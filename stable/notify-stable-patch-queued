@@ -19,7 +19,6 @@ DefaultEmail = getenv("DEBEMAIL")
 # Additional Cc targets which should get added
 #
 DefaultCc    = [
-                    "linux-kernel@vger.kernel.org",
                     "stable@vger.kernel.org",
                     "kernel-team@lists.ubuntu.com"
                ]
@@ -91,10 +90,11 @@ def AssembleMailBody(version, subject, patchlines):
         " http://kernel.ubuntu.com/git?p=ubuntu/" +
         "linux.git;a=shortlog;h=refs/heads/linux-" + bversion + "y-queue",
         "",
-        "If you, or anyone else, feels it should not be added to the " +
-        bversion[:-1],
-        "Linux kernel, or for any feedback related to it, please reply to",
-        "this email. For more information on extended stable, see",
+        "If you, or anyone else, feels it should not be added to this tree,"
+        " please ",
+        "reply to this email.",
+        "",
+        "For more information about the " + version + " tree, see",
         "https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable",
         "",
         "Thanks.",
