@@ -3,7 +3,7 @@
 ## This is the Ubuntu Kernel Team weekly status meeting.
 ##
 [LINK] https://wiki.ubuntu.com/KernelTeam/Meeting
-[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Quantal
+[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/raring
 
 # Meeting Etiquette
 #
@@ -21,11 +21,11 @@ Release metrics and incoming bug data can be reviewed at the following link:
 
 [TOPIC] Milestone Targeted Work Items (ogasawara)
 
-[TOPIC] Status: Quantal Development Kernel (ogasawara)
+[TOPIC] Status: Raring Development Kernel (ogasawara)
 
-[TOPIC] Status: CVE's (sconklin)
+[TOPIC] Status: CVE's (henrix)
 
-[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Precise/Oneiric/Natty/Lucid/Hardy (bjf/herton/henrix)
+[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Quantal/Precise/Oneiric/Lucid/Hardy (bjf/herton/henrix)
 
 [TOPIC] Open Discussion or Questions? Raise your hand to be recognized (o/)
 
