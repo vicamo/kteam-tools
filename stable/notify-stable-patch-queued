@@ -19,7 +19,7 @@ DefaultEmail = getenv("DEBEMAIL")
 # Additional Cc targets which should get added
 #
 DefaultCc    = [
-                    "stable@vger.kernel.org",
+                    #"stable@vger.kernel.org",
                     "kernel-team@lists.ubuntu.com"
                ]
 #
