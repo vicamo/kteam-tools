@@ -205,7 +205,7 @@ class ApplyStablePatches(StdApp):
 
     # function to add sob and "commit <hash> upstream" line to the patch
     #
-    def modify_patch(self, patch, uhash, sob):
+    def modify_patch(self, patch, uhash, sob, stable_re):
         commit_line = 'commit %s upstream.' % (uhash)
         subject = False
         hash_add = False
@@ -237,6 +237,11 @@ class ApplyStablePatches(StdApp):
                     if hash_added and 'Signed-off-by:' in line:
                         if line.strip() == sob:
                             continue
+
+                    if hash_added and stable_re.search(line):
+                        if 'verbose' in self.cfg:
+                            print("\nDropped '%s' line from patch" % (line.rstrip()))
+                        continue
 
                     if hash_added and line.strip() == '---':
                         dst.write(sob)
@@ -384,12 +389,13 @@ class ApplyStablePatches(StdApp):
                     eout(result)
                     continue
                 filename = result[0]
-                self.modify_patch(filename, change[0], self.cfg['sob'])
+                self.modify_patch(filename, change[0], self.cfg['sob'], ccstable)
                 applied_file = '%s/%s' % (applied_dir, filename)
                 if path.exists(applied_file):
                     remove(applied_file)
                 discarded_file = '%s/%s' % (discarded_dir, filename)
                 if path.exists(discarded_file):
+                    remove(filename)
                     print("discarded")
                     continue
                 patch_file = '%s/%s' % (fixed_dir, filename)
@@ -420,7 +426,7 @@ class ApplyStablePatches(StdApp):
                     failed_file = '%s/%s' % (failed_dir, filename)
                     if path.exists(failed_file):
                         remove(failed_file)
-                    move(filename, failed_dir)
+                    move(patch_file, failed_dir)
                     print("failed")
                     status, result = run_command('git am --abort')
                     continue
