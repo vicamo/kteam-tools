@@ -153,13 +153,13 @@ def ParsePatch(filename):
 
     cmd = SendMailCmd + " --suppress-cc=all --from \"" + opts.sender + "\""
     #fp.write("To: " + author + "\n")
-    cmd += " --to \"" + author + "\""
+    cmd += " --to \"" + author.replace("\"", "\\\"").replace(",", "") + "\""
     for line in slist:
         #fp.write("Cc: " + line + "\n")
-        cmd += " --cc \"" + line + "\""
+        cmd += " --cc \"" + line.replace("\"", "\\\"").replace(",", "") + "\""
     for line in DefaultCc:
         #fp.write("Cc: " + line + "\n")
-        cmd += " --cc \"" + line + "\""
+        cmd += " --cc \"" + line.replace("\"", "\\\"").replace(",", "") + "\""
     for line in AssembleMailBody(opts.version, subject, patchlines):
         fp.write(line + "\n")
     fp.flush()
@@ -168,6 +168,8 @@ def ParsePatch(filename):
         cmd += " --dry-run"
 
     cmd += " " + fp.name
+    if opts.dryrun:
+        print(cmd)
     system(cmd)
 
     if opts.dryrun:
