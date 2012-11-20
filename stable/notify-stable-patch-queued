@@ -170,14 +170,21 @@ def ParsePatch(filename):
     cmd += " " + fp.name
     if opts.dryrun:
         print(cmd)
-    system(cmd)
+    ret = system(cmd)
 
     if opts.dryrun:
         system("cat " + fp.name)
     fp.close()
+    return ret
 
+perrors = []
 for filename in args:
     print "Processing", filename, "..."
-    ParsePatch(filename)
+    if ParsePatch(filename):
+        perrors.append(filename)
+if perrors:
+    print "Error while sending the following patches:"
+    for p in perrors:
+        print p
 
 # vi:set ts=4 sw=4 expandtab:
