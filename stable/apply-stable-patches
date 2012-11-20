@@ -161,6 +161,9 @@ class KernelVersion:
                     self.sublevel = int(kver[2])
                 except ValueError:
                     self.sublevel = None
+            else:
+                # sublevel is optional: if not specified, assume 0
+                self.sublevel = 0
         self.plus = plus
 
     # compare against current kernel version
@@ -302,6 +305,8 @@ class ApplyStablePatches(StdApp):
                     continue
                 s = ccstable.search(body)
                 if s:
+                    if 'verbose' in self.cfg:
+                        print("")
                     forvers = []
                     sline = s.group(0)
                     s2 = cchint.search(sline)
@@ -310,6 +315,12 @@ class ApplyStablePatches(StdApp):
                         if (s2.group('ge') or s2.group('ge') or s2.group('plus')
                             or s2.group('later')):
                             plus = True
+                        if 'verbose' in self.cfg:
+                            pf = ""
+                            if plus:
+                                pf = ">="
+                            print("commit %s is marked for version %s%s" %
+                                  (c, pf, s2.group('kver')))
                         forvers.append(KernelVersion(s2.group('kver'), plus))
                         sline = sline[s2.end():]
                         s2 = cchint.search(sline)
