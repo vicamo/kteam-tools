@@ -140,7 +140,7 @@ class KernelVersion:
     version = None
     patchlevel = None
     sublevel = None
-    plus = False
+    plus = 0
 
     # __init__
     #
@@ -294,7 +294,7 @@ class ApplyStablePatches(StdApp):
                 raise GitError("\n".join(result))
             cc = 1
             ccstable = compile(r'^\s*Cc:.*\b(stable)\b.*', IGNORECASE | MULTILINE)
-            cchint = compile(r'((?P<for>\b(for)\b)|(?P<ge>\s*>=\s*)|(\s*))(?P<v>[v]*)(?P<kver>[0-9]\.[0-9][^\s+,\]]*)(?P<plus>[+]*)[,\]]*((?P<only>[\s]+only)|(?P<later>[\s]+and later)|(\s*))')
+            cchint = compile(r'((?P<for>\b(for)\b)|(?P<gr>\s*>\s*)|(?P<ge>\s*>=\s*)|(\s*))(?P<v>[v]*)(?P<kver>[0-9]\.[0-9][^\s+,\]]*)(?P<plus>[+]*)[,\]]*((?P<only>[\s]+only)|(?P<later>[\s]+and later)|(\s*))')
             forstable = []
             for c in result:
                 stdo("\rLooking for stable commits inside provided range (%d/%d)..."
@@ -305,25 +305,29 @@ class ApplyStablePatches(StdApp):
                     continue
                 s = ccstable.search(body)
                 if s:
-                    if 'verbose' in self.cfg:
-                        print("")
                     forvers = []
                     sline = s.group(0)
                     s2 = cchint.search(sline)
                     while s2:
-                        plus = False
-                        if (s2.group('ge') or s2.group('ge') or s2.group('plus')
+                        plus = 0
+                        if (s2.group('gr')):
+                            plus = 1
+                        elif (s2.group('ge') or s2.group('ge') or s2.group('plus')
                             or s2.group('later')):
-                            plus = True
+                            plus = 2
                         if 'verbose' in self.cfg:
                             pf = ""
-                            if plus:
-                                pf = ">="
-                            print("commit %s is marked for version %s%s" %
-                                  (c, pf, s2.group('kver')))
+                            if plus == 1:
+                                pf = "> "
+                            elif plus == 2:
+                                pf = ">= "
+                            stdo("\ncommit %s is marked for version %s%s" %
+                                 (c, pf, s2.group('kver')))
                         forvers.append(KernelVersion(s2.group('kver'), plus))
                         sline = sline[s2.end():]
                         s2 = cchint.search(sline)
+                    if 'verbose' in self.cfg and forvers:
+                        print("")
                     forstable.append([c, forvers])
                 cc += 1
 
@@ -415,7 +419,11 @@ class ApplyStablePatches(StdApp):
                     if change[1]:
                         ignore = True
                         for kver in change[1]:
-                            if kver.plus:
+                            if kver.plus == 1:
+                                if kernel.compare(kver) > 0:
+                                    ignore = False
+                                    break
+                            elif kver.plus == 2:
                                 if kernel.compare(kver) >= 0:
                                     ignore = False
                                     break
@@ -434,6 +442,8 @@ class ApplyStablePatches(StdApp):
                     remove(filename)
                 status, result = run_command('git am %s' % patch_file)
                 if status != 0:
+                    if 'verbose' in self.cfg:
+                        eout(result)
                     failed_file = '%s/%s' % (failed_dir, filename)
                     if path.exists(failed_file):
                         remove(failed_file)
