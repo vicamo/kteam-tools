@@ -1,0 +1,434 @@
+#!/usr/bin/python3
+
+import sys
+import re
+import shlex
+import os
+
+comment_re       = re.compile(r'^(\s*#.*|\s*)$')
+
+experimental_re = re.compile(r'\bEXPERIMENTAL(=n)?\b')
+staging_re      = re.compile(r'\bSTAGING(=n)?\b')
+debug_re        = re.compile(r'\bDEBUG_KERNEL(=n)?\b')
+
+def join(a, parent):
+    a['parent'] = parent
+    parent['children'].append(a)
+
+    while True:
+        add_deps(a, parent['deps'])
+        if 'parent' not in parent:
+            break
+        parent = parent['parent']
+
+entries = []
+def emit(a):
+    global entries
+
+    if not a:
+        return
+    a['children'] = list()
+
+    if 'prompt' not in a or 'comment' in a:
+        return
+
+    # Your parent is the preceeding menu items if you are directly dependant
+    # on them, or the surrounding menu otherwise.
+    for parent in menu:
+        if 'menu' in parent:
+            join(a, parent)
+            break
+        elif 'choice' in parent:
+            if 'choice' in a:
+                raise ValueError('choice in choice')
+            join(a, parent)
+            break
+        elif 'config' in parent:
+            match = re.search(r'\b' + parent['config'] + r'(=n)?\b', a['deps'])
+            if match:
+                #print("PARENT: ", parent['config'])
+                join(a, parent)
+                break
+
+    # Flagging.
+    if 'DANGEROUS' in a['prompt']:
+        a['info'] = a.get('info', '') + "flag<DANGEROUS> "
+    if 'DEPRECATED' in a['prompt']:
+        a['info'] = a.get('info', '') + "flag<DEPRECATED> "
+    match = experimental_re.search(a['deps'])
+    if match or 'EXPERIMENTAL' in a['prompt']:
+        a['info'] = a.get('info', '') + "flag<EXPERIMENTAL> "
+    match = staging_re.search(a['deps'])
+    if match:
+        a['info'] = a.get('info', '') + "flag<STAGING> "
+    match = debug_re.search(a['deps'])
+    if match:
+        a['info'] = a.get('info', '') + "flag<DEBUG> "
+
+    menu.insert(0, a)
+    entries.append(a)
+
+
+def add_deps(a, deps):
+    if deps == '':
+        return
+    if a['deps'] != '':
+        a['deps'] += " && "
+    a['deps'] += "( " + deps + " )"
+
+
+def add_deps_list(a, deps_list):
+    for deps in deps_list:
+        add_deps(a, deps)
+
+
+root = {'config': 'ROOT', 'menu': True, 'deps': '', 'children': list()}
+menu = [root]
+ifs = list()
+def read_kconfig(base, filename):
+    global menu
+    global ifs
+
+    #print("FILE:" + filename)
+    A = None
+    with open(os.path.join(base, filename)) as fd:
+        text = 0
+        current = None
+        for line in fd:
+            #print(line, end='')
+
+            # Drop comments and blank lines.
+            match = comment_re.match(line)
+            if match:
+                continue
+
+            # Drop text blocks -- these end when the indent reduces
+            # blank lines do not count!  But hitting indent of 0 _otherwise_
+            # does.
+            if text:
+                # Work out effective indent.
+                indent = 0
+                for char in line:
+                    if char == ' ':
+                        indent += 1
+                    elif char == '\t':
+                        indent = (indent & ~7) + 8
+                    else:
+                        break
+
+                if text == True:
+                    text = indent
+                if (indent  != 0 or line[1] in (' ', '\t')) and indent >= text:
+                    continue
+            text = 0
+
+            # Pull the command lines apart.
+            #print(text, line, end='')
+            a = shlex.split(line)
+            #if filename == 'kernel/Kconfig.hz':
+            #    print(a)
+
+            if a[0] == 'source':
+                emit(A)
+                A = None
+                menu_keep = list(menu)
+                ifs_keep = list(ifs)
+                read_kconfig(base, a[1])
+                ifs = ifs_keep
+                menu = menu_keep
+
+                #print("FILE:" + filename)
+            elif a[0] == 'config':
+                emit(A)
+                A = {'file': filename, 'config': a[1], 'deps': ''}
+                add_deps_list(A, ifs)
+            elif a[0] == 'menuconfig':
+                emit(A)
+                A = {'file': filename, 'config': a[1], 'menuconfig': True, 'deps': ''}
+                add_deps_list(A, ifs)
+            elif a[0] == 'choice':
+                emit(A)
+                A = {'file': filename, 'choice': True, 'deps': ''}
+                add_deps_list(A, ifs)
+            elif a[0] == 'menu':
+                emit(A)
+                A = {'file': filename, 'prompt': a[1], 'menu': True, 'deps': ''}
+            elif a[0] == 'comment':
+                emit(A)
+                A = {'file': filename, 'prompt': a[1], 'comment': True, 'deps': ''}
+            elif a[0] == 'endmenu':
+                emit(A)
+                A = None
+                while True:
+                    x = menu.pop(0)
+                    #print("ENDMENU: ", x)
+                    if 'menu' in x:
+                        break
+            elif a[0] == 'endchoice':
+                emit(A)
+                A = None
+                #print(filename, '  ', line, end='')
+                while True:
+                    x = menu.pop(0)
+                    #print("ENDCHOICE: ", x['prompt'])
+                    if 'choice' in x:
+                        break
+            elif a[0] == 'if':
+                ifs.insert(0, a[1])
+            elif a[0] == 'endif':
+                ifs.pop(0)
+
+            # config attributes
+            if a[0] == 'help' or a[0] == '---help---':
+                text = True
+            elif a[0] in ('boolean', 'bool', 'tristate', 'int', 'string'):
+                if a[0] == 'boolean':
+                    a[0] = 'bool'
+                A['type'] = a[0]
+                if len(a) > 1:
+                    A['prompt'] = a[1]
+            elif a[0] == 'def_bool':
+                A['type'] = 'bool'
+            elif a[0] == 'def_tristate':
+                A['type'] = 'tristate'
+            elif a[0] == 'prompt':
+                A['prompt'] = a[1]
+                if len(a) > 2 and a[2] == 'if':
+                    add_deps(A, ' '.join(a[3:]))
+            elif a[0] == 'depends' and a[1] == 'on':
+                add_deps(A, ' '.join(a[2:]))
+    emit(A)
+
+read_kconfig(sys.argv[1], sys.argv[2])
+
+def fake_menu(parent):
+    is_menu = False
+    for entry in parent['children']:
+        if 'children' in entry:
+            if fake_menu(entry):
+                if 'menu' not in entry and 'menuconfig' not in entry:
+                    #print('FAKEMENU', entry.get('config', ''), entry.get('prompt', ''))
+                    entry['menu'] = True
+                
+        if 'menu' in entry or 'menuconfig' in entry:
+            is_menu = True
+
+    return is_menu
+
+fake_menu(root)
+
+def child_find(parent, prompt):
+    for entry in parent['children']:
+        if 'prompt' in entry and entry['prompt'] == prompt:
+            return entry
+        if 'config' in entry and entry['config'] == prompt:
+            return entry
+    return None
+
+
+def children(parent, prefix, toplevel=False, menu=False, config=False):
+    for entry in parent['children']:
+        if menu and 'menu' not in entry and 'menuconfig' not in entry:
+            continue
+        if config and 'config' not in entry:
+            continue
+
+        if 'config' in entry:
+            print(prefix + entry['config'])
+        elif 'prompt' in entry:
+            print(prefix + entry['prompt'])
+        if 'children' in entry and \
+           (not toplevel or 'menu' in entry or 'menuconfig' in entry):
+            children(entry, prefix + '  ', toplevel, menu, config)
+
+
+def children_list(root, selector_list, toplevel=False, menu=False, config=False):
+    parent = root
+    for selector in selector_list:
+        parent = child_find(parent, selector)
+        if not parent:
+            raise ValueError(selector + ":selector not found")
+    children(parent, '', toplevel=toplevel, menu=menu, config=config) 
+
+
+def children_scan_iter(parent, toplevel):
+    for entry in parent['children']:
+        #print("AT", entry.get('config', ''), entry.get('prompt', ''))
+        yield entry
+        if 'children' in entry and \
+           (not toplevel or 'menu' in entry or 'menuconfig' in entry):
+            for ent in children_scan_iter(entry, toplevel):
+                yield ent
+
+def children_scan(root, selector_list, toplevel=False):
+    parent = root
+    for selector in selector_list:
+        parent = child_find(parent, selector)
+        if not parent:
+            raise ValueError(selector + ":selector not found")
+    for entry in children_scan_iter(parent, toplevel):
+        yield entry
+    
+
+cmd = sys.argv[3]
+args = sys.argv[4:]
+
+if cmd == 'debug':
+    for entry in entries:
+        if 'config' in entry:
+            name = entry['config']
+        else:
+            name = entry['prompt']
+
+        pname = ''
+        if 'parent' in entry:
+            parent = entry['parent']
+            while True:
+                if 'config' in parent:
+                    pname = "'" + parent['config'] + "' " + pname
+                else:
+                    pname = "'" + parent['prompt'] + "' " + pname
+                if 'parent' not in parent:
+                    break
+                parent = parent['parent']
+
+        print(name, " : ", entry['deps'], " : ", pname, " : ", entry['file'])
+
+elif cmd == 'menus':
+    children_list(root, [], toplevel=True, menu=True) 
+
+elif cmd == 'geninfo':
+    for entry in entries:
+        if 'config' not in entry:
+            continue
+        if 'prompt' not in entry:
+            continue
+
+        name = entry['config']
+        prompt = entry['prompt']
+        info = entry.get('info', '')
+
+        experimental = 'flag<EXPERIMENTAL>' in info
+        dangerous = 'flag<DANGEROUS>' in info
+        debug = 'flag<DEBUG>' in info
+
+        if entry['type'] == 'bool':
+            (options, default, expected) = ('y/n', 'y', 'y')
+        elif entry['type'] == 'tristate':
+            (options, default, expected) = ('y/m/n', 'm', 'm')
+        else:
+            (options, default, expected) = ('-', '-', '-')
+
+        if default != '-' and (experimental or dangerous or debug):
+            (default, expected) = ('n', 'n')
+
+        misc = ''
+
+        # Work out if we are a choice.
+        if 'parent' in entry and 'choice' in entry['parent']:
+            choices = []
+            for entry in entry['parent']['children']:
+                #print("ENDCHOICE: child -- " + entry['config'])
+                choices.append("CONFIG_" + entry['config'])
+            choice_string = ' '.join(choices)
+            misc += ' choice<' + ' '.join(choices) + '>'
+
+            expected = 'c'
+
+        print("CONFIG_{0} {1} {2} {3} {4}desc<{5}>{6}".format(name, options, default, expected, entry.get('info', ''), prompt, misc))
+
+elif cmd == 'dump-toplevel':
+    children_list(root, args, toplevel=True)
+
+elif cmd == 'dump':
+    children_list(root, args)
+
+elif cmd == 'expand':
+    for line in sys.stdin:
+        if line.startswith('set '):
+            a = shlex.split(line)
+            a.pop(0)
+            result = {}
+            while len(a) >= 1:
+                cmd = a.pop(0)
+                if cmd in ('+all', '+tree', '?tree', '+tree-top', '?tree-top'):
+                    if cmd == '+all':
+                        position = []
+                    else:
+                        position = a.pop(0).split(',')
+
+                    if cmd[1:] == 'tree-top':
+                        toplevel = True
+                    else:
+                        toplevel = False
+                
+                    try:
+                        for entry in children_scan(root, position, toplevel):
+                            if 'config' in entry:
+                                #print("ADD", entry['config'])
+                                if cmd[0] == '+':
+                                    result[entry['config']] = entry
+                                elif entry['config'] in result:
+                                    del result[entry['config']]
+                    except ValueError:
+                        print('WARNING: ' + ':'.join(position) + ' not found', file=sys.stderr)
+                        pass
+
+                elif cmd == '+pattern':
+                    pattern = a.pop(0)
+                
+                    for entry in children_scan(root, []):
+                        if 'config' in entry and re.search(pattern, entry['config']):
+                            #print("PATTERN", pattern, entry.get('config',''))
+                            result[entry['config']] = entry
+
+                elif cmd == '?pattern':
+                    pattern = a.pop(0)
+
+                    keys = list(result.keys())
+                    for key in keys:
+                        if not re.search(pattern, key):
+                            del result[key]
+
+                elif cmd == '?type':
+                    pattern = a.pop(0)
+
+                    keys = list(result.keys())
+                    for key in keys:
+                        if result[key]['type'] != pattern:
+                            del result[key]
+
+                elif cmd in ('?flag', '!flag', '?mark', '!mark'):
+                    pattern = cmd[1:] + "<" + a.pop(0) + ">"
+
+                    keys = list(result.keys())
+                    for key in keys:
+                        if 'info' in result[key] and pattern in result[key]['info']:
+                            if cmd[0] == '!':
+                                del result[key]
+                        else:
+                            if cmd[0] == '?':
+                                del result[key]
+
+                elif cmd == '=':
+                    value = ' '.join(a)
+                    
+                    for key in sorted(result.keys()):
+                        result[key]['info'] = result[key].get('info', '') + " " + value
+                        print("CONFIG_" + key + " " + value)
+                    break
+
+                else:
+                    print("ERROR: " + cmd + ": invalid set", file=sys.stderr)
+                    print(line, end='', file=sys.stderr)
+                    break
+
+            continue
+                
+            #for entry in children_scan(root, a[1:-1], toplevel=True):
+            #    #print('RESULT', entry.get('config'), entry.get('prompt'))
+            #    if 'config' in entry and entry['type'] == 'tristate':
+            #        print(entry['config'] + ' ' + a[-1])
+            continue
+
+        print(line, end='')

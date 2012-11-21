@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+
+import sys
+import re
+
+info_option = re.compile(r'\s*(\S+)<(.*?)>')
+
+# Load in the tree annotations.
+annotations = {}
+for line in sys.stdin:
+    if line[0] in ('#', '\n'):
+        continue
+
+    line = line.rstrip()
+    a = line.split(None, 2)
+    if len(a) != 3:
+        a.append('')
+    (config, value, info) = a
+
+    if config not in annotations:
+        annotations[config] = (value, info)
+    else:
+        (ovalue, oinfo) = annotations[config]
+        if value == '-':
+            value = ovalue
+        info = oinfo + ' ' + info
+
+        # Elide duplicate flags and marks.
+        ninfo = ''
+        flags = {}
+        matches = info_option.finditer(info)
+        for match in matches:
+            flag_type = match.group(1)
+            flag_key = match.group(1) + match.group(2)
+            if flag_type in ('flag', 'mark', 'note'):
+                if flag_key in flags:
+                    continue
+                flags[flag_key] = True
+            
+            ninfo += match.group(0).strip() + ' '
+
+        annotations[config] = (value, ninfo.strip())
+            
+
+# Load in the various architecture lists, take the first one for each option.
+# Apply annotations as above as we go.
+seen = {}
+for config in annotations:
+    (value, info) = annotations[config]
+    sys.stdout.write(config + ' ' + value + ' ' + info.strip() + '\n')

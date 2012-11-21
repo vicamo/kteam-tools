@@ -30,8 +30,8 @@ esac
 
 
 # XXX: in theory at least this should be tree specific.
-"$here/lib-config/devel-info-dump" "$there/debian.master/config/annotations" "$current"
-"$here/lib-config/devel-info-dump" "$there/debian.master/config/annotations" "$next"
+"$here/lib-config/devel-config-info" "$there/debian.master/config/annotations" "$current"
+"$here/lib-config/devel-config-info" "$there/debian.master/config/annotations" "$next"
 
 (
 	cd "$next" || exit 1

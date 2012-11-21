@@ -10,31 +10,22 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-# Ensure the configs are clean in tree.
-git checkout -f >&2
+annotations="$1"
+base="$2"
 
-fakeroot debian/rules dumpconfigs dumpportsconfigs 2>&1 | \
-perl -e '
-	while (<>) {
-		$_ =~ /^\s*(.*)\s\(([^\)]*)\) \[([^\]]*)\]\s+(.*)$/;
-		($desc, $option, $default, $value) = ($1, $2, $3, $4);
-		next if ($option eq "");
 
-		$default =~ s@/\?$@@;
+# Generate per architecture configuration trees
+"$here/devel-config-tree" "$base" arch/x86/Kconfig geninfo >"$base/CONFIGS-info-x86"
+"$here/devel-config-tree" "$base" arch/arm/Kconfig geninfo >"$base/CONFIGS-info-arm"
 
-		$def = $default;
-		$def = "n" if ($default =~ /[nN]/);
-		$def = "y" if ($default =~ /[yY]/);
-		$def = "m" if ($default =~ /[mM]/);
+# Generate the expanded annotations.
+{
+	"$here/devel-config-tree" "$base" arch/x86/Kconfig expand <"$annotations"
+	"$here/devel-config-tree" "$base" arch/arm/Kconfig expand <"$annotations"
+} | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
-		$option = "CONFIG_$option";
+# Generate a common merged configuration version.
+"$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-x86" "$base/CONFIGS-info-arm"
 
-		$default = "-" if (!$default);
-		$def = "-" if (!$def);
-
-		print "$option $default $def $desc\n";
-	}
-' | "$here/devel-config-tag" "$@"
-
-# Ensure the configs are clean in tree once more.
-git checkout -f >&2
+# Legacy formats.
+awk '{ print $1 " " $2 " " $3 }' <"$base/CONFIGS-info" >"$base/CONFIGS-defaults"
