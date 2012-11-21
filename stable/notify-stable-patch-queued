@@ -151,7 +151,8 @@ def ParsePatch(filename):
     except:
         raise
 
-    cmd = SendMailCmd + " --suppress-cc=all --from \"" + opts.sender + "\""
+    cmd = SendMailCmd + " --suppress-cc=all --8bit-encoding=UTF-8"
+    cmd += " --from \"" + opts.sender + "\""
     #fp.write("To: " + author + "\n")
     cmd += " --to \"" + author.replace("\"", "\\\"").replace(",", "") + "\""
     for line in slist:
