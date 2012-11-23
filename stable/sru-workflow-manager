@@ -859,9 +859,9 @@ class Shank(StdApp):
 
     def check_master_task(self, bug, tname):
         """
-        check if the task with name tname is in the state Fix Released
-        on the master bug, when bug is a derivative/backport tracking bug,
-        otherwise just return True
+        check if the task with name tname is in the state Confirmed or
+        Fix Released on the master bug, when bug is a derivative/backport
+        tracking bug, otherwise just return True
         """
         props = bug.properties
         if 'kernel-stable-master-bug' in props:
@@ -874,12 +874,13 @@ class Shank(StdApp):
                         continue
                     short_name = task_name[len(self.projectname)+1:].strip()
                     if short_name.lower() == tname:
-                        if t.status == 'Fix Released':
+                        if t.status == 'Confirmed' or t.status == 'Fix Released':
                             return True
                         else:
                             break
-                self.verbose("%s isn't Fix Released on bug %s, waiting on master bug\n"
+                self.verbose("%s isn't Confirmed or Fix Released on bug %s,"
                              % (tname, mbug.id))
+                self.verbose(" waiting on master bug\n")
                 return False
             except:
                 traceback.print_exc()
@@ -903,10 +904,11 @@ class Shank(StdApp):
             return False
 
         if self.taskbyname['promote-to-proposed'].status == 'New':
-            # if this is a derivative tracking bug, wait the packages on
-            # the master tracking bug to be promote-to-proposed first,
-            # before setting the task here. A derivative package may
-            # have dependencies on master packages.
+            # if this is a derivative tracking bug, first wait until
+            # that packages on the master tracking bug are also ready or
+            # already promoted. The way derivative package bugs are
+            # opened already ensures this, but check the tasks on the
+            # master bug anyway just in case...
             if not self.check_master_task(taskobj.bug, 'promote-to-proposed'):
                 return False
 
@@ -1382,8 +1384,8 @@ class Shank(StdApp):
                 # We don't publish on Fri/Sat/Sun (see comment on function
                 # hold_updates_security_copy). Also, only allow the
                 # promote-to-{updates,security} on derivative packages
-                # if the master packages are already promoted to the
-                # updates pocket.
+                # if the master packages are already ready for promotion
+                # or already promoted to the updates pocket.
                 tbug = self.taskbyname[self.projectname].bug
                 if (not self.hold_updates_security_copy() and
                     self.check_master_task(tbug, 'promote-to-updates')):
@@ -1409,7 +1411,8 @@ class Shank(StdApp):
                     self.verbose('Unable to set promote-to-{updates,security} ')
                     self.verbose('tasks. We are either near\nthe weekend, when ')
                     self.verbose('no publising is done, or this is a derivative ')
-                    self.verbose('bug\nwhere the master bug isn\'t released yet\n')
+                    self.verbose('bug\nwhere the master bug isn\'t ready for ')
+                    self.verbose('release or released yet\n')
 
             else:
                 # don't have required testing signoffs
