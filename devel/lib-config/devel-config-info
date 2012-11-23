@@ -1,0 +1,40 @@
+#! /bin/bash
+#
+# devel-config-info -- generate the configuration info tables.
+#
+P="$0"
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+# Ensure the configs are clean in tree.
+git checkout -f >&2
+
+fakeroot debian/rules dumpconfigs dumpportsconfigs 2>&1 | \
+perl -e '
+	while (<>) {
+		$_ =~ /^\s*(.*)\s\(([^\)]*)\) \[([^\]]*)\]\s+(.*)$/;
+		($desc, $option, $default, $value) = ($1, $2, $3, $4);
+		next if ($option eq "");
+
+		$default =~ s@/\?$@@;
+
+		$def = $default;
+		$def = "n" if ($default =~ /[nN]/);
+		$def = "y" if ($default =~ /[yY]/);
+		$def = "m" if ($default =~ /[mM]/);
+
+		$option = "CONFIG_$option";
+
+		$default = "-" if (!$default);
+		$def = "-" if (!$def);
+
+		print "$option $default $def $desc\n";
+	}
+' | "$here/devel-config-tag" "$@"
+
+# Ensure the configs are clean in tree once more.
+git checkout -f >&2
