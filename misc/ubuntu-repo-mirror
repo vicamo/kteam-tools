@@ -42,6 +42,7 @@ REPOS += ubuntu-raring
 REPOS += ubuntu-raring-meta
 REPOS += ubuntu-raring-signed
 REPOS += wireless-crda
+REPOS += ubuntu-nexus7
 
 all: repo
 
