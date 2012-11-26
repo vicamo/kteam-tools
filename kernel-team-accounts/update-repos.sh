@@ -8,6 +8,13 @@ RELEASES="hardy lucid oneiric precise quantal raring"
 EXTRAS="ubuntu-hardy-lbm ubuntu-hardy-lrm ubuntu-hardy-lum ubuntu-lucid-lbm ubuntu-oneiric-lbm ubuntu-precise-lbm ubuntu-quantal-lbm"
 EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest instrument-lib"
 METAS="hardy lucid oneiric precise quantal"
+LOCK=/tmp/update-repos.lock
+
+if [ -f $LOCK ]
+then
+	exit 1
+fi
+echo 1 > $LOCK
 
 if [ ! -d ${LREPO} ]
 then
@@ -58,3 +65,5 @@ then
 else
 	(cd kteam-tools; git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
 fi
+
+rm -f $LOCK
