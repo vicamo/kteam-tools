@@ -50,6 +50,7 @@ ubuntu-stable	git://kernel.ubuntu.com/herton/linux-stable.git
 drm-2.6		git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
 drm-intel-danvet 	git://people.freedesktop.org/~danvet/drm-intel
 debloat-testing	git://git.infradead.org/debloat-testing.git
+extended-stable	git://kernel.ubuntu.com/ubuntu/linux.git
 EORL
 	RET="$url"
 }

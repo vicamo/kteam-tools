@@ -23,7 +23,7 @@ mkdir -p "$master_tags"
 master_tree_select
 
 # Pull in all trees containing tags we wish to build.
-repo_remote_update_list linus 2.6.32.y.33.z linux-stable
+repo_remote_update_list linus 2.6.32.y.33.z linux-stable extended-stable
 
 #
 # UPSTREAM TAGS: Find all the new upstream release tags.

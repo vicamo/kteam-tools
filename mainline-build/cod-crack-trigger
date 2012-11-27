@@ -56,6 +56,8 @@ drm-2.6/drm-next				996	drm-next
 drm-intel-danvet/drm-intel-next			997	drm-intel-next
 drm-intel-danvet/drm-intel-nightly		994	drm-intel-nightly
 debloat-testing/master				993	debloat-testing
+extended-stable/linux-3.5.y-review		992     linux-3.5.y.z-review
+extended-stable/linux-3.5.y-queue		991     linux-3.5.y.z-queue
 EOL
 # Also allocated
 # 995: sconklin -- wayland
