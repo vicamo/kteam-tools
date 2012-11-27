@@ -205,8 +205,9 @@ class Ubuntu:
             [
                 'linux',
                 'linux-meta',
-                #'linux-lts-quantal',
-                #'linux-meta-lts-quantal',
+                'linux-lts-quantal',
+                'linux-meta-lts-quantal',
+                #'linux-signed-lts-quantal',
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
                 'linux-armadaxp',
@@ -218,7 +219,10 @@ class Ubuntu:
                     'meta' : 'linux-meta',
                     'lbm'  : 'linux-backports-modules-3.2.0'
                 },
-                'linux-lts-quantal' : { 'meta' : 'linux-meta-lts-quantal' },
+                'linux-lts-quantal' : {
+                    'meta' : 'linux-meta-lts-quantal',
+                    'signed' : 'linux-signed-lts-quantal'
+                },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
                 'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }

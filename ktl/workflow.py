@@ -243,7 +243,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
-                #'prepare-package-signed'     : 'canonical-kernel-team',
+                'prepare-package-signed'     : 'canonical-kernel-team',
                 #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'canonical-kernel-team',
                 'verification-testing'       : 'canonical-kernel-team',
