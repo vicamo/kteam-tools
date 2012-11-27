@@ -24,6 +24,14 @@ lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
 precise|*)				build_release="precise" ;;
 esac
 
+# Arches to build
+case "$series" in
+hardy|lucid)			arches="amd64 i386" ;;
+maverick|natty|oneiric)		arches="amd64 i386 armel" ;;
+precise|quantal)		arches="amd64 i386 armel armhf" ;;
+*)				arches="amd64 i386 armhf" ;;
+esac
+
 {
 	time=`date +%s`
 	echo "Release: $build_release"
@@ -269,33 +277,23 @@ do_chroot "$build_release-i386" \
 	fakeroot debian/rules clean
 do_chroot "$build_release-i386" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep
-do_chroot "$build_release-amd64" \
-	fakeroot debian/rules clean
-{
-	build_common
-	cat - <<'EOM'
-	debian/rules do_tools=0 no_dumpfile=1 build-generic
-	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
-EOM
-} | do_chroot "$build_release-amd64" "/bin/bash"
-do_chroot "$build_release-i386" \
-	fakeroot debian/rules clean
-{
-	build_common
-	cat - <<'EOM'
-	debian/rules do_tools=0 no_dumpfile=1 build-generic
-	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
-EOM
-} | do_chroot "$build_release-i386" "/bin/bash"
-do_chroot "$build_release-i386" \
-	fakeroot debian/rules clean
-{
-	build_common
-	cat - <<'EOM'
-	debian/rules do_tools=0 no_dumpfile=1 build-generic-pae
-	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic-pae
-EOM
-} | do_chroot "$build_release-i386" "/bin/bash"
+for arch in $arches; do
+	if [ "$arch" == "armel" -o "$arch" == "armhf" ]; then
+		carch=amd64
+		cross_prefix="dpkg-architecture -a$arch -c"
+	else
+		carch=$arch
+		cross_prefix=""
+	fi
+	do_chroot "$build_release-$carch" \
+		fakeroot debian/rules clean
+	{
+	        build_common
+	        cat - <<-EOM
+	        $cross_prefix debian/rules do_tools=0 no_dumpfile=1 binary-debs
+		EOM
+	} | do_chroot "$build_release-$carch" "/bin/bash"
+done
 
 {
 	time=`date +%s`
