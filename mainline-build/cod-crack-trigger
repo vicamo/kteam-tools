@@ -29,27 +29,43 @@ repo_remote_update_list linus drm-2.6 drm-intel-danvet debloat-testing extended-
 
 refresh=1
 date="`date +%F`"
-while read branch abi base
+while read branch abi base parent
 do
 	curr="$master_tags/$base"
 	# Check for upstream crack of the day.
 	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
 	prev=`cat "$curr" 2>/dev/null || true`
 
-	echo "branch<$branch> tip<$tip> prev<$prev>"
+	pcurr="$master_tags/$parent"
+	pprev=`cat "$pcurr" 2>/dev/null || true`
 
-	if [ "$tip" != "" -a "$tip" != "$prev" ]; then
-		# Commit the new tip.
-		echo "$tip" >"$curr.new"
-		mv -f "$curr.new" "$curr"
+	echo "branch<$branch> tip<$tip> prev<$prev> pprev<$pprev>"
 
-		if [ "$refresh" -eq 1 ]; then
-			repo_remote_update_list $ubuntu_series
-			refresh=0
-		fi
-		"$here/cod-enqueue" "C" \
-			"$here/mainline-build" "$tip" "$abi" "$base" "$date"
+	if [ "$tip" = "" -o "$tip" = "$prev" ]; then
+		continue
 	fi
+
+	# Commit the new tip.
+	echo "$tip" >"$curr.new"
+	mv -f "$curr.new" "$curr"
+
+	# Check we are not also the same as any parental tip.  There
+	# is no point in rebuilding if we are and generating two
+	# identicle builds.  Note we have committed the tip already
+	# so we can have cascaded parents.
+	if [ "$tip" = "$pprev" ]; then
+		continue
+	fi
+
+	# We need to build it, so make sure our ubuntu repositories
+	# are up to date to build against.
+	if [ "$refresh" -eq 1 ]; then
+		repo_remote_update_list $ubuntu_series
+		refresh=0
+	fi
+	
+	"$here/cod-enqueue" "C" \
+		"$here/mainline-build" "$tip" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
 drm-2.6/drm-next				996	drm-next
@@ -57,7 +73,7 @@ drm-intel-danvet/drm-intel-next			997	drm-intel-next
 drm-intel-danvet/drm-intel-nightly		994	drm-intel-nightly
 debloat-testing/master				993	debloat-testing
 extended-stable/linux-3.5.y-review		992     linux-3.5.y.z-review
-extended-stable/linux-3.5.y-queue		991     linux-3.5.y.z-queue
+extended-stable/linux-3.5.y-queue		991     linux-3.5.y.z-queue	linux-3.5.y.z-review
 EOL
 # Also allocated
 # 995: sconklin -- wayland
