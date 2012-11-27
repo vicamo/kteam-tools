@@ -290,7 +290,7 @@ for arch in $arches; do
 	{
 	        build_common
 	        cat - <<-EOM
-	        $cross_prefix debian/rules do_tools=0 no_dumpfile=1 binary-debs
+	        $cross_prefix fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-debs
 		EOM
 	} | do_chroot "$build_release-$carch" "/bin/bash"
 done
