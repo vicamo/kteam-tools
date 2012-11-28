@@ -1,0 +1,16 @@
+#!/bin/bash
+
+base="$HOME/git2/ubuntu-raring"
+. "$base/debian/debian.env"
+for config in "$base/CONFIGS"/*
+do
+	name=`basename "$config"`
+	echo "$name" | sed -e 's/-config\.flavour\./ /g' | {
+		read arch flavour
+		if [ ! -f "$base/$DEBIAN/config/$arch/config.flavour.$flavour" ]; then
+			continue
+		fi
+		echo "*** $arch $flavour ..."
+		./devel-config-apply "$base" "$base/debian.master/config/annotations" "$arch" "$flavour" "$base/CONFIGS/$arch-config.flavour.$flavour" >>"$base/$DEBIAN/config/$arch/config.flavour.$flavour"
+	}
+done

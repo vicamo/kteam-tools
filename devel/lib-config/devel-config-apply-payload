@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+
+use strict;
+
+use FindBin;                # where was script installed?
+use lib $FindBin::Bin;      # use that dir for libs, too
+
+my $P0 = 'devel-config-apply-payload';
+my $P = $P0;
+
+use PredicateEngine qw(policy_check %values);
+
+my ($arch, $flavour, $config) = @ARGV;
+
+my $column = "$arch-$flavour";
+
+my $opt;
+my $is;
+
+my %options;
+my @options;
+
+open(CONFIG, "<$config") || die "$0: $config: open failed - $!\n";
+while (<CONFIG>) {
+	chomp;
+
+	if ($_ =~ /^# (\S+) is not set/) {
+		$opt = $1;
+		$is = 'n';
+	} elsif ($_ =~ /(\S+)=(\S+)/) {
+		$opt = $1;
+		$is = $2;
+	} else {
+		next;
+	}
+
+	$values{$column, $opt} = $is;
+
+	if (!defined $options{$opt}) {
+		$options{$opt} = 1;
+		push(@options, $opt);
+	}
+}
+close(CONFIG);
+
+my ($config, $expected, $options, $option, $value, $policy);
+while (<STDIN>) {
+	chomp;
+	($config, $expected, $options) = split(' ', $_, 3);
+	$policy = '';
+	while ($options =~ /\s*(\S+)<(.*?)?>/g) {
+		($option, $value) = ($1, $2);
+		if ($option eq 'policy') {
+			$policy = $value;
+		}
+	}
+
+	#print "OPTION<$config> EXPECTED<$expected> POLICY<$policy>\n";
+
+	# Check the policy.
+	if ($policy eq '') {
+		next if ($expected eq '-');
+		$policy = 'value ' . $expected;
+	}
+	if (not exists $values{$column, $config}) {
+		#print "$config MISSING\n";
+		next;
+	} elsif (policy_check($column, $config, $policy)) {
+		#print "$config OK\n";
+		next;
+	} else {
+		#print "$config BAD ($values{$column, $config} ~~ $policy)\n";
+		my $ok = '';
+		my $possible;
+		while ($policy =~ /\bvalue\s+([^\s\&\|\/\(\)]+)/g) {
+			$possible = $1;
+			#print "POSSIBLE<$possible> POLICY<$policy_iter>\n";
+			$values{$column, $config} = $possible;
+			if (policy_check($column, $config, $policy)) {
+				$ok = $possible;
+				last;
+			}
+		}
+		if ($ok ne '') {
+			print "$config=$ok\n";
+		} else {
+			print "## $config UNABLE TO FIX\n";
+		}
+	}
+}
+

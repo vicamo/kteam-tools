@@ -1,0 +1,28 @@
+#! /bin/bash
+#
+# devel-config-apply -- generate a list of configuration options to attempt to apply
+#
+P="$0"
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+base="$1"
+annotations="$2"
+arch="$3"
+flavour="$4"
+config="$5"
+
+case "$arch" in
+i386|amd64)	karch='x86' ;;
+armel|armhf)	karch='arm' ;;
+*)		echo "$arch: architecture unknown" 1>&2; exit 1 ;;
+esac
+
+# Generate the expanded annotations.
+"$here/devel-config-tree" "$base" "arch/$karch/Kconfig" expand <"$annotations" | \
+	"$here/devel-arch-annotations-merge" | tee APW | \
+	"$here/devel-config-apply-payload" "$arch" "$flavour" "$config"
