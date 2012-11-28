@@ -23,43 +23,72 @@ output_configs "$configs"
 rm -rf tmp
 mkdir -p tmp
 
-list_interesting "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
+function what_mark()
+{
+	typeset flag="$1"
+
+	what=`awk '/'"$flag"'/ { print $1 }' <"$info" |
+		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
+}
+
+function list_mark()
+{
+	what_mark "$2"
+	list "$1" "$what" "$3"
+}
+
+#list_interesting 'Subsystems' 'CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]' ''
+list_mark 'Subsystems' 'mark<Subsystem>' ''
+
+#list_interesting "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
+list_mark 'Filesystems' 'mark<Filesystem>' ''
 
 #list 'Security' 'CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]' ''
+list_mark "Security Options" "mark<Security>" ''
 
-list_interesting 'Subsystems' 'CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]' ''
+#list_interesting 'Network Protocols' '(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]' ''
+#list_interesting 'INET/INET6 Networking' 'CONFIG_INET6?_' ''
+#list_interesting 'Netfilter Match/Targets' 'CONFIG_NETFILTER_XT_' ''
+list_mark 'Networking' 'mark<Networking>' ''
 
-list_interesting 'Network Protocols' '(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]' ''
+#list_interesting '{,S,P}ATA Drivers' 'CONFIG_(ATA|SATA|PATA)_' ''
+list 'Disk Drivers' 'mark<Disk Drivers>' ''
 
-list_interesting 'INET/INET6 Networking' 'CONFIG_INET6?_' ''
+#list_interesting 'Input Drivers' 'CONFIG_INPUT_' 'CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]'
+#list_interesting "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
+list_mark "Input Drivers" 'mark<INPUT>' ''
 
-list_interesting '{,S,P}ATA Drivers' 'CONFIG_(ATA|SATA|PATA)_' ''
+#list_interesting 'HID Drivers' 'CONFIG_HID_' ''
+list_mark 'HID Drivers' 'mark<HID>' ''
 
-list_interesting 'Input Drivers' 'CONFIG_INPUT_' 'CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]'
+#list_interesting 'Sensor Drivers' 'CONFIG_SENSORS_' ''
+list_mark "Sensor Drivers" 'mark<Sensors>' ''
 
-list_interesting 'HID Drivers' 'CONFIG_HID_' ''
+#list_interesting 'Crypto/CRC' 'CONFIG_(CRYPTO_|CRC_|CRC[0-9]+)' ''
+list_mark 'Crypto/CRC' 'mark<Crypto>' ''
 
-list_interesting 'Sensor Drivers' 'CONFIG_SENSORS_' ''
+#list_interesting 'Block and Character devices' 'CONFIG_(BLK|CHR)_DEV_' ''
+list_mark 'Block and Character devices' 'mark<BLK-CHR>' ''
 
-list_interesting 'Crypto/CRC' 'CONFIG_(CRYPTO_|CRC_|CRC[0-9]+)' ''
+#list_interesting 'PHY support' 'CONFIG_(.*_PHY|PHYLIB)[_ =]' ''
+list_mark 'PHY support' 'mark<PHYS>' ''
 
-list_interesting 'Netfilter Match/Targets' 'CONFIG_NETFILTER_XT_' ''
+#list_interesting 'Device Mapper' 'CONFIG_DM[_ =]' ''
+list_mark 'Device Mapper/Multiple Devices' 'mark<MD>' ''
 
-list_interesting 'Block and Character devices' 'CONFIG_(BLK|CHR)_DEV_' ''
+#list_interesting "USB support" "CONFIG_USB_" "(CONFIG_USB_ARCH_HAS_|USB_OHCI_BIG_ENDIAN_.*)"
+list_mark "USB support" 'mark<USB>' ''
 
-list_interesting 'PHY support' 'CONFIG_(.*_PHY|PHYLIB)[_ =]' ''
+#list_interesting "RTC Drivers" "CONFIG_RTC_DRV_" ""
+list_mark "RTC Drivers" 'mark<RTC>' ''
 
-list_interesting 'Device Mapper' 'CONFIG_DM[_ =]' ''
+#list_interesting "GPIO support" "CONFIG_GPIO_" ""
+list_mark "GPIO support" 'mark<GPIO>' ''
 
-list_interesting "RTC Drivers" "CONFIG_RTC_DRV_" ""
+#list_interesting "I2C support" "CONFIG_I2C_" ""
+list_mark "I2C support" 'mark<I2C>' ''
 
-list_interesting "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
-
-list_interesting "USB support" "CONFIG_USB_" "(CONFIG_USB_ARCH_HAS_|USB_OHCI_BIG_ENDIAN_.*)"
-
-list_interesting "GPIO support" "CONFIG_GPIO_" ""
-
-list_interesting "I2C support" "CONFIG_I2C_" ""
+list_mark 'UBUNTU Drivers' 'mark<UBUNTU>' ''
 
 function what_flag()
 {
