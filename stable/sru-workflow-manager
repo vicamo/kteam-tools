@@ -1077,15 +1077,18 @@ class Shank(StdApp):
         check_component = CheckComponent(self.lp)
         name_meta = 'linux-meta'
         name_ports_meta = 'linux-ports-meta'
+        name_signed = 'linux-signed'
         name_split = pkg_name.split('-', 1)
         if len(name_split) > 1:
             name_meta = '%s-meta-%s' % (name_split[0], name_split[1])
             name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
+            name_signed = '%s-signed-%s' % (name_split[0], name_split[1])
         name_map = { 'prepare-package-lbm' : 'linux-backports-modules',
                      'prepare-package-lrm' : 'linux-restricted-modules',
                      'prepare-package-lum' : 'linux-ubuntu-modules',
                      'prepare-package-meta' : name_meta,
-                     'prepare-package-ports-meta' : name_ports_meta }
+                     'prepare-package-ports-meta' : name_ports_meta,
+                     'prepare-package-signed' : name_signed }
         ver_split = pkg_ver.split('-')
         main_version = ver_split[0]
         pkg_list = [ pkg_name ]
@@ -1114,10 +1117,20 @@ class Shank(StdApp):
             if not ps:
                 if check_ver:
                     missing_pkg.append([pkg, check_ver])
+                elif pkg == name_signed:
+                    missing_pkg.append([pkg, 'for version=%s' % (pkg_ver)])
                 else:
                     missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
                 continue
-            if not check_ver:
+            if pkg == name_signed:
+                src_ver = ps[0].source_package_version
+                if src_ver.startswith(pkg_ver):
+                    mis_lst.extend(check_component.mismatches_list(series_name,
+                                   pkg, ps[0].source_package_version,
+                                   'proposed', ps))
+                else:
+                    missing_pkg.append([pkg, 'for version=%s' % (pkg_ver)])
+            elif not check_ver:
                 src_ver = ps[0].source_package_version
                 # special hardcoded case for lrm on hardy...
                 if pkg == 'linux-restricted-modules-2.6.24':
