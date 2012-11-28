@@ -1035,41 +1035,37 @@ class Shank(StdApp):
                 return True
         return False
 
-    def promote_to_proposed_fix_released(self, taskobj):
+    def check_component_in_pocket(self, taskobj, tstamp_prop, dt_utcnow, pocket):
         """
-        When promote-to-proposed is set to Fix Released, we begin verification testing by setting
-        verification-testing to In Progress, add tags to the bugs, and spam with text
+        Check if packages for the given tracking bug were properly copied
+        to the right component in the given pocket.
         """
-        # Exit if processed already
-        task = self.taskbyname['verification-testing']
-        if task.status != 'New':
-            return False
+        bug = taskobj.bug
 
         # Set promote-to-proposed timestamp first, used for checking below
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
+        self.set_tagged_timestamp(taskobj, tstamp_prop)
 
         # Wait publishing tasks to complete. Usually archive admin sets
-        # the promote-to-proposed task to Fix Released right away after
+        # the promote-to-<pocket> task to Fix Released right away after
         # doing the copy, but actual publishing takes more time. It's
         # said that the publishing should take at most 1 hour to
         # complete, but could be a bit more in some cases, or could
         # vary. Anyway, just wait arbitrarily 1 hour before we do the
         # actual processing, to avoid sru-workflow-manager to complain
         # about packages in wrong component while real copying/publishing
-        # still didn't finish, in the case the packages were previously
-        # in the wrong component and are now moved to the right ones.
-        bug = taskobj.bug
-        if 'kernel-stable-Promote-to-proposed-end' in bug.properties:
-            date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
+        # still didn't finish
+        if tstamp_prop in bug.properties:
+            date_str = bug.properties[tstamp_prop]
             timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-            delta = DeltaTime(timestamp, datetime.utcnow())
+            delta = DeltaTime(timestamp, dt_utcnow)
             if delta.hours < 1:
-                self.verbose('Waiting 1 hour after promote-to-proposed was Fix Released\n')
+                self.verbose('Waiting 1 hour after promote-to-%s was Fix Released\n'
+                             % (pocket))
                 return False
         else:
             return False
 
-        # Check if packages were copied to the right pocket->component
+        # Do the checking for proper packages in pocket->component
         title = bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
@@ -1113,7 +1109,7 @@ class Shank(StdApp):
             else:
                 check_ver = None
             ps = check_component.get_published_sources(series_name, pkg,
-                                                       check_ver, 'proposed')
+                                                       check_ver, pocket)
             if not ps:
                 if check_ver:
                     missing_pkg.append([pkg, check_ver])
@@ -1127,7 +1123,7 @@ class Shank(StdApp):
                 if src_ver.startswith(pkg_ver):
                     mis_lst.extend(check_component.mismatches_list(series_name,
                                    pkg, ps[0].source_package_version,
-                                   'proposed', ps))
+                                   pocket, ps))
                 else:
                     missing_pkg.append([pkg, 'for version=%s' % (pkg_ver)])
             elif not check_ver:
@@ -1140,49 +1136,68 @@ class Shank(StdApp):
                 if src_ver.startswith(dep_ver1) or src_ver.startswith(dep_ver2):
                     mis_lst.extend(check_component.mismatches_list(series_name,
                                    pkg, ps[0].source_package_version,
-                                   'proposed', ps))
+                                   pocket, ps))
                 else:
                     missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
             else:
                 mis_lst.extend(check_component.mismatches_list(series_name,
-                               pkg, check_ver, 'proposed', ps))
+                               pkg, check_ver, pocket, ps))
         if not missing_pkg:
             if mis_lst:
-                self.set_task_to_state('promote-to-proposed', 'Incomplete')
+                self.set_task_to_state('promote-to-%s' % (pocket), 'Incomplete')
                 msgbody  = "The following packages ended up in the wrong"
-                msgbody += " component in the -proposed pocket:\n"
+                msgbody += " component in the -%s pocket:\n" % (pocket)
                 for item in mis_lst:
                     msgbody += '\n%s %s - is in %s instead of %s' % (item[0],
                                item[1], item[2], item[3])
                 bugbody = msgbody
                 bugbody += "\n\nOnce this is fixed, set the "
-                bugbody += "promote-to-proposed to Fix Released again"
-                self.send_comment(task, 'Packages outside of main', bugbody)
+                bugbody += "promote-to-%s to Fix Released again" % (pocket)
+                self.send_comment(taskobj, 'Packages outside of proper component', bugbody)
                 if not 'dryrun' in self.cfg:
-                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
-                self.send_email(task, '[bug %s] Packages copied to the wrong component'
-                                % (task.bug.id), msgbody)
+                    self.props.set({tstamp_prop:None})
+                self.send_email(taskobj, '[bug %s] Packages copied to the wrong component'
+                                % (bug.id), msgbody)
                 return False
         else:
             # Even if we already waited 1 hour, wait more (1 day) before
             # complaining if we don't find the packages published to
-            # -proposed, in case the copy/publishing take more hours
-            # after promote-to-proposed is set to Fix Released the first
+            # the pocket, in case the copy/publishing take more hours
+            # after promote-to-<pocket> is set to Fix Released the first
             # time
             if delta.days >= 1:
-                self.set_task_to_state('promote-to-proposed', 'Incomplete')
-                msgbody  = "Promote-to-proposed is Fix Released, but "
+                self.set_task_to_state('promote-to-%s' % (pocket), 'Incomplete')
+                msgbody  = "Promote-to-%s is Fix Released, but " % (pocket)
                 msgbody += "some packages for this update aren't published "
-                msgbody += "in Launchpad, on -proposed pocket:\n"
+                msgbody += "in Launchpad, on -%s pocket:\n" % (pocket)
                 for item in missing_pkg:
                     msgbody += '\n%s %s' % (item[0], item[1])
-                self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
+                self.send_comment(taskobj, 'Can\'t find packages published in -%s' %
+                                  (pocket), msgbody)
                 if not 'dryrun' in self.cfg:
-                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                    self.props.set({tstamp_prop:None})
                 return False
             for item in missing_pkg:
-                self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
-                             % (item[0], item[1]))
+                self.verbose('Didn\'t found <%s> <%s> on -%s yet, check on next run\n'
+                             % (item[0], item[1], pocket))
+            return False
+
+        return True
+
+    def promote_to_proposed_fix_released(self, taskobj):
+        """
+        When promote-to-proposed is set to Fix Released, we begin verification testing by setting
+        verification-testing to In Progress, add tags to the bugs, and spam with text
+        """
+        # Exit if processed already
+        task = self.taskbyname['verification-testing']
+        if task.status != 'New':
+            return False
+
+        # Check if packages were copied to the right pocket->component
+        if not self.check_component_in_pocket(taskobj,
+                'kernel-stable-Promote-to-proposed-end',
+                datetime.utcnow(), 'proposed'):
             return False
 
         # Update remaining time stamps and status
@@ -1372,11 +1387,13 @@ class Shank(StdApp):
             self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
-            self.release_test_state_check('promote-to-security', ['New', 'Confirmed', 'Invalid', 'Fix Released'])
-            self.release_test_state_check('promote-to-updates', ['New', 'Confirmed', 'Fix Released'])
+            self.release_test_state_check('promote-to-security', ['New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released'])
+            self.release_test_state_check('promote-to-updates', ['New', 'Confirmed', 'Incomplete', 'Fix Released'])
 
             # If we found any problems, we've halted processing and set this
-            if self.taskbyname[self.projectname].status != 'In Progress':
+            if (self.taskbyname[self.projectname].status != 'In Progress' or
+                self.taskbyname['promote-to-security'].status == 'Incomplete' or
+                self.taskbyname['promote-to-updates'].status == 'Incomplete'):
                 self.verbose('*** Exiting release test without triggering any publishing\n')
                 return
 
@@ -1451,14 +1468,30 @@ class Shank(StdApp):
         """
         self.verbose('*** Performing check for final close test\n')
 
+        if self.taskbyname[self.projectname].status == 'Fix Released':
+            print ' Bug already closed, aborting check'
+            return False
+
         if (( self.taskbyname['promote-to-updates'].status == 'Fix Released') and
             (self.taskbyname['promote-to-security'].status == 'Invalid' or
             self.taskbyname['promote-to-security'].status == 'Fix Released')):
 
+            # Check if packages were copied to the right pocket->component
+            current_time = datetime.utcnow()
+            pok_sec = True
+            if self.taskbyname['promote-to-security'].status == 'Fix Released':
+                pok_sec = self.check_component_in_pocket(taskobj,
+                            'kernel-stable-Promote-to-updates-end',
+                            current_time, 'security')
+            pok_upd = self.check_component_in_pocket(taskobj,
+                        'kernel-stable-Promote-to-updates-end',
+                        current_time, 'updates')
+            if not (pok_sec and pok_upd):
+                return False
+
             print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
             self.set_task_to_state(self.projectname, 'Fix Released')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-updates-end')
             self.set_stable_phase(taskobj, 'Released')
 
             # Send email and possibly a status update -spc- TODO
