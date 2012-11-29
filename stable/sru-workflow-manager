@@ -740,12 +740,6 @@ class Shank(StdApp):
                 return False
         return True
 
-    def is_prep_pkg_released(self, taskname):
-        if taskname in self.taskbyname:
-            if self.taskbyname[taskname].status != "Fix Released":
-                return False
-        return True
-
     def get_dep_pkg_name(self, pkg_name, pkg_ver, deptype):
         series = self.ubuntu.series_name(pkg_name, pkg_ver)
         if not series:
@@ -1024,15 +1018,9 @@ class Shank(StdApp):
                     self.verbose('Dryrun - Would open tracking bug for backport package %s\n'
                                  % (bp_pkg[0]))
                     continue
-                # Verify abi change, assume all prepare-package-* tasks are Fix Released
-                new_abi = (self.is_prep_pkg_released('prepare-package-lbm') and
-                           self.is_prep_pkg_released('prepare-package-lrm') and
-                           self.is_prep_pkg_released('prepare-package-lum') and
-                           self.is_prep_pkg_released('prepare-package-meta') and
-                           self.is_prep_pkg_released('prepare-package-ports-meta'))
                 try:
                     bug = tb.open(bp_pkg[0], '%s~%s1' % (pkg_ver, bp_pkg[1]),
-                                  new_abi, taskobj.bug.id)
+                                  self.has_new_abi(), taskobj.bug.id)
                 except:
                     traceback.print_exc()
                     bug = None
