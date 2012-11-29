@@ -121,7 +121,7 @@ if v1 == "1" or v2 == "2":
     basever = "%s.%s.%s" % (v1, v2, v3)
 else:
     basever = "%s.%s"  % (v1, v2)
-ann_ver = "%s.yuz" % basever
+ann_ver = "%s.y.z" % basever
 vstable = opts.new_version
 rangestart = opts.previous_release
 rangeend = "v%s" % vstable
@@ -143,13 +143,9 @@ mailbody.extend([
     "",
     "This tree picks up the latest %s stable release upstream, and add patches"
     % (basever),
-    "on top that were later marked for stable but can't be added to %s anymore,"
+    "on top that were later marked for stable but can't be added to %s, as"
     % (basever),
-    "as it is not anymore an stable series maintained upstream.",
-    "",
-    "The patches are only added if they are valid for this stable release",
-    "series and conform to the stable upstream update rules (available at",
-    "Documentation/stable_kernel_rules.txt inside kernel sources).",
+    "it is not anymore an stable series maintained upstream.",
     "",
     "The tree is maintained by the Ubuntu Kernel Team, with the intention",
     "to continue to provide support for the %s series. Anyone is welcomed"
