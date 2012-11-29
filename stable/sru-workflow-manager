@@ -583,6 +583,66 @@ class Shank(StdApp):
         self.email.send(mcfg['from_address'], to_address, subj, msg)
         return
 
+    def has_new_abi(self):
+        tasks_abi = [ 'prepare-package-lbm', 'prepare-package-lrm',
+                      'prepare-package-lum', 'prepare-package-meta',
+                      'prepare-package-ports-meta' ]
+        for taskname in tasks_abi:
+            if taskname in self.taskbyname:
+                if self.taskbyname[taskname].status != "Fix Released":
+                    return False
+        return True
+
+    def send_upload_announcement(self, task, pocket):
+        """
+        Send email with upload announcement
+        """
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Sending upload announcement\n')
+            return
+        self.verbose('Sending upload announcement\n')
+
+        from_addr = None
+        if 'mail_notify' in self.cfg:
+            if 'from_address' in self.cfg['mail_notify']:
+                from_addr = self.cfg['mail_notify']['from_address']
+        if not from_addr:
+            self.verbose('No valid email config found, can\'t'
+                         ' send upload announcement\n')
+            return
+
+        dest  = "kernel-team@lists.ubuntu.com"
+        dest += ", ubuntu-installer@lists.ubuntu.com"
+        dest += ", gema.gomez-solano@canonical.com"
+        if 'upload_announce_to' in self.cfg:
+            for addr in self.cfg['upload_announce_to']:
+                dest += ", %s" % (addr)
+
+        bug = task.bug
+        title = bug.title
+        package = re.findall('linux[^:]*', title)[0]
+        version = re.findall('([0-9]+\.[^ ]+)', title)[0]
+        series = self.ubuntu.series_name(package, version)
+        abi_bump = self.has_new_abi()
+
+        subj = "[" + series + "] " + package + " " + version + " uploaded"
+        if abi_bump:
+            subj += " (ABI bump)"
+
+        msg  = "A new " + series + " kernel has been uploaded into "
+        msg += pocket + ". "
+        if abi_bump:
+            msg += "Note the ABI bump. "
+        msg += "\nThe full changelog about all bug fixes contained in this "
+        msg += "upload can be found at:\n\n"
+        msg += "https://launchpad.net/ubuntu/" + series + "/+source/"
+        msg += package + "/" + version + "\n\n"
+        msg += "-- \nThis message was created by an automated script,"
+        msg += " maintained by the\nUbuntu Kernel Team."
+
+        self.email.send(from_addr, dest, subj, msg)
+        return
+
     def send_status_update(self, task, message):
         """
         Send a status update to twitter, status.net, identi.ca, etc
@@ -1200,10 +1260,12 @@ class Shank(StdApp):
                 datetime.utcnow(), 'proposed'):
             return False
 
-        # Update remaining time stamps and status
-        self.set_task_to_state('verification-testing', 'In Progress')
+        # Update remaining time stamps and status, send announcement
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
         self.set_stable_phase(taskobj, 'Verification')
+        self.set_task_to_state('verification-testing', 'In Progress')
+        self.send_upload_announcement(taskobj, 'proposed')
+
         # Now tag all bugs verification-needed and spam with a comment
         # Automate this in the future but for now send an email
         print self.printlink,
