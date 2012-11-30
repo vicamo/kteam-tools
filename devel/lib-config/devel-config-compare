@@ -88,6 +88,8 @@ list_mark "GPIO support" 'mark<GPIO>' ''
 #list_interesting "I2C support" "CONFIG_I2C_" ""
 list_mark "I2C support" 'mark<I2C>' ''
 
+list_mark "Graphics Drivers" 'mark<Graphics>' ''
+
 list_mark 'UBUNTU Drivers' 'mark<UBUNTU>' ''
 
 function what_flag()
