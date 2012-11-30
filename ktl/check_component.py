@@ -139,7 +139,7 @@ class CheckComponent():
         return self.linux_abi_component(dcomponent, series, package, bpkg)
 
     def component_function(self, series, package):
-        if (package == 'linux'):
+        if (package == 'linux') or (package == 'linux-signed'):
             # Everything on linux package should be on 'main'. Except
             # for hardy and lucid, where we had some things on universe
             # etc., so we use the linux_abi_component that will check
