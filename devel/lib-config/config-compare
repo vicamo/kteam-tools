@@ -87,6 +87,7 @@ if ($format eq 'wiki') {
 	my %f__row_map = (
 		'normal'	=> '',
 		'build'		=> '<#baffc8>',
+		'warning'	=> '<#eee8aa>',
 		'inconsistent'	=> '<#ffbac8>',
 	);
 	my $f__row_colour;
@@ -162,6 +163,9 @@ if ($format eq 'wiki') {
 }
 .configtable$id .inconsistent0, .configtable$id .inconsistent1 {
 	background-color: #ffbac8;
+}
+.configtable$id .warning0, .configtable$id .warning1 {
+	background-color: #eee8aa;
 }
 .configtable$id .normal1 {
 	background-color: #eeeeee;
@@ -290,6 +294,7 @@ $titles .= f_table_row_end();
 my $entry;
 my $cmt;
 my $seen;
+my $nopolicy;
 
 my $ok;
 my %ok;
@@ -307,6 +312,9 @@ for my $option (@options) {
 	$cmt = '';
 	$ok = 1;
 	%ok = ();
+	
+	$nopolicy = (!defined $policy{$option} || $policy{$option} eq '-');
+
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
@@ -331,6 +339,9 @@ for my $option (@options) {
 
 		} elsif (!$ok) {
 			f_table_row_colour('inconsistent');
+
+		} elsif ($nopolicy) {
+			f_table_row_colour('warning');
 
 		} else {
 			f_table_row_colour('normal');
