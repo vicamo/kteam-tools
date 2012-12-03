@@ -40,11 +40,13 @@ function list_mark()
 #list_interesting 'Subsystems' 'CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]' ''
 list_mark 'Subsystems' 'mark<Subsystem>' ''
 
-#list_interesting "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
-list_mark 'Filesystems' 'mark<Filesystem>' ''
+list_mark 'I/O Handling' 'mark<IO>' ''
 
 #list 'Security' 'CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]' ''
 list_mark "Security Options" "mark<Security>" ''
+
+#list_interesting "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
+list_mark 'Filesystems' 'mark<Filesystem>' ''
 
 #list_interesting 'Network Protocols' '(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]' ''
 #list_interesting 'INET/INET6 Networking' 'CONFIG_INET6?_' ''
@@ -89,6 +91,10 @@ list_mark "GPIO support" 'mark<GPIO>' ''
 list_mark "I2C support" 'mark<I2C>' ''
 
 list_mark "Graphics Drivers" 'mark<Graphics>' ''
+
+list_mark "CPU Frequency scaling" 'mark<CPUFREQ>' ''
+
+list_mark "Virtualisation Technology" 'mark<VIRT>' ''
 
 list_mark 'UBUNTU Drivers' 'mark<UBUNTU>' ''
 
