@@ -308,19 +308,12 @@ elif cmd == 'geninfo':
         prompt = entry['prompt']
         info = entry.get('info', '')
 
-        experimental = 'flag<EXPERIMENTAL>' in info
-        dangerous = 'flag<DANGEROUS>' in info
-        debug = 'flag<DEBUG>' in info
-
         if entry['type'] == 'bool':
-            (options, default, expected) = ('y/n', 'y', 'y')
+            (options, default, expected) = ('y/n', 'y', '-')
         elif entry['type'] == 'tristate':
-            (options, default, expected) = ('y/m/n', 'm', 'm')
+            (options, default, expected) = ('y/m/n', 'm', '-')
         else:
             (options, default, expected) = ('-', '-', '-')
-
-        if default != '-' and (experimental or dangerous or debug):
-            (default, expected) = ('n', 'n')
 
         misc = ''
 
