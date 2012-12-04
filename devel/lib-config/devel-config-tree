@@ -10,6 +10,7 @@ comment_re       = re.compile(r'^(\s*#.*|\s*)$')
 experimental_re = re.compile(r'\bEXPERIMENTAL(=n)?\b')
 staging_re      = re.compile(r'\bSTAGING(=n)?\b')
 debug_re        = re.compile(r'\bDEBUG_KERNEL(=n)?\b')
+broken_re       = re.compile(r'\bBROKEN(=n)?\b')
 
 def join(a, parent):
     a['parent'] = parent
@@ -64,6 +65,9 @@ def emit(a):
     match = debug_re.search(a['deps'])
     if match:
         a['info'] = a.get('info', '') + "flag<DEBUG> "
+    match = broken_re.search(a['deps'])
+    if match or 'BROKEN' in a['prompt']:
+        a['info'] = a.get('info', '') + "flag<BROKEN> "
 
     menu.insert(0, a)
     entries.append(a)

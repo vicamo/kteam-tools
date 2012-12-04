@@ -112,6 +112,9 @@ list_interesting 'DANGEROUS Options' "$what" ''
 what_flag 'DEPRECATED'
 list_interesting 'DEPRECATED Options' "$what" ''
 
+what_flag 'BROKEN'
+list_interesting 'BROKEN Options' "$what" ''
+
 what_flag 'BUILD FAILURE'
 list_interesting 'BUILD FAILURES' "$what" ''
 
