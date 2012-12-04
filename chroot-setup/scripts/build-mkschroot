@@ -306,6 +306,7 @@ fi
 
 ${SCHROOTCMD} -- apt-get -y --force-yes update
 ${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
+${SCHROOTCMD} -- apt-get -u -y --force-yes autoremove
 
 if $DOINSTALL; then
 	#
@@ -339,7 +340,17 @@ if $DOINSTALL; then
 	esac
 fi
 
+PKGLIST=/tmp/$$.pkglist
+${SCHROOTCMD} -- dpkg -l > $PKGLIST
+
 echo ADDPKG=${ADDPKG}
-for i in ${ADDPKG} ; do ${SCHROOTCMD} -- apt-get -y --force-yes install $i; done
+for i in ${ADDPKG}
+do
+	if ! grep -q $i $PKGLIST
+	then
+		${SCHROOTCMD} -- apt-get -y --force-yes install $i
+	fi
+done
+rm -f $PKGLIST
 echo ADDPKGDEP=${ADDPKGDEP}
 ${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source $ADDPKGDEP
