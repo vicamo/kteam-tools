@@ -1,5 +1,11 @@
 #!/bin/bash
 
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 base="$HOME/git2/ubuntu-raring"
 . "$base/debian/debian.env"
 for config in "$base/CONFIGS"/*
@@ -11,6 +17,6 @@ do
 			continue
 		fi
 		echo "*** $arch $flavour ..."
-		./devel-config-apply "$base" "$base/debian.master/config/annotations" "$arch" "$flavour" "$base/CONFIGS/$arch-config.flavour.$flavour" >>"$base/$DEBIAN/config/$arch/config.flavour.$flavour"
+		"$here//devel-config-apply" "$base" "$base/debian.master/config/annotations" "$arch" "$flavour" "$base/CONFIGS/$arch-config.flavour.$flavour" >>"$base/$DEBIAN/config/$arch/config.flavour.$flavour"
 	}
 done
