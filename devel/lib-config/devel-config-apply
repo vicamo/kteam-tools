@@ -19,6 +19,7 @@ config="$5"
 case "$arch" in
 i386|amd64)	karch='x86' ;;
 armel|armhf)	karch='arm' ;;
+powerpc)	karch='powerpc' ;;
 *)		echo "$arch: architecture unknown" 1>&2; exit 1 ;;
 esac
 

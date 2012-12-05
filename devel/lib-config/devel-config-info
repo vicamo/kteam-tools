@@ -17,15 +17,17 @@ base="$2"
 # Generate per architecture configuration trees
 "$here/devel-config-tree" "$base" arch/x86/Kconfig geninfo >"$base/CONFIGS-info-x86"
 "$here/devel-config-tree" "$base" arch/arm/Kconfig geninfo >"$base/CONFIGS-info-arm"
+"$here/devel-config-tree" "$base" arch/powerpc/Kconfig geninfo >"$base/CONFIGS-info-powerpc"
 
 # Generate the expanded annotations.
 {
 	"$here/devel-config-tree" "$base" arch/x86/Kconfig expand <"$annotations"
 	"$here/devel-config-tree" "$base" arch/arm/Kconfig expand <"$annotations"
+	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig expand <"$annotations"
 } | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
 # Generate a common merged configuration version.
-"$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-x86" "$base/CONFIGS-info-arm"
+"$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-x86" "$base/CONFIGS-info-arm" "$base/CONFIGS-info-powerpc"
 
 # Legacy formats.
 awk '{ print $1 " " $2 " " $3 }' <"$base/CONFIGS-info" >"$base/CONFIGS-defaults"
