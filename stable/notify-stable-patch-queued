@@ -51,7 +51,7 @@ OptParser.add_option(
          "DEBEMAIL (%default)."
 )
 OptParser.add_option(
-    "--version", dest="version", action="store", default="3.5.yuz",
+    "--version", dest="version", action="store", default="3.5.y.z",
     help="sets the kernel version displayed in the subject of of the "
          "notification emails, default is %default")
 OptParser.add_option(
@@ -78,6 +78,7 @@ def AssembleMailBody(version, subject, patchlines):
     mailbody = [
         "Subject: [ " + version + " extended stable ] Patch \"" + subject +
         "\" has been added to staging queue",
+        "X-Extended-Stable: " + bversion[:-1],
         "",
         "This is a note to let you know that I have just added a patch titled",
         "",
