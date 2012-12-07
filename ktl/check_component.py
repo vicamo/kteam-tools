@@ -162,13 +162,11 @@ class CheckComponent():
         if package.startswith('linux-ubuntu-modules-'):
             return self.linux_abi_component
         if (package.startswith('linux-lts-') or
-            package.startswith('linux-meta-lts-')):
+            package.startswith('linux-meta-lts-') or
+            package.startswith('linux-signed-lts-')):
             return self.main_component
         if package in ['linux-ec2', 'linux-fsl-imx51', 'linux-ti-omap4',
                        'linux-mvl-dove', 'linux-armadaxp']:
-            return self.main_component
-        if (package.startswith('linux-signed') or
-            package.startswith('kernel-signed')):
             return self.main_component
         return self.default_component
 
