@@ -44,6 +44,9 @@ class Email:
         msg['Subject'] = subject
         msg['From'] = from_address
         msg['To'] = to_address
+        # If to_address contains multiple addresses, we must pass it as
+        # a python list to sendemail
+        to_list = to_address.split(',')
         # Send the message via our own SMTP server, but don't include the
         # envelope header.
         s = SMTP(self.smtp_server, 587)
@@ -52,7 +55,7 @@ class Email:
         s.ehlo()
         s.starttls()
         s.login(self.smtp_user.encode('UTF-8'),self.smtp_password.encode('UTF-8'))
-        s.sendmail(from_address, to_address, msg.as_string())
+        s.sendmail(from_address, to_list, msg.as_string())
         s.quit()
         return
 
