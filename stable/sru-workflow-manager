@@ -780,8 +780,8 @@ class Shank(StdApp):
                     if len(ver_split) > 1:
                         src_ver = '2.6.24-%s' % (ver_split[1])
             if ((p.status.lower() == 'published') and
-                (src_ver.startswith(dep_ver1) or
-                 src_ver.startswith(dep_ver2))):
+                (src_ver.startswith(dep_ver1 + '.') or
+                 src_ver.startswith(dep_ver2 + '.'))):
                 dep_matches.append(p)
         if not dep_matches:
             self.verbose('Can\'t find <%s> (<%s> or <%s>) build on c-k-t ppa\n' %
