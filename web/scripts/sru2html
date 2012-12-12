@@ -149,7 +149,7 @@ class SruReport:
         <div class="outermost">'''
         retval += '\n'
 
-        trackers_only_packages = ['linux-lts-backport-maverick', 'linux-lts-backport-natty', 'linux-lts-backport-oneiric']
+        trackers_only_packages = ['linux-lts-backport-maverick', 'linux-lts-backport-natty', 'linux-lts-backport-oneiric', 'linux-lts-quantal']
         suite_keys = self.data['releases'].keys()
         suite_keys.sort()
         for rls in suite_keys:
