@@ -7,12 +7,11 @@ from getopt                             import getopt, GetoptError
 from commands                           import getstatusoutput
 from tempfile                           import NamedTemporaryFile, mkdtemp
 from shutil                             import move, rmtree
-from string                             import whitespace, digits
+from string                             import whitespace
 from subprocess                         import call
 from ktl.utils                          import stdo, error, eout, run_command
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
-from ktl.kernel                         import Kernel
 
 # *** You may remove this comment block from your application
 #
@@ -94,7 +93,7 @@ class Cmdline:
         stdo("                         announcement sent out, eg. 3.6.6                                    \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7u1                         \n" % self.cfg['app_name'])
+        stdo("        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7.1                         \n" % self.cfg['app_name'])
 
     # process
     #
@@ -104,7 +103,6 @@ class Cmdline:
         line. All parameters are processed into class variables for use by other methods.
         """
         self.cfg['app_name'] = argv[0]
-        result = True
         try:
             optsShort = ''
             optsLong  = ['help', 'dry-run', 'from=', 'previous_release=', 'new_version=']
@@ -157,7 +155,10 @@ mail_message = ("\n"
 "made at maximum in 3 days, after that the final release of %s will be\n"
 "made.\n"
 "\n"
-"See below the diffstat and shortlog for this release.\n"
+"For more information about the 3.5.y.z extended stable tree, see\n"
+"https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable\n"
+"\n"
+"Included below are the diffstat and shortlog for this release.\n"
 "\n"
 "-%s\n"
 "\n"
@@ -189,7 +190,7 @@ class AppTemplate(StdApp):
 
     # function to add headers to the patches
     #
-    def modify_patch(self, patch, version):
+    def modify_patch(self, patch, version, basever):
         header_line = "%s -stable review patch.  If anyone has any objections, please let me know." % (version)
         from_line = None
         subject = False
@@ -217,6 +218,7 @@ class AppTemplate(StdApp):
 
                     if subject and not header_add:
                         if line.strip() == '':
+                            dst.write('X-Extended-Stable: %s\n' % (basever))
                             header_add = True
                             continue
 
@@ -313,9 +315,11 @@ class AppTemplate(StdApp):
             # Get the base version
             if kver[0] == "1" or kver[1] == "2":
                 base_ver = "%s.%s.%s.y" % (kver[0], kver[1], kver[2])
+                main_ver = "%s.%s.%s" % (kver[0], kver[1], kver[2])
             else:
                 base_ver = "%s.%s.y" % (kver[0], kver[1])
-            ann_ver = "%suz" % base_ver
+                main_ver = "%s.%s" % (kver[0], kver[1])
+            ann_ver = "%s.z" % base_ver
 
             old_head = self.cfg['previous_release']
             new_ver = self.cfg['new_version']
@@ -346,7 +350,7 @@ class AppTemplate(StdApp):
                 raise GitError("\n".join(result))
             patches = listdir(tmpdir)
             for patch in patches:
-                self.modify_patch(tmpdir + "/" + patch, new_ver)
+                self.modify_patch(tmpdir + "/" + patch, new_ver, main_ver)
             mailbody = "# This is the cover letter message for the patch"
             mailbody += " series, that will be\n# sent as the start for"
             mailbody += " the review thread. Review this and edit+save"
@@ -357,6 +361,7 @@ class AppTemplate(StdApp):
                 mailbody += "To: " + entry + '\n'
             mailbody += ("Subject: [ %s extended stable ] Linux %s stable review"
                          % (ann_ver, new_ver) + "\n")
+            mailbody += "X-Extended-Stable: %s" % (main_ver)
             mailbody += mail_message % (new_ver, patch_cnt, base_ver,
                                         new_ver, sender.split()[0])
             mailbody += diffstat + '\n\n'
