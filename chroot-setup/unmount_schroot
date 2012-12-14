@@ -2,4 +2,5 @@
 #
 # Unmount all schroot mounts
 #
-schroot --list --all|grep ^session|sed 's/^session://'|while read s;do sudo schroot -f -e --chroot=$s; done
+mount|grep schroot|while read m on f j; do sudo fuser -k "$f";sudo umount $f;done
+mount|grep schroot|while read m on f j; do sudo fuser -k "$f";sudo umount $f;done
