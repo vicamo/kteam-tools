@@ -771,7 +771,7 @@ class Shank(StdApp):
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ppa = ckt.getPPAByName(name='ppa')
         dep_matches = []
-        for p in ppa.getPublishedSources(source_name=dep_name):
+        for p in ppa.getPublishedSources(source_name=dep_name, exact_match=True):
             src_ver = p.source_package_version
             # special case for hardy lrm version...
             if (deptype == 'lrm') and (pkg_kernel == '2.6.24'):
@@ -852,7 +852,7 @@ class Shank(StdApp):
     def is_pkg_built(self, pkg_name, pkg_ver):
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ppa = ckt.getPPAByName(name='ppa')
-        matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name)
+        matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name, exact_match=True)
                             if p.status.lower() == 'published' and
                                p.source_package_version == pkg_ver ]
         if not matches:
