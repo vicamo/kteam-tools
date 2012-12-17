@@ -96,7 +96,15 @@ list_mark "CPU Frequency scaling" 'mark<CPUFREQ>' ''
 
 list_mark "Virtualisation Technology" 'mark<VIRT>' ''
 
+list_mark "Media Support" 'mark<MEDIA>' ''
+
+list_mark "Character Devices" 'mark<CHARACTER>' ''
+
+list_mark "Miscellaneous Devices" 'mark<Misc Devices>' ''
+
 list_mark 'UBUNTU Drivers' 'mark<UBUNTU>' ''
+
+list_mark 'Staging Drivers' 'mark<STAGING>' ''
 
 function what_flag()
 {
