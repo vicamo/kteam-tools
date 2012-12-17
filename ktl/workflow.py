@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 #
 
-from utils              import date_to_string
-from datetime           import datetime
 import re
 
 # UbuntuError
@@ -79,7 +77,7 @@ class Properties:
                 # see if it matches the one we're adding
                 level = m.group(1)
                 item = m.group(2)
-                value = m.group(3)
+                #value = m.group(3)
                 key = item
                 if len(level) > 0:
                     key = "%s.%s" % (last_key[''], item)
