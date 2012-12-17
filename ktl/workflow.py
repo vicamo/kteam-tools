@@ -98,7 +98,22 @@ class Properties:
 #
 class Workflow:
 
-    # Tasks, tags, etc vary according to the package name
+    # Stable tasks, tags, etc vary according to the package name. This
+    # is a dictionary with information necessary for the scripts to
+    # to create and handle stable tracking bugs. Each entry corresponds
+    # to a package name entry, and the following fields:
+    # * task_assignment: dictionary with launchpad series nominations
+    #   for stable kernel tracking bugs and their assignee (that is, the
+    #   tasks on stable SRU updates, nominated on the tracking bugs, and
+    #   the launchpad user name responsible for that task). 
+    # * initial_bug_tags: tags to be added on the tracking bug when it's
+    #   created
+    # * subscribers: launchpad persons or teams to subscribe
+    #   automatically to the tracking bugs when they are created
+    # * invalidate_tasks: task assignments that should be invalid on the
+    #   tracking bugs when they are created, depending on the kernel
+    #   version. The list of kernel versions where the task is invalid
+    #   is the value which must be provided
     tdb = {
         'linux' :  {
             'task_assignment' : {
@@ -373,6 +388,36 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"]
             }
+        }
+
+    # Development tasks, tags, etc vary according to the package name.
+    # This is a dictionary with information necessary for the scripts
+    # to create and handle tracking bugs for development kernels. Each
+    # entry corresponds to a package name entry, and the following fields:
+    # * task_assignment: dictionary with launchpad series nominations
+    #   for development kernel tracking bugs and their assignee (that
+    #   is, the tasks on development kernel releases, nominated on the
+    #   tracking bugs, and the launchpad user name responsible for that
+    #   task)
+    # * initial_bug_tags: tags to be added on the tracking bug when it's
+    #   created
+    # * subscribers: launchpad persons or teams to subscribe
+    #   automatically to the tracking bugs when they are created
+    devel_workflow = {
+        'linux' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-kernel-team',
+                'prepare-package-lbm'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                'prepare-package-signed'     : 'canonical-kernel-team',
+                'package-testing'            : 'canonical-kernel-team',
+                'promote-to-release'         : 'ubuntu-archive',
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                [],
+            },
         }
 
     # assignee
