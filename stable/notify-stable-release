@@ -3,7 +3,7 @@
 from os                     import system, getenv, path
 from sys                    import exit
 from subprocess             import Popen, PIPE
-from optparse               import OptionParser, OptParseError
+from optparse               import OptionParser
 from tempfile               import NamedTemporaryFile
 
 #
@@ -137,6 +137,7 @@ for entry in cclist:
 mailbody.extend([
     "From: " + opts.sender,
     "Subject: [%s extended stable] Linux %s" % (ann_ver, vstable),
+    "X-Extended-Stable: %s" % (basever),
     "",
     "I am announcing the release of the %s tree of stable patches." %
     (vstable),
@@ -195,6 +196,7 @@ for line in mailbody:
 fp.flush()
 dp.write("From: " + opts.sender + "\n")
 dp.write("Subject: Re: [%s extended stable] Linux %s\n\n" % (ann_ver, vstable))
+dp.write("X-Extended-Stable: %s" % (basever))
 dp.flush()
 cmd = "git diff " + rangestart + ".." + rangeend + " >> " + dp.name
 system(cmd)
