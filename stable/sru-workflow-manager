@@ -380,10 +380,6 @@ class Shank(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
-        self.projectname = 'kernel-sru-workflow'
-
-        self.project = self.lp.projects[self.projectname]
-
         # Get set up for email and status messages
         if 'mail_notify' in self.cfg:
             mcfg = self.cfg['mail_notify']
@@ -403,6 +399,144 @@ class Shank(StdApp):
 
         return
 
+    def process_bugs(self, project):
+        # Searching for bug tasks, the search can be quite complicated and made up
+        # of several components. The following can be combined in many ways to get
+        # the search you want. The search happens on the server and returns a
+        # collection of bug tasks that match the search criteria.
+        #
+        # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
+        #                          status=self.cfg['task_search_status'], modified_since=search_since)
+        #
+        search_tags            = [   # A list of the tags we care about
+                'kernel-release-tracking-bug'
+            ]
+        search_tags_combinator = "All"
+        search_status          = ["New","In Progress","Invalid", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
+        search_since           = datetime(year=2011, month=1, day=1)
+        tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+
+        for task in tasks:
+            bug = task.bug
+            if 'buglist' in self.cfg:
+                if str(bug.id) not in self.cfg['buglist']:
+                    continue
+
+            self.printlink =  '%s : (%s)\n' % (bug.id, self.bug_url(bug.id)),
+            self.verbose('Processing: %s' % self.printlink)
+
+            # initialize any per-bug variables that we use for the release test
+            self.bugtags = []
+            for atag in bug.tags:
+                self.bugtags.append(atag)
+            performReleaseTest = False
+            self.certification_testing_complete = False
+            self.regression_testing_complete = False
+            self.security_signoff_complete = False
+            self.security_publishing_required = False
+
+            # Initialize the properties object
+            self.props = Properties(bug)
+            #
+            # list any Properties from bug description
+            props = bug.properties
+            for prop in props:
+                self.verbose('    Bug has Property:  %s:%s' % (prop, props[prop]))
+
+            # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
+            # TODO This is a bit sloppy and I should probably build one list and walk it twice.
+            try:
+                # TODO revisit this, but hardcode for now
+                #mtstring = self.project.display_name
+                mtstring = self.projectname
+
+                self.taskbyname = {}
+                for t in bug.tasks:
+                    task_name       = t.bug_target_name
+
+                    if task_name == mtstring:
+                        # we save a pointer to the master task and check to make sure we should process this bug
+                        self.taskbyname[mtstring] = t
+                        if t.status == 'In Progress':
+                            continue
+                        else:
+                            self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
+                            raise RuntimeError
+
+                    if not task_name.startswith(mtstring):
+                        # Ignore the tasks assigned to the actual package, we care about workflow only
+                        self.verbose('Skipping non-workflow task <%s>:<%s>\n' % (mtstring, task_name))
+                        continue
+
+                    # add one to account for the trailing /
+                    therest = task_name[len(mtstring)+1:].strip()
+                    self.taskbyname[therest] = t
+
+            except RuntimeError:
+                # end processing for this bug
+                self.verbose('    Quitting this bug\n')
+                continue
+
+            # now walk them one at a time
+            for t in bug.tasks:
+                task_name = t.bug_target_name.strip()
+                # bug_target_name includes both the main and sub task in the string
+                # so for example it could be "Kernel SRU Workflow prepare-package"
+                # so we have to strip off the right hand part
+                # The task can also be just the single parent task
+                #
+
+                if task_name == mtstring:
+                    self.verbose('Skipping empty master workflow task \n')
+                    continue
+
+                if not task_name.startswith(mtstring):
+                    # Ignore the tasks assigned to the actual package, we care about workflow only
+                    self.verbose('Skipping non-workflow task %s\n' % (task_name))
+                    continue
+
+                therest = task_name[len(mtstring)+1:].strip()
+                task_name = therest
+
+                state      = t.status
+                importance = t.importance
+                assignee    = t.assignee
+                if assignee is None:
+                    assignee = '*Unassigned'
+                else:
+                    assignee = assignee.display_name
+
+                self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
+
+                if task_name not in self.state_map:
+                    print self.printlink,
+                    print("I don't know how to handle the task <%s>, skipping" % (task_name))
+                    continue
+
+                if 'action' not in self.state_map[task_name][state]:
+                    print self.printlink,
+                    print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
+                    raise ValueError
+
+                action = self.state_map[task_name][state]['action']
+
+                if  action is None:
+                    self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
+                else:
+                    if project == 'kernel-sru-workflow' and action(t):
+                        performReleaseTest = True
+
+            # Now process any tests which require information from multiple tasks
+            # will require info stored in class variables during task processing
+            if performReleaseTest:
+                self.perform_release_test()
+
+            # Now flush any property changes to the bug description
+            self.props.flush()
+            self.verbose('--\n')
+
+        return
+
     # main
     #
     def main(self):
@@ -417,147 +551,10 @@ class Shank(StdApp):
 
             self.initialize()
 
-            project = self.lp.projects[self.projectname]
-
-            # Searching for bug tasks, the search can be quite complicated and made up
-            # of several components. The following can be combined in many ways to get
-            # the search you want. The search happens on the server and returns a
-            # collection of bug tasks that match the search criteria.
-            #
-            # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
-            #                          status=self.cfg['task_search_status'], modified_since=search_since)
-            #
-            search_tags            = [   # A list of the tags we care about
-                    'kernel-release-tracking-bug'
-                ]
-            search_tags_combinator = "All"
-            search_status          = ["New","In Progress","Invalid", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
-            search_since           = datetime(year=2011, month=1, day=1)
-            tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
-
-            for task in tasks:
-                bug = task.bug
-                if 'buglist' in self.cfg:
-                    if str(bug.id) not in self.cfg['buglist']:
-                        continue
-                if 'staging' in self.cfg:
-                    self.cfg['lpserver'] = 'bugs.qastaging.launchpad.net'
-                else:
-                    self.cfg['lpserver'] = 'bugs.launchpad.net'
-
-                self.printlink =  '%s : (%s)\n' % (bug.id, self.bug_url(bug.id)),
-                self.verbose('Processing: %s' % self.printlink)
-
-                # initialize any per-bug variables that we use for the release test
-                self.bugtags = []
-                for atag in bug.tags:
-                    self.bugtags.append(atag)
-                performReleaseTest = False
-                self.certification_testing_complete = False
-                self.regression_testing_complete = False
-                self.security_signoff_complete = False
-                self.security_publishing_required = False
-
-                # Initialize the properties object
-                self.props = Properties(bug)
-                #
-                # list any Properties from bug description
-                props = bug.properties
-                for prop in props:
-                    self.verbose('    Bug has Property:  %s:%s' % (prop, props[prop]))
-
-                # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
-                # TODO This is a bit sloppy and I should probably build one list and walk it twice.
-                try:
-                    # TODO revisit this, but hardcode for now
-                    #mtstring = self.project.display_name
-                    mtstring = self.projectname
-
-                    self.taskbyname = {}
-                    for t in bug.tasks:
-                        task_name       = t.bug_target_name
-
-                        if task_name == mtstring:
-                            # we save a pointer to the master task and check to make sure we should process this bug
-                            self.taskbyname[mtstring] = t
-                            if t.status == 'In Progress':
-                                continue
-                            else:
-                                self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
-                                raise RuntimeError
-
-                        if not task_name.startswith(mtstring):
-                            # Ignore the tasks assigned to the actual package, we care about workflow only
-                            self.verbose('Skipping non-workflow task <%s>:<%s>\n' % (mtstring, task_name))
-                            continue
-
-                        # add one to account for the trailing /
-                        therest = task_name[len(mtstring)+1:].strip()
-                        self.taskbyname[therest] = t
-
-                except RuntimeError:
-                    # end processing for this bug
-                    self.verbose('    Quitting this bug\n')
-                    continue
-
-                # now walk them one at a time
-                for t in bug.tasks:
-                    task_name = t.bug_target_name.strip()
-                    # bug_target_name includes both the main and sub task in the string
-                    # so for example it could be "Kernel SRU Workflow prepare-package"
-                    # so we have to strip off the right hand part
-                    # The task can also be just the single parent task
-                    #
-
-                    if task_name == mtstring:
-                        self.verbose('Skipping empty master workflow task \n')
-                        continue
-
-                    if not task_name.startswith(mtstring):
-                        # Ignore the tasks assigned to the actual package, we care about workflow only
-                        self.verbose('Skipping non-workflow task %s\n' % (task_name))
-                        continue
-
-                    therest = task_name[len(mtstring)+1:].strip()
-                    task_name = therest
-
-                    state      = t.status
-                    importance = t.importance
-                    assignee    = t.assignee
-                    if assignee is None:
-                        assignee = '*Unassigned'
-                    else:
-                        assignee = assignee.display_name
-
-                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
-
-                    if task_name not in self.state_map:
-                        print self.printlink,
-                        print("I don't know how to handle the task <%s>, skipping" % (task_name))
-                        continue
-
-                    if 'action' not in self.state_map[task_name][state]:
-                        print self.printlink,
-                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
-                        raise ValueError
-
-                    action = self.state_map[task_name][state]['action']
-
-                    if  action is None:
-                        self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
-                    else:
-                        if action(t):
-                            performReleaseTest = True
-
-                # Now process any tests which require information from multiple tasks
-                # will require info stored in class variables during task processing
-                if performReleaseTest:
-                    self.perform_release_test()
-
-                # Now flush any property changes to the bug description
-                self.props.flush()
-                self.verbose('--\n')
-
+            for pname in [ #'kernel-development-workflow',
+                           'kernel-sru-workflow' ]:
+                self.projectname = pname
+                self.process_bugs(self.lp.projects[self.projectname])
 
         # Handle the user presses <ctrl-C>.
         #
@@ -574,7 +571,11 @@ class Shank(StdApp):
     # end of main
 
     def bug_url(self, bug_id):
-        retval = 'https://%s/bugs/%s' % (self.cfg['lpserver'], bug_id)
+        if 'staging' in self.cfg:
+            lpserver = 'bugs.qastaging.launchpad.net'
+        else:
+            lpserver = 'bugs.launchpad.net'
+        retval = 'https://%s/bugs/%s' % (lpserver, bug_id)
         return retval
 
     def send_comment(self, task, subject, body):
