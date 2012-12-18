@@ -35,6 +35,7 @@ class TrackingBug:
         if not series_target:
             raise Exception("%s-%s: can't figure out the distro series for it."
                             % (package, version))
+        devel_series = ub.is_development_series(series)
 
         # Title: <package>: <version> -proposed tracker
         title = "%s: %s -proposed tracker" % (package, version)
@@ -55,11 +56,14 @@ class TrackingBug:
         now.replace(tzinfo=None)
         tstamp = date_to_string(now)
         ourprops = {}
-        ourprops['kernel-stable-Prepare-package-start'] = tstamp
-        ourprops['kernel-stable-phase'] = 'Prepare'
-        ourprops['kernel-stable-phase-changed'] = tstamp
+        prop_pfx = 'kernel'
+        if not devel_series:
+            prop_pfx += '-stable'
+        ourprops['%s-Prepare-package-start' % (prop_pfx)] = tstamp
+        ourprops['%s-phase' % (prop_pfx)] = 'Prepare'
+        ourprops['%s-phase-changed' % (prop_pfx)] = tstamp
         if master_bug:
-            ourprops['kernel-stable-master-bug'] = master_bug
+            ourprops['%s-master-bug' % (prop_pfx)] = master_bug
         for k in ourprops:
             description = description + '%s:%s\n' % (k, ourprops[k])
 
@@ -110,7 +114,10 @@ class TrackingBug:
 
         lp = self.lp.launchpad
         ubuntu = lp.distributions["ubuntu"]
-        project = 'kernel-sru-workflow'
+        if devel_series:
+            project = 'kernel-development-workflow'
+        else:
+            project = 'kernel-sru-workflow'
         proj = lp.projects[project]
         bug.lpbug.addTask(target=proj)
 
@@ -182,7 +189,7 @@ class TrackingBug:
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
-                        if wf.is_task_invalid(package, task, lin_ver):
+                        if not devel_series and wf.is_task_invalid(package, task, lin_ver):
                             t.status = "Invalid"
                             continue
                     if not new_abi and task.startswith('prepare-package-'):

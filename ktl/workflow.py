@@ -404,7 +404,7 @@ class Workflow:
     # * subscribers: launchpad persons or teams to subscribe
     #   automatically to the tracking bugs when they are created
     devel_workflow = {
-        'linux' :  {
+        'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
                 'prepare-package-lbm'        : 'canonical-kernel-team',
@@ -417,48 +417,60 @@ class Workflow:
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 [],
-            },
+            }
         }
 
     # assignee
     #
-    def assignee(self, packagename, taskname):
+    def assignee(self, packagename, taskname, devel):
         """
         Using the given package name and task name, return the launchpad
         team or person who should be assigned that task. If the
         package name is not in the dictionary, return the default
         """
-        if packagename in self.tdb:
-            if taskname in self.tdb[packagename]['task_assignment']:
-                return self.tdb[packagename]['task_assignment'][taskname]
+        if devel:
+            db = self.devel_workflow
+        else:
+            db = self.tdb
+        if packagename in db:
+            if taskname in db[packagename]['task_assignment']:
+                return db[packagename]['task_assignment'][taskname]
             else:
                 return None
         else:
-                return self.tdb['default']['task_assignment'][taskname]
+                return db['default']['task_assignment'][taskname]
 
     # initial_tags
     #
-    def initial_tags(self, packagename):
+    def initial_tags(self, packagename, devel):
         """
         Lookup the given package name and return the tags which
         should be initially applied to the tracking bug
         """
-        if packagename in self.tdb:
-                return self.tdb[packagename]['initial_bug_tags']
+        if devel:
+            db = self.devel_workflow
         else:
-                return self.tdb['default']['initial_bug_tags']
+            db = self.tdb
+        if packagename in db:
+                return db[packagename]['initial_bug_tags']
+        else:
+                return db['default']['initial_bug_tags']
 
     # subscribers
     #
-    def subscribers(self, packagename):
+    def subscribers(self, packagename, devel):
         """
         Lookup the given package name and return a list of
         teams who should be initially subscribed to the tracking bug
         """
-        if packagename in self.tdb:
-                return self.tdb[packagename]['subscribers']
+        if devel:
+            db = self.devel_workflow
         else:
-                return self.tdb['default']['subscribers']
+            db = self.tdb
+        if packagename in db:
+                return db[packagename]['subscribers']
+        else:
+                return db['default']['subscribers']
 
     # is task invalid for that series version
     #
