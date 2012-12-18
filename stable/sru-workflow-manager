@@ -141,6 +141,8 @@ class Shank(StdApp):
 
         self.state_map = {
             # Task, Current State, Action
+            # Note: some tasks are only for and present in Kernel
+            # Development Workflow, others only on SRU workflow
             'prepare-package'         : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -297,6 +299,19 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.regression_testing_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'package-testing'         : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':self.package_testing_fix_released},
+                                         'Unknown' : {'action':None},
+                                         },
             'promote-to-updates'      : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -321,6 +336,19 @@ class Shank(StdApp):
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
                                          'Fix Released' : {'action':self.check_for_final_close},
+                                         'Unknown' : {'action':None},
+                                         },
+            'promote-to-release'      : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':self.promote_to_release_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'security-signoff'        : {'New' : {'action':None},
@@ -1362,6 +1390,57 @@ class Shank(StdApp):
             self.set_task_to_state(self.projectname, 'Incomplete')
             self.set_stable_phase(taskobj, 'OnHold')
             return False
+
+    def package_testing_fix_released(self, taskobj):
+        """
+        When package-testing is set to Fix Released, that means the
+        development kernel passed all wanted testing and is acked to go
+        to the release pocket by the Ubuntu Kernel Team
+        """
+        if self.taskbyname['promote-to-release'].status == 'New':
+            # if this is a derivative tracking bug, first wait until
+            # that packages on the master tracking bug are also ready or
+            # already promoted. The way derivative package bugs are
+            # opened already ensures this, but check the tasks on the
+            # master bug anyway just in case...
+            if not self.check_master_task(taskobj.bug, 'promote-to-release'):
+                return False
+
+            # Set promote-to-proposed
+            self.set_task_to_state('promote-to-released', 'Confirmed')
+            # Add time stamp and status
+            self.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
+            self.set_stable_phase(taskobj, 'CopyToRelease')
+        return False
+
+    def promote_to_release_fix_released(self, taskobj):
+        """
+        When promote-to-release is set to Fix Released, the development
+        kernel is copied to the -release pocket, marking the end of the
+        workflow for it. Some final checks are done here to verify that
+        everything is ok
+        """
+
+        # Ensure all tasks are closed
+        self.release_test_state_check('prepare-package', ['Fix Released'])
+        self.release_test_state_check('package-testing', ['Fix Released'])
+
+        # If we found any problems, we've halted processing and set this
+        if (self.taskbyname[self.projectname].status != 'In Progress'):
+            self.verbose('*** promote-to-release halted on bug with status!=In Progress\n')
+            return
+
+        if not self.check_component_in_pocket(taskobj,
+                    'kernel-Promote-to-release-end', datetime.utcnow(),
+                    'release'):
+            return False
+
+        self.set_task_to_state(self.projectname, 'Fix Released')
+        self.set_stable_phase(taskobj, 'Released')
+        msgbody = 'The package has been published and the bug is being set to Fix Released\n'
+        self.send_comment(taskobj, 'Package Released!', msgbody)
+        self.send_status_update(taskobj, 'has been published.')
 
     def security_signoff_finished(self, taskobj):
         """
