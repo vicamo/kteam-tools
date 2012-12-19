@@ -962,10 +962,14 @@ class Shank(StdApp):
         Fix Released on the master bug, when bug is a derivative/backport
         tracking bug, otherwise just return True
         """
+        master_prop = 'kernel'
+        if self.projectname == 'kernel-sru-workflow':
+            master_prop += '-stable'
+        master_prop += '-master-bug'
         props = bug.properties
-        if 'kernel-stable-master-bug' in props:
+        if master_prop in props:
             try:
-                mbug = self.lp.get_bug(props['kernel-stable-master-bug'])
+                mbug = self.lp.get_bug(props[master_prop])
                 for t in mbug.tasks:
                     task_name = t.bug_target_name
                     if (not task_name.startswith(self.projectname) or
@@ -1002,13 +1006,18 @@ class Shank(StdApp):
                 self.set_task_to_state('upload-to-ppa', 'Confirmed')
             return False
 
-        if self.taskbyname['promote-to-proposed'].status == 'New':
+        if self.projectname == 'kernel-sru-workflow':
+            taskname = 'promote-to-proposed'
+        else:
+            taskname = 'package-testing'
+
+        if self.taskbyname[taskname].status == 'New':
             # if this is a derivative tracking bug, first wait until
             # that packages on the master tracking bug are also ready or
             # already promoted. The way derivative package bugs are
             # opened already ensures this, but check the tasks on the
             # master bug anyway just in case...
-            if not self.check_master_task(taskobj.bug, 'promote-to-proposed'):
+            if not self.check_master_task(taskobj.bug, taskname):
                 return False
 
             # open new tracking bugs for derivative packages if needed
@@ -1077,8 +1086,11 @@ class Shank(StdApp):
                     m_bug_list.append('%s (%s)' % (bp_pkg[0], bp_pkg[1]))
 
             # comment about publishing and possible new tracking bugs opened
-            msgbody  = 'All builds are complete, packages in this bug can be'
-            msgbody += ' copied to -proposed.'
+            msgbody  = 'All builds are complete, packages in this bug'
+            if taskname == 'promote-to-proposed':
+                msgbody += ' can be copied to -proposed.'
+            else:
+                msgbody += ' are available in -proposed.'
             if der_bug_list:
                 msgbody += '\n\nDerivative packages from packages here can be worked on,'
                 msgbody += ' the following tracking bugs were opened for them:'
@@ -1097,14 +1109,19 @@ class Shank(StdApp):
                 for ln in m_bug_list:
                     msgbody += '\n%s' % (ln)
             task = self.taskbyname[self.projectname]
-            self.send_comment(task, 'Packages are ready for -proposed', msgbody)
+            self.send_comment(task, 'Packages available', msgbody)
 
             # Set promote-to-proposed
-            self.set_task_to_state('promote-to-proposed', 'Confirmed')
+            self.set_task_to_state(taskname, 'Confirmed')
             # Add time stamp and status
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
-            self.set_phase(taskobj, 'CopyToProposed')
+            if self.projectname == 'kernel-sru-workflow':
+                self.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
+                self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
+                self.set_phase(taskobj, 'CopyToProposed')
+            else:
+                self.set_tagged_timestamp(taskobj, 'kernel-Prepare-package-end')
+                self.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
+                self.set_phase(taskobj, 'Testing')
         return False
 
     def upload_to_ppa_in_progress(self, taskobj):
