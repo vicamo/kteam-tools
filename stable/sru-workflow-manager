@@ -551,7 +551,7 @@ class Shank(StdApp):
 
             self.initialize()
 
-            for pname in [ #'kernel-development-workflow',
+            for pname in [ 'kernel-development-workflow',
                            'kernel-sru-workflow' ]:
                 self.projectname = pname
                 self.process_bugs(self.lp.projects[self.projectname])
