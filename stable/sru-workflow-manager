@@ -802,10 +802,15 @@ class Shank(StdApp):
         pkg_abi = pkg_abi.lstrip('-')
         dep_ver1 = '%s-%s' % (pkg_kernel, pkg_abi)
         dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
-        ckt = self.lp.launchpad.people['canonical-kernel-team']
-        ppa = ckt.getPPAByName(name='ppa')
+        # if we are doing an stable update, the upload goes to the c-k-t
+        # ppa, otherwise we must check the main archive
+        if self.projectname == 'kernel-sru-workflow':
+            ckt = self.lp.launchpad.people['canonical-kernel-team']
+            archive = ckt.getPPAByName(name='ppa')
+        else:
+            archive = self.lp.launchpad.distributions["ubuntu"].main_archive
         dep_matches = []
-        for p in ppa.getPublishedSources(source_name=dep_name, exact_match=True):
+        for p in archive.getPublishedSources(source_name=dep_name, exact_match=True):
             src_ver = p.source_package_version
             # special case for hardy lrm version...
             if (deptype == 'lrm') and (pkg_kernel == '2.6.24'):
@@ -818,11 +823,11 @@ class Shank(StdApp):
                  src_ver.startswith(dep_ver2 + '.'))):
                 dep_matches.append(p)
         if not dep_matches:
-            self.verbose('Can\'t find <%s> (<%s> or <%s>) build on c-k-t ppa\n' %
-                         (dep_name, dep_ver1, dep_ver2))
+            self.verbose('Can\'t find <%s> (<%s> or <%s>) build on %s\n' %
+                         (dep_name, dep_ver1, dep_ver2, archive.displayname))
         for dep_pkg in dep_matches:
             src_id = str(dep_pkg.self).rsplit('/', 1)[1]
-            build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
             task_name = taskobj.bug_target_name
             workflow_task = task_name[len(self.projectname)+1:].strip()
             if build_summaries['status'] == 'FULLYBUILT':
@@ -884,17 +889,23 @@ class Shank(StdApp):
         return False
 
     def is_pkg_built(self, pkg_name, pkg_ver):
-        ckt = self.lp.launchpad.people['canonical-kernel-team']
-        ppa = ckt.getPPAByName(name='ppa')
-        matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name, exact_match=True)
+        # if we are doing an stable update, the upload goes to the c-k-t
+        # ppa, otherwise we must check the main archive
+        if self.projectname == 'kernel-sru-workflow':
+            ckt = self.lp.launchpad.people['canonical-kernel-team']
+            archive = ckt.getPPAByName(name='ppa')
+        else:
+            archive = self.lp.launchpad.distributions["ubuntu"].main_archive
+        matches = [ p for p in archive.getPublishedSources(source_name=pkg_name, exact_match=True)
                             if p.status.lower() == 'published' and
                                p.source_package_version == pkg_ver ]
         if not matches:
-            self.verbose('Can\'t find <%s> <%s> build on c-k-t ppa\n' % (pkg_name, pkg_ver))
+            self.verbose('Can\'t find <%s> <%s> build on %s\n' %
+                         (pkg_name, pkg_ver, archive.displayname))
             return False
         for pkg in matches:
             src_id = str(pkg.self).rsplit('/', 1)[1]
-            build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built\n'
                              % (pkg_name, pkg_ver))
