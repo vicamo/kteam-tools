@@ -404,6 +404,20 @@ class Workflow:
     # * subscribers: launchpad persons or teams to subscribe
     #   automatically to the tracking bugs when they are created
     devel_workflow = {
+        'linux-ppc' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'ben-collins',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'ben-collins',
+                #'prepare-package-signed'     : 'canonical-kernel-team',
+                'package-testing'            : 'ben-collins',
+                'promote-to-release'         : 'ubuntu-archive',
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                [],
+            },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',

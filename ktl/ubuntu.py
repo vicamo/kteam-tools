@@ -143,7 +143,9 @@ class Ubuntu:
                 'linux',
                 'linux-meta',
                 'linux-ti-omap4',
-                'linux-meta-ti-omap4'
+                'linux-meta-ti-omap4',
+                'linux-ppc',
+                'linux-meta-ppc'
             ],
             'dependent-packages' :
             {
@@ -151,11 +153,12 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
-                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
+                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
+                'linux-ppc' : { 'meta' : 'linux-meta-ppc' }
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ti-omap4' ]
+                'linux' : [ 'linux-ti-omap4', 'linux-ppc' ]
             },
             'sha1' : '',
             'md5' : ''
