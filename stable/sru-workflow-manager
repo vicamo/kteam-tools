@@ -1122,6 +1122,7 @@ class Shank(StdApp):
                 self.set_tagged_timestamp(taskobj, 'kernel-Prepare-package-end')
                 self.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
                 self.set_phase(taskobj, 'Testing')
+                self.send_upload_announcement(taskobj, 'proposed')
         return False
 
     def upload_to_ppa_in_progress(self, taskobj):
