@@ -735,31 +735,36 @@ class Shank(StdApp):
             props = {keyvalue:tstamp}
             self.props.set(props)
 
-    # set_stable_phase
+    # set_phase
     #
     """
     Add the phase we're entering as a 'property',
     along with a time stamp
     """
-    def set_stable_phase(self, taskobj, phasetext):
+    def set_phase(self, taskobj, phasetext):
+        bug_prop = 'kernel'
+        if self.projectname == 'kernel-sru-workflow':
+            bug_prop += '-stable'
+        bug_prop += '-phase'
+        bug_prop_chg = bug_prop + '-changed'
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
-        if 'kernel-stable-phase' in taskobj.bug.properties:
-            if taskobj.bug.properties['kernel-stable-phase'] == phasetext:
+        if bug_prop in taskobj.bug.properties:
+            if taskobj.bug.properties[bug_prop] == phasetext:
                 # we already have this one
                 self.verbose('Not overwriting identical phase property\n')
                 return
         # Handle dryrun mode
         if 'dryrun' in self.cfg:
-            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
+            self.verbose('Dryrun - Changing bug phase to <%s>\n' % phasetext)
             return
         else:
-            self.verbose('Changing stable phase to <%s>\n' % phasetext)
+            self.verbose('Changing bug phase to <%s>\n' % phasetext)
         # Add phase and time stamp
         now = datetime.utcnow()
         now.replace(tzinfo=None)
         tstamp = date_to_string(now)
-        props = {'kernel-stable-phase':phasetext, 'kernel-stable-phase-changed':tstamp}
+        props = {bug_prop:phasetext, bug_prop_chg:tstamp}
         self.props.set(props)
 
     def is_prep_pkg_closed(self, taskname):
@@ -1088,7 +1093,7 @@ class Shank(StdApp):
             # Add time stamp and status
             self.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
             self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
-            self.set_stable_phase(taskobj, 'CopyToProposed')
+            self.set_phase(taskobj, 'CopyToProposed')
         return False
 
     def upload_to_ppa_in_progress(self, taskobj):
@@ -1279,7 +1284,7 @@ class Shank(StdApp):
 
         # Update remaining time stamps and status, send announcement
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
-        self.set_stable_phase(taskobj, 'Verification')
+        self.set_phase(taskobj, 'Verification')
         self.set_task_to_state('verification-testing', 'In Progress')
         self.send_upload_announcement(taskobj, 'proposed')
 
@@ -1301,7 +1306,7 @@ class Shank(StdApp):
              self.taskbyname['security-signoff'].status != 'Invalid') or
             self.taskbyname['regression-testing'].status != 'Fix Released'):
             self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-end')
-            self.set_stable_phase(taskobj, 'Testing')
+            self.set_phase(taskobj, 'Testing')
 
         if self.taskbyname['certification-testing'].status == 'New':
             self.set_task_to_state('certification-testing', 'Confirmed')
@@ -1329,7 +1334,7 @@ class Shank(StdApp):
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
-            self.set_stable_phase(taskobj, 'TestFail')
+            self.set_phase(taskobj, 'TestFail')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -1372,7 +1377,7 @@ class Shank(StdApp):
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
-            self.set_stable_phase(taskobj, 'TestFail')
+            self.set_phase(taskobj, 'TestFail')
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -1389,7 +1394,7 @@ class Shank(StdApp):
             self.set_task_to_state('regression-testing', 'Incomplete')
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
-            self.set_stable_phase(taskobj, 'OnHold')
+            self.set_phase(taskobj, 'OnHold')
             return False
 
     def package_testing_fix_released(self, taskobj):
@@ -1412,7 +1417,7 @@ class Shank(StdApp):
             # Add time stamp and status
             self.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
             self.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
-            self.set_stable_phase(taskobj, 'CopyToRelease')
+            self.set_phase(taskobj, 'CopyToRelease')
         return False
 
     def promote_to_release_fix_released(self, taskobj):
@@ -1438,7 +1443,7 @@ class Shank(StdApp):
             return False
 
         self.set_task_to_state(self.projectname, 'Fix Released')
-        self.set_stable_phase(taskobj, 'Released')
+        self.set_phase(taskobj, 'Released')
         msgbody = 'The package has been published and the bug is being set to Fix Released\n'
         self.send_comment(taskobj, 'Package Released!', msgbody)
         self.send_status_update(taskobj, 'has been published.')
@@ -1562,7 +1567,7 @@ class Shank(StdApp):
                     if self.taskbyname['promote-to-updates'].status == 'New':
                         self.set_task_to_state('promote-to-updates', 'Confirmed')
                         self.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
-                        self.set_stable_phase(task, 'CopyToUpdates')
+                        self.set_phase(task, 'CopyToUpdates')
                     # Now send a happy email 
                     msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
                     #self.send_email(task, 'Package is ready for publication', msgbody)
@@ -1587,7 +1592,7 @@ class Shank(StdApp):
                 self.send_comment(self.taskbyname[self.projectname], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
                 self.set_task_to_state(self.projectname, 'Incomplete')
-                self.set_stable_phase(task, 'OnHold')
+                self.set_phase(task, 'OnHold')
         # this method is not associated with a task state transition so no status returned
         return 
 
@@ -1622,7 +1627,7 @@ class Shank(StdApp):
             print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
             self.set_task_to_state(self.projectname, 'Fix Released')
-            self.set_stable_phase(taskobj, 'Released')
+            self.set_phase(taskobj, 'Released')
 
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
