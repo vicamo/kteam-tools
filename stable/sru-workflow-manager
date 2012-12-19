@@ -523,7 +523,7 @@ class Shank(StdApp):
                 if  action is None:
                     self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
                 else:
-                    if project == 'kernel-sru-workflow' and action(t):
+                    if self.projectname == 'kernel-sru-workflow' and action(t):
                         performReleaseTest = True
 
             # Now process any tests which require information from multiple tasks
