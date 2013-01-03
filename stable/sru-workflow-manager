@@ -443,7 +443,7 @@ class Shank(StdApp):
             if len(props) > 0:
                 self.verbose('    Properties:\n')
                 for prop in props:
-                    self.verbose('        %s:%s\n' % (prop, props[prop]))
+                    self.verbose('        %s: %s\n' % (prop, props[prop]))
 
             self.verbose('\n    Tasks:')
             # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
@@ -1062,6 +1062,7 @@ class Shank(StdApp):
                         if (bp_entries[bp_entry][0] == pkg_name and
                             bp_entries[bp_entry][1] == found['series_version']):
                             bp_list.append([bp_entry, entry['name']])
+
             der_bug_list = []
             bp_bug_list = []
             m_bug_list = []
@@ -1083,7 +1084,7 @@ class Shank(StdApp):
                 if bug:
                     # Friendly comment on the bug stating that this is a derivative
                     bug.add_comment(msgder, subder)
-                    print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
+                    print '        Action: Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
                     der_bug_list.append([der_pkg, bug.id])
                 else:
                     m_bug_list.append('%s' % (der_pkg))
@@ -1099,7 +1100,7 @@ class Shank(StdApp):
                     traceback.print_exc()
                     bug = None
                 if bug:
-                    print('Opened tracking bug %s for backport package %s (%s)\n'
+                    print('        Action: Opened tracking bug %s for backport package %s (%s)\n'
                           % (bug.id, bp_pkg[0], bp_pkg[1]))
                     bp_bug_list.append([bp_pkg[0], bp_pkg[1], bug.id])
                 else:
