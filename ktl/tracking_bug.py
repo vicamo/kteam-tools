@@ -77,7 +77,7 @@ class TrackingBug:
 
         # Tags:
         #    add all tags for this package name
-        taglist = wf.initial_tags(package)
+        taglist = wf.initial_tags(package, devel_series)
         for itag in taglist:
             bug.tags.append(itag)
 
@@ -91,7 +91,7 @@ class TrackingBug:
         # Teams / individuals to be automatically subscribed to the tracking bugs
         #   These vary per package
         #
-        teams = wf.subscribers(package)
+        teams = wf.subscribers(package, devel_series)
         for team in teams:
             try:
                 lp_team = self.lp.launchpad.people[team]
@@ -177,7 +177,7 @@ class TrackingBug:
                 if parts[0] != '':
                     continue
                 task = parts[2].strip()
-                assignee = wf.assignee(package, task)
+                assignee = wf.assignee(package, task, devel_series)
                 if assignee is None:
                     print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                     t.status = "Invalid"
