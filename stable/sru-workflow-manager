@@ -544,6 +544,14 @@ class Shank(StdApp):
         try:
             # set our config file, which can be overridden on the command line
             self.defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
+
+            # The configuraton file is required and if it's not found we can get some
+            # odd error messages. So, just check for it and bail out if it's not found.
+            #
+            if not path.exists(self.defaults['configuration_file']):
+                print("\n  *** Error: The required configuration file (%s) does not exist.\n             Further execution aborted." % (self.defaults['configuration_file']))
+                return
+
             #print('config file = %s' % self.defaults['configuration_file'])
 
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
