@@ -440,9 +440,12 @@ class Shank(StdApp):
             #
             # list any Properties from bug description
             props = bug.properties
-            for prop in props:
-                self.verbose('    Bug has Property:  %s:%s' % (prop, props[prop]))
+            if len(props) > 0:
+                self.verbose('    Properties:\n')
+                for prop in props:
+                    self.verbose('        %s:%s\n' % (prop, props[prop]))
 
+            self.verbose('\n    Tasks:')
             # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
             # TODO This is a bit sloppy and I should probably build one list and walk it twice.
             try:
@@ -465,7 +468,8 @@ class Shank(StdApp):
 
                     if not task_name.startswith(mtstring):
                         # Ignore the tasks assigned to the actual package, we care about workflow only
-                        self.verbose('Skipping non-workflow task <%s>:<%s>\n' % (mtstring, task_name))
+                        self.verbose("\n        %-25s\n" % (task_name))
+                        self.verbose('            Action: Skipping non-workflow task\n')
                         continue
 
                     # add one to account for the trailing /
@@ -487,12 +491,14 @@ class Shank(StdApp):
                 #
 
                 if task_name == mtstring:
-                    self.verbose('Skipping empty master workflow task \n')
+                    self.verbose("\n        %-25s\n" % (task_name))
+                    self.verbose('            Action: Skipping empty master workflow task \n')
                     continue
 
                 if not task_name.startswith(mtstring):
                     # Ignore the tasks assigned to the actual package, we care about workflow only
-                    self.verbose('Skipping non-workflow task %s\n' % (task_name))
+                    self.verbose("\n        %-25s\n" % (task_name))
+                    self.verbose('            Action: Skipping non-workflow task\n')
                     continue
 
                 therest = task_name[len(mtstring)+1:].strip()
@@ -506,22 +512,22 @@ class Shank(StdApp):
                 else:
                     assignee = assignee.display_name
 
-                self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
+                self.verbose("\n        %-25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
 
                 if task_name not in self.state_map:
                     print self.printlink,
-                    print("I don't know how to handle the task <%s>, skipping" % (task_name))
+                    print("            Warning: I don't know how to handle the task <%s>, skipping" % (task_name))
                     continue
 
                 if 'action' not in self.state_map[task_name][state]:
                     print self.printlink,
-                    print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
+                    print("            Error: No action found for state <%s> and task <%s>" % (state, task_name))
                     raise ValueError
 
                 action = self.state_map[task_name][state]['action']
 
                 if  action is None:
-                    self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
+                    self.verbose('            Action: No action for task %s in state %s\n' % (task_name, state))
                 else:
                     if self.projectname == 'kernel-sru-workflow' and action(t):
                         performReleaseTest = True
