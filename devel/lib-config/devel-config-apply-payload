@@ -81,7 +81,9 @@ while (<STDIN>) {
 				last;
 			}
 		}
-		if ($ok ne '') {
+		if ($ok eq 'n') {
+			print "# $config is not set\n";
+		} elsif ($ok ne '') {
 			print "$config=$ok\n";
 		} else {
 			print "## $config UNABLE TO FIX\n";
