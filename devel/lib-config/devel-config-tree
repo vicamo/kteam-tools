@@ -65,9 +65,9 @@ def emit(a):
     match = debug_re.search(a['deps'])
     if match:
         a['info'] = a.get('info', '') + "flag<DEBUG> "
-    match = broken_re.search(a['deps'])
-    if match or 'BROKEN' in a['prompt']:
-        a['info'] = a.get('info', '') + "flag<BROKEN> "
+    #match = broken_re.search(a['deps'])
+    #if match or 'BROKEN' in a['prompt']:
+    #    a['info'] = a.get('info', '') + "flag<BROKEN> "
 
     menu.insert(0, a)
     entries.append(a)

@@ -54,7 +54,7 @@ list_mark 'Filesystems' 'mark<Filesystem>' ''
 list_mark 'Networking' 'mark<Networking>' ''
 
 #list_interesting '{,S,P}ATA Drivers' 'CONFIG_(ATA|SATA|PATA)_' ''
-list 'Disk Drivers' 'mark<Disk Drivers>' ''
+list_mark 'Disk Drivers' 'mark<Disk Drivers>' ''
 
 #list_interesting 'Input Drivers' 'CONFIG_INPUT_' 'CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]'
 #list_interesting "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
@@ -94,6 +94,8 @@ list_mark "Graphics Drivers" 'mark<Graphics>' ''
 
 list_mark "CPU Frequency scaling" 'mark<CPUFREQ>' ''
 
+list_mark "Thermal Control" 'mark<THERMAL>' ''
+
 list_mark "Virtualisation Technology" 'mark<VIRT>' ''
 
 list_mark "Media Support" 'mark<MEDIA>' ''
@@ -101,6 +103,8 @@ list_mark "Media Support" 'mark<MEDIA>' ''
 list_mark "Character Devices" 'mark<CHARACTER>' ''
 
 list_mark "Miscellaneous Devices" 'mark<Misc Devices>' ''
+
+list_mark 'UBUNTU Critical Options' 'mark<CRITICAL>' ''
 
 list_mark 'UBUNTU Drivers' 'mark<UBUNTU>' ''
 
@@ -120,8 +124,8 @@ list_interesting 'DANGEROUS Options' "$what" ''
 what_flag 'DEPRECATED'
 list_interesting 'DEPRECATED Options' "$what" ''
 
-what_flag 'BROKEN'
-list_interesting 'BROKEN Options' "$what" ''
+#what_flag 'BROKEN'
+#list_interesting 'BROKEN Options' "$what" ''
 
 what_flag 'BUILD FAILURE'
 list_interesting 'BUILD FAILURES' "$what" ''
