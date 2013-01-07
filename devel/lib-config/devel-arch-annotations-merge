@@ -6,6 +6,7 @@ import re
 info_option = re.compile(r'\s*(\S+)<(.*?)>')
 
 # Load in the tree annotations.
+negatives = {}
 annotations = {}
 for line in sys.stdin:
     if line[0] in ('#', '\n'):
@@ -16,6 +17,10 @@ for line in sys.stdin:
     if len(a) != 3:
         a.append('')
     (config, value, info) = a
+
+    if value == 'C':
+        negatives[config] = True
+        continue
 
     if config not in annotations:
         annotations[config] = (value, info)
@@ -31,6 +36,7 @@ for line in sys.stdin:
         matches = info_option.finditer(info)
         for match in matches:
             flag_type = match.group(1)
+            flag_value = match.group(2)
             flag_key = match.group(1) + match.group(2)
             if flag_type in ('flag', 'mark', 'note'):
                 if flag_key in flags:
@@ -40,11 +46,21 @@ for line in sys.stdin:
             ninfo += match.group(0).strip() + ' '
 
         annotations[config] = (value, ninfo.strip())
-            
+
 
 # Load in the various architecture lists, take the first one for each option.
 # Apply annotations as above as we go.
 seen = {}
 for config in annotations:
     (value, info) = annotations[config]
-    sys.stdout.write(config + ' ' + value + ' ' + info.strip() + '\n')
+
+    print(config + ' ' + value + ' ' + info.strip())
+
+for config in negatives.keys():
+    value = 'c'
+    if config in annotations:
+        nvalue = annotations[config][0]
+        if nvalue != '-':
+            value = nvalue
+    if value == 'c':
+        print(config + ' n')

@@ -450,6 +450,11 @@ elif cmd == 'expand':
                     for key in sorted(result.keys()):
                         result[key]['info'] = result[key].get('info', '') + " " + value
                         print("CONFIG_" + key + " " + value)
+
+                        entry = result[key]
+                        if 'parent' in entry and 'choice' in entry['parent'] and \
+                           entry['type'] == 'bool':
+                                print("CONFIG_" + entry['config'] + " C")
                     break
 
                 else:
@@ -457,12 +462,6 @@ elif cmd == 'expand':
                     print(line, end='', file=sys.stderr)
                     break
 
-            continue
-                
-            #for entry in children_scan(root, a[1:-1], toplevel=True):
-            #    #print('RESULT', entry.get('config'), entry.get('prompt'))
-            #    if 'config' in entry and entry['type'] == 'tristate':
-            #        print(entry['config'] + ' ' + a[-1])
             continue
 
         # Pull the info updates off the config lines so they can be checked
@@ -473,5 +472,12 @@ elif cmd == 'expand':
 
             if name in byname and len(a) >= 3:
                 byname[name]['info'] = byname[name].get('info', '') + ' ' + a[2].strip()
+
+            if name in byname:
+                entry = byname[name]
+                if 'parent' in entry and 'choice' in entry['parent'] and \
+                   entry['type'] == 'bool':
+                    for entry in entry['parent']['children']:
+                        print("CONFIG_" + entry['config'] + " C")
 
         print(line, end='')

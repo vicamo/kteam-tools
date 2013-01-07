@@ -33,7 +33,6 @@ with open(annots) as inf:
 
 # Load in the various architecture lists, take the first one for each option.
 # Apply annotations as above as we go.
-negatives = {}
 values = {}
 vnames = []
 for merge in sys.argv[3:]:
@@ -51,15 +50,6 @@ for merge in sys.argv[3:]:
                 if value != '-':
                     a[3] = value
                     a[4] += ' mark<annotated>'
-
-                    # Check if this is a choice.  If so annotate negatively.
-                    if value != 'n':
-                        match = re.search(r'choice<([^>]*)>', a[4])
-                        if match:
-                            for choice in match.group(1).split():
-                                if a[0] == choice:
-                                    continue
-                                negatives[choice] = True
 
             # Elide duplicate flags and marks.
             info = ''
@@ -79,10 +69,6 @@ for merge in sys.argv[3:]:
             vnames.append(a[0])
             values[a[0]] = a;
             
-
-for choice in negatives.keys():
-    if values[choice][3] == 'c':
-        values[choice][3] = 'n'
 
 with open(output, "w") as outf:
     for option in vnames:
