@@ -23,6 +23,7 @@ def join(a, parent):
         parent = parent['parent']
 
 entries = []
+byname = {}
 def emit(a):
     global entries
 
@@ -71,6 +72,9 @@ def emit(a):
 
     menu.insert(0, a)
     entries.append(a)
+
+    if 'config' in a:
+        byname[a['config']] = a
 
 
 def add_deps(a, deps):
@@ -427,5 +431,14 @@ elif cmd == 'expand':
             #    if 'config' in entry and entry['type'] == 'tristate':
             #        print(entry['config'] + ' ' + a[-1])
             continue
+
+        # Pull the info updates off the config lines so they can be checked
+        # in the other rules.
+        if line.startswith("CONFIG_"):
+            a = line.split(None, 2)
+            name = a[0][7:]
+
+            if name in byname and len(a) >= 3:
+                byname[name]['info'] = byname[name].get('info', '') + ' ' + a[2].strip()
 
         print(line, end='')
