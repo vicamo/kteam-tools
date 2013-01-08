@@ -138,7 +138,8 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"],
             'invalidate_tasks' : {
-                'certification-testing' : [ '2.6.24', '2.6.35', '2.6.38', '3.0.0' ]
+                'certification-testing' : [ '2.6.24', '2.6.32', '2.6.35',
+                                            '2.6.38', '3.0.0' ]
                 }
             },
         'linux-ec2' :  {
