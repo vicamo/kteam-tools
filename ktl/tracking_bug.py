@@ -193,7 +193,8 @@ class TrackingBug:
                             t.status = "Invalid"
                             continue
                     if not new_abi and task.startswith('prepare-package-'):
-                        t.status = "Invalid"
+                        if task != 'prepare-package-signed':
+                            t.status = "Invalid"
 
         return bug
 
