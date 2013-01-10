@@ -714,16 +714,18 @@ class Shank(StdApp):
         returns True if we changed the state and False if it was already at the desired state
         """
         if 'dryrun' in self.cfg:
+            self.verbose('                ')
             self.verbose('Dryrun - Set task %s to state %s\n' % (taskname, state))
             return
 
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
-            print self.printlink,
+            print '                '
             print 'Setting Task <%s> to State <%s>' % (taskname, state)
             self.taskbyname[taskname].status = state
             return True
         else:
+            self.verbose('                ')
             self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
             return False
 
@@ -734,6 +736,7 @@ class Shank(StdApp):
     """
     def set_tagged_timestamp(self, taskobj, keyvalue):
         bug = taskobj.bug
+        self.verbose('                ')
         if keyvalue in bug.properties:
             self.verbose('tagged timestamp <%s> already in the tracking bug, not replacing\n' % keyvalue)
             return
@@ -837,6 +840,7 @@ class Shank(StdApp):
                  src_ver.startswith(dep_ver2 + '.'))):
                 dep_matches.append(p)
         if not dep_matches:
+            self.verbose('                ')
             self.verbose('Can\'t find <%s> (<%s> or <%s>) build on %s\n' %
                          (dep_name, dep_ver1, dep_ver2, archive.displayname))
         for dep_pkg in dep_matches:
@@ -844,6 +848,7 @@ class Shank(StdApp):
             build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
             task_name = taskobj.bug_target_name
             workflow_task = task_name[len(self.projectname)+1:].strip()
+            self.verbose('                ')
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built, %s is Fix Released\n'
                              % (dep_name, dep_pkg.source_package_version, workflow_task))
@@ -914,12 +919,14 @@ class Shank(StdApp):
                             if p.status.lower() == 'published' and
                                p.source_package_version == pkg_ver ]
         if not matches:
+            self.verbose('                ')
             self.verbose('Can\'t find <%s> <%s> build on %s\n' %
                          (pkg_name, pkg_ver, archive.displayname))
             return False
         for pkg in matches:
             src_id = str(pkg.self).rsplit('/', 1)[1]
             build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            self.verbose('                ')
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built\n'
                              % (pkg_name, pkg_ver))
