@@ -361,7 +361,7 @@ class AppTemplate(StdApp):
                 mailbody += "To: " + entry + '\n'
             mailbody += ("Subject: [ %s extended stable ] Linux %s stable review"
                          % (ann_ver, new_ver) + "\n")
-            mailbody += "X-Extended-Stable: %s" % (main_ver)
+            mailbody += "X-Extended-Stable: %s\n" % (main_ver)
             mailbody += mail_message % (new_ver, patch_cnt, base_ver,
                                         new_ver, sender.split()[0])
             mailbody += diffstat + '\n\n'
