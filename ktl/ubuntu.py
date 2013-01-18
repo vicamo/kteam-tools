@@ -134,7 +134,7 @@ class Ubuntu:
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '13.04',
-            'kernel'    : '3.7.0',
+            'kernel'    : '3.8.0',
             'name'      : 'raring',
             'supported' : False,
             # adjust packages when this goes live
@@ -487,7 +487,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '3.7.0'    : db['13.04'],
+        '3.8.0'    : db['13.04'],
         '3.5.0'    : db['12.10'],
         '3.2.0'    : db['12.04'],
         '3.0.0'    : db['11.10'],
