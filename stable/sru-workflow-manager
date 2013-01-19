@@ -597,6 +597,7 @@ class Shank(StdApp):
         """
         Add comment to tracking bug
         """
+        self.verbose('        ')
         if 'dryrun' in self.cfg:
             self.verbose('Dryrun - Adding comment to tracking bug\n')
         else:
@@ -641,6 +642,7 @@ class Shank(StdApp):
         """
         Send email with upload announcement
         """
+        self.verbose('        ')
         if 'dryrun' in self.cfg:
             self.verbose('Dryrun - Sending upload announcement\n')
             return
@@ -651,6 +653,7 @@ class Shank(StdApp):
             if 'from_address' in self.cfg['mail_notify']:
                 from_addr = self.cfg['mail_notify']['from_address']
         if not from_addr:
+            self.verbose('        ')
             self.verbose('No valid email config found, can\'t'
                          ' send upload announcement\n')
             return
@@ -715,18 +718,17 @@ class Shank(StdApp):
         returns True if we changed the state and False if it was already at the desired state
         """
         if 'dryrun' in self.cfg:
-            self.verbose('                ')
+            self.verbose('        ')
             self.verbose('Dryrun - Set task %s to state %s\n' % (taskname, state))
             return
 
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
-            print '                '
-            print 'Setting Task <%s> to State <%s>' % (taskname, state)
+            print('        Setting Task <%s> to State <%s>' % (taskname, state))
             self.taskbyname[taskname].status = state
             return True
         else:
-            self.verbose('                ')
+            self.verbose('        ')
             self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
             return False
 
@@ -737,7 +739,7 @@ class Shank(StdApp):
     """
     def set_tagged_timestamp(self, taskobj, keyvalue):
         bug = taskobj.bug
-        self.verbose('                ')
+        self.verbose('        ')
         if keyvalue in bug.properties:
             self.verbose('tagged timestamp <%s> already in the tracking bug, not replacing\n' % keyvalue)
             return
@@ -770,9 +772,11 @@ class Shank(StdApp):
         if bug_prop in taskobj.bug.properties:
             if taskobj.bug.properties[bug_prop] == phasetext:
                 # we already have this one
+                self.verbose('        ')
                 self.verbose('Not overwriting identical phase property\n')
                 return
         # Handle dryrun mode
+        self.verbose('        ')
         if 'dryrun' in self.cfg:
             self.verbose('Dryrun - Changing bug phase to <%s>\n' % phasetext)
             return
@@ -1080,10 +1084,12 @@ class Shank(StdApp):
             tb = TrackingBug(self.lp, 'staging' in self.cfg)
             for der_pkg in der_list:
                 if 'dryrun' in self.cfg:
+                    self.verbose('        ')
                     self.verbose('Dryrun - Would open tracking bug for derivative package %s\n'
                                  % (der_pkg))
                     continue
                 try:
+                    print('        ')
                     bug = tb.open(der_pkg, '<version to be filled>', True,
                                   taskobj.bug.id, series)
                 except:
@@ -1098,6 +1104,7 @@ class Shank(StdApp):
                     m_bug_list.append('%s' % (der_pkg))
             for bp_pkg in bp_list:
                 if 'dryrun' in self.cfg:
+                    self.verbose('        ')
                     self.verbose('Dryrun - Would open tracking bug for backport package %s\n'
                                  % (bp_pkg[0]))
                     continue
