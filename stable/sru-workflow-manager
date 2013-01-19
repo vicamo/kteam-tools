@@ -814,10 +814,10 @@ class Shank(StdApp):
         dep_name = self.get_dep_pkg_name(pkg_name, pkg_ver, deptype)
         if not dep_name:
             return False
-        pkg_abi = re.findall('-[0-9]+[^.]+', pkg_ver)[0]
+        pkg_abi = re.findall('-[0-9]+\.', pkg_ver)[0]
         pkg_kernel = re.findall('-[0-9]+[^ ]+', pkg_ver)[0]
         pkg_kernel = pkg_ver.replace(pkg_kernel, '', 1)
-        pkg_abi = pkg_abi.lstrip('-')
+        pkg_abi = pkg_abi.lstrip('-').rstrip('.')
         dep_ver1 = '%s-%s' % (pkg_kernel, pkg_abi)
         dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
         # if we are doing an stable update, the upload goes to the c-k-t
