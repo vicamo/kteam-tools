@@ -195,8 +195,8 @@ for line in mailbody:
     fp.write(line + "\n")
 fp.flush()
 dp.write("From: " + opts.sender + "\n")
-dp.write("Subject: Re: [%s extended stable] Linux %s\n\n" % (ann_ver, vstable))
-dp.write("X-Extended-Stable: %s" % (basever))
+dp.write("Subject: Re: [%s extended stable] Linux %s\n" % (ann_ver, vstable))
+dp.write("X-Extended-Stable: %s\n\n" % (basever))
 dp.flush()
 cmd = "git diff " + rangestart + ".." + rangeend + " >> " + dp.name
 system(cmd)
