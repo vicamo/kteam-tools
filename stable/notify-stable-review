@@ -143,10 +143,9 @@ class Cmdline:
         return
 
 mail_message = ("\n"
-"I am announcing the review cycle for the %s release of stable patches.\n"
-"This new release contains %s patches. Proposed patches are posted as a\n"
-"response to this message. The same patches are also available at the\n"
-"following repository:\n"
+"I am announcing the review cycle for the %s stable release. This new\n"
+"release contains %s patches, which are posted as a response to this\n"
+"message. They are also available at the following repository:\n"
 "\n"
 "git://kernel.ubuntu.com/ubuntu/linux.git linux-%s-review\n"
 "\n"
