@@ -238,7 +238,7 @@ class Workflow:
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',
                 'prepare-package-meta'       : 'canonical-hwe-arm-kernel',
-                'upload-to-ppa'              : 'canonical-hwe-arm-kernel',
+                #'upload-to-ppa'              : 'canonical-hwe-arm-kernel',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-hwe-arm-kernel',
                 'regression-testing'         : 'canonical-platform-qa',
