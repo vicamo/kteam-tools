@@ -151,7 +151,7 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
@@ -164,9 +164,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.upload_to_ppa_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':self.upload_to_ppa_fix_released},
+                                         'Fix Released' : {'action':None},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-lbm'     : {'New' : {'action':None},
@@ -177,9 +177,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_lbm_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-lrm'     : {'New' : {'action':None},
@@ -190,9 +190,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_lrm_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-lum'     : {'New' : {'action':None},
@@ -203,9 +203,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_lum_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-meta'    : {'New' : {'action':None},
@@ -216,9 +216,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_meta_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-ports-meta':{'New' : {'action':None},
@@ -229,9 +229,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_ports_meta_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'prepare-package-signed'   : {'New' : {'action':None},
@@ -242,9 +242,9 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':self.prep_signed_package_in_progress},
+                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'promote-to-proposed'     : {'New' : {'action':None},
@@ -425,7 +425,7 @@ class Shank(StdApp):
             self.printlink =  '%s : (%s)\n' % (bug.id, self.bug_url(bug.id)),
             self.verbose('Processing: %s' % self.printlink)
 
-            # initialize any per-bug variables that we use for the release test
+            # initialize any per-bug variables that we use
             self.bugtags = []
             for atag in bug.tags:
                 self.bugtags.append(atag)
@@ -445,7 +445,7 @@ class Shank(StdApp):
                 for prop in props:
                     self.verbose('        %s: %s\n' % (prop, props[prop]))
 
-            self.verbose('\n    Tasks:')
+            self.verbose('\n    Scanning bug tasks:')
             # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
             # TODO This is a bit sloppy and I should probably build one list and walk it twice.
             try:
@@ -481,7 +481,14 @@ class Shank(StdApp):
                 self.verbose('    Quitting this bug\n')
                 continue
 
+            # Verify the build state of packages in this bug. We do
+            # everything in one go as we get build information for all
+            # packages
+            self.verbose('\n    Checking status for packages in this bug:\n')
+            self.package_check(bug)
+
             # now walk them one at a time
+            self.verbose('\n    Processing bug tasks:')
             for t in bug.tasks:
                 task_name = t.bug_target_name.strip()
                 # bug_target_name includes both the main and sub task in the string
@@ -712,6 +719,26 @@ class Shank(StdApp):
         self.status.update(bugurl + ' : ' + pkgid + ' ' + message)
         return
 
+    def set_task_assignee(self, taskname, assignee):
+        """
+        Assign the task for the given assignee
+        returns True if we changed the state and False if it was already at the desired state
+        """
+        if 'dryrun' in self.cfg:
+            self.verbose('        ')
+            self.verbose('Dryrun - Assign task %s to %s\n' % (taskname, assignee))
+            return
+
+        # TODO could add error handling and retries here if needed
+        if self.taskbyname[taskname].assignee.username != assignee.name:
+            print('        Assigning Task <%s> to <%s>' % (taskname, assignee))
+            self.taskbyname[taskname].assignee = assignee
+            return True
+        else:
+            self.verbose('        ')
+            self.verbose('Task <%s> already assigned to <%s>\n' % (taskname, assignee))
+            return False
+
     def set_task_to_state(self, taskname, state):
         """
         Set a task with a given name to the desired state
@@ -729,7 +756,7 @@ class Shank(StdApp):
             return True
         else:
             self.verbose('        ')
-            self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
+            self.verbose('Task <%s> already in state <%s>\n' % (taskname, state))
             return False
 
     # set_tagged_timestamp
@@ -789,203 +816,14 @@ class Shank(StdApp):
         props = {bug_prop:phasetext, bug_prop_chg:tstamp}
         self.props.set(props)
 
-    def is_prep_pkg_closed(self, taskname):
-        if taskname in self.taskbyname:
-            if (self.taskbyname[taskname].status != "Fix Released" and
-                self.taskbyname[taskname].status != "Invalid"):
-                return False
-        return True
-
-    def get_dep_pkg_name(self, pkg_name, pkg_ver, deptype):
-        series = self.ubuntu.series_name(pkg_name, pkg_ver)
-        if not series:
-            print("ERROR: Can't find series for %s-%s to check %s dependency\n" %
-                  (pkg_name, pkg_ver, deptype))
-            return None
-        kinfo = self.ubuntu.lookup(series)
-        if 'dependent-packages' in kinfo:
-            if pkg_name in kinfo['dependent-packages']:
-                if deptype in kinfo['dependent-packages'][pkg_name]:
-                    return kinfo['dependent-packages'][pkg_name][deptype]
-        print("ERROR: can't find %s package name for %s-%s\n" %
-              (deptype, pkg_name, pkg_ver))
-        return None
-
-    def check_dep_pkg_built(self, taskobj, deptype):
-        title = taskobj.bug.title
-        pkg_name = re.findall('linux[^:]*', title)[0]
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-        dep_name = self.get_dep_pkg_name(pkg_name, pkg_ver, deptype)
-        if not dep_name:
-            return False
-        pkg_abi = re.findall('-[0-9]+\.', pkg_ver)[0]
-        pkg_kernel = re.findall('-[0-9]+[^ ]+', pkg_ver)[0]
-        pkg_kernel = pkg_ver.replace(pkg_kernel, '', 1)
-        pkg_abi = pkg_abi.lstrip('-').rstrip('.')
-        dep_ver1 = '%s-%s' % (pkg_kernel, pkg_abi)
-        dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
-        # if we are doing an stable update, the upload goes to the c-k-t
-        # ppa, otherwise we must check the main archive
-        if self.projectname == 'kernel-sru-workflow':
-            ckt = self.lp.launchpad.people['canonical-kernel-team']
-            archive = ckt.getPPAByName(name='ppa')
-        else:
-            archive = self.lp.launchpad.distributions["ubuntu"].main_archive
-        dep_matches = []
-        for p in archive.getPublishedSources(source_name=dep_name, exact_match=True):
-            src_ver = p.source_package_version
-            # special case for hardy lrm version...
-            if (deptype == 'lrm') and (pkg_kernel == '2.6.24'):
-                if src_ver.startswith('2.6.24'):
-                    ver_split = src_ver.split('-', 1)
-                    if len(ver_split) > 1:
-                        src_ver = '2.6.24-%s' % (ver_split[1])
-            if ((p.status.lower() == 'published') and
-                (src_ver.startswith(dep_ver1 + '.') or
-                 src_ver.startswith(dep_ver2 + '.'))):
-                dep_matches.append(p)
-        if not dep_matches:
-            self.verbose('                ')
-            self.verbose('Can\'t find <%s> (<%s> or <%s>) build on %s\n' %
-                         (dep_name, dep_ver1, dep_ver2, archive.displayname))
-        for dep_pkg in dep_matches:
-            src_id = str(dep_pkg.self).rsplit('/', 1)[1]
-            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
-            task_name = taskobj.bug_target_name
-            workflow_task = task_name[len(self.projectname)+1:].strip()
-            self.verbose('                ')
-            if build_summaries['status'] == 'FULLYBUILT':
-                self.verbose('<%s> <%s> built, %s is Fix Released\n'
-                             % (dep_name, dep_pkg.source_package_version, workflow_task))
-                self.set_task_to_state(workflow_task, 'Fix Released')
-            else:
-                self.verbose('<%s> <%s> not fully built yet, %s still In Progress\n'
-                             % (dep_name, dep_pkg.source_package_version, workflow_task))
-        return False
-
     #
     # Begin action methods for state transitions
     #
 
-    def prep_lbm_package_in_progress(self, taskobj):
+    def check_master_task(self, bug, tasks):
         """
-        when we have a prepare-package-lbm task and it's set to In
-        Progress, the package have a dependent linux-backports-modules
-        package to be built; update the task if package is built
-        """
-        self.check_dep_pkg_built(taskobj, 'lbm')
-        return False
-
-    def prep_lrm_package_in_progress(self, taskobj):
-        """
-        when we have a prepare-package-lrm task and it's set to In
-        Progress, the package have a dependent linux-restricted-modules
-        package to be built; update the task if package is built
-        """
-        self.check_dep_pkg_built(taskobj, 'lrm')
-        return False
-
-    def prep_lum_package_in_progress(self, taskobj):
-        """
-        when we have a prepare-package-lum task and it's set to In
-        Progress, the package have a dependent linux-ubuntu-modules
-        package to be built; update the task if package is built
-        """
-        self.check_dep_pkg_built(taskobj, 'lum')
-        return False
-
-    def prep_meta_package_in_progress(self, taskobj):
-        """
-        when we have a prepare-package-meta task and it's set to In
-        Progress, the package have a dependent meta package to be built;
-        update the task if package is built
-        """
-        self.check_dep_pkg_built(taskobj, 'meta')
-        return False
-
-    def prep_ports_meta_package_in_progress(self, taskobj):
-        """
-        when we have a prepare-package-ports-meta task and it's set to
-        In Progress, the package have a dependent ports-meta package to
-        be built; update the task if package is built
-        """
-        self.check_dep_pkg_built(taskobj, 'ports-meta')
-        return False
-
-    def is_pkg_built(self, pkg_name, pkg_ver):
-        # if we are doing an stable update, the upload goes to the c-k-t
-        # ppa, otherwise we must check the main archive
-        if self.projectname == 'kernel-sru-workflow':
-            ckt = self.lp.launchpad.people['canonical-kernel-team']
-            archive = ckt.getPPAByName(name='ppa')
-        else:
-            archive = self.lp.launchpad.distributions["ubuntu"].main_archive
-        matches = [ p for p in archive.getPublishedSources(source_name=pkg_name, exact_match=True)
-                            if p.status.lower() == 'published' and
-                               p.source_package_version == pkg_ver ]
-        if not matches:
-            self.verbose('                ')
-            self.verbose('Can\'t find <%s> <%s> build on %s\n' %
-                         (pkg_name, pkg_ver, archive.displayname))
-            return False
-        for pkg in matches:
-            src_id = str(pkg.self).rsplit('/', 1)[1]
-            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
-            self.verbose('                ')
-            if build_summaries['status'] == 'FULLYBUILT':
-                self.verbose('<%s> <%s> built\n'
-                             % (pkg_name, pkg_ver))
-                return True
-            else:
-                self.verbose('<%s> <%s> not fully built yet, skipping\n'
-                             % (pkg_name, pkg_ver))
-        return False
-
-    def prep_signed_package_in_progress(self, taskobj):
-        """
-        when we have a prepare-package-signed task and it's set to
-        In Progress, the package have a dependent signed package to
-        be built; update the task if package is built
-        """
-        title = taskobj.bug.title
-        pkg_name = re.findall('linux[^:]*', title)[0]
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-        dep_name = self.get_dep_pkg_name(pkg_name, pkg_ver, 'signed')
-        if dep_name and self.is_pkg_built(dep_name, pkg_ver):
-            self.set_task_to_state('prepare-package-signed', 'Fix Released')
-        return False
-
-    def prep_package_in_progress(self, taskobj):
-        """
-        when the prep-package task is set to In Progress and no
-        upload-to-ppa task is present, kernel team builds the packages;
-        check the build status and update tasks
-        """
-        task_name = taskobj.bug_target_name
-        workflow_task = task_name[len(self.projectname)+1:].strip()
-        if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
-            return False
-        if (not (self.is_prep_pkg_closed('prepare-package-lbm') and
-                 self.is_prep_pkg_closed('prepare-package-lrm') and
-                 self.is_prep_pkg_closed('prepare-package-lum') and
-                 self.is_prep_pkg_closed('prepare-package-meta') and
-                 self.is_prep_pkg_closed('prepare-package-ports-meta') and
-                 self.is_prep_pkg_closed('prepare-package-signed'))):
-            return False
-        title = taskobj.bug.title
-        pkg_name = re.findall('linux[^:]*', title)[0]
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-        if self.is_pkg_built(pkg_name, pkg_ver):
-            if not 'upload-to-ppa' in self.taskbyname:
-                self.set_task_to_state('prepare-package', 'Fix Released')
-            else:
-                self.set_task_to_state('upload-to-ppa', 'Fix Released')
-        return False
-
-    def check_master_task(self, bug, tname):
-        """
-        check if the task with name tname is in the state Confirmed or
-        Fix Released on the master bug, returns:
+        check if the dictionary of tasks is in one of the provided list of
+        status on the master bug listed in the bug, returns:
         * -1 if we were unable to check the status
         * 0 if the task on the master tracking bug is not Confirmed/
           Fix Released
@@ -993,6 +831,8 @@ class Shank(StdApp):
           bug
         * 2 if the task on the master tracking bug is Confirmed or Fix
           Released
+        The tasks provided must be a dictionary in the form:
+            'task name' : [ list of desired status ]
         """
         master_prop = 'kernel'
         if self.projectname == 'kernel-sru-workflow':
@@ -1002,26 +842,40 @@ class Shank(StdApp):
         if master_prop in props:
             try:
                 mbug = self.lp.get_bug(props[master_prop])
+                r = 2
                 for t in mbug.tasks:
                     task_name = t.bug_target_name
                     if (not task_name.startswith(self.projectname) or
                         task_name == self.projectname):
                         continue
                     short_name = task_name[len(self.projectname)+1:].strip()
-                    if short_name.lower() == tname:
-                        if t.status == 'Confirmed' or t.status == 'Fix Released':
-                            return 2
-                        else:
-                            break
-                self.verbose("%s isn't Confirmed or Fix Released on bug %s,"
-                             % (tname, mbug.id))
-                self.verbose(" waiting on master bug\n")
-                return 0
+                    for tname in iter(tasks):
+                        if short_name.lower() == tname:
+                            if not t.status in tasks[tname]:
+                                r = 0
+                                self.verbose("%s doesn't match any of these "
+                                             "status in bug %s: %s."
+                                             % (tname, mbug.id, tasks[tname]))
+                                self.verbose(" Waiting on master bug\n")
+                                return 0
+                return r
             except:
                 traceback.print_exc()
                 print("ERROR: unable to get master bug\n")
                 return -1
         return 1
+
+    def prepare_package_fixed(self):
+        """
+        Check if all prepare-package tasks are finished, returning a
+        boolean value indicating so
+        """
+        for task in iter(self.taskbyname):
+            if task.startswith('prepare-package'):
+                if (self.taskbyname[task].status != 'Fix Released' and
+                    self.taskbyname[task].status != 'Invalid'):
+                    return False
+        return True
 
     def prep_package_fix_released(self, taskobj):
         """
@@ -1031,25 +885,30 @@ class Shank(StdApp):
         Confirmed. Otherwise, if upload-to-ppa task is present, just set
         it to Confirmed if necessary
         """
-        task_name = taskobj.bug_target_name
-        workflow_task = task_name[len(self.projectname)+1:].strip()
-        if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
-            if self.taskbyname['upload-to-ppa'].status == 'New':
-                self.set_task_to_state('upload-to-ppa', 'Confirmed')
-            return False
-
         if self.projectname == 'kernel-sru-workflow':
             taskname = 'promote-to-proposed'
         else:
             taskname = 'package-testing'
 
         if self.taskbyname[taskname].status == 'New':
+            # check if all prepare-package tasks are finished
+            if not self.prepare_package_fixed():
+                return False
+
             # if this is a derivative tracking bug, first wait until
             # that packages on the master tracking bug are also ready or
             # already promoted. The way derivative package bugs are
             # opened already ensures this, but check the tasks on the
             # master bug anyway just in case...
-            if self.check_master_task(taskobj.bug, taskname) <= 0:
+            tsk_st = { 'prepare-package' : [ 'Fix Released' ],
+                       'prepare-package-lbm' : [ 'Fix Released', 'Invalid' ],
+                       'prepare-package-lrm' : [ 'Fix Released', 'Invalid' ],
+                       'prepare-package-lum' : [ 'Fix Released', 'Invalid' ],
+                       'prepare-package-meta' : [ 'Fix Released', 'Invalid' ],
+                       'prepare-package-ports-meta' : [ 'Fix Released', 'Invalid' ],
+                       'prepare-package-signed' : [ 'Fix Released' ],
+                       taskname : [ 'Confirmed', 'Fix Released' ] }
+            if self.check_master_task(taskobj.bug, tsk_st) <= 0:
                 return False
 
             # open new tracking bugs for derivative packages if needed
@@ -1161,20 +1020,281 @@ class Shank(StdApp):
                 self.send_upload_announcement(taskobj, 'proposed')
         return False
 
-    def upload_to_ppa_in_progress(self, taskobj):
+    def build_status(self, series, package, release, abi, archive, pocket = ''):
         """
-        When the upload-to-ppa task is set to In Progress, kernel team
-        builds the packages; check the build status and update tasks
+        Return an status code, the possible assignee responsible and the
+        package creator related to the publishing of the package in the
+        given archive on the optionally specified pocket (if we want the
+        check to be restricted on a specific pocket). The following
+        values are returned as the status code:
+        0 - if the package-version wasn't found/published. In this case
+            the package creator and assignee returned is always None
+        1 - if the package-version is available (published), but still
+            didn't finish building
+        2 - package-version is available in the archive
+        The parameters are:
+        series - the distribution series (quantal, oneiric, etc.)
+        package - the package name
+        release - the version or version-abi number to match
+        abi_match - if provided, indicates that release is not an exact
+                    version number, and we must do an ABI check
+        archive - launchpad archive to look into
+        pocket - optional, if we want only results of the archive from
+                 the specified pocket
         """
-        return self.prep_package_in_progress(taskobj)
 
-    def upload_to_ppa_fix_released(self, taskobj):
+        if pocket and not abi:
+            ps = archive.getPublishedSources(distro_series=series,
+                                             exact_match=True,
+                                             source_name=package,
+                                             status='Published',
+                                             version=release,
+                                             pocket=pocket)
+        elif not pocket and not abi:
+            ps = archive.getPublishedSources(distro_series=series,
+                                             exact_match=True,
+                                             source_name=package,
+                                             status='Published',
+                                             version=release)
+        elif pocket and abi:
+            ps = archive.getPublishedSources(distro_series=series,
+                                             exact_match=True,
+                                             source_name=package,
+                                             status='Published',
+                                             pocket=pocket)
+        else:
+            ps = archive.getPublishedSources(distro_series=series,
+                                             exact_match=True,
+                                             source_name=package,
+                                             status='Published')
+        matches = []
+        if abi:
+            dep_ver1 = '%s-%s' % (release, abi)
+            dep_ver2 = '%s.%s' % (release, abi)
+            rel_match = '<%s> or <%s>' % (dep_ver1, dep_ver2)
+            for p in ps:
+                src_ver = p.source_package_version
+                # special case for hardy lrm version...
+                if ((series.name == 'hardy') and
+                    (package == 'linux-restricted-modules-2.6.24')):
+                    if src_ver.startswith('2.6.24'):
+                        ver_split = src_ver.split('-', 1)
+                        if len(ver_split) > 1:
+                            src_ver = '2.6.24-%s' % (ver_split[1])
+                if ((src_ver.startswith(dep_ver1 + '.') or
+                     src_ver.startswith(dep_ver2 + '.'))):
+                    matches.append(p)
+            if not matches:
+                self.verbose('        ')
+                self.verbose('Can\'t find <%s> (%s) build on %s (pocket:%s)\n' %
+                             (package, rel_match, archive.displayname,
+                              pocket))
+                return 0, None, None
+        else:
+            rel_match = '<%s>' % (release)
+            for p in ps:
+                matches.append(p)
+            if not matches:
+                self.verbose('        ')
+                self.verbose('Can\'t find <%s> %s build on %s (pocket:%s)\n' %
+                             (package, rel_match, archive.displayname,
+                              pocket))
+                return 0, None, None
+        res = 0, None, None
+        lst_date = None
+        for pkg in matches:
+            src_id = str(pkg.self).rsplit('/', 1)[1]
+            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            if build_summaries['status'] == 'FULLYBUILT':
+                self.verbose('        ')
+                self.verbose('<%s> %s built (pocket:%s)\n'
+                             % (package, rel_match, pocket))
+                bs = 2
+            else:
+                self.verbose('        ')
+                self.verbose('<%s> %s not fully built yet, skipping (pocket:%s)\n'
+                             % (package, rel_match, pocket))
+                bs = 1
+            # prefer newer published items...
+            if lst_date:
+                if lst_date > pkg.date_published:
+                    continue
+            lst_date = pkg.date_published
+            res = bs, pkg.creator, pkg.package_creator
+        return res
+
+    def package_check(self, bug):
         """
-        When the upload-to-ppa task is set to Fix Released we create new
-        tracking bugs for derivative packages, and set the
-        promote-to-proposed task to Confirmed.
+        Verify the required packages for this update, and determine its
+        build status
         """
-        return self.prep_package_fix_released(taskobj)
+        # Get the source package names and required versions for this update
+        title = bug.title
+        pkg_name = re.findall('linux[^:]*', title)
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)
+        if pkg_name and pkg_ver:
+            pkg_name = pkg_name[0]
+            pkg_ver = pkg_ver[0]
+        else:
+            self.verbose('        Unable to check package builds for this bug:'
+                         ' either the package name or\n        version are not'
+                         ' properly available yet in the bug title.\n')
+            return
+        pkg_mainver = re.findall('-[0-9]+[^ ]+', pkg_ver)
+        if pkg_mainver:
+            pkg_mainver = pkg_ver.replace(pkg_mainver[0], '', 1)
+        if not pkg_mainver:
+            self.verbose('        ')
+            self.verbose('WARNING: unable to get main package version\n')
+        pkg_abi = re.findall('-[0-9]+\.', pkg_ver)
+        if pkg_abi:
+            pkg_abi = pkg_abi[0].lstrip('-').rstrip('.')
+        else:
+            self.verbose('        ')
+            self.verbose('WARNING: unable to get ABI from package version\n')
+        distro_series = None
+        series = self.ubuntu.series_name(pkg_name, pkg_ver)
+        if series:
+            sc = self.lp.launchpad.distributions["ubuntu"].series_collection
+            for s in sc:
+                if s.name == series:
+                    distro_series = s
+                    break
+        if not distro_series:
+            print("        ")
+            print("ERROR: can't figure out the distro series for %s-%s\n"
+                  % (pkg_name, pkg_ver))
+            return
+        pkgs = {}
+        entry = self.ubuntu.lookup(series)
+        if entry:
+            if 'dependent-packages' in entry:
+                if pkg_name in entry['dependent-packages']:
+                    pkgs.update(entry['dependent-packages'][pkg_name])
+        pkgs['main'] = pkg_name
+
+        # Try to verify if there was an abi change in this release. We
+        # guess this by looking if there is already a package with same
+        # abi in the updates/release pocket.
+        new_abi = True
+        main_archive = self.lp.launchpad.distributions["ubuntu"].main_archive
+        if pkg_mainver and pkg_abi:
+            st_abi_rel, _, _ = self.build_status(distro_series, pkg_name,
+                                             pkg_mainver, pkg_abi, main_archive,
+                                             'Release')
+            st_abi_upd, _, _ = self.build_status(distro_series, pkg_name,
+                                             pkg_mainver, pkg_abi, main_archive,
+                                             'Updates')
+            if st_abi_rel == 2 or st_abi_upd == 2:
+                new_abi = False
+
+        # Check build status. This is really convoluted... due to number
+        # of tasks and we wanting the better behaviour as possible
+        promoted_to_updates = True
+        promoted_to_security = True
+        promoted_to_release = True
+        assignee_security = None
+        assignee_updates = None
+        assignee_release = None
+        task_status = [ 'New', 'In Progress', 'Fix Released' ]
+        ckt = self.lp.launchpad.people['canonical-kernel-team']
+        ckt_archive = ckt.getPPAByName(name='ppa')
+        for dep in iter(pkgs):
+            if pkgs[dep] == pkg_name:
+                bug_task = 'prepare-package'
+            else:
+                bug_task = 'prepare-package-%s' % (dep)
+            abi_num = None
+            pkg_rel = pkg_ver
+            if dep in [ 'lbm', 'lrm', 'lum', 'meta', 'ports-meta' ] and pkg_abi:
+                abi_num = pkg_abi
+                pkg_rel = pkg_mainver
+            status_updates = 0
+            status_release = 0
+            prepare_status = 0
+            prepare_assignee = None
+            if self.projectname == 'kernel-sru-workflow':
+                promoted_to_release = False
+                status_ckt, assignee_ckt, creator_ckt = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, ckt_archive)
+                status_proposed, assignee_proposed, creator_proposed = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, main_archive, 'Proposed')
+                status_updates, assignee_updates, creator_updates = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, main_archive, 'Updates')
+                status_security, assignee_security, creator_security = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, main_archive, 'Security')
+                if status_security != 2:
+                    promoted_to_security = False
+                if status_updates != 2:
+                    promoted_to_updates = False
+                for s in [ status_ckt, status_proposed, status_updates ]:
+                    if s > prepare_status:
+                        prepare_status = s
+                for c in [ creator_ckt, creator_proposed,
+                           creator_updates, creator_security ]:
+                    if c:
+                        prepare_assignee = c
+                        break
+            else:
+                promoted_to_updates = False
+                promoted_to_security = False
+                status_proposed, assignee_proposed, creator_proposed = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, main_archive, 'Proposed')
+                status_release, assignee_release, creator_release = self.build_status(
+                        distro_series, pkgs[dep], pkg_rel,
+                        abi_num, main_archive, 'Release')
+                if status_release != 2:
+                    promoted_to_release = False
+                prepare_status = status_proposed
+                if status_release > prepare_status:
+                    prepare_status = status_release
+                if creator_proposed:
+                    prepare_assignee = creator_proposed
+                else:
+                    prepare_assignee = creator_release
+            if prepare_assignee and self.taskbyname[bug_task].status != 'Invalid':
+                self.set_task_assignee(bug_task, prepare_assignee)
+            # we must be careful and check if really we had an ABI bump
+            # in this update when setting the task status...
+            if abi_num:
+                if (self.taskbyname[bug_task].status == 'Fix Released' or
+                    self.taskbyname[bug_task].status == 'Invalid'):
+                    if status_updates == 2 or status_release == 2:
+                        continue
+                if new_abi:
+                    self.set_task_to_state(bug_task, task_status[prepare_status])
+                else:
+                    self.set_task_to_state(bug_task, 'Invalid')
+            else:
+                self.set_task_to_state(bug_task, task_status[prepare_status])
+
+        # Set promotion bug tasks
+        if promoted_to_security:
+            if assignee_security:
+                self.set_task_assignee('promote-to-security',
+                                       assignee_security)
+            self.set_task_to_state('promote-to-security', 'Fix Released')
+        #else:
+            # TODO: verify promote-to-security task state
+        if promoted_to_updates:
+            if assignee_updates:
+                self.set_task_assignee('promote-to-updates',
+                                       assignee_updates)
+            self.set_task_to_state('promote-to-updates', 'Fix Released')
+        #else:
+            # TODO: verify promote-to-updates task state
+        if promoted_to_release:
+            if assignee_release:
+                self.set_task_assignee('promote-to-release',
+                                       assignee_release)
+            self.set_task_to_state('promote-to-release', 'Fix Released')
+        #else:
+            # TODO: verify promote-to-updates task state
 
     def has_prep_task(self, taskname):
         if taskname in self.taskbyname:
@@ -1474,7 +1594,8 @@ class Shank(StdApp):
             # already promoted. The way derivative package bugs are
             # opened already ensures this, but check the tasks on the
             # master bug anyway just in case...
-            if self.check_master_task(taskobj.bug, 'promote-to-release') <= 0:
+            tsk_st = { 'promote-to-release' : [ 'Confirmed', 'Fix Released' ] }
+            if self.check_master_task(taskobj.bug, tsk_st) <= 0:
                 return False
 
             # Set promote-to-proposed
@@ -1494,10 +1615,13 @@ class Shank(StdApp):
         """
 
         # Ensure all tasks are closed
-        self.release_test_state_check('prepare-package', ['Fix Released'])
-        self.release_test_state_check('package-testing', ['Fix Released'])
+        if not self.prepare_package_fixed():
+            return
+        if (self.taskbyname['package-testing'].status != 'Fix Released' or
+            self.taskbyname['package-testing'].status != 'Invalid'):
+            self.taskbyname['package-testing'].status = "Won't Fix"
 
-        # If we found any problems, we've halted processing and set this
+        # Do we halted processing?
         if (self.taskbyname[self.projectname].status != 'In Progress'):
             self.verbose('*** promote-to-release halted on bug with status!=In Progress\n')
             return
@@ -1615,10 +1739,12 @@ class Shank(StdApp):
                 # hold_updates_security_copy). Also, only allow the
                 # promote-to-{updates,security} on derivative packages
                 # if the master packages are already ready for promotion
-                # or already promoted to the updates pocket.
+                # or already promoted to the updates/security pockets.
                 tbug = self.taskbyname[self.projectname].bug
+                tsk_st = { 'promote-to-updates' : [ 'Confirmed', 'Fix Released' ],
+                           'promote-to-security' : [ 'Confirmed', 'Fix Released', 'Invalid' ] }
                 if (not self.hold_updates_security_copy() and
-                    self.check_master_task(tbug, 'promote-to-updates') > 0):
+                    self.check_master_task(tbug, tsk_st) > 0):
                     task = self.taskbyname[self.projectname]
                     # If this is a derivative, it's supposed to be
                     # rebased on top of master, or to have security
@@ -1628,7 +1754,8 @@ class Shank(StdApp):
                     # -security. In case we have an error getting the
                     # status of the master security task, return (try
                     # again later)
-                    security_master = self.check_master_task(tbug, 'promote-to-security')
+                    tsk_st = { 'promote-to-security' : [ 'Confirmed', 'Fix Released' ] }
+                    security_master = self.check_master_task(tbug, tsk_st)
                     if security_master < 0:
                         return
                     if self.security_publishing_required or security_master == 2:
