@@ -1257,21 +1257,42 @@ class Shank(StdApp):
                     prepare_assignee = creator_proposed
                 else:
                     prepare_assignee = creator_release
-            if prepare_assignee and self.taskbyname[bug_task].status != 'Invalid':
-                self.set_task_assignee(bug_task, prepare_assignee)
-            # we must be careful and check if really we had an ABI bump
-            # in this update when setting the task status...
+            # When things are moved from one pocket to another, things
+            # may be unavailable for some time, and we may think no
+            # packages were built. Thus we add a tagged timestamp,
+            # marking the time when we detect that the builds are
+            # missing. If after 1 hour the builds are still unavailable,
+            # then we allow to reset the tasks.
+            prop = 'kernel-%s-build-unavailable' % (dep)
+            if (self.taskbyname[bug_task].status == 'Fix Released' and
+                prepare_status != 2):
+                self.set_tagged_timestamp(self.taskbyname[bug_task], prop)
+                if not prop in bug.properties:
+                    continue
+                date_str = bug.properties[prop]
+                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+                delta = DeltaTime(timestamp, datetime.utcnow())
+                if delta.hours < 1:
+                    self.verbose('        ')
+                    self.verbose('Builds gone for %s, waiting 1 hour to reset tasks\n'
+                                 % (bug_task))
+                    continue
+            if prop in bug.properties:
+                self.props.set({prop:None})
+            new_status = self.taskbyname[bug_task].status
             if abi_num:
-                if (self.taskbyname[bug_task].status == 'Fix Released' or
-                    self.taskbyname[bug_task].status == 'Invalid'):
-                    if status_updates == 2 or status_release == 2:
-                        continue
                 if new_abi:
-                    self.set_task_to_state(bug_task, task_status[prepare_status])
+                    if (self.taskbyname[bug_task].status == 'Invalid'
+                        and prepare_status == 0):
+                        continue
+                    new_status = task_status[prepare_status]
                 else:
-                    self.set_task_to_state(bug_task, 'Invalid')
+                    new_status = 'Invalid'
             else:
-                self.set_task_to_state(bug_task, task_status[prepare_status])
+                new_status = task_status[prepare_status]
+            if prepare_assignee and new_status != 'Invalid':
+                self.set_task_assignee(bug_task, prepare_assignee)
+            self.set_task_to_state(bug_task, new_status)
 
         # Set promotion bug tasks
         if promoted_to_security:
