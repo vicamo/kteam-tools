@@ -81,13 +81,6 @@ class TrackingBug:
         for itag in taglist:
             bug.tags.append(itag)
 
-        # Get the one task and modify the status and importance.
-        #
-        for task in bug.tasks:
-            task.status = "In Progress"
-            task.importance = "Medium"
-            break
-
         # Teams / individuals to be automatically subscribed to the tracking bugs
         #   These vary per package
         #
@@ -104,6 +97,8 @@ class TrackingBug:
         #
         nomination = bug.lpbug.addNomination(target=series_target)
         if nomination.canApprove():
+            for task in bug.tasks:
+                task.status = "Invalid"
             nomination.approve()
         bug.tags.append(series)
 
@@ -165,10 +160,11 @@ class TrackingBug:
                 if nomination.canApprove():
                     nomination.approve()
 
-        # Task assignments
-        # Set status of the master task so the bot will start processing
+        # Set task assignments and importance. Main project task must be
+        # set to In Progress for the bot to do its processing.
         #
         for t in bug.tasks:
+            t.importance = "Medium"
             task       = t.bug_target_display_name
             parts = task.partition(proj.display_name)
             if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
