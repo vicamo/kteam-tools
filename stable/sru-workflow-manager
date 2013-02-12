@@ -701,6 +701,7 @@ class Shank(StdApp):
         """
         Send a status update to twitter, status.net, identi.ca, etc
         """
+        self.verbose('        ')
         if 'dryrun' in self.cfg:
             self.verbose('Dryrun - Sending Status\n')
             return
@@ -1281,11 +1282,9 @@ class Shank(StdApp):
                 self.props.set({prop:None})
             new_status = self.taskbyname[bug_task].status
             if abi_num:
-                if new_abi:
-                    if (self.taskbyname[bug_task].status == 'Invalid'
-                        and prepare_status == 0):
-                        continue
-                    new_status = task_status[prepare_status]
+                if new_abi or status_release == 2 or status_updates == 2:
+                    if self.taskbyname[bug_task].status != 'Invalid' or new_abi:
+                        new_status = task_status[prepare_status]
                 else:
                     new_status = 'Invalid'
             else:
