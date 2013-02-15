@@ -1090,7 +1090,7 @@ class Shank(StdApp):
                 self.verbose('Can\'t find <%s> (%s) build on %s (pocket:%s)\n' %
                              (package, rel_match, archive.displayname,
                               pocket))
-                return 0, None, None
+                return 0, None
         else:
             rel_match = '<%s>' % (release)
             for p in ps:
@@ -1100,8 +1100,8 @@ class Shank(StdApp):
                 self.verbose('Can\'t find <%s> %s build on %s (pocket:%s)\n' %
                              (package, rel_match, archive.displayname,
                               pocket))
-                return 0, None, None
-        res = 0, None, None
+                return 0, None
+        res = 0, None
         lst_date = None
         for pkg in matches:
             src_id = str(pkg.self).rsplit('/', 1)[1]
@@ -1121,7 +1121,7 @@ class Shank(StdApp):
                 if lst_date > pkg.date_published:
                     continue
             lst_date = pkg.date_published
-            res = bs, pkg.creator, pkg.package_creator
+            res = bs, pkg
         return res
 
     def package_check(self, bug):
@@ -1180,10 +1180,10 @@ class Shank(StdApp):
         new_abi = True
         main_archive = self.lp.launchpad.distributions["ubuntu"].main_archive
         if pkg_mainver and pkg_abi:
-            st_abi_rel, _, _ = self.build_status(distro_series, pkg_name,
+            st_abi_rel, _ = self.build_status(distro_series, pkg_name,
                                              pkg_mainver, pkg_abi, main_archive,
                                              'Release')
-            st_abi_upd, _, _ = self.build_status(distro_series, pkg_name,
+            st_abi_upd, _ = self.build_status(distro_series, pkg_name,
                                              pkg_mainver, pkg_abi, main_archive,
                                              'Updates')
             if st_abi_rel == 2 or st_abi_upd == 2:
@@ -1194,9 +1194,9 @@ class Shank(StdApp):
         promoted_to_updates = True
         promoted_to_security = True
         promoted_to_release = True
-        assignee_security = None
-        assignee_updates = None
-        assignee_release = None
+        pkg_security = None
+        pkg_updates = None
+        pkg_release = None
         task_status = [ 'New', 'In Progress', 'Fix Released' ]
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ckt_archive = ckt.getPPAByName(name='ppa')
@@ -1216,18 +1216,14 @@ class Shank(StdApp):
             prepare_assignee = None
             if self.projectname == 'kernel-sru-workflow':
                 promoted_to_release = False
-                status_ckt, assignee_ckt, creator_ckt = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, ckt_archive)
-                status_proposed, assignee_proposed, creator_proposed = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, main_archive, 'Proposed')
-                status_updates, assignee_updates, creator_updates = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, main_archive, 'Updates')
-                status_security, assignee_security, creator_security = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, main_archive, 'Security')
+                status_ckt, pkg_ckt = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, ckt_archive)
+                status_proposed, pkg_proposed = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, main_archive, 'Proposed')
+                status_updates, pkg_updates = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, main_archive, 'Updates')
+                status_security, pkg_security = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, main_archive, 'Security')
                 if status_security != 2:
                     promoted_to_security = False
                 if status_updates != 2:
@@ -1235,29 +1231,26 @@ class Shank(StdApp):
                 for s in [ status_ckt, status_proposed, status_updates ]:
                     if s > prepare_status:
                         prepare_status = s
-                for c in [ creator_ckt, creator_proposed,
-                           creator_updates, creator_security ]:
+                for c in [ pkg_ckt, pkg_proposed, pkg_updates, pkg_security ]:
                     if c:
-                        prepare_assignee = c
+                        prepare_assignee = c.package_creator
                         break
             else:
                 promoted_to_updates = False
                 promoted_to_security = False
-                status_proposed, assignee_proposed, creator_proposed = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, main_archive, 'Proposed')
-                status_release, assignee_release, creator_release = self.build_status(
-                        distro_series, pkgs[dep], pkg_rel,
-                        abi_num, main_archive, 'Release')
+                status_proposed, pkg_proposed = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, main_archive, 'Proposed')
+                status_release, pkg_release = self.build_status(distro_series,
+                        pkgs[dep], pkg_rel, abi_num, main_archive, 'Release')
                 if status_release != 2:
                     promoted_to_release = False
                 prepare_status = status_proposed
                 if status_release > prepare_status:
                     prepare_status = status_release
-                if creator_proposed:
-                    prepare_assignee = creator_proposed
-                else:
-                    prepare_assignee = creator_release
+                if pkg_proposed:
+                    prepare_assignee = pkg_proposed.package_creator
+                elif pkg_release:
+                    prepare_assignee = pkg_release.package_creator
             # When things are moved from one pocket to another, things
             # may be unavailable for some time, and we may think no
             # packages were built. Thus we add a tagged timestamp,
@@ -1295,23 +1288,23 @@ class Shank(StdApp):
 
         # Set promotion bug tasks
         if promoted_to_security:
-            if assignee_security:
+            if pkg_security:
                 self.set_task_assignee('promote-to-security',
-                                       assignee_security)
+                                       pkg_security.creator)
             self.set_task_to_state('promote-to-security', 'Fix Released')
         #else:
             # TODO: verify promote-to-security task state
         if promoted_to_updates:
-            if assignee_updates:
+            if pkg_updates:
                 self.set_task_assignee('promote-to-updates',
-                                       assignee_updates)
+                                       pkg_updates.creator)
             self.set_task_to_state('promote-to-updates', 'Fix Released')
         #else:
             # TODO: verify promote-to-updates task state
         if promoted_to_release:
-            if assignee_release:
+            if pkg_release:
                 self.set_task_assignee('promote-to-release',
-                                       assignee_release)
+                                       pkg_release.creator)
             self.set_task_to_state('promote-to-release', 'Fix Released')
         #else:
             # TODO: verify promote-to-updates task state
