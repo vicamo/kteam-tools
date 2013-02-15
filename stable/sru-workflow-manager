@@ -1214,6 +1214,7 @@ class Shank(StdApp):
             status_release = 0
             prepare_status = 0
             prepare_assignee = None
+            prepare_uploader = None
             if self.projectname == 'kernel-sru-workflow':
                 promoted_to_release = False
                 status_ckt, pkg_ckt = self.build_status(distro_series,
@@ -1234,6 +1235,7 @@ class Shank(StdApp):
                 for c in [ pkg_ckt, pkg_proposed, pkg_updates, pkg_security ]:
                     if c:
                         prepare_assignee = c.package_creator
+                        prepare_uploader = c.package_signer
                         break
             else:
                 promoted_to_updates = False
@@ -1249,8 +1251,10 @@ class Shank(StdApp):
                     prepare_status = status_release
                 if pkg_proposed:
                     prepare_assignee = pkg_proposed.package_creator
+                    prepare_uploader = pkg_proposed.package_signer
                 elif pkg_release:
                     prepare_assignee = pkg_release.package_creator
+                    prepare_uploader = pkg_release.package_signer
             # When things are moved from one pocket to another, things
             # may be unavailable for some time, and we may think no
             # packages were built. Thus we add a tagged timestamp,
@@ -1285,6 +1289,14 @@ class Shank(StdApp):
             if prepare_assignee and new_status != 'Invalid':
                 self.set_task_assignee(bug_task, prepare_assignee)
             self.set_task_to_state(bug_task, new_status)
+            # Take care of the upload-to-ppa task if needed
+            if dep == 'main' and 'upload-to-ppa' in self.taskbyname:
+                if prepare_uploader:
+                    self.set_task_assignee('upload-to-ppa', prepare_uploader)
+                if prepare_status >= 1:
+                    self.set_task_to_state('upload-to-ppa', 'Fix Released')
+                else:
+                    self.set_task_to_state('upload-to-ppa', 'New')
 
         # Set promotion bug tasks
         if promoted_to_security:
