@@ -39,7 +39,7 @@ esac
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
 
-	rm -f CONFIGS/ppc64-*
+	rm -f CONFIGS/ppc64-* CONFIGS/*highbank*
 )
 
 "$here/devel-config-summary-report" "$format" "$current" "$next"

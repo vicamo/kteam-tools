@@ -19,14 +19,14 @@ function rebuild() {
 	local out
 	rm -f "tmp/*" "tmp/.required"
 
+	[ "$what" = "" ] && what="^NOT_VALID"
 	[ "$not" = "" ] && not="^NOT_VALID"
 
 	for i in `ls -1 "$configs"`
 
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" | \
-			sort >"tmp/$out"
+		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" >"tmp/$out"
 	done
 }
 function config-cmp() {
@@ -49,6 +49,7 @@ output_header() {
 		echo "$level $header $level"
 		;;
 	html)
+		header=`echo "$header" | sed -e 's/>/ \&gt; /g'`
 		echo "<h2>$header</h2>"
 		;;
 	esac

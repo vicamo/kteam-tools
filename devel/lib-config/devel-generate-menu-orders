@@ -1,0 +1,70 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <format> <info> <config directory>" 1>&2
+	exit 1
+fi
+format="$1"
+info="$2"
+configs="$3"
+
+. "$here/lib-output"
+
+output_format "$format"
+output_info "$info"
+output_configs "$configs"
+
+function what_menu()
+{
+        typeset list="$1"
+        typeset menu="$2"
+
+        what=`cat "$list" | grep "^E $menu>>" | 
+		awk -F'>' '{ print $NF }' |
+		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ =]/'`
+}
+#		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ 	]/'`
+
+function list_menu()
+{
+        what_menu "$list" "$2"
+	#[ "$what" = "" ] && what="^NOT_VALID"
+	#echo "# $1"
+	#egrep -h "$what" "$HOME/git2/ubuntu-raring/debian.master/config/annotations-good"
+	list "$1" "$what" "$3"
+}
+
+rm -rf tmp
+mkdir -p tmp
+
+#./devel-config-tree $HOME/git2/ubuntu-raring arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-x86
+#./devel-config-tree $HOME/git2/ubuntu-raring arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-arm
+#./devel-config-tree $HOME/git2/ubuntu-raring arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-powerpc
+
+list="/tmp/list.$$"
+{
+	echo "M ROOT"
+	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	#cat X-arm X-x86 X-powerpc
+} | sed \
+	-e 's/Bus options (PCI etc.)/Bus options/g' \
+	-e 's/Bus support/Bus options/g' \
+| sort -t% | uniq >"$list"
+
+cat "$list" | grep '^M ' | \
+while read junk menu
+do
+	name=`echo "$menu" | sed \
+		-e 's/ROOT>//g' 
+	`
+	what_menu "$list" "$menu"
+	list_menu "$name" "$menu" ""
+done
