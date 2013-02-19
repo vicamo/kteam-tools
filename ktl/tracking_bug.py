@@ -97,8 +97,6 @@ class TrackingBug:
         #
         nomination = bug.lpbug.addNomination(target=series_target)
         if nomination.canApprove():
-            for task in bug.tasks:
-                task.status = "Invalid"
             nomination.approve()
         bug.tags.append(series)
 
@@ -164,14 +162,22 @@ class TrackingBug:
         # set to In Progress for the bot to do its processing.
         #
         for t in bug.tasks:
-            t.importance = "Medium"
             task       = t.bug_target_display_name
             parts = task.partition(proj.display_name)
             if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
                 t.status = "In Progress"
+                t.importance = "Medium"
             else:
                 if parts[0] != '':
+                    # Mark the development task as invalid if this is an
+                    # stable tracking bug
+                    if (parts[0] == "linux (Ubuntu)" and
+                        series_target.status != "Active Development"):
+                        t.status = "Invalid"
+                    elif parts[0] != "linux (Ubuntu)":
+                        t.importance = "Medium"
                     continue
+                t.importance = "Medium"
                 task = parts[2].strip()
                 assignee = wf.assignee(package, task, devel_series)
                 if assignee is None:
