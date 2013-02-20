@@ -1279,11 +1279,11 @@ class Shank(StdApp):
                 self.props.set({prop:None})
             new_status = self.taskbyname[bug_task].status
             if abi_num:
-                if new_abi or status_release == 2 or status_updates == 2:
-                    if self.taskbyname[bug_task].status != 'Invalid' or new_abi:
-                        new_status = task_status[prepare_status]
+                if new_abi:
+                    new_status = task_status[prepare_status]
                 else:
-                    new_status = 'Invalid'
+                    if new_status != 'Invalid' and new_status != 'Fix Released':
+                        new_status = 'Invalid'
             else:
                 new_status = task_status[prepare_status]
             if prepare_assignee and new_status != 'Invalid':
