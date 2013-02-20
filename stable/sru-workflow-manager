@@ -1301,7 +1301,7 @@ class Shank(StdApp):
                     self.set_task_assignee('upload-to-ppa', prepare_uploader)
                 if prepare_status >= 1:
                     self.set_task_to_state('upload-to-ppa', 'Fix Released')
-                else:
+                elif self.taskbyname['upload-to-ppa'].status != 'Confirmed':
                     self.set_task_to_state('upload-to-ppa', 'New')
 
         # Set promotion bug tasks
