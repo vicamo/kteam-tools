@@ -731,7 +731,13 @@ class Shank(StdApp):
             return
 
         # TODO could add error handling and retries here if needed
-        if self.taskbyname[taskname].assignee.username != assignee.name:
+        new_assignee = None
+        current_assignee = self.taskbyname[taskname].assignee
+        if current_assignee and current_assignee.username != assignee.name:
+            new_assignee = assignee
+        elif not current_assignee:
+            new_assignee = assignee
+        if new_assignee:
             print('        Assigning Task <%s> to <%s>' % (taskname, assignee))
             self.taskbyname[taskname].assignee = assignee
             return True
