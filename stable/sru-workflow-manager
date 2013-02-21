@@ -289,7 +289,7 @@ class Shank(StdApp):
             'regression-testing'      : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
+                                         'Invalid' : {'action':self.regression_testing_invalid},
                                          "Won't Fix" : {'action':None},
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
@@ -1520,7 +1520,8 @@ class Shank(StdApp):
              self.taskbyname['certification-testing'].status != 'Invalid') or
             (self.taskbyname['security-signoff'].status != 'Fix Released' and
              self.taskbyname['security-signoff'].status != 'Invalid') or
-            self.taskbyname['regression-testing'].status != 'Fix Released'):
+            (self.taskbyname['regression-testing'].status != 'Fix Released' and
+             self.taskbyname['regression-testing'].status != 'Invalid')):
             self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-end')
             self.set_phase(taskobj, 'Testing')
 
@@ -1576,6 +1577,15 @@ class Shank(StdApp):
         """
         self.certification_testing_complete = True
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-end')
+        return True
+
+    def regression_testing_invalid(self, taskobj):
+        """
+        When regression-testing is Invalid, it means we want to skip
+        testing for that update. So just ignore and return the value to
+        perform the release test
+        """
+        self.regression_testing_complete = True
         return True
 
     def regression_testing_fix_released(self, taskobj):
@@ -1738,7 +1748,7 @@ class Shank(StdApp):
             self.release_test_state_check('promote-to-proposed', ['Fix Released'])
             self.release_test_state_check('verification-testing', ['Fix Released'])
             self.release_test_state_check('certification-testing', ['Invalid', 'Fix Released'])
-            self.release_test_state_check('regression-testing', ['Fix Released'])
+            self.release_test_state_check('regression-testing', ['Invalid', 'Fix Released'])
             self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
@@ -1763,7 +1773,7 @@ class Shank(StdApp):
                 self.security_publishing_required = True
 
             # one last check for test results
-            if 'qa-testing-passed' in self.bugtags and \
+            if ('qa-testing-passed' in self.bugtags or self.taskbyname['regression-testing'].status == 'Invalid') and \
                     ('certification-testing-passed' in self.bugtags or self.taskbyname['certification-testing'].status == 'Invalid'):
 
                 # We don't publish on Fri/Sat/Sun (see comment on function
@@ -1825,7 +1835,7 @@ class Shank(StdApp):
                 self.send_comment(self.taskbyname[self.projectname], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
                 self.set_task_to_state(self.projectname, 'Incomplete')
-                self.set_phase(task, 'OnHold')
+                self.set_phase(self.taskbyname[self.projectname], 'OnHold')
         # this method is not associated with a task state transition so no status returned
         return 
 
