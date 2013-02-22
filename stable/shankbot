@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 #
+# TODO:
+#      run as a daemon
+#      check for lock before running sru-workflow-manager
+#      tell someone that sru-workflow-manager is currently running if they ask
+#      provide status of current sru bugs
+#      provide list of current sru bugs
+#
 
+from os                                 import getenv, path, getcwd, chdir
 import string
 import random
 import re
-from os                                 import getenv
+import json
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import error, basicConfig, INFO, DEBUG
+from logging                            import error, debug, basicConfig, INFO, DEBUG
 from time                               import sleep
 from threading                          import Thread, Event
 from ktl.ircbot                         import SingleServerIRCBot
 from ktl.irclib                         import nm_to_n, irc_lower
 from ktl.shell                          import sh, ShellError
-
 
 # Pinky's exclamations.
 #
@@ -125,8 +132,25 @@ class OutputManager(Thread):
             s.event.clear()
 
     def send(s, msg, target):
-        s.queue.append((msg.strip(),target))
+        s.queue.append((msg,target))
         s.event.set()
+
+# ErrorExit
+#
+class ErrorExit(Exception):
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    def __init__(self, emsg):
+        self.__message = emsg
+
+    @property
+    def message(self):
+        '''
+        The shell command that was being executed when the timeout occured.
+        '''
+        return self.__message
 
 # IrcShankbot
 #
@@ -142,7 +166,6 @@ class IrcShankbot(SingleServerIRCBot):
         s.nickname = args.nick
         s.queue = OutputManager(s.connection)
         s.queue.start()
-        s.start()
         s.args = args
 
     def on_nicknameinuse(s, c, e):
@@ -153,12 +176,20 @@ class IrcShankbot(SingleServerIRCBot):
         c.join(s.channel)
 
     def on_privmsg(s, c, e):
-        print("** on_privmsg")
+        debug('on_privmsg event:')
+        debug('       source: \'%s\'' % e.source())
+        debug('         type: \'%s\'' % e.eventtype())
+        debug('       target: \'%s\'' % e.target())
+        debug('    arguments: \'%s\'' % e.arguments())
         from_nick = nm_to_n(e.source())
         s.do_command(e, e.arguments()[0], from_nick)
 
     def on_pubmsg(s, c, e):
-        print("** on_pubmsg")
+        debug('on_pubmsg event:')
+        debug('       source: \'%s\'' % e.source())
+        debug('         type: \'%s\'' % e.eventtype())
+        debug('       target: \'%s\'' % e.target())
+        debug('    arguments: \'%s\'' % e.arguments())
         from_nick = nm_to_n(e.source())
         a = re.split(":|,| ", e.arguments()[0], 1)
         if len(a) > 1 \
@@ -199,6 +230,8 @@ class IrcShankbot(SingleServerIRCBot):
         event, and FROM_PRIVATE is the nick that sent the message.
         """
 
+        who = from_private.strip()
+
         if e.eventtype() == "pubmsg":
             # s.reply() sees 'from_private = None' and sends to public channel.
             target = None
@@ -206,27 +239,62 @@ class IrcShankbot(SingleServerIRCBot):
             # assume that from_private comes from a 'privmsg' event.
             target = from_private.strip()
 
-        print("do_command: '%s'   target: '%s'" % (cmd, target))
+        debug("do_command: '%s'   target: '%s'" % (cmd, from_private))
 
         if cmd == 'die':
             s.die()
 
-        elif 'stab' in cmd:
+        elif cmd == 'help':
+            s.reply(who + ', ' + 'Version: 0.1', target)
+            s.reply(who + ', ' + 'I\'m not very smart (I\'m based on a pinky bot) but I know how to:', target)
+            s.reply(who + ', ' + '  shank [<bugid>]', target)
+            s.reply(who + ', ' + '         Run the sru-workflow-manager on one or all of the currently active sru workflow bugs', target)
+            s.reply(who + ', ' + '  die', target)
+            s.reply(who + ', ' + '         The bot will exit. Since it is normally running via a cron job, it will start up again', target)
+            s.reply(who + ', ' + '         fairly soon after exiting.', target)
+            s.reply(who + ', ' + '  update', target)
+            s.reply(who + ', ' + '         Perform a \'git pull\' on the repository where the bot is running. This, in combination', target)
+            s.reply(who + ', ' + '         with \'die\' is a way to make changes to the bot code and get it to restart. Or, to get', target)
+            s.reply(who + ', ' + '         any of the other code (sru-workflow-manager) updated remotely.', target)
+            s.reply(who + ', ' + ' ', target)
+            s.reply(who + ', ' + 'Also, if asked "are you thinking what I\'m thinking?" or "are you pondering what I\'m pondering?"', target)
+            s.reply(who + ', ' + 'I\'ll say something that pinky would have said. And if I don\'t understand what you are asking, I\'ll,', target)
+            s.reply(who + ', ' + 'just make a noise.', target)
+
+        elif cmd == 'update':
+            (rc, output) = sh('git pull', ignore_result=True)
+            for line in output:
+                s.reply(who + ', ' + line, target)
+
+        elif 'status' == cmd:
+            s.reply(who + ', ' + 'ack, this is going to take a minute or two', target)
+            origin = getcwd()
+            try:
+                chdir('../web')
+                sh('make kernel-sru-workflow.json', ignore_result=True)
+                with open('kernel-sru-workflow.json', 'r') as f:
+                    sru_bugs = json.loads(f.read())
+            finally:
+                chdir(origin)
+
+
+        elif 'shank' in cmd:
             if ' ' in cmd:
                 # Another arg parser here would probably be the right thing.
                 cmd = cmd.split()
                 sh_cmd = 'sru-workflow-manager --bugs=%s' % cmd[1]
                 try:
+                    s.reply(who + ', ' + 'roger, roger', target)
                     (rc, output) = sh(sh_cmd)
-                    s.reply('bug %s has been shanked' % (cmd[1]))
+                    s.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
                 except ShellError as e:
                     s.reply(e.output)
 
             else:
-                s.reply('shanking the bugs boss', target)
+                s.reply(who + ', ' + 'shanking the bugs boss', target)
                 try:
                     (rc, output) = sh('sru-workflow-manager')
-                    s.reply('I shanked them all', target)
+                    s.reply(who + ', ' + 'I shanked them all', target)
                 except ShellError as e:
                     s.reply(e.output)
 
@@ -245,11 +313,17 @@ class IrcShankbot(SingleServerIRCBot):
             else:
                 s.reply(s.exclaim_something(), target)
 
-    # main
+    # run
     #
-    def main(s):
+    def run(s):
         retval = 1
         try:
+            if not path.exists('sru-workflow-manager'):
+                raise ErrorExit('Unable to find "./sru-workflow-manager". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
+
+            if not path.exists('../web/Makefile'):
+                raise ErrorExit('Unable to find "../web/Makefile". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
+
             s.start()
             retval = 0
 
@@ -258,6 +332,9 @@ class IrcShankbot(SingleServerIRCBot):
         except KeyboardInterrupt:
             print("Aborting ...")
             s.die()
+
+        except ErrorExit as e:
+            error(e.message)
 
         if retval > 0:
             error("")
@@ -298,6 +375,6 @@ if __name__ == '__main__':
         args.user = u
 
     app = IrcShankbot(args)
-    exit(app.main())
+    exit(app.run())
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
