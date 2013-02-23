@@ -26,12 +26,11 @@ my %policy;
 my %desc;
 
 my $sort = 0;
-
 my $colour = 0;
-
 my $format = 'wiki';
-
 my $interesting = 0;
+my $worthy = 0;
+my $worthy_seen = 0;
 
 while (1) {
 	if ($ARGV[0] eq '--required') {
@@ -72,6 +71,10 @@ while (1) {
 
 	} elsif ($ARGV[0] eq '--interesting') {
 		$interesting = 1;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--worthy') {
+		$worthy = 1;
 		shift @ARGV;
 
 	} else {
@@ -299,7 +302,6 @@ my $nopolicy;
 my $ok;
 my %ok;
 
-
 my @interesting = ();
 my @normal = ();
 
@@ -336,12 +338,15 @@ for my $option (@options) {
 	if ($colour) {
 		if ($flags{$option} =~ /BUILD FAILURE/) {
 			f_table_row_colour('build');
+			$worthy_seen = 1;
 
 		} elsif (!$ok) {
 			f_table_row_colour('inconsistent');
+			$worthy_seen = 1;
 
 		} elsif ($nopolicy) {
 			f_table_row_colour('warning');
+			$worthy_seen = 1;
 
 		} else {
 			f_table_row_colour('normal');
@@ -394,3 +399,9 @@ for $row (@interesting, @normal) {
 	print $row;
 }
 print f_table_end();
+
+if ($worthy == 0 || $worthy_seen == 0) {
+	exit(0);
+} else {
+	exit(1);
+}

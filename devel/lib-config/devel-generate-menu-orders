@@ -6,19 +6,23 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <format> <info> <config directory>" 1>&2
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 <format> <info> <config directory> <prefix>" 1>&2
 	exit 1
 fi
 format="$1"
 info="$2"
 configs="$3"
+prefix="$4"
 
 . "$here/lib-output"
 
 output_format "$format"
 output_info "$info"
 output_configs "$configs"
+
+: >"$prefix.$format"
+: >"$prefix-issues.$format"
 
 function what_menu()
 {
@@ -37,7 +41,11 @@ function list_menu()
 	#[ "$what" = "" ] && what="^NOT_VALID"
 	#echo "# $1"
 	#egrep -h "$what" "$HOME/git2/ubuntu-raring/debian.master/config/annotations-good"
-	list "$1" "$what" "$3"
+	if ! list_worthy "$1" "$what" "$3" >"$list.menu"; then
+		cat "$list.menu" >>"$prefix-issues.$format"
+	fi
+	cat "$list.menu" >>"$prefix.$format"
+	rm -f "$list.menu"
 }
 
 rm -rf tmp
@@ -68,3 +76,5 @@ do
 	what_menu "$list" "$menu"
 	list_menu "$name" "$menu" ""
 done
+
+rm -f "$list"

@@ -15,12 +15,13 @@ case "$1" in
 --html)		format="html"; shift ;;
 esac
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $P <current series> <next series>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $P <current series> <next series> <prefix>" 1>&2
 	exit 1
 fi
 current="$1"
 next="$2"
+prefix="$3"
 
 there="$next"
 case "$there" in
@@ -42,4 +43,4 @@ esac
 	rm -f CONFIGS/ppc64-* CONFIGS/*highbank*
 )
 
-"$here/devel-config-summary-report" "$format" "$current" "$next"
+"$here/devel-config-summary-report" "$format" "$current" "$next" "$prefix"

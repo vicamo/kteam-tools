@@ -68,11 +68,14 @@ list_core() {
 	local title="$3"
 	local what="$4"
 	local not="$5"
+	local RET
 
 	rebuild "$what" "$not"
 	output_header "$title"
 	config-cmp$variant --colour $flags $cmp
+	RET="$?"
 	output_footer "$title"
+	return $RET
 }
 list_interesting() {
 	list_core "-interesting" "" "$@"
@@ -82,4 +85,7 @@ list_sort() {
 }
 list() {
 	list_core "" "" "$@"
+}
+list_worthy() {
+	list_core "" "--worthy" "$@"
 }

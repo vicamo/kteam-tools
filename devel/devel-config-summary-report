@@ -10,17 +10,18 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $P <format> <current series> <next series>" 1>&2
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $P <format> <current series> <next series> <prefix>" 1>&2
 	exit 1
 fi
 format="$1"
 current="$2"
 next="$3"
+prefix="$4"
 
 #"$here/lib-config/devel-config-compare" "$format" "$next/CONFIGS-info" "$next/CONFIGS"
 #"$here/lib-config/devel-config-experimental-compare" "$format" DANGEROUS "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"
-"$here/lib-config/devel-generate-menu-orders" "$format" "$next/CONFIGS-info" "$next/CONFIGS"
+"$here/lib-config/devel-generate-menu-orders" "$format" "$next/CONFIGS-info" "$next/CONFIGS" "$prefix"
 #APW "$here/lib-config/devel-config-experimental-compare" "$format" EXPERIMENTAL "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"
 #APW "$here/lib-config/devel-config-experimental-compare" "$format" STAGING "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"
 #APW "$here/lib-config/devel-config-new-compare" "$format" "$current/CONFIGS-defaults" "$next/CONFIGS-defaults" "$next/CONFIGS-experimental" "$next/CONFIGS-info" "$next/CONFIGS"

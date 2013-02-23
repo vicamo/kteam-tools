@@ -6,7 +6,7 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-base="$HOME/git2/ubuntu-nexus7"
+base="$HOME/git2/ubuntu-raring"
 . "$base/debian/debian.env"
 for config in "$base/CONFIGS"/*
 do
