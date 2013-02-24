@@ -35,6 +35,7 @@ with open(annots) as inf:
 # Apply annotations as above as we go.
 values = {}
 vnames = []
+aused = {}
 for merge in sys.argv[3:]:
     with open(merge) as inf:
         for line in inf:
@@ -45,6 +46,7 @@ for merge in sys.argv[3:]:
 
             # Merge in any annotations.
             if a[0] in annotations:
+                aused[a[0]] = True
                 (value, info) = annotations[a[0]]
                 a[4] = info + ' ' + a[4]
                 if value != '-':
@@ -73,3 +75,7 @@ for merge in sys.argv[3:]:
 with open(output, "w") as outf:
     for option in vnames:
         outf.write(' '.join(values[option]).rstrip() + '\n')
+
+for option in annotations:
+    if option not in aused:
+        print("WARNING: " + option + " annotation of non-existant option")
