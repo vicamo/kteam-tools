@@ -336,7 +336,10 @@ for my $option (@options) {
 	}
 
 	if ($colour) {
-		if ($flags{$option} =~ /BUILD FAILURE/) {
+		if ($seen == 0) {
+			f_table_row_colour('normal');
+
+		} elsif ($flags{$option} =~ /BUILD FAILURE/) {
 			f_table_row_colour('build');
 			$worthy_seen = 1;
 
