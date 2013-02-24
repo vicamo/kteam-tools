@@ -21,7 +21,7 @@ prefix="$4"
 
 #"$here/lib-config/devel-config-compare" "$format" "$next/CONFIGS-info" "$next/CONFIGS"
 #"$here/lib-config/devel-config-experimental-compare" "$format" DANGEROUS "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"
-"$here/lib-config/devel-generate-menu-orders" "$format" "$next/CONFIGS-info" "$next/CONFIGS" "$prefix"
+"$here/lib-config/devel-generate-menu-orders" "$format" "$next/CONFIGS-info" "$next/CONFIGS" "$next" "$prefix"
 {
 	"$here/lib-config/devel-config-experimental-compare" "$format" EXPERIMENTAL "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"
 	"$here/lib-config/devel-config-experimental-compare" "$format" STAGING "$current/CONFIGS-info" "$next/CONFIGS-info" "$next/CONFIGS"

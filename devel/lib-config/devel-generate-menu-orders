@@ -6,14 +6,15 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 4 ]; then
-	echo "Usage: $0 <format> <info> <config directory> <prefix>" 1>&2
+if [ "$#" -ne 5 ]; then
+	echo "Usage: $0 <format> <info> <config directory> <base> <prefix>" 1>&2
 	exit 1
 fi
 format="$1"
 info="$2"
 configs="$3"
-prefix="$4"
+base="$4"
+prefix="$5"
 
 . "$here/lib-output"
 
@@ -51,17 +52,12 @@ function list_menu()
 rm -rf tmp
 mkdir -p tmp
 
-#./devel-config-tree $HOME/git2/ubuntu-raring arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-x86
-#./devel-config-tree $HOME/git2/ubuntu-raring arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-arm
-#./devel-config-tree $HOME/git2/ubuntu-raring arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations >X-powerpc
-
 list="/tmp/list.$$"
 {
 	echo "M ROOT"
-	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
-	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
-	"$here/devel-config-tree" $HOME/git2/ubuntu-raring arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
-	#cat X-arm X-x86 X-powerpc
+	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
 } | sed \
 	-e 's/Bus options (PCI etc.)/Bus options/g' \
 	-e 's/Bus support/Bus options/g' \
