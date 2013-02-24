@@ -23,16 +23,22 @@ current="$1"
 next="$2"
 prefix="$3"
 
-there="$next"
-case "$there" in
+there_current="$current"
+case "$there_current" in
 /*) ;;
-*)  there="`pwd`/$there" ;;
+*)  there_current="`pwd`/$there_current" ;;
 esac
 
+there_next="$next"
+case "$there_next" in
+/*) ;;
+*)  there_next="`pwd`/$there_next" ;;
+esac
 
-# XXX: in theory at least this should be tree specific.
-"$here/lib-config/devel-config-info" "$there/debian.master/config/annotations" "$current"
-"$here/lib-config/devel-config-info" "$there/debian.master/config/annotations" "$next"
+echo "*** $current ..."
+"$here/lib-config/devel-config-info" "$there_current/debian.master/config/annotations" "$current"
+echo "*** $next ..."
+"$here/lib-config/devel-config-info" "$there_next/debian.master/config/annotations" "$next"
 
 (
 	cd "$next" || exit 1
