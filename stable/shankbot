@@ -247,6 +247,7 @@ class IrcShankbot(SingleServerIRCBot):
         elif cmd == 'help':
             s.reply(who + ', ' + 'Version: 0.1', target)
             s.reply(who + ', ' + 'I\'m not very smart (I\'m based on a pinky bot) but I know how to:', target)
+            s.reply(who + ', ' + ' ', target)
             s.reply(who + ', ' + '  shank [<bugid>]', target)
             s.reply(who + ', ' + '         Run the sru-workflow-manager on one or all of the currently active sru workflow bugs', target)
             s.reply(who + ', ' + '  die', target)
@@ -256,10 +257,15 @@ class IrcShankbot(SingleServerIRCBot):
             s.reply(who + ', ' + '         Perform a \'git pull\' on the repository where the bot is running. This, in combination', target)
             s.reply(who + ', ' + '         with \'die\' is a way to make changes to the bot code and get it to restart. Or, to get', target)
             s.reply(who + ', ' + '         any of the other code (sru-workflow-manager) updated remotely.', target)
+            s.reply(who + ', ' + '  moin', target)
+            s.reply(who + ', ' + '         replies with "moin"', target)
             s.reply(who + ', ' + ' ', target)
             s.reply(who + ', ' + 'Also, if asked "are you thinking what I\'m thinking?" or "are you pondering what I\'m pondering?"', target)
             s.reply(who + ', ' + 'I\'ll say something that pinky would have said. And if I don\'t understand what you are asking, I\'ll,', target)
             s.reply(who + ', ' + 'just make a noise.', target)
+
+        elif cmd == 'moin':
+            s.reply(who + ', moin', target)
 
         elif cmd == 'update':
             (rc, output) = sh('git pull', ignore_result=True)
@@ -282,7 +288,7 @@ class IrcShankbot(SingleServerIRCBot):
             if ' ' in cmd:
                 # Another arg parser here would probably be the right thing.
                 cmd = cmd.split()
-                sh_cmd = 'sru-workflow-manager --bugs=%s' % cmd[1]
+                sh_cmd = './sru-workflow-manager --bugs=%s' % cmd[1]
                 try:
                     s.reply(who + ', ' + 'roger, roger', target)
                     (rc, output) = sh(sh_cmd)
@@ -293,7 +299,7 @@ class IrcShankbot(SingleServerIRCBot):
             else:
                 s.reply(who + ', ' + 'shanking the bugs boss', target)
                 try:
-                    (rc, output) = sh('sru-workflow-manager')
+                    (rc, output) = sh('./sru-workflow-manager')
                     s.reply(who + ', ' + 'I shanked them all', target)
                 except ShellError as e:
                     s.reply(e.output)
@@ -318,7 +324,7 @@ class IrcShankbot(SingleServerIRCBot):
     def run(s):
         retval = 1
         try:
-            if not path.exists('sru-workflow-manager'):
+            if not path.exists('./sru-workflow-manager'):
                 raise ErrorExit('Unable to find "./sru-workflow-manager". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
 
             if not path.exists('../web/Makefile'):
