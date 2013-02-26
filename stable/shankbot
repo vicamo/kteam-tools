@@ -284,7 +284,15 @@ class IrcShankbot(SingleServerIRCBot):
                 chdir(origin)
 
 
-        elif 'shank' in cmd:
+        elif 'shank' == cmd:
+            s.reply(who + ', ' + 'shanking the bugs boss', target)
+            try:
+                (rc, output) = sh('./sru-workflow-manager')
+                s.reply(who + ', ' + 'I shanked them all', target)
+            except ShellError as e:
+                s.reply(e.output)
+
+        elif cmd.startswith('shank '):
             if ' ' in cmd:
                 # Another arg parser here would probably be the right thing.
                 cmd = cmd.split()
@@ -293,14 +301,6 @@ class IrcShankbot(SingleServerIRCBot):
                     s.reply(who + ', ' + 'roger, roger', target)
                     (rc, output) = sh(sh_cmd)
                     s.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
-                except ShellError as e:
-                    s.reply(e.output)
-
-            else:
-                s.reply(who + ', ' + 'shanking the bugs boss', target)
-                try:
-                    (rc, output) = sh('./sru-workflow-manager')
-                    s.reply(who + ', ' + 'I shanked them all', target)
                 except ShellError as e:
                     s.reply(e.output)
 
@@ -317,7 +317,8 @@ class IrcShankbot(SingleServerIRCBot):
             if cmd == expected1 or cmd == expected2:
                 s.reply(s.ponder_something(), target)
             else:
-                s.reply(s.exclaim_something(), target)
+                s.reply(who + ', ' + 'sorry, I don\'t know how to do that', target)
+                s.reply(who + ', ' + s.exclaim_something(), target)
 
     # run
     #
