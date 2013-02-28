@@ -35,8 +35,10 @@ case "$there_next" in
 *)  there_next="`pwd`/$there_next" ;;
 esac
 
-echo "*** $current ..."
-"$here/lib-config/devel-config-info" "$there_current/debian.master/config/annotations" "$current"
+if [ "$current" != '-' ]; then
+	echo "*** $current ..."
+	"$here/lib-config/devel-config-info" "$there_current/debian.master/config/annotations" "$current"
+fi
 echo "*** $next ..."
 "$here/lib-config/devel-config-info" "$there_next/debian.master/config/annotations" "$next"
 
