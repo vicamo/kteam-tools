@@ -213,7 +213,7 @@ if ($format eq 'wiki') {
 }
 
 if ($info) {
-	my ($config, $maybe, $default, $expected, $options, $option, $value);
+	my ($config, $maybe, $default, $expected, $options, $option, $value, $policy);
 	open(INFO, "<$info") || die "$0: $info: open failed - $!\n";
 	while (<INFO>) {
 		chomp;
@@ -228,17 +228,21 @@ if ($info) {
 			} elsif ($option eq 'choice') {
 				$flags{$config} .= " " . f_em('CHOICE');
 			} elsif ($option eq 'policy') {
-				$policy{$config} = $value;
+				#$policy{$config} = $value;
 				#$flags{$config} .= " " . f_em("policy=$value");
-				$expected = $value;
+				$policy = $value;
 			} elsif ($option eq 'desc') {
 				$desc{$config} .= $value;
 			}
 		}
 		$values{'Policy', $config} = $expected;
-		if (!defined $policy{$config} &&
-		    $expected ne 'c' && $expected ne '-') {
+		if ($expected eq 'p') {
+			$policy{$config} = $policy;
+			$values{'Policy', $config} = $policy;
+		} elsif ($expected ne 'c' && $expected ne '-') {
 			$policy{$config} = "value $expected";
+		} else {
+			delete $policy{$config};
 		}
 	}
 	close(INFO);
@@ -324,7 +328,9 @@ for my $option (@options) {
 		if (!defined $policy{$option} && $is ne '-') {
 			$policy{$option} = "value $is";
 		}
-		if ($policy{$option} && $column ne 'Policy' &&
+		if ($policy{$option} &&
+		    $policy{$option} ne 'value ?' && 
+		    $column ne 'Policy' &&
 		    defined $values{$column, $option} &&
 		    !policy_check($column, $option, $policy{$option})) {
 			$ok = 0;
