@@ -385,7 +385,7 @@ elif cmd == 'expand':
             result = {}
             while len(a) >= 1:
                 cmd = a.pop(0)
-                if cmd in ('+all', '+tree', '?tree', '+tree-top', '?tree-top'):
+                if cmd in ('+all', '+tree', '!tree', '+tree-top', '!tree-top'):
                     if cmd == '+all':
                         position = []
                     else:
