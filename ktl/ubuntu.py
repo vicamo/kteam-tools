@@ -158,7 +158,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ppc' ]
+                #'linux' : [ 'linux-ppc' ]
             },
             'sha1' : '',
             'md5' : ''
