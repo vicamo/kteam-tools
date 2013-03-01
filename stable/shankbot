@@ -152,6 +152,61 @@ class ErrorExit(Exception):
         '''
         return self.__message
 
+import Queue
+import threading
+import time
+
+g_exit_flag = 0
+g_q_lock = threading.Lock()
+g_work_q = Queue.Queue(10)
+
+class Shankster(threading.Thread):
+    # __init__
+    #
+    def __init__(s, q, output):
+        threading.Thread.__init__(s)
+        s.q = q
+        s.output = output
+        s.exit_flag = False
+
+    # run
+    #
+    def run(s):
+        while not s.exit_flag:
+            g_q_lock.acquire()
+            if not s.q.empty():
+                data = s.q.get()
+                g_q_lock.release()
+
+                cmd = data['cmd']
+                who = data['who']
+                target = data['target']
+                if 'shank' == cmd:
+                    try:
+                        (rc, output) = sh('./sru-workflow-manager')
+                        s.output.reply(who + ', ' + 'I shanked them all', target)
+                    except ShellError as e:
+                        s.output.reply(e.output)
+
+                elif cmd.startswith('shank '):
+                    if ' ' in cmd:
+                        # Another arg parser here would probably be the right thing.
+                        cmd = cmd.split()
+                        sh_cmd = './sru-workflow-manager --bugs=%s' % cmd[1]
+                        try:
+                            (rc, output) = sh(sh_cmd)
+                            s.output.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
+                        except ShellError as e:
+                            s.output.reply(e.output)
+
+                else:
+                    s.output.reply(who + ', ' + 'sorry, I don\'t know how to do that', target)
+
+            else:
+                g_q_lock.release()
+
+            time.sleep(1)
+
 # IrcShankbot
 #
 class IrcShankbot(SingleServerIRCBot):
@@ -168,12 +223,18 @@ class IrcShankbot(SingleServerIRCBot):
         s.queue.start()
         s.args = args
 
+        s.threads = []
+        thread = Shankster(g_work_q, s)
+        thread.start()
+        s.threads.append(thread)
+
     def on_nicknameinuse(s, c, e):
         s.nickname = c.get_nickname() + "_"
         c.nick(s.nickname)
 
     def on_welcome(s, c, e):
         c.join(s.channel)
+        s.reply('\\o/')
 
     def on_privmsg(s, c, e):
         debug('on_privmsg event:')
@@ -220,6 +281,12 @@ class IrcShankbot(SingleServerIRCBot):
     def exclaim_something(s):
         "Return a random exclamation string."
         return random.choice(exclamations)
+
+    def enqueue_cmd(s, who, cmd, target):
+        g_q_lock.acquire()
+        print('queueing: "%s"' % cmd)
+        g_work_q.put({'who': who, 'cmd':cmd, 'target':target})
+        g_q_lock.release()
 
     def do_command(s, e, cmd, from_private):
         """
@@ -283,26 +350,13 @@ class IrcShankbot(SingleServerIRCBot):
             finally:
                 chdir(origin)
 
-
         elif 'shank' == cmd:
+            s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'shanking the bugs boss', target)
-            try:
-                (rc, output) = sh('./sru-workflow-manager')
-                s.reply(who + ', ' + 'I shanked them all', target)
-            except ShellError as e:
-                s.reply(e.output)
 
         elif cmd.startswith('shank '):
-            if ' ' in cmd:
-                # Another arg parser here would probably be the right thing.
-                cmd = cmd.split()
-                sh_cmd = './sru-workflow-manager --bugs=%s' % cmd[1]
-                try:
-                    s.reply(who + ', ' + 'roger, roger', target)
-                    (rc, output) = sh(sh_cmd)
-                    s.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
-                except ShellError as e:
-                    s.reply(e.output)
+            s.enqueue_cmd(who, cmd, target)
+            s.reply(who + ', ' + 'roger, roger', target)
 
         else:
 
@@ -338,15 +392,19 @@ class IrcShankbot(SingleServerIRCBot):
         #
         except KeyboardInterrupt:
             print("Aborting ...")
-            s.die()
 
         except ErrorExit as e:
             error(e.message)
 
-        if retval > 0:
-            error("")
-            error("Due to the above error(s), this script is unable to continue and is terminating.")
-            error("")
+        while not g_work_q.empty():
+            pass
+
+        for t in s.threads:
+            t.exit_flag = True
+            if t.is_alive():
+                t.join()
+
+        s.die()
 
         return retval
 
