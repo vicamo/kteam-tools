@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash 
 #
 # devel-config-info -- generate the configuration info tables.
 #
@@ -13,21 +13,28 @@ esac
 annotations="$1"
 base="$2"
 
+archs=`grep 'ARCH:' "$annotations" | cut -c 9-`
+if [ "$archs" = '' ]; then
+	archs='x86 arm powerpc'
+fi
 
 # Generate per architecture configuration trees
-"$here/devel-config-tree" "$base" arch/x86/Kconfig geninfo >"$base/CONFIGS-info-x86"
-"$here/devel-config-tree" "$base" arch/arm/Kconfig geninfo >"$base/CONFIGS-info-arm"
-"$here/devel-config-tree" "$base" arch/powerpc/Kconfig geninfo >"$base/CONFIGS-info-powerpc"
+rm -f "$base/CONFIGS-info-"*
+for arch in $archs
+do
+	"$here/devel-config-tree" "$base" arch/$arch/Kconfig geninfo >"$base/CONFIGS-info-$arch"
+done
 
 # Generate the expanded annotations.
 {
-	"$here/devel-config-tree" "$base" arch/x86/Kconfig expand <"$annotations"
-	"$here/devel-config-tree" "$base" arch/arm/Kconfig expand <"$annotations"
-	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig expand <"$annotations"
+	for arch in $archs
+	do
+		"$here/devel-config-tree" "$base" arch/$arch/Kconfig expand <"$annotations"
+	done
 } | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
 # Generate a common merged configuration version.
-"$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-x86" "$base/CONFIGS-info-arm" "$base/CONFIGS-info-powerpc"
+"$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-"*
 
 # Legacy formats.
 awk '{ print $1 " " $2 " " $3 }' <"$base/CONFIGS-info" >"$base/CONFIGS-defaults"
