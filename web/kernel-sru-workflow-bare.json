@@ -9,7 +9,8 @@
         "bug-tags": [], 
         "bug-tags-combinator": "all", 
         "projects": [
-            "kernel-sru-workflow"
+            "kernel-sru-workflow",
+            "kernel-development-workflow"
         ], 
         "task-status": [
             "New", 

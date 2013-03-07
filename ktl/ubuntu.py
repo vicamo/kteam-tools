@@ -605,6 +605,24 @@ class Ubuntu:
 
         return retval
 
+    # development_series
+    #
+    @property
+    def development_series(self):
+        """
+        Assume there is one, and only one, development series.
+        """
+        retval = None
+        for series in self.db:
+            try:
+                if self.db[series]['development']:
+                    retval = self.db[series]['name']
+                    break
+            except KeyError:
+                    pass
+
+        return retval
+
     # supported_series
     #
     @property
