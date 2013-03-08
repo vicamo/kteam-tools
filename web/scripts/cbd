@@ -316,6 +316,9 @@ class CollectRegressionsData(StdApp):
                     bugs_db = None
                     raise
 
+            u = Ubuntu()
+            bugs_db['info'] = {}
+            bugs_db['info']['dev series'] = u.development_series
             if bugs_db != None:
                 with open(self.cfg['database'], 'w') as f:
                     f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
