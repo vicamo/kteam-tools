@@ -1,3 +1,12 @@
 #!/bin/bash
+EXPECTED_ARGS=1
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo "Usage: `basename $0` previousversion"
+  exit $E_BADARGS
+fi
+
+
 fakeroot debian/rules clean
-dpkg-buildpackage -S -rfakeroot $*
+dpkg-buildpackage -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -uc -us -sa -v$1
