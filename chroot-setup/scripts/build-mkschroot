@@ -344,13 +344,27 @@ PKGLIST=/tmp/$$.pkglist
 ${SCHROOTCMD} -- dpkg -l > $PKGLIST
 
 echo ADDPKG=${ADDPKG}
+pkg_found="/tmp/$$.pkg_found"
 for i in ${ADDPKG}
 do
-	if ! grep -q $i $PKGLIST
+	echo Checking for $i
+	rm -f $pkg_found
+	cat $PKGLIST | egrep "^ii  " | while read ii pkg junk
+	do
+		if [ "$i" = "$pkg" ]
+		then
+			echo Creating $pkg_found for "$i"
+			echo "$i" > $pkg_found
+		fi
+	done
+	if [ ! -f $pkg_found ]
 	then
+		echo Installing $i
 		${SCHROOTCMD} -- apt-get -y --force-yes install $i
 	fi
 done
+rm -f $pkg_found
 rm -f $PKGLIST
+echo PKGLIST $PKGLIST
 echo ADDPKGDEP=${ADDPKGDEP}
 ${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source $ADDPKGDEP
