@@ -263,7 +263,7 @@ class Workflow:
                 #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
-                #'certification-testing'     : 'canonical-hw-cert',
+                'certification-testing'      : 'canonical-hw-cert',
                 'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
