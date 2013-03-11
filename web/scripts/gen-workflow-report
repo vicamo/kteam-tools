@@ -426,9 +426,12 @@ class GenWorkflowReport():
             bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][b]
             self.combined[b] = bug
 
-        for b in self.bugs_db['bug-collections']['kernel-development-workflow']['bugs']:
-            bug = self.bugs_db['bug-collections']['kernel-development-workflow']['bugs'][b]
-            self.combined[b] = bug
+        try:
+            for b in self.bugs_db['bug-collections']['kernel-development-workflow']['bugs']:
+                bug = self.bugs_db['bug-collections']['kernel-development-workflow']['bugs'][b]
+                self.combined[b] = bug
+        except KeyError:
+            pass
 
         retval = ''
         for ss in sorted(series):
