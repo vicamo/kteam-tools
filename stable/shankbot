@@ -352,7 +352,7 @@ class IrcShankbot(SingleServerIRCBot):
 
         elif 'shank' == cmd:
             s.enqueue_cmd(who, cmd, target)
-            s.reply(who + ', ' + 'shanking the bugs boss', target)
+            s.reply(who + ', ' + 'gimme some love boss', target)
 
         elif cmd.startswith('shank '):
             s.enqueue_cmd(who, cmd, target)
