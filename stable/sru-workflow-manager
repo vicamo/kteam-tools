@@ -7,7 +7,7 @@ from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.check_component                import CheckComponent
-from ktl.utils                          import stdo, date_to_string
+from ktl.utils                          import stdo, date_to_string, run_command
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Properties
@@ -1025,6 +1025,10 @@ class Shank(StdApp):
                 self.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
                 self.set_phase(taskobj, 'Testing')
                 self.send_upload_announcement(taskobj, 'proposed')
+
+                series = self.get_series(bug)
+                status, result = run_command('ssh zinc.canonical.com touch /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html' % series)
+
         return False
 
     def build_status(self, series, package, release, abi, archive, pocket = ''):
@@ -1129,6 +1133,16 @@ class Shank(StdApp):
             lst_date = pkg.date_published
             res = bs, pkg
         return res
+
+    def get_series(s, bug):
+        '''
+        Use a bug's title to determine what series the kernel is related to.
+        '''
+        title = bug.title
+        pkg_name = re.findall('linux[^:]*', title)
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)
+        series = s.ubuntu.series_name(pkg_name, pkg_ver)
+        return series
 
     def package_check(self, bug):
         """
