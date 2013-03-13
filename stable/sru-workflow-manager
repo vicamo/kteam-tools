@@ -1027,7 +1027,7 @@ class Shank(StdApp):
                 self.send_upload_announcement(taskobj, 'proposed')
 
                 series = self.get_series(bug)
-                status, result = run_command('ssh zinc.canonical.com touch /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html' % series)
+                status, result = run_command('ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (bug.title, series))
 
         return False
 
