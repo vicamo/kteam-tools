@@ -31,6 +31,15 @@ exclamations = [
     "Oooo!"
 ]
 
+you_are_welcome = [
+    "Da nada",
+    "No worries, mate",
+    "De res",
+    "De rien",
+    "Prego",
+    "Aw, shucks, ma'am. 'Tweren't nothing"
+]
+
 # Pinky's ponderings.
 #
 ponderings = [
@@ -282,6 +291,9 @@ class IrcShankbot(SingleServerIRCBot):
         "Return a random exclamation string."
         return random.choice(exclamations)
 
+    def say_your_welcome(s):
+        return random.choice(you_are_welcome)
+
     def enqueue_cmd(s, who, cmd, target):
         g_q_lock.acquire()
         print('queueing: "%s"' % cmd)
@@ -357,6 +369,9 @@ class IrcShankbot(SingleServerIRCBot):
         elif cmd.startswith('shank '):
             s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'roger, roger', target)
+
+        elif cmd.startswith('thank'):
+            s.reply(who + ', ' + s.say_your_welcome(), target)
 
         else:
 
