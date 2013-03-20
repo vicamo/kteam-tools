@@ -6,7 +6,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-base="$HOME/git2/ubuntu-raring"
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <repo>" 1>&2
+	exit 1
+fi
+
+base="$1"
 . "$base/debian/debian.env"
 for config in "$base/CONFIGS"/*
 do
