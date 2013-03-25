@@ -9,7 +9,7 @@ from ktl.git                            import Git, GitError
 from re                                 import compile, IGNORECASE, MULTILINE
 from commands                           import getstatusoutput
 from ktl.kernel                         import Kernel
-from os                                 import path, mkdir, remove, rename
+from os                                 import path, mkdir, remove, rename, getenv
 from shutil                             import move
 from tempfile                           import NamedTemporaryFile
 
@@ -73,7 +73,13 @@ class Cmdline:
         stdo("                         Git base revision or range of commits to check for stable commits   \n")
         stdo("                         to apply                                                            \n")
         stdo("                                                                                             \n")
-        stdo("        --sob=<sob>      Signed-off-by: line to be added to the applied patches              \n")
+        stdo("        --sob            Add 'Signed-off-by:' line to the patches                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --name=<full name>                                                                   \n")
+        stdo("                         Name to use in the SOB line.  Default is variable $DEBFULLNAME      \n")
+        stdo("                                                                                             \n")
+        stdo("        --email=<email address>                                                              \n")
+        stdo("                         Email address to use in the SOB line.  Default is variable $DEBEMAIL\n")
         stdo("                                                                                             \n")
         stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
         stdo("                         running.                                                            \n")
@@ -100,7 +106,8 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'range=', 'sob=', 'verbose', 'config=', 'debug=']
+            optsLong  = ['help', 'range=', 'sob', 'verbose', 'config=',
+                         'debug=', 'name=', 'email=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -111,7 +118,13 @@ class Cmdline:
                     self.cfg['range'] = val
 
                 elif opt in ('--sob'):
-                    self.cfg['sob'] = val
+                    self.cfg['sob'] = ''
+
+                elif opt in ('--name'):
+                    self.cfg['name'] = val
+
+                elif opt in ('--email'):
+                    self.cfg['email'] = val
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
@@ -125,6 +138,17 @@ class Cmdline:
         except GetoptError, error:
             print(error, defaults)
             raise CmdlineError('')
+
+        if 'sob' in self.cfg:
+            if 'name' not in self.cfg:
+                self.cfg['name'] = getenv("DEBFULLNAME")
+            if 'email' not in self.cfg:
+                self.cfg['email'] = getenv("DEBEMAIL")
+
+            if self.cfg['name'] == None or self.cfg['email'] == None:
+                raise CmdlineError('You need to either use --name and --email or set DEBFULLNAME and DEBEMAIL')
+
+            self.cfg['sob'] = "Signed-off-by: " + self.cfg['name'] + " <" + self.cfg['email'] + ">"
 
         return self.cfg
 
