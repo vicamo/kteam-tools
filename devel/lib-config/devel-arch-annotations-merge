@@ -16,6 +16,8 @@ for line in sys.stdin:
     a = line.split(None, 2)
     if len(a) != 3:
         a.append('')
+    if len(a) != 3:
+        sys.stderr.write(line + '\n')
     (config, value, info) = a
 
     if value == 'C':
@@ -47,6 +49,14 @@ for line in sys.stdin:
 
         annotations[config] = (value, ninfo.strip())
 
+# Handle any pending negatives from 'choices'.
+for config in negatives.keys():
+    if config in annotations:
+        nvalue = annotations[config][0]
+        if nvalue == '-':
+            annotations[config] = ('n', annotations[config][1])
+    else:
+        annotations[config] = ('n', '')
 
 # Load in the various architecture lists, take the first one for each option.
 # Apply annotations as above as we go.
@@ -55,12 +65,3 @@ for config in annotations:
     (value, info) = annotations[config]
 
     print(config + ' ' + value + ' ' + info.strip())
-
-for config in negatives.keys():
-    value = 'c'
-    if config in annotations:
-        nvalue = annotations[config][0]
-        if nvalue != '-':
-            value = nvalue
-    if value == 'c':
-        print(config + ' n')
