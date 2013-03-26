@@ -897,10 +897,6 @@ class Shank(StdApp):
         else:
             taskname = 'package-testing'
 
-        print("prep_package_fix_released")
-        print(taskname)
-        cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (taskobj.bug.title, 'raring')
-        status, result = run_command(cmd)
         if self.taskbyname[taskname].status == 'New':
             # check if all prepare-package tasks are finished
             if not self.prepare_package_fixed():
@@ -991,31 +987,31 @@ class Shank(StdApp):
                 else:
                     m_bug_list.append('%s (%s)' % (bp_pkg[0], bp_pkg[1]))
 
-            #  # comment about publishing and possible new tracking bugs opened
-            #  msgbody  = 'All builds are complete, packages in this bug'
-            #  if taskname == 'promote-to-proposed':
-            #      msgbody += ' can be copied to -proposed.'
-            #  else:
-            #      msgbody += ' are available in -proposed.'
-            #  if der_bug_list:
-            #      msgbody += '\n\nDerivative packages from packages here can be worked on,'
-            #      msgbody += ' the following tracking bugs were opened for them:'
-            #      for pkg_bug in der_bug_list:
-            #          msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
-            #  if bp_bug_list:
-            #      msgbody += '\n\nBackport packages from packages here can be worked on,'
-            #      msgbody += ' the following tracking bugs were opened for them:'
-            #      for pkg_bug in bp_bug_list:
-            #          msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
-            #  if m_bug_list:
-            #      msgbody += '\n\nIt was not possible to create or handle the'
-            #      msgbody += ' tracking bugs for the following packages'
-            #      msgbody += ' (their tracking bugs based on this update'
-            #      msgbody += ' must be handled manually):'
-            #      for ln in m_bug_list:
-            #          msgbody += '\n%s' % (ln)
-            #  task = self.taskbyname[self.projectname]
-            #  self.send_comment(task, 'Packages available', msgbody)
+            # comment about publishing and possible new tracking bugs opened
+            msgbody  = 'All builds are complete, packages in this bug'
+            if taskname == 'promote-to-proposed':
+                msgbody += ' can be copied to -proposed.'
+            else:
+                msgbody += ' are available in -proposed.'
+            if der_bug_list:
+                msgbody += '\n\nDerivative packages from packages here can be worked on,'
+                msgbody += ' the following tracking bugs were opened for them:'
+                for pkg_bug in der_bug_list:
+                    msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
+            if bp_bug_list:
+                msgbody += '\n\nBackport packages from packages here can be worked on,'
+                msgbody += ' the following tracking bugs were opened for them:'
+                for pkg_bug in bp_bug_list:
+                    msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
+            if m_bug_list:
+                msgbody += '\n\nIt was not possible to create or handle the'
+                msgbody += ' tracking bugs for the following packages'
+                msgbody += ' (their tracking bugs based on this update'
+                msgbody += ' must be handled manually):'
+                for ln in m_bug_list:
+                    msgbody += '\n%s' % (ln)
+            task = self.taskbyname[self.projectname]
+            self.send_comment(task, 'Packages available', msgbody)
 
             # Set promote-to-proposed
             self.set_task_to_state(taskname, 'Confirmed')
