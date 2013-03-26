@@ -25,5 +25,7 @@ esac
 
 # Generate the expanded annotations.
 "$here/devel-config-tree" "$base" "arch/$karch/Kconfig" expand <"$annotations" | \
+	tee APW2 | \
 	"$here/devel-arch-annotations-merge" | \
+	tee APW3 | \
 	"$here/devel-config-apply-payload" "$arch" "$flavour" "$config"

@@ -43,19 +43,32 @@ while (<CONFIG>) {
 }
 close(CONFIG);
 
-my ($config, $expected, $options, $option, $value, $policy);
+my ($config, $expected, $options, $option, $value, $policy, $only);
 while (<STDIN>) {
 	chomp;
 	($config, $expected, $options) = split(' ', $_, 3);
 	$policy = '';
+	$only = '';
+
+	next if ($expected eq '?');
+
 	while ($options =~ /\s*(\S+)<(.*?)?>/g) {
 		($option, $value) = ($1, $2);
 		if ($option eq 'policy') {
 			$policy = $value;
+		} elsif ($option eq 'only') {
+			$only = $value;
 		}
 	}
 
-	#print "OPTION<$config> EXPECTED<$expected> POLICY<$policy>\n";
+	#print "OPTION<$config> EXPECTED<$expected> ONLY<$only> POLICY<$policy>\n";
+
+	if ($only && $only ne 'true') {
+		if ($only eq 'false' || !policy_check($column, $config, $only)) {
+			#print "$config !ONLY\n";
+			next;
+		}
+	}
 
 	# Check the policy.
 	if ($policy eq '') {
@@ -74,7 +87,7 @@ while (<STDIN>) {
 		my $possible;
 		while ($policy =~ /\bvalue\s+([^\s\&\|\/\(\)]+)/g) {
 			$possible = $1;
-			#print "POSSIBLE<$possible> POLICY<$policy_iter>\n";
+			#print "POSSIBLE<$possible> POLICY<$policy>\n";
 			$values{$column, $config} = $possible;
 			if (policy_check($column, $config, $policy)) {
 				$ok = $possible;
@@ -90,4 +103,3 @@ while (<STDIN>) {
 		}
 	}
 }
-
