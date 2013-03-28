@@ -4,6 +4,7 @@ do
 wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_2.6.$ver.orig.tar.gz
 done
 
+wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_3.2.0.orig.tar.gz
 wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_3.5.0.orig.tar.gz
 wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_3.8.0.orig.tar.gz
 
