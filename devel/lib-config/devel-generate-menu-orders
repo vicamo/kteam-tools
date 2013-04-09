@@ -55,9 +55,9 @@ mkdir -p tmp
 list="/tmp/list.$$"
 {
 	echo "M ROOT"
-	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
-	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
-	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder <$HOME/git2/ubuntu-raring/debian.master/config/annotations
+	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder <"$base/debian.master/config/annotations"
+	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder <"$base/debian.master/config/annotations"
+	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder <"$base/debian.master/config/annotations"
 } | sed \
 	-e 's/Bus options (PCI etc.)/Bus options/g' \
 	-e 's/Bus support/Bus options/g' \
