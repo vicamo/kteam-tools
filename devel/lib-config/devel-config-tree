@@ -245,8 +245,7 @@ def children(parent, prefix, toplevel=False, menu=False, config=False):
             print(prefix + entry['config'])
         elif 'prompt' in entry:
             print(prefix + entry['prompt'])
-        if 'children' in entry and \
-           (not toplevel or 'menu' in entry or 'menuconfig' in entry):
+        if 'children' in entry and not toplevel:
             children(entry, prefix + '  ', toplevel, menu, config)
 
 
@@ -263,8 +262,7 @@ def children_scan_iter(parent, toplevel):
     for entry in parent['children']:
         #print("AT", entry.get('config', ''), entry.get('prompt', ''))
         yield entry
-        if 'children' in entry and \
-           (not toplevel or 'menu' in entry or 'menuconfig' in entry):
+        if 'children' in entry and not toplevel:
             for ent in children_scan_iter(entry, toplevel):
                 yield ent
 
@@ -366,10 +364,10 @@ elif cmd == 'genorder':
             print('M', '>'.join(pname + [ mname ]))
             if 'config' in entry:
                 print('E', '>'.join(pname + [ mname]) + '>>' + entry['config'])
+        elif 'choice' in entry:
+            pass
         else:
-            if 'choice' not in entry:
-                print('E', '>'.join(pname) + '>>' + cname)
-
+            print('E', '>'.join(pname) + '>>' + cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
