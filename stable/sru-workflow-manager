@@ -162,7 +162,7 @@ class Shank(StdApp):
                                          'Invalid' : {'action':None},
                                          "Won't Fix" : {'action':None},
                                          'Expired' : {'action':None},
-                                         'Confirmed' : {'action':None},
+                                         'Confirmed' : {'action':self.upload_to_ppa_confirmed},
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
@@ -884,6 +884,10 @@ class Shank(StdApp):
                     return False
         return True
 
+    def upload_to_ppa_confirmed(self, taskobj):
+        self.set_phase(taskobj, 'ReadyToBePackaged')
+        return True
+
     def prep_package_fix_released(self, taskobj):
         """
         when the prep-package task is set to Fix Released and there is
@@ -1308,6 +1312,8 @@ class Shank(StdApp):
                 new_status = task_status[prepare_status]
             if prepare_assignee and new_status != 'Invalid':
                 self.set_task_assignee(bug_task, prepare_assignee)
+
+            print('*** Setting the task state')
             self.set_task_to_state(bug_task, new_status)
             # Take care of the upload-to-ppa task if needed
             if dep == 'main' and 'upload-to-ppa' in self.taskbyname:
