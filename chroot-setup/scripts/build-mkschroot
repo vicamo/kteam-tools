@@ -111,7 +111,7 @@ case $SUITE in
 			;;
 		esac
 		;;
-	natty|oneiric|precise|quantal|android|raring)
+	natty|oneiric|precise|quantal|android|raring|saucy)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -129,7 +129,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|quantal|android|raring)
+	precise|quantal|android|raring|saucy)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -151,7 +151,7 @@ case $SUITE in
 	quantal)
 		ADDPKG="$ADDPKG flex bison";
 	;;
-	raring)
+	raring|saucy)
 		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev";
 	;;
 	android)
