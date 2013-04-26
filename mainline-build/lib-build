@@ -23,7 +23,7 @@ master_tree_select()
 	fi
 }
 
-ubuntu_series="hardy lucid maverick natty oneiric precise quantal raring"
+ubuntu_series="hardy lucid maverick natty oneiric precise quantal raring saucy"
 
 # Map remote names to real URLs for use when remotes are missing.
 repo_remote_url()

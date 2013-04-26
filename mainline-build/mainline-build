@@ -42,7 +42,8 @@ v2.6.36*|v2.6.37*|v2.6.38*)	master_release="natty" ;;
 v2.6.39*|v3.0*)			master_release="oneiric" ;;
 v3.1*|v3.2*)			master_release="precise" ;;
 v3.3*|v3.4*|v3.5*)		master_release="quantal" ;;
-*)				master_release="raring" ;;
+v3.6*|v3.7*|v3.8*)		master_release="raring" ;;
+*)				master_release="saucy" ;;
 esac
 
 # Ensure we have the latest and greatest code in the master release.
