@@ -1,0 +1,167 @@
+#!/bin/bash
+#
+# git-build-kernel
+# Kamal Mostafa <kamal@canonical.com>
+#
+
+
+### directory containing linux_x.y.0.orig.gz orig tarballs for the 'source'
+### build target
+ORIG_TARBALLS_DIR=/usr3/ubuntu
+
+# DEFAULT_FDR_TARGETS="binary-headers binary-arch"
+DEFAULT_FDR_TARGETS="binary-generic"
+
+
+function usage
+{
+    {
+    echo "usage: git-build-kernel {branch|tag|ref|commit} amd64|i386 [fdr_targets]"
+    echo "       git-build-kernel {branch|tag|ref|commit} source"
+    echo
+    echo "    Default fdr_targets: $DEFAULT_FDR_TARGETS"
+    echo "      (Use 'binary' for a full binary package build, or"
+    echo "       any subset of 'binary-headers binary-arch binary-indep')"
+    } 1>&2
+    exit 1
+}
+
+
+### Process cmdline arguments
+
+GITBRANCH="$1"		# branch, tag, ref, commit-ish
+[ -z "$GITBRANCH" ] && usage
+
+ARCH="$2"
+[ -z "$ARCH" ] && usage
+
+shift
+shift
+
+do_source_pkg=0
+if [ "$ARCH" = "source" ]
+then
+    TARGETS="[source package]"
+    ARCH=amd64
+    do_source_pkg=1
+else
+    TARGETS="$*"		# optional
+    [ -z "$TARGETS" ] && TARGETS="$DEFAULT_FDR_TARGETS"
+fi
+
+
+### Find the git repo root (e.g. /some/path/ubuntu-raring[.git])
+
+# Note: don't use --show-toplevel; it fails inside .git/
+GITREPO="`git rev-parse --git-dir`"
+[ "$GITREPO" = "." ] && GITREPO="$PWD"
+GITREPO="${GITREPO%/.git}"
+[ -z "$GITREPO" ] && {
+    echo "fatal: Not a git repository (or any of the parent directories)" 1>&2
+    exit 1
+}
+
+
+### Get the var "DEBIAN=debian.master" from debian/debian.env
+eval `git show $GITBRANCH:debian/debian.env | grep DEBIAN=`
+[ -z "$DEBIAN" ] && DEBIAN=debian
+
+
+### Extract the distro target (e.g. "raring-proposed") from
+### debian.master/changelog, and use it as the basis of the chroot.
+### If it isn't useful, try to use the git repo directory name.
+chg="`git show $GITBRANCH:$DEBIAN/changelog | head -1`"
+DISTRO=`echo "$chg" | sed -n -e '1s/^.* \(.*\);.*$/\1/p'`
+CHROOT="$DISTRO"
+CHROOT="${CHROOT%-proposed}"
+if [ "$CHROOT" = "UNRELEASED" -o -z "$CHROOT" ]
+then
+    GITREPOBASE="${GITREPO%/*}"	# e.g. /home/kamal/src/linux
+    GITREPODIR="${GITREPO##*/}"	# e.g. "ubuntu-raring[.git]"
+    CHROOT="${GITREPODIR##ubuntu-}"
+    CHROOT="${CHROOT%.git}"
+fi
+CHROOT="$CHROOT-$ARCH" # append the arch to the chroot name
+
+### Get the version number - we need it to locate the orig tarball
+VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
+
+
+### Set up the /tmp work directory
+
+WORKDIR="`mktemp -u -d -t kernel-$LOGNAME-XXXXXXXX`"
+mkdir "$WORKDIR" || exit
+
+BUILDDIR="$WORKDIR/build"
+LOG="$WORKDIR/build.log"
+trap "rm -rf $BUILDDIR" 0
+
+[ $do_source_pkg = 1 ] && {
+    orig_tarball="linux_${VERSION%%-*}.orig.tar.gz"
+    # symlink here would be nice, but needs $ORIG_TARBALLS_DIR to be
+    # mounted in the chroot
+    #ln -s $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
+    cp -p $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
+}
+
+###
+### Run the build process in a subshell and capture output to a logfile.
+### The build process is essentially:
+###     use 'git archive' copy the git branch
+###     enter the chroot
+###     run the standard debian/rules invocations like a pkgbuilder would
+###
+
+echo "git-build-kernel ($CHROOT)"
+echo "      version: $DISTRO ($VERSION)"
+echo "      targets: $TARGETS"
+echo "  starting build in $HOSTNAME:$WORKDIR ..."
+
+(
+	set -e
+	echo "+++gbk++++ git-build-kernel"
+	echo "+++gbk++++   ($HOSTNAME:$WORKDIR)"
+
+	echo "+++gbk++++ git archive $GITREPO ($GITBRANCH)"
+	mkdir "$BUILDDIR"
+	git archive --format=tar "$GITBRANCH" | tar -x -C "$BUILDDIR"
+
+	echo "+++gbk++++ dchroot -c $CHROOT"
+	set +e
+	dchroot -c "$CHROOT"   2>&1 <<-XXEOFXX
+		set -e
+		set -x
+		cd "$BUILDDIR"
+		fakeroot debian/rules clean
+		if [ $do_source_pkg = 1 ]
+		then
+		    debuild -S -I -i -uc -us
+		else
+		    debian/rules build
+		    fakeroot debian/rules $TARGETS
+		fi
+XXEOFXX
+	STATUS=$?
+	echo "+++gbk++++ build exit status was $STATUS"
+	exit $STATUS
+) > $LOG 2>&1
+STATUS=$?
+
+
+### Output information about the build status and products
+
+if [ $STATUS = 0 ]
+then echo "  build completed OK. build log:"
+else echo "  !!! BUILD FAILED !!! build log:"
+fi
+echo "      $HOSTNAME:$LOG"
+
+# cat $LOG
+
+if [ $STATUS = 0 ]
+then
+    echo "  binary packages:"
+    echo "      $HOSTNAME:$WORKDIR/"
+fi
+
+exit $STATUS
