@@ -7,7 +7,7 @@
 
 ### directory containing linux_x.y.0.orig.gz orig tarballs for the 'source'
 ### build target
-ORIG_TARBALLS_DIR=/usr3/ubuntu
+ORIG_TARBALLS_DIR=/home/usr3/ubuntu
 
 # DEFAULT_FDR_TARGETS="binary-headers binary-arch"
 DEFAULT_FDR_TARGETS="binary-generic"
@@ -98,10 +98,9 @@ trap "rm -rf $BUILDDIR" 0
 
 [ $do_source_pkg = 1 ] && {
     orig_tarball="linux_${VERSION%%-*}.orig.tar.gz"
-    # symlink here would be nice, but needs $ORIG_TARBALLS_DIR to be
-    # mounted in the chroot
-    #ln -s $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
-    cp -p $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
+    # Careful: $ORIG_TARBALLS_DIR must be accessible from within the chroot.
+    # (Alternately, use "cp -p" instead of "ln -s" if that's not an option)
+    ln -s $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
 }
 
 ###
