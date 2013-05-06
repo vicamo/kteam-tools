@@ -130,22 +130,18 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
-        '13.04' :
+        '13.10' :
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '13.04',
             'kernel'    : '3.8.0',
-            'name'      : 'raring',
+            'name'      : 'saucy',
             'supported' : False,
             # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
                 'linux-meta',
-                'linux-ti-omap4',
-                'linux-meta-ti-omap4',
-                'linux-ppc',
-                'linux-meta-ppc'
             ],
             'dependent-packages' :
             {
@@ -153,8 +149,34 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
-                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
-                'linux-ppc' : { 'meta' : 'linux-meta-ppc' }
+            },
+            'derivative-packages' :
+            {
+                #'linux' : [ 'linux-ppc' ]
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
+        '13.04' :
+        {
+            'development' : False,
+            'series_version' : '13.04',
+            'kernel'    : '3.8.0',
+            'name'      : 'raring',
+            'supported' : True,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+                'linux-meta-ti-omap4',
+            ],
+            'dependent-packages' :
+            {
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                }
             },
             'derivative-packages' :
             {
@@ -487,6 +509,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '3.9.0'    : db['13.10'],
         '3.8.0'    : db['13.04'],
         '3.5.0'    : db['12.10'],
         '3.2.0'    : db['12.04'],
@@ -504,6 +527,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'saucy'    : db['13.10'],
         'raring'   : db['13.04'],
         'quantal'  : db['12.10'],
         'precise'  : db['12.04'],
