@@ -268,7 +268,7 @@ class Ubuntu:
             'series_version' : '11.10',
             'kernel'    : '3.0.0',
             'name'      : 'oneiric',
-            'supported' : True,
+            'supported' : False,
             # adjust packages when this goes live
             'packages'  :
             [
@@ -456,7 +456,7 @@ class Ubuntu:
             'series_version' : '8.04',
             'kernel' : '2.6.24',
             'name' : 'hardy',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux',
