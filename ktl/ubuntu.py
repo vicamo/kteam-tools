@@ -176,11 +176,12 @@ class Ubuntu:
                 'linux' : {
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
-                }
+                },
+                'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
             },
             'derivative-packages' :
             {
-                #'linux' : [ 'linux-ppc' ]
+                'linux' : [ 'linux-lowlatency' ]
             },
             'sha1' : '',
             'md5' : ''
