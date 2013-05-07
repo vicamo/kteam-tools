@@ -249,6 +249,10 @@ class Ubuntu:
                     'meta' : 'linux-meta-lts-quantal',
                     'signed' : 'linux-signed-lts-quantal'
                 },
+                'linux-lts-raring' : {
+                    'meta' : 'linux-meta-lts-raring',
+                    'signed' : 'linux-signed-lts-raring'
+                },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
                 'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
@@ -260,6 +264,7 @@ class Ubuntu:
             'backport-packages' :
             {
                 'linux-lts-quantal' : [ 'linux', '12.10' ],
+                'linux-lts-raring' : [ 'linux', '13.04' ],
             },
             'sha1' : '',
             'md5' : ''
