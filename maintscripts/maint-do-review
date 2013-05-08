@@ -12,6 +12,7 @@
 import os, sys, optparse
 #from getopt import *
 from subprocess import *
+from ktl.shell                          import sh, ShellError
 
 editor_cmd = os.getenv("EDITOR", default="gvim")
 review_cmd = "git-compare"
@@ -233,7 +234,7 @@ else:
 		if p1.Comment != "":
 			file.write(p1.Comment + "\n")
 	file.close()
-	rc = os.system("gnome-terminal -e '" + editor_cmd + " " + ReviewFile
+	(rc, output) = sh("gnome-terminal -e '" + editor_cmd + " " + ReviewFile
 		       + "'")
 
 #------------------------------------------------------------------------------
@@ -249,7 +250,7 @@ for p1 in GitList:
 		print "\b"
 		if line[0] == "q":
 			break
-		os.system(review_cmd + " " + p1.sha)
+		(rc, output) = sh(review_cmd + " " + p1.sha)
 		NumberDone += 1
 print "done"
 

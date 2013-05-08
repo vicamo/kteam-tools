@@ -9,6 +9,7 @@
 #==============================================================================
 import sys, os, optparse, re
 from subprocess import *
+from ktl.shell                          import sh, ShellError
 
 #------------------------------------------------------------------------------
 # Libraries shared by all kteam-tools will be found here (../lib)
@@ -106,7 +107,7 @@ def GetDateTime():
 # Try to make sure we've run fdr clean
 #------------------------------------------------------------------------------
 if not os.path.isfile(os.path.join(debian_dir, "control")):
-	print "EE: debian control file not found - do you need to run 'fakeroot debian/rules clean?'"
+	print "EE: debian control file not found - do you need to run 'fakeroot debian/rules clean'?"
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
@@ -132,8 +133,7 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --local"
 	if opts.cktppa:
 		cmd += " --ckt-ppa"
-	if os.system(cmd + " Ubuntu-" + version):
-		sys.exit(1)
+	(rc, output) = sh(cmd + " Ubuntu-" + version)
 
 	#----------------------------------------------------------------------
 	# Remove the old ABI files (as the changelog is not modified, yet,
@@ -147,9 +147,9 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		GetPackageInfo(prev=True)[1]
 	)
 	if not opts.dryrun:
-		os.system("git rm --quiet -rf " + old_abi_dir)
-		os.system("rm -rf " + old_abi_dir)
-		os.system("git add " + os.path.join(debian_dir, "abi", version))
+		(rc, output) = sh("git rm --quiet -rf " + old_abi_dir)
+		(rc, output) = sh("rm -rf " + old_abi_dir)
+		(rc, output) = sh("git add " + os.path.join(debian_dir, "abi", version))
 
 #------------------------------------------------------------------------------
 # Next step is to create a new changelog with the new header first and the
@@ -158,9 +158,9 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 if opts.dryrun:
 	print "Would call fakeroot debian/rules here"
 else:
-	os.system("fakeroot debian/rules startnewrelease")
-	os.system("git add " + changelog)
-	os.system("git commit -F debian/commit-templates/newrelease")
+	(rc, output) = sh("fakeroot debian/rules startnewrelease")
+	(rc, output) = sh("git add " + changelog)
+	(rc, output) = sh("git commit -F debian/commit-templates/newrelease")
 
 #------------------------------------------------------------------------------
 # Finally add the changelog and commit everything.

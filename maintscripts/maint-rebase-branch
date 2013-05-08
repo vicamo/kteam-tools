@@ -9,6 +9,8 @@
 #==============================================================================
 import sys, os, optparse
 from ktl.utils                        import debug, error, run_command
+from ktl.shell                        import sh, ShellError
+
 
 #------------------------------------------------------------------------------
 # Libraries shared by all kteam-tools will be found here (../lib)
@@ -156,15 +158,15 @@ if opts.continue_rebase == False and opts.skip_rebase == False:
     # First switch to the branch (to get of auto-tmp-rebase for sure).
     #----------------------------------------------------------------------
     print "Switching to", branch
-    os.system("git checkout " + branch)
+    (rc, output) = sh("git checkout " + branch)
 
     #----------------------------------------------------------------------
     # Then create the temporary rebase branch (delete it if already present)
     #----------------------------------------------------------------------
     if "auto-tmp-rebase" in GitListBranches():
-        os.system("git branch -D auto-tmp-rebase")
+        (rc, output) = sh("git branch -D auto-tmp-rebase")
     print "Creating temporary auto-tmp-rebase"
-    os.system("git checkout -b auto-tmp-rebase " + branch)
+    (rc, output) = sh("git checkout -b auto-tmp-rebase " + branch)
 
 #------------------------------------------------------------------------------
 # Get the sha1 of the last common commit with the master branch and remember
@@ -201,7 +203,7 @@ if not os.path.isfile(cmd):
     cmd = "./debian/scripts/misc/insert-ubuntu-changes"
 cmd += " {0} {1} ".format(changelog, BaseVersion.split("-")[1])
 cmd += TargetVersion.split("-")[1]
-os.system(cmd)
+(rc, output) = sh(cmd)
 
 #------------------------------------------------------------------------------
 # The ABI needs to be bumped only if this hasn't been done already and the
@@ -214,25 +216,25 @@ if VersionGetABI(GetPackageInfo()[1]) == \
 
 print "Committing changes..."
 cmd = "git add {0}".format(changelog)
-os.system(cmd)
+(rc, output) = sh(cmd)
 cmd = "git commit -s -m \"UBUNTU: Rebased to {0}\"".format(TargetVersion)
-os.system(cmd)
+(rc, output) = sh(cmd)
 
 #------------------------------------------------------------------------------
 # FIXME: Everything below can go into maint-close-release
 #------------------------------------------------------------------------------
 print "Inserting changes to close release..."
 PkgVersion = GetPackageInfo()[1]
-os.system("./debian/rules insertchanges")
+(rc, output) = sh("./debian/rules insertchanges")
 ModifyChangelog(SetRelease=TargetPocket)
 cmd = "git add {0}".format(changelog)
-os.system(cmd)
+(rc, output) = sh(cmd)
 tagname = "Ubuntu-{0}".format(PkgVersion)
 print "Committing release..."
 cmd = "git commit -s -m \"UBUNTU: {0}\"".format(tagname)
-os.system(cmd)
+(rc, output) = sh(cmd)
 print "Tagging release..."
-os.system("git tag -s -f -m {0} {0}".format(tagname))
-os.system("git clean -d -x -f")
+(rc, output) = sh("git tag -s -f -m {0} {0}".format(tagname))
+(rc, output) = sh("git clean -d -x -f")
 
 # vi:set ts=4 sw=4 expandtab:

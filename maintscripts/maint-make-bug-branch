@@ -3,6 +3,7 @@
 import sys, os
 from subprocess import *
 from getopt import *
+from ktl.shell                          import sh, ShellError
 
 def GetDebian():
 	cmd = "debian/rules printdebian"
@@ -154,7 +155,7 @@ basever = "Ubuntu-" + PkgGetLatest(pkginfo['name'], pocket)
 # Now create the new branch and create a working tree.
 #------------------------------------------------------------------------------
 print "Creating a branch named {0} based on {1}".format(branchname, basever)
-os.system("git checkout -b " + branchname + " " + basever)
+(rc, output) = sh("git checkout -b " + branchname + " " + basever)
 
 #------------------------------------------------------------------------------
 # Finally the changelog get automatically modified to add the bugnumber
@@ -163,8 +164,8 @@ os.system("git checkout -b " + branchname + " " + basever)
 pkginfo = GetPkgInfo(changelog)
 newpkgversion = "({0}+{1}v1)".format(pkginfo['version'], branchname)
 print "Changing version to {0}".format(newpkgversion)
-os.system("sed -i '1s/(.*)/{0}/' {1}".format(newpkgversion, changelog))
-os.system("git add {0}; git commit -s -m 'Startbugrelease'".format(changelog))
+(rc, output) = sh("sed -i '1s/(.*)/{0}/' {1}".format(newpkgversion, changelog))
+(rc, output) = sh("git add {0}; git commit -s -m 'Startbugrelease'".format(changelog))
 
 print "Done"
 
