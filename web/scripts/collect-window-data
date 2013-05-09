@@ -74,6 +74,8 @@ class Cmdline:
         stdo("                         The delta from now that we are interested in new bugs having        \n")
         stdo("                         been created within.                                                \n")
         stdo("                                                                                             \n")
+        stdo("        --dupes          Display bugs that are duplicates of other bugs.                     \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
@@ -117,6 +119,9 @@ class Cmdline:
                 elif opt in ('--title'):
                     self.cfg['title'] = val
 
+                elif opt == '--dupes':
+                    self.cfg['dupes'] = True
+
         except GetoptError as e:
             print(e, defaults)
             raise CmdlineError('')
@@ -146,6 +151,7 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['dupes'] = False
 
     # __initialize
     #
@@ -300,6 +306,10 @@ class CollectRegressionsData(StdApp):
                         bug = KernelBug(t.bug)
                         task = self.__get_relevant_task(bug, package_name)
                         #self.__verbose_bug_info(bug)
+
+                        if not self.cfg['dupes'] and bug.duplicate_of is None:
+                            self.verbose('    *** Skipping, is a duplicate of: %s.\n' % bug.duplicate_of)
+                            next
 
                         ago = DeltaTime(bug.date_created, now)
                         if ago.days < bug_creation_window:
