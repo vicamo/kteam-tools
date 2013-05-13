@@ -136,13 +136,12 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
+raring linux master-next linux-meta master
+raring linux-lbm master
 quantal linux master-next linux-meta master
+quantal linux-lbm master
 precise linux master-next linux-meta master
-oneiric linux master-next linux-meta master
-oneiric linux-lbm master
-natty linux master-next linux-meta master
-natty linux-lbm master
+precise linux-lbm master
 lucid linux master-next linux-meta master
 lucid linux-lbm master
-hardy linux master-next linux-meta master
 EOL
