@@ -147,8 +147,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		GetPackageInfo(prev=True)[1]
 	)
 	if not opts.dryrun:
-		(rc, output) = sh("git rm --quiet -rf " + old_abi_dir)
-		(rc, output) = sh("rm -rf " + old_abi_dir)
+		(rc, output) = sh("git rm --quiet -rf " + old_abi_dir, ignore_result=True)
+		(rc, output) = sh("rm -rf " + old_abi_dir, ignore_result=True)
 		(rc, output) = sh("git add " + os.path.join(debian_dir, "abi", version))
 
 #------------------------------------------------------------------------------
