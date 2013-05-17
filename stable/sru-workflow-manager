@@ -1313,7 +1313,6 @@ class Shank(StdApp):
             if prepare_assignee and new_status != 'Invalid':
                 self.set_task_assignee(bug_task, prepare_assignee)
 
-            print('*** Setting the task state')
             self.set_task_to_state(bug_task, new_status)
             # Take care of the upload-to-ppa task if needed
             if dep == 'main' and 'upload-to-ppa' in self.taskbyname:
