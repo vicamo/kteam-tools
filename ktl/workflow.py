@@ -227,6 +227,7 @@ class Workflow:
             'task_assignment' : {
                 'prepare-package'            : 'ben-collins',
                 'prepare-package-meta'       : 'ben-collins',
+                'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ben-collins',
                 'regression-testing'         : 'ben-collins',
