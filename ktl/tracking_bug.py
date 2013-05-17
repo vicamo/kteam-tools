@@ -111,6 +111,7 @@ class TrackingBug:
             project = 'kernel-development-workflow'
         else:
             project = 'kernel-sru-workflow'
+
         proj = lp.projects[project]
         bug.lpbug.addTask(target=proj)
 
@@ -186,7 +187,7 @@ class TrackingBug:
                 else:
                     try:
                         t.assignee = self.lp.launchpad.people[assignee]
-                    except KeyError:
+                    except:
                         print("Can't assign '%s', team not found in Launchpad!" % (assignee))
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
