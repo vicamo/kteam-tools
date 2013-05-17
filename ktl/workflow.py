@@ -365,6 +365,21 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
             },
+        'linux-ppc' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'ben-collins',
+                'prepare-package-meta'       : 'ben-collins',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'ben-collins',
+                'regression-testing'         : 'ben-collins',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
