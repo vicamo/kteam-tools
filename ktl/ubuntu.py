@@ -696,21 +696,16 @@ class Ubuntu:
         Dbg.enter('series_name')
         retval = None
 
-        if (package == 'linux' or
-            package == 'linux-ti-omap4' or
-            package == 'linux-ec2' or
-            package == 'linux-armadaxp' or
-            package == 'linux-ppc' or
-            package == 'linux-lowlatency'):
-            Dbg.verbose('package condition 1\n')
-            for entry in self.db.itervalues():
-                if version.startswith(entry['kernel']):
-                    retval = entry['name']
-
         if package.startswith('linux-lts-'):
             Dbg.verbose('package condition 2\n')
             for entry in self.db.itervalues():
                 if entry['name'] in version:
+                    retval = entry['name']
+
+        else:
+            Dbg.verbose('package condition 1\n')
+            for entry in self.db.itervalues():
+                if version.startswith(entry['kernel']):
                     retval = entry['name']
 
         Dbg.leave('series_name (%s)' % retval)
