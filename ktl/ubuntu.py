@@ -713,29 +713,6 @@ class Ubuntu:
                 if entry['name'] in version:
                     retval = entry['name']
 
-        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
-            Dbg.verbose('package condition 3\n')
-            version, release = version.split('-')
-            Dbg.verbose('version: %s   release: %s\n' % (version, release))
-            if release:
-                abi, upload = release.split('.')
-                Dbg.verbose('abi: %s   upload: %s\n' % (abi, upload))
-                try:
-                    abi_n = int(abi)
-                except ValueError:
-                    abi_n = 0
-                if abi_n:
-                    if package == 'linux-mvl-dove':
-                        if abi_n < 400:
-                            retval = 'lucid'
-                        else:
-                            retval = 'maverick'
-                    elif package == 'linux-fsl-imx51':
-                        if abi_n < 600:
-                            retval = 'karmic'
-                        else:
-                            retval = 'lucid'
-
         Dbg.leave('series_name (%s)' % retval)
         return retval
 
