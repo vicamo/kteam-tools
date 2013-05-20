@@ -75,6 +75,8 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("        --sob            Add 'Signed-off-by:' line to the patches                            \n")
         stdo("                                                                                             \n")
+        stdo("        --check-already  Check for already committed ('commit {sha} upstream.') patches      \n")
+        stdo("                                                                                             \n")
         stdo("        --name=<full name>                                                                   \n")
         stdo("                         Name to use in the SOB line.  Default is variable $DEBFULLNAME      \n")
         stdo("                                                                                             \n")
@@ -94,6 +96,7 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --check-already --sob --range=v3.8..master                                        \n" % self.cfg['app_name'])
 
     # process
     #
@@ -107,7 +110,7 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'range=', 'sob', 'verbose', 'config=',
-                         'debug=', 'name=', 'email=']
+                         'check-already', 'debug=', 'name=', 'email=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -119,6 +122,9 @@ class Cmdline:
 
                 elif opt in ('--sob'):
                     self.cfg['sob'] = ''
+
+                elif (opt == '--check-already'):
+                    self.cfg['check_already'] = True
 
                 elif opt in ('--name'):
                     self.cfg['name'] = val
@@ -371,6 +377,10 @@ class ApplyStablePatches(StdApp):
             #
             # Before applying patches, 5 directories are created if they
             # don't exist:
+            # * AlreadyCommitted: patches which were already committed
+            #            to the current branch as indicated by the
+            #            presence of a "commit {sha} upstream." string
+            #            (searching for these is enabled by --check-already)
             # * Applied: patches which succesfuly apply to the current
             #            branch are copied to this directory
             # * Ignored: patches which are marked for a different stable
@@ -401,12 +411,15 @@ class ApplyStablePatches(StdApp):
             stdo("\r%s" % (' ' * 80))
             stdo("\rApplying stable changes found in the current branch...\n")
             applied_dir = 'Applied'
+            already_dir = 'AlreadyCommitted'
             ignored_dir = 'Ignored'
             failed_dir = 'Failed'
             fixed_dir = 'Fixed'
             discarded_dir = 'Discarded'
             if not path.exists(applied_dir):
                 mkdir(applied_dir)
+	    if not path.exists(already_dir) and 'check_already' in self.cfg:
+                mkdir(already_dir)
             if not path.exists(ignored_dir):
                 mkdir(ignored_dir)
             if not path.exists(failed_dir):
@@ -416,6 +429,10 @@ class ApplyStablePatches(StdApp):
             if not path.exists(discarded_dir):
                 mkdir(discarded_dir)
             kernel = KernelVersion(Kernel().version(), False)
+	    if 'check_already' in self.cfg:
+		status, result = run_command('git show-branch --merge-base HEAD master')
+		if status == 0:
+		    merge_base=result[0].strip()
             for change in forstable:
                 status, title = run_command('git log -n 1 --format=%%s %s' % (change[0]))
                 if status != 0:
@@ -473,6 +490,15 @@ class ApplyStablePatches(StdApp):
                             continue
                 else:
                     remove(filename)
+		if 'check_already' in self.cfg:
+		    status, result = run_command('git log --oneline -n 1 --since="%s" -i --grep="^commit %s upstream\.$"' % (merge_base, change[0]) )
+		    if result[0].strip() != '':
+			already_file = '%s/%s' % (already_dir, filename)
+			if path.exists(already_file):
+			    remove(already_file)
+			move(patch_file, already_dir)
+			print("already-committed")
+			continue
                 status, result = run_command('git am -k %s' % patch_file)
                 if status != 0:
                     if 'verbose' in self.cfg:
