@@ -428,6 +428,15 @@ class ApplyStablePatches(StdApp):
                     eout(result)
                     continue
                 filename = result[0]
+
+		# Replace the useless 0001- prefix with the short sha of
+		# the upstream commit to avoid filename collision when
+		# two commits have similar or identical titles.
+		short_sha_pfx = '%s-' % change[0][:8]
+		newfilename = filename.replace('0001-', short_sha_pfx, 1)
+		rename(filename, newfilename)
+		filename = newfilename
+
                 self.modify_patch(filename, change[0], self.cfg['sob'], ccstable)
                 applied_file = '%s/%s' % (applied_dir, filename)
                 if path.exists(applied_file):
