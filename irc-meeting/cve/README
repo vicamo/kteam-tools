@@ -1,6 +1,7 @@
 == (PART I) Daily - Simple case ==
        | bzr update
 (cve1) | (or bzr branch the first time)
+       | FIRST TIME OR TO BRANCH FRESH bzr branch bzr+ssh://bazaar.launchpad.net/~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
        | bzr pull http://people.canonical.com/~kernel/cve-tracker
        | bzr vis (in bzr-gtk package) sanity check
 
