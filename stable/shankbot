@@ -321,6 +321,8 @@ class IrcShankbot(SingleServerIRCBot):
         debug("do_command: '%s'   target: '%s'" % (cmd, from_private))
 
         if cmd == 'die':
+            for t in s.threads:
+                t.exit_flag = True
             s.die()
 
         elif cmd == 'help':
