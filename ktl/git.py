@@ -39,6 +39,17 @@ class Git:
 
         return retval
 
+    # config
+    #
+    # Return the requested git config value. E.g. config("user.email")
+    #
+    @classmethod
+    def config(cls, key):
+        status, result = run_command("git config %s" % key, cls.debug)
+        if status != 0:
+            raise GitError(result)
+        return result[0]
+
     # branches
     #
     # Return a list of all the git branches known to this git repository.
