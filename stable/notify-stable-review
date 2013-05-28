@@ -168,27 +168,28 @@ class AppTemplate(StdApp):
     # generate announcement message text
     #
     def message_text(self, base_ver, new_ver, patch_cnt, sender):
+        branch="linux-%s-review" % base_ver
         return """
-I am announcing the review cycle for the %s stable release. This new
-release contains %s patches, which are posted as a response to this
-message. They are also available at the following repository:
+This is the start of the review cycle for the Linux %s stable kernel.
 
-git://kernel.ubuntu.com/ubuntu/linux.git linux-%s-review
+This version contains %s new patches, summarized below.  The new patches are
+posted as replies to this message and also available in this git branch:
 
-If there are any problems, or if anything is missing, please answer to
-this or to any of the followup patches. Note that any answer should be
-made at maximum in 3 days, after that the final release of %s will be
-made.
+http://kernel.ubuntu.com/git?p=ubuntu/linux.git;h=%s;a=shortlog
 
-For more information about the %s.z extended stable tree, see
-https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable
+git://kernel.ubuntu.com/ubuntu/linux.git  %s
 
-Included below are the diffstat and shortlog for this release.
+The review period for version %s will be open for the next three days.
+To report a problem, please reply to the relevant follow-up patch message.
+
+For more information about the Linux %s.z extended stable kernel version,
+see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
 
  -%s
 
 --
-""" % ( new_ver, patch_cnt, base_ver, new_ver, base_ver, sender.split()[0] )
+""" % ( new_ver, patch_cnt, branch, branch,
+	new_ver, base_ver, sender.split()[0] )
         # end of def message_text
 
     # function to add headers to the patches
