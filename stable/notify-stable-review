@@ -141,27 +141,6 @@ class Cmdline:
             raise CmdlineError('--new_release=<str> must be specified.')
         return
 
-mail_message = ("\n"
-"I am announcing the review cycle for the %s stable release. This new\n"
-"release contains %s patches, which are posted as a response to this\n"
-"message. They are also available at the following repository:\n"
-"\n"
-"git://kernel.ubuntu.com/ubuntu/linux.git linux-%s-review\n"
-"\n"
-"If there are any problems, or if anything is missing, please answer to\n"
-"this or to any of the followup patches. Note that any answer should be\n"
-"made at maximum in 3 days, after that the final release of %s will be\n"
-"made.\n"
-"\n"
-"For more information about the 3.5.y.z extended stable tree, see\n"
-"https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable\n"
-"\n"
-"Included below are the diffstat and shortlog for this release.\n"
-"\n"
-"-%s\n"
-"\n"
-"-- \n")
-
 # AppTemplate
 #
 class AppTemplate(StdApp):
@@ -185,6 +164,32 @@ class AppTemplate(StdApp):
             "kernel-team@lists.ubuntu.com"
         ]
         return
+
+    # generate announcement message text
+    #
+    def message_text(self, base_ver, new_ver, patch_cnt, sender):
+        return """
+I am announcing the review cycle for the %s stable release. This new
+release contains %s patches, which are posted as a response to this
+message. They are also available at the following repository:
+
+git://kernel.ubuntu.com/ubuntu/linux.git linux-%s-review
+
+If there are any problems, or if anything is missing, please answer to
+this or to any of the followup patches. Note that any answer should be
+made at maximum in 3 days, after that the final release of %s will be
+made.
+
+For more information about the %s.z extended stable tree, see
+https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable
+
+Included below are the diffstat and shortlog for this release.
+
+ -%s
+
+--
+""" % ( new_ver, patch_cnt, base_ver, new_ver, base_ver, sender.split()[0] )
+        # end of def message_text
 
     # function to add headers to the patches
     #
@@ -360,8 +365,7 @@ class AppTemplate(StdApp):
             mailbody += ("Subject: [ %s extended stable ] Linux %s stable review"
                          % (ann_ver, new_ver) + "\n")
             mailbody += "X-Extended-Stable: %s\n" % (main_ver)
-            mailbody += mail_message % (new_ver, patch_cnt, base_ver,
-                                        new_ver, sender.split()[0])
+            mailbody += self.message_text(base_ver, new_ver, patch_cnt, sender)
             mailbody += diffstat + '\n\n'
             mailbody += shortlog
             tf = NamedTemporaryFile(prefix="pmail-")
