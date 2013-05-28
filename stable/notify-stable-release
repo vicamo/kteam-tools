@@ -5,6 +5,7 @@ from sys                    import exit
 from subprocess             import Popen, PIPE
 from optparse               import OptionParser
 from tempfile               import NamedTemporaryFile
+from ktl.git                import Git
 
 #
 # The mail will be sent to this list of receipients.
@@ -18,10 +19,10 @@ cclist = [
          ]
 
 #
-# Try to get the default name and email address to make up the sender from
-# the environment.
-DefaultName  = getenv("DEBFULLNAME")
-DefaultEmail = getenv("DEBEMAIL")
+# Get the default name and email address from git config
+#
+DefaultName  = Git.config("user.name")
+DefaultEmail = Git.config("user.email")
 
 if DefaultEmail != "":
     if DefaultName != "":
@@ -47,9 +48,8 @@ OptParser.add_option(
 )
 OptParser.add_option(
     "--from", dest="sender", action="store", default=DefaultFrom,
-    help="sets the sender of the announcement email. "
-         "Without this option, try to get this info from DEBFULLNAME and "
-         "DEBEMAIL (%default)."
+    help="sets the sender of the announcement email, default is "
+         "git config user.name and user.email (%default)."
 )
 OptParser.add_option(
     "--previous_release", dest="previous_release", action="store", default="",

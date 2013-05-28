@@ -78,10 +78,10 @@ class Cmdline:
         stdo("        --check-already  Check for already committed ('commit {sha} upstream.') patches      \n")
         stdo("                                                                                             \n")
         stdo("        --name=<full name>                                                                   \n")
-        stdo("                         Name to use in the SOB line.  Default is variable $DEBFULLNAME      \n")
+        stdo("                         Name to use for the SOB line.  Default is git config user.name      \n")
         stdo("                                                                                             \n")
         stdo("        --email=<email address>                                                              \n")
-        stdo("                         Email address to use in the SOB line.  Default is variable $DEBEMAIL\n")
+        stdo("                         Email address for the SOB line.  Default is git config user.email   \n")
         stdo("                                                                                             \n")
         stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
         stdo("                         running.                                                            \n")
@@ -147,12 +147,12 @@ class Cmdline:
 
         if 'sob' in self.cfg:
             if 'name' not in self.cfg:
-                self.cfg['name'] = getenv("DEBFULLNAME")
+                self.cfg['name'] = Git.config("user.name")
             if 'email' not in self.cfg:
-                self.cfg['email'] = getenv("DEBEMAIL")
+                self.cfg['email'] = Git.config("user.email")
 
             if self.cfg['name'] == None or self.cfg['email'] == None:
-                raise CmdlineError('You need to either use --name and --email or set DEBFULLNAME and DEBEMAIL')
+                raise CmdlineError('You need to either configure your git user.{name,email} or use --name and --email')
 
             self.cfg['sob'] = "Signed-off-by: " + self.cfg['name'] + " <" + self.cfg['email'] + ">"
 

@@ -80,8 +80,7 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("        --from=<email address>                                                               \n")
         stdo("                         Sets the sender of the notification email. Without this option,     \n")
-        stdo("                         the script tries to get this info from DEBFULLNAME and DEBEMAIL     \n")
-        stdo("                         environment variables by default.                                   \n")
+        stdo("                         the script uses git config user.{name,email} by default.            \n")
         stdo("                                                                                             \n")
         stdo("        --previous_release=<version tag or commit>                                           \n")
         stdo("                         The tag or commit of the top of the previous stable release, eg.    \n")
@@ -252,8 +251,8 @@ class AppTemplate(StdApp):
             # from the environment.
             sender = ""
             if not 'from' in self.cfg:
-                sender_name  = getenv("DEBFULLNAME")
-                sender_email = getenv("DEBEMAIL")
+                sender_name  = Git.config("user.name")
+                sender_email = Git.config("user.email")
                 if sender_email:
                     if sender_name:
                         sender = "%s <%s>" % (sender_name, sender_email)
@@ -262,7 +261,7 @@ class AppTemplate(StdApp):
                 else:
                     raise CmdlineError("Unable to determine the sender for the "
                                        "email (From: address). Set your "
-                                       "DEBFULLNAME/DEBEMAIL properly or use "
+                                       "git config user.{name,email} or use "
                                        "the --from option")
             else:
                 sender = self.cfg['from']

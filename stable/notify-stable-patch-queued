@@ -5,15 +5,15 @@ from sys                                import exit
 from re                                 import compile, sub, match, IGNORECASE
 from tempfile                           import NamedTemporaryFile
 from os                                 import system, getenv
+from ktl.git                            import Git
 
 SendMailCmd  = "git send-email"
 
 #
-# Try to get the default name and email address to make up the sender from
-# the environment.
+# Get the default name and email address from git config
 #
-DefaultName  = getenv("DEBFULLNAME")
-DefaultEmail = getenv("DEBEMAIL")
+DefaultName  = Git.config("user.name")
+DefaultEmail = Git.config("user.email")
 
 #
 # Additional Cc targets which should get added
@@ -46,13 +46,12 @@ OptParser = OptionParser(
 )
 OptParser.add_option(
     "--from", dest="sender", action="store", default=DefaultFrom,
-    help="sets the sender of the notification emails. "
-         "Without this option, try to get this info from DEBFULLNAME and "
-         "DEBEMAIL (%default)."
+    help="sets the sender of the notification emails, default is "
+         "git config user.name and user.email (%default)."
 )
 OptParser.add_option(
     "--version", dest="version", action="store", default="3.5.y.z",
-    help="sets the kernel version displayed in the subject of of the "
+    help="sets the kernel version displayed in the subject of the "
          "notification emails, default is %default")
 OptParser.add_option(
     "--dry-run", dest="dryrun", action="store_true", default=False,
