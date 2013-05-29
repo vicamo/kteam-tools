@@ -63,40 +63,46 @@ class Cmdline:
         """
         Prints out the help text which explains the command line options.
         """
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s --range=<git rev> --sob=<sob> [--verbose] [--config=<cfg file>] [--debug=<dbg options>]\n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --range=<git rev>                                                                    \n")
-        stdo("                         Git base revision or range of commits to check for stable commits   \n")
-        stdo("                         to apply                                                            \n")
-        stdo("                                                                                             \n")
-        stdo("        --sob            Add 'Signed-off-by:' line to the patches                            \n")
-        stdo("                                                                                             \n")
-        stdo("        --check-already  Check for already committed ('commit {sha} upstream.') patches      \n")
-        stdo("                                                                                             \n")
-        stdo("        --name=<full name>                                                                   \n")
-        stdo("                         Name to use for the SOB line.  Default is git config user.name      \n")
-        stdo("                                                                                             \n")
-        stdo("        --email=<email address>                                                              \n")
-        stdo("                         Email address for the SOB line.  Default is git config user.email   \n")
-        stdo("                                                                                             \n")
-        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
-        stdo("                         running.                                                            \n")
-        stdo("                                                                                             \n")
-        stdo("        --config=<cfg file>                                                                  \n")
-        stdo("                         The full path to the configuration file to use instead of           \n")
-        stdo("                         the default location.                                               \n")
-        stdo("                                                                                             \n")
-        stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
-        stdo("                         the application defined support for the option.                     \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-        stdo("        %s --check-already --sob --range=v3.8..master                                        \n" % self.cfg['app_name'])
+        app_name = self.cfg['app_name']
+        stdo("""    Usage:
+        %s --range=<git rev> --sob=<sob> [--verbose] [--config=<cfg file>] [--debug=<dbg options>]
+
+    Options:
+        --help           Prints this text.
+
+        --range=<git rev>
+                         Git base revision or range of commits to check for
+                         stable commits to apply
+
+        --sob            Add 'Signed-off-by:' line to the patches
+
+        --check-already  Check for already committed ('commit {sha} upstream.')
+                         patches
+
+        --name=<full name>
+                         Name to use for the SOB line.
+                         Default is git config user.name
+
+        --email=<email address>
+                         Email address for the SOB line.
+                         Default is git config user.email
+
+        --verbose        Give some feedback of what is happening while the
+                         script is running.
+
+        --config=<cfg file>
+                         The full path to the configuration file to use instead
+                         of the default location.
+
+        --debug=<debug options>
+                         Performs additional output related to the option
+                         enabled and the application defined support for the
+                         option.
+
+    Examples:
+        %s --verbose
+        %s --check-already --sob --range=v3.8..master
+""" % ( app_name, app_name, app_name ))
 
     # process
     #

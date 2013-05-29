@@ -63,36 +63,44 @@ class Cmdline:
         """
         Prints out the help text which explains the command line options.
         """
-        stdo("  This utility is intended to be run after a set of stable patches are ready for review      \n")
-        stdo("  inside an stable upstream kernel process. It looks at a git branch with patches for        \n")
-        stdo("  review, and sends a notification email for the start of the review, plus all the patches as\n")
-        stdo("  a response to the notification email. For more information, see:                           \n")
-        stdo("  http://wiki.ubuntu.com/Kernel/Dev/ExtendedStable/Maintenance                               \n")
-        stdo("                                                                                             \n")
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--dry-run] [--from=<email address>]                                              \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --dry-run        Run in test mode and do not really send out any mail. This will     \n")
-        stdo("                         also cause the mail bodies to be written to stdout.                 \n")
-        stdo("                                                                                             \n")
-        stdo("        --from=<email address>                                                               \n")
-        stdo("                         Sets the sender of the notification email. Without this option,     \n")
-        stdo("                         the script uses git config user.{name,email} by default.            \n")
-        stdo("                                                                                             \n")
-        stdo("        --previous_release=<version tag or commit>                                           \n")
-        stdo("                         The tag or commit of the top of the previous stable release, eg.    \n")
-        stdo("                         v3.5.7, we will get the stable patches from that up to HEAD.        \n")
-        stdo("                                                                                             \n")
-        stdo("        --new_version=<version string>                                                       \n")
-        stdo("                         The version for the set of stable patches in review to be released. \n")
-        stdo("                         It's the new version to be displayed in subject/body of the email   \n")
-        stdo("                         announcement sent out, eg. 3.6.6                                    \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7.1                         \n" % self.cfg['app_name'])
+
+        app_name = self.cfg['app_name']
+        stdo("""
+  This utility is intended to be run after a set of stable patches are ready
+  for review inside an stable upstream kernel process. It looks at a git
+  branch with patches for review, and sends a notification email for the start
+  of the review, plus all the patches as a response to the notification email.
+  For more information, see:
+  http://wiki.ubuntu.com/Kernel/Dev/ExtendedStable/Maintenance
+
+    Usage:
+        %s [--dry-run] [--from=<email address>]
+
+    Options:
+        --help           Prints this text.
+
+        --dry-run        Run in test mode and do not really send out any mail.
+                         This will also cause the mail bodies to be written to
+                         stdout.
+
+        --from=<email address>
+                         Sets the sender of the notification email.  Default
+                         is constructed from git config user.{name,email}
+
+        --previous_release=<version tag or commit>
+                         The tag or commit of the top of the previous stable
+                         release, e.g. v3.5.7, we will get the stable patches
+                         from that up to HEAD.
+
+        --new_version=<version string>
+                         The version for the set of stable patches in review
+                         to be released.  It's the new version to be displayed
+                         in subject/body of the email announcement sent out,
+                         e.g. 3.6.6
+
+    Examples:
+        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7.1
+""" % ( app_name, app_name ))
 
     # process
     #
