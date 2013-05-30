@@ -54,6 +54,10 @@ OptParser.add_option(
     help="sets the kernel version displayed in the subject of the "
          "notification emails, default is %default")
 OptParser.add_option(
+    "--target", dest="tversion", action="store",
+    help="sets the patch target version (e.g. 3.8.13.2) displayed in the "
+         "body of the notification emails")
+OptParser.add_option(
     "--dry-run", dest="dryrun", action="store_true", default=False,
     help="run in test mode and do not send out mails (default: %default)"
 )
@@ -74,6 +78,10 @@ if opts.sender == "":
 def AssembleMailBody(version, subject, patchlines):
     # strip the real version used in our branch for the email
     bversion = version.split('y')[0]
+    if opts.tversion:
+        tversion_para = "\nThis patch is scheduled to be released in version " + opts.tversion + ".\n"
+    else:
+        tversion_para = ""
     mailbody = [
         "Subject: [ " + version + " extended stable ] Patch \"" + subject +
         "\" has been added to staging queue",
@@ -89,7 +97,7 @@ def AssembleMailBody(version, subject, patchlines):
         "",
         " http://kernel.ubuntu.com/git?p=ubuntu/" +
         "linux.git;a=shortlog;h=refs/heads/linux-" + bversion + "y-queue",
-        "",
+        tversion_para,
         "If you, or anyone else, feels it should not be added to this tree,"
         " please ",
         "reply to this email.",
