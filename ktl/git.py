@@ -94,17 +94,11 @@ class Git:
     #
     @classmethod
     def current_branch(cls):
-        retval = ""
-        status, result = run_command("git branch", cls.debug)
-        if status == 0:
-            for line in result:
-                if line != '' and line[0] == '*':
-                    retval = line[1:].strip()
-                    break
-        else:
-            raise GitError(result)
-
-        return retval
+        # Note: older versions of git symbolic-ref do not support --short
+        status, result = run_command("git symbolic-ref HEAD", cls.debug)
+        if status != 0:
+            raise GitError("no current branch")
+        return result[0].lstrip("refs/heads/")
 
     # show
     #
