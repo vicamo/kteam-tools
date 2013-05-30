@@ -189,7 +189,7 @@ class CreateTrackingBug(StdApp):
             cmdline.error(e.msg, self.defaults)
 
         except GitError as e:
-            eout(e.msg[0])
+            eout(e.msg)
 
         except DebianError as e:
             eout(e.msg)
