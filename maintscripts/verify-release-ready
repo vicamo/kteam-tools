@@ -249,15 +249,6 @@ class VerifyReleaseReady(StdApp):
                     break
                 self.status(msg, True)
 
-                # Check: That the pocket information is correct.
-                #
-                msg = 'pocket (-proposed)'
-                if cl1['pocket'] != 'proposed':
-                    self.status(msg, False)
-                    self.verbose("expected '-proposed' but got: '%s'" % (cl1['pocket']))
-                    break
-                self.status(msg, True)
-
                 break
 
             if cl1['package'] != 'linux':
