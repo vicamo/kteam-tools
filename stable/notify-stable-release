@@ -16,6 +16,7 @@ tolist = [
             "kernel-team@lists.ubuntu.com"
          ]
 cclist = [
+            "lwn@lwn.net",
          ]
 
 #
