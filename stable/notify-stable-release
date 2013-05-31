@@ -139,32 +139,20 @@ mailbody.extend([
     "Subject: [%s extended stable] Linux %s" % (ann_ver, vstable),
     "X-Extended-Stable: %s" % (basever),
     "",
-    "I am announcing the release of the %s tree of stable patches." %
-    (vstable),
-    "",
-    "This tree picks up the latest %s stable release upstream, and add patches"
-    % (basever),
-    "on top that were later marked for stable but can't be added to %s, as"
-    % (basever),
-    "it is not anymore an stable series maintained upstream.",
-    "",
-    "The tree is maintained by the Ubuntu Kernel Team, with the intention",
-    "to continue to provide support for the %s series. Anyone is welcomed"
-    % (basever),
-    "on using it or contributing to this effort.",
-    "",
-    "For more info, see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable",
+    "I am announcing the release of the Linux %s kernel." % (vstable),
     "",
     "The updated %s.y tree can be found at: " % (basever),
+    "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y" % (basever),
+    "and can be browsed at:",
+    "  http://kernel.ubuntu.com/git?p=ubuntu/linux.git;h=refs/heads/linux-%s.y;a=shortlog" % (basever),
     "",
-    "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y"
+    "The diff from %s is posted as a follow-up to this email." % (rangestart),
+    "",
+    "The %s.y extended stable tree is maintained by the Ubuntu Kernel Team."
     % (basever),
+    "For more info, see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable",
     "",
-    "The diffstat and shortlog with changes since previous %s release are"
-    % (rangestart),
-    "shown below.",
-    "",
-    "-" + opts.sender.split()[0],
+    " -" + opts.sender.split()[0],
     "",
     "-- ",
 ])
