@@ -16,13 +16,32 @@ class TrackingBug:
         self.wf = Workflow()
         self.ub = Ubuntu()
 
+    # has_dependent_package
+    #
+    def has_dependent_package(self, series, main_package, dependent_package):
+        '''
+        Returns true/false depending on if the main package has the specified
+        dependent package as a dependency.
+        '''
+        if self.__dependency_list is None:
+            try:
+                record = self.ub.lookup(series)
+                try:
+                    self.__dependency_list = record['dependent-packages'][main_package]
+                except KeyError:
+                    self.__dependency_list = {}
+            except KeyError:
+                self.__dependency_list = {}
+
+        return dependent_package in self.__dependency_list
+
     def open(self, package, version, new_abi, master_bug, series_specified = None):
 
         # For the given version, figure out the series.
         # If we can't find the series, don't continue.
         #
         series_target = None
-        series = series_specified
+        targeted_series_name = series_specified
         if not series_specified:
             series = self.ub.series_name(package, version)
         if series:
@@ -118,37 +137,18 @@ class TrackingBug:
         proj = lp.projects[project]
         bug.lpbug.addTask(target=proj)
 
-        # check the need for dependent packages tasks
-        has_lbm = False
-        has_meta = False
-        has_ports_meta = False
-        has_signed = False
-        try:
-            found = self.ub.lookup(series)
-        except KeyError:
-            found = {}
-        if found:
-            if 'dependent-packages' in found:
-                for dep in iter(found['dependent-packages']):
-                    if dep == package:
-                        has_lbm = 'lbm' in found['dependent-packages'][dep]
-                        has_meta = 'meta' in found['dependent-packages'][dep]
-                        has_ports_meta = 'ports-meta' in found['dependent-packages'][dep]
-                        has_signed = 'signed' in found['dependent-packages'][dep]
-                        break
-
         sc = proj.series_collection
         for s in sc:
             if s.active and s.name not in ['trunk', 'latest']:
                 if s.name == 'upload-to-ppa' and not series_specified:
                     continue
-                if s.name == 'prepare-package-lbm' and not has_lbm:
+                if s.name == 'prepare-package-lbm' and not self.has_dependent_package(series, package, 'lbm'):
                     continue
-                if s.name == 'prepare-package-meta' and not has_meta:
+                if s.name == 'prepare-package-meta' and not self.has_dependent_package(series, package, 'meta'):
                     continue
-                if s.name == 'prepare-package-ports-meta' and not has_ports_meta:
+                if s.name == 'prepare-package-ports-meta' and not self.has_dependent_package(series, package, 'ports-meta'):
                     continue
-                if s.name == 'prepare-package-signed' and not has_signed:
+                if s.name == 'prepare-package-signed' and not self.has_dependent_package(series, package, 'signed'):
                     continue
                 nomination = bug.lpbug.addNomination(target=s)
                 if nomination.canApprove():
