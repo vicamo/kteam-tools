@@ -13,18 +13,18 @@ class TrackingBug:
         self.lp = lp
         self.staging = staging
         self.quiet = quiet
+        self.wf = Workflow()
+        self.ub = Ubuntu()
 
-    def open(self, package, version, new_abi, master_bug, der_series = None):
-        wf = Workflow()
-        ub = Ubuntu()
+    def open(self, package, version, new_abi, master_bug, series_specified = None):
 
         # For the given version, figure out the series.
         # If we can't find the series, don't continue.
         #
         series_target = None
-        series = der_series
-        if not der_series:
-            series = ub.series_name(package, version)
+        series = series_specified
+        if not series_specified:
+            series = self.ub.series_name(package, version)
         if series:
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
@@ -36,7 +36,7 @@ class TrackingBug:
         if not series_target:
             raise Exception("%s-%s: can't figure out the distro series for it."
                             % (package, version))
-        devel_series = ub.is_development_series(series)
+        devel_series = self.ub.is_development_series(series)
 
         # Title: <package>: <version> -proposed tracker
         title = "%s: %s -proposed tracker" % (package, version)
@@ -79,14 +79,14 @@ class TrackingBug:
 
         # Tags:
         #    add all tags for this package name
-        taglist = wf.initial_tags(package, devel_series)
+        taglist = self.wf.initial_tags(package, devel_series)
         for itag in taglist:
             bug.tags.append(itag)
 
         # Teams / individuals to be automatically subscribed to the tracking bugs
         #   These vary per package
         #
-        teams = wf.subscribers(package, devel_series)
+        teams = self.wf.subscribers(package, devel_series)
         for team in teams:
             try:
                 lp_team = self.lp.launchpad.people[team]
@@ -124,7 +124,7 @@ class TrackingBug:
         has_ports_meta = False
         has_signed = False
         try:
-            found = ub.lookup(series)
+            found = self.ub.lookup(series)
         except KeyError:
             found = {}
         if found:
@@ -140,7 +140,7 @@ class TrackingBug:
         sc = proj.series_collection
         for s in sc:
             if s.active and s.name not in ['trunk', 'latest']:
-                if s.name == 'upload-to-ppa' and not der_series:
+                if s.name == 'upload-to-ppa' and not series_specified:
                     continue
                 if s.name == 'prepare-package-lbm' and not has_lbm:
                     continue
@@ -175,7 +175,7 @@ class TrackingBug:
                     continue
                 t.importance = "Medium"
                 task = parts[2].strip()
-                assignee = wf.assignee(package, task, devel_series)
+                assignee = self.wf.assignee(package, task, devel_series)
                 if assignee is None:
                     if not self.quiet:
                         print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
@@ -189,7 +189,7 @@ class TrackingBug:
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
-                        if not devel_series and wf.is_task_invalid(package, task, lin_ver):
+                        if not devel_series and self.wf.is_task_invalid(package, task, lin_ver):
                             t.status = "Invalid"
                             continue
                     if not new_abi and task.startswith('prepare-package-'):
