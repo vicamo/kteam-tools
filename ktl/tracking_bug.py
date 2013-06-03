@@ -120,8 +120,6 @@ class TrackingBug:
 
         # check the need for dependent packages tasks
         has_lbm = False
-        has_lrm = False
-        has_lum = False
         has_meta = False
         has_ports_meta = False
         has_signed = False
@@ -134,8 +132,6 @@ class TrackingBug:
                 for dep in iter(found['dependent-packages']):
                     if dep == package:
                         has_lbm = 'lbm' in found['dependent-packages'][dep]
-                        has_lrm = 'lrm' in found['dependent-packages'][dep]
-                        has_lum = 'lum' in found['dependent-packages'][dep]
                         has_meta = 'meta' in found['dependent-packages'][dep]
                         has_ports_meta = 'ports-meta' in found['dependent-packages'][dep]
                         has_signed = 'signed' in found['dependent-packages'][dep]
@@ -147,10 +143,6 @@ class TrackingBug:
                 if s.name == 'upload-to-ppa' and not der_series:
                     continue
                 if s.name == 'prepare-package-lbm' and not has_lbm:
-                    continue
-                if s.name == 'prepare-package-lrm' and not has_lrm:
-                    continue
-                if s.name == 'prepare-package-lum' and not has_lum:
                     continue
                 if s.name == 'prepare-package-meta' and not has_meta:
                     continue
