@@ -145,6 +145,12 @@ class CreateTrackingBug(StdApp):
             # Title:
             title = "%s update to %s stable release" % (series.title(), self.cfg['version'])
 
+            # Repository - see if it's a tree we maintain
+            if version.startswith("3.5") or version.startswith("3.8"):
+                repository = "git://kernel.ubuntu.com/ubuntu/linux.git"
+            else:
+                repository = "git://git.kernel.org/"
+
             # Description
             description = """
     SRU Justification
@@ -158,13 +164,13 @@ class CreateTrackingBug(StdApp):
        patch set is now available. It should be included in the Ubuntu
        kernel as well.
 
-       git://git.kernel.org/
+       %s
 
     TEST CASE: TBD
 
        The following patches are in the %s stable release:
 
-            """ % (version, version)
+            """ % (version, repository, version)
 
             bug = self.lp.create_bug(project='ubuntu', package='linux', title=title, description=description)
 
