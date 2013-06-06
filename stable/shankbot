@@ -14,7 +14,7 @@ import random
 import re
 import json
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import error, debug, basicConfig, INFO, DEBUG
+from logging                            import error, debug, basicConfig, INFO, DEBUG, WARNING
 from time                               import sleep
 from threading                          import Thread, Event
 from ktl.ircbot                         import SingleServerIRCBot
@@ -430,7 +430,7 @@ if __name__ == '__main__':
         LOGLEVEL = DEBUG
     else:
         LOGLEVEL = INFO
-    LOGLEVEL = DEBUG
+    LOGLEVEL = WARNING
     basicConfig(level=LOGLEVEL, format="%(levelname)s - %(message)s")
 
     app_description = '''
