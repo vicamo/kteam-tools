@@ -10,8 +10,10 @@ from ktl.git                            import Git, GitError
 #from commands                           import getstatusoutput
 #from ktl.kernel                         import Kernel
 from os                                 import path #, mkdir, remove, rename, getenv
+from string                             import rsplit
 #from shutil                             import move
 #from tempfile                           import NamedTemporaryFile
+
 
 if len(argv) < 3:
     print "Usage:\n"
@@ -28,63 +30,24 @@ Git = Git
 if not Git.is_repo():
     eout("\nThis only works if you're in a git repo")
 
-gitcmd = "git log --pretty=format:%%f %s.." % (last_tag)
+gitcmd = "git log --pretty=format:\"%%h %%f\" %s.." % (last_tag)
 status, commitlist = run_command(gitcmd, dbg=False)
 if status:
     eout("error while running git command:\n%s\n" % gitcmd)
 
-hits = []
+hit_patches = []
+hit_commits = []
 for fn in file_list:
-    patch_name = path.basename(fn).split(".")[0][5:]
+    patch_name = rsplit(path.basename(fn),".",1)[0][5:]
     for commit in commitlist:
-        if commit.startswith(patch_name):
-            hits.append(fn)
+        commit_subj = commit.split(" ")[1]
 
-if len(hits) > 0:
+        if commit_subj.startswith(patch_name):
+            hit_patches.append(fn)
+            hit_commits.append(commit)
+
+if len(hit_patches) > 0:
     print "The following commits may already be in your tree:\n"
-    for fn in hits:
-        print fn
+    for fn, commit in zip(hit_patches, hit_commits):
+        print fn + "\n" + commit + "\n"
 
-#
-# take a path to a directory full of patches
-#
-
-#
-# For each patch in that directory
-#
-#    See whether it's already applied to the current tree
-#
-#
-#
-#
-#
-#
-
-
-#
-# 
-#
-
-#
-# 
-#
-
-#
-# 
-#
-
-#
-# 
-#
-
-#
-# 
-#
-
-#
-# 
-#
-
-#
-# 
-#
