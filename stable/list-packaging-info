@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+#from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, error, run_command, eout
+#from ktl.std_app                        import StdApp
+from ktl.git                            import Git, GitError
+#from re                                 import compile, IGNORECASE, MULTILINE
+#from commands                           import getstatusoutput
+from ktl.debian                         import Debian
+from ktl.ubuntu                         import Ubuntu
+
+from os                                 import path #, mkdir, remove, rename, getenv
+from string                             import rsplit
+#from shutil                             import move
+#from tempfile                           import NamedTemporaryFile
+
+G = Git
+D = Debian
+U = Ubuntu()
+
+# Make sure we're in a git repo
+if not Git.is_repo():
+    eout("\nThis only works if you're in a git repo")
+
+changelog = D.changelog()
+#print changelog[0]
+
+linux_version = changelog[0]['linux-version']
+package = changelog[0]['package']
+series = changelog[0]['series']
+pocket = changelog[0]['pocket']
+version = changelog[0]['version']
+ABI = changelog[0]['ABI']
+release = changelog[0]['release']
+upload_number = changelog[0]['upload-number']
+
+print "=== Package Information ===\n"
+
+print "          Package :", package
+print "Changelog Version :", version
+
+info = U.lookup(linux_version)
+ubuntu_series = info['name']
+#print "info = ", info
+
+# if series is not in the changelog, infer it from the version
+# Not accurate for backports, so adjust it
+if series == "UNRELEASED":
+    print "        Changelog : UNRELEASED"
+    series = ubuntu_series
+else:
+    print "        Changelog : ready for release"
+
+print "           Series :", series
+
+update_series = series
+
+if "lts" in package:
+    update_series = ubuntu_series
+    cmdline = "rmadison -asource linux | grep updates | grep %s" % ubuntu_series
+    status, backport_updates = run_command(cmdline, dbg=False)
+    if status:
+        eout("error while running rmadison command:\n%s\n" % cmdline)
+    backported_version = backport_updates[0].split("|")[1].strip()
+    print "  Backported from :", update_series, backported_version
+
+#
+# Get updates version -
+#
+
+cmdline = "rmadison -asource %s | grep updates" % package
+if package in ["linux", "linux-meta", "linux-signed", "linux-ti-omap4"]:
+    cmdline = cmdline + " | grep %s" % update_series
+
+#print "cmdline = ", cmdline
+status, uline = run_command(cmdline, dbg=False)
+if status:
+    eout("error while running rmadison command:\n%s\n" % cmdline)
+
+updates_package = uline[0].split('|')[0].strip()
+if updates_package != package:
+    print "Unable to determine version in updates, unexpected output from rmadison"
+else:
+    updates_version = uline[0].split('|')[1].strip()
+    print "  Updates version :", updates_version
+
+print "\n=== Commit lines ===\n"
+
+#meta, linux, lbm, ti-omap
+if package in ["linux", "linux-meta","linux-ti-omap4"]:
+    tag_str = 'Ubuntu-%s' % version
+    commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
+elif package == "linux-signed":
+    commit_str = "(printed by update script)"
+elif "ports" in package:
+    tag_str = 'ports-Ubuntu-%s' % version
+    commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
+elif "lts" in package:
+    tag_str = 'Ubuntu-lts-%s' % version
+    commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
+else:
+    commit_str = "Don't know how to figure out the commit line"
+
+print commit_str
+print "git tag -s -m %s %s" % (tag_str, tag_str)
+
+print "\n=== Build Command Line ===\n"
+
+if "lts" in package:
+    buildstr = "debuild -S -I -i -uc -us -sa -v%s" % backported_version
+elif package in ["linux-ports-meta", "linux-meta"]:
+    buildstr = "make"
+else:
+    buildstr = "debuild -S -I -i -uc -us -sa -v%s" % updates_version
+
+print buildstr
+print
+
+
