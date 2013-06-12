@@ -15,6 +15,7 @@ class TrackingBug:
         self.quiet = quiet
         self.wf = Workflow()
         self.ub = Ubuntu()
+        self.__dependency_list = None
 
     # has_dependent_package
     #
@@ -33,7 +34,8 @@ class TrackingBug:
             except KeyError:
                 self.__dependency_list = {}
 
-        return dependent_package in self.__dependency_list
+        retval = dependent_package in self.__dependency_list
+        return retval
 
     def open(self, package, version, new_abi, master_bug, series_specified = None):
 
@@ -43,19 +45,19 @@ class TrackingBug:
         series_target = None
         targeted_series_name = series_specified
         if not series_specified:
-            series = self.ub.series_name(package, version)
-        if series:
+            targeted_series_name = self.ub.series_name(package, version)
+        if targeted_series_name:
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
             sc = ubuntu.series_collection
             for s in sc:
-                if s.name == series:
+                if s.name == targeted_series_name:
                     series_target = s
                     break
         if not series_target:
             raise Exception("%s-%s: can't figure out the distro series for it."
                             % (package, version))
-        devel_series = self.ub.is_development_series(series)
+        devel_series = self.ub.is_development_series(targeted_series_name)
 
         # Title: <package>: <version> -proposed tracker
         title = "%s: %s -proposed tracker" % (package, version)
@@ -120,7 +122,7 @@ class TrackingBug:
         nomination = bug.lpbug.addNomination(target=series_target)
         if nomination.canApprove():
             nomination.approve()
-        bug.tags.append(series)
+        bug.tags.append(targeted_series_name)
 
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Add a task for kernel-sru-workflow and then nominate all the series that belong
@@ -134,67 +136,66 @@ class TrackingBug:
         else:
             project = 'kernel-sru-workflow'
 
-        proj = lp.projects[project]
-        bug.lpbug.addTask(target=proj)
+        lp_project = lp.projects[project]
+        bug.lpbug.addTask(target=lp_project)
 
-        sc = proj.series_collection
-        for s in sc:
-            if s.active and s.name not in ['trunk', 'latest']:
-                if s.name == 'upload-to-ppa' and not series_specified:
+        sc = lp_project.series_collection
+        for series in sc:
+            if series.active and series.name not in ['trunk', 'latest']:
+                if series.name == 'upload-to-ppa' and not series_specified:
                     continue
-                if s.name == 'prepare-package-lbm' and not self.has_dependent_package(series, package, 'lbm'):
+                if series.name == 'prepare-package-lbm' and not self.has_dependent_package(targeted_series_name, package, 'lbm'):
                     continue
-                if s.name == 'prepare-package-meta' and not self.has_dependent_package(series, package, 'meta'):
+                if series.name == 'prepare-package-meta' and not self.has_dependent_package(targeted_series_name, package, 'meta'):
                     continue
-                if s.name == 'prepare-package-ports-meta' and not self.has_dependent_package(series, package, 'ports-meta'):
+                if series.name == 'prepare-package-ports-meta' and not self.has_dependent_package(targeted_series_name, package, 'ports-meta'):
                     continue
-                if s.name == 'prepare-package-signed' and not self.has_dependent_package(series, package, 'signed'):
+                if series.name == 'prepare-package-signed' and not self.has_dependent_package(targeted_series_name, package, 'signed'):
                     continue
-                nomination = bug.lpbug.addNomination(target=s)
+                nomination = bug.lpbug.addNomination(target=series)
                 if nomination.canApprove():
                     nomination.approve()
 
         # Set task assignments and importance. Main project task must be
         # set to In Progress for the bot to do its processing.
         #
-        for t in bug.tasks:
-            task       = t.bug_target_display_name
-            parts = task.partition(proj.display_name)
-            if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
-                t.status = "In Progress"
-                t.importance = "Medium"
+        for task in bug.tasks:
+            task_name       = task.bug_target_display_name
+            parts = task_name.partition(lp_project.display_name)
+            if parts[0] == '' and parts[1] == lp_project.display_name and parts[2] == '':
+                task.status = "In Progress"
+                task.importance = "Medium"
             else:
                 if parts[0] != '':
                     # Mark the development task as invalid if this is an
                     # stable tracking bug
-                    if (parts[0] == "linux (Ubuntu)" and
-                        series_target.status != "Active Development"):
-                        t.status = "Invalid"
+                    if (parts[0] == "linux (Ubuntu)" and series_target.status != "Active Development"):
+                        task.status = "Invalid"
                     elif parts[0] != "linux (Ubuntu)":
-                        t.importance = "Medium"
+                        task.importance = "Medium"
                     continue
-                t.importance = "Medium"
-                task = parts[2].strip()
-                assignee = self.wf.assignee(package, task, devel_series)
+                task.importance = "Medium"
+                task_name = parts[2].strip()
+                assignee = self.wf.assignee(package, task_name, devel_series)
                 if assignee is None:
                     if not self.quiet:
                         print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                     t.status = "Invalid"
                 else:
                     try:
-                        t.assignee = self.lp.launchpad.people[assignee]
+                        task.assignee = self.lp.launchpad.people[assignee]
                     except:
                         if not self.quiet:
                             print("Can't assign '%s', team not found in Launchpad!" % (assignee))
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
-                        if not devel_series and self.wf.is_task_invalid(package, task, lin_ver):
-                            t.status = "Invalid"
+                        if not devel_series and self.wf.is_task_invalid(package, task_name, lin_ver):
+                            task.status = "Invalid"
                             continue
-                    if not new_abi and task.startswith('prepare-package-'):
-                        if task != 'prepare-package-signed':
-                            t.status = "Invalid"
+                    if not new_abi and task_name.startswith('prepare-package-'):
+                        if task_name != 'prepare-package-signed':
+                            task.status = "Invalid"
 
         return bug
 
