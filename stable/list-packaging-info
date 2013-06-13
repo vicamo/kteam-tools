@@ -98,16 +98,18 @@ elif "ports" in package:
     tag_str = 'ports-Ubuntu-%s' % version
     commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
 elif "lts" in package:
-    tag_str = 'Ubuntu-lts-%s' % version
-    commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
+    tag_str = 'Ubuntu-lts-%s' % version.split('~')[0]
+    commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str.split('~')[0]
 else:
     commit_str = "Don't know how to figure out the commit line"
 
 print commit_str
 print "git tag -s -m %s %s" % (tag_str, tag_str)
 
-print "\n=== Build Command Line ===\n"
+print "\n=== Build Command Lines ===\n"
 
+print "git clean -dxf"
+print "fakeroot debian/rules clean"
 if "lts" in package:
     buildstr = "debuild -S -I -i -uc -us -sa -v%s" % backported_version
 elif package in ["linux-ports-meta", "linux-meta"]:
