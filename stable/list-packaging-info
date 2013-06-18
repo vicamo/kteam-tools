@@ -93,7 +93,8 @@ if package in ["linux", "linux-meta","linux-ti-omap4"]:
     tag_str = 'Ubuntu-%s' % version
     commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
 elif package == "linux-signed":
-    commit_str = "(printed by update script)"
+    commit_str = None
+    tag_str = None
 elif "ports" in package:
     tag_str = 'ports-Ubuntu-%s' % version
     commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str
@@ -101,10 +102,13 @@ elif "lts" in package:
     tag_str = 'Ubuntu-lts-%s' % version.split('~')[0]
     commit_str = 'git commit -s -m "UBUNTU: %s"' % tag_str.split('~')[0]
 else:
-    commit_str = "Don't know how to figure out the commit line"
+    raise("Don't know how to figure out the commit line")
 
-print commit_str
-print "git tag -s -m %s %s" % (tag_str, tag_str)
+if commit_str is None:
+    print "Commit and tag commands are printed by the update-version script"
+else:
+    print commit_str
+    print "git tag -s -m %s %s" % (tag_str, tag_str)
 
 print "\n=== Build Command Lines ===\n"
 
