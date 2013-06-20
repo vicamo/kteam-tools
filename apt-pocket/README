@@ -1,0 +1,54 @@
+= apt-soources =
+
+When building for testing pre-upload to the archive it is key that you
+use the correct pocket and component combinations.  For development it
+is key you build against -proposed.  For main packages you should test
+with only main enabled to ensure new dependancies have not been added, etc.
+
+These combination would necessitate having several chroots per
+architecture, per release.  To avoid this apt-sources allows you to have
+only a base chroot on your system (configured for -release and -security)
+and use that to provide the other combinations on demand.
+
+
+== Installation of apt-sources ==
+
+apt-sources consists of two parts:
+
+ 1. 90apt-sources -- an schroot setup hook which identifies the requested
+    pockets and components and enables them in the chroot at initialisation
+    time.
+ 2. apt-sources-init -- a helper which can be applied to the master chroot
+    configuration to generate the necessary additional configuration to
+    allow selection of the various pocket/component combinations.
+
+Copy 90apt-sources into /etc/schroot/setup.d on the target system.
+Then use apt-sources-init on your master configuration (select v1 for
+precise and v2 for later releases):
+
+   {{{
+sudo ./apt-sources-init /etc/schroot.d/chroot.d/sbuild-precise-amd64 <v1|v2>
+}}}
+
+
+== Using the chroots ==
+
+Once the initialisaion is complete you can then access the chroots as if
+they existed in their own right.  If your main chroot is called sbuild-precise-amd64
+then the new chroots will be named as below:
+
+    {{{
+sbuild-precise-<pocket>[+<component>]-amd64
+}}}
+
+For example:
+    {{{
+sbuild-precise-proposed-amd64
+sbuild-precise-security-amd64
+sbuild-precise-security+main-amd64
+}}}
+
+You do need to apt-get update and apt-get dist-upgrade in the chroot to
+ensure you have the relevant packages updated as needed.  When using the
+chroots with sbuild (the primary use case) this is done automatically as
+part of the normal build processing.

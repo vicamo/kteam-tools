@@ -1,0 +1,51 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 -a "$#" -ne 3 ]; then 
+	echo "Usage: $0 <master config> v1|v2 [<prefix>]" 1>&2
+	echo "       v1: precise and older" 1>&2
+	echo "       v2: quantal and newer" 1>&2
+	exit 1
+fi
+base="$1"
+mode="$2"
+
+name="`head -1 "$base" | sed -e 's/\[//' -e 's/\]//'`"
+if [ "$#" = 3 ]; then
+	prefix="$3"
+else
+	prefix="${name%%-*}"
+fi
+
+echo "name<$name> prefix<$prefix>"
+case "$mode" in
+v1)
+	for pocket in security updates proposed
+	do
+		for comp in '' +main +restricted +universe +multiverse
+		do
+			newname=`echo "$name" | sed -e "s/^$prefix-/$prefix-$pocket$comp-/"`
+			newbase=`echo "$base" | sed -e "s/$prefix-/$prefix-$pocket$comp-/"`
+			sed \
+				-e "1s/$name/$newname/" \
+				-e "s/description=.*/description=$name apt.enable=true/" \
+			    <"$base" >"$newbase.apt-pocket"
+		done
+	done
+	;;
+v2)
+	aliases="aliases="
+	for pocket in security updates proposed
+	do
+		for comp in '' +main +restricted +universe +multiverse
+		do
+			newname=`echo "$name" | sed -e "s/^$prefix-/$prefix-$pocket$comp-/"`
+			aliases="$aliases$newname,"
+		done
+	done
+	aliases=${aliases%,}
+
+	{
+		echo "apt.enable=true"
+		echo "$aliases"
+	} >>"$base"
+esac

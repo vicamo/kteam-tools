@@ -1,0 +1,149 @@
+#!/bin/sh
+# Copyright © 2012  Andy Whitcroft <apw@ubuntu.com>
+#
+# schroot is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# schroot is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+#####################################################################
+
+set -e
+
+. "$SETUP_DATA_DIR/common-data"
+. "$SETUP_DATA_DIR/common-functions"
+if [ -f "$SETUP_DATA_DIR/common-config" ]; then
+    . "$SETUP_DATA_DIR/common-config"
+else
+    # handle precise where we cannot set variables, and do not get
+    # alias information.
+    desc="`schroot --config -c "$CHROOT_NAME" | \
+	awk -F= '
+		/^description/ {
+			r=$2
+			for (n=3; n <= NF; n++) { r = r "=" $n }
+			 print r
+		}
+	'`"
+
+    case "$desc" in
+    *apt.enable=true*)
+	APT_ENABLE=true
+	CHROOT_ALIAS="$CHROOT_NAME"
+	CHROOT_NAME=`echo "$desc" | sed -e 's/apt.enable=true//' -e 's/^ *//' -e 's/ *$//'` 
+	;;
+    esac
+fi
+
+changed=false
+if [ $STAGE = "setup-start" ] || [ $STAGE = "setup-recover" ]; then
+    sources="${CHROOT_PATH}/etc/apt/sources.list"
+
+    if [ "$CHROOT_SESSION_PURGE" = 'false' ]; then
+	exit 0
+    fi
+
+    # Alias driven mode.
+    if [ -n "$APT_ENABLE" ]; then
+	suite="proposed"
+	comp="universe"
+	[ -n "$APT_DEFAULT_SUITE" ] && suite="$APT_DEFAULT_SUITE"
+	[ -n "$APT_DEFAULT_COMPONENT" ] && comp="$APT_DEFAULT_COMPONENT"
+
+	# "Subtract" the CHROOT_NAME from the CHROOT_ALIAS to extract
+	# the pocket/component information.
+	suite_comp=`awk -v base="$CHROOT_NAME" -v name="$CHROOT_ALIAS" '
+                BEGIN {
+                        bbh = split(base, bb, "-")
+                        nbh = split(name, nb, "-")
+                        bbl = 1
+                        nbl = 1
+
+                        while (bbl <= bbh && bb[bbl] == nb[nbl]) { bbl++; nbl++; }
+                        while (bbh >= bbl && bb[bbh] == nb[nbh]) { bbh--; nbh--; }
+
+                        extra=""
+                        for (; nbl <= nbh; nbl++) {
+                                extra = extra "-" nb[nbl]
+                        }
+                        print(substr(extra, 2))
+                }
+        '`
+
+	case "$suite_comp" in
+	'')
+		;;
+	*+*)
+		suite=`echo "$suite_comp" | sed -e 's/\+.*//'`
+		comp=`echo "$suite_comp" | sed -e 's/[^\+]*+//'`
+		;;
+	*)
+		suite="$suite_comp"
+		;;
+	esac
+
+	case "$suite" in
+	release)	suites="" ;;
+	security)	suites="security" ;;
+	updates)	suites="security updates" ;;
+	proposed)	suites="security updates proposed" ;;
+	*) echo "unknown suite $suite" 1>&2; exit 1 ;;
+	esac
+	case "$comp" in
+	main)		comps="main" ;;
+	restricted)	comps="main restricted" ;;
+	universe)	comps="main universe" ;;
+	multiverse)	comps="main restricted universe multiverse" ;;
+	'')		;;
+	*) echo "unknown component $comp" 1>&2; exit 1 ;;
+	esac
+
+	APT_POCKETS="$suites"
+	APT_COMPONENTS="$comps"
+    fi
+
+    if [ -n "$APT_POCKETS" ]; then
+	echo "setting apt pockets to 'release $APT_POCKETS' in sources.list"
+	awk -v pockets="$APT_POCKETS" '
+		BEGIN		{ n = 0; split(pockets, plist); }
+		/^#/		{ print ; next }
+		($3 !~ /-/)	{ print;
+				  release = $3;
+				  for (m in plist) {
+					$3 = release "-" plist[m];
+					new[n] = $0; n++;
+				  }
+			  	  next;
+				}
+		END		{ for (x = 0; x < n; x++) {
+					print new[x]
+				  }
+				}
+	' <"$sources" >"$sources.new"
+	mv "$sources.new" "$sources"
+	changed=true
+    fi
+    if [ -n "$APT_COMPONENTS" ]; then
+	echo "setting apt components to '$APT_COMPONENTS' in sources.list"
+	awk -v components="$APT_COMPONENTS" '
+		/^#/		{ print ; next }
+				{ print $1 " " $2 " " $3 " " components }
+	' <"$sources" >"$sources.new"
+	mv "$sources.new" "$sources"
+	changed=true
+    fi
+
+    if [ "$VERBOSE" = 'verbose' -a "$changed" = 'true' ]; then
+	echo "Resulting sources.list"
+	cat "$sources"
+    fi
+fi
