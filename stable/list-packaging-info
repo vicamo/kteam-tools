@@ -36,6 +36,14 @@ ABI = changelog[0]['ABI']
 release = changelog[0]['release']
 upload_number = changelog[0]['upload-number']
 
+print "================================================="
+print "=             !!! NOTICE !!!                    ="
+print "=                                               ="
+print "=  This is broken and some information is wrong ="
+print "=  Check everything until this is fixed         ="
+print "=                                               ="
+print "================================================="
+
 print "=== Package Information ===\n"
 
 print "          Package :", package
