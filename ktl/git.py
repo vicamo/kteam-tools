@@ -98,7 +98,7 @@ class Git:
         status, result = run_command("git symbolic-ref HEAD", cls.debug)
         if status != 0:
             raise GitError("no current branch")
-        return result[0].lstrip("refs/heads/")
+        return result[0].replace("refs/heads/", "")
 
     # show
     #
