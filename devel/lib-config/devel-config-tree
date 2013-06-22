@@ -363,7 +363,7 @@ elif cmd == 'genorder':
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
             print('M', '>'.join(pname + [ mname ]))
             if 'config' in entry:
-                print('E', '>'.join(pname + [ mname]) + '>>' + entry['config'])
+                print('E', '>'.join(pname + [ mname ]) + '>>' + entry['config'])
         elif 'choice' in entry:
             pass
         else:
