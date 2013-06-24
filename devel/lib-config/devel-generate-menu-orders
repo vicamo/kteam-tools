@@ -39,14 +39,11 @@ function what_menu()
 function list_menu()
 {
         what_menu "$list" "$2"
-	#[ "$what" = "" ] && what="^NOT_VALID"
-	#echo "# $1"
-	#egrep -h "$what" "$HOME/git2/ubuntu-raring/debian.master/config/annotations-good"
-	if ! list_worthy "$1" "$what" "$3" >"$list.menu"; then
-		cat "$list.menu" >>"$prefix-issues.$format"
+	if ! list_worthy "$1" "$what" "$3" >"$prefix.menu"; then
+		cat "$prefix.menu" >>"$prefix-issues.$format"
 	fi
-	cat "$list.menu" >>"$prefix.$format"
-	rm -f "$list.menu"
+	cat "$prefix.menu" >>"$prefix.$format"
+	rm -f "$prefix.menu"
 }
 
 rm -rf tmp
@@ -55,10 +52,10 @@ mkdir -p tmp
 list="/tmp/list.$$"
 {
 	echo "M ROOT"
-	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder <"$base/debian.master/config/annotations"
-	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder <"$base/debian.master/config/annotations"
-	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder <"$base/debian.master/config/annotations"
-} | sed \
+	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder
+	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder
+	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder
+} | tee APW | sed \
 	-e 's/Bus options (PCI etc.)/Bus options/g' \
 	-e 's/Bus support/Bus options/g' \
 | sort -t% | uniq >"$list"
@@ -69,7 +66,8 @@ do
 	name=`echo "$menu" | sed \
 		-e 's/ROOT>//g' 
 	`
-	what_menu "$list" "$menu"
+	#what_menu "$list" "$menu"
+	echo "$name ... " 1>&2
 	list_menu "$name" "$menu" ""
 done
 

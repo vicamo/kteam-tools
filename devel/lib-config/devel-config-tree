@@ -13,6 +13,8 @@ debug_re        = re.compile(r'\bDEBUG_KERNEL(=n)?\b')
 broken_re       = re.compile(r'\bBROKEN(=n)?\b')
 
 def join(a, parent):
+    global root
+
     a['parent'] = parent
     parent['children'].append(a)
 
@@ -33,6 +35,14 @@ def emit(a):
 
     if 'prompt' not in a or 'comment' in a:
         return
+
+    #if 'menu' in a and 'prompt' in a and a['file'].startswith('arch/'):
+    #    arch = a['file'].split('/')[1]
+    #    a['prompt'] += ' (' + arch + ')'
+    if a['file'].startswith('arch/'):
+        a['is_arch'] = True
+    else:
+        a['is_arch'] = False
 
     # Your parent is the preceeding menu items if you are directly dependant
     # on them, or the surrounding menu otherwise.
@@ -90,8 +100,8 @@ def add_deps_list(a, deps_list):
         add_deps(a, deps)
 
 
-root = {'config': 'ROOT', 'menu': True, 'deps': '', 'children': list()}
-menu = [root]
+root = {'prompt': 'ROOT', 'menu': True, 'deps': '', 'children': list()}
+menu = [ root ]
 ifs = list()
 def read_kconfig(base, filename):
     global menu
@@ -207,7 +217,14 @@ def read_kconfig(base, filename):
                 add_deps(A, ' '.join(a[2:]))
     emit(A)
 
-read_kconfig(sys.argv[1], sys.argv[2])
+(directory, filename) = sys.argv[1:3]
+arch = filename.split('/')[1]
+
+root['file'] = filename
+#root_arch['file'] = filename
+#root_arch['prompt'] = arch
+
+read_kconfig(directory, filename)
 
 def fake_menu(parent):
     is_menu = False
@@ -337,6 +354,7 @@ elif cmd == 'geninfo':
         print("CONFIG_{0} {1} {2} {3} {4}desc<{5}>{6}".format(name, options, default, expected, entry.get('info', ''), prompt, misc))
 
 elif cmd == 'genorder':
+    print('M', 'ROOT')
     for entry in entries:
         if 'prompt' in entry:
             mname = entry['prompt']
@@ -360,14 +378,28 @@ elif cmd == 'genorder':
                     break
                 parent = parent['parent']
 
+        if entry['is_arch']:
+            akey = ' (' + arch + ')'
+            amenu = '__prefix_arch'
+        else:
+            akey = ''
+            amenu = '__prefix_menu'
+
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
-            print('M', '>'.join(pname + [ mname ]))
+            entry['__prefix_menu'] = "M " + '>'.join(pname + [ mname ])
+            entry['__prefix_arch'] = "M " + '>'.join(pname + [ mname ]) + ' (' + arch + ')'
             if 'config' in entry:
-                print('E', '>'.join(pname + [ mname ]) + '>>' + entry['config'])
+                if amenu in entry:
+                    print(entry[amenu])
+                    del entry[amenu]
+                print('E', '>'.join(pname + [ mname ]) + akey + '>>' + entry['config'])
         elif 'choice' in entry:
             pass
         else:
-            print('E', '>'.join(pname) + '>>' + cname)
+            if amenu in entry:
+                print(entry[amenu])
+                del entry[amenu]
+            print('E', '>'.join(pname) + akey + '>>' + cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
