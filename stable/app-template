@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 #
 
-from sys                                import argv
-from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error
-from ktl.std_app                        import StdApp
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG, info, warning
 
 # *** You may remove this comment block from your application
 #
@@ -19,148 +17,72 @@ from ktl.std_app                        import StdApp
 #
 # *** You may remove this comment block from your application
 
-# CmdlineError
-#
-# The type of exception that will be raised by Cmdline.process() if there
-# are command line processing errors.
-#
-class CmdlineError(Exception):
-    # __init__
-    #
-    def __init__(self, error):
-        self.msg = error
-
-# Cmdline
-#
-class Cmdline:
-    """
-    Handle all the command line processing for the application.
-    """
-    # __init__
-    #
-    def __init__(self):
-        self.cfg = {}
-
-    # error
-    #
-    def error(self, e, defaults):
-        """
-        Simple helper which prints out an error message and then prints out the usage.
-        """
-        if e != '': error(e)
-        self.usage(defaults)
-
-    # usage
-    #
-    def usage(self, defaults):
-        """
-        Prints out the help text which explains the command line options.
-        """
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
-        stdo("                         running.                                                            \n")
-        stdo("                                                                                             \n")
-        stdo("        --config=<cfg file>                                                                  \n")
-        stdo("                         The full path to the configuration file to use instead of           \n")
-        stdo("                         the default location.                                               \n")
-        stdo("                                                                                             \n")
-        stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
-        stdo("                         the application defined support for the option.                     \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-
-    # process
-    #
-    def process(self, argv, defaults):
-        """
-        This method is responsible for calling the getopt function to process the command
-        line. All parameters are processed into class variables for use by other methods.
-        """
-        self.cfg['app_name'] = argv[0]
-        result = True
-        try:
-            optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=']
-            opts, args = getopt(argv[1:], optsShort, optsLong)
-
-            for opt, val in opts:
-                if (opt == '--help'):
-                    raise CmdlineError('')
-
-                elif (opt == '--verbose'):
-                    self.cfg['verbose'] = True
-
-                elif opt in ('--config'):
-                    self.cfg['configuration_file'] = val
-
-                elif opt in ('--debug'):
-                    self.cfg['debug'] = val.split(',')
-
-        except GetoptError, error:
-            print(error, defaults)
-            raise CmdlineError('')
-
-        return self.cfg
-
-    # verify_options
-    #
-    def verify_options(self, cfg):
-        """
-        Used to verify that all required parameters are present and correct.
-        """
-        return
-
-
 # AppTemplate
 #
-class AppTemplate(StdApp):
+class AppTemplate():
+
     # __init__
     #
-    def __init__(self):
-        StdApp.__init__(self)
-        self.defaults = {}
+    def __init__(s):
+        info('AppTemplate::__init__')
 
-    # initialize
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
     #
-    def initialize(self):
-        """
-        A separate initialize that we can control when it gets called (not
-        when the object is instantiated).
-        """
-        return
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
 
     # main
     #
-    def main(self):
-        cmdline = Cmdline()
-        try:
-            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
-            cmdline.verify_options(self.cfg)
+    def main(s):
+        '''
+        '''
+        retval = 1
 
-            self.initialize()
+        try:
+            retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            pass
+            warning("Aborting ...")
 
-        # Handle command line errors.
-        #
-        except CmdlineError as e:
-            cmdline.error(e.msg, self.defaults)
-
-        return
+        return retval
 
 if __name__ == '__main__':
-    app = AppTemplate()
-    app.main()
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    AppTemplate --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--verbose', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.verbose:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
 
 # vi:set ts=4 sw=4 expandtab:
 

@@ -1,153 +1,85 @@
 #!/usr/bin/env python
 #
 
-from sys                                import argv, stderr
 from os                                 import path, chmod, stat
 from stat                               import S_IEXEC
-from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo
-from ktl.std_app                        import StdApp
+from sys                                import argv, stderr
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG
 
-# CmdlineError
+
+# TheApp
 #
-# The type of exception that will be raised by Cmdline.process() if there
-# are command line processing errors.
-#
-class CmdlineError(Exception):
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
     # __init__
     #
-    def __init__(self, error):
-        self.msg = error
-
-# Cmdline
-#
-# Do all the command line processing.
-#
-class Cmdline:
-    # __init__
-    #
-    def __init__(self):
-        self.cfg = {}
-
-    # error
-    #
-    def error(self, e, defaults):
-        if e != '': print e
-        self.usage(defaults)
-
-    # usage
-    #
-    # Prints out the help text which explains the command line options.
-    #
-    def usage(self, defaults):
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [<options>] <script-class-name> <script-file-name>                                \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("        --force          If the target file exists, overwrite it with the script template.   \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-
-    # process
-    #
-    # As you can probably tell from the name, this method is responsible
-    # for calling the getopt function to process the command line. All
-    # parameters are processed into class variables for use by other
-    # methods.
-    #
-    def process(self, argv, defaults):
-        self.cfg['app_name'] = argv[0]
-        result = True
-        try:
-            optsShort = ''
-            optsLong  = ['help', 'force']
-            opts, args = getopt(argv[1:], optsShort, optsLong)
-
-            for opt, val in opts:
-                if (opt == '--help'):
-                    raise CmdlineError('')
-
-                elif (opt == '--force'):
-                    self.cfg['force'] = True
-
-            if result: # No errors yet
-
-                # At lease one source package must be specified.
-                #
-                if len(args) == 2:
-                    self.cfg['target class'] = args[0]
-                    self.cfg['target file']  = args[1]
-                else:
-                    raise CmdlineError('\n   *** Error: The path to a new script file and the name of the new scripts class are required.\n')
-
-        except GetoptError, error:
-            print(error, defaults)
-            raise CmdlineError('')
-
-        return self.cfg
-
-    # verify_options
-    #
-    def verify_options(self, cfg):
-        if path.exists(self.cfg['target file']) and 'force' not in self.cfg:
-            raise CmdlineError('\n   *** Error: The specified file exists. If you intend to overwrite the file\n              specify --force on the command line.\n')
-
-        return
-
-
-# InitScript
-#
-class InitScript(StdApp):
-    # __init__
-    #
-    def __init__(self):
-        StdApp.__init__(self)
-        self.defaults = {}
-        self.defaults['template'] = 'app-template'
+    def __init__(s, args):
+        '''
+        When instantiated, we go ahead and make our initial connection to Launchpad and
+        get signed in.
+        '''
+        s.args = args
 
     # main
     #
-    def main(self):
-        cmdline = Cmdline()
-        st = None
+    def main(s):
+        retval = 1
         try:
-            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
-            cmdline.verify_options(self.cfg)
-
-            template_file = path.dirname(self.cfg['app_name']) + '/' + self.cfg['template']
+            template_file = path.dirname(argv[0]) + '/' + 'app-template'
             if path.exists(template_file):
 
                 with open(template_file, 'r') as template:
-                    with open(self.cfg['target file'], 'w') as f:
+                    with open(s.args.script_name, 'w') as f:
                         for line in template.readlines():
                             line = line.rstrip()
-                            line = line.replace('AppTemplate', self.cfg['target class'])
+                            line = line.replace('AppTemplate', s.args.script_class)
 
                             f.write(line)
                             f.write('\n')
 
-                st = stat(self.cfg['target file'])
-                chmod(self.cfg['target file'], st.st_mode | S_IEXEC)
+                st = stat(s.args.script_name)
+                chmod(s.args.script_name, st.st_mode | S_IEXEC)
             else:
                 stderr.write("   *** Error: The template file (%s) does not exist.\n" % (template_file))
+
+            retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            pass
+            print("Aborting ...")
 
-        # Handle ommand line errors.
-        #
-        except CmdlineError as e:
-            cmdline.error(e.msg, self.defaults)
-
-        return
+        return retval
 
 if __name__ == '__main__':
-    app = InitScript()
-    app.main()
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I give you a python skeleton that you can start with for your new script.
+    '''
+    app_epilog = '''
+examples:
+    init-script Grepper my-grep
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('script_class',  metavar='script_class',   type=str, nargs='+', help='The class that is to be created in the script.')
+    parser.add_argument('script_name',   metavar='script_name',   type=str, nargs='+', help='The file name of the new script.')
+    args = parser.parse_args()
 
-# vi:set ts=4 sw=4 expandtab:
+    args.script_name = args.script_name[0]
+    args.script_class = args.script_class[0]
 
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    basicConfig(level=INFO, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
