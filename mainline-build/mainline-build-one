@@ -325,6 +325,7 @@ for arch in $arches; do
 done
 
 {
+	echo "Configs: $configs"
 	time=`date +%s`
 	echo "End: $time"
 } >>../BUILT
