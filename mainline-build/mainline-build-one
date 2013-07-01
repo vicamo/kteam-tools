@@ -259,7 +259,7 @@ git commit -a -m "debian changelog"
 # configuration options.
 #
 echo "*** using configs from $configs ..."
-git checkout "$configs" -- debian.master/configs
+git checkout "$configs" -- debian.master/config
 
 if [ -f "$here/config.$series" ]; then
 	cp "$here/config.$series" "$debian/config/OVERRIDES"
