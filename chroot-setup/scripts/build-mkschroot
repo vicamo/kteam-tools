@@ -171,6 +171,12 @@ case $SUITE in
 	saucy)
 		# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
 		ADDPKG="$ADDPKG gcc-4.6 gcc-4.7"
+		case $ARCH in
+			amd64|i386) ADDPKG="$ADDPKG gcc-4.7-arm-linux-gnueabihf"
+			;;
+		*)
+			;;
+		esac
 		;;
 	*)
 		;;
