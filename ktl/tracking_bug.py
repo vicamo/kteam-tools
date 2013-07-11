@@ -7,6 +7,53 @@ from ktl.utils                          import date_to_string
 from datetime                           import datetime
 import re
 
+from logging                            import info, debug, warning
+from ktl.termcolor                      import colored
+
+def cinfo(msg, color='white'):
+    Clog.info(msg, color)
+
+def cdebug(msg, color='magenta'):
+    Clog.debug(msg, color)
+
+def cwarn(msg, color='red'):
+    Clog.warn(msg, color)
+
+def cerror(msg, color='red'):
+    Clog.warn(msg, color)
+
+def cnotice(msg, color='yellow'):
+    Clog.notice(msg, color)
+
+class Clog:
+    '''
+    Colored logging.
+    '''
+    dbg = False
+
+    @classmethod
+    def info(c, msg, color='white'):
+        if c.dbg:
+            # I do this becaus i'm weird and like things lined up in my log output
+            # and "INFO -" is fewer chars then "DEBUG -" and so things don't line
+            # up.
+            #
+            print(colored(msg, color))
+        else:
+            print(colored(msg, color))
+
+    @classmethod
+    def debug(c, msg, color='magenta'):
+        print(colored(msg, color))
+
+    @classmethod
+    def warn(c, msg, color='red'):
+        c.info(colored(msg, color))
+
+    @classmethod
+    def notice(c, msg, color='yellow'):
+        c.info(colored(msg, color))
+
 class TrackingBug:
 
     def __init__(self, lp, staging, quiet = False):
@@ -24,6 +71,7 @@ class TrackingBug:
         Returns true/false depending on if the main package has the specified
         dependent package as a dependency.
         '''
+        cdebug('    has_dependent_package enter')
         if self.__dependency_list is None:
             try:
                 record = self.ub.lookup(series)
@@ -34,10 +82,20 @@ class TrackingBug:
             except KeyError:
                 self.__dependency_list = {}
 
+        for key in self.__dependency_list:
+            cdebug('        dependency: %s' % key)
         retval = dependent_package in self.__dependency_list
+        cdebug('    has_dependent_package leave (%s)' % retval)
         return retval
 
     def open(self, package, version, new_abi, master_bug, series_specified = None):
+
+        cdebug('open enter')
+        cdebug('    package: %s' % package)
+        cdebug('    version: %s' % version)
+        cdebug('    new_abi: %s' % new_abi)
+        cdebug('    master_bug: %s' % master_bug)
+        cdebug('    series_specified: %s' % series_specified)
 
         # For the given version, figure out the series.
         # If we can't find the series, don't continue.
@@ -89,7 +147,13 @@ class TrackingBug:
         for k in ourprops:
             description = description + '%s:%s\n' % (k, ourprops[k])
 
-        bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
+        try:
+            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
+        except:
+            cerror('Bug creation failed: project: "ubuntu", package: %s' % package)
+            cerror('                     (It\'s possible the package does not exist)')
+            cdebug('open leave')
+            return None
 
         id = bug.id
         if not self.quiet:
@@ -143,15 +207,22 @@ class TrackingBug:
         for series in sc:
             if series.active and series.name not in ['trunk', 'latest']:
                 if series.name == 'upload-to-ppa' and not series_specified:
+                    cdebug('    no upload-to-ppa')
                     continue
                 if series.name == 'prepare-package-lbm' and not self.has_dependent_package(targeted_series_name, package, 'lbm'):
+                    cdebug('    no prepare-package-lbm')
                     continue
                 if series.name == 'prepare-package-meta' and not self.has_dependent_package(targeted_series_name, package, 'meta'):
+                    cdebug('    no prepare-package-meta')
                     continue
                 if series.name == 'prepare-package-ports-meta' and not self.has_dependent_package(targeted_series_name, package, 'ports-meta'):
+                    cdebug('    no prepare-package-ports-meta')
                     continue
                 if series.name == 'prepare-package-signed' and not self.has_dependent_package(targeted_series_name, package, 'signed'):
+                    cdebug('    no prepare-package-signed')
                     continue
+
+                cdebug('    adding nomination: %s' % series)
                 nomination = bug.lpbug.addNomination(target=series)
                 if nomination.canApprove():
                     nomination.approve()
@@ -161,10 +232,12 @@ class TrackingBug:
         #
         for task in bug.tasks:
             task_name       = task.bug_target_display_name
+            cdebug('    task: %s' % task_name)
             parts = task_name.partition(lp_project.display_name)
             if parts[0] == '' and parts[1] == lp_project.display_name and parts[2] == '':
                 task.status = "In Progress"
                 task.importance = "Medium"
+                cdebug('        status: %s; importance: %s' % (task.status, task.importance))
             else:
                 if parts[0] != '':
                     # Mark the development task as invalid if this is an
@@ -172,7 +245,11 @@ class TrackingBug:
                     if (parts[0] == "linux (Ubuntu)" and series_target.status != "Active Development"):
                         task.status = "Invalid"
                     elif parts[0] != "linux (Ubuntu)":
-                        task.importance = "Medium"
+                        try:
+                            task.importance = "Medium"
+                        except:
+                            cwarn('Failed to set the task (%s) importance to "Medium".' % (task_name))
+                    cdebug('        status: %s; importance: %s' % (task.status, task.importance))
                     continue
                 task.importance = "Medium"
                 task_name = parts[2].strip()
@@ -197,6 +274,7 @@ class TrackingBug:
                         if task_name != 'prepare-package-signed':
                             task.status = "Invalid"
 
+        cdebug('open leave')
         return bug
 
 # vi:set ts=4 sw=4 expandtab:
