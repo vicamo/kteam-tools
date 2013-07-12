@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CWD=/usr3/ubuntu
 LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 LLREPO=linux-2.6.git
 LREPO=linux.git
@@ -11,6 +12,13 @@ METAS="hardy lucid oneiric precise quantal raring saucy"
 SIGNED="precise quantal raring saucy"
 LOCK=/tmp/update-repos.lock
 ORIGS="2.6.24 2.6.32 2.6.38 3.0.0 3.2.0 3.5.0 3.8.0"
+
+if [ ! "$1" = "" ]
+then
+	CWD="$1"
+fi
+
+cd $CWD || exit 1
 
 for i in ${ORIGS}
 do
