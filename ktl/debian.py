@@ -48,11 +48,13 @@ class Debian:
         try:
             debian_env = Git.show("debian/debian.env", branch=current_branch)
             for line in debian_env:
-                (var, val) = line.split('=', 1)
-                val = val.rstrip()
+                if 'DEBIAN=' in line:
+                    (var, val) = line.split('=', 1)
+                    val = val.rstrip()
 
-                if var == 'DEBIAN':
-                    debdirs.append(val)
+                    if var == 'DEBIAN':
+                        debdirs.append(val)
+                        break
             debug("SUCCEEDED\n", cls.debug, False)
         except GitError:
             debug("FAILED\n", cls.debug, False)
