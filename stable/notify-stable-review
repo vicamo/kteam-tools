@@ -87,6 +87,12 @@ class Cmdline:
                          Sets the sender of the notification email.  Default
                          is constructed from git config user.{name,email}
 
+        --sent_cover_letter=<Message-Id>
+                         (Optional and unusual) Assumes the cover letter has
+                         already been sent as <Message-Id>, so passes that to
+                         git-send-email as the --in-reply-to to be used (and
+                         does not generate another cover letter).
+
         --previous_release=<version tag or commit>
                          The tag or commit of the top of the previous stable
                          release, e.g. v3.5.7, we will get the stable patches
@@ -112,7 +118,8 @@ class Cmdline:
         self.cfg['app_name'] = argv[0]
         try:
             optsShort = ''
-            optsLong  = ['help', 'dry-run', 'from=', 'previous_release=', 'new_version=']
+            optsLong  = ['help', 'dry-run', 'from=', 'previous_release=',
+                    'new_version=', 'sent_cover_letter=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -130,6 +137,9 @@ class Cmdline:
 
                 elif opt in ('--new_version'):
                     self.cfg['new_version'] = val
+
+                elif opt in ('--sent_cover_letter'):
+                    self.cfg['sent_cover_letter'] = val
 
         except GetoptError, error:
             print(error, defaults)
@@ -410,26 +420,38 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
             for patch in patches:
                 self.modify_patch(tmpdir + "/" + patch, new_ver, main_ver)
 
-            tfe = self.generate_cover_letter(editor, sender, base_ver, main_ver)
-            if not tfe:
-                rmtree(tmpdir)
-                return
+            if not 'sent_cover_letter' in self.cfg:
+                tfe = self.generate_cover_letter(editor, sender, base_ver, main_ver)
+                if not tfe:
+                    rmtree(tmpdir)
+                    return
+            else:
+                tfe = False
 
-            cmd = "git send-email --no-chain-reply-to --thread "
+            cmd = "git send-email --no-chain-reply-to "
             cmd += "--from \"" + sender + "\""
             for line in self.tolist:
                 cmd += " --to \"" + line + "\""
             if 'dry-run' in self.cfg:
                 cmd += " --dry-run"
             cmd += " --8bit-encoding UTF-8"
-            cmd += " " + tfe.name + " " + tmpdir + "/*.patch"
+            if 'sent_cover_letter' in self.cfg:
+                cmd += " --no-thread"
+                cmd += " --in-reply-to " + self.cfg['sent_cover_letter']
+            else:
+                cmd += " --thread"
+                cmd += " " + tfe.name
+            cmd += " " + tmpdir + "/*.patch"
             system(cmd)
-            if 'dry-run' in self.cfg:
-                print "\n\n"
-                tfe.seek(0)
-                for line in tfe:
-                    stdo(line)
-            tfe.close()
+
+            if tfe:
+                if 'dry-run' in self.cfg:
+                    print "\n\n"
+                    tfe.seek(0)
+                    for line in tfe:
+                        stdo(line)
+                tfe.close()
+
             rmtree(tmpdir)
 
         # Handle the user presses <ctrl-C>.
