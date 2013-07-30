@@ -93,6 +93,11 @@ class Cmdline:
                          git-send-email as the --in-reply-to to be used (and
                          does not generate another cover letter).
 
+        --edit_patch_dir
+                         Starts a subshell in the directory of generated
+                         patches just before sending to allow edits or
+                         selective removal.
+
         --previous_release=<version tag or commit>
                          The tag or commit of the top of the previous stable
                          release, e.g. v3.5.7, we will get the stable patches
@@ -119,7 +124,7 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'dry-run', 'from=', 'previous_release=',
-                    'new_version=', 'sent_cover_letter=']
+                    'new_version=', 'sent_cover_letter=', 'edit_patch_dir' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -140,6 +145,9 @@ class Cmdline:
 
                 elif opt in ('--sent_cover_letter'):
                     self.cfg['sent_cover_letter'] = val
+
+                elif opt in ('--edit_patch_dir'):
+                    self.cfg['edit_patch_dir'] = True
 
         except GetoptError, error:
             print(error, defaults)
@@ -427,6 +435,14 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
                     return
             else:
                 tfe = False
+
+            if 'edit_patch_dir' in self.cfg:
+                print "\n\n"
+                print "*** You are now in a sub-shell in %s ." % tmpdir
+                print "*** Remove or edit these patch files as desired."
+                print "*** When you 'exit' all remaining files will be sent.\n"
+                cmd = "cd %s ; bash ;" % tmpdir
+                system(cmd)
 
             cmd = "git send-email --no-chain-reply-to "
             cmd += "--from \"" + sender + "\""
