@@ -94,7 +94,8 @@ mkdir "$WORKDIR" || exit
 
 BUILDDIR="$WORKDIR/build"
 LOG="$WORKDIR/build.log"
-trap "rm -rf $BUILDDIR" 0
+touch "$WORKDIR/building"
+trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 
 [ $do_source_pkg = 1 ] && {
     orig_tarball="linux_${VERSION%%-*}.orig.tar.gz"
@@ -115,6 +116,19 @@ echo "git-build-kernel ($CHROOT)"
 echo "      version: $DISTRO ($VERSION)"
 echo "      targets: $TARGETS"
 echo "  starting build in $HOSTNAME:$WORKDIR ..."
+
+function show_elapsed
+{
+	while [ -f $WORKDIR/building ]
+	do
+	    loadavg="`uptime`"
+	    loadavg="load${loadavg##*load}"
+	    elapsed=`date --utc --date="@$SECONDS" +%H:%M:%S`
+	    echo -n -e "\r  elapsed: $elapsed   $loadavg"
+	    sleep 11
+	done
+}
+show_elapsed &
 
 (
 	set -e
@@ -146,6 +160,8 @@ XXEOFXX
 ) > $LOG 2>&1
 STATUS=$?
 
+rm -f "$WORKDIR/building"
+echo
 
 ### Output information about the build status and products
 
