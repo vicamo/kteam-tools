@@ -34,6 +34,8 @@ do
 	arch=amd64
 	[ "${ref_p2%%-*}" = "amd64" ] && { arch=amd64; ref_p2="${ref_p2#*-}"; }
 	[ "${ref_p2%%-*}" = "i386" ] && { arch=i386; ref_p2="${ref_p2#*-}"; }
+	[ "${ref_p2%%-*}" = "armhf" ] && { arch=armhf; ref_p2="${ref_p2#*-}"; }
+	[ "${ref_p2%%-*}" = "armel" ] && { arch=armel; ref_p2="${ref_p2#*-}"; }
 
 	### handle predefined branch or refs targets
 	### e.g. refs/heads/binary  (an actual branch named "binary")
