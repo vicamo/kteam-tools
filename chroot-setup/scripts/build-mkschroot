@@ -152,7 +152,7 @@ case $SUITE in
 		ADDPKG="$ADDPKG flex bison";
 	;;
 	raring|saucy)
-		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev";
+		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
 	android)
 		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
