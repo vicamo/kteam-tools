@@ -38,13 +38,13 @@ class Clog:
             # and "INFO -" is fewer chars then "DEBUG -" and so things don't line
             # up.
             #
-            print(colored(msg, color))
+            debug(colored(msg, color))
         else:
-            print(colored(msg, color))
+            info(colored(msg, color))
 
     @classmethod
     def debug(c, msg, color='magenta'):
-        print(colored(msg, color))
+        debug(colored(msg, color))
 
     @classmethod
     def warn(c, msg, color='red'):
@@ -86,6 +86,34 @@ class TrackingBug:
             cdebug('        dependency: %s' % key)
         retval = dependent_package in self.__dependency_list
         cdebug('    has_dependent_package leave (%s)' % retval)
+        return retval
+
+    # valid_series
+    #
+    def valid_series(s, lp_series, series_specified, targeted_series_name, package):
+        retval = False
+        while True:
+            if not lp_series.active:
+                break
+            if lp_series.name in ['trunk', 'latest']:
+                break
+            if lp_series.name == 'upload-to-ppa' and not series_specified:
+                cdebug('    no upload-to-ppa')
+                break
+            if lp_series.name == 'prepare-package-lbm' and not s.has_dependent_package(targeted_series_name, package, 'lbm'):
+                cdebug('    no prepare-package-lbm')
+                break
+            if lp_series.name == 'prepare-package-meta' and not s.has_dependent_package(targeted_series_name, package, 'meta'):
+                cdebug('    no prepare-package-meta')
+                break
+            if lp_series.name == 'prepare-package-ports-meta' and not s.has_dependent_package(targeted_series_name, package, 'ports-meta'):
+                cdebug('    no prepare-package-ports-meta')
+                break
+            if lp_series.name == 'prepare-package-signed' and not s.has_dependent_package(targeted_series_name, package, 'signed'):
+                cdebug('    no prepare-package-signed')
+                break
+            retval = True
+            break
         return retval
 
     def open(self, package, version, new_abi, master_bug, series_specified = None):
@@ -194,7 +222,6 @@ class TrackingBug:
         #
 
         lp = self.lp.launchpad
-        ubuntu = lp.distributions["ubuntu"]
         if devel_series:
             project = 'kernel-development-workflow'
         else:
@@ -205,23 +232,7 @@ class TrackingBug:
 
         sc = lp_project.series_collection
         for series in sc:
-            if series.active and series.name not in ['trunk', 'latest']:
-                if series.name == 'upload-to-ppa' and not series_specified:
-                    cdebug('    no upload-to-ppa')
-                    continue
-                if series.name == 'prepare-package-lbm' and not self.has_dependent_package(targeted_series_name, package, 'lbm'):
-                    cdebug('    no prepare-package-lbm')
-                    continue
-                if series.name == 'prepare-package-meta' and not self.has_dependent_package(targeted_series_name, package, 'meta'):
-                    cdebug('    no prepare-package-meta')
-                    continue
-                if series.name == 'prepare-package-ports-meta' and not self.has_dependent_package(targeted_series_name, package, 'ports-meta'):
-                    cdebug('    no prepare-package-ports-meta')
-                    continue
-                if series.name == 'prepare-package-signed' and not self.has_dependent_package(targeted_series_name, package, 'signed'):
-                    cdebug('    no prepare-package-signed')
-                    continue
-
+            if self.valid_series(series, series_specified, targeted_series_name, package):
                 cdebug('    adding nomination: %s' % series)
                 nomination = bug.lpbug.addNomination(target=series)
                 if nomination.canApprove():
