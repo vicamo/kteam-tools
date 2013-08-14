@@ -131,8 +131,8 @@ class Archive:
                 sourceinfo['signer'] = sourceinfo['package_signer_link'].split('/')[-1].strip('~') 
                 rm = re.match('[0-9]\.[0-9](\.[0-9][0-9])*', sourceinfo['source_package_version'])
                 if rm is None:
-                    print("  ** Error: The source package version failed to match the regular expression.")
-                    raise
+                    print("  ** Error: The source package version (%s) failed to match the regular expression for kernel version strings." % sourceinfo['source_package_version'])
+                    continue # skip this one
                 version = rm.group(0)
                 sourceinfo['series'] = sourceinfo['display_name'].split()[-1]
                 # And strip some things we don't care about
