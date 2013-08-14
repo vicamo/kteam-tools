@@ -1,5 +1,9 @@
 
-reports: fetch-data sru-report.html versions.html 30-day-new.html 1-day-new.html kernel-sru-workflow.html #kernel-cves.html kt-meeting.txt
+reports: kernel-sru-workflow.html fetch-data sru-report.html
+
+every-hour: 1-day-new.html
+
+every-day: versions.html 30-day-new.html
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
