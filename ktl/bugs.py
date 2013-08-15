@@ -99,8 +99,10 @@ class Bugs():
             assignee = task.assignee
             if assignee is None:
                 bug_item['assignee'] = 'Unassigned'
+                bug_item['assignee-name'] = 'unassigned'
             else:
                 bug_item['assignee'] = assignee.display_name
+                bug_item['assignee-name'] = assignee.lpperson.name
 
         for task in bug.tasks:
             task_item = {}
@@ -108,14 +110,17 @@ class Bugs():
                 bug_item['tasks'] = []
 
             task_item['name']       = task.bug_target_display_name
+            task_item['target-name']= task.bug_target_name
             task_item['status']     = task.status
             task_item['importance'] = task.importance
 
             assignee = task.assignee
             if assignee is None:
                 task_item['assignee'] = 'Unassigned'
+                task_item['assignee-name'] = 'unassigned'
             else:
                 task_item['assignee'] = assignee.display_name
+                task_item['assignee-name'] = assignee.lpperson.name
             bug_item['tasks'].append(task_item)
 
         # Misc.
