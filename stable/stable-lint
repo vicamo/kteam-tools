@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# stable-lint
+# checks a stable queue (git branch) for some common discrepancies
+#
+
+function usage
+{
+	echo "usage: stable-lint [ commit..range ]      (default range is since last tag)" 1>&2
+	exit 1
+}
+
+if [ $# -gt 1 ]
+then
+	usage
+elif [ $# -eq 1 ]
+then
+	[ "${1:0:1}" = "-" ] && usage
+	range="$1"
+else
+	latest_tag="$(git describe --abbrev=0)"
+	range="$latest_tag..HEAD"
+fi
+
+############################################################
+
+function check_commit_upstream_label # sha commitlog
+{
+	grep -q '^commit [[:xdigit:]]\{40\} upstream' $2 && return 0
+	grep -q 'Upstream commit [[:xdigit:]]\{40\}' $2 && return 0
+	# ignore the "Linux w.x.y.z" release commits
+	head -1 $2 | grep -q '^Linux [0-9].*' && return 0
+	echo "W: $1 missing: commit {mainline_sha} upstream."
+	return 1
+}
+
+function check_no_cc_stable # sha commitlog
+{
+	ccstable="$(grep -i '^cc:[[:space:]]*<*stable@' $2)"
+	[ -z "$ccstable" ] || {
+		echo "W: $1 should-strip: $ccstable"
+		return 1
+	}
+	return 0
+}
+
+set -e
+sob="Signed-off-by: $(git config user.name) <$(git config user.email)>"
+set +e
+function check_signed_off_by # sha commitlog
+{
+	grep -q "$sob" $2 && return 0
+	echo "W: $1 missing: $sob"
+	return 1
+}
+
+############################################################
+
+COMMITLOG=$(mktemp)
+trap "rm -f $COMMITLOG" 0
+
+git log --pretty=%h "$range" | while read SHA
+do
+	git log -1 --pretty=%B $SHA > $COMMITLOG
+
+	check_commit_upstream_label	$SHA $COMMITLOG
+	check_signed_off_by		$SHA $COMMITLOG
+	check_no_cc_stable		$SHA $COMMITLOG
+done
+
