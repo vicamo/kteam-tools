@@ -141,7 +141,7 @@ case $SUITE in
 esac
 case $SUITE in
 	precise)
-		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency linux-headers-generic-lts-quantal";
+		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency linux-headers-generic-lts-quantal libpci-dev";
 		case ${ARCH} in
 			i386)
 				ADDPKG="$ADDPKG linux-headers-generic-pae linux-headers-lowlatency-pae";
