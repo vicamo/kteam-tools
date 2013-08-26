@@ -299,7 +299,7 @@ class SpamProposedReleaseBugs(StdApp):
                     if 'comment-text' in self.cfg:
                         self.verbose('        . adding comment\n')
                         if not self.cfg['dryrun']:
-                            bug.add_comment(self.cfg['comment-text'])
+                            bug.add_comment(self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']))
 
                     # Status
                     #
