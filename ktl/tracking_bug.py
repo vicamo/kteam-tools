@@ -9,9 +9,10 @@ import re
 
 class TrackingBug:
 
-    def __init__(self, lp, staging):
+    def __init__(self, lp, staging, quiet = False):
         self.lp = lp
         self.staging = staging
+        self.quiet = quiet
 
     def open(self, package, version, new_abi, master_bug, der_series = None):
         wf = Workflow()
@@ -70,10 +71,11 @@ class TrackingBug:
         bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
         id = bug.id
-        if self.staging:
-            print("https://bugs.qastaging.launchpad.net/bugs/%s" % (id))
-        else:
-            print("https://bugs.launchpad.net/bugs/%s" % (id))
+        if not self.quiet:
+            if self.staging:
+                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (id))
+            else:
+                print("https://bugs.launchpad.net/bugs/%s" % (id))
 
         # Tags:
         #    add all tags for this package name
@@ -89,7 +91,8 @@ class TrackingBug:
             try:
                 lp_team = self.lp.launchpad.people[team]
             except KeyError:
-                print("Can't subscribe '%s', team not found in Launchpad!" % (team))
+                if not self.quiet:
+                    print("Can't subscribe '%s', team not found in Launchpad!" % (team))
                 continue
             bug.lpbug.subscribe(person=lp_team)
 
@@ -182,13 +185,15 @@ class TrackingBug:
                 task = parts[2].strip()
                 assignee = wf.assignee(package, task, devel_series)
                 if assignee is None:
-                    print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
+                    if not self.quiet:
+                        print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                     t.status = "Invalid"
                 else:
                     try:
                         t.assignee = self.lp.launchpad.people[assignee]
                     except:
-                        print("Can't assign '%s', team not found in Launchpad!" % (assignee))
+                        if not self.quiet:
+                            print("Can't assign '%s', team not found in Launchpad!" % (assignee))
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
                         lin_ver = lin_ver[0]

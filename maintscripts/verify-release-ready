@@ -1,121 +1,17 @@
 #!/usr/bin/env python
 #
 
-from ktl.utils                          import stdo, eout, dump
-from ktl.std_app                        import StdApp
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG
+
+from ktl.utils                          import stdo, eout
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
 from ktl.ubuntu                         import Ubuntu
-from sys                                import argv
-from getopt                             import getopt, GetoptError
+from ktl.termcolor                      import colored
+from ktl.shell                          import sh
 import re
-
-# CmdlineError
-#
-# The type of exception that will be raised by Cmdline.process() if there
-# are command line processing errors.
-#
-class CmdlineError(Exception):
-    # __init__
-    #
-    def __init__(self, error):
-        self.msg = error
-
-# Cmdline
-#
-# Do all the command line processing.
-#
-class Cmdline:
-    # __init__
-    #
-    def __init__(self):
-        self.cfg = {}
-
-    # error
-    #
-    def error(self, e, defaults):
-        if e != '': print e
-        self.usage(defaults)
-
-    # usage
-    #
-    # Prints out the help text which explains the command line options.
-    #
-    def usage(self, defaults):
-        stdo("                                                                                             \n")
-        stdo("                                                                                             \n")
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --config=<cfg file>                                                                  \n")
-        stdo("                         The full path to the configuration file to use instead of           \n")
-        stdo("                         the default location.                                               \n")
-        stdo("                                                                                             \n")
-        stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
-        stdo("                         the application defined support for the option.                     \n")
-        stdo("                                                                                             \n")
-        stdo("                         debian - Enable debugging in the Debian class which determins       \n")
-        stdo("                                  where the changelog is and parses it.                      \n")
-        stdo("                                                                                             \n")
-        stdo("        --verbose                                                                            \n")
-        stdo("                         Give more detailed output for each of the checks being performed.   \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s                                                                                   \n" % self.cfg['app_name'])
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-        stdo("        %s --debug=debian                                                                    \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-
-    # process
-    #
-    # As you can probably tell from the name, this method is responsible
-    # for calling the getopt function to process the command line. All
-    # parameters are processed into class variables for use by other
-    # methods.
-    #
-    def process(self, argv, defaults):
-        self.cfg['app_name'] = argv[0]
-        result = True
-        try:
-            optsShort = ''
-            optsLong  = ['help', 'config=', 'debug=', 'verbose']
-            opts, args = getopt(argv[1:], optsShort, optsLong)
-
-            for opt, val in opts:
-                if (opt == '--help'):
-                    raise CmdlineError('')
-
-                elif opt in ('--config'):
-                    self.cfg['configuration_file'] = val
-
-                elif opt in ('--debug'):
-                    self.cfg['debug'] = val.split(',')
-
-                elif opt in ('--verbose'):
-                    self.cfg['verbose'] = True
-
-            if result: # No errors yet
-
-                # At lease one source package must be specified.
-                #
-                if len(args) > 0:
-                    self.cfg['source_pkgs'] = args
-
-        except GetoptError, error:
-            print(error, defaults)
-            raise CmdlineError('')
-
-        return self.cfg
-
-    # verify_options
-    #
-    def verify_options(self, cfg):
-        return
 
 # AppError
 #
@@ -124,313 +20,425 @@ class Cmdline:
 class AppError(Exception):
     # __init__
     #
-    def __init__(self, error=''):
-        self.msg = error
+    def __init__(s, error=''):
+        s.msg = error
 
 
 # VerifyReleaseReady
 #
-class VerifyReleaseReady(StdApp):
+class VerifyReleaseReady():
     # __init__
     #
-    def __init__(self):
-        StdApp.__init__(self)
-        self.defaults = {}
-        self.defaults['verbose'] = False
-        self.passed = 0
-        self.failed = 0
-        self.delimiter = 40
+    def __init__(s, args):
+        s.args = args
+        s.defaults = {}
+        s.defaults['verbose'] = False
+        s.passed = 0
+        s.failed = 0
+        s.delimiter = 40
 
     # initialize
     #
-    def initialize(self):
+    def initialize(s):
         validation_sequence = [
-            (self.is_repo, True, 'is valid git repo'),
+            (s.is_repo, True, 'is valid git repo'),
         ]
-
-        if 'debug' in self.cfg:
-            if 'debian' in self.cfg['debug']:
-                Debian.debug = True
 
     # Are we currently in a git repository?
     #
-    def is_repo(self):
+    def is_repo(s):
         retval = True
         if not Git.is_repo():
             raise AppError('This script can only be run from within a git repository.')
         return retval
 
-    def status(self, msg, flag):
-        indent = self.delimiter - len(msg)
+    def status(s, msg, flag):
+        indent = s.delimiter - len(msg)
         if indent <= 0:
             indent = 0
 
-        stdo('%s' % (' ' * indent) + msg + ':')
+        stdo('%s' % (' ' * indent) + msg + ': ')
         if flag:
-            self.passed += 1
-            stdo(' pass\n')
+            s.passed += 1
+            stdo(colored('pass\n', 'green'))
         else:
-            self.failed += 1
-            stdo(' fail\n')
+            s.failed += 1
+            stdo(colored('fail\n', 'red'))
 
-    def verbose(self, msg):
-        if 'verbose' in self.cfg and self.cfg['verbose']:
-            stdo(msg)
-            stdo('\n')
+    def verbose(s, msg):
+        if s.args.verbose:
+            stdo(colored(msg + '\n', 'blue'))
+
+    def verify_linux(s, cl1, cl2):
+        if '-' not in cl1['version']:
+            raise AppError("The version string is not well formed (missing '-').")
+
+        (cl1_version, abi_build) = cl1['version'].split('-')  # Current version line
+        cl1_abi   = cl1['ABI']
+        cl1_build = cl1['upload-number']
+
+        (cl2_version, abi_build) = cl2['version'].split('-')  # Previous version line
+        cl2_abi   = cl2['ABI']
+        cl2_build = cl2['upload-number']
+
+        # Verify the version information in the changelog
+        #
+        while True:
+            # Version is correct
+            #
+            msg = 'kernel version (%s)' % (Kernel.version())
+            if cl1_version != Kernel.version():
+                s.status(msg, False)
+                s.verbose("expected '%s' but got: '%s'" % (Kernel.version(), cl1_version))
+                break
+            s.status(msg, True)
+
+            # Check: Make sure the current version is correctly incremented from the previous one.
+            #
+            msg = 'build number (%d)' % (int(cl2_build) + 1)
+            if int(cl1_build) != int(cl2_build) + 1:
+                s.status(msg, False)
+                s.verbose("expected %d but got: %d" % (int(cl2_build), int(cl1_build)))
+                break
+            s.status(msg, True)
+
+            # Check: Make sure that the abi directory has the previous version
+            msg = 'previous abi present (%s)' % (cl2['version'])
+            abi = Debian.abi()
+            if  cl2['version'] not in abi:
+                s.status(msg, False)
+                break
+            s.status(msg, True)
+
+            # Check: That the release information is correct.
+            #
+            ub = Ubuntu()
+            series = ub.series_name(cl1['package'], cl1['version'])
+            msg = 'release (%s)' % (series)
+            if cl1['release'] != series:
+                s.status(msg, False)
+                s.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
+                break
+            s.status(msg, True)
+
+            break
+
+        changelog = Debian.changelog()
+
+        if cl1['package'] != 'linux':
+            tag_prefix = 'Ubuntu-' + cl1['package'].replace('linux-', '')
+        else:
+            tag_prefix = 'Ubuntu'
+
+        # Check: Make sure the commit of the version is the correct text.
+        #
+        log = Git.log(num=1) # Only interested in the last commit
+
+        commit = []
+        for line in log['commits'][0]['text']:
+            line = line.strip()
+            if line != '':
+                if 'Signed-off-by' not in line:
+                    commit.append(line)
+
+        version = '%s-%s.%s' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
+        (closed, expected) = s.verify_closing_commit(cl1, commit, version)
+
+        if closed:
+            s.verify_tag(log, expected)
+
+        # Look to see if a tracking bug has been added to the changelog
+        #
+        found_tracker = False
+        for line in changelog[1]['content']:
+            if found_tracker:
+                (junk, tracker_id) = line.split('#')
+                break
+            if 'Tracking Bug' in line:
+                found_tracker = True
+        s.status('release tracking bug', found_tracker)
+
+        # If we are on a topic branch make sure we are not re-using the same tracking
+        # bug from as the master branch. (The master and master-next branches can have
+        # the same tracking bug #)
+        #
+        if found_tracker:
+            branch = Git.current_branch()
+            if branch not in ['master', 'master-next']:
+                master_changelog = Debian.master_changelog()
+                found_tracker = False
+                for line in master_changelog[1]['content']:
+                    if found_tracker:
+                        (junk, master_tracker_id) = line.split('#')
+                        break
+                    if 'Tracking Bug' in line:
+                        found_tracker = True
+
+                unique_tracker = False
+                if found_tracker:
+                    if tracker_id != master_tracker_id:
+                        unique_tracker = True
+                    else:
+                        print('%s != %s' % (tracker_id, master_tracker_id))
+                s.status('unique release tracking bug', unique_tracker)
+
+        s.verify_content()
+
+    def verify_closing_commit(s, cl1, commit, version):
+        # **NOTE: Because we are inconsistent with the exact text used in the last commit
+        #         I'm loosing up the matching a bit but making sure that what is in the
+        #         last commit matches the tag
+        #
+        closed = True
+        expected = '^UBUNTU: (Ubuntu[-\S]*-%s)$' % (version)
+        m = re.match(expected, commit[0])
+        msg = 'closing release commit'
+        if len(commit) != 1:        # There should only be a single line in the commit
+            s.status(msg, False)
+            s.verbose("too many lines of text")
+            closed = False
+        elif m == None:
+            s.status(msg, False)
+            s.verbose("expected '%s', got '%s'" % (expected, commit[0]))
+        else:
+            expected = m.group(1) # This should be the tag text
+            s.status(msg, True)
+
+        return closed, expected
+
+    def verify_tag(s, log, expected):
+        # Check: Make sure the commit corresponds to the tag.
+        #        Only runs if we have the expected tag.
+        #
+        # **NOTE: There can be multiple tags associated with the specific commit.
+        #
+        tag_found = False
+        msg = 'tag exists on final commit'
+        s.verbose('closing commit sha1: %s' % log['commits'][0]['sha1'])
+        tags = Git.tags(contains=log['commits'][0]['sha1'])
+        for tag in tags:
+            if tag == expected:
+                s.status(msg, True)
+                tag_found = True
+                break
+        if not tag_found:
+            s.status(msg, False) # the specified commit.
+            s.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
+
+
+    def verify_content(s):
+        changelog = Debian.changelog()
+
+        # It's important that there be a single blank line at the beginning of
+        # the content. (after the package/version/pocket line)
+        #
+        ei = 1
+        et = []
+        error_text = 'There should be one and only one blank line following the package/version/pocket line.'
+        content_error = False
+        test = changelog[1]['content'][0].strip()
+        if test != '':                              # Should be a blank line
+            s.status('content [%d]' % ei, False)
+            ei += 1
+            et.append(error_text)
+            content_error = True
+
+        test = changelog[1]['content'][1].strip()
+        if not content_error and test == '':       # Should not be a blank line
+            s.status('content [%d]' % ei, False)
+            ei += 1
+            et.append(error_text)
+            content_error = True
+
+        # The "Final" line in the version content should be a line that starts
+        # with two dashes, has an email address and a date/time stamp.
+        #
+        cl = len(changelog[1]['content'])
+        error_text = 'The final three lines of a new changelog block should be a blank line, a "signature" line, and a final blank line.'
+
+        if changelog[1]['content'][cl - 3].strip() != '': # Should be a blank line
+            s.status('final commit content [%d]' % ei, False)
+            et.append(error_text)
+            content_error = True
+        else:
+            if changelog[1]['content'][cl - 1].strip() != '': # Should be a blank line
+                s.status('final commit content [%d]' % ei, False)
+                et.append(error_text)
+                content_error = True
+            else:
+                if changelog[1]['content'][cl - 2].strip() == '': # Should be the "signature" line
+                    s.status('final commit content [%d]' % ei, False)
+                    et.append(error_text)
+                    content_error = True
+                else:
+                    m = re.match('^ -- (.*) <(.*)@(.*)> .*$', changelog[1]['content'][cl - 2])
+                    if m != None:
+                        if 'canonical.com' not in m.group(3):
+                            error_text = "The email address on the signature line does not contail 'canonical.com'."
+                            et.append(error_text)
+                            s.status('final commit content [%d]' % ei, False)
+                            content_error = True
+                    else:
+                        error_text = "Failed to parse the signature line."
+                        et.append(error_text)
+                        s.status('final commit content [%d]' % ei, False)
+                        content_error = True
+
+        if content_error:
+            print(' ')
+            ei = 1
+            for e in et:
+                print(' [%d] %s' % (ei, e))
+                ei += 1
+        else:
+            s.status('final commit content', True)
+
+    def verify_linux_meta(s, cl1, cl2):
+        cl1_version = cl1['linux-version'] # Current version line
+        cl1_abi   = cl1['ABI']
+        cl1_build = cl1['upload-number']
+
+        cl2_version = cl2['linux-version'] # Previous version line
+        cl2_abi   = cl2['ABI']
+        cl2_build = cl2['upload-number']
+
+        while True:
+            # Check: Make sure the current version is correctly incremented from the previous one.
+            #
+            msg = 'build number (%d)' % (int(cl2_build) + 1)
+            if int(cl1_build) != int(cl2_build) + 1:
+                s.status(msg, False)
+                s.verbose("expected %d but got: %d" % (int(cl2_build) + 1, int(cl1_build)))
+                break
+            s.status(msg, True)
+
+            break
+
+        # Check: Make sure the commit of the version is the correct text.
+        #
+        log = Git.log(num=1) # Only interested in the last commit
+
+        commit = []
+        for line in log['commits'][0]['text']:
+            line = line.strip()
+            if line != '':
+                if 'Signed-off-by' not in line:
+                    commit.append(line)
+
+        version = '%s.%s.%s' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
+        (closed, expected) = s.verify_closing_commit(cl1, commit, version)
+
+        if closed:
+            s.verify_tag(log, expected)
+
+        s.verify_content()
 
     # main
     #
-    def main(self):
-        cmdline = Cmdline()
+    def main(s):
+        kernel_packages = [
+            'linux',
+            'linux-ti-omap4',
+            'linux-lts-quantal',
+            'linux-lts-raring'
+        ]
+
+        non_kernel_packages = [
+            'linux-ports-meta',
+            'linux-meta',
+            'linux-meta-ti-omap4',
+            'linux-meta-lts-raring',
+            'linux-meta-lts-quantal',
+            'linux-signed-lts-raring',
+            'linux-signed-lts-quantal',
+            'linux-backports-modules-3.2.0',
+        ]
+
         try:
-            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
-            cmdline.verify_options(self.cfg)
-            self.initialize()
+            s.initialize()
 
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
                 raise AppError('This script can only be run from within a git repository.')
-            self.status('is valid git repo', True)
+            s.status('is valid git repo', True)
+
+            branch = Git.current_branch()
+            s.verbose('%15s : %s' % ('branch', branch))
 
             changelog = Debian.changelog()
 
-            # Check: Make sure the current version line in the changelog contains the correct pocket.
-            #
             cl1 = changelog[0]
-            if '-' not in cl1['version']:
-                raise AppError("The version string is not well formed (missing '-').")
-
-            # Verify the version information in the changelog
-            #
-            (cl1_version, abi_build) = cl1['version'].split('-')  # Current version line
-            cl1_abi   = cl1['ABI']
-            cl1_build = cl1['upload-number']
+            if s.args.verbose:
+                s.verbose('\n')
+                s.verbose('New version information:')
+                for k in cl1:
+                    s.verbose('%15s : %s' % (k, cl1[k]))
 
             cl2 = changelog[1]
-            (cl2_version, abi_build) = cl2['version'].split('-')  # Previous version line
-            cl2_abi   = cl2['ABI']
-            cl2_build = cl2['upload-number']
-            while True:
-                # Version is correct
-                #
-                msg = 'kernel version (%s)' % (Kernel.version())
-                if cl1_version != Kernel.version():
-                    self.status(msg, False)
-                    self.verbose("expected '%s' but got: '%s'" % (Kernel.version(), cl1_version))
-                    break
-                self.status(msg, True)
-
-                # Check: Make sure the current version is correctly incremented from the previous one.
-                #
-                msg = 'build number (%d)' % (int(cl2_build) + 1)
-                if int(cl1_build) != int(cl2_build) + 1:
-                    self.status(msg, False)
-                    self.verbose("expected %d but got: %d" % (int(cl2_build), int(cl1_build)))
-                    break
-                self.status(msg, True)
-
-                # Check: Make sure that the abi directory has the previous version
-                msg = 'previous abi present (%s)' % (cl2['version'])
-                abi = Debian.abi()
-                if  cl2['version'] not in abi:
-                    self.status(msg, False)
-                    break
-                self.status(msg, True)
-
-                # Check: That the release information is correct.
-                #
-                ub = Ubuntu()
-                series = ub.series_name(cl1['package'], cl1['version'])
-                msg = 'release (%s)' % (series)
-                if cl1['release'] != series:
-                    self.status(msg, False)
-                    self.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
-                    break
-                self.status(msg, True)
-
-                break
-
-            if cl1['package'] != 'linux':
-                tag_prefix = 'Ubuntu-' + cl1['package'].replace('linux-', '')
+            if s.args.verbose:
+                s.verbose('\n')
+                s.verbose('Previous version information:')
+                for k in cl2:
+                    s.verbose('%15s : %s' % (k, cl2[k]))
+            if cl1['package'] in kernel_packages:
+                s.verify_linux(cl1, cl2)
+            elif cl1['package'] in non_kernel_packages:
+                s.verify_linux_meta(cl1, cl2)
             else:
-                tag_prefix = 'Ubuntu'
-
-            # Check: Make sure the commit of the version is the correct text.
-            #
-            log = Git.log(num=1) # Only interested in the last commit
-
-            commit = []
-            for line in log['commits'][0]['text']:
-                line = line.strip()
-                if line != '':
-                    if 'Signed-off-by' not in line:
-                        commit.append(line)
-
-            # **NOTE: Because we are inconsistent with the exact text used in the last commit
-            #         I'm loosing up the matching a bit but making sure that what is in the
-            #         last commit matches the tag
-            #
-            closed = True
-            m = re.match('^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number']), commit[0])
-            msg = 'closing release commit'
-            if len(commit) != 1:        # There should only be a single line in the commit
-                self.status(msg, False)
-                self.verbose("too many lines of text")
-                closed = False
-            elif m == None:
-                self.status(msg, False)
-                expected = '^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
-                self.verbose("expected '%s', got '%s'" % (expected, commit[0]))
-            else:
-                expected = m.group(1) # This should be the tag text
-                self.status(msg, True)
-
-            # Check: Make sure the commit corresponds to the tag.
-            #        Only runs if we have the expected tag.
-            #
-            # **NOTE: There can be multiple tags associated with the specific commit.
-            #
-            if closed:
-                tag_found = False
-                msg = 'tag exists on final commit'
-                tags = Git.tags(contains=log['commits'][0]['sha1'])
-                for tag in tags:
-                    if tag == expected:
-                        self.status(msg, True)
-                        tag_found = True
-                        break
-                if not tag_found:
-                    self.status(msg, False) # the specified commit.
-                    self.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
-
-            # Look to see if a tracking bug has been added to the changelog
-            #
-            found_tracker = False
-            for line in changelog[1]['content']:
-                if found_tracker:
-                    (junk, tracker_id) = line.split('#')
-                    break
-                if 'Tracking Bug' in line:
-                    found_tracker = True
-            self.status('release tracking bug', found_tracker)
-
-            # If we are on a topic branch make sure we are not re-using the same tracking
-            # bug from as the master branch.
-            #
-            if found_tracker:
-                branch = Git.current_branch()
-                if branch != 'master':
-                    master_changelog = Debian.master_changelog()
-                    found_tracker = False
-                    for line in master_changelog[1]['content']:
-                        if found_tracker:
-                            (junk, master_tracker_id) = line.split('#')
-                            break
-                        if 'Tracking Bug' in line:
-                            found_tracker = True
-
-                    unique_tracker = False
-                    if found_tracker:
-                        if tracker_id != master_tracker_id:
-                            unique_tracker = True
-                        else:
-                            print('%s != %s' % (tracker_id, master_tracker_id))
-                    self.status('unique release tracking bug', unique_tracker)
-
-            # It's important that there be a single blank line at the beginning of
-            # the content. (after the package/version/pocket line)
-            #
-            ei = 1
-            et = []
-            error_text = 'There should be one and only one blank line following the package/version/pocket line.'
-            content_error = False
-            test = changelog[1]['content'][0].strip()
-            if test != '':                              # Should be a blank line
-                self.status('content [%d]' % ei, False)
-                ei += 1
-                et.append(error_text)
-                content_error = True
-
-            test = changelog[1]['content'][1].strip()
-            if not content_error and test == '':       # Should not be a blank line
-                self.status('content [%d]' % ei, False)
-                ei += 1
-                et.append(error_text)
-                content_error = True
-
-            # The "Final" line in the version content should be a line that starts
-            # with two dashes, has an email address and a date/time stamp.
-            #
-            cl = len(changelog[1]['content'])
-            error_text = 'The final three lines of a new changelog block should be a blank line, a "signature" line, and a final blank line.'
-
-            if changelog[1]['content'][cl - 3].strip() != '': # Should be a blank line
-                self.status('content [%d]' % ei, False)
-                et.append(error_text)
-                content_error = True
-            else:
-                if changelog[1]['content'][cl - 1].strip() != '': # Should be a blank line
-                    self.status('content [%d]' % ei, False)
-                    et.append(error_text)
-                    content_error = True
-                else:
-                    if changelog[1]['content'][cl - 2].strip() == '': # Should be the "signature" line
-                        self.status('content [%d]' % ei, False)
-                        et.append(error_text)
-                        content_error = True
-                    else:
-                        m = re.match('^ -- (.*) <(.*)@(.*)> .*$', changelog[1]['content'][cl - 2])
-                        if m != None:
-                            if 'canonical.com' not in m.group(3):
-                                error_text = "The email address on the signature line does not contail 'canonical.com'."
-                                et.append(error_text)
-                                self.status('content [%d]' % ei, False)
-                                content_error = True
-                        else:
-                            error_text = "Failed to parse the signature line."
-                            et.append(error_text)
-                            self.status('content [%d]' % ei, False)
-                            content_error = True
-
-            if content_error:
-                print(' ')
-                ei = 1
-                for e in et:
-                    print(' [%d] %s' % (ei, e))
-                    ei += 1
-            else:
-                self.status('content', True)
+                stdo(colored('Unrecognised package: %s\n' % cl1['package'], 'yellow'))
+                stdo(colored('    Trying non-kernel package verification...\n', 'yellow'))
+                s.verify_linux_meta(cl1, cl2)
+                stdo(colored('    Trying kernel package verification...\n', 'yellow'))
+                s.verify_linux(cl1, cl2)
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
             pass
 
-        # Handle command line errors.
-        #
-        except CmdlineError as e:
-            cmdline.error(e.msg, self.defaults)
-
         # Handle all application errors
         #
         except AppError as e:
-            eout(e.msg)
+            eout(colored(e.msg, 'red'))
 
         except DebianError as e:
-            eout(e.msg)
+            eout(colored(e.msg, 'red'))
 
         except GitError as e:
-            eout(e.msg[0])
+            eout(colored(e.msg[0], 'red'))
 
         except KernelError as e:
-            eout(e.msg)
+            eout(colored(e.msg, 'red'))
 
-        return
+        return s.failed
 
 if __name__ == '__main__':
-    app = VerifyReleaseReady()
-    app.main()
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    Smokem --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug',        action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--verbose',      action='store_true', default=False, help='Print out more an usual amount of information about what is happening.')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    app = VerifyReleaseReady(args)
+    exit(app.main())
 
 # vi:set ts=4 sw=4 expandtab:
 
