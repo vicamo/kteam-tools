@@ -142,7 +142,7 @@ class Workflow:
             },
         'linux-ec2' :  {
             'task_assignment' : {
-                'prepare-package'            : 'stefan-bader-canonical',
+                'prepare-package'            : 'smb',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
