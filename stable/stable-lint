@@ -36,7 +36,7 @@ function check_commit_upstream_label # sha commitlog
 
 function check_no_cc_stable # sha commitlog
 {
-	ccstable="$(grep -i '^cc:[[:space:]]*<*stable@' $2)"
+	ccstable="$(grep -i '^cc:[[:space:]]*.*stable@' $2)"
 	[ -z "$ccstable" ] || {
 		echo "W: $1 should-strip: $ccstable"
 		return 1
