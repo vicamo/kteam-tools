@@ -11,7 +11,7 @@ EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest autotest-cl
 METAS="lucid precise quantal raring saucy"
 SIGNED="precise quantal raring saucy"
 LOCK=/tmp/update-repos.lock
-ORIGS="2.6.24 2.6.32 2.6.38 3.0.0 3.2.0 3.5.0 3.8.0"
+ORIGS="2.6.24 2.6.32 2.6.38 3.0.0 3.2.0 3.5.0 3.8.0 3.11.0"
 
 if [ ! "$1" = "" ]
 then
