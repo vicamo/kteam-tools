@@ -20,17 +20,9 @@ REPOS += instrument-lib
 REPOS += kernel-testing
 REPOS += kteam-tools
 REPOS += ubuntu-debian
-REPOS += ubuntu-hardy
-REPOS += ubuntu-hardy-lbm
-REPOS += ubuntu-hardy-lrm
-REPOS += ubuntu-hardy-lum
-REPOS += ubuntu-hardy-meta
 REPOS += ubuntu-lucid
 REPOS += ubuntu-lucid-lbm
 REPOS += ubuntu-lucid-meta
-REPOS += ubuntu-oneiric
-REPOS += ubuntu-oneiric-lbm
-REPOS += ubuntu-oneiric-meta
 REPOS += ubuntu-precise
 REPOS += ubuntu-precise-lbm
 REPOS += ubuntu-precise-meta
@@ -43,6 +35,9 @@ REPOS += ubuntu-raring-meta
 REPOS += ubuntu-raring-signed
 REPOS += wireless-crda
 REPOS += ubuntu-nexus7
+REPOS += ubuntu-saucy
+REPOS += ubuntu-saucy-signed
+REPOS += ubuntu-saucy-meta
 
 all: repo
 
