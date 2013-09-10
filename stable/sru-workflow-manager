@@ -667,7 +667,6 @@ class Shank(StdApp):
 
         dest  = "kernel-team@lists.ubuntu.com"
         dest += ", ubuntu-installer@lists.ubuntu.com"
-        dest += ", gema.gomez-solano@canonical.com"
         if 'upload_announce_to' in self.cfg:
             for addr in self.cfg['upload_announce_to']:
                 dest += ", %s" % (addr)
