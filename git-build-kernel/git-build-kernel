@@ -81,7 +81,9 @@ then
     CHROOT="${GITREPODIR##ubuntu-}"
     CHROOT="${CHROOT%.git}"
 fi
-CHROOT="$CHROOT-$ARCH" # append the arch to the chroot name
+### Cross-compile in an amd64 chroot; don't use an ARCH chroot.
+# CHROOT="$CHROOT-$ARCH" # append the arch to the chroot name
+CHROOT="$CHROOT-amd64"
 
 ### Get the version number - we need it to locate the orig tarball
 VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
@@ -115,6 +117,7 @@ trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 echo "git-build-kernel ($CHROOT)"
 echo "      version: $DISTRO ($VERSION)"
 echo "      targets: $TARGETS"
+echo "         arch: $ARCH"
 echo "  starting build in $HOSTNAME:$WORKDIR ..."
 
 function show_elapsed
@@ -145,6 +148,8 @@ show_elapsed &
 		set -e
 		set -x
 		cd "$BUILDDIR"
+		export \$(dpkg-architecture -a$ARCH)
+		[ \$DEB_BUILD_ARCH != \$DEB_HOST_ARCH ] && export CROSS_COMPILE="\${DEB_HOST_GNU_TYPE}-"
 		fakeroot debian/rules clean
 		if [ $do_source_pkg = 1 ]
 		then
