@@ -80,10 +80,14 @@ echo "^^^ - build head"
 #
 # Rebuild the changelog.
 #
-for debian in "debian.master" "debian" "meta-source/debian"
-do
-	[ -d "$debian" ] && break
-done 
+if [ -f 'debian/debian.env' ]; then
+	debian=`sed -ne 's/DEBIAN=//p' 'debian/debian.env'`
+else
+	for debian in 'debian.master' 'debian' 'meta-source/debian'
+	do
+		[ -d "$debian" ] && break
+	done 
+fi
 changelog="$debian/changelog"
 
 unreleased=`head -1 "$changelog" | grep -c UNRELEASED`
