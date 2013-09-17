@@ -1,9 +1,9 @@
 #! /bin/bash
 
-P="cod-preproposed"
+P="cod-source"
 
-if [ "$#" -ne 4 -a "$#" -ne 5 ]; then
-	echo "Usage: $P <repo> <series> <commit> <tag> [<abi override>]" 1>&2
+if [ "$#" -ne 5 -a "$#" -ne 6 ]; then
+	echo "Usage: $P <ppa> <repo> <series> <commit> <tag> [<abi override>]" 1>&2
 	exit 1
 fi
 
@@ -13,11 +13,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-repo="$1"
-series="$2"
-commit="$3"
-tag="$4"
-abi="$5"
+ppa="$1"
+repo="$2"
+series="$3"
+commit="$4"
+tag="$5"
+abi="$6"
 
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
@@ -45,7 +46,7 @@ do_chroot()
 	"$cmd" -c "$chroot" --directory=`pwd` -- "$@"
 }
 
-echo "*** BUILDING PREPROPOSED: repo:$repo commit:$commit series:$series tag:$tag..."
+echo "*** BUILDING SOURCE: ppa:$ppa repo:$repo commit:$commit series:$series tag:$tag..."
 
 build_release="hardy"
 
@@ -55,7 +56,7 @@ master_tree="$master_main/$repo"
 cd "$master_tree" || exit 1
 
 # NOTE: a - in the branch name seems to be causing issues.
-branch="BUILD.preproposed.$series"
+branch="BUILD.source.$series"
 branch=`echo "$branch" | sed -e 's/-/./g'`
 
 # Ensure we get the uptodate machinary.
@@ -132,6 +133,6 @@ elif [ -d meta-source ]; then
 fi
 
 # Move the upload to the incoming directory.
-mkdir -p "$HOME/public_html/upload/pre-proposed"
+mkdir -p "$HOME/public_html/upload/$ppa"
 mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
-	"$HOME/public_html/upload/pre-proposed"
+	"$HOME/public_html/upload/$ppa"

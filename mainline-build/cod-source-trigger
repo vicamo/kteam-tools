@@ -1,5 +1,5 @@
 #!/bin/bash
-P="cod-preproposed-trigger"
+P="cod-source-trigger"
 
 set -e
 
@@ -43,16 +43,16 @@ update_repo()
 }
 
 # Ensure we have our state directory.
-mkdir -p "$master_main/state/preproposed"
+mkdir -p "$master_main/state/source"
 
 #
-# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+# UBUNTU SOURCE: tips of the ubuntu trees et al
 #
 date=`date +%Y%m%d%H%M`
-while read series repo branch repo2 branch2
+while read ppa series repo branch repo2 branch2
 do
 	current="${repo}_${series}_${branch}"
-	curr="$master_main/state/preproposed/$current"
+	curr="$master_main/state/source/$current"
 	branch="$series/$branch"
 
 	update_repo "$repo" "$series"
@@ -84,7 +84,7 @@ do
 
 		if [ "$tip" != "$release" ]; then
 			"$here/cod-enqueue" "A" \
-				"$here/cod-preproposed" "$repo" "$series" \
+				"$here/cod-source" "$ppa" "$repo" "$series" \
 					"$tip" "$date"
 			changed=1
 		else
@@ -101,7 +101,7 @@ do
 	update_repo "$repo2" "$series"
 
 	current="${repo2}_${series}_${branch2}.ABI"
-	curr2="$master_main/state/preproposed/$current"
+	curr2="$master_main/state/source/$current"
 	branch2="$series/$branch2"
 
         # Find the abi number for the tip.
@@ -129,19 +129,19 @@ do
 		mv -f "$curr2.new" "$curr2"
 
 		echo "$here/cod-enqueue" "A" \
-			"$here/cod-preproposed" "$repo2" "$series" \
+			"$here/cod-source" "$ppa" "$repo2" "$series" \
 				"$branch2" "$date" "$abi_tip"
 		"$here/cod-enqueue" "A" \
-			"$here/cod-preproposed" "$repo2" "$series" \
+			"$here/cod-source" "$ppa" "$repo2" "$series" \
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-raring linux master-next linux-meta master
-raring linux-lbm master
-quantal linux master-next linux-meta master
-quantal linux-lbm master
-precise linux master-next linux-meta master
-precise linux-lbm master
-lucid linux master-next linux-meta master
-lucid linux-lbm master
+pre-proposed raring linux master-next linux-meta master
+pre-proposed raring linux-lbm master
+pre-proposed quantal linux master-next linux-meta master
+pre-proposed quantal linux-lbm master
+pre-proposed precise linux master-next linux-meta master
+pre-proposed precise linux-lbm master
+pre-proposed lucid linux master-next linux-meta master
+pre-proposed lucid linux-lbm master
 EOL
