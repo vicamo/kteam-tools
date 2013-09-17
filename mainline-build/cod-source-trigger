@@ -69,7 +69,7 @@ do
 
 	release=`cd "$master_main/$repo" && git log "$branch" | awk '
 		/^commit /			{ sha1 = $2 }
-		/^ *UBUNTU: *Ubuntu-2\.6\./	{ exit }
+		/^ *UBUNTU: *Ubuntu-/		{ exit }
 		END				{ print sha1 }
 	'`
 	prev=`cat "$curr" 2>/dev/null || true`
