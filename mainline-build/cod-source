@@ -48,7 +48,7 @@ do_chroot()
 
 echo "*** BUILDING SOURCE: ppa:$ppa repo:$repo commit:$commit series:$series tag:$tag..."
 
-build_release="hardy"
+build_release="precise"
 
 master_main="$HOME/COD"
 master_tree="$master_main/$repo"
