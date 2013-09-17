@@ -56,7 +56,7 @@ do
 done
 
 # Look for any uploads for various PPAs.
-for ppa in pre-proposed
+for ppa in 'test-devel' 'pre-proposed'
 do
 	(
 		cd "$incoming/upload/$ppa" || exit 1
