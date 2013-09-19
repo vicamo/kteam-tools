@@ -28,6 +28,8 @@ function check_commit_upstream_label # sha commitlog
 {
 	grep -q '^commit [[:xdigit:]]\{40\} upstream' $2 && return 0
 	grep -q 'Upstream commit [[:xdigit:]]\{40\}' $2 && return 0
+	# ignore Revert commits (they may or may not be from upstream)
+	head -1 $2 | grep -q "^Revert \"" && return 0
 	# ignore the "Linux w.x.y.z" release commits
 	head -1 $2 | grep -q '^Linux [0-9].*' && return 0
 	echo "W: $1 missing: commit {mainline_sha} upstream."
