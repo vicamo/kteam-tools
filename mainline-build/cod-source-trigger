@@ -48,6 +48,7 @@ mkdir -p "$master_main/state/source"
 #
 # UBUNTU SOURCE: tips of the ubuntu trees et al
 #
+now_tm=`date +%s`
 date=`date +%Y%m%d%H%M`
 while read ppa series repo branch repo2 branch2 flags
 do
@@ -75,34 +76,66 @@ do
 	prev=`cat "$curr" 2>/dev/null || true`
 
 	echo "repo<$repo> branch<$branch> tip<$tip> release<$release> prev<$prev>"
+	upload=1
 
-	changed=0
-	if [ "$tip" != "$prev" ]; then
-		changed=1
+	# If the tip matches our last upload then there is nothing to do.
+	if [ "$tip" = "$prev" ]; then
+		echo "nominal tip unchanged, skipping"
+		upload=0
+	fi
+		
+	# If the tip matches the release commit and those are excluded
+	# then there is nothing to do.
+	case ",$flags,*" in
+	no-release)
+		if [ "$tip" = "$release" ]; then
+			echo "nominal tip represents release, skipping"
+			upload=0
+		fi
+		;;
+	esac
 
-		# Commit the new tip.
-		echo "$tip" >"$curr.new"
-		mv -f "$curr.new" "$curr"
-
-		case ",$flags,*" in
-		no-release)
-			if [ "$tip" = "$release" ]; then
-				changed=0
-				echo "tip represents release, nothing to do"
-			fi
-			;;
-		esac
-
-		if [ "$changed" = "1" ]; then
-			"$here/cod-enqueue" "A" \
-				"$here/cod-source" "$ppa" "$repo" "$series" \
-					"$tip" "$date"
+	# If we did an upload in the last 12 hours, then it is too soon
+	# to upload again.
+	if [ -f "$curr" ]; then
+		upload_tm=`stat -c %Y "$curr"`
+		let update_age="$now_tm-$upload_tm"
+		if [ "$update_age" -lt 43200 ]; then
+			echo "nominal tip uploaded <12hrs ago ($update_age), skipping"
+			upload=0
 		fi
 	fi
 
+	# If we committed less than 2 hours ago then we might make further
+	# updates soon, so hold a little.
+	commit_tm=`cd "$master_main/$repo" && 
+		git log --pretty=format:%ct "$branch^..$branch" || true`
+	if [ "$commit_tm" = '' ]; then
+		echo "actual tip does not exist, skipping"
+		upload=0
+	else
+		let commit_age="$now_tm-$commit_tm"
+		if [ "$commit_age" -lt 7200 ]; then
+			echo "actual tip changed <2hrs ago ($commit_age), skipping"
+			upload=0
+		fi
+	fi
+
+	if [ "$upload" = '0' ]; then
+		continue
+	fi
+	
+	# Commit the new tip.
+	echo "$tip" >"$curr.new"
+	mv -f "$curr.new" "$curr"
+
+	# Queue up the build.
+	"$here/cod-enqueue" "A" \
+		"$here/cod-source" "$ppa" "$repo" "$series" "$tip" "$date"
+
 	# If we are dealing with linux then we need to ensure that linux-meta
 	# is uploaded with an appropriate ABI number.
-	if [ "$repo2" = "" -o "$changed" = 0 ]; then
+	if [ "$repo2" = "" ]; then
 		continue
 	fi
 
