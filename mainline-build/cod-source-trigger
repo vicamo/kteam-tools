@@ -49,7 +49,7 @@ mkdir -p "$master_main/state/source"
 # UBUNTU SOURCE: tips of the ubuntu trees et al
 #
 date=`date +%Y%m%d%H%M`
-while read ppa series repo branch repo2 branch2
+while read ppa series repo branch repo2 branch2 flags
 do
 	current="${repo}_${series}_${branch}"
 	curr="$master_main/state/source/$current"
@@ -78,17 +78,25 @@ do
 
 	changed=0
 	if [ "$tip" != "$prev" ]; then
+		changed=1
+
 		# Commit the new tip.
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
 
-		if [ "$tip" != "$release" ]; then
+		case ",$flags,*" in
+		no-release)
+			if [ "$tip" = "$release" ]; then
+				changed=0
+				echo "tip represents release, nothing to do"
+			fi
+			;;
+		esac
+
+		if [ "$changed" = "1" ]; then
 			"$here/cod-enqueue" "A" \
 				"$here/cod-source" "$ppa" "$repo" "$series" \
 					"$tip" "$date"
-			changed=1
-		else
-			echo "tip represents release, nothing to do"
 		fi
 	fi
 
@@ -136,18 +144,18 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-test-devel saucy linux master-next linux-meta master
-test-devel saucy linux goldfish linux-meta goldfish
-test-devel saucy linux grouper linux-meta grouper
-test-devel saucy linux maguro linux-meta maguro
-test-devel saucy linux mako linux-meta mako
-test-devel saucy linux manta linux-meta manta
-pre-proposed raring linux master-next linux-meta master
-pre-proposed raring linux-lbm master
-pre-proposed quantal linux master-next linux-meta master
-pre-proposed quantal linux-lbm master
-pre-proposed precise linux master-next linux-meta master
-pre-proposed precise linux-lbm master
-pre-proposed lucid linux master-next linux-meta master
-pre-proposed lucid linux-lbm master
+test-devel saucy linux master-next linux-meta master -
+test-devel saucy linux goldfish linux-meta goldfish -
+test-devel saucy linux grouper linux-meta grouper -
+test-devel saucy linux maguro linux-meta maguro -
+test-devel saucy linux mako linux-meta mako -
+test-devel saucy linux manta linux-meta manta -
+pre-proposed raring linux master-next linux-meta master no-release
+pre-proposed raring linux-lbm master no-release
+pre-proposed quantal linux master-next linux-meta master no-release
+pre-proposed quantal linux-lbm master no-release
+pre-proposed precise linux master-next linux-meta master no-release
+pre-proposed precise linux-lbm master no-release
+pre-proposed lucid linux master-next linux-meta master no-release
+pre-proposed lucid linux-lbm master no-release
 EOL
