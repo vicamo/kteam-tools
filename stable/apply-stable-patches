@@ -79,6 +79,8 @@ class Cmdline:
         --check-already  Check for already committed ('commit {sha} upstream.')
                          patches
 
+        --stop-on-fail   Stop processing if a patch fails to apply
+
         --name=<full name>
                          Name to use for the SOB line.
                          Default is git config user.name
@@ -116,7 +118,8 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'range=', 'sob', 'verbose', 'config=',
-                         'check-already', 'debug=', 'name=', 'email=']
+                         'check-already', 'stop-on-fail', 'debug=',
+                         'name=', 'email=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -131,6 +134,9 @@ class Cmdline:
 
                 elif (opt == '--check-already'):
                     self.cfg['check_already'] = True
+
+                elif (opt == '--stop-on-fail'):
+                    self.cfg['stop_on_fail'] = True
 
                 elif opt in ('--name'):
                     self.cfg['name'] = val
@@ -515,6 +521,9 @@ class ApplyStablePatches(StdApp):
                     move(patch_file, failed_dir)
                     print("failed")
                     status, result = run_command('git am --abort')
+                    if 'stop_on_fail' in self.cfg:
+                        print("Stopping because a patch failed to apply.")
+                        break
                     continue
                 if patch_file == filename:
                     move(filename, applied_dir)
