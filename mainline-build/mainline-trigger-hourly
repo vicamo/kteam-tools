@@ -14,4 +14,9 @@ esac
 #
 "$here/cod-tags-trigger"
 
+#
+# UBUNTU SOURCE: source package uploads, tips of the ubuntu trees etc
+#
+"$here/cod-source-trigger"
+
 echo "$P: trigger run complete"

@@ -10,11 +10,6 @@ case "$here" in
 esac
 
 #
-# UBUNTU SOURCE: source package uploads, tips of the ubuntu trees etc
-#
-"$here/cod-source-trigger"
-
-#
 # MAINLINE CRACK: tips of herton's prestable branches.
 #
 "$here/cod-prestable-trigger"
