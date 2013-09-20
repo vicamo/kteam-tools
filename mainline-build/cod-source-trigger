@@ -184,7 +184,6 @@ test-devel saucy linux maguro linux-meta maguro -
 test-devel saucy linux mako linux-meta mako -
 test-devel saucy linux manta linux-meta manta -
 pre-proposed raring linux master-next linux-meta master no-release
-pre-proposed raring linux-lbm master no-release
 pre-proposed quantal linux master-next linux-meta master no-release
 pre-proposed quantal linux-lbm master no-release
 pre-proposed precise linux master-next linux-meta master no-release
@@ -192,3 +191,4 @@ pre-proposed precise linux-lbm master no-release
 pre-proposed lucid linux master-next linux-meta master no-release
 pre-proposed lucid linux-lbm master no-release
 EOL
+#pre-proposed raring linux-lbm master no-release
