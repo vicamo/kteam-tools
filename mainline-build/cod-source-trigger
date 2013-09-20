@@ -86,8 +86,8 @@ do
 		
 	# If the tip matches the release commit and those are excluded
 	# then there is nothing to do.
-	case ",$flags,*" in
-	no-release)
+	case ",$flags," in
+	*,no-release,*)
 		if [ "$tip" = "$release" ]; then
 			echo "nominal tip represents release, skipping"
 			upload=0
