@@ -1500,6 +1500,17 @@ class Shank(StdApp):
 
         return True
 
+    def set_testing_to_confirmed(self, taskobj):
+        if self.taskbyname['certification-testing'].status == 'New':
+            self.set_task_to_state('certification-testing', 'Confirmed')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-start')
+        if self.taskbyname['regression-testing'].status == 'New':
+            self.set_task_to_state('regression-testing', 'Confirmed')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-start')
+        if self.taskbyname['security-signoff'].status == 'New':
+            self.set_task_to_state('security-signoff', 'Confirmed')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-start')
+
     def promote_to_proposed_fix_released(self, taskobj):
         """
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
@@ -1520,6 +1531,7 @@ class Shank(StdApp):
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
         self.set_phase(taskobj, 'Verification')
         self.set_task_to_state('verification-testing', 'In Progress')
+        self.set_testing_to_confirmed(taskobj)
         self.send_upload_announcement(taskobj, 'proposed')
 
         # Now tag all bugs verification-needed and spam with a comment
@@ -1543,15 +1555,7 @@ class Shank(StdApp):
             self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-end')
             self.set_phase(taskobj, 'Testing')
 
-        if self.taskbyname['certification-testing'].status == 'New':
-            self.set_task_to_state('certification-testing', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-start')
-        if self.taskbyname['regression-testing'].status == 'New':
-            self.set_task_to_state('regression-testing', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-start')
-        if self.taskbyname['security-signoff'].status == 'New':
-            self.set_task_to_state('security-signoff', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-start')
+        self.set_testing_to_confirmed(taskobj)
         return False
 
     def certification_testing_fix_released(self, taskobj):
