@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+set +x
+
+echo "  Stage 9:"
+echo "    . Mark the security-signoff task as Fix Released."
+
+# Set the security-signoff task as completed on the various
+# tracking bugs.
+#
+./tracking-bugs-modify mods-stage9
+
+../swm --staging --dryrun-email --verbose > 9.log 2>&1
+
+./tracking-bugs-snapshot snap-stage9
+./tracking-bugs-verify ref-tbs-stage9 snap-stage9

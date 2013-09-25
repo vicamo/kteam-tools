@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+set +x
+
+echo "  Stage 8:"
+echo "    . Mark the certification-testing task as Fix Released."
+
+# Set the promote-to-proposed task as completed on the various
+# tracking bugs.
+#
+./tracking-bugs-modify mods-stage8
+
+# The sru-workflow-manager should see that we are past the 1 hr
+# grace perios and should set the next set of tasks to "Confirmed".
+#
+../swm --staging --dryrun-email --verbose > 8.log 2>&1
+
+./tracking-bugs-snapshot snap-stage8
+./tracking-bugs-verify ref-tbs-stage8 snap-stage8

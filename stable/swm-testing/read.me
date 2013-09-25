@@ -1,0 +1,61 @@
+The files and scripts in this directory are for doing regression
+testing of the sru-workflow-manager.
+
+Process
+-------
+
+ 1. Close (mark 'Invalid') all open release tracking bugs on
+    the qastaging launchpad service. This is done so that we
+    start from a known good state with only the tracking bugs
+    that we care about.
+
+ 2. Look at the latest kernel packages that have been built in
+    the kernel team's ppa. Using that information, create a
+    new set of release tracking bugs, for those same packages,
+    on the qastaging launchpad service.
+
+ 3. Run the sru-workflow-manager.
+
+ 4. Grab a snapshot of the tracking bugs.
+
+ 5. Compare the snapshot of the tracking bugs against known,
+    good, tracking bug reference data.
+
+ 6. Modify one or more of the tracking bugs to simulate the
+    actions of a human.
+
+ 7. Repease steps 3 through 6 until the all tasks for all the
+    tracking bugs have been completed.
+
+Files
+-----
+
+ tracking-bugs-close
+     Closes all existing release tracking bugs on qastaging
+     service.
+
+ tracking-bugs-init
+     Creates all the tracking bugs to be used for the regression
+     test run.
+
+ tracking-bugs-snapshot
+     Find all the existing open tracking bugs; collect the relevant
+     data about each one and write that data to a file.
+
+ tracking-bugs-verify
+     Compare the data for two sets of tracking bugs. Usually the
+     first set is the reference set of data and the second set
+     is the snapshot that was just created of the existing
+     tracking bugs. If anything is found to not match the script
+     will return a non-zero result.
+
+ ref-*.json
+     These files are the reference data. Each file contains the
+     release tracking bugs with the correct current tasks, task
+     status and assignee for a particular time in the sru workflow
+     cycle. These files were originally generated and then verified
+     by hand.
+
+ test-stage*
+     Shell scripts that test one particular 'stage' in the cadence
+     cycle.

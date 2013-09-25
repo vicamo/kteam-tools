@@ -1,0 +1,15 @@
+[
+    {
+        "series name" : "raring",
+        "tags" : [
+            "certification-testing-passed"
+        ],
+        "tasks" : [
+            {
+                "target-name": "kernel-sru-workflow/certification-testing",
+                "status": "Fix Released"
+            }
+        ],
+        "title": "linux: <version to be filled> -proposed tracker"
+    }
+]

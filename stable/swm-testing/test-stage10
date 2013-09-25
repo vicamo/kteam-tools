@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+set +x
+
+echo "  Stage 10:"
+echo "    . Mark promote-to-security and promote-to-updates tasks as Fix Released."
+
+./tracking-bugs-modify mods-stage10
+
+../swm --staging --dryrun-email --verbose > 10.log 2>&1
+
+./tracking-bugs-snapshot snap-stage10
+./tracking-bugs-verify ref-tbs-stage10 snap-stage10

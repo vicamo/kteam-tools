@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+echo "  Stage 3:"
+echo "    . Verify that nothing changes if we run sru-wrorkflow-manager again at this point"
+
+# Second turn of the crank, nothing should change.
+#
+../swm --staging --dryrun-email --debug > 2.log 2>&1
+
+./tracking-bugs-snapshot snap-stage3
+./tracking-bugs-verify ref-tbs-stage2 snap-stage3

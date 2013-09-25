@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+echo "  Stage 1:"
+echo "    . Closing any existing release tracking bugs"
+./tracking-bugs-close-all  # Mark any/all existing release tracking bugs 'Invalid'
+
+echo "    . Creating release tracking bugs"
+./tracking-bugs-init       # Create the set of release tracking bugs we are going to use
+                           # for our testing.
+
+./tracking-bugs-snapshot snap-init
+./tracking-bugs-verify ref-tbs-created snap-init
