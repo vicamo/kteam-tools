@@ -81,9 +81,15 @@ then
     CHROOT="${GITREPODIR##ubuntu-}"
     CHROOT="${CHROOT%.git}"
 fi
-### Cross-compile in an amd64 chroot; don't use an ARCH chroot.
-# CHROOT="$CHROOT-$ARCH" # append the arch to the chroot name
-CHROOT="$CHROOT-amd64"
+
+### Compile amd64 and i386 in a native chroot.
+### Cross-compile ARM in an amd64 chroot (for dramatically better performance).
+if [ "$ARCH" = "amd64" -o "$ARCH" = "i386" ]
+then
+	CHROOT="$CHROOT-$ARCH"
+else
+	CHROOT="$CHROOT-amd64"
+fi
 
 ### Get the version number - we need it to locate the orig tarball
 VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
