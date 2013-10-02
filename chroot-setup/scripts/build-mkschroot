@@ -139,6 +139,19 @@ case $SUITE in
 	*)
 		;;
 esac
+
+case $SUITE in
+	saucy)
+	case ${ARCH} in
+		i386|amd64)
+			ADDPKG="$ADDPKG gcc-powerpc-linux-gnu g++-powerpc-linux-gnu";
+		;;
+	esac
+	;;
+	*)
+		;;
+esac
+
 case $SUITE in
 	precise)
 		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency linux-headers-generic-lts-quantal libpci-dev";
