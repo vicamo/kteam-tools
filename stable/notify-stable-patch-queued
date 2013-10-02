@@ -50,6 +50,13 @@ OptParser.add_option(
          "git config user.name and user.email (%default)."
 )
 OptParser.add_option(
+    "-b", "--blacklist", dest="blacklist", action="append", type="string",
+    help="adds a new entry to the blacklist, i.e., if an email recipient "
+         "matches an entry in the blacklist, it won't get notified.  "
+         "Useful, for example, when a bogus email address is found in a "
+         "patch."
+)
+OptParser.add_option(
     "--version", dest="version", action="store", default="3.5.y.z",
     help="sets the kernel version displayed in the subject of the "
          "notification emails, default is %default")
@@ -74,6 +81,9 @@ if len(args) == 0:
 if opts.sender == "":
     print "EE: No mail sender was set!"
     exit(1)
+
+if opts.blacklist != None:
+    SobBlacklist = SobBlacklist + opts.blacklist
 
 def AssembleMailBody(version, subject, patchlines):
     # strip the real version used in our branch for the email
