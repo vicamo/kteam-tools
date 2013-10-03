@@ -33,7 +33,12 @@ RELEASE_ARCH=${RELEASE}-${ARCH}
 #
 # Make sure you've all of the prerequisite packages installed.
 #
-PRE_REQS="debootstrap dchroot kernel-wedge fakeroot gawk postfix qemu-kvm-extras-static"
+PRE_REQS="debootstrap dchroot kernel-wedge fakeroot gawk postfix"
+case $(dpkg --print-architecture) in
+	amd64|i386) PRE_REQS="$PRE_REQS qemu-kvm-extras-static";
+	;;
+esac
+
 for i in ${PRE_REQS}
 do
 	if ! dpkg -l | grep $i > /dev/null 2>&1
