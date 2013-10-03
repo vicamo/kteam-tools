@@ -12,6 +12,7 @@ RC=0
 USER="$SUDO_USER"
 DEBOOTSTRAP=debootstrap
 SBUILD_GRP=sbuild
+HOSTARCH=$(dpkg --print-architecture)
 
 if [ "$USER" = "" ]; then
 	echo "ERROR: You must run this command under sudo!" >&2
@@ -203,38 +204,42 @@ case $SUITE in
 	esac
 	
 #
-# armel/armhf is only supported if the lsb-release is Lucid or higher.
+# armel/armhf qemu is only supported if the lsb-release is Lucid or higher.
 # Furthermore you must have a minimum version of debootstrap
 # installed (usually by enabling -backports)
 #
-if [ "$ARCH" = "armel" ] || [ "$ARCH" = "armhf" ]
-then
-	DEBOOTSTRAP_MINVERSION=1.0.37ubuntu1~lucid1
-	DEBOOTSTRAP_VERSION=`dpkg-query --show debootstrap|cut -f 2`
-	if ! dpkg --compare-versions ${DEBOOTSTRAP_MINVERSION} ge ${DEBOOTSTRAP_VERSION}
-	then
-		echo Warning: debootstrap must be at a minimum version of ${DEBOOTSTRAP_MINVERSION} to support armel.
-		echo Try enabling -backports and then update your packages.
-	fi
-	DEBOOTSTRAP=qemu-debootstrap
-	#
-	# makedumpfile does not exist in armel
-	#
-	ADDPKG="`echo $ADDPKG|sed 's/makedumpfile//'`"
+case $HOSTARCH in
+	amd64|i386)
+		case $ARCH in
+			armel|armhf)
+				DEBOOTSTRAP_MINVERSION=1.0.37ubuntu1~lucid1
+				DEBOOTSTRAP_VERSION=`dpkg-query --show debootstrap|cut -f 2`
+				if ! dpkg --compare-versions ${DEBOOTSTRAP_MINVERSION} ge ${DEBOOTSTRAP_VERSION}
+				then
+					echo Warning: debootstrap must be at a minimum version of ${DEBOOTSTRAP_MINVERSION} to support armel.
+					echo Try enabling -backports and then update your packages.
+				fi
+				DEBOOTSTRAP=qemu-debootstrap
+				#
+				# makedumpfile does not exist in armel
+				#
+				ADDPKG="`echo $ADDPKG|sed 's/makedumpfile//'`"
 
-	#
-	# Check for a minimum version of qemu-kvm-extras-static
-	#
-	QEMU_KVM_EXTRAS_STATIC_MINVERSION=0.15.50-2011.08-0ubuntu4~ppa10.04.1
-	QEMU_KVM_EXTRAS_STATIC_VERSION=`dpkg-query --show qemu-kvm-extras-static|cut -f 2`
-	if dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_VERSION} lt ${QEMU_KVM_EXTRAS_STATIC_MINVERSION}
-	then
-		echo Warning: qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
-		echo Try 'echo deb http://ppa.launchpad.net/linaro-maintainers/tools/ubuntu lucid main | sudo tee /etc/apt/sources.list.d/linaro.list'
-	fi
-fi
+				#
+				# Check for a minimum version of qemu-kvm-extras-static
+				#
+				QEMU_KVM_EXTRAS_STATIC_MINVERSION=0.15.50-2011.08-0ubuntu4~ppa10.04.1
+				QEMU_KVM_EXTRAS_STATIC_VERSION=`dpkg-query --show qemu-kvm-extras-static|cut -f 2`
+				if dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_VERSION} lt ${QEMU_KVM_EXTRAS_STATIC_MINVERSION}
+				then
+					echo Warning: qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
+					echo Try 'echo deb http://ppa.launchpad.net/linaro-maintainers/tools/ubuntu lucid main | sudo tee /etc/apt/sources.list.d/linaro.list'
+				fi
+			;;
+		esac
+	;;
+esac
 
-HOSTARCH=$(dpkg --print-architecture)
 if [ "$ARCH" = "" ]; then
 	NAME="$SUITE"
 else
