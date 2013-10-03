@@ -5,6 +5,12 @@
             "linux": {
                 "bugs": {}
             }, 
+            "linux-lts-raring": {
+                "bugs": {}
+            }, 
+            "linux-lts-quantal": {
+                "bugs": {}
+            }, 
             "linux-backports-modules-2.6.32": {
                 "bugs": {}
             }, 
