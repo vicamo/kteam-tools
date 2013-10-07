@@ -85,6 +85,7 @@ class Cmdline:
         stdo(" Examples:                                                                                   \n")
         stdo("     %s --verbose                                                                            \n" % self.cfg['app_name'])
         stdo("     %s --series=hardy --package=linux                                                       \n" % self.cfg['app_name'])
+        stdo("     %s --comment=boilerplate/bugtext-start-verification.txt --package=linux --series=raring srus.json\n" % self.cfg['app_name'])
 
     # process
     #
