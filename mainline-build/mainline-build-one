@@ -302,7 +302,7 @@ build_common()
 do_chroot "$build_release-i386" \
 	fakeroot debian/rules clean
 do_chroot "$build_release-i386" \
-	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep
+	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
 for arch in $arches; do
 	if [ "$arch" == "armel" -o "$arch" == "armhf" ]; then
 		carch=amd64
