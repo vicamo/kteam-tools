@@ -128,36 +128,6 @@ class Shank(StdApp):
         bug = WorkflowBug(s.lp, s.projects_tracked, bugid, sauron, s.args.dryrun)
         if bug.is_valid:
             try:
-                if False:
-                    p = Package(s.lp_production, bug)
-                    p.ignore_promotions = s.args.dryrun_ignore_promotions
-                    cinfo('')
-                    if p.is_released:
-                        cinfo('        The package has been promoted to the approriate release directories. Nothing more to be done.')
-
-                    elif p.is_prepd:
-                        cinfo('        The package and all of it\'s dependents have been fully prepared.')
-
-                    else:
-                        cinfo('        Needs work')
-                        p.determine_build_status()
-
-                        if p.updates is not None:
-                            cinfo('')
-                            cinfo('        Based on the build status of packages:', 'cyan')
-                            for task in p.updates:
-                                try:
-                                    bug.tasks_by_name[task].status = p.updates[task]['status']
-                                except KeyError:
-                                    pass
-                                try:
-                                    if s.args.debug_assignee:
-                                        bug.tasks_by_name[task].assignee = s.lp.launchpad.people[s.args.debug_assignee]
-                                    else:
-                                        bug.tasks_by_name[task].assignee = p.updates[task]['assignee']
-                                except KeyError:
-                                    pass
-
                 s.process_bug_tasks(bug)
 
             except PackageError:
