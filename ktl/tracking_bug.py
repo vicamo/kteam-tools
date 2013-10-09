@@ -267,8 +267,8 @@ class TrackingBug:
                 assignee = self.wf.assignee(package, task_name, devel_series)
                 if assignee is None:
                     if not self.quiet:
-                        print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
-                    t.status = "Invalid"
+                        print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task_name
+                    task.status = "Invalid"
                 else:
                     try:
                         task.assignee = self.lp.launchpad.people[assignee]
