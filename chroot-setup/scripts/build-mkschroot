@@ -59,11 +59,22 @@ while [ $# -ne 0 ]; do
 							;;
 					esac
 				;;
+				# only armel is supported on armhf
+				armhf)
+					case $ARCH in
+						armhf|armel)
+							;;
+						*)
+							echo $ARCH is not supported on $HOSTARCH
+							exit 1
+							;;
+					esac
+				;;
 				*)
 					if [ ! "$HOSTARCH" = "$ARCH" ]
 					then
-						echo "There is no qemu support on $HOSTARCH must"
-						echo "$HOSTARCH must equal --arch option"
+						echo "There is no qemu support on $HOSTARCH"
+						echo "$HOSTARCH must equal --arch $ARCH option"
 						exit 1
 					fi
 				;;
