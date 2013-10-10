@@ -48,11 +48,22 @@ while [ $# -ne 0 ]; do
 			ARCH=$(echo $1|cut -d= -f2)
 			OPTIONS="$OPTIONS $1"
 			case $HOSTARCH in
-				arm*)
+				# Only i386 is supported as non-host target
+				amd64)
+					case $ARCH in
+						amd64|i386)
+							;;
+						*)
+							echo $ARCH is not supported on $HOSTARCH
+							exit 1
+							;;
+					esac
+				;;
+				*)
 					if [ ! "$HOSTARCH" = "$ARCH" ]
 					then
-						echo "There is no qemu support on ARM"
-						echo "$HOSTARCH must equal ARCH"
+						echo "There is no qemu support on $HOSTARCH must"
+						echo "$HOSTARCH must equal --arch option"
 						exit 1
 					fi
 				;;
