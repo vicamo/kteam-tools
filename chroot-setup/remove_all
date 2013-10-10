@@ -4,6 +4,7 @@ CDIR="`dirname $0`"
 
 . "${CDIR}/scripts/chroot-defs.conf"
 
+schroot --all-sessions -e
 let index=0
 for i in ${releases[@]}
 do
