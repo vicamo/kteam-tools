@@ -142,6 +142,7 @@ class Ubuntu:
             [
                 'linux',
                 'linux-meta',
+                'linux-exynos5',
             ],
             'dependent-packages' :
             {
@@ -149,10 +150,11 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
+                'linux-exynos5' : { 'meta' : 'linux-meta-exynos5' },
             },
             'derivative-packages' :
             {
-                #'linux' : [ 'linux-ppc' ]
+                'linux' : [ 'linux-exynos5' ]
             },
             'sha1' : '',
             'md5' : ''
