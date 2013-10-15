@@ -520,6 +520,133 @@ class Shank(StdApp):
         cdebug('            prep_package_new leave')
         return False
 
+    def handle_derivatives(s, taskobj, taskname):
+        # if this is a derivative tracking bug, first wait until
+        # that packages on the master tracking bug are also ready or
+        # already promoted. The way derivative package bugs are
+        # opened already ensures this, but check the tasks on the
+        # master bug anyway just in case...
+        tsk_st = {
+            'prepare-package'            : [ 'Fix Released' ],
+            'prepare-package-lbm'        : [ 'Fix Released', 'Invalid' ],
+            'prepare-package-meta'       : [ 'Fix Released', 'Invalid' ],
+            'prepare-package-ports-meta' : [ 'Fix Released', 'Invalid' ],
+            'prepare-package-signed'     : [ 'Fix Released' ],
+            taskname                     : [ 'Confirmed', 'Fix Released' ]
+        }
+        # If the master bug's tasks are not completely ready.
+        #
+        if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
+            cdebug('                verify_master_bug_tasks failed')
+            cdebug('            prepare_package_fixed leave (False)')
+            return False
+
+        # open new tracking bugs for derivative packages if needed
+        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
+        if not series:
+            print("ERROR: Can't find series for %s-%s to get derivatives\n" % (s.wfb.pkg_name, s.wfb.pkg_version))
+            cdebug('            prepare_package_fixed leave (False)')
+            return False
+
+        der_list = []
+        record = s.ubuntu.lookup(series)
+        if 'derivative-packages' in record:
+            if s.wfb.pkg_name in record['derivative-packages']:
+                der_list = record['derivative-packages'][s.wfb.pkg_name]
+        bp_list = []
+        for entry in s.ubuntu.db.itervalues():
+            if 'backport-packages' in entry:
+                bp_entries = entry['backport-packages']
+                for bp_entry in iter(bp_entries):
+                    if (bp_entries[bp_entry][0] == s.wfb.pkg_name and bp_entries[bp_entry][1] == record['series_version']):
+                        bp_list.append([bp_entry, entry['name']])
+
+        der_bug_list = []
+        bp_bug_list  = []
+        m_bug_list   = []
+
+        tb = TrackingBug(s.lp, s.args.staging)
+        for der_pkg in der_list:
+            cdebug('                    derivative package: %s' % der_pkg)
+            if s.args.dryrun or s.args.dryrun_derivative_trackers:
+                cinfo('        Dryrun - Would open tracking bug for derivative package %s' % (der_pkg))
+                continue
+            try:
+                print('        ')
+                bug = tb.open(der_pkg, '<version to be filled>', True, taskobj.bug.id, series)
+            except:
+                traceback.print_exc()
+                bug = None
+            if bug:
+                # Friendly comment on the bug stating that this is a derivative
+                msgder =  "This tracking bug was opened to be worked from "
+                msgder += "%s-%s update (bug %s)" % (s.wfb.pkg_name, s.wfb.pkg_version, taskobj.bug.id)
+                subder =  "Derivative package tracking bug"
+                bug.add_comment(msgder, subder)
+                cinfo('        Action: Opened tracking bug %s for derivative package %s' % (bug.id, der_pkg))
+                der_bug_list.append([der_pkg, bug.id])
+            else:
+                m_bug_list.append('%s' % (der_pkg))
+
+        for bp_pkg in bp_list:
+            cdebug('                    backport package: %s' % bp_pkg)
+            if s.args.dryrun or s.args.dryrun_derivative_trackers:
+                cinfo('        Dryrun - Would open tracking bug for backport package %s' % (bp_pkg[0]))
+                continue
+            try:
+                bug = tb.open(bp_pkg[0], '%s~%s1' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
+            except:
+                traceback.print_exc()
+                bug = None
+            if bug:
+                cinfo('        Action: Opened tracking bug %s for backport package %s (%s)' % (bug.id, bp_pkg[0], bp_pkg[1]))
+                bp_bug_list.append([bp_pkg[0], bp_pkg[1], bug.id])
+            else:
+                m_bug_list.append('%s (%s)' % (bp_pkg[0], bp_pkg[1]))
+
+        # comment about publishing and possible new tracking bugs opened
+        msgbody  = 'All builds are complete, packages in this bug'
+        if taskname == 'promote-to-proposed':
+            msgbody += ' can be copied to -proposed.'
+        else:
+            msgbody += ' are available in -proposed.'
+        if der_bug_list:
+            msgbody += '\n\nDerivative packages from packages here can be worked on,'
+            msgbody += ' the following tracking bugs were opened for them:'
+            for pkg_bug in der_bug_list:
+                msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
+        if bp_bug_list:
+            msgbody += '\n\nBackport packages from packages here can be worked on,'
+            msgbody += ' the following tracking bugs were opened for them:'
+            for pkg_bug in bp_bug_list:
+                msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
+        if m_bug_list:
+            msgbody += '\n\nIt was not possible to create or handle the'
+            msgbody += ' tracking bugs for the following packages'
+            msgbody += ' (their tracking bugs based on this update'
+            msgbody += ' must be handled manually):'
+            for ln in m_bug_list:
+                msgbody += '\n%s' % (ln)
+        task = s.wfb.tasks_by_name[s.projectname]
+        s.send_comment(task, 'Packages available', msgbody)
+
+        # Set promote-to-proposed
+        s.set_task_to_state(taskname, 'Confirmed')
+        # Add time stamp and status
+        if s.projectname == 'kernel-sru-workflow':
+            s.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
+            s.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
+            s.set_phase(taskobj, 'CopyToProposed')
+        else:
+            s.set_tagged_timestamp(taskobj, 'kernel-Prepare-package-end')
+            s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
+            s.set_phase(taskobj, 'Testing')
+            s.send_upload_announcement(taskobj, 'proposed')
+
+            cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
+            status, result = run_command(cmd)
+
+
     def prep_package_fix_released(s, taskobj):
         """
         when the prep-package task is set to Fix Released and there is
@@ -547,130 +674,7 @@ class Shank(StdApp):
                 cdebug('                prepare_package_fixed leave (False)')
                 return False
 
-            # if this is a derivative tracking bug, first wait until
-            # that packages on the master tracking bug are also ready or
-            # already promoted. The way derivative package bugs are
-            # opened already ensures this, but check the tasks on the
-            # master bug anyway just in case...
-            tsk_st = {
-                'prepare-package'            : [ 'Fix Released' ],
-                'prepare-package-lbm'        : [ 'Fix Released', 'Invalid' ],
-                'prepare-package-meta'       : [ 'Fix Released', 'Invalid' ],
-                'prepare-package-ports-meta' : [ 'Fix Released', 'Invalid' ],
-                'prepare-package-signed'     : [ 'Fix Released' ],
-                taskname                     : [ 'Confirmed', 'Fix Released' ]
-            }
-            # If the master bug's tasks are not completely ready.
-            #
-            if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
-                cdebug('                verify_master_bug_tasks failed')
-                cdebug('            prepare_package_fixed leave (False)')
-                return False
-
-            # open new tracking bugs for derivative packages if needed
-            series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
-            if not series:
-                print("ERROR: Can't find series for %s-%s to get derivatives\n" % (s.wfb.pkg_name, s.wfb.pkg_version))
-                cdebug('            prepare_package_fixed leave (False)')
-                return False
-
-            der_list = []
-            record = s.ubuntu.lookup(series)
-            if 'derivative-packages' in record:
-                if s.wfb.pkg_name in record['derivative-packages']:
-                    der_list = record['derivative-packages'][s.wfb.pkg_name]
-            bp_list = []
-            for entry in s.ubuntu.db.itervalues():
-                if 'backport-packages' in entry:
-                    bp_entries = entry['backport-packages']
-                    for bp_entry in iter(bp_entries):
-                        if (bp_entries[bp_entry][0] == s.wfb.pkg_name and bp_entries[bp_entry][1] == record['series_version']):
-                            bp_list.append([bp_entry, entry['name']])
-
-            der_bug_list = []
-            bp_bug_list  = []
-            m_bug_list   = []
-
-            tb = TrackingBug(s.lp, s.args.staging)
-            for der_pkg in der_list:
-                cdebug('                    derivative package: %s' % der_pkg)
-                if s.args.dryrun or s.args.dryrun_derivative_trackers:
-                    cinfo('        Dryrun - Would open tracking bug for derivative package %s' % (der_pkg))
-                    continue
-                try:
-                    print('        ')
-                    bug = tb.open(der_pkg, '<version to be filled>', True, taskobj.bug.id, series)
-                except:
-                    traceback.print_exc()
-                    bug = None
-                if bug:
-                    # Friendly comment on the bug stating that this is a derivative
-                    msgder =  "This tracking bug was opened to be worked from "
-                    msgder += "%s-%s update (bug %s)" % (s.wfb.pkg_name, s.wfb.pkg_version, taskobj.bug.id)
-                    subder =  "Derivative package tracking bug"
-                    bug.add_comment(msgder, subder)
-                    cinfo('        Action: Opened tracking bug %s for derivative package %s' % (bug.id, der_pkg))
-                    der_bug_list.append([der_pkg, bug.id])
-                else:
-                    m_bug_list.append('%s' % (der_pkg))
-
-            for bp_pkg in bp_list:
-                cdebug('                    backport package: %s' % bp_pkg)
-                if s.args.dryrun or s.args.dryrun_derivative_trackers:
-                    cinfo('        Dryrun - Would open tracking bug for backport package %s' % (bp_pkg[0]))
-                    continue
-                try:
-                    bug = tb.open(bp_pkg[0], '%s~%s1' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
-                except:
-                    traceback.print_exc()
-                    bug = None
-                if bug:
-                    cinfo('        Action: Opened tracking bug %s for backport package %s (%s)' % (bug.id, bp_pkg[0], bp_pkg[1]))
-                    bp_bug_list.append([bp_pkg[0], bp_pkg[1], bug.id])
-                else:
-                    m_bug_list.append('%s (%s)' % (bp_pkg[0], bp_pkg[1]))
-
-            # comment about publishing and possible new tracking bugs opened
-            msgbody  = 'All builds are complete, packages in this bug'
-            if taskname == 'promote-to-proposed':
-                msgbody += ' can be copied to -proposed.'
-            else:
-                msgbody += ' are available in -proposed.'
-            if der_bug_list:
-                msgbody += '\n\nDerivative packages from packages here can be worked on,'
-                msgbody += ' the following tracking bugs were opened for them:'
-                for pkg_bug in der_bug_list:
-                    msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
-            if bp_bug_list:
-                msgbody += '\n\nBackport packages from packages here can be worked on,'
-                msgbody += ' the following tracking bugs were opened for them:'
-                for pkg_bug in bp_bug_list:
-                    msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
-            if m_bug_list:
-                msgbody += '\n\nIt was not possible to create or handle the'
-                msgbody += ' tracking bugs for the following packages'
-                msgbody += ' (their tracking bugs based on this update'
-                msgbody += ' must be handled manually):'
-                for ln in m_bug_list:
-                    msgbody += '\n%s' % (ln)
-            task = s.wfb.tasks_by_name[s.projectname]
-            s.send_comment(task, 'Packages available', msgbody)
-
-            # Set promote-to-proposed
-            s.set_task_to_state(taskname, 'Confirmed')
-            # Add time stamp and status
-            if s.projectname == 'kernel-sru-workflow':
-                s.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
-                s.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
-                s.set_phase(taskobj, 'CopyToProposed')
-            else:
-                s.set_tagged_timestamp(taskobj, 'kernel-Prepare-package-end')
-                s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
-                s.set_phase(taskobj, 'Testing')
-                s.send_upload_announcement(taskobj, 'proposed')
-
-                cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
-                status, result = run_command(cmd)
+            s.handle_derivatives(taskobj, taskname)
 
         else:
             cdebug('                doing nothing, the task is not \'New\'')
