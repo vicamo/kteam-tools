@@ -9,15 +9,25 @@ from ktl.ubuntu                         import Ubuntu
 from sb.exceptions                      import GeneralError
 from sb.log                             import Clog, cinfo, cdebug, cerror, cwarn
 
-# KernelVersion
+# KernelPackageVersion
 #
-class KernelVersion():
+class KernelPackageVersion():
     '''
     Given a kernel version string, break it down into its various components to make
     it easier for users to access those individual components.
     '''
     def __init__(s, txt):
         matched = False
+        #                                       .- package name (group(1))
+        #                                      /           .- kernel version (group(2))
+        #                                     /           /          .- version/abi separator (group(3))
+        #                                    /           /          /
+        ver_with_pkg_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d]*)")
+        #                                                                /      /       /
+        #                                                               /      /       .- backport extra (m.group(6))
+        #                                                              /      .- upload number (m.group(5))
+        #                                                             .- abi (group(4))
+
         #                                  .- kernel version (group(1))
         #                                 /          .- version/abi separator (group(2))
         #                                /          /
@@ -28,21 +38,37 @@ class KernelVersion():
         #                                             .- abi (group(3))
 
         setattr(s, 'valid', False)
-        m = ver_rc.search(txt)
+        m = ver_with_pkg_rc.search(txt)
         if m is not None:
             matched = True
-            cdebug('       full: %s%s%s.%s%s' % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)))
-            cdebug('     kernel: %s' % m.group(1))
-            cdebug('        abi: %s' % m.group(3))
-            cdebug('     upload: %s' % m.group(4))
-            cdebug('      extra: %s' % m.group(5))
-
-            setattr(s, 'full', '%s%s%s.%s%s' % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)))
-            setattr(s, 'kernel', m.group(1))
-            setattr(s, 'abi', m.group(3))
-            setattr(s, 'upload', m.group(4))
-            setattr(s, 'extra', m.group(5))
+            setattr(s, 'package', m.group(1))
+            setattr(s, 'full', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
+            setattr(s, 'kernel', m.group(2))
+            setattr(s, 'abi', m.group(4))
+            setattr(s, 'upload', m.group(5))
+            setattr(s, 'extra', m.group(6))
+            setattr(s, 'sep', m.group(2))
             s.valid = True
+        else:
+            m = ver_rc.search(txt)
+            if m is not None:
+                matched = True
+                setattr(s, 'package', '')
+                setattr(s, 'full', '%s%s%s.%s%s' % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)))
+                setattr(s, 'kernel', m.group(1))
+                setattr(s, 'abi', m.group(3))
+                setattr(s, 'upload', m.group(4))
+                setattr(s, 'extra', m.group(5))
+                setattr(s, 'sep', m.group(2))
+                s.valid = True
+
+        if matched:
+            cdebug('    package: %s' % (s.package))
+            cdebug('       full: %s%s%s.%s%s' % (s.kernel, s.sep, s.abi, s.upload, s.extra))
+            cdebug('     kernel: %s' % s.kernel)
+            cdebug('        abi: %s' % s.abi)
+            cdebug('     upload: %s' % s.upload)
+            cdebug('      extra: %s' % s.extra)
 
         if not matched:
             cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
@@ -78,7 +104,7 @@ class KernelPackage():
 
     # __init__
     #
-    def __init__(s, lp, package, version):
+    def __init__(s, lp, version):
         cdebug('KPac::__init__ enter')
         s.__distro_series = None
 
@@ -89,9 +115,9 @@ class KernelPackage():
         s.main_archive = s.lp.launchpad.distributions["ubuntu"].main_archive
 
         cdebug('Kernel Package:', 'yellow')
-        cdebug('       name: %s' % package)
-        s.name = package
-        s.version = KernelVersion(version)
+        cdebug('       name: %s' % version.package)
+        s.version = version
+        s.name = s.version.package
         s.pkgs = s.dependent_packages
         cdebug('     series: %s' % s.distro_series)
 
