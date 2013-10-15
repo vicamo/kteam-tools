@@ -5,6 +5,7 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
+from os                                 import getenv
 
 from ktl.utils                          import error
 from ktl.bugs                           import Bugs
@@ -64,7 +65,7 @@ class TheApp():
     def __initialize(s):
         s.cfg = {}
         s.cfg['launchpad_client_name'] = 'tracking-bugs-modify'
-        s.cfg['launchpad_services_root'] = 'qastaging'
+        s.cfg['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
         cdebug(" . Connecting to Launchpad")
         s.lp = LaunchpadService(s.cfg)
 

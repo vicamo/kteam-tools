@@ -5,6 +5,7 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
+from os                                 import getenv
 
 from ktl.utils                          import error
 from ktl.bugs                           import Bugs
@@ -36,7 +37,7 @@ class TheApp():
     def __initialize(self):
         self.cfg = {}
         self.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-bug-data'
-        self.cfg['launchpad_services_root'] = 'qastaging'
+        self.cfg['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
         cdebug(" . Connecting to Launchpad")
         self.lp = LaunchpadService(self.cfg)
 

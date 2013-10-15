@@ -10,6 +10,7 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
+from os                                 import getenv
 import json
 
 from lpltk.LaunchpadService             import LaunchpadService
@@ -35,7 +36,7 @@ class TrackingBugsTester():
         s.defaults['launchpad_client_name'] = 'kernel-team-smoker'
         s.production = LaunchpadService(s.defaults)  # Some things are only available on the production
 
-        s.defaults['launchpad_services_root'] = 'qastaging'  # All testing is done using the qastaging LP service
+        s.defaults['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
         s.staging = LaunchpadService(s.defaults)
         s.args = args
         s.wf = Workflow()
@@ -87,7 +88,7 @@ class TrackingBugsTester():
                 s.ref[series] = {}
 
             bug = s.tracker.open(project, version, True, None, None)
-            cinfo('        https://qastaging.launchpad.net/ubuntu/+source/linux/+bug/%s' % bug.id)
+            cinfo('        https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.staging.config['launchpad_services_root'], bug.id, bug.title))
 
             kbug = KernelBug(bug)
             kbug_info = Bugs.bug_info(kbug, None)

@@ -5,6 +5,7 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
+from os                                 import getenv
 
 from ktl.utils                          import error
 from ktl.bugs                           import Bugs
@@ -37,7 +38,7 @@ class TheApp():
         s.cfg = {}
         s.cfg['read_only'] = True
         s.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-bug-data'
-        s.cfg['launchpad_services_root'] = 'qastaging'
+        s.cfg['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
         cdebug(" . Connecting to Launchpad")
         s.lp = LaunchpadService(s.cfg)
 
@@ -132,7 +133,7 @@ class TheApp():
                     for task in tasks:
                         bug = KernelBug(task.bug)
                         if s.args.list:
-                            cinfo('        https://qastaging.launchpad.net/ubuntu/+source/linux/+bug/%s' % bug.id)
+                            cinfo('        https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.lp.config['launchpad_services_root'], bid, data['title']))
                         else:
                             primary_task = s.__get_relevant_task(bug, lp_project.name)
                             #s.__verbose_bug_info(bug)

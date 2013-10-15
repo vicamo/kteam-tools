@@ -8,6 +8,7 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, INFO, DEBUG
 import json
 import re
+from os                                 import getenv
 
 from lpltk.LaunchpadService             import LaunchpadService
 
@@ -47,7 +48,7 @@ class TBCompare():
         s.defaults['launchpad_client_name'] = 'kernel-team-smoker'
         s.production = LaunchpadService(s.defaults)  # Some things are only available on the production
 
-        s.defaults['launchpad_services_root'] = 'qastaging'  # All testing is done using the qastaging LP service
+        s.defaults['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
         s.staging = LaunchpadService(s.defaults)
         s.args = args
         s.wf = Workflow()
@@ -226,7 +227,7 @@ class TBCompare():
                 bid, data = s.find_match(reference[x], comparison)
                 series = data['series name']
 
-                cinfo('https://qastaging.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (bid, comparison[bid]['title']))
+                cinfo('https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.staging.config['launchpad_services_root'], bid, comparison[bid]['title']))
                 cdebug('    %s' % series)
                 s.verify_workflow_task(data, series)
                 s.verify_package_task(data, package, series)
