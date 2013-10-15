@@ -323,13 +323,6 @@ class Shank(StdApp):
         s.status.update(bugurl + ' : ' + pkgid + ' ' + message)
         return
 
-    def set_task_assignee(s, taskname, assignee):
-        """
-        Assign the task for the given assignee
-        returns True if we changed the state and False if it was already at the desired state
-        """
-        s.wfb.tasks_by_name[taskname].assignee = assignee
-
     def set_task_to_state(s, taskname, state):
         """
         Set a task with a given name to the desired state
