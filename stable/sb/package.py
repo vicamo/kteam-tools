@@ -71,80 +71,6 @@ class WorkflowBugTask(object):
         else:
             setattr(s, 'assignee', assignee.display_name)
 
-# WorkflowBug
-#
-class WorkflowBug():
-    # __init__
-    #
-    def __init__(s, lp, projects, bugid):
-        s.lp = lp
-        s.lpbug = s.lp.get_bug(bugid)
-        s.projects = projects
-
-        s.__package_name = None
-
-        # If a bug isn't to be processed, detect this as early as possible.
-        #
-        s.is_valid = s.check_is_valid(s.lpbug)
-
-        if s.is_valid:
-            cinfo('    Targeted Project:')
-            cinfo('        %s' % s.targeted_project)
-            cinfo('')
-            s.properties = s.lpbug.properties
-            if len(s.properties) > 0:
-                cinfo('    Properties:')
-                for prop in s.properties:
-                    cinfo('        %s: %s' % (prop, s.properties[prop]))
-
-            s.tasks_by_name = s.create_tasks_by_name()
-
-    # check_is_valid
-    #
-    def check_is_valid(s, bug):
-        '''
-        '''
-        retval = True
-        for t in s.lpbug.tasks:
-            task_name       = t.bug_target_name
-
-            if task_name in s.projects:
-                s.targeted_project = task_name
-                if t.status == 'In Progress':
-                    continue
-                else:
-                    cinfo('        Not processing this bug because master task state is set to %s' % (t.status))
-                    cinfo('        Quitting this bug')
-                    retval = False
-
-        return retval
-
-    # create_tasks_by_name
-    #
-    def create_tasks_by_name(s):
-        '''
-        We are only interested in the tasks that are specific to the workflow project. Others
-        are ignored.
-        '''
-        taskbyname = {}
-
-        cinfo('')
-        cinfo('    Scanning bug tasks:')
-
-        for t in s.lpbug.tasks:
-            task_name       = t.bug_target_name
-
-            if task_name.startswith(s.targeted_project):
-                if '/' in task_name:
-                    task_name = task_name[len(s.targeted_project)+1:].strip()
-                taskbyname[task_name] = WorkflowBugTask(t, task_name)
-            else:
-                cinfo('')
-                cinfo('        %-25s' % (task_name))
-                cinfo('            Action: Skipping non-workflow task')
-
-        return taskbyname
-
 # BS
 #
 class BS(object):
@@ -380,7 +306,7 @@ class Package():
             except KeyError:
                 for key in s.bug.tasks_by_name:
                     cdebug(key)
-                    raise
+                raise
 
             cdebug('prep_task_name: %s' % prep_task_name)
             cdebug('prep_task_status: %s' % prep_task_status)
