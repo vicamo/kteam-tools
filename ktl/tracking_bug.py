@@ -71,7 +71,6 @@ class TrackingBug:
         Returns true/false depending on if the main package has the specified
         dependent package as a dependency.
         '''
-        cdebug('    has_dependent_package enter')
         if self.__dependency_list is None:
             try:
                 record = self.ub.lookup(series)
@@ -82,10 +81,7 @@ class TrackingBug:
             except KeyError:
                 self.__dependency_list = {}
 
-        for key in self.__dependency_list:
-            cdebug('        dependency: %s' % key)
         retval = dependent_package in self.__dependency_list
-        cdebug('    has_dependent_package leave (%s)' % retval)
         return retval
 
     # valid_series
@@ -124,6 +120,8 @@ class TrackingBug:
         cdebug('    new_abi: %s' % new_abi)
         cdebug('    master_bug: %s' % master_bug)
         cdebug('    series_specified: %s' % series_specified)
+
+        self.__dependency_list = None
 
         # For the given version, figure out the series.
         # If we can't find the series, don't continue.
