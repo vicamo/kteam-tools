@@ -135,7 +135,7 @@ class Ubuntu:
             'development' : True,        # This is the version that is currently under development
             'series_version' : '14.04',
             'kernel'    : '3.12.0',
-            'name'      : 'tardy',
+            'name'      : 'trusty',
             'supported' : False,
             # adjust packages when this goes live
             'packages'  :
@@ -569,7 +569,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
-        'tardy'    : db['14.04'],
+        'trusty'   : db['14.04'],
         'saucy'    : db['13.10'],
         'raring'   : db['13.04'],
         'quantal'  : db['12.10'],
