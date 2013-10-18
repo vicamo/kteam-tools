@@ -41,9 +41,6 @@ class TheApp():
         '''
         '''
         s.args = args
-        s.defaults = {}
-        s.cfg = {}
-        s.cfg['verbose'] = True
 
         #                              .- package name (group(1))
         #                             /           .- kernel version (group(2))
@@ -208,7 +205,7 @@ class TheApp():
             #
             for change in changes:
                 bid, data = s.find_match(change, bugs)
-                cinfo('https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.lp.config['launchpad_services_root'], bid, data['title']))
+                cdebug('https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.cfg['launchpad_services_root'], bid, data['title']))
                 bug = KernelBug(s.lp.get_bug(bid))
 
                 if 'tasks' in change:

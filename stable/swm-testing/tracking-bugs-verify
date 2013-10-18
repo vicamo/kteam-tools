@@ -44,12 +44,12 @@ class TBCompare():
     # __init__
     #
     def __init__(s, args):
-        s.defaults = {}
-        s.defaults['launchpad_client_name'] = 'kernel-team-smoker'
-        s.production = LaunchpadService(s.defaults)  # Some things are only available on the production
+        s.cfg = {}
+        s.cfg['launchpad_client_name'] = 'kernel-team-smoker'
+        s.production = LaunchpadService(s.cfg)  # Some things are only available on the production
 
-        s.defaults['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
-        s.staging = LaunchpadService(s.defaults)
+        s.cfg['launchpad_services_root'] = getenv('LP_SERVICE', 'qastaging')
+        s.staging = LaunchpadService(s.cfg)
         s.args = args
         s.wf = Workflow()
         s.tracker = TrackingBug(s.staging, True, True)
@@ -227,7 +227,7 @@ class TBCompare():
                 bid, data = s.find_match(reference[x], comparison)
                 series = data['series name']
 
-                cinfo('https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.staging.config['launchpad_services_root'], bid, comparison[bid]['title']))
+                cdebug('https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.cfg['launchpad_services_root'], bid, comparison[bid]['title']))
                 cdebug('    %s' % series)
                 s.verify_workflow_task(data, series)
                 s.verify_package_task(data, package, series)

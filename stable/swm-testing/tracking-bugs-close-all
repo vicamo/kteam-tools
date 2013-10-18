@@ -25,9 +25,6 @@ class TheApp():
         '''
         '''
         s.args = args
-        s.defaults = {}
-        s.cfg = {}
-        s.cfg['verbose'] = True
 
     # __initialize
     #

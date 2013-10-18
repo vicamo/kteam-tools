@@ -1,11 +1,11 @@
 {
-    "1205962": {
+    "1206134": {
         "assignee": "Unassigned", 
         "assignee-name": "unassigned", 
         "booted_kernel_version": "", 
-        "date created": "Tuesday, 08. October 2013 00:34 UTC", 
-        "date last message": "Tuesday, 08. October 2013 00:50 UTC", 
-        "date last updated": "Tuesday, 08. October 2013 01:22 UTC", 
+        "date created": "Friday, 18. October 2013 15:51 UTC", 
+        "date last message": "Friday, 18. October 2013 16:05 UTC", 
+        "date last updated": "Friday, 18. October 2013 16:16 UTC", 
         "heat": 12, 
         "importance": "Medium", 
         "kernel_gravity": 2000, 
@@ -14,16 +14,16 @@
         "number_of_messages": 2, 
         "number_subscribed": 4, 
         "properties": {
-            "kernel-stable-Certification-testing-start": "Tuesday, 08. October 2013 01:23 UTC", 
-            "kernel-stable-Prepare-package-end": "Tuesday, 08. October 2013 00:50 UTC", 
-            "kernel-stable-Prepare-package-start": "Tuesday, 08. October 2013 00:34 UTC", 
-            "kernel-stable-Promote-to-proposed-end": "Tuesday, 08. October 2013 00:06 UTC", 
-            "kernel-stable-Promote-to-proposed-start": "Tuesday, 08. October 2013 00:50 UTC", 
-            "kernel-stable-Regression-testing-start": "Tuesday, 08. October 2013 01:23 UTC", 
-            "kernel-stable-Security-signoff-start": "Tuesday, 08. October 2013 01:23 UTC", 
-            "kernel-stable-Verification-testing-start": "Tuesday, 08. October 2013 01:23 UTC", 
+            "kernel-stable-Certification-testing-start": "Friday, 18. October 2013 16:16 UTC", 
+            "kernel-stable-Prepare-package-end": "Friday, 18. October 2013 16:05 UTC", 
+            "kernel-stable-Prepare-package-start": "Friday, 18. October 2013 15:51 UTC", 
+            "kernel-stable-Promote-to-proposed-end": "Friday, 18. October 2013 15:08 UTC", 
+            "kernel-stable-Promote-to-proposed-start": "Friday, 18. October 2013 16:05 UTC", 
+            "kernel-stable-Regression-testing-start": "Friday, 18. October 2013 16:16 UTC", 
+            "kernel-stable-Security-signoff-start": "Friday, 18. October 2013 16:17 UTC", 
+            "kernel-stable-Verification-testing-start": "Friday, 18. October 2013 16:16 UTC", 
             "kernel-stable-phase": "Verification & Testing", 
-            "kernel-stable-phase-changed": "Tuesday, 08. October 2013 01:23 UTC"
+            "kernel-stable-phase-changed": "Friday, 18. October 2013 16:16 UTC"
         }, 
         "series name": "raring", 
         "series version": "13.04", 
@@ -140,13 +140,13 @@
         ], 
         "title": "linux: 3.8.0-32.47 -proposed tracker"
     }, 
-    "1205963": {
+    "1206135": {
         "assignee": "Unassigned", 
         "assignee-name": "unassigned", 
         "booted_kernel_version": "", 
-        "date created": "Tuesday, 08. October 2013 00:40 UTC", 
-        "date last message": "Tuesday, 08. October 2013 00:43 UTC", 
-        "date last updated": "Tuesday, 08. October 2013 00:43 UTC", 
+        "date created": "Friday, 18. October 2013 15:56 UTC", 
+        "date last message": "Friday, 18. October 2013 15:58 UTC", 
+        "date last updated": "Friday, 18. October 2013 15:58 UTC", 
         "heat": 10, 
         "importance": "Medium", 
         "kernel_gravity": 2000, 
@@ -155,10 +155,10 @@
         "number_of_messages": 2, 
         "number_subscribed": 3, 
         "properties": {
-            "kernel-stable-Prepare-package-start": "Tuesday, 08. October 2013 00:40 UTC", 
-            "kernel-stable-master-bug": "1205962", 
+            "kernel-stable-Prepare-package-start": "Friday, 18. October 2013 15:56 UTC", 
+            "kernel-stable-master-bug": "1206134", 
             "kernel-stable-phase": "Prepare", 
-            "kernel-stable-phase-changed": "Tuesday, 08. October 2013 00:40 UTC"
+            "kernel-stable-phase-changed": "Friday, 18. October 2013 15:56 UTC"
         }, 
         "series name": "raring", 
         "series version": "13.04", 
@@ -275,13 +275,13 @@
         ], 
         "title": "linux-lowlatency: <version to be filled> -proposed tracker"
     }, 
-    "1205964": {
+    "1206136": {
         "assignee": "Unassigned", 
         "assignee-name": "unassigned", 
         "booted_kernel_version": "", 
-        "date created": "Tuesday, 08. October 2013 00:43 UTC", 
-        "date last message": "Tuesday, 08. October 2013 00:46 UTC", 
-        "date last updated": "Tuesday, 08. October 2013 00:46 UTC", 
+        "date created": "Friday, 18. October 2013 15:58 UTC", 
+        "date last message": "Friday, 18. October 2013 16:02 UTC", 
+        "date last updated": "Friday, 18. October 2013 16:02 UTC", 
         "heat": 10, 
         "importance": "Medium", 
         "kernel_gravity": 2000, 
@@ -290,10 +290,10 @@
         "number_of_messages": 2, 
         "number_subscribed": 3, 
         "properties": {
-            "kernel-stable-Prepare-package-start": "Tuesday, 08. October 2013 00:43 UTC", 
-            "kernel-stable-master-bug": "1205962", 
+            "kernel-stable-Prepare-package-start": "Friday, 18. October 2013 15:58 UTC", 
+            "kernel-stable-master-bug": "1206134", 
             "kernel-stable-phase": "Prepare", 
-            "kernel-stable-phase-changed": "Tuesday, 08. October 2013 00:43 UTC"
+            "kernel-stable-phase-changed": "Friday, 18. October 2013 15:58 UTC"
         }, 
         "series name": "raring", 
         "series version": "13.04", 
@@ -410,25 +410,27 @@
         ], 
         "title": "linux-ppc: <version to be filled> -proposed tracker"
     }, 
-    "1205965": {
+    "1206137": {
         "assignee": "Unassigned", 
         "assignee-name": "unassigned", 
         "booted_kernel_version": "", 
-        "date created": "Tuesday, 08. October 2013 00:46 UTC", 
-        "date last message": "Tuesday, 08. October 2013 00:46 UTC", 
-        "date last updated": "Tuesday, 08. October 2013 00:50 UTC", 
+        "date created": "Friday, 18. October 2013 16:02 UTC", 
+        "date last message": "Friday, 18. October 2013 16:08 UTC", 
+        "date last updated": "Friday, 18. October 2013 16:08 UTC", 
         "heat": 12, 
         "importance": "Medium", 
         "kernel_gravity": 2000, 
-        "number of messages": 1, 
+        "number of messages": 2, 
         "number_affected": 1, 
-        "number_of_messages": 1, 
+        "number_of_messages": 2, 
         "number_subscribed": 4, 
         "properties": {
-            "kernel-stable-Prepare-package-start": "Tuesday, 08. October 2013 00:47 UTC", 
-            "kernel-stable-master-bug": "1205962", 
-            "kernel-stable-phase": "Prepare", 
-            "kernel-stable-phase-changed": "Tuesday, 08. October 2013 00:47 UTC"
+            "kernel-stable-Prepare-package-end": "Friday, 18. October 2013 16:08 UTC", 
+            "kernel-stable-Prepare-package-start": "Friday, 18. October 2013 16:02 UTC", 
+            "kernel-stable-Promote-to-proposed-start": "Friday, 18. October 2013 16:08 UTC", 
+            "kernel-stable-master-bug": "1206134", 
+            "kernel-stable-phase": "CopyToProposed", 
+            "kernel-stable-phase-changed": "Friday, 18. October 2013 16:08 UTC"
         }, 
         "series name": "precise", 
         "series version": "12.04", 
@@ -459,7 +461,7 @@
                 "assignee-name": "canonical-kernel-team", 
                 "importance": "Medium", 
                 "name": "Kernel SRU Workflow prepare-package", 
-                "status": "New", 
+                "status": "Fix Released", 
                 "target-name": "kernel-sru-workflow/prepare-package"
             }, 
             {
@@ -467,15 +469,23 @@
                 "assignee-name": "canonical-kernel-team", 
                 "importance": "Medium", 
                 "name": "Kernel SRU Workflow prepare-package-meta", 
-                "status": "New", 
+                "status": "Fix Released", 
                 "target-name": "kernel-sru-workflow/prepare-package-meta"
+            }, 
+            {
+                "assignee": "Canonical Kernel Team", 
+                "assignee-name": "canonical-kernel-team", 
+                "importance": "Medium", 
+                "name": "Kernel SRU Workflow prepare-package-signed", 
+                "status": "Fix Released", 
+                "target-name": "kernel-sru-workflow/prepare-package-signed"
             }, 
             {
                 "assignee": "Ubuntu Stable Release Updates Team", 
                 "assignee-name": "ubuntu-sru", 
                 "importance": "Medium", 
                 "name": "Kernel SRU Workflow promote-to-proposed", 
-                "status": "New", 
+                "status": "Confirmed", 
                 "target-name": "kernel-sru-workflow/promote-to-proposed"
             }, 
             {

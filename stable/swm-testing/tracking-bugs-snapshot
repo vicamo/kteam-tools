@@ -25,9 +25,6 @@ class TheApp():
         '''
         '''
         s.args = args
-        s.defaults = {}
-        s.cfg = {}
-        s.cfg['verbose'] = True
 
     # __initialize
     #
@@ -133,7 +130,7 @@ class TheApp():
                     for task in tasks:
                         bug = KernelBug(task.bug)
                         if s.args.list:
-                            cinfo('        https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.lp.config['launchpad_services_root'], bid, data['title']))
+                            cdebug('        https://%s.launchpad.net/ubuntu/+source/linux/+bug/%s - %s' % (s.cfg['launchpad_services_root'], bug.id, bug.title))
                         else:
                             primary_task = s.__get_relevant_task(bug, lp_project.name)
                             #s.__verbose_bug_info(bug)

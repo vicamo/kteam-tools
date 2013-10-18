@@ -14,3 +14,8 @@ echo "    . Verify packages built and create derivative tracking bugs"
 
 ./tracking-bugs-snapshot snap-stage2
 ./tracking-bugs-verify ref-tbs-stage2 snap-stage2
+
+../swm --staging --dryrun-email --verbose > 2.1.log 2>&1
+
+./tracking-bugs-snapshot snap-stage2.1
+./tracking-bugs-verify ref-tbs-stage2.1 snap-stage2.1
