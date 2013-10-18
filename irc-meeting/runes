@@ -3,7 +3,7 @@
 ## This is the Ubuntu Kernel Team weekly status meeting.
 ##
 [LINK] https://wiki.ubuntu.com/KernelTeam/Meeting
-[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Saucy
+[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Trusty
 
 # Meeting Etiquette
 #
@@ -21,11 +21,13 @@ Release metrics and incoming bug data can be reviewed at the following link:
 
 [TOPIC] Milestone Targeted Work Items (ogasawara)
 
-[TOPIC] Status: Saucy Development Kernel (ogasawara)
+[TOPIC] Status: Trusty Development Kernel (ogasawara)
 
-[TOPIC] Status: CVE's (sconklin)
+[TOPIC] Status: CVE's 
+The current CVE status can be reviewed at the following link:
+http://people.canonical.com/~kernel/cve/pkg/ALL-linux.html
 
-[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Raring/Quantal/Precise/Lucid/Hardy (bjf/henrix/sconklin)
+[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Saucy/Raring/Quantal/Precise/Lucid (bjf/henrix/sconklin)
 
 [TOPIC] Open Discussion or Questions? Raise your hand to be recognized (o/)
 
