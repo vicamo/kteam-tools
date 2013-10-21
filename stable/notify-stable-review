@@ -252,7 +252,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
         mailbody += "From: " + sender + '\n'
         for entry in self.tolist:
             mailbody += "To: " + entry + '\n'
-        mailbody += ("Subject: [ %s extended stable ] Linux %s stable review"
+        mailbody += ("Subject: [%s extended stable] Linux %s stable review"
                      % (ann_ver, new_ver) + "\n")
         mailbody += "X-Extended-Stable: %s\n" % (main_ver)
         mailbody += self.message_text(base_ver, new_ver, patch_cnt, sender)
@@ -492,4 +492,3 @@ if __name__ == '__main__':
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
-
