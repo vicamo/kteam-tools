@@ -308,6 +308,8 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
 
                     if not subject:
                         if 'Subject:' in line:
+                            line = line.replace("Subject: [PATCH ",
+                                                "Subject: [PATCH %s " % (basever))
                             subject = True
 
                     if subject and not header_add:
