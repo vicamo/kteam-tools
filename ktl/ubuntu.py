@@ -180,10 +180,13 @@ class Ubuntu:
                     'signed' : 'linux-signed'
                 },
                 'linux-exynos5' : { 'meta' : 'linux-meta-exynos5' },
+                'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' },
+                'linux-ppc' : { 'meta' : 'linux-meta-ppc' }
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-exynos5' ]
+                'linux' : [ 'linux-exynos5' ],
+                'linux' : [ 'linux-lowlatency', 'linux-ppc' ]
             },
             'sha1' : '',
             'md5' : ''
