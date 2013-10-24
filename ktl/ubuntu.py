@@ -272,6 +272,9 @@ class Ubuntu:
                 'linux-lts-raring',
                 'linux-meta-lts-raring',
                 'linux-signed-lts-raring',
+                'linux-lts-saucy',
+                'linux-meta-lts-saucy',
+                'linux-signed-lts-saucy',
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
                 'linux-armadaxp',
@@ -291,6 +294,10 @@ class Ubuntu:
                     'meta' : 'linux-meta-lts-raring',
                     'signed' : 'linux-signed-lts-raring'
                 },
+                'linux-lts-saucy' : {
+                    'meta' : 'linux-meta-lts-saucy',
+                    'signed' : 'linux-signed-lts-saucy'
+                },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
                 'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
@@ -303,6 +310,7 @@ class Ubuntu:
             {
                 'linux-lts-quantal' : [ 'linux', '12.10' ],
                 'linux-lts-raring' : [ 'linux', '13.04' ],
+                'linux-lts-saucy' : [ 'linux', '13.10' ],
             },
             'sha1' : '',
             'md5' : ''
