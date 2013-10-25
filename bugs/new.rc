@@ -5,10 +5,16 @@
             "linux": {
                 "bugs": {}
             }, 
+            "linux-lts-saucy": {
+                "bugs": {}
+            }, 
             "linux-lts-raring": {
                 "bugs": {}
             }, 
             "linux-lts-quantal": {
+                "bugs": {}
+            }, 
+            "linux-firmware": {
                 "bugs": {}
             }, 
             "linux-backports-modules-2.6.32": {
