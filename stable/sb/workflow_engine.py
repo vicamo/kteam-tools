@@ -3,8 +3,6 @@
 # shank is the "stable bot" or "stab-bot".
 #
 
-from sys                                import argv
-from os                                 import path
 from ktl.check_component                import CheckComponent
 from ktl.utils                          import stdo, date_to_string, run_command
 from ktl.ubuntu                         import Ubuntu
@@ -12,21 +10,14 @@ from ktl.workflow                       import Properties
 from ktl.tracking_bug                   import TrackingBug
 from datetime                           import datetime
 from urllib                             import quote
-from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
 from ktl.bugs                           import DeltaTime
 from ktl.termcolor                      import colored
-import re
 import traceback
-import json
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO, DEBUG, WARNING
 from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
-from sb.log                             import Clog, cinfo, cdebug, cwarn, cnotice, cerror
-from sb.kernel_package                  import KernelPackage, KernelPackageBuildStatus, KernelPackageVersion
-from sb.launchpad                       import Launchpad
+from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
 
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
