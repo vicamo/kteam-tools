@@ -395,13 +395,17 @@ class Package():
                     changes['promote-to-release']['assignee'] = pkg_release.creator
                 changes['promote-to-release']['status'] = 'Fix Released'
 
+        cinfo('------------------------------------------------------------', 'magenta')
+        cinfo('            Changes:', 'magenta')
         if changes is not None:
-            cdebug('')
             for key in changes:
                 try:
-                    cdebug('                %25s - status: %s  assignee: %s' % (key, changes[key]['status'], changes[key]['assignee']), 'magenta')
+                    cinfo('                %25s - status: %s  assignee: %s' % (key, changes[key]['status'], changes[key]['assignee']), 'magenta')
                 except KeyError:
-                    cdebug('                %25s - status: %s' % (key, changes[key]['status']), 'magenta')
+                    cinfo('                %25s - status: %s' % (key, changes[key]['status']), 'magenta')
+        else:
+            cinfo('                none', 'magenta')
+        cinfo('------------------------------------------------------------', 'magenta')
 
         s.updates = changes
 
