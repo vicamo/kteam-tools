@@ -3,7 +3,6 @@
 
 import re
 
-from lpltk.LaunchpadService             import LaunchpadService
 from ktl.ubuntu                         import Ubuntu
 
 from sb.exceptions                      import GeneralError
@@ -234,6 +233,7 @@ class KernelPackage():
             cdebug('                Stable Package', 'cyan')
             cdebug('')
             s.status[dep] = {}
+            s.status[dep]['pkg'] = s.pkgs[dep]
             s.status[dep]['status'] = {}
             s.status[dep]['status']['ppa']      = s.build_status(s.pkgs[dep], abi_num, s.ckt_ppa,    pkg_rel)
             s.status[dep]['status']['proposed'] = s.build_status(s.pkgs[dep], abi_num, s.main_archive, pkg_rel, 'Proposed')
@@ -320,10 +320,12 @@ class KernelPackage():
         if not matches:
             cdebug('                    Can\'t find "%s" (%s) build on %s (pocket:%s)' % (package, rel_match, archive.displayname, pocket))
             pbs.pkg = None
+            pbs.missing = True
         else:
             lst_date = None
             for pkg in matches:
                 pbs.pkg = pkg
+                pbs.missing = True
                 src_id = str(pkg.self).rsplit('/', 1)[1]
                 build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
                 if build_summaries['status'] == 'FULLYBUILT':
