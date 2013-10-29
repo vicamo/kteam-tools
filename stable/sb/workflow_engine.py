@@ -22,6 +22,14 @@ from sb.log                             import cinfo, cdebug, cwarn, cnotice, ce
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
 
+# StateVerificationError
+#
+class StateVerificationError(Exception):
+    '''
+    '''
+    def __init__(s):
+        pass
+
 # TaskActions
 #
 class TaskActions(dict):
@@ -107,6 +115,26 @@ class WorkflowEngine():
 
         return retval
 
+    # initialize
+    #
+    def initialize(s):
+        '''
+        There are certain things (like connecting to LP) that I don't like to do
+        in the constructor because they are so time consuming. Those thinngs are
+        done here.
+        '''
+        s.ubuntu = Ubuntu()
+
+        # Get set up for email and status messages
+        if 'mail_notify' in s.cfg:
+            mcfg = s.cfg['mail_notify']
+            s.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+
+        scfg = s.cfg['status_net']
+        s.status = Status(scfg['url'], scfg['user'], scfg['pass'])
+
+        return
+
     # crank
     #
     def crank(s, bugid, sauron):
@@ -184,13 +212,13 @@ class WorkflowEngine():
                 cinfo('            Action: No action for task %s in state %s' % (task.name, task.status))
             else:
                 res_action = action(task)
-                if s.projectname == 'kernel-sru-workflow' and res_action:
-                    performReleaseTest = True
 
         # Now process any tests which require information from multiple tasks
         # will require info stored in class variables during task processing
-        if performReleaseTest:
-            s.perform_release_test()
+        if s.projectname == 'kernel-sru-workflow':
+            if s.verification_and_testing_completed():
+                if s.release_ready():
+                    s.release()
 
         # Now flush any property changes to the bug description
         s.props.flush()
@@ -1071,6 +1099,7 @@ class WorkflowEngine():
             # Setting the tas to 'Incomplete' will stop further processing of the bug.
             #
             s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
+            raise StateVerificationError()
 
     # within_publishing_window
     #
@@ -1148,34 +1177,40 @@ class WorkflowEngine():
             retval = True
         return retval
 
-    # This is not performed during processing for a specific task but only if several tasks are
-    # in the correct state
+    # verification_and_testing_completed
     #
-    # perform_release_test
-    #
-    def perform_release_test(s):
-        """
-        Check results from multiple tasks to see whether release
-        to -updates and -security are required
-        """
-        cinfo('')
-        cinfo('    Performing Release Test:', 'cyan')
+    def verification_and_testing_completed(s):
+        '''
+        Make sure all the preconditions for setting the release states have been met.
+        '''
+        retval = True
 
-        cdebug('            perform_release_test enter')
-
-        # No need to do anything until these three are all complete
-        if not s.certification_testing_complete:
-            cnotice('                certification testing has not been completed')
-        if not s.regression_testing_complete:
-            cnotice('                regression testing has not been completed')
-        if not s.security_signoff_complete:
-            cnotice('                security signoff has not been completed')
+        cnotice('')
         if not s.verification_testing_complete:
-            cnotice('                verification testing has not been completed')
+            cnotice('        verification testing has not been completed')
+            retval = False
+        if not s.certification_testing_complete:
+            cnotice('        certification testing has not been completed')
+            retval = False
+        if not s.regression_testing_complete:
+            cnotice('        regression testing has not been completed')
+            retval = False
+        if not s.security_signoff_complete:
+            cnotice('        security signoff has not been completed')
+            retval = False
 
-        if (s.certification_testing_complete and s.regression_testing_complete and s.security_signoff_complete and s.verification_testing_complete):
-            cdebug('                Cert and regression testing and security signoff all complete', 'yellow')
+        if retval:
+            cnotice('        Cert and regression testing and security signoff all complete', 'yellow')
 
+        return retval
+
+    # release_ready
+    #
+    def release_ready(s):
+        retval = True
+
+        cdebug('            release_ready enter')
+        try:
             # Some general sanity checks before we pull the lever to publish
             s.verify_state('prepare-package',       ['Fix Released'])
             s.verify_state('promote-to-proposed',   ['Fix Released'])
@@ -1188,107 +1223,118 @@ class WorkflowEngine():
             s.verify_state('promote-to-security',   ['New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released'])
             s.verify_state('promote-to-updates',    ['New', 'Confirmed', 'Incomplete', 'Fix Released'])
 
-            # If we found any problems, we've halted processing and set this
-            if (s.wfb.tasks_by_name[s.projectname].status != 'In Progress' or
-                s.wfb.tasks_by_name['promote-to-security'].status == 'Incomplete' or
-                s.wfb.tasks_by_name['promote-to-updates'].status == 'Incomplete'):
+            if s.wfb.tasks_by_name[s.projectname].status != 'In Progress':
+                cinfo('                Task %s is NOT In Progress' % s.projectname, 'red')
+                retval = False
 
-                if s.wfb.tasks_by_name[s.projectname].status != 'In Progress':
-                    cinfo('                Task %s is NOT In Progress' % s.projectname, 'red')
-                if s.wfb.tasks_by_name['promote-to-security'].status == 'Incomplete':
-                    cinfo('                Task promote-to-security is Incomplete' % s.projectname, 'red')
-                if s.wfb.tasks_by_name['promote-to-updates'].status == 'Incomplete':
-                    cinfo('                Task promote-to-updates is Incomplete' % s.projectname, 'red')
+            if s.wfb.tasks_by_name['promote-to-security'].status == 'Incomplete':
+                cinfo('                Task promote-to-security is Incomplete', 'red')
+                retval = False
 
-                cdebug('                Task states are not properly set')
-                cdebug('            perform_release_test leave')
-                return
+            if s.wfb.tasks_by_name['promote-to-updates'].status == 'Incomplete':
+                cinfo('                Task promote-to-updates is Incomplete', 'red')
+                retval = False
 
-            if ((s.wfb.tasks_by_name['promote-to-security'].status == 'Confirmed' or
-                 s.wfb.tasks_by_name['promote-to-security'].status == 'Invalid') and
-                s.wfb.tasks_by_name['promote-to-updates'].status == 'Confirmed'):
-                s.verbose('*** Exiting release test, all set\n')
-                cdebug('                i don\'t understand this condition')
-                cdebug('            perform_release_test leave')
-                return
+        except StateVerificationError as e:
+            retval = False # An error has already been sent and the appropriate things done to the bug itself.
 
-            if s.wfb.tasks_by_name['security-signoff'].status == 'Fix Released':
-                # publishing to security is required
-                s.security_publishing_required = True
+        cdebug('            release_ready leave(%s)' % retval)
+        return retval
 
-            # one last check for test results
+
+    # release
+    #
+    # This is not performed during processing for a specific task but only if several tasks are
+    # in the correct state
+    #
+    def release(s):
+        """
+        Check results from multiple tasks to see whether release
+        to -updates and -security are required
+        """
+        cinfo('')
+        cinfo('    Performing Release Test:', 'cyan')
+
+        cdebug('            release enter')
+
+        if s.wfb.tasks_by_name['security-signoff'].status == 'Fix Released':
+            # publishing to security is required
+            s.security_publishing_required = True
+
+        # one last check for test results
+        #
+        if s.testing_completed():
+            cdebug('                all testing has been completed')
+            tbug = s.wfb.lpbug
+
+            tsk_st = {
+                'promote-to-updates'  : [ 'Confirmed', 'Fix Released' ],
+                'promote-to-security' : [ 'Confirmed', 'Fix Released', 'Invalid' ]
+            }
+            mb_status = s.verify_master_bug_tasks(tbug, tsk_st)
+
+            # We don't publish on Fri/Sat/Sun (see comment on function
+            # within_publishing_window). Also, only allow the
+            # promote-to-{updates,security} on derivative packages
+            # if the master packages are already ready for promotion
+            # or already promoted to the updates/security pockets.
+
+            # Either this is not a derivative bug at all or the master bug of which
+            # this is a derivative is has the specified tasks in one of the accepted
+            # states.
             #
-            if s.testing_completed():
-                cdebug('                all testing has been completed')
-                tbug = s.wfb.lpbug
+            if (s.within_publishing_window() and mb_status > s.master_bug_bad_status):
+                task = s.wfb.tasks_by_name[s.projectname]
 
-                tsk_st = {
-                    'promote-to-updates'  : [ 'Confirmed', 'Fix Released' ],
-                    'promote-to-security' : [ 'Confirmed', 'Fix Released', 'Invalid' ]
-                }
+                # If this is a derivative, it's supposed to be
+                # rebased on top of master, or to have security
+                # fixes as master has. Thus, we also enable
+                # publishing to the security pocket for the
+                # derivative if master will be or is published to
+                # -security. In case we have an error getting the
+                # status of the master security task, return (try
+                # again later)
+                tsk_st = { 'promote-to-security' : [ 'Confirmed', 'Fix Released' ] }
                 mb_status = s.verify_master_bug_tasks(tbug, tsk_st)
 
-                # We don't publish on Fri/Sat/Sun (see comment on function
-                # within_publishing_window). Also, only allow the
-                # promote-to-{updates,security} on derivative packages
-                # if the master packages are already ready for promotion
-                # or already promoted to the updates/security pockets.
-
-                # Either this is not a derivative bug at all or the master bug of which
-                # this is a derivative is has the specified tasks in one of the accepted
-                # states.
-                #
-                if (s.within_publishing_window() and mb_status > s.master_bug_bad_status):
-                    task = s.wfb.tasks_by_name[s.projectname]
-
-                    # If this is a derivative, it's supposed to be
-                    # rebased on top of master, or to have security
-                    # fixes as master has. Thus, we also enable
-                    # publishing to the security pocket for the
-                    # derivative if master will be or is published to
-                    # -security. In case we have an error getting the
-                    # status of the master security task, return (try
-                    # again later)
-                    tsk_st = { 'promote-to-security' : [ 'Confirmed', 'Fix Released' ] }
-                    mb_status = s.verify_master_bug_tasks(tbug, tsk_st)
-
-                    if s.security_publishing_required or mb_status == s.master_bug_good_status:
-                        s.verbose('Requires publishing to the -security pocket\n')
-                        if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
-                            s.wfb.tasks_by_name['promote-to-security'].status = 'Confirmed'
-                    else:
-                        if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
-                            s.wfb.tasks_by_name['promote-to-security'].status = 'Invalid'
-
-                    if s.wfb.tasks_by_name['promote-to-updates'].status == 'New':
-                        s.wfb.tasks_by_name['promote-to-updates'].status = 'Confirmed'
-                        s.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
-                        s.set_phase(task, 'CopyToUpdates')
+                if s.security_publishing_required or mb_status == s.master_bug_good_status:
+                    s.verbose('Requires publishing to the -security pocket\n')
+                    if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
+                        s.wfb.tasks_by_name['promote-to-security'].status = 'Confirmed'
                 else:
-                    if s.within_publishing_window():
-                        cinfo('                Unable to set promote-to-{updates,security} tasks because we are outside of', 'yellow')
-                        cinfo('                the publishing window.', 'yellow')
-                    else:
-                        cinfo('                Unable to set promote-to-{updates,security} tasks because the master bug of', 'yellow')
-                        cinfo('                this derivative is not ready for release.', 'yellow')
+                    if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
+                        s.wfb.tasks_by_name['promote-to-security'].status = 'Invalid'
 
+                if s.wfb.tasks_by_name['promote-to-updates'].status == 'New':
+                    s.wfb.tasks_by_name['promote-to-updates'].status = 'Confirmed'
+                    s.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
+                    s.set_phase(task, 'CopyToUpdates')
             else:
-                # don't have required testing signoffs
-                s.verbose('ERROR: test completion tags not found during release test!\n')
-                # Send email and possibly a status update
-                msgbody = 'During the release test either the certification-testing-passed or the qa-testing-passed tag was not found\n'
-                msgbody = msgbody + 'Tags on this bug are:\n'
-                for ftag in s.bugtags:
-                    msgbody = msgbody + '    ' + ftag + '\n'
-                msgbody = msgbody + '\n'
-                msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                s.send_comment(s.wfb.tasks_by_name[s.projectname], 'Test completion tags not found during release test', msgbody)
-                # stop further processing by this bot
-                s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
-                s.set_phase(s.wfb.tasks_by_name[s.projectname], 'OnHold')
+                if s.within_publishing_window():
+                    cinfo('                Unable to set promote-to-{updates,security} tasks because we are outside of', 'yellow')
+                    cinfo('                the publishing window.', 'yellow')
+                else:
+                    cinfo('                Unable to set promote-to-{updates,security} tasks because the master bug of', 'yellow')
+                    cinfo('                this derivative is not ready for release.', 'yellow')
+
+        else:
+            # don't have required testing signoffs
+            s.verbose('ERROR: test completion tags not found during release test!\n')
+            # Send email and possibly a status update
+            msgbody = 'During the release test either the certification-testing-passed or the qa-testing-passed tag was not found\n'
+            msgbody = msgbody + 'Tags on this bug are:\n'
+            for ftag in s.bugtags:
+                msgbody = msgbody + '    ' + ftag + '\n'
+            msgbody = msgbody + '\n'
+            msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
+            s.send_comment(s.wfb.tasks_by_name[s.projectname], 'Test completion tags not found during release test', msgbody)
+            # stop further processing by this bot
+            s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
+            s.set_phase(s.wfb.tasks_by_name[s.projectname], 'OnHold')
+
         # this method is not associated with a task state transition so no status returned
-        cdebug('                fell out the bottom')
-        cdebug('            perform_release_test leave')
+        cdebug('            release leave')
+
         return
 
     def check_for_final_close(s, taskobj):
@@ -1336,28 +1382,6 @@ class WorkflowEngine():
         # We should never trigger a release test from this, since it should have lready been done
         cdebug('            check_for_final_close leave: False')
         return False
-
-    # initialize
-    #
-    def initialize(s):
-        '''
-        There are certain things (like connecting to LP) that I don't like to do
-        in the constructor because they are so time consuming. Those thinngs are
-        done here.
-        '''
-        s.ubuntu = Ubuntu()
-
-        # Get set up for email and status messages
-        if 'mail_notify' in s.cfg:
-            mcfg = s.cfg['mail_notify']
-            s.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
-
-        scfg = s.cfg['status_net']
-        s.status = Status(scfg['url'], scfg['user'], scfg['pass'])
-
-        s.printlink = "(No link)"
-
-        return
 
 # vi:set ts=4 sw=4 expandtab:
 
