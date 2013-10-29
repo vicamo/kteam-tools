@@ -1,10 +1,10 @@
 #!/bin/bash
 
 CWD=/usr3/ubuntu
-LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 LLREPO=linux-2.6.git
 LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
+LINUX=${UBUNTU}/${LREPO}
 RELEASES="lucid precise quantal raring saucy trusty"
 EXTRAS="ubuntu-lucid-lbm ubuntu-precise-lbm ubuntu-quantal-lbm"
 EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest autotest-client-tests instrument-lib"
