@@ -149,6 +149,7 @@ class WorkflowEngine():
             s.bugtags.append(atag)
         performReleaseTest = False
         s.certification_testing_complete = False
+        s.verification_testing_complete = False
         s.regression_testing_complete = False
         s.security_signoff_complete = False
         s.security_publishing_required = False
@@ -866,6 +867,7 @@ class WorkflowEngine():
             s.set_phase(taskobj, 'Testing')
 
         s.set_testing_to_confirmed(taskobj)
+        s.verification_testing_complete = True
         cdebug('            verification_testing_fix_released leave (False)')
         return False
 
@@ -1054,7 +1056,7 @@ class WorkflowEngine():
         '''
         taskobj = s.wfb.tasks_by_name[task_name]
         if taskobj.status not in required_states:
-            cerror('%s set to invalid state.' % task_name)
+            cerror('        %s set to invalid state. Required: %s' % (task_name, required_states))
 
             # Send email and possibly a status update
             #
@@ -1156,6 +1158,9 @@ class WorkflowEngine():
         Check results from multiple tasks to see whether release
         to -updates and -security are required
         """
+        cinfo('')
+        cinfo('    Performing Release Test:', 'cyan')
+
         cdebug('            perform_release_test enter')
 
         # No need to do anything until these three are all complete
@@ -1165,8 +1170,10 @@ class WorkflowEngine():
             cnotice('                regression testing has not been completed')
         if not s.security_signoff_complete:
             cnotice('                security signoff has not been completed')
+        if not s.verification_testing_complete:
+            cnotice('                verification testing has not been completed')
 
-        if (s.certification_testing_complete and s.regression_testing_complete and s.security_signoff_complete):
+        if (s.certification_testing_complete and s.regression_testing_complete and s.security_signoff_complete and s.verification_testing_complete):
             cdebug('                Cert and regression testing and security signoff all complete', 'yellow')
 
             # Some general sanity checks before we pull the lever to publish
