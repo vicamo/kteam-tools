@@ -193,7 +193,6 @@ class WorkflowEngine():
 
         # Now flush any property changes to the bug description
         s.props.flush()
-        s.verbose('--\n')
 
         return
 
@@ -313,24 +312,6 @@ class WorkflowEngine():
 
         s.status.update(bugurl + ' : ' + pkgid + ' ' + message)
         return
-
-    def set_task_to_state(s, taskname, state):
-        """
-        Set a task with a given name to the desired state
-        returns True if we changed the state and False if it was already at the desired state
-        """
-        try:
-            s.wfb.tasks_by_name[taskname].status = state
-        except KeyError:
-            cdebug('set_task_to_state: KeyError')
-            cdebug('    Failed to find the \'%s\' task.' % taskname)
-            cdebug('    tasks_by_name:')
-            for task in s.wfb.tasks_by_name:
-                cdebug('        %s' % task)
-        try:
-            status = state
-        except:
-            cdebug('BAD')
 
     # set_tagged_timestamp
     #
@@ -615,7 +596,7 @@ class WorkflowEngine():
         s.send_comment(task, 'Packages available', msgbody)
 
         # Set promote-to-proposed
-        s.set_task_to_state(taskname, 'Confirmed')
+        s.wfb.tasks_by_name[taskname].status = 'Confirmed'
         # Add time stamp and status
         if s.projectname == 'kernel-sru-workflow':
             s.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
@@ -781,7 +762,7 @@ class WorkflowEngine():
             cdebug('                    missing_pkg is set')
             if mis_lst:
                 cdebug('                    mis_lst is set')
-                s.set_task_to_state('promote-to-%s' % (pocket), 'Incomplete')
+                s.wfb.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
                 msgbody  = "The following packages ended up in the wrong"
                 msgbody += " component in the -%s pocket:\n" % (pocket)
                 for item in mis_lst:
@@ -804,7 +785,7 @@ class WorkflowEngine():
             # after promote-to-<pocket> is set to Fix Released the first
             # time
             if delta.days >= 1:
-                s.set_task_to_state('promote-to-%s' % (pocket), 'Incomplete')
+                s.wfb.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
                 msgbody  = "Promote-to-%s is Fix Released, but " % (pocket)
                 msgbody += "some packages for this update aren't published "
                 msgbody += "in Launchpad, on -%s pocket:\n" % (pocket)
@@ -827,13 +808,13 @@ class WorkflowEngine():
 
     def set_testing_to_confirmed(s, taskobj):
         if s.wfb.tasks_by_name['certification-testing'].status == 'New':
-            s.set_task_to_state('certification-testing', 'Confirmed')
+            s.wfb.tasks_by_name['certification-testing'].status = 'Confirmed'
             s.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-start')
         if s.wfb.tasks_by_name['regression-testing'].status == 'New':
-            s.set_task_to_state('regression-testing', 'Confirmed')
+            s.wfb.tasks_by_name['regression-testing'].status = 'Confirmed'
             s.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-start')
         if s.wfb.tasks_by_name['security-signoff'].status == 'New':
-            s.set_task_to_state('security-signoff', 'Confirmed')
+            s.wfb.tasks_by_name['security-signoff'].status = 'Confirmed'
             s.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-start')
 
     def promote_to_proposed_fix_released(s, taskobj):
@@ -858,7 +839,7 @@ class WorkflowEngine():
         # Update remaining time stamps and status, send announcement
         s.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
         s.set_phase(taskobj, 'Verification & Testing')
-        s.set_task_to_state('verification-testing', 'In Progress')
+        s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
         s.set_testing_to_confirmed(taskobj)
         s.send_upload_announcement(taskobj, 'proposed')
 
@@ -903,7 +884,7 @@ class WorkflowEngine():
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             s.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
-            s.set_task_to_state(s.projectname, 'Incomplete')
+            s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
             s.set_phase(taskobj, 'TestFail')
             cdebug('            certification_testing_fix_released leave (False)')
             return False
@@ -920,7 +901,7 @@ class WorkflowEngine():
             msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
             s.send_comment(taskobj, 'Certification completed but no status tags applied', msgbody)
             # reset task state so Certification team fixes it
-            s.set_task_to_state('certification-testing', 'Incomplete')
+            s.wfb.tasks_by_name['certification-testing'].status = 'Incomplete'
             cdebug('            certification_testing_fix_released leave (False)')
             return False
 
@@ -959,7 +940,7 @@ class WorkflowEngine():
             msgbody = 'The bug was tagged as qa-testing-failed\n'
             s.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
-            s.set_task_to_state(s.projectname, 'Incomplete')
+            s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
             s.set_phase(taskobj, 'TestFail')
             cdebug('            regression_testing_fix_released leave (False)', 'yellow')
             return False
@@ -976,9 +957,9 @@ class WorkflowEngine():
             msgbody = 'The regression-testing task was set to Fix Released but neither the qa-testing-passed or qa-testing-failed tag was applied\n'
             s.send_comment(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
             # reset task so QA team can fix it
-            s.set_task_to_state('regression-testing', 'Incomplete')
+            s.wfb.tasks_by_name['regression-testing'].status = 'Incomplete'
             # stop further processing by this bot
-            s.set_task_to_state(s.projectname, 'Incomplete')
+            s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
             s.set_phase(taskobj, 'OnHold')
             cdebug('            regression_testing_fix_released leave (False)')
             return False
@@ -1005,7 +986,7 @@ class WorkflowEngine():
                 return False
 
             # Set promote-to-proposed
-            s.set_task_to_state('promote-to-release', 'Confirmed')
+            s.wfb.tasks_by_name['promote-to-release'].status = 'Confirmed'
             # Add time stamp and status
             s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
             s.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
@@ -1043,7 +1024,7 @@ class WorkflowEngine():
             cdebug('            promote_to_release_fix_released leave: False')
             return False
 
-        s.set_task_to_state(s.projectname, 'Fix Released')
+        s.wfb.tasks_by_name[s.projectname].status = 'Fix Released'
         s.set_phase(taskobj, 'Released')
         msgbody = 'The package has been published and the bug is being set to Fix Released\n'
         s.send_comment(taskobj, 'Package Released!', msgbody)
@@ -1087,7 +1068,7 @@ class WorkflowEngine():
 
             # Setting the tas to 'Incomplete' will stop further processing of the bug.
             #
-            s.set_task_to_state(s.projectname, 'Incomplete')
+            s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
 
     # within_publishing_window
     #
@@ -1267,13 +1248,13 @@ class WorkflowEngine():
                     if s.security_publishing_required or mb_status == s.master_bug_good_status:
                         s.verbose('Requires publishing to the -security pocket\n')
                         if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
-                            s.set_task_to_state('promote-to-security', 'Confirmed')
+                            s.wfb.tasks_by_name['promote-to-security'].status = 'Confirmed'
                     else:
                         if s.wfb.tasks_by_name['promote-to-security'].status == 'New':
-                            s.set_task_to_state('promote-to-security', 'Invalid')
+                            s.wfb.tasks_by_name['promote-to-security'].status = 'Invalid'
 
                     if s.wfb.tasks_by_name['promote-to-updates'].status == 'New':
-                        s.set_task_to_state('promote-to-updates', 'Confirmed')
+                        s.wfb.tasks_by_name['promote-to-updates'].status = 'Confirmed'
                         s.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
                         s.set_phase(task, 'CopyToUpdates')
                 else:
@@ -1296,7 +1277,7 @@ class WorkflowEngine():
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
                 s.send_comment(s.wfb.tasks_by_name[s.projectname], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
-                s.set_task_to_state(s.projectname, 'Incomplete')
+                s.wfb.tasks_by_name[s.projectname].status = 'Incomplete'
                 s.set_phase(s.wfb.tasks_by_name[s.projectname], 'OnHold')
         # this method is not associated with a task state transition so no status returned
         cdebug('                fell out the bottom')
@@ -1335,7 +1316,7 @@ class WorkflowEngine():
 
             print s.printlink,
             print ' Everything is done, setting bug to Fix Released'
-            s.set_task_to_state(s.projectname, 'Fix Released')
+            s.wfb.tasks_by_name[s.projectname].status = 'Fix Released'
             s.set_phase(taskobj, 'Released')
 
             # Send email and possibly a status update -spc- TODO
