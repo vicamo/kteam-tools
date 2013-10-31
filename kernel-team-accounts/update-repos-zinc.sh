@@ -21,7 +21,7 @@ echo 1 > $LOCK
 if [ ! -d ${LREPO} ]
 then
 	git clone --bare ${LINUX} ${LREPO}
-	(cd ${LREPO}; git fetch origin)
 fi
+(cd ${LREPO}; git fetch origin)
 
 rm -f $LOCK
