@@ -195,7 +195,7 @@ class Workflow:
                 'prepare-package-meta'       : 'canonical-hwe-arm-kernel',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-hwe-arm-kernel',
-                'regression-testing'         : 'canonical-platform-qa',
+                'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 },
