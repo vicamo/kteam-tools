@@ -59,7 +59,7 @@ class WorkflowEngine():
 
         s.state_map = {
             'upload-to-ppa'             : TaskActions({'Confirmed'    : s.upload_to_ppa_confirmed}),
-            'prepare-package'           : TaskActions({'New'          : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
+            'prepare-package'           : TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
             'prepare-package-lbm'       : TaskActions({'Fix Released' : s.prep_package_fix_released}),
             'prepare-package-meta'      : TaskActions({'Fix Released' : s.prep_package_fix_released}),
             'prepare-package-ports-meta': TaskActions({'Fix Released' : s.prep_package_fix_released}),
