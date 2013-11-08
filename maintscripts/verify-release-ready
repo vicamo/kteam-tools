@@ -338,20 +338,30 @@ class VerifyReleaseReady():
     def main(s):
         kernel_packages = [
             'linux',
+            'linux-ec2',
             'linux-ti-omap4',
             'linux-lts-quantal',
-            'linux-lts-raring'
+            'linux-lts-raring',
+            'linux-lts-saucy',
+            'linux-lts-trusty'
         ]
 
         non_kernel_packages = [
             'linux-ports-meta',
+            'linux-signed',
             'linux-meta',
             'linux-meta-ti-omap4',
             'linux-meta-lts-raring',
             'linux-meta-lts-quantal',
+            'linux-meta-lts-saucy',
+            'linux-meta-lts-trusty',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
+            'linux-signed-lts-saucy',
+            'linux-signed-lts-trusty',
+            'linux-backports-modules-3.5.0',
             'linux-backports-modules-3.2.0',
+            'linux-backports-modules-2.6.32',
         ]
 
         try:
