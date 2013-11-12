@@ -229,6 +229,15 @@ case $SUITE in
 esac
 
 case $SUITE in
+	trusty)
+		case $ARCH in
+			amd64|i386) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu"
+			;;
+		esac
+		;;
+esac
+
+case $SUITE in
 	android) _SUITE=precise
 		;;
 	*) _SUITE=$SUITE
