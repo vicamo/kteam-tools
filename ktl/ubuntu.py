@@ -185,8 +185,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-exynos5' ],
-                'linux' : [ 'linux-lowlatency', 'linux-ppc' ]
+                'linux' : [ 'linux-lowlatency', 'linux-ppc', 'linux-exynos5' ]
             },
             'sha1' : '',
             'md5' : ''
