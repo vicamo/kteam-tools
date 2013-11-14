@@ -192,7 +192,7 @@ class Shankster(threading.Thread):
                 target = data['target']
                 if 'shank' == cmd:
                     try:
-                        (rc, output) = sh('./sru-workflow-manager')
+                        (rc, output) = sh('./swm')
                         s.output.reply(who + ', ' + 'I shanked them all', target)
                     except ShellError as e:
                         s.output.reply(e.output)
@@ -201,7 +201,7 @@ class Shankster(threading.Thread):
                     if ' ' in cmd:
                         # Another arg parser here would probably be the right thing.
                         cmd = cmd.split()
-                        sh_cmd = './sru-workflow-manager --bugs=%s' % cmd[1]
+                        sh_cmd = './swm --bugs=%s' % cmd[1]
                         try:
                             (rc, output) = sh(sh_cmd)
                             s.output.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
