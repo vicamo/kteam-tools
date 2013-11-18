@@ -49,8 +49,8 @@ then
 fi
 
 case $HOST_ARCH in
-	amd64)
-		for i in i386 amd64 armel
+	amd64|i386)
+		for i in `ls $CDIR/ukb/$RELEASE`
 		do
 			if arch_supported $CDIR/ukb $RELEASE $i
 			then
