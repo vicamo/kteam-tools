@@ -161,14 +161,19 @@ popd
 #
 get_chroot $RELEASE $ARCH
 #
-# Cross compile armel.
+# Only amd64/i386 support cross compilng.
 #
-if [ "${ARCH}" = "armel" ]
-then
-	BLD_ENV="do_tools=false"
-	BLD_OPTS="-aarmel"
-	CHROOT="schroot -c $RELEASE-amd64"
-fi
+case $HOST_ARCH in
+	i386|amd64)
+		case $ARCH in
+			armel|armhf|powerpc)
+				BLD_ENV="do_tools=false"
+				BLD_OPTS="-d -a$ARCH"
+				CHROOT="schroot -c $RELEASE-$HOST_ARCH"
+			;;
+		esac
+	;;
+esac
 
 echo CHROOT $CHROOT
 pushd $RDIR
@@ -190,7 +195,7 @@ then
 	CL="-j${BLD_CPUS}"
 fi
 
-if ! echo "${BLD_ENV} dpkg-buildpackage ${CL} -rfakeroot -b ${BLD_OPTS} -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+if ! echo "${BLD_ENV} dpkg-buildpackage ${CL} -rfakeroot ${BLD_OPTS} -b -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
