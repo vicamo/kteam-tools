@@ -230,6 +230,7 @@ esac
 
 case $SUITE in
 	trusty)
+		ADDPKG="$ADDPKG libiberty-dev"
 		case $ARCH in
 			amd64|i386) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu"
 			;;
