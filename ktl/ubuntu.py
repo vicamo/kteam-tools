@@ -150,11 +150,10 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
-                'linux-exynos5' : { 'meta' : 'linux-meta-exynos5' },
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-exynos5' ]
+                'linux' : []
             },
             'sha1' : '',
             'md5' : ''
@@ -179,13 +178,12 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
-                'linux-exynos5' : { 'meta' : 'linux-meta-exynos5' },
                 'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' },
                 'linux-ppc' : { 'meta' : 'linux-meta-ppc' }
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-lowlatency', 'linux-ppc', 'linux-exynos5' ]
+                'linux' : [ 'linux-lowlatency', 'linux-ppc' ]
             },
             'sha1' : '',
             'md5' : ''
