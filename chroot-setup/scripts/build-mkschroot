@@ -113,7 +113,7 @@ fi
 #------------------------------------------------------------------------------
 ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache devscripts"
 ADDPKG="$ADDPKG xmlto docbook-utils gs transfig sharutils"
-ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc"
+ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc lzop"
 ADDPKGDEP=
 case $SUITE in
 	dapper)
