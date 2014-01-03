@@ -6,11 +6,11 @@ LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
 VIRGIN=git://kernel.ubuntu.com/virgin
 LINUX=${VIRGIN}/${LREPO}
-RELEASES="lucid precise quantal raring saucy trusty"
+RELEASES="lucid precise quantal saucy trusty"
 EXTRAS="ubuntu-lucid-lbm ubuntu-precise-lbm ubuntu-quantal-lbm"
 EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest autotest-client-tests instrument-lib"
-METAS="lucid precise quantal raring saucy"
-SIGNED="precise quantal raring saucy"
+METAS="lucid precise quantal saucy"
+SIGNED="precise quantal saucy"
 LOCK=/tmp/update-repos.lock
 ORIGS="2.6.24 2.6.32 2.6.38 3.0.0 3.2.0 3.5.0 3.8.0 3.11.0"
 
