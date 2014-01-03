@@ -35,6 +35,9 @@ REPOS += ubuntu-nexus7
 REPOS += ubuntu-saucy
 REPOS += ubuntu-saucy-signed
 REPOS += ubuntu-saucy-meta
+REPOS += ubuntu-trusty
+REPOS += ubuntu-trusty-signed
+REPOS += ubuntu-trusty-meta
 
 all: repo
 
