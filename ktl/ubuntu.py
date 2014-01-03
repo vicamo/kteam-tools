@@ -194,7 +194,7 @@ class Ubuntu:
             'series_version' : '13.04',
             'kernel'    : '3.8.0',
             'name'      : 'raring',
-            'supported' : True,
+            'supported' : False,
             # adjust packages when this goes live
             'packages'  :
             [
