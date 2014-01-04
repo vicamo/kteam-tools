@@ -188,7 +188,6 @@ pre-proposed quantal linux master-next linux-meta master no-release
 pre-proposed quantal linux-lbm master no-release
 pre-proposed precise linux master-next linux-meta master no-release
 pre-proposed precise linux-lbm master no-release
-pre-proposed precise linux-lbm master no-release
 pre-proposed precise linux lts-backports-raring-next no-release
 pre-proposed lucid linux master-next linux-meta master no-release
 pre-proposed lucid linux-lbm master no-release
