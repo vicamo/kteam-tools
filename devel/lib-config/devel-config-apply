@@ -19,12 +19,12 @@ config="$5"
 case "$arch" in
 i386|amd64)	karch='x86' ;;
 armel|armhf)	karch='arm' ;;
-powerpc)	karch='powerpc' ;;
+powerpc|ppc64el)	karch='powerpc' ;;
 *)		echo "$arch: architecture unknown" 1>&2; exit 1 ;;
 esac
 
 # Generate the expanded annotations.
 cat "$annotations" | \
-	"$here/devel-config-tree" "$base" "arch/$karch/Kconfig" expand | \
-	"$here/devel-arch-annotations-merge" | \
+	"$here/devel-config-tree" "$base" "arch/$karch/Kconfig" expand | tee APW1 | \
+	"$here/devel-arch-annotations-merge" | tee APW2 | \
 	"$here/devel-config-apply-payload" "$arch" "$flavour" "$config"

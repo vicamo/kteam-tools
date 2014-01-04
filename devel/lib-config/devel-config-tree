@@ -283,12 +283,14 @@ def children_scan_iter(parent, toplevel):
             for ent in children_scan_iter(entry, toplevel):
                 yield ent
 
-def children_scan(root, selector_list, toplevel=False):
+def children_scan(root, selector_list, toplevel=False, menu=False):
     parent = root
     for selector in selector_list:
         parent = child_find(parent, selector)
         if not parent:
             raise ValueError(selector + ":selector not found")
+    if menu:
+        yield parent
     for entry in children_scan_iter(parent, toplevel):
         yield entry
     
@@ -355,6 +357,7 @@ elif cmd == 'geninfo':
 
 elif cmd == 'genorder':
     print('M', 'ROOT')
+    print('M', 'ROOT (' + arch + ')')
     for entry in entries:
         if 'prompt' in entry:
             mname = entry['prompt']
@@ -386,20 +389,22 @@ elif cmd == 'genorder':
             amenu = '__prefix_menu'
 
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
-            entry['__prefix_menu'] = "M " + '>'.join(pname + [ mname ])
-            entry['__prefix_arch'] = "M " + '>'.join(pname + [ mname ]) + ' (' + arch + ')'
+            entry['__prefix_menu'] = "M " + '>>'.join(pname + [ mname ])
+            entry['__prefix_arch'] = "M " + '>>'.join(pname + [ mname ]) + ' (' + arch + ')'
             if 'config' in entry:
                 if amenu in entry:
                     print(entry[amenu])
                     del entry[amenu]
-                print('E', '>'.join(pname + [ mname ]) + akey + '>>' + entry['config'])
+                print('E', '>>'.join(pname + [ mname ]) + akey + '>>>' + entry['config'])
         elif 'choice' in entry:
             pass
         else:
-            if amenu in entry:
-                print(entry[amenu])
-                del entry[amenu]
-            print('E', '>'.join(pname) + akey + '>>' + cname)
+            if 'parent' in entry:
+                parent = entry['parent']
+                if amenu in parent:
+                    print(parent[amenu])
+                    del parent[amenu]
+            print('E', '>>'.join(pname) + akey + '>>>' + cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
@@ -415,19 +420,26 @@ elif cmd == 'expand':
             result = {}
             while len(a) >= 1:
                 cmd = a.pop(0)
-                if cmd in ('+all', '+tree', '!tree', '+tree-top', '!tree-top'):
+                if cmd in ('+all', '+tree', '!tree', '+tree-top', '!tree-top', '+tree-menu', '!tree-menu', '+tree-menu-top', '!tree-menu-top'):
                     if cmd == '+all':
                         position = []
+                    elif '>>' in a[0]:
+                        position = a.pop(0).split('>>')
                     else:
                         position = a.pop(0).split(',')
 
-                    if cmd[1:] == 'tree-top':
+                    if cmd[1:] in ('tree-top', 'tree-menu-top'):
                         toplevel = True
                     else:
                         toplevel = False
-                
+
+                    if cmd[1:] in ('tree-menu', 'tree-menu-top'):
+                        menu = True
+                    else:
+                        menu = False
+
                     try:
-                        for entry in children_scan(root, position, toplevel):
+                        for entry in children_scan(root, position, toplevel, menu):
                             if 'config' in entry:
                                 #print("ADD", entry['config'])
                                 if cmd[0] == '+':
@@ -446,13 +458,17 @@ elif cmd == 'expand':
                             #print("PATTERN", pattern, entry.get('config',''))
                             result[entry['config']] = entry
 
-                elif cmd == '?pattern':
+                elif cmd in ('?pattern', '!pattern'):
                     pattern = a.pop(0)
 
                     keys = list(result.keys())
                     for key in keys:
-                        if not re.search(pattern, key):
-                            del result[key]
+                        if cmd[0] == '?':
+                            if not re.search(pattern, key):
+                                del result[key]
+                        else:
+                            if re.search(pattern, key):
+                                del result[key]
 
                 elif cmd == '?type':
                     pattern = a.pop(0)

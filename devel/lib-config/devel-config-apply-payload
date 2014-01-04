@@ -69,6 +69,7 @@ while (<STDIN>) {
 			next;
 		}
 	}
+	#print "OPTION<$config> EXPECTED<$expected> ONLY<$only> POLICY<$policy>\n";
 
 	# Check the policy.
 	if ($policy eq '') {

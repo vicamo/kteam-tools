@@ -30,7 +30,7 @@ function what_menu()
         typeset list="$1"
         typeset menu="$2"
 
-        what=`cat "$list" | grep "^E $menu>>" | 
+        what=`cat "$list" | grep "^E $menu>>>" | 
 		awk -F'>' '{ print $NF }' |
 		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ =]/'`
 }
@@ -56,15 +56,19 @@ list="/tmp/list.$$"
 	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder
 	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder
 } | tee APW | sed \
-	-e 's/Bus options (PCI etc.)/Bus options/g' \
-	-e 's/Bus support/Bus options/g' \
-| sort -t% | uniq >"$list"
+	-e 's/ROOT>>Bus options (PCI etc.)/ROOT>>Bus options/g' \
+	-e 's/ROOT>>Bus support/ROOT>>Bus options/g' \
+	-e 's/ROOT>>Platform support>>CPU Frequency scaling/ROOT>>CPU Power Management>>CPU Frequency scaling/g' \
+	-e 's/ROOT>>Power management and ACPI options>>CPU Frequency scaling/ROOT>>CPU Power Management>>CPU Frequency scaling/g' \
+	-e 's/ROOT>>Platform support>>CPUIdle driver>>CPU Idle/ROOT>>CPU Power Management>>CPU Idle/g' \
+	-e 's/ROOT>>Power management and ACPI options>>CPU Idle/ROOT>>CPU Power Management>>CPU Idle/g' \
+| LANG=C sort | uniq >"$list"
 
 cat "$list" | grep '^M ' | \
 while read junk menu
 do
 	name=`echo "$menu" | sed \
-		-e 's/ROOT>//g' 
+		-e 's/ROOT>>//g' 
 	`
 	#what_menu "$list" "$menu"
 	echo "$name ... " 1>&2

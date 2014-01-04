@@ -49,7 +49,7 @@ output_header() {
 		echo "$level $header $level"
 		;;
 	html)
-		header=`echo "$header" | sed -e 's/>/ \&gt; /g'`
+		header=`echo "$header" | sed -e 's/>>/ \&gt;\&gt; /g'`
 		echo "<h2>$header</h2>"
 		;;
 	esac
