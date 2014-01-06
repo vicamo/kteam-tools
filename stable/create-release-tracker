@@ -170,7 +170,7 @@ class CreateTrackingBug(StdApp):
             with open(changelog_path, 'w') as f:
                 f.write(thelog[0])
                 f.write(thelog[1])
-                f.write("  [%s]\n" % (bug.owner.display_name))
+                f.write("  [ %s ]\n" % (bug.owner.display_name))
                 f.write("\n")
                 f.write("  * Release Tracking Bug\n")
                 f.write("    - LP: #%s\n" % (bug.id))
