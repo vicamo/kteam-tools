@@ -112,7 +112,7 @@ fi
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
 ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache devscripts"
-ADDPKG="$ADDPKG xmlto docbook-utils gs transfig sharutils"
+ADDPKG="$ADDPKG xmlto docbook-utils transfig sharutils"
 ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc lzop"
 ADDPKGDEP=
 case $SUITE in
@@ -132,7 +132,7 @@ case $SUITE in
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
 	lucid)
-		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage asciidoc"
+		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage asciidoc gs"
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
 	maverick)
