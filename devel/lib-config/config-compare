@@ -265,7 +265,7 @@ for my $column (@columns) {
 		if ($_ =~ /^# (\S+) is not set/) {
 			$opt = $1;
 			$is = 'n';
-		} elsif ($_ =~ /(\S+)=(\S+)/) {
+		} elsif ($_ =~ /(\S+?)=(\S+)/) {
 			$opt = $1;
 			$is = $2;
 		} else {
