@@ -166,7 +166,7 @@ get_chroot $RELEASE $ARCH
 case $HOST_ARCH in
 	i386|amd64)
 		case $ARCH in
-			armel|armhf|powerpc)
+			armel|armhf|powerpc|ppc64el)
 				BLD_ENV="do_tools=false"
 				BLD_OPTS="-d -a$ARCH"
 				CHROOT="schroot -c $RELEASE-$HOST_ARCH"
