@@ -51,7 +51,6 @@ for merge in sys.argv[3:]:
                 a[4] = info + ' ' + a[4]
                 if value != '-':
                     a[3] = value
-                    a[4] += ' mark<annotated>'
 
             # Elide duplicate flags and marks.
             info = ''

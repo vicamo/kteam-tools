@@ -495,6 +495,8 @@ elif cmd == 'expand':
                     
                     for key in sorted(result.keys()):
                         result[key]['info'] = result[key].get('info', '') + " " + value
+                        if a[0] != '-':
+                            result[key]['info'] = result[key].get('info', '') + " mark<annotated>"
                         print("CONFIG_" + key + " " + value)
 
                         entry = result[key]
@@ -518,6 +520,8 @@ elif cmd == 'expand':
 
             if name in byname and len(a) >= 3:
                 byname[name]['info'] = byname[name].get('info', '') + ' ' + a[2].strip()
+                if a[0] != '-':
+                    byname[name]['info'] = byname[name].get('info', '') + ' mark<annotated>'
 
             if name in byname:
                 entry = byname[name]
