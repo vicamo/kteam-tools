@@ -6,8 +6,10 @@ import re
 
 from datetime                           import datetime
 
+from ktl.workflow                       import Properties
 from ktl.bugs                           import DeltaTime
 from ktl.ubuntu                         import Ubuntu
+from ktl.utils                          import date_to_string
 
 from sb.exceptions                      import GeneralError, ErrorExit
 from sb.log                             import cinfo, cdebug, cerror, cwarn
@@ -112,6 +114,7 @@ class Package():
         s.main_archive = s.lp.launchpad.distributions["ubuntu"].main_archive
 
         s.bug = shankbug
+        s.props = Properties(s.bug.lpbug)
 
         # Determine some properties of the package we are looking at based on the
         # bug title. This information is used further on.
@@ -201,6 +204,20 @@ class Package():
         pkgs['main'] = s.package.name
 
         return pkgs
+
+    # set_tagged_timestamp
+    #
+    def set_tagged_timestamp(s, taskobj, keyvalue):
+        '''
+        Add the supplied key with a timestamp. We do not replace existing keys
+        '''
+        cinfo('                Adding tagged timestamp <%s> to tracking bug' % keyvalue)
+
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        tstamp = date_to_string(now)
+        props = {keyvalue:tstamp}
+        s.props.set(props)
 
     # determine_build_status
     #
