@@ -31,7 +31,7 @@ done
 	do
 		"$here/devel-config-tree" "$base" arch/$arch/Kconfig expand <"$annotations"
 	done
-} | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
+} | tee APW-premerge | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
 # Generate a common merged configuration version.
 "$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-"*
