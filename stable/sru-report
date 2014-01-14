@@ -211,6 +211,7 @@ class SruReport(StdApp):
 
         self.components   = ['main', 'universe']
         self.all_series   = self.ubuntu.supported_series
+        self.all_series.append(self.ubuntu.development_series)
 
         self.tempdir = None
 
@@ -325,7 +326,8 @@ class SruReport(StdApp):
                 m = self.ubuntu.db
                 for num in sorted(m.iterkeys(), key=lambda x:m[x]['name']):
                     if not m[num]['supported']:
-                        continue
+                        if 'development' not in m[num] or not m[num]['development']:
+                            continue
 
                     series      = m[num]['name']
                     series_pkgs = m[num]['packages']
