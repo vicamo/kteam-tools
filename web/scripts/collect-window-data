@@ -338,6 +338,7 @@ class CollectRegressionsData(StdApp):
                             try:
                                 bug = KernelBug(self.lp.get_bug(bug_id))
                             except KeyError:
+                                deletion_list.append(bug_id)  # If I can't look at it, drop it
                                 continue
                             task = self.__get_relevant_task(bug, package_name)
                             if task is None:
