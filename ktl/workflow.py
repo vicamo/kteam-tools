@@ -263,6 +263,7 @@ class Workflow:
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-ports-meta' : 'canonical-kernel-team',
                 'prepare-package-signed'     : 'canonical-kernel-team',
+                'package-testing'            : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
