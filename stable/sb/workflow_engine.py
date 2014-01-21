@@ -76,7 +76,7 @@ class WorkflowEngine():
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid, 'Fix Released' : s.certification_testing_fix_released}),
             'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,    'Fix Released' : s.regression_testing_fix_released}),
-            'package-testing'           : TaskActions({'Fix Released' : s.package_testing_fix_released}),
+            'package-testing'           : TaskActions({'Confirmed'    : s.package_testing_confirmed, 'Fix Released' : s.package_testing_fix_released}),
             'promote-to-updates'        : TaskActions({'Fix Released' : s.check_for_final_close}),
             'promote-to-security'       : TaskActions({'Fix Released' : s.check_for_final_close}),
             'promote-to-release'        : TaskActions({'Fix Released' : s.promote_to_release_fix_released}),
@@ -196,7 +196,7 @@ class WorkflowEngine():
 
             task = shankbug.tasks_by_name[workflow_task_name]
             cinfo('')
-            cinfo("        %-25s  %15s  %10s  %s" % (task.name, task.status, task.importance, task.assignee))
+            cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, task.assignee, workflow_task_name))
 
             therest = task_name[len(master_task_name)+1:].strip()
             task_name = therest
@@ -210,6 +210,7 @@ class WorkflowEngine():
 
             if action is None:
                 cinfo('            Action: No action for task %s in state %s' % (task.name, task.status))
+
             else:
                 res_action = action(task)
 
@@ -641,6 +642,46 @@ class WorkflowEngine():
             status, result = run_command(cmd)
 
 
+    def package_testing_confirmed(s, taskobj):
+        """
+        Right now all we want to do is send some email.
+        """
+        cdebug('            package_testing_confirmed enter')
+
+        s.wfb.tasks_by_name['package-testing'].status = 'In Progress'
+
+        s.set_tagged_timestamp(taskobj, 'ppa-package-testing-start')
+        s.set_phase(taskobj, 'PPA Testing')
+
+        #-------------------------------------------------------------------
+
+        if s.args.dryrun or s.args.dryrun_email:
+            cinfo('Dryrun - Sending email')
+            return
+
+        cinfo('Sending email')
+
+        if not 'mail_notify' in s.cfg:
+            s.verbose('No mail_notify config found, can\'t send email\n')
+            return
+
+        to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
+        subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
+
+        mcfg = s.cfg['mail_notify']
+        msg  = ''
+        msg += 'Title: %s\n\n' % s.wfb.title
+        msg += 'ID: %s\n' % taskobj.bug.id
+        msg += 'URL: %s\n' % s.bug_url(taskobj.bug.id)
+        msg += 'Version: %s\n' % s.wfb.pkg_version
+        msg += 'Package: %s\n' % s.wfb.pkg_name
+        msg += 'Series: %s\n' % s.wfb.series
+        msg += ""
+        s.email.send(mcfg['from_address'], to_address, subj, msg)
+
+        cdebug('            package_testing_confirmed leave (False)')
+        return False
+
     def prep_package_fix_released(s, taskobj):
         """
         when the prep-package task is set to Fix Released and there is
@@ -669,6 +710,7 @@ class WorkflowEngine():
                 return False
 
             s.handle_derivatives(taskobj, taskname)
+            s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
 
         else:
             cdebug('                doing nothing, the task is not \'New\'')
