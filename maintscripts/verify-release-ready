@@ -110,6 +110,40 @@ class VerifyReleaseReady():
                 break
             s.status(msg, True)
 
+            # If ABI override is present, then check correctness and print info
+            abi_arch, empty = Debian.abi_arch()
+            allAbiOverridden = True
+            noneAbiOverridden = True
+            allModOverridden = True
+            noneModOverridden = True
+            for arch in abi_arch:
+                if "ignore" in abi_arch[arch]:
+                    noneAbiOverridden = False
+                else:
+                    allAbiOverridden = False
+                if "ignore.modules" in abi_arch[arch]:
+                    noneModOverridden = False
+                else:
+                    allModOverridden = False
+            if noneAbiOverridden is False:
+                msg = 'ABI override is present'
+                s.status(msg, True)
+                if allAbiOverridden is False:
+                    msg = 'Not all arches have ABI overridden'
+                    s.status(msg, False)
+            if (noneModOverridden is False):
+                msg = 'Module override is present'
+                s.status(msg, True)
+                if allModOverridden is False:
+                    msg = 'Not all arches have Module overridden'
+                    s.status(msg, False)
+            if allAbiOverridden != allModOverridden:
+                msg = 'Both ABI and Module override must be present'
+                s.status(msg, False)
+            for emptyFile in empty:
+                msg = 'Empty override file: %s' % emptyFile
+                s.status(msg, False)
+
             # Check: That the release information is correct.
             #
             ub = Ubuntu()

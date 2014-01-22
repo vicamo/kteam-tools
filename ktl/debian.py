@@ -9,7 +9,7 @@ from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, dump
 from ktl.kernel                         import Kernel
 from re                                 import compile
-from os                                 import path, listdir
+from os                                 import path, listdir, walk
 
 # DebianError
 #
@@ -192,5 +192,49 @@ class Debian:
 
         # Not there anywhere, barf
         raise DebianError('Failed to find the abi files.')
+
+    # abi_arch
+    #
+    @classmethod
+    def abi_arch(cls):
+
+        # Return contents of all arch directories within an ABI
+        debian_dirs = cls.debian_directories()
+        retvals = {}
+        empty = []
+        abiarch = []
+        for debdir in debian_dirs:
+            abidir = debdir + '/abi'
+            debug("Trying '%s': \n" % abidir, cls.debug)
+            if path.isdir(abidir):
+                debug("  '%s' is a directory\n" % abidir, cls.debug)
+                contents = listdir(abidir)
+                for item in contents:
+                    debug("  Contains: '%s'\n" % item, cls.debug)
+                    if path.isdir(abidir + '/' + item):
+                        abisubdirs = listdir(abidir + '/' + item)
+                        for subdir in abisubdirs:
+                            fullpath = path.join(abidir, item, subdir)
+                            if path.isdir(fullpath):
+                                abiarch.append(fullpath)
+                for archdir in abiarch:
+                    arch = path.basename(archdir)
+                    contents = listdir(archdir)
+                    retvals[arch] = contents
+                    # Now, check each ignore file to make sure it's not empty,
+                    # as empty files don't work to trigger ABI ignore in the PPA
+                    # but will in a test build !!!!!
+                    for fname in contents:
+                        if 'ignore' in fname:
+                            fpath = path.join(archdir, fname)
+                            fsize = path.getsize(fpath)
+                            if fsize == 0:
+                                debug("  Found empty ABI file: '%s'\n" % fpath, cls.debug)
+                                empty.append(fpath);
+                return retvals, empty
+
+        # Not there anywhere, barf
+        raise DebianError('Failed to find the abi files.')
+
 
 # vi:set ts=4 sw=4 expandtab:
