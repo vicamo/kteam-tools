@@ -1043,26 +1043,29 @@ class WorkflowEngine():
         to the release pocket by the Ubuntu Kernel Team
         """
         cdebug('            package_testing_fix_released enter')
-        if s.wfb.tasks_by_name['promote-to-release'].status == 'New':
-            # if this is a derivative tracking bug, first wait until
-            # that packages on the master tracking bug are also ready or
-            # already promoted. The way derivative package bugs are
-            # opened already ensures this, but check the tasks on the
-            # master bug anyway just in case...
-            tsk_st = { 'promote-to-release' : [ 'Confirmed', 'Fix Released' ] }
+        try:
+            if s.wfb.tasks_by_name['promote-to-release'].status == 'New':
+                # if this is a derivative tracking bug, first wait until
+                # that packages on the master tracking bug are also ready or
+                # already promoted. The way derivative package bugs are
+                # opened already ensures this, but check the tasks on the
+                # master bug anyway just in case...
+                tsk_st = { 'promote-to-release' : [ 'Confirmed', 'Fix Released' ] }
 
-            # If the master bug's tasks are not completely ready.
-            #
-            if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
-                cdebug('            package_testing_fix_released leave (False)')
-                return False
+                # If the master bug's tasks are not completely ready.
+                #
+                if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
+                    cdebug('            package_testing_fix_released leave (False)')
+                    return False
 
-            # Set promote-to-proposed
-            s.wfb.tasks_by_name['promote-to-release'].status = 'Confirmed'
-            # Add time stamp and status
-            s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
-            s.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
-            s.set_phase(taskobj, 'CopyToRelease')
+                # Set promote-to-proposed
+                s.wfb.tasks_by_name['promote-to-release'].status = 'Confirmed'
+                # Add time stamp and status
+                s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
+                s.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
+                s.set_phase(taskobj, 'CopyToRelease')
+        except:
+            cerror('Exception thrown processing the package-testing task when set to Fix Released')
         cdebug('            package_testing_fix_released leave (False)')
         return False
 
