@@ -90,8 +90,8 @@ class VerifyReleaseReady():
             if cl1_version != Kernel.version():
                 s.status(msg, False)
                 s.verbose("expected '%s' but got: '%s'" % (Kernel.version(), cl1_version))
-                break
-            s.status(msg, True)
+            else:
+                s.status(msg, True)
 
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
@@ -99,16 +99,19 @@ class VerifyReleaseReady():
             if int(cl1_build) != int(cl2_build) + 1:
                 s.status(msg, False)
                 s.verbose("expected %d but got: %d" % (int(cl2_build), int(cl1_build)))
-                break
-            s.status(msg, True)
+            else:
+                s.status(msg, True)
 
             # Check: Make sure that the abi directory has the previous version
-            msg = 'previous abi present (%s)' % (cl2['version'])
+            v = cl2['version']
+            if '~' in v:
+                v = v.split('~', 1)[0]
+            msg = 'previous abi present (%s)' % (v)
             abi = Debian.abi()
-            if  cl2['version'] not in abi:
+            if  v not in abi:
                 s.status(msg, False)
-                break
-            s.status(msg, True)
+            else:
+                s.status(msg, True)
 
             # If ABI override is present, then check correctness and print info
             abi_arch, empty = Debian.abi_arch()
@@ -152,8 +155,8 @@ class VerifyReleaseReady():
             if cl1['release'] != series:
                 s.status(msg, False)
                 s.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
-                break
-            s.status(msg, True)
+            else:
+                s.status(msg, True)
 
             break
 
