@@ -3,6 +3,7 @@
 CWD=/srv/kernel.ubuntu.com/git/virgin
 LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 LREPO=linux.git
+
 LOCK=/tmp/update-repos.lock
 
 if [ ! "$1" = "" ]

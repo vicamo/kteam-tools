@@ -25,7 +25,7 @@ master_tree_select
 #
 # UPSTREAM COD: builds of upstream tree tips
 #
-repo_remote_update_list linus drm-2.6 drm-intel-danvet debloat-testing extended-stable
+repo_remote_update_list linus drm-2.6 drm-intel debloat-testing extended-stable
 
 refresh=1
 date="`date +%F`"
