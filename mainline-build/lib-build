@@ -61,14 +61,22 @@ repo_remote_update()
 {
 	local remote="$1"
 	local url
+	local curr
 
- 	if ! git remote | grep "^$remote$" >/dev/null 2>&1; then
-		repo_remote_url "$remote"; url="$RET"
- 		echo "$P: adding $remote remote ($url) ..."
- 		git remote add "$remote" "$url"
- 	fi
- 	echo "$P: fetching $remote remote ..."
- 	git fetch "$remote" || true
+	repo_remote_url "$remote"; url="$RET"
+
+	curr=`git config "remote.$remote.url"`
+	if [ "$curr" != "" -a "$curr" != "$url" ]; then
+		echo "$P: removing $remote remote ($curr) ..."
+		git remote rm "$remote"
+		curr=""
+	fi
+	if [ "$curr" = "" ]; then
+		echo "$P: adding $remote remote ($url) ..."
+		git remote add "$remote" "$url"
+	fi
+	echo "$P: fetching $remote remote ..."
+	git fetch "$remote" || true
 }
 
 repo_remote_update_list()
