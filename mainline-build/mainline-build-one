@@ -233,7 +233,7 @@ do
 	while :
 	do
 		let "off=$off+1"
-		version=`git cat-file -p "origin/$branch:debian.master/changelog" | \
+		version=`git cat-file -p "$series/$branch:debian.master/changelog" | \
 			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
 			BEGIN				{ v="END"; }
 			/^Version:/			{ v=$2; last }
@@ -264,8 +264,8 @@ git commit -a -m "debian changelog"
 # Pull the specified version of the configs and default any new
 # configuration options.
 #
-echo "*** using configs from $configs ..."
-git checkout "$configs" -- debian.master/config
+echo "*** using configs from $configs ($branch) ..."
+git checkout "$configs" -- debian.master/config || git checkout "$series/$branch" -- debian.master/config
 
 if [ -f "$here/config.$series" ]; then
 	cp "$here/config.$series" "$debian/config/OVERRIDES"
