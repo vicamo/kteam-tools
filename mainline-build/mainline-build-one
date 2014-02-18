@@ -227,6 +227,7 @@ done
 find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
 
 found="0"
+fbranch=""
 for branch in unstable master-next master
 do
 	let off=-1
@@ -245,6 +246,7 @@ do
 
 	dpkg --compare-versions "$version" lt "$found" && break
 	found="$version"
+	fbranch="$branch"
 done
 configs="Ubuntu-$found"
 
@@ -264,8 +266,8 @@ git commit -a -m "debian changelog"
 # Pull the specified version of the configs and default any new
 # configuration options.
 #
-echo "*** using configs from $configs ($branch) ..."
-git checkout "$configs" -- debian.master/config || git checkout "$series/$branch" -- debian.master/config
+echo "*** using configs from $configs ($fbranch) ..."
+git checkout "$configs" -- debian.master/config || git checkout "$series/$fbranch" -- debian.master/config
 
 if [ -f "$here/config.$series" ]; then
 	cp "$here/config.$series" "$debian/config/OVERRIDES"
