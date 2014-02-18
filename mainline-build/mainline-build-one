@@ -224,23 +224,29 @@ done
 
 # Identify the last Ubuntu version which used the same main version
 # to use for the configs.
-find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`
-let off=-1
-while :
+find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
+
+found="0"
+for branch in unstable master-next master
 do
-	let "off=$off+1"
-	configs=`dpkg-parsechangelog -ldebian.master/changelog \
-			--count 1 --offset "$off" | awk -v find="$find[.-]" '
-		BEGIN				{ v="END"; }
-		/^Version:/			{ v="NXT"; }
-		(/^Version:/ && $2 ~ "^" find)	{ v=$2; last; }
-		END		{ print v; }
-	'`
-	[ "$configs" = 'END' ] && break
-	[ "$configs" = 'NXT' ] && continue
-	break
+	let off=-1
+	while :
+	do
+		let "off=$off+1"
+		version=`git cat-file -p "origin/$branch:debian.master/changelog" | \
+			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
+			BEGIN				{ v="END"; }
+			/^Version:/			{ v=$2; last }
+			END				{ print v }
+		'`
+		dpkg --compare-versions "$version" lt "$find" && break
+		[ "$version" = 'END' ] && break
+	done
+
+	dpkg --compare-versions "$version" lt "$found" && break
+	found="$version"
 done
-configs="Ubuntu-$configs"
+configs="Ubuntu-$found"
 
 #
 # Rebuild the changelog.
