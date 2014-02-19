@@ -21,6 +21,7 @@ my $policy = 1;
 
 my $info;
 my %flags;
+my %marks;
 my %expected;
 my %policy;
 my %desc;
@@ -223,6 +224,8 @@ if ($info) {
 			if ($option eq 'flag') {
 				$flags{$config} .= " " . f_em($value);
 				$flags{$config, $value} = 1;
+			} elsif ($option eq 'mark') {
+				$marks{$config, $value} = 1;
 			} elsif ($option eq 'note') {
 				$flags{$config} .= " $value";
 			} elsif ($option eq 'choice') {
@@ -342,7 +345,7 @@ for my $option (@options) {
 	}
 
 	if ($colour) {
-		if ($seen == 0) {
+		if ($seen == 0 || $marks{$option, 'ignore'}) {
 			f_table_row_colour('normal');
 
 		} elsif ($flags{$option} =~ /BUILD FAILURE/) {
