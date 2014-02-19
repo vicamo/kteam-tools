@@ -288,6 +288,11 @@ def children_scan_iter(parent, toplevel):
 def children_scan(root, selector_list, toplevel=False, menu=False):
     parent = root
     for selector in selector_list:
+        if "Architecture: " in selector:
+            if "Architecture: " + arch == selector:
+                continue
+            else:
+                raise ValueError(selector + ":selector not found")
         parent = child_find(parent, selector)
         if not parent:
             raise ValueError(selector + ":selector not found")
@@ -369,7 +374,7 @@ elif cmd == 'geninfo':
 
 elif cmd == 'genorder':
     print('M', 'ROOT')
-    print('M', 'ROOT (' + arch + ')')
+    print('M', 'ROOT>>Architecture: ' + arch)
     for entry in entries:
         if 'prompt' in entry:
             mname = entry['prompt']
@@ -394,20 +399,20 @@ elif cmd == 'genorder':
                 parent = parent['parent']
 
         if entry['is_arch']:
-            akey = ' (' + arch + ')'
+            akey = [ "Architecture: " + arch ]
             amenu = '__prefix_arch'
         else:
-            akey = ''
+            akey = []
             amenu = '__prefix_menu'
 
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
             entry['__prefix_menu'] = "M " + '>>'.join(pname + [ mname ])
-            entry['__prefix_arch'] = "M " + '>>'.join(pname + [ mname ]) + ' (' + arch + ')'
+            entry['__prefix_arch'] = "M " + '>>'.join([ pname[0], "Architecture: " + arch ] + pname[1:] + [ mname ])
             if 'config' in entry:
                 if amenu in entry:
                     print(entry[amenu])
                     del entry[amenu]
-                print('E', '>>'.join(pname + [ mname ]) + akey + '>>>' + entry['config'])
+                print('E', '>>'.join([ pname[0] ] + akey + pname[1:] + [ mname ]) + '>>>' + entry['config'])
         elif 'choice' in entry:
             pass
         else:
@@ -416,7 +421,7 @@ elif cmd == 'genorder':
                 if amenu in parent:
                     print(parent[amenu])
                     del parent[amenu]
-            print('E', '>>'.join(pname) + akey + '>>>' + cname)
+            print('E', '>>'.join([ pname[0] ] + akey + pname[1:]) + '>>>' + cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
