@@ -234,18 +234,18 @@ do
 	while :
 	do
 		let "off=$off+1"
-		version=`git cat-file -p "$series/$branch:debian.master/changelog" | \
+		fversion=`git cat-file -p "$series/$branch:debian.master/changelog" | \
 			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
 			BEGIN				{ v="END"; }
 			/^Version:/			{ v=$2; last }
 			END				{ print v }
 		'`
-		dpkg --compare-versions "$version" lt "$find" && break
-		[ "$version" = 'END' ] && break
+		dpkg --compare-versions "$fversion" lt "$find" && break
+		[ "$fversion" = 'END' ] && break
 	done
 
-	dpkg --compare-versions "$version" lt "$found" && break
-	found="$version"
+	dpkg --compare-versions "$fversion" lt "$found" && break
+	found="$fversion"
 	fbranch="$branch"
 done
 configs="Ubuntu-$found"
