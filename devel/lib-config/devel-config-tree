@@ -407,12 +407,12 @@ elif cmd == 'genorder':
 
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
             entry['__prefix_menu'] = "M " + '>>'.join(pname + [ mname ])
-            entry['__prefix_arch'] = "M " + '>>'.join([ pname[0], "Architecture: " + arch ] + pname[1:] + [ mname ])
+            entry['__prefix_arch'] = "M " + '>>'.join(pname + [ mname ] + akey)
             if 'config' in entry:
                 if amenu in entry:
                     print(entry[amenu])
                     del entry[amenu]
-                print('E', '>>'.join([ pname[0] ] + akey + pname[1:] + [ mname ]) + '>>>' + entry['config'])
+                print('E', '>>'.join(pname + [ mname ] + akey) + '>>>' + entry['config'])
         elif 'choice' in entry:
             pass
         else:
@@ -421,7 +421,7 @@ elif cmd == 'genorder':
                 if amenu in parent:
                     print(parent[amenu])
                     del parent[amenu]
-            print('E', '>>'.join([ pname[0] ] + akey + pname[1:]) + '>>>' + cname)
+            print('E', '>>'.join(pname + akey) + '>>>' + cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
