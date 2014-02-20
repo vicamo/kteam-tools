@@ -19,7 +19,6 @@ for which in \
 	"$HOME/public_html/mainline/linux-3.8.y.z-queue" \
 	"$HOME/public_html/mainline/linux-3.11.y.z-review" \
 	"$HOME/public_html/mainline/linux-3.11.y.z-queue" \
-	"$HOME/public_html/mainline/prestable"/*
 do
 	"$here/cleanup-daily-one" "$which"
 done
