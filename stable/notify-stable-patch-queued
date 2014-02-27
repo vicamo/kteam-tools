@@ -68,6 +68,12 @@ OptParser.add_option(
     "--dry-run", dest="dryrun", action="store_true", default=False,
     help="run in test mode and do not send out mails (default: %default)"
 )
+OptParser.add_option(
+    "--no-validate", dest="novalidate", action="store_true", default=False,
+    help="send the --no-validate option to 'git send-email'.  Basically, it "
+         "means that it won't check if a line contains more than 998 "
+         "characters (default: %default)"
+)
 (opts, args) = OptParser.parse_args()
 
 #
@@ -182,6 +188,9 @@ def ParsePatch(filename):
     for line in AssembleMailBody(opts.version, subject, patchlines):
         fp.write(line + "\n")
     fp.flush()
+
+    if opts.novalidate:
+        cmd += " --no-validate"
 
     if opts.dryrun:
         cmd += " --dry-run"

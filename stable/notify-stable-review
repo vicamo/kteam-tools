@@ -109,6 +109,11 @@ class Cmdline:
                          in subject/body of the email announcement sent out,
                          e.g. 3.6.6
 
+        --no-validate
+                         Send the --no-validate option to 'git send-email'.
+                         Basically, it means that it won't check if a line
+                         contains more than 998 characteres.
+
     Examples:
         %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7.1
 """ % ( app_name, app_name ))
@@ -124,7 +129,8 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'dry-run', 'from=', 'previous_release=',
-                    'new_version=', 'sent_cover_letter=', 'edit_patch_dir' ]
+                    'new_version=', 'sent_cover_letter=', 'edit_patch_dir',
+                    'no-validate' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -148,6 +154,9 @@ class Cmdline:
 
                 elif opt in ('--edit_patch_dir'):
                     self.cfg['edit_patch_dir'] = True
+
+                elif opt in ('--no-validate'):
+                    self.cfg['no-validate'] = True
 
         except GetoptError, error:
             print(error, defaults)
@@ -452,6 +461,8 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
                 cmd += " --to \"" + line + "\""
             if 'dry-run' in self.cfg:
                 cmd += " --dry-run"
+            if 'no-validate' in self.cfg:
+                cmd += " --no-validate"
             cmd += " --8bit-encoding UTF-8"
             if 'sent_cover_letter' in self.cfg:
                 cmd += " --no-thread"
