@@ -256,6 +256,18 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
             },
+        'linux-firmware' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"]
+            },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
@@ -377,18 +389,26 @@ class Workflow:
 
     # is task invalid for that series version
     #
-    def is_task_invalid(self, packagename, taskname, version):
+    def task_is_valid(self, packagename, taskname, version):
         """
         Return if the task is invalid for that package version
         """
-        if not packagename in self.tdb:
-            return False
-        if not 'invalidate_tasks' in self.tdb[packagename]:
-            return False
-        if not taskname in self.tdb[packagename]['invalidate_tasks']:
-            return False
-        version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
-        return (version in version_list)
+        retval = False
+        try:
+            version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
+            retval = (version in version_list)
+        except KeyError:
+            retval = True
+        return retval
+
+    def package_has_task(self, packagename, taskname):
+        retval = False
+        try:
+            if taskname in self.tdb[packagename]['task_assignment']:
+                retval = True
+        except KeyError:
+            retval = False
+        return retval
 
 if __name__ == '__main__':
     workflow = Workflow()
