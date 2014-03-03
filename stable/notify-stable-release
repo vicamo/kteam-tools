@@ -2,7 +2,7 @@
 
 from os                     import system, getenv, path
 from sys                    import exit
-from subprocess             import Popen, PIPE
+from subprocess             import Popen, PIPE, call
 from optparse               import OptionParser
 from tempfile               import NamedTemporaryFile
 from ktl.git                import Git
@@ -62,6 +62,12 @@ OptParser.add_option(
     help="The version for the set of stable patches to be released. "
          "It's the new version to be displayed in subject/body of the email"
          "announcement sent out, eg. 3.6.6"
+)
+OptParser.add_option(
+    "--edit", dest="edit", action="store_true", default=False,
+    help="allow editing the cover-letter by launching an editor.  Usually "
+         "not needed, but may be useful to edit the last release email "
+         "(i.e., when a kernel reaches EOL)"
 )
 (opts, args) = OptParser.parse_args()
 
@@ -189,6 +195,25 @@ dp.write("X-Extended-Stable: %s\n\n" % (basever))
 dp.flush()
 cmd = "git diff " + rangestart + ".." + rangeend + " >> " + dp.name
 system(cmd)
+
+#
+# Allow the user to edit the cover letter
+#
+if opts.edit == True:
+    # Get editor to be used for opening the cover letter
+    editor = getenv("NSR_EDITOR")
+    if not editor:
+        editor = "/usr/bin/editor"
+    try:
+        call([editor, fp.name])
+    except:
+        print("%s not found to edit cover letter for the patch series."
+              % editor)
+        print("Please install an editor, if your system doesn't have")
+        print(" /usr/bin/editor setup as alternatives, you can set the")
+        print(" NSR_EDITOR environment variable pointing to the editor")
+        print(" executable (eg. vim, nano, etc.)")
+        exit(1)
 
 #
 # Construct the call to git send-email
