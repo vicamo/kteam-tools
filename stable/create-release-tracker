@@ -9,7 +9,6 @@ from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
-from logging                            import error, debug, basicConfig, INFO, DEBUG, WARNING
 
 # CmdlineError
 #
@@ -154,17 +153,10 @@ class CreateTrackingBug(StdApp):
             # B U G   W O R K
 
             tb = TrackingBug(self.lp, 'staging' in self.cfg)
-
-            if changelog[0]['package'] == 'linux-firmware': # special case non-kernel packages
-                bug = tb.open(changelog[0]['package'],
-                              changelog[0]['version'],
-                              changelog[0]['ABI'] != changelog[1]['ABI'],
-                              master_bug, series_specified=branch)
-            else:
-                bug = tb.open(changelog[0]['package'],
-                              changelog[0]['version'],
-                              changelog[0]['ABI'] != changelog[1]['ABI'],
-                              master_bug)
+            bug = tb.open(changelog[0]['package'],
+                          changelog[0]['version'],
+                          changelog[0]['ABI'] != changelog[1]['ABI'],
+                          master_bug)
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
@@ -205,8 +197,6 @@ class CreateTrackingBug(StdApp):
         return
 
 if __name__ == '__main__':
-    LOGLEVEL = WARNING
-    basicConfig(level=LOGLEVEL, format="%(levelname)s - %(message)s")
     app = CreateTrackingBug()
     app.main()
 

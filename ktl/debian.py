@@ -31,9 +31,6 @@ class Debian:
     package_rc = compile("^(linux[-\S])*.*$")
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
 
-    firmware_version_line_rc = compile("^(linux[-\S]*) \(([0-9\.]+)\) (\S+); urgency=\S+$")
-    firmware_version_rc      = compile("^([0-9\.]+)$")
-
     # debian_directories
     #
     @classmethod
@@ -122,27 +119,22 @@ class Debian:
 
         # The first line of the changelog should always be a version line.
         #
-        m = cls.firmware_version_line_rc.match(changelog_contents[0])
-        if m is None:
-            m = cls.version_line_rc.match(changelog_contents[0])
-
-        if m is None:
+        m = cls.version_line_rc.match(changelog_contents[0])
+        if m == None:
             if cls.debug:
                 m = cls.package_rc.match(changelog_contents[0])
-                if m is None:
-                    debug('(1) The package does not appear to be in a recognized format.\n', cls.debug)
+                if m == None:
+                    debug('The package does not appear to be in a recognized format.\n', cls.debug)
 
                 m = cls.ver_rc.match(changelog_contents[0])
-                if m is None:
-                    debug('(2) The version does not appear to be in a recognized format.\n', cls.debug)
+                if m == None:
+                    debug('The version does not appear to be in a recognized format.\n', cls.debug)
 
             raise DebianError("The first line in the changelog is not a version line.")
 
         content = []
         for line in changelog_contents:
-            m = cls.firmware_version_line_rc.match(line)
-            if m is None:
-                m = cls.version_line_rc.match(line)
+            m = cls.version_line_rc.match(line)
             if m != None:
                 version = ""
                 release = ""
@@ -163,19 +155,13 @@ class Debian:
                 section['content'] = content
                 section['package'] = package
 
-                m = cls.firmware_version_rc.match(version)
-                if m is None:
-                    m = cls.version_rc.match(version)
-                    if m != None:
-                        section['linux-version'] = m.group(1)
-                        section['ABI']           = m.group(2)
-                        section['upload-number'] = m.group(3)
-                    else:
-                        debug('The version (%s) failed to match the regular expression.\n' % version, cls.debug)
+                m = cls.version_rc.match(version)
+                if m != None:
+                    section['linux-version'] = m.group(1)
+                    section['ABI']           = m.group(2)
+                    section['upload-number'] = m.group(3)
                 else:
-                    section['linux-version'] = ''
-                    section['ABI']           = ''
-                    section['upload-number'] = ''
+                    debug('The version (%s) failed to match the regular expression.\n' % version, cls.debug)
 
                 retval.append(section)
                 content = []

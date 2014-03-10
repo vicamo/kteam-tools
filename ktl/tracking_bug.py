@@ -229,27 +229,12 @@ class TrackingBug:
         bug.lpbug.addTask(target=lp_project)
 
         sc = lp_project.series_collection
-        # special case linux-firmware. I'm not sure why the other packages aren't
-        # handled the same way.
-        #
-        if package == 'linux-firmware':
-            cdebug('linux-firmware special case', 'green')
-            for series in sc:
-                if self.wf.package_has_task(package, series.name):
-                    cdebug('    adding nomination: %s' % series)
-                    nomination = bug.lpbug.addNomination(target=series)
-                    if nomination.canApprove():
-                        nomination.approve()
-        else:
-            for series in sc:
-                # special case linux-firmware. I'm not sure why the other packages aren't
-                # handled the same way.
-                #
-                if self.valid_series(series, series_specified, targeted_series_name, package):
-                    cdebug('    adding nomination: %s' % series)
-                    nomination = bug.lpbug.addNomination(target=series)
-                    if nomination.canApprove():
-                        nomination.approve()
+        for series in sc:
+            if self.valid_series(series, series_specified, targeted_series_name, package):
+                cdebug('    adding nomination: %s' % series)
+                nomination = bug.lpbug.addNomination(target=series)
+                if nomination.canApprove():
+                    nomination.approve()
 
         # Set task assignments and importance. Main project task must be
         # set to In Progress for the bot to do its processing.
