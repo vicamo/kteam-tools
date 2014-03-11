@@ -675,7 +675,11 @@ class WorkflowEngine():
         msg += 'URL: %s\n' % s.bug_url(taskobj.bug.id)
         msg += 'Version: %s\n' % s.wfb.pkg_version
         msg += 'Package: %s\n' % s.wfb.pkg_name
-        msg += 'Series: %s\n' % s.wfb.series
+        if '-lts-' in s.wfb.series:
+            series = s.wfb.series.split('-lts-')[1]
+        else:
+            series = s.wfb.series
+        msg += 'Series: %s\n' % series
         msg += ""
         s.email.send(mcfg['from_address'], to_address, subj, msg)
 
