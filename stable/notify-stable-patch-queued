@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from email.parser                       import Parser
 from optparse                           import OptionParser, OptParseError
 from sys                                import exit
 from re                                 import compile, sub, match, IGNORECASE
@@ -131,16 +132,24 @@ def AssembleMailBody(version, subject, patchlines):
         mailbody.append(line)
 
     return mailbody
-    
+
 def ParsePatch(filename):
     try:
         fp = open(filename, "r")
     except:
         raise
 
-    author = ""
+    headers = Parser().parse(fp)
+    # Make sure we get multiline headers correct
+    author = headers['from'].replace("\n", "")
+    subject = headers['subject'].replace("\n", "")
+    fp.seek(0) # rewind file
+
+    # Patches should be formatted using 'git format-patch -k' so that we
+    # don't get the '[PATCH]'... but just in case we do:
+    subject = sub("(\[PATCH[^\]]*\] )?", "", subject)
+
     slist = []
-    subject = ""
     patchlines = []
     pat = [ compile("^Signed-off-by:\s*", IGNORECASE),
             compile("^Reported-by:\s*", IGNORECASE),
@@ -148,11 +157,6 @@ def ParsePatch(filename):
             compile("^Cc:\s*", IGNORECASE),
             compile("^Acked-by:\s*", IGNORECASE) ]
     for line in fp.readlines():
-        if line.startswith("From: "):
-            author = line[6:].rstrip()
-        if line.startswith("Subject: "):
-            subject = sub("Subject: (\[PATCH[^\]]*\] )?", "", line.rstrip())
-
         mailtgt = None
         for cp in pat:
             if cp.search(line):
