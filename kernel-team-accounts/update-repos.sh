@@ -12,7 +12,7 @@ EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest autotest-cl
 METAS="lucid precise quantal saucy"
 SIGNED="precise quantal saucy"
 LOCK=/tmp/update-repos.lock
-ORIGS="2.6.24 2.6.32 2.6.38 3.0.0 3.2.0 3.5.0 3.8.0 3.11.0 3.13.0"
+ORIGS="2.6.32 3.0.0 3.2.0 3.5.0 3.8.0 3.11.0 3.13.0"
 LTS_ORIGS="linux-lts-quantal/linux-lts-quantal_3.5.0.orig.tar.gz linux-lts-raring/linux-lts-raring_3.8.0.orig.tar.gz linux-lts-saucy/linux-lts-saucy_3.11.0.orig.tar.gz"
 
 if [ ! "$1" = "" ]
