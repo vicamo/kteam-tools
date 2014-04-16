@@ -350,6 +350,7 @@ then
 		>$TARGET/etc/apt/apt.conf.d/01proxy-from-http_proxy
 fi
 
+${SCHROOTCMD} -- dpkg --configure -a
 ${SCHROOTCMD} -- apt-get -y --force-yes update
 ${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
 ${SCHROOTCMD} -- apt-get -u -y --force-yes autoremove
