@@ -1359,12 +1359,12 @@ class WorkflowEngine():
                     s.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
                     s.set_phase(task, 'CopyToUpdates')
             else:
-                if s.within_publishing_window():
+                if not s.within_publishing_window():
                     cinfo('                Unable to set promote-to-{updates,security} tasks because we are outside of', 'yellow')
                     cinfo('                the publishing window.', 'yellow')
                 else:
                     cinfo('                Unable to set promote-to-{updates,security} tasks because the master bug of', 'yellow')
-                    cinfo('                this derivative is not ready for release.', 'yellow')
+                    cinfo('                this derivative is not ready for release. (mb_status:%s)' % mb_status, 'yellow')
 
         else:
             # don't have required testing signoffs
