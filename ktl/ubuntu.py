@@ -585,6 +585,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '3.15.0'   : db['14.10'],
         '3.13.0'   : db['14.04'],
         '3.11.0'   : db['13.10'],
         '3.8.0'    : db['13.04'],
@@ -604,6 +605,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'utopic'   : db['14.10'],
         'trusty'   : db['14.04'],
         'saucy'    : db['13.10'],
         'raring'   : db['13.04'],
