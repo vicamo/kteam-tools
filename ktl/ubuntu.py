@@ -130,13 +130,40 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
-        '14.04' :
+        '14.10' :
         {
             'development' : True,        # This is the version that is currently under development
+            'series_version' : '14.10',
+            'kernel'    : '3.15.0',
+            'name'      : 'utopic',
+            'supported' : False,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+            ],
+            'dependent-packages' :
+            {
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                },
+            },
+            'derivative-packages' :
+            {
+                'linux' : []
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
+        '14.04' :
+        {
+            'development' : False,        # This is the version that is currently under development
             'series_version' : '14.04',
             'kernel'    : '3.13.0',
             'name'      : 'trusty',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
