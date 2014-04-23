@@ -38,6 +38,9 @@ REPOS += ubuntu-saucy-meta
 REPOS += ubuntu-trusty
 REPOS += ubuntu-trusty-signed
 REPOS += ubuntu-trusty-meta
+REPOS += ubuntu-utopic
+REPOS += ubuntu-utopic-signed
+REPOS += ubuntu-utopic-meta
 
 all: repo
 
