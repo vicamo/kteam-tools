@@ -177,12 +177,13 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-test-devel trusty linux master-next linux-meta master -
-test-devel saucy linux goldfish linux-meta goldfish -
-test-devel saucy linux grouper linux-meta grouper -
-test-devel saucy linux maguro linux-meta maguro -
-test-devel saucy linux mako linux-meta mako -
-test-devel saucy linux manta linux-meta manta -
+test-devel utopic linux master-next linux-meta master -
+test-devel trusty linux goldfish linux-meta goldfish -
+test-devel trusty linux grouper linux-meta grouper -
+test-devel trusty linux maguro linux-meta maguro -
+test-devel trusty linux mako linux-meta mako -
+test-devel trusty linux manta linux-meta manta -
+pre-proposed trusty linux master-next linux-meta master no-release
 pre-proposed saucy linux master-next linux-meta master no-release
 pre-proposed quantal linux master-next linux-meta master no-release
 pre-proposed quantal linux-lbm master no-release
