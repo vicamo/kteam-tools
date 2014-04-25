@@ -18,7 +18,7 @@ class Email:
     """
     This class encapsulates sending email.
     """
-    def __init__(self, smtp_server = None, smtp_user = None, smtp_password = None, port = 587):
+    def __init__(self, smtp_server = None, smtp_user = None, smtp_password = None, smtp_port = 587):
         """
         Save the information needed to contact an smtp server
         """
@@ -29,6 +29,7 @@ class Email:
         self.smtp_server = smtp_server
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
+        self.smtp_port = smtp_port
         # can be set for debugging
         self.verbose = False
         return
@@ -49,12 +50,13 @@ class Email:
         to_list = to_address.split(',')
         # Send the message via our own SMTP server, but don't include the
         # envelope header.
-        s = SMTP(self.smtp_server, 587)
+        s = SMTP(self.smtp_server, self.smtp_port)
         if self.verbose:
             s.set_debuglevel(1)
         s.ehlo()
         s.starttls()
-        s.login(self.smtp_user.encode('UTF-8'),self.smtp_password.encode('UTF-8'))
+        if self.smtp_user is not None and self.smtp_password is not None:
+            s.login(self.smtp_user.encode('UTF-8'),self.smtp_password.encode('UTF-8'))
         s.sendmail(from_address, to_list, msg.as_string())
         s.quit()
         return
