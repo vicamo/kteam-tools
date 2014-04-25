@@ -152,7 +152,15 @@ class MorningBugReport():
 
             if 'mail_notify' in self.cfg:
                 mcfg = self.cfg['mail_notify']
-                self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+                try:
+                    port = mcfg['smtp_port']
+                except:
+                    port = 587
+
+                if 'smtp_user' not in mcfg:
+                    self.email = Email(mcfg['smtp_server'].encode('UTF-8'), smtp_port = port)
+                else:
+                    self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'), port)
 
         except CfgError as e:
             error(e)
