@@ -128,7 +128,15 @@ class WorkflowEngine():
         # Get set up for email and status messages
         if 'mail_notify' in s.cfg:
             mcfg = s.cfg['mail_notify']
-            s.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+            try:
+                port = mcfg['smtp_port']
+            except:
+                port = 587
+
+            if 'smtp_user' not in mcfg:
+                s.email = Email(mcfg['smtp_server'].encode('UTF-8'), smtp_port = port)
+            else:
+                s.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'), port)
 
         scfg = s.cfg['status_net']
         s.status = Status(scfg['url'], scfg['user'], scfg['pass'])
