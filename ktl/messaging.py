@@ -24,7 +24,7 @@ class Email:
         """
         # This is pretty much only tested and working with the authentication required by the Canonical server
         # It probably needs more options added
-        if (smtp_server is None) or (smtp_user is None) or (smtp_password is None):
+        if smtp_server is None:
             raise ValueError, "Must supply smpt server information"
         self.smtp_server = smtp_server
         self.smtp_user = smtp_user
