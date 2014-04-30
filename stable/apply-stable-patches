@@ -503,7 +503,7 @@ class ApplyStablePatches(StdApp):
                 else:
                     remove(filename)
 		if 'check_already' in self.cfg:
-		    status, result = run_command('git log --oneline -n 1 --since="%s" -i --grep="^commit %s upstream\.$"' % (merge_base, change[0]) )
+		    status, result = run_command('git log --oneline -n 1 %s..HEAD -i --grep="^commit %s upstream\.$"' % (merge_base, change[0]) )
 		    if result[0].strip() != '':
 			already_file = '%s/%s' % (already_dir, filename)
 			if path.exists(already_file):
