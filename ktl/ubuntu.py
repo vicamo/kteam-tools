@@ -302,6 +302,9 @@ class Ubuntu:
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
                 'linux-armadaxp',
+                'linux-lts-trusty',
+                'linux-meta-lts-trusty',
+                'linux-signed-lts-trusty',
                 'linux-meta-armadaxp'
             ],
             'dependent-packages' :
@@ -321,6 +324,10 @@ class Ubuntu:
                 'linux-lts-saucy' : {
                     'meta' : 'linux-meta-lts-saucy',
                     'signed' : 'linux-signed-lts-saucy'
+                },
+                'linux-lts-trusty' : {
+                    'meta' : 'linux-meta-lts-trusty',
+                    'signed' : 'linux-signed-lts-trusty'
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
