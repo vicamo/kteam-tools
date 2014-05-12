@@ -148,6 +148,7 @@ class WorkflowEngine():
     def crank(s, bugid, sauron):
         s.initialize()
 
+        s.sauron = sauron
         s.printlink =  '%s : (%s)' % (bugid, s.bug_url(bugid))
         cinfo('')
         cinfo('Processing: %s' % s.printlink, 'cyan')
@@ -757,18 +758,19 @@ class WorkflowEngine():
         # actual processing, to avoid sru-workflow-manager to complain
         # about packages in wrong component while real copying/publishing
         # still didn't finish
-        if tstamp_prop in bug.properties:
-            date_str = bug.properties[tstamp_prop]
-            timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-            delta = DeltaTime(timestamp, datetime.utcnow())
-            if delta.hours < 1:
-                cinfo('                Waiting 1 hour after promote-to-%s was Fix Released' % (pocket))
+        if not s.args.ignore_timestamp:
+            if tstamp_prop in bug.properties:
+                date_str = bug.properties[tstamp_prop]
+                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+                delta = DeltaTime(timestamp, datetime.utcnow())
+                if delta.hours < 1:
+                    cinfo('                Waiting 1 hour after promote-to-%s was Fix Released' % (pocket))
+                    cdebug('                check_component_in_pocket leave (False)')
+                    return False
+            else:
+                cdebug('                     tstamp_prop (%s) not in bug.properties' % tstamp_prop)
                 cdebug('                check_component_in_pocket leave (False)')
                 return False
-        else:
-            cdebug('                     tstamp_prop (%s) not in bug.properties' % tstamp_prop)
-            cdebug('                check_component_in_pocket leave (False)')
-            return False
 
         # Do the checking for proper packages in pocket->component
         series_name = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)

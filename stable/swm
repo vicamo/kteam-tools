@@ -146,6 +146,7 @@ examples:
     parser.add_argument('--dryrun-ignore-promotions',   action='store_true', default=False, help='')
     parser.add_argument('--staging',                    action='store_true', default=False, help='Use the staging LP service instead of the production one.')
     parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
+    parser.add_argument('--ignore-timestamp',           action='store_true', default=False, help='Don\'t check timestamps during operation.')
     parser.add_argument('--bugs',                                            default=None,  help='A comma seperated list of bug ids. Only these bug ids will be processed.')
     parser.add_argument('--logfile',                                         default=None,  help='Where to log the output.')
     args = parser.parse_args()
