@@ -338,10 +338,10 @@ class WorkflowEngine():
         """
         s.verbose('        ')
         if s.args.dryrun:
-            s.verbose('Dryrun - Sending Status\n')
+            s.verbose('Dryrun - Sending Status')
             return
 
-        s.verbose('Sending Status\n')
+        s.verbose('Sending Status')
 
         bugurl = quote(s.bug_url(taskobj.bug.id))
 
@@ -513,6 +513,7 @@ class WorkflowEngine():
                     s.wfb.tasks_by_name[task].status = p.updates[task]['status']
                 except KeyError:
                     pass
+
                 try:
                     if s.args.debug_assignee:
                         s.wfb.tasks_by_name[task].assignee = s.lp.default_service.launchpad.people[s.args.debug_assignee]
@@ -521,10 +522,29 @@ class WorkflowEngine():
                 except KeyError:
                     pass
 
+            if 'promote-to-release' in p.updates and p.updates['promote-to-release']['status'] == 'Fix Released':
+                cdebug("promote-to-release is Fix Released")
+                s.final_promote_to_release_tasks(taskobj)
+
         cdebug('            prep_package_new leave')
         return False
 
+    def final_promote_to_release_tasks(s, taskobj):
+        if s.projectname == 'kernel-development-workflow':
+            cdebug("kernel-development-workflow")
+            s.set_tagged_timestamp(taskobj, 'kernel-Prepare-package-end')
+            s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
+            s.set_phase(taskobj, 'Testing')
+            s.send_upload_announcement(taskobj, 'proposed')
+
+            series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
+            cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
+            cdebug(cmd)
+            status, result = run_command(cmd)
+
     def handle_derivatives(s, taskobj, taskname):
+        cdebug('            handle_derivatives enter')
+
         # if this is a derivative tracking bug, first wait until
         # that packages on the master tracking bug are also ready or
         # already promoted. The way derivative package bugs are
@@ -542,14 +562,14 @@ class WorkflowEngine():
         #
         if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
             cdebug('                verify_master_bug_tasks failed')
-            cdebug('            prepare_package_fixed leave (False)')
+            cdebug('            handle_derivatives leave (False)')
             return False
 
         # open new tracking bugs for derivative packages if needed
         series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         if not series:
             print("ERROR: Can't find series for %s-%s to get derivatives\n" % (s.wfb.pkg_name, s.wfb.pkg_version))
-            cdebug('            prepare_package_fixed leave (False)')
+            cdebug('            handle_derivatives leave (False)')
             return False
 
         der_list = []
@@ -649,6 +669,8 @@ class WorkflowEngine():
 
             cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
             status, result = run_command(cmd)
+
+        cdebug('            handle_derivatives leave')
 
 
     def package_testing_confirmed(s, taskobj):
