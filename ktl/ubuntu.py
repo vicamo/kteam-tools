@@ -342,6 +342,7 @@ class Ubuntu:
                 'linux-lts-quantal' : [ 'linux', '12.10' ],
                 'linux-lts-raring' : [ 'linux', '13.04' ],
                 'linux-lts-saucy' : [ 'linux', '13.10' ],
+                'linux-lts-trusty' : [ 'linux', '14.04' ],
             },
             'sha1' : '',
             'md5' : ''
