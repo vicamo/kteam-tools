@@ -1,0 +1,253 @@
+#!/bin/bash
+#
+# git-branch-status ("git bs")
+#
+# License: GPL-2+, Copyright 2014, Kamal Mostafa <kamal@whence.com>
+#
+
+## Unicode chart Box Drawing   ─
+## Unicode chart Arrows        ← ↑ → ↓     ⇋
+## Unicode chart Supplemental Arrows-A    ⟵    ⟶
+##
+##                              ┌ +9999 → origin/master     v3.8.19 + 23
+##    master ←───(stale)────────┴──────── origin/master~23  v3.8.19
+##
+##    master ←───(up-to-date)───────────→ origin/master     v3.8.19 + 23
+##
+##    foobar ← +6 ───┐          ┌── +23 → origin/master     v3.8.19 + 23
+##                   └─(forked)─┴──────── origin/master~23  v3.8.19
+##
+##    foobar ← +5555 ┐
+##                   └──(ahead)─────────→ origin/master     v3.8.19 + 23
+##
+
+## Unicode stuff
+hr="────────────────────────────────────────────────────────────"
+hc="─"
+la="←"
+ra="→"
+omega="Ω"
+ellipsis="…"
+
+## configuration
+cfg_omega=1	# transform N parts of "origin/branchname" to "Ω" shorthand
+cfg_w_left=28
+w_right=8
+vstatus=0
+
+w_center=10
+[ "$vstatus" = 1 ] || w_center=0
+
+function leftside() # localref ahead [color]
+{
+    local ref="$1"
+    local let ahead="$2"
+    local Cc="$3"
+
+    local hrlen
+    let hrlen="w_left - ${#ref} - 1"
+    [ $hrlen -lt 1 ] && hrlen=1
+
+    local lhr="$la$hr"
+    [ $ahead -gt 0 ] && lhr="$la +$ahead $hr"
+    lhr="${lhr:0:$hrlen}"
+
+    [ "$curbranch" = "$ref" ] && Cc="$Cc$Cbold"
+
+    printf "$Cc%s$Cx %s" "$ref" "$lhr"
+}
+
+function rightside() # localref remoteref ahead arrow(1|0) [color]
+{
+    local localref="$1"
+    local remoteref="$2"
+    local let ahead="$3"
+    local let arrow="$4"
+    local Cc="$5"
+    local has_omega=0
+
+    local hrlen
+    let hrlen="w_right - 3"
+    [ $hrlen -lt 1 ] && hrlen=1
+
+    local lhr="$hr"
+    [ $ahead -gt 0 ] && lhr=" +$ahead $hr"
+    lhr="${lhr:0:$hrlen}"
+
+    local lra="$ra"
+    [ $arrow -eq 0 ] && lra="$hc"
+
+    ## use any tag
+    #descr="$(git_descr --tags $remoteref)"
+    ## use only annotated tags
+    descr="$(git_descr $remoteref)"
+
+    let rref_len=14
+
+    [ "$remoteref" == "origin/$localref" ] && {
+	# abbreviate "origin" to unicode omega
+	[ $cfg_omega -gt 0 ] && {
+	    has_omega=1
+	    remoteref="$omega/$localref"
+	    [ $cfg_omega -gt 1 ] && remoteref="$omega"
+	}
+	# abbreviate long remote ref name (> rref_len==14) with ellipsis
+	[ ${#remoteref} -gt 14 ] && remoteref="${remoteref:0:13}$ellipsis"
+    }
+
+    [ $has_omega -eq 1 ] && let rref_len=rref_len+1
+    printf "%s${lra} $Cc%-*s$Cx %s" "$lhr" "$rref_len" "$remoteref" "$descr"
+}
+
+function git_descr() # [--all|--tags] {sha}
+{
+    local descr="`git describe --long $git_descr_opts $* 2>/dev/null`"
+    dtag="${descr%-*-*}"
+    dplus="${descr%-*}"; dplus="${dplus##*-}"
+    if [ "$dplus" = 0 ]
+    then dtag="$CT$dtag$Cx"
+    else dtag="$Ct$dtag$Cx+$dplus"
+    fi
+    echo "$dtag"
+}
+
+
+
+#Cahead=`git config --get-color color.status.added green`
+#Cbehind=`git config --get-color color.status.changed yellow`
+#Cforked=`git config --get-color color.status.changed red`
+#Cstale=`git config --get-color color.status.changed cyan`
+#echo "colors${Cahead}ahead${Cbehind}behind${Cforked}forked${Cstale}stale${Cx}reset"
+
+
+# FIXME: just claim new color.appname.key vars?
+CA=`git config --get-color color.diff.new yellow`	# ahead
+CS=`git config --get-color junk 'dim cyan'`		# stale
+CF=`git config --get-color color.status.untracked red`	# forked
+CU=`git config --get-color color.status.updated green`	# up-to-date (synced)
+
+CT=`git config --get-color junk 'bold yellow'`	# tag (like git log deco)
+Ct=`git config --get-color junk 'dim yellow'`	# dim tag
+CD=`git config --get-color junk 'dim yellow'`
+
+Cbold=`git config --get-color junk 'bold'`
+Cx=`git config --get-color reset reset`
+
+echo "[${CA}ahead${Cx} ${CU}up-to-date${Cx} ${CS}stale${Cx} ${CF}forked${Cx}]"
+
+
+
+
+[ "$1" = "-a" -o "$1" = "--assume-upstream" ] && {
+    do_assume_upstream=1
+    shift
+}
+
+# force_upstream="origin/master-next"
+
+### FIXME - unused
+curbranch="$(git symbolic-ref --short HEAD)"
+
+branches="refs/heads/"	# default, all branches
+[ $# -gt 0 ] && {
+    branches=""
+    for b in $*
+    do branches="$branches refs/heads/$b"
+    done
+    do_assume_upstream=1
+}
+
+[ -n "$do_assume_upstream" ] && assume_upstream="origin/master"
+
+
+
+git for-each-ref --format='%(refname:short) %(upstream:short)' $branches \
+| while read refname upstream
+do
+
+    [ -n "$force_upstream" ] && {
+	upstream="$force_upstream"
+    }
+
+    # echo "$refname <-- $upstream"
+
+    [ -z "$upstream" ] && {
+	[ -z "$assume_upstream" ] && continue
+	upstream="$assume_upstream"
+    }
+
+    merge_base=`git show-branch --merge-base "$refname" "$upstream"`
+    ahead=`git log --oneline --pretty=%h "$merge_base..$refname" | wc -l`
+    behind=`git log --oneline --pretty=%h "$merge_base..$upstream" | wc -l`
+
+    merge_base="${merge_base:0:8}"
+
+
+    ## columnize
+    let w_left=cfg_w_left
+    let z=${#refname}+6
+    while [ $z -gt $w_left ]; do let w_left=w_left+4; done
+
+
+    if [ $ahead -gt 0 ]
+    then ## forked or ahead
+
+      if [ $behind -gt 0 ]
+      then ## forked
+
+	##    foobar ← +6 ───┐          ┌── +23 → origin/master     v3.8.19 + 23
+	##                   └─(forked)─┴──────── origin/master~23  v3.8.19
+
+	[ "$vstatus" = 1 ] && status="─(forked)─"
+	printf "%-*s┐%-*s┌%s\n" \
+				$w_left   "$(leftside $refname $ahead $CF)" \
+				$w_center "" \
+				      "$(rightside $refname $upstream $behind 1 $CF)"
+	printf "%-*s└%-*s┴%s\n" \
+				$w_left   "" \
+				$w_center "$status" \
+				      "$(rightside $refname $merge_base 0 0 $CD)"
+
+      else ## ahead
+
+        [ "$vstatus" = 1 ] && status="─(ahead)──"
+	printf "%-*s┐\n" \
+				$w_left   "$(leftside $refname $ahead $CA)"
+	printf "%-*s└%-*s─%s\n" \
+				$w_left   "" \
+				$w_center "$status" \
+				      "$(rightside $refname $upstream 0 1)"
+
+      fi
+
+    else ## stale or synced
+
+      if [ $behind -gt 0 ]
+      then ## stale
+
+        [ "$vstatus" = 1 ] && status="─(stale)──"
+	printf "%-*s %-*s┌%s\n" \
+				$w_left   "" \
+				$w_center "" \
+				      "$(rightside $refname $upstream $behind 1)"
+	printf "%-*s─%-*s┴%s\n" \
+				$w_left   "$(leftside $refname 0 $CS)" \
+				$w_center "$status" \
+				      "$(rightside $refname $merge_base 0 0 $CD)"
+
+      else ## synced
+
+	[ "$vstatus" = 1 ] && status="─(synced)─"
+	# printf "\n"	# to make each block 2 lines long
+	printf "%-*s─%-*s─%s\n" \
+				$w_left   "$(leftside $refname 0 $CU)" \
+				$w_center "$status" \
+					  "$(rightside $refname $upstream 0 1)"
+
+      fi
+
+    fi
+
+done
+
+
