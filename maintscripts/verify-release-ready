@@ -52,6 +52,12 @@ class VerifyReleaseReady():
             raise AppError('This script can only be run from within a git repository.')
         return retval
 
+    # Print colorized status line
+    #
+    # flag:
+    #   False                   -> fail (red)
+    #   "warning"               -> warning (yellow)
+    #   True or any other value -> pass (green)
     def status(s, msg, flag):
         indent = s.delimiter - len(msg)
         if indent <= 0:
@@ -60,7 +66,10 @@ class VerifyReleaseReady():
         stdo('%s' % (' ' * indent) + msg + ': ')
         if flag:
             s.passed += 1
-            stdo(colored('pass\n', 'green'))
+            if flag == 'warning':
+                stdo(colored('warning\n', 'yellow'))
+            else:
+                stdo(colored('pass\n', 'green'))
         else:
             s.failed += 1
             stdo(colored('fail\n', 'red'))
