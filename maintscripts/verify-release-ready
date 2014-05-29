@@ -198,7 +198,13 @@ class VerifyReleaseReady():
         found_tracker = False
         for line in changelog[1]['content']:
             if found_tracker:
-                (junk, tracker_id) = line.split('#')
+                if '#' in line:
+                    (junk, tracker_id) = line.split('#')
+                else:
+                    tracker_id = 'warning'
+                s.status('conformant release tracking bug line', tracker_id)
+                if tracker_id == 'warning':
+                    stdo(colored('\t%s\n' % line, 'yellow'))
                 break
             if 'Tracking Bug' in line:
                 found_tracker = True
@@ -208,14 +214,15 @@ class VerifyReleaseReady():
         # bug from as the master branch. (The master and master-next branches can have
         # the same tracking bug #)
         #
-        if found_tracker:
+        if found_tracker and tracker_id != 'warning':
             branch = Git.current_branch()
             if branch not in ['master', 'master-next']:
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
                 for line in master_changelog[1]['content']:
                     if found_tracker:
-                        (junk, master_tracker_id) = line.split('#')
+                        if '#' in line:
+                            (junk, master_tracker_id) = line.split('#')
                         break
                     if 'Tracking Bug' in line:
                         found_tracker = True
