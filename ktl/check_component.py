@@ -2,12 +2,8 @@
 #
 
 from ktl.utils                          import error
-import sys, os, re
-common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
-common_lib = os.path.dirname(common_lib)
-common_lib = os.path.join(common_lib, "lib")
-sys.path.insert(0, common_lib)
-from buildenv_lib                       import GetUploadVersion
+import re
+from kernel_versions                    import KernelVersions
 
 #
 # CheckComponent
@@ -39,7 +35,7 @@ class CheckComponent():
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = GetUploadVersion(series, package, pocket="release")
+        rel_ver = KernelVersions().valid_versions('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -118,7 +114,7 @@ class CheckComponent():
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = GetUploadVersion(series, package, pocket="release")
+        rel_ver = KernelVersions().valid_versions('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -171,7 +167,7 @@ class CheckComponent():
 
     def get_published_sources(self, series, package, version, pocket):
         if not version:
-            version = GetUploadVersion(series, package, pocket=pocket)
+            version = KernelVersions().valid_versions(pocket, series, package)
             if not version:
                 error("No upload of %s for %s is currently available in"
                       " the %s pocket" % (package, series, pocket))
