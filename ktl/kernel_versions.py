@@ -86,13 +86,16 @@ class KernelVersions:
 
         # Take any non-proposed version.
         if mode == 'tags':
+            result = []
             for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
                 #print(version, pockets[version])
                 if pockets[version] != ['Proposed']:
-                    return version
+                    result.append(version)
 
             if pockets[version] == ['Proposed']:
-                return version
+                result.append(version)
+
+            return result
 
         elif mode == 'release-updates':
             release = None
