@@ -82,7 +82,7 @@ class KernelVersions:
         return pockets
 
 
-    def current_in_pocket(s, pocket, series, sourcename):
+    def current_in_pocket(s, pocket, series, sourcename, infer_release=False):
         '''Get the current version of this package published in the specified pocket'''
         pockets = s._pocket_data(series, sourcename)
 
@@ -94,7 +94,8 @@ class KernelVersions:
                 result = version
             # If a package is introduced post release then there is no -release
             # version, the very first -updates version stands in for this version.
-            if not result and pocket == 'Release' and 'Updates' in pockets[version]:
+            if infer_release and not result and \
+                    pocket == 'Release' and 'Updates' in pockets[version]:
                 result = version
 
         return result
