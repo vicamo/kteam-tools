@@ -35,7 +35,7 @@ class CheckComponent():
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = KernelVersions().valid_versions('release', series, package)
+        rel_ver = KernelVersions().current_in_pocket('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -114,7 +114,7 @@ class CheckComponent():
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = KernelVersions().valid_versions('release', series, package)
+        rel_ver = KernelVersions().current_in_pocket('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -167,7 +167,7 @@ class CheckComponent():
 
     def get_published_sources(self, series, package, version, pocket):
         if not version:
-            version = KernelVersions().valid_versions(pocket, series, package)
+            version = KernelVersions().current_in_pocket(pocket, series, package)
             if not version:
                 error("No upload of %s for %s is currently available in"
                       " the %s pocket" % (package, series, pocket))

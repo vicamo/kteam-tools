@@ -82,58 +82,6 @@ class KernelVersions:
         return pockets
 
 
-    def valid_versions(s, mode, series, sourcename):
-        '''Get valid package versions
-
-           Get all package versions which were really published to the
-           public, include the latest proposed version.
-        '''
-
-        pockets = s._pocket_data(series, sourcename)
-
-        # Take any non-proposed version.
-        if mode == 'tags':
-            result = []
-            for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-                #print(version, pockets[version])
-                if pockets[version] != ['Proposed']:
-                    result.append(version)
-
-            if pockets[version] == ['Proposed']:
-                result.append(version)
-
-            return result
-
-        elif mode == 'release-updates':
-            release = None
-            updates = None
-            for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-                if 'Release' in pockets[version]:
-                    release = version
-                if 'Updates' in pockets[version]:
-                    updates = version
-                    if not release:
-                        release = version
-            return release, updates
-
-        elif mode == 'updates':
-            release = None
-            updates = None
-            for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-                if 'Updates' in pockets[version]:
-                    updates = version
-                    if not release:
-                        release = version
-            return updates
-
-        elif mode == 'proposed':
-            proposed = None
-            for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-                if 'Proposed' in pockets[version]:
-                    proposed = version
-            return proposed
-
-
     def current_in_pocket(s, pocket, series, sourcename):
         '''Get the current version of this package published in the specified pocket'''
         pockets = s._pocket_data(series, sourcename)
