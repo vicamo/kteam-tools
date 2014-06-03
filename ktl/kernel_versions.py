@@ -54,12 +54,7 @@ class KernelVersions:
         apt_pkg.init_system()
 
 
-    def valid_versions(s, mode, series, sourcename):
-        '''Get valid package versions
-
-           Get all package versions which were really published to the
-           public, include the latest proposed version.
-        '''
+    def _pocket_data(s, series, sourcename):
         global archive
 
         distro_series = s.releases[series]
@@ -83,6 +78,18 @@ class KernelVersions:
                 pockets[version] = []
             if pocket not in pockets[version]:
                 pockets[version].append(pocket)
+        
+        return pockets
+
+
+    def valid_versions(s, mode, series, sourcename):
+        '''Get valid package versions
+
+           Get all package versions which were really published to the
+           public, include the latest proposed version.
+        '''
+
+        pockets = s._pocket_data(series, sourcename)
 
         # Take any non-proposed version.
         if mode == 'tags':
@@ -125,6 +132,40 @@ class KernelVersions:
                 if 'Proposed' in pockets[version]:
                     proposed = version
             return proposed
+
+
+    def current_in_pocket(s, pocket, series, sourcename):
+        '''Get the current version of this package published in the specified pocket'''
+        pockets = s._pocket_data(series, sourcename)
+
+        pocket = pocket.capitalize()
+
+        result = None
+        for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+            if pocket in pockets[version]:
+                result = version
+            # If a package is introduced post release then there is no -release
+            # version, the very first -updates version stands in for this version.
+            if not result and pocket == 'Release' and 'Updates' in pockets[version]:
+                result = version
+
+        return result
+
+
+    def all_viable(s, series, sourcename):
+        '''Get all viable versions of this package published ever, only the last -proposed is considered'''
+        pockets = s._pocket_data(series, sourcename)
+
+        result = []
+        for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+            #print(version, pockets[version])
+            if pockets[version] != ['Proposed']:
+                result.append(version)
+
+        if pockets[version] == ['Proposed']:
+            result.append(version)
+
+        return result
 
 
     def lpinit(s):
