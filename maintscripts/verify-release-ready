@@ -12,6 +12,7 @@ from ktl.ubuntu                         import Ubuntu
 from ktl.termcolor                      import colored
 from ktl.shell                          import sh
 import re
+import ConfigParser
 
 # AppError
 #
@@ -188,10 +189,21 @@ class VerifyReleaseReady():
                     commit.append(line)
 
         version = '%s-%s.%s' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
-        (closed, expected) = s.verify_closing_commit(cl1, commit, version)
 
-        if closed:
-            s.verify_tag(log, expected)
+	(closed, expected_re) = s.verify_closing_commit(cl1, commit, version)
+
+	# Construct the expected tag, and verify that it matches the
+	# latest commit tag
+	#
+	config = ConfigParser.RawConfigParser()
+	if config.read('debian/gbp.conf'):
+	    expect_tag_format = config.get('buildpackage', 'debian-tag')
+	    expect_tag = expect_tag_format%{'version':version}
+	    s.verify_tag(log, expect_tag)
+	else:
+	    s.status('missing debian/gbp.conf', 'warning')
+	    if closed:
+		s.verify_tag(log, expected_re)
 
         # Look to see if a tracking bug has been added to the changelog
         #
@@ -266,7 +278,7 @@ class VerifyReleaseReady():
         # **NOTE: There can be multiple tags associated with the specific commit.
         #
         tag_found = False
-        msg = 'tag exists on final commit'
+        msg = 'correct tag (%s)' % expected
         s.verbose('closing commit sha1: %s' % log['commits'][0]['sha1'])
         tags = Git.tags(contains=log['commits'][0]['sha1'])
         for tag in tags:
