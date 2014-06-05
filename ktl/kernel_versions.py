@@ -42,7 +42,7 @@ class Launchpad(_Launchpad):
         return service_root, launchpadlib_dir, cache_path, service_root_dir
 
 class KernelVersions:
-    def __init__(s):
+    def __init__(s, active_only=True):
         s.lp = None
         s.ubuntu = None
         s.archive = None
@@ -50,7 +50,7 @@ class KernelVersions:
         s.broken_bugs = set()
         s.ignored_commenters = []
 
-        s.lpinit()
+        s.lpinit(active_only)
         apt_pkg.init_system()
 
 
@@ -117,14 +117,14 @@ class KernelVersions:
         return result
 
 
-    def lpinit(s):
+    def lpinit(s, active_only):
         '''Init LP credentials, archive, distro list and sru-team members'''
         logging.debug("Initializing LP Credentials")
         lp = Launchpad.login_anonymously('kernel-versions', 'production')
         s.ubuntu = lp.distributions['ubuntu']
         s.archive = s.ubuntu.getArchive(name='primary')
         for series in s.ubuntu.series:
-            if series.active:
+            if not active_only or series.active:
                 s.releases[series.name] = series
         logging.debug('Active releases found: %s' % ' '.join(s.releases))
 
