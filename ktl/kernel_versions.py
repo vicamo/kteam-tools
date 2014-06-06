@@ -41,6 +41,64 @@ class Launchpad(_Launchpad):
             os.makedirs(cache_path, 0o700)
         return service_root, launchpadlib_dir, cache_path, service_root_dir
 
+class PackagePockets:
+    def __init__(s, pv, series, sourcename):
+        s.pv = pv
+        s.series = series
+        s.sourcename = sourcename
+
+        distro_series = s.pv.releases[series]
+
+        logging.debug(
+            'Fetching publishing history for %s/%s' %
+            (distro_series.name, sourcename))
+        pubs = s.pv.archive.getPublishedSources(source_name=sourcename,
+                                           exact_match=True,
+                                           distro_series=distro_series)
+
+        # Take the latest pocket the package made it into as its 'pocket'.
+        s.pockets = {}
+        for pub in pubs:
+            #print(pub.source_package_version, pub.pocket, pub.status)
+            if pub.status == 'Deleted':
+                continue
+            version = pub.source_package_version
+            pocket = pub.pocket
+            if version not in s.pockets:
+                s.pockets[version] = []
+            if pocket not in s.pockets[version]:
+                s.pockets[version].append(pocket)
+        
+
+    def current_in_pocket(s, pocket, infer_release=False):
+        '''Get the current version of this package published in the specified pocket'''
+        pocket = pocket.capitalize()
+
+        result = None
+        for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+            if pocket in s.pockets[version]:
+                result = version
+            # If a package is introduced post release then there is no -release
+            # version, the very first -updates version stands in for this version.
+            if infer_release and not result and \
+                    pocket == 'Release' and 'Updates' in s.pockets[version]:
+                result = version
+
+        return result
+
+    def all_viable(s):
+        result = []
+        for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+            #print(version, pockets[version])
+            if s.pockets[version] != ['Proposed']:
+                result.append(version)
+
+        if s.pockets[version] == ['Proposed']:
+            result.append(version)
+
+        return result
+
+
 class KernelVersions:
     def __init__(s, active_only=True):
         s.lp = None
@@ -54,67 +112,22 @@ class KernelVersions:
         apt_pkg.init_system()
 
 
-    def _pocket_data(s, series, sourcename):
-        global archive
-
-        distro_series = s.releases[series]
-
-        logging.debug(
-            'Fetching publishing history for %s/%s' %
-            (distro_series.name, sourcename))
-        pubs = s.archive.getPublishedSources(source_name=sourcename,
-                                           exact_match=True,
-                                           distro_series=distro_series)
-
-        # Take the latest pocket the package made it into as its 'pocket'.
-        pockets = {}
-        for pub in pubs:
-            #print(pub.source_package_version, pub.pocket, pub.status)
-            if pub.status == 'Deleted':
-                continue
-            version = pub.source_package_version
-            pocket = pub.pocket
-            if version not in pockets:
-                pockets[version] = []
-            if pocket not in pockets[version]:
-                pockets[version].append(pocket)
-        
-        return pockets
+    def pocket_data(s, series, sourcename):
+        return PackagePockets(s, series, sourcename)
 
 
     def current_in_pocket(s, pocket, series, sourcename, infer_release=False):
         '''Get the current version of this package published in the specified pocket'''
-        pockets = s._pocket_data(series, sourcename)
+        pockets = s.pocket_data(series, sourcename)
 
-        pocket = pocket.capitalize()
-
-        result = None
-        for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-            if pocket in pockets[version]:
-                result = version
-            # If a package is introduced post release then there is no -release
-            # version, the very first -updates version stands in for this version.
-            if infer_release and not result and \
-                    pocket == 'Release' and 'Updates' in pockets[version]:
-                result = version
-
-        return result
+        return pockets.current_in_pocket(pocket, infer_release)
 
 
     def all_viable(s, series, sourcename):
         '''Get all viable versions of this package published ever, only the last -proposed is considered'''
-        pockets = s._pocket_data(series, sourcename)
+        pockets = s.pocket_data(series, sourcename)
 
-        result = []
-        for version in sorted(pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-            #print(version, pockets[version])
-            if pockets[version] != ['Proposed']:
-                result.append(version)
-
-        if pockets[version] == ['Proposed']:
-            result.append(version)
-
-        return result
+        return pockets.all_viable()
 
 
     def lpinit(s, active_only):
