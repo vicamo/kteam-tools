@@ -100,7 +100,7 @@ class PackagePockets:
 
 
 class KernelVersions:
-    def __init__(s, active_only=True):
+    def __init__(s, launchpad=None, ppa_owner=None, ppa_name=None, active_only=True):
         s.lp = None
         s.ubuntu = None
         s.archive = None
@@ -108,7 +108,7 @@ class KernelVersions:
         s.broken_bugs = set()
         s.ignored_commenters = []
 
-        s.lpinit(active_only)
+        s.lpinit(launchpad=launchpad, ppa_owner=ppa_owner, ppa_name=ppa_name, active_only=active_only)
         apt_pkg.init_system()
 
 
@@ -130,12 +130,26 @@ class KernelVersions:
         return pockets.all_viable()
 
 
-    def lpinit(s, active_only):
+    def ppa(s, ppa_owner, ppa_name):
+        return KernelVersions(launchpad=s.lp, active_only=s.active_only, \
+                              ppa_owner=ppa_owner, ppa_name=ppa_name)
+
+
+    def lpinit(s, launchpad=None, ppa_owner=None, ppa_name=None, active_only=True):
         '''Init LP credentials, archive, distro list and sru-team members'''
         logging.debug("Initializing LP Credentials")
-        lp = Launchpad.login_anonymously('kernel-versions', 'production')
-        s.ubuntu = lp.distributions['ubuntu']
-        s.archive = s.ubuntu.getArchive(name='primary')
+        if not launchpad:
+            s.lp = Launchpad.login_anonymously('kernel-versions', 'production')
+        else:
+            s.lp = launchpad
+            
+        s.ubuntu = s.lp.distributions['ubuntu']
+        if not ppa_owner:
+            s.archive = s.ubuntu.getArchive(name='primary')
+        else:
+            s.archive = s.lp.people[ppa_owner].getPPAByName(name=ppa_name)
+
+        s.active_only = active_only
         for series in s.ubuntu.series:
             if not active_only or series.active:
                 s.releases[series.name] = series
