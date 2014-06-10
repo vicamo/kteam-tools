@@ -28,6 +28,7 @@ DefaultCc    = [
 # SOB chain.
 #
 SobBlacklist = [
+	"Johannes Berg <johannes.berg@intel.com>"
                ]
 
 if DefaultEmail != "":
