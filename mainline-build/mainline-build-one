@@ -307,10 +307,12 @@ build_common()
 #
 #dpkg-buildpackage -S -sd -rfakeroot -I.git -I.gitignore -i'\.git.*'
 #dpkg-buildpackage -b
+echo "-+++- begin binary-headers -+++-"
 do_chroot "$build_release-i386" \
 	fakeroot debian/rules clean
 do_chroot "$build_release-i386" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
+echo "-+++- end binary-headers -+++-"
 for arch in $arches; do
 	if [ "$arch" == "armel" -o "$arch" == "armhf" ]; then
 		carch=amd64
@@ -319,6 +321,7 @@ for arch in $arches; do
 		carch=$arch
 		cross_prefix=""
 	fi
+	echo "-+++- begin $carch -+++-"
 	do_chroot "$build_release-$carch" \
 		fakeroot debian/rules clean
 	{
@@ -330,6 +333,7 @@ for arch in $arches; do
 	        $cross_prefix fakeroot debian/rules do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
 		EOM
 	} | do_chroot "$build_release-$carch" "/bin/bash"
+	echo "-+++- end $carch -+++-"
 done
 
 {
