@@ -538,7 +538,11 @@ class WorkflowEngine():
             s.send_upload_announcement(taskobj, 'proposed')
 
             series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
-            cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
+            # If this is running remotely we need to use ssh. If it's running as the kernel-ppa
+            # user on zinc, we can't use ssh.
+            #
+            #cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
+            cmd = '\'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
             cdebug(cmd)
             status, result = run_command(cmd)
 
