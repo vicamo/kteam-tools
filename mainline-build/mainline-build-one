@@ -240,10 +240,11 @@ do
 			/^Version:/			{ v=$2; last }
 			END				{ print v }
 		'`
-		dpkg --compare-versions "$fversion" lt "$find" && break
 		[ "$fversion" = 'END' ] && break
+		dpkg --compare-versions "$fversion" lt "$find" && break
 	done
 
+	[ "$fversion" = 'END' ] && continue
 	dpkg --compare-versions "$fversion" lt "$found" && break
 	found="$fversion"
 	fbranch="$branch"
