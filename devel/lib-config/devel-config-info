@@ -19,17 +19,18 @@ if [ "$archs" = '' ]; then
 fi
 
 # Generate per architecture configuration trees
-rm -f "$base/CONFIGS-info-"*
+rm -f "$base/CONFIGS-parser-"* "$base/CONFIGS-info-"*
 for arch in $archs
 do
-	"$here/devel-config-tree" "$base" arch/$arch/Kconfig geninfo >"$base/CONFIGS-info-$arch"
+	"$here/devel-config-parser" "$base" arch/$arch/Kconfig "$base/CONFIGS-parser-$arch"
+	"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" geninfo >"$base/CONFIGS-info-$arch"
 done
 
 # Generate the expanded annotations.
 {
 	for arch in $archs
 	do
-		"$here/devel-config-tree" "$base" arch/$arch/Kconfig expand <"$annotations"
+		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" expand <"$annotations"
 	done
 } | tee APW-premerge | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 

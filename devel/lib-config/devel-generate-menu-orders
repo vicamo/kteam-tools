@@ -52,9 +52,9 @@ mkdir -p tmp
 list="/tmp/list.$$"
 {
 	echo "M ROOT"
-	"$here/devel-config-tree" "$base" arch/x86/Kconfig genorder
-	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder
-	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder
+	"$here/devel-config-tree" "$base/CONFIGS-parser-x86" genorder
+	"$here/devel-config-tree" "$base/CONFIGS-parser-arm" genorder
+	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder
 } | tee APW | sed \
 	-e 's@ROOT>>Bus support(>>|$)@ROOT>>Bus options (PCI etc.)@' \
 	-e 's@ROOT>>Kernel Features(>>|$)@ROOT>>Processor type and features@' \
