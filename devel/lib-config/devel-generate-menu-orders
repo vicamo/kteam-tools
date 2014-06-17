@@ -56,12 +56,17 @@ list="/tmp/list.$$"
 	"$here/devel-config-tree" "$base" arch/arm/Kconfig genorder
 	"$here/devel-config-tree" "$base" arch/powerpc/Kconfig genorder
 } | tee APW | sed \
-	-e 's/ROOT>>Bus options (PCI etc.)/ROOT>>Bus options/g' \
-	-e 's/ROOT>>Bus support/ROOT>>Bus options/g' \
-	-e 's/ROOT>>Platform support>>CPU Frequency scaling/ROOT>>CPU Power Management>>CPU Frequency scaling/g' \
-	-e 's/ROOT>>Power management and ACPI options>>CPU Frequency scaling/ROOT>>CPU Power Management>>CPU Frequency scaling/g' \
-	-e 's/ROOT>>Platform support>>CPUIdle driver>>CPU Idle/ROOT>>CPU Power Management>>CPU Idle/g' \
-	-e 's/ROOT>>Power management and ACPI options>>CPU Idle/ROOT>>CPU Power Management>>CPU Idle/g' \
+	-e 's@ROOT>>Bus support(>>|$)@ROOT>>Bus options (PCI etc.)@' \
+	-e 's@ROOT>>Kernel Features(>>|$)@ROOT>>Processor type and features@' \
+	-e 's@ROOT>>CPU Power Management(>>|$)@ROOT>>Power management and ACPI options@' \
+	-e 's@ROOT>>Userspace binary formats(>>|$)@ROOT>>Executable file formats / Emulations@' \
+	-e 's@ROOT>>Power management options(>>|$)@ROOT>>Power management and ACPI options@' \
+	-e 's@ROOT>>Platform support(>>|$)@ROOT>>Power management and ACPI options@' \
+	-e 's@ROOT>>Platform support>>CPUIdle driver(>>|$)@ROOT>>Power management and ACPI options@' \
+	-e 's@ROOT>>Kernel options(>>|$)@ROOT>>Processor type and features@' \
+	-e 's@ROOT>>Kernel options(>>|$)@ROOT>>Executable file formats / Emulations@' \
+	-e 's@ROOT>>Kernel options(>>|$)@ROOT>>Power management and ACPI options@' \
+	-e 's@ROOT>>Bus options(>>|$)@ROOT>>Bus options (PCI etc.)@' \
 | LANG=C sort | uniq >"$list"
 
 cat "$list" | grep '^M ' | \

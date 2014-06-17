@@ -1,0 +1,63 @@
+#!/usr/bin/python3
+
+import sys
+
+arch_merge = {}
+
+menu_map = {}
+menu_renames = []
+
+for line in sys.stdin:
+    if line == 'RESET\n':
+        file_seen = {}
+        continue
+
+    (menu, config, fname, arch) = line.strip().split('\t')
+    if ' ' not in config and fname.startswith('arch/'):
+        if config not in arch_merge:
+            arch_merge[config] = []
+        if arch not in arch_merge[config]:
+            arch_merge[config].append(arch)
+
+    #
+    # Handle menu renames ...
+    #
+    if fname in file_seen:
+        continue
+    file_seen[fname] = True
+
+    # All new, take this menu name for it.
+    if fname not in menu_map:
+        menu_map[fname] = menu
+        continue
+
+    # If we match the existing one all is well.
+    if menu.startswith(menu_map[fname]):
+        continue
+
+    #print("RENAME (" + fname + "): " + menu + " -> " + menu_map[fname])
+
+    # Rip off any common trailing menu information.
+    old = menu_map[fname].split('>>')
+    new = menu.split('>>')
+
+    old_i = len(old) - 1
+    new_i = len(new) - 1
+    while old[old_i] == new[new_i]:
+        old.pop(old_i)
+        new.pop(new_i)
+        old_i -= 1
+        new_i -= 1
+
+    (menu_old, menu_new) = ('>>'.join(old), '>>'.join(new))
+
+    if (menu_old, menu_new) not in menu_renames:
+        menu_renames.append((menu_old, menu_new))
+    #print(which + '\t' + '>>'.join(new) + '\t' + '>>'.join(old))
+
+for (old, new) in menu_renames:
+    print('menu-rename\t' + new + "\t" + old)
+
+for name in arch_merge:
+    if len(arch_merge[name]) > 1:
+        print('common-config\t' + name)

@@ -372,6 +372,41 @@ elif cmd == 'geninfo':
 
         print("CONFIG_{0} {1} {2} {3} {4}desc<{5}>{6}".format(name, options, default, expected, entry.get('info', ''), prompt, misc))
 
+elif cmd == 'genorder2':
+    for entry in entries:
+        if 'prompt' in entry:
+            mname = entry['prompt']
+        else:
+            mname = entry['config']
+        if 'config' in entry:
+            cname = entry['config']
+        else:
+            cname = entry['prompt']
+
+        # Calculate the menu path.
+        pname = list()
+        if 'parent' in entry:
+            parent = entry['parent']
+            while True:
+                if 'menu' in parent or 'menuconfig' in parent:
+                    #if 'prompt' in parent:
+                    #    pname.insert(0, parent['prompt'])
+                    #else:
+                    #    pname.insert(0, parent['config'])
+                    if 'config' in parent:
+                        pname.insert(0, parent['config'])
+                    else:
+                        pname.insert(0, parent['prompt'])
+                if 'parent' not in parent:
+                    break
+                parent = parent['parent']
+
+        # Special case menuconfig options such that they are in their own menus.
+        if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:   
+            pname.append(mname)
+
+        print('>>'.join(pname) + "\t" + cname + "\t" + entry['file'] + "\t" + arch)
+
 elif cmd == 'genorder':
     print('M', 'ROOT')
     print('M', 'ROOT>>Architecture: ' + arch)
