@@ -197,11 +197,8 @@ case $SUITE in
 	quantal)
 		ADDPKG="$ADDPKG flex bison";
 	;;
-	raring|saucy|trusty)
-		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev"
-	;;
-	utopic)
-		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev dh-systemd";
+	raring|saucy|trusty|utopic)
+		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
 	android)
 		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
