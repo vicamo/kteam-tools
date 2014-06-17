@@ -2,6 +2,7 @@
 
 import sys
 
+arch_part = {}
 arch_merge = {}
 
 menu_map = {}
@@ -14,6 +15,8 @@ for line in sys.stdin:
 
     (menu, config, fname, arch) = line.strip().split('\t')
     if ' ' not in config and fname.startswith('arch/'):
+        arch_part[config] = True
+    if ' ' not in config:
         if config not in arch_merge:
             arch_merge[config] = []
         if arch not in arch_merge[config]:
@@ -59,5 +62,5 @@ for (old, new) in menu_renames:
     print('menu-rename\t' + new + "\t" + old)
 
 for name in arch_merge:
-    if len(arch_merge[name]) > 1:
-        print('common-config\t' + name)
+    if name in arch_part and len(arch_merge[name]) > 1:
+        print('config-generic\t' + name)

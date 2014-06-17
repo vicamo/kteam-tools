@@ -141,7 +141,8 @@ elif cmd == 'geninfo':
 
         print("CONFIG_{0} {1} {2} {3} {4}desc<{5}>{6}".format(name, options, default, expected, entry.get('info', ''), prompt, misc))
 
-elif cmd == 'genorder2':
+elif cmd == 'genrenames':
+    print("RESET")
     for entry in entries:
         if 'prompt' in entry:
             mname = entry['prompt']
@@ -177,8 +178,40 @@ elif cmd == 'genorder2':
         print('>>'.join(pname) + "\t" + cname + "\t" + entry['file'] + "\t" + arch)
 
 elif cmd == 'genorder':
-    print('M', 'ROOT')
-    print('M', 'ROOT>>Architecture: ' + arch)
+    (renames) = args[0]
+
+    menu_rename = []
+    config_generic = {}
+
+    with open(renames, "r") as rfd:
+        for line in rfd:
+            rargs = line.strip().split('\t')
+            cmd = rargs[0]
+
+            if cmd == 'menu-rename':
+                menu_rename.append((rargs[1], rargs[2]))
+            elif cmd == 'config-generic':
+                config_generic[rargs[1]] = True
+
+
+    out_seen = {}
+    def out_rename(prefix, menu, element=None):
+        if menu not in out_seen:
+            out_seen[menu] = True
+            out_rename('M', menu)
+
+        entry = menu
+        if element:
+            entry += '>>>' + element
+        for replace in menu_rename:
+            if entry.startswith(replace[0]):
+                length = len(replace[0])
+                if len(entry) == length or entry[length:length+1] == '>':
+                    entry = entry.replace(replace[0], replace[1], 1)
+        print(prefix, entry)
+        
+
+    out_rename('M', 'ROOT')
     for entry in entries:
         if 'prompt' in entry:
             mname = entry['prompt']
@@ -202,30 +235,18 @@ elif cmd == 'genorder':
                     break
                 parent = parent['parent']
 
-        if entry['is_arch']:
+        if entry['is_arch'] and cname not in config_generic:
             akey = [ "Architecture: " + arch ]
-            amenu = '__prefix_arch'
         else:
             akey = []
-            amenu = '__prefix_menu'
 
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
-            entry['__prefix_menu'] = "M " + '>>'.join(pname + [ mname ])
-            entry['__prefix_arch'] = "M " + '>>'.join(pname + [ mname ] + akey)
             if 'config' in entry:
-                if amenu in entry:
-                    print(entry[amenu])
-                    del entry[amenu]
-                print('E', '>>'.join(pname + [ mname ] + akey) + '>>>' + entry['config'])
+                out_rename('E', '>>'.join(pname + [ mname ] + akey), entry['config'])
         elif 'choice' in entry:
             pass
         else:
-            if 'parent' in entry:
-                parent = entry['parent']
-                if amenu in parent:
-                    print(parent[amenu])
-                    del parent[amenu]
-            print('E', '>>'.join(pname + akey) + '>>>' + cname)
+            out_rename('E', '>>'.join(pname + akey), cname)
 
 elif cmd == 'dump-toplevel':
     children_list(root, args, toplevel=True)
