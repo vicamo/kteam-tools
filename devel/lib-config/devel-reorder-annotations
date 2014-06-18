@@ -1,0 +1,97 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <base> <annotations-in> <annotations-out>" 1>&2
+	exit 1
+fi
+base="$1"
+annot_in="$2"
+annot_out="$3"
+
+list="/tmp/list.$$"
+{
+	echo "M ROOT"
+	"$here/devel-config-tree" "$base/CONFIGS-parser-x86" genorder "$base/CONFIGS-renames"
+	"$here/devel-config-tree" "$base/CONFIGS-parser-arm" genorder "$base/CONFIGS-renames"
+	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder "$base/CONFIGS-renames"
+} | LANG=C sort | uniq >"$list"
+
+copy_menu() {
+	local menu="$1"
+
+	name=`echo "$menu" | sed \
+		-e 's/ROOT>>//g' \
+		-e 's/>>/ >> /g'
+	`
+	patn=`echo "$menu *" | sed \
+		-e 's/ROOT>>//g' \
+		-e 's@/@\\\\/@g' \
+		-e 's@(@\\\\(@g' \
+		-e 's@)@\\\\)@g' \
+		-e 's@ *>> *@ *>> *@g'
+	`
+	#echo "$name ... " 1>&2
+
+	echo "# Menu: $name"
+	awk '
+		/^# Menu: '"$patn"'$/		{ found=1; next }
+		/^# Menu:/			{ found=0; next }
+		(found == 1)			{ print }
+	' <"$annot_in" | sed -e '
+		:a
+		/^\n*$/{$d;N;ba
+		}
+	'
+	echo ""
+}
+
+{
+	echo "M HEADER"
+	cat "$list"
+} | grep '^M ' | \
+while read junk menu
+do
+	copy_menu "$menu"
+done >"$annot_out"
+
+# Validate we have copied over every section.
+<"$annot_in" \
+awk '
+	/^# Menu: /			{ which=$0; next }
+	/^$/				{ next }
+	(which != "")			{ print which; which=""}
+' | sed -e 's/  *$//' -e 's/ *>> */ >> /g' | sort >"$list.in"
+
+<"$annot_out" \
+awk '
+	/^# Menu: /			{ which=$0; next }
+	/^$/				{ next }
+	(which != "")			{ print which; which=""}
+' | sed -e 's/  *$//' -e 's/ *>> */ >> /g' | sort >"$list.out"
+join -t\b -v1 "$list.in" "$list.out" | grep -v '^# Menu: FOOTER' >"$list.missing"
+
+# Work out what if anything is missing -- and copy it over.
+if [ $(wc -l <"$list.missing") != "0" ]; then
+	{
+		echo ""
+		echo "## v- UNMATCHED MENUS"
+		echo ""
+		while read a b menu
+		do
+			echo "WARNING: unknown -- $menu" 1>&2
+			copy_menu "$menu"
+		done <"$list.missing"
+		echo "## ^- UNMATCHED MENUS"
+		echo ""
+	} >>"$annot_out"
+fi
+
+copy_menu "FOOTER" >>"$annot_out"
+
+rm -f "$list" "$list.in" "$list.out" "$list.missing"
