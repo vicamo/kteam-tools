@@ -198,7 +198,8 @@ elif cmd == 'genorder':
     def out_rename(prefix, menu, element=None):
         if menu not in out_seen:
             out_seen[menu] = True
-            out_rename('M', menu)
+            if prefix != 'M':
+                out_rename('M', menu)
 
         entry = menu
         if element:
@@ -241,6 +242,7 @@ elif cmd == 'genorder':
             akey = []
 
         if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
+            out_rename('M', '>>'.join(pname + [ mname ] + akey))
             if 'config' in entry:
                 out_rename('E', '>>'.join(pname + [ mname ] + akey), entry['config'])
         elif 'choice' in entry:
@@ -255,6 +257,20 @@ elif cmd == 'dump':
     children_list(root, args)
 
 elif cmd == 'expand':
+    menu_rename = []
+    config_generic = {}
+
+    if len(args) > 0:
+        (renames) = args[0]
+        with open(renames, "r") as rfd:
+            for line in rfd:
+                rargs = line.strip().split('\t')
+                cmd = rargs[0]
+
+                if cmd == 'menu-rename':
+                    # NOTE: we use these in the opposite order, and ROOT is implied.
+                    menu_rename.append((rargs[2].split('>>')[1:], rargs[1].split('>>')[1:]))
+
     for line in sys.stdin:
         if line.startswith('set '):
             a = shlex.split(line)
@@ -280,6 +296,8 @@ elif cmd == 'expand':
                     else:
                         menu = False
 
+
+                    found = False
                     try:
                         for entry in children_scan(root, position, toplevel, menu):
                             if 'config' in entry:
@@ -288,9 +306,32 @@ elif cmd == 'expand':
                                     result[entry['config']] = entry
                                 elif entry['config'] in result:
                                     del result[entry['config']]
+                        found = True
                     except ValueError:
-                        print('WARNING: ' + ':'.join(position) + ' not found', file=sys.stderr)
+                        #print('WARNING: ' + ':'.join(position) + ' not found', file=sys.stderr)
                         pass
+
+                    if not found:
+                        for others in menu_rename:
+                            (one, two) = others
+                            if len(position) >= len(one) and position[0:len(one)] == one:
+                                position2 = two + position[len(one):]
+                                try:
+                                    for entry in children_scan(root, position2, toplevel, menu):
+                                        if 'config' in entry:
+                                            #print("ADD", entry['config'])
+                                            if cmd[0] == '+':
+                                                result[entry['config']] = entry
+                                            elif entry['config'] in result:
+                                                del result[entry['config']]
+                                    found = True
+                                except ValueError:
+                                    #print('WARNING: ' + ':'.join(position2) + ' not found', file=sys.stderr)
+                                    pass
+                            if found:
+                                break
+                    if not found:
+                        print('WARNING: ' + ':'.join(position) + ' not found', file=sys.stderr)
 
                 elif cmd == '+pattern':
                     pattern = a.pop(0)
