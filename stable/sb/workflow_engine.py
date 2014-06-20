@@ -790,7 +790,10 @@ class WorkflowEngine():
                 timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
                 delta = DeltaTime(timestamp, datetime.utcnow())
                 if delta.hours < 1:
-                    cinfo('                Waiting 1 hour after promote-to-%s was Fix Released' % (pocket))
+                    cinfo('                Waiting 1 hour after promote-to-%s was Fix Released (%d)' % (pocket, delta.hours))
+                    cdebug('                   timestamp : %s' % str(timestamp))
+                    cdebug('                         now : %s' % str(datetime.utcnow()))
+                    cdebug('                       delta : %s' % str(delta))
                     cdebug('                check_component_in_pocket leave (False)')
                     return False
             else:
