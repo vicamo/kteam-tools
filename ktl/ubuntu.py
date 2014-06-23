@@ -134,7 +134,7 @@ class Ubuntu:
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '14.10',
-            'kernel'    : '3.15.0',
+            'kernel'    : '3.16.0',
             'name'      : 'utopic',
             'supported' : False,
             # adjust packages when this goes live
@@ -593,7 +593,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '3.15.0'   : db['14.10'],
+        '3.16.0'   : db['14.10'],
         '3.13.0'   : db['14.04'],
         '3.11.0'   : db['13.10'],
         '3.8.0'    : db['13.04'],
