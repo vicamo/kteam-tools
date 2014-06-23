@@ -67,20 +67,20 @@ class WorkflowEngine():
 
         s.state_map = {
             'upload-to-ppa'             : TaskActions({'Confirmed'    : s.upload_to_ppa_confirmed}),
-            'prepare-package'           : TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
-            'prepare-package-lbm'       : TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
-            'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
-            'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
-            'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_new, 'In Progress' : s.prep_package_new, 'Fix Released' : s.prep_package_fix_released}),
+            'prepare-package'           : TaskActions({'New'          : s.prep_package_main_new,               'In Progress'  : s.prep_package_main_new,       'Fix Released' : s.prep_package_main_new       }),
+            'prepare-package-lbm'       : TaskActions({'New'          : s.prep_package_lbm_new,                'In Progress'  : s.prep_package_lbm_new,        'Fix Released' : s.prep_package_lbm_new        }),
+            'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       'Fix Released' : s.prep_package_meta_new       }),
+            'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, 'Fix Released' : s.prep_package_ports_meta_new }),
+            'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     'Fix Released' : s.prep_package_signed_new     }),
+            'package-testing'           : TaskActions({'New'          : s.package_testing_new,                 'Confirmed'    : s.noop,                        'Fix Released' : s.package_testing_new         }),
             'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
-            'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid, 'Fix Released' : s.certification_testing_fix_released}),
-            'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,    'Fix Released' : s.regression_testing_fix_released}),
-            'package-testing'           : TaskActions({'Confirmed'    : s.package_testing_confirmed, 'Fix Released' : s.package_testing_fix_released}),
+            'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
+            'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,          'Fix Released' : s.regression_testing_fix_released}),
             'promote-to-updates'        : TaskActions({'Fix Released' : s.check_for_final_close}),
             'promote-to-security'       : TaskActions({'Fix Released' : s.check_for_final_close}),
             'promote-to-release'        : TaskActions({'Fix Released' : s.promote_to_release_fix_released}),
-            'security-signoff'          : TaskActions({'Invalid'      : s.security_signoff_finished,     'Fix Released' : s.security_signoff_finished}),
+            'security-signoff'          : TaskActions({'Invalid'      : s.security_signoff_finished,           'Fix Released' : s.security_signoff_finished}),
         }
 
         s.lp = lp
@@ -492,6 +492,59 @@ class WorkflowEngine():
         s.set_phase(taskobj, 'ReadyToBePackaged')
         cdebug('upload_to_ppa_confirmed leave (True)')
         return True
+
+    # noop
+    #
+    def noop(s, taskobj):
+        """
+        Don't do anything.
+        """
+        return False
+
+    def common_prep_package_new(s, taskobj, pkg):
+        cdebug('            WorkflowEngine::common_prep_package_new enter')
+        if s.wfb.package_fully_built(pkg):
+            cdebug('                %s : fully built' % (pkg), 'green')
+
+            # This task can be marked "Fix Released"
+            #
+        else:
+            cdebug('                %s : not built' % (pkg), 'red')
+        cdebug('            WorkflowEngine::common_prep_package_new leave')
+
+    def prep_package_main_new(s, taskobj):
+        s.common_prep_package_new(taskobj, 'main')
+        return False
+
+    def prep_package_meta_new(s, taskobj):
+        s.common_prep_package_new(taskobj, 'meta')
+        return False
+
+    def prep_package_ports_meta_new(s, taskobj):
+        s.common_prep_package_new(taskobj, 'ports-meta')
+        return False
+
+    def prep_package_signed_new(s, taskobj):
+        s.common_prep_package_new(taskobj, 'signed')
+        return False
+
+    def prep_package_lbm_new(s, taskobj):
+        s.common_prep_package_new(taskobj, 'lbm')
+        return False
+
+    def package_testing_new(s, taskobj):
+        cdebug('            WorkflowEngine::package_testing_new enter')
+
+        if s.wfb.all_dependent_packages_fully_built():
+            cdebug('                all dependent packages : fully built', 'green')
+
+            # This task can be marked "Fix Released"
+            #
+        else:
+            cdebug('                all dependent packages : not built', 'red')
+
+        cdebug('            WorkflowEngine::package_testing_new leave')
+        return False
 
     def prep_package_new(s, taskobj):
         '''
@@ -1433,7 +1486,7 @@ class WorkflowEngine():
         cdebug('            check_for_final_close enter')
 
         if s.wfb.tasks_by_name[s.projectname].status == 'Fix Released':
-            print ' Bug already closed, aborting check'
+            cdebug('                Bug already closed, aborting check')
             cdebug('            check_for_final_close leave: False')
             return False
 

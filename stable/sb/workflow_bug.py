@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 #
 from logging                            import info, debug, error, warning, basicConfig, INFO, DEBUG, WARNING
-import re
 
-from ktl.termcolor                      import colored
-from ktl.ubuntu                         import Ubuntu
-from sb.log                             import cinfo
+from sb.log                             import cinfo, cdebug
+from sb.package                         import Package
 
 # WorkflowBugTask
 #
@@ -85,31 +83,18 @@ class WorkflowBug():
         s.title = s.lpbug.title
         s.dryrun = dryrun
 
-        s.__package_name = None
-
-        cinfo('                      title: "%s"' % s.title, 'blue')
-
-        try:
-            s.pkg_name = re.findall('linux[^:]*', s.title)[0]
-        except IndexError:
-            s.pkg_name = None
-        cinfo('                   pkg_name: "%s"' % s.pkg_name, 'blue')
-
-        try:
-            s.pkg_version = re.findall('([0-9]+\.[^ ]+)', s.title)[0]
-        except IndexError:
-            s.pkg_version = None
-        cinfo('                pkg_version: "%s"' % s.pkg_version, 'blue')
-
-        if s.pkg_name is not None and s.pkg_version is not None:
-            s.series = Ubuntu().series_name(s.pkg_name, s.pkg_version)
-        else:
-            s.series = None
-        cinfo('                     series: "%s"' % s.series, 'blue')
-
         # If a bug isn't to be processed, detect this as early as possible.
         #
         s.is_valid = s.check_is_valid(s.lpbug)
+
+        s.__package = Package(s.lp, s)
+
+        cinfo('                      title: "%s"' % s.title, 'blue')
+        cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
+        cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
+        cinfo('                     series: "%s"' % s.__package.series, 'blue')
+        for d in s.__package.pkgs:
+            cinfo('                        dep: "%s"' % d, 'blue')
 
         if s.is_valid:
             cinfo('    Targeted Project:', 'cyan')
@@ -172,4 +157,19 @@ class WorkflowBug():
 
         return tasks_by_name
 
+    # package_fully_built
+    #
+    def package_fully_built(s, pkg):
+        cdebug('                WorkflowBug::package_fully_built enter')
+        retval = s.__package.fully_built(pkg)
+        cdebug('                WorkflowBug::package_fully_built leave (True)')
+        return retval
+
+    # all_dependent_packages_fully_built
+    #
+    def all_dependent_packages_fully_built(s):
+        cdebug('                WorkflowBug::all_dependent_packages_fully_built enter')
+        retval = s.__package.all_dependent_packages_fully_built()
+        cdebug('                WorkflowBug::all_dependent_packages_fully_built leave (True)')
+        return retval
 
