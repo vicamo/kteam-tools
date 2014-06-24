@@ -190,6 +190,21 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
             },
+        'linux-keystone' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-hwe-arm-kernel',
+                'prepare-package-meta'       : 'canonical-hwe-arm-kernel',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-hwe-arm-kernel',
+                'regression-testing'         : 'canonical-hwe-arm-kernel',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug', 'armhf'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"]
+            },
         'linux-exynos5' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',

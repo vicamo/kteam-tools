@@ -170,6 +170,7 @@ class Ubuntu:
                 'linux',
                 'linux-meta',
                 'linux-exynos5',
+                'linux-keystone',
             ],
             'dependent-packages' :
             {
