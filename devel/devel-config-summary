@@ -10,6 +10,7 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+annotations=""
 format="wiki"
 current="-"
 while :
@@ -17,34 +18,54 @@ do
 	case "$1" in
 	--html)		format="html"; shift ;;
 	--previous)	current="$2"; shift 2 ;;
+	--annotations)	annotations="$2"; shift 2 ;;
 	*)		break 2 ;;
 	esac
 done
 if [ "$#" -ne 2 ]; then
-	echo "Usage: $P [--previous <series repo>] <series repo> <prefix>" 1>&2
+	echo "Usage: $P [--previous <series repo>] [--annotations <annotations>] <series repo> <prefix>" 1>&2
 	exit 1
 fi
 next="$1"
 prefix="$2"
 
-there_current="$current"
-case "$there_current" in
-/*) ;;
-*)  there_current="`pwd`/$there_current" ;;
-esac
+if [ "$current" != '-' ]; then
+	there_current="$current"
+	case "$there_current" in
+	/*) ;;
+	*)  there_current="`pwd`/$there_current" ;;
+	esac
 
+	annot_current="$annotations"
+	if [ "$annot_current" = "" ]; then
+		annot_current="$there_next/debian.master/config/annotations"
+	fi
+	case "$annot_current" in
+	/*) ;;
+	*)  annot_current="`pwd`/$annot_current" ;;
+	esac
+
+	echo "*** $current ..."
+	"$here/lib-config/devel-config-info" "$annot_current" "$current"
+fi
+
+echo "*** $next ..."
 there_next="$next"
 case "$there_next" in
 /*) ;;
 *)  there_next="`pwd`/$there_next" ;;
 esac
 
-if [ "$current" != '-' ]; then
-	echo "*** $current ..."
-	"$here/lib-config/devel-config-info" "$there_current/debian.master/config/annotations" "$current"
+annot_next="$annotations"
+if [ "$annot_next" = "" ]; then
+	annot_next="$there_next/debian.master/config/annotations"
 fi
-echo "*** $next ..."
-"$here/lib-config/devel-config-info" "$there_next/debian.master/config/annotations" "$next"
+case "$annot_next" in
+/*) ;;
+*)  annot_next="`pwd`/$annot_next" ;;
+esac
+
+"$here/lib-config/devel-config-info" "$annot_next" "$next"
 
 (
 	cd "$next" || exit 1
