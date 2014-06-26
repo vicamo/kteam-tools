@@ -130,12 +130,16 @@ elif cmd == 'geninfo':
 
         # Work out if we are a choice.
         if 'parent' in entry and 'choice' in entry['parent']:
-            choices = []
-            for entry in entry['parent']['children']:
-                #print("ENDCHOICE: child -- " + entry['config'])
-                choices.append("CONFIG_" + entry['config'])
-            choice_string = ' '.join(choices)
-            misc += ' choice<' + ' '.join(choices) + '>'
+            #choices = []
+            #for entry in entry['parent']['children']:
+            #    #print("ENDCHOICE: child -- " + entry['config'])
+            #    choices.append("CONFIG_" + entry['config'])
+            #choice_string = ' '.join(choices)
+            #misc += ' choice<' + ' '.join(choices) + '>'
+            if 'prompt' in entry['parent']:
+                misc += ' choice<' + entry['parent']['prompt'] + '>'
+            else:
+                misc += ' choice<UNKNOWN>'
 
             expected = 'c'
 
@@ -383,8 +387,8 @@ elif cmd == 'expand':
                                 result[key]['info'] = result[key].get('info', '') + " note<default>"
                         if a[0] != '-':
                             result[key]['info'] = result[key].get('info', '') + " mark<annotated>"
-                        default = result[key].get('default', None) 
-                        if to == 'D' and default:
+                        default = entry_default(result[key])
+                        if to == 'D' and default != '-':
                             print("CONFIG_" + key + " " + ' '.join(a) + " note<default:" + default + ">")
                         else:
                             print("CONFIG_" + key + " " + ' '.join(a))
@@ -407,6 +411,10 @@ elif cmd == 'expand':
         if line.startswith("CONFIG_"):
             a = line.split(None, 2)
             name = a[0][7:]
+
+            if len(a) < 2:
+                print("ERROR: " + name + ": badly formed line", file=sys.stderr)
+                print("ERROR: " + line, end='', file=sys.stderr)
 
             if name in byname:
                 if len(a) >= 3:

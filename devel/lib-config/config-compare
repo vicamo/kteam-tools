@@ -16,6 +16,7 @@ $values{'APW'} = 1234;
 
 my %options;
 my @options;
+my @ioptions;
 
 my $policy = 1;
 
@@ -25,6 +26,7 @@ my %marks;
 my %expected;
 my %policy;
 my %desc;
+my %choice;
 
 my $sort = 0;
 my $colour = 0;
@@ -151,7 +153,11 @@ if ($format eq 'wiki') {
 } elsif ($format eq 'html') {
 	my $id = int(rand(1000000));
 	sub html_em {
-		"<b>" . $_[0] . "</b>";
+		if ($_[1] eq 'i') {
+			"<i>" . $_[0] . "</i>";
+		} else {
+			"<b>" . $_[0] . "</b>";
+		}
 	}
 	sub html_table_start {
 "<style>
@@ -187,9 +193,9 @@ if ($format eq 'wiki') {
 	}
 	sub html_table_cell {
 		if ($_[1]) {
-			"<td title=\"" . $_[1] . "\">" . $_[0];
+			"<td title=\"" . $_[1]. "\">" . $_[0];
 		} else {
-			"<td>" . $_[0];
+			"<td>" . $_[0]
 		}
 	}
 	sub html_table_row_end {
@@ -219,6 +225,7 @@ if ($info) {
 	while (<INFO>) {
 		chomp;
 		($config, $maybe, $default, $expected, $options) = split(' ', $_, 5);
+		push(@ioptions, $config);
 		while ($options =~ /\s*(\S+)<(.*?)?>/g) {
 			($option, $value) = ($1, $2);
 			if ($option eq 'flag') {
@@ -229,7 +236,8 @@ if ($info) {
 			} elsif ($option eq 'note') {
 				$flags{$config} .= " $value";
 			} elsif ($option eq 'choice') {
-				$flags{$config} .= " " . f_em('CHOICE');
+				$flags{$config} .= " " . f_em($value, 'i');
+				$choice{$config} = 1;
 			} elsif ($option eq 'policy') {
 				#$policy{$config} = $value;
 				#$flags{$config} .= " " . f_em("policy=$value");
@@ -241,6 +249,10 @@ if ($info) {
 		$values{'Policy', $config} = $expected;
 		if ($expected eq 'p') {
 			$policy{$config} = $policy;
+			if ($policy =~ /^{/) {
+				$policy =~ s/'//g; $policy =~ s/: */:/g;
+				$policy =~ s/^{//; $policy =~ s/}$//;
+			}
 			$values{'Policy', $config} = $policy;
 		} elsif ($expected ne 'c' && $expected ne '-') {
 			$policy{$config} = "value $expected";
@@ -285,7 +297,12 @@ for my $column (@columns) {
 	close(CONFIG);
 }
 
-@options = sort(@options) if ($sort);
+if ($sort) {
+	@options = sort(@options);
+} elsif ($info) {
+	@options = @ioptions;
+}
+	
 
 push(@columns, "Policy") if ($policy);
 
@@ -305,6 +322,7 @@ my $entry;
 my $cmt;
 my $seen;
 my $nopolicy;
+my $no;
 
 my $ok;
 my %ok;
@@ -316,11 +334,13 @@ if (!$policy) {
 	%policy = ();
 }
 for my $option (@options) {
+	next if (!defined $options{$option});
 	next if ($flags{$option, 'IGNORE'});
 	$seen = '';
 	$cmt = '';
 	$ok = 1;
 	%ok = ();
+	$no = 1;
 	
 	$nopolicy = (!defined $policy{$option} || $policy{$option} eq '-');
 
@@ -342,6 +362,9 @@ for my $option (@options) {
 			$ok{$column} = 1;
 		}
 		$seen++ if ($is ne '-' && $column ne 'Policy');
+		if ($is ne '-' and $is ne 'n') {
+			$no = 0;
+		}
 	}
 
 	if ($colour) {
@@ -384,6 +407,9 @@ for my $option (@options) {
 	if ($flags{$option}) {
 		$cmt .= $flags{$option};
 	}
+	#if ($choice{$option} && $no) {
+	#	$cmt .= " " . f_em('ELIDE');
+	#}
 	$entry .= f_table_cell($cmt);
 	$entry .= f_table_row_end();
 
