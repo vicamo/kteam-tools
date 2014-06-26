@@ -142,7 +142,7 @@ sub pred_exec {
 	#warn " return cut<$cut> res<$res> sep<$sep>\n";
 	return ($cut, $res);
 }
-sub policy_check {
+sub policy_check_predicate {
 	my ($column, $option, $policy) = @_;
 
 	$P = $P0 . ": " . $option;
@@ -156,6 +156,31 @@ sub policy_check {
 	my ($cut, $res) = pred_exec($policy);
 	#print "CUT<$cut> RES<$res>\n";
 	return $res;
+}
+sub policy_check {
+        my ($column, $option, $policy) = @_;
+
+        if ($policy =~ /^{/) {
+		# Pull out the arch and flavour from the column name.
+		my ($arch, $flavour) = split(/-/, $column, 2);
+
+		# Pull together the policy hash.
+                $policy =~ s/:/=>/g;
+                my $plcy = eval($policy);
+
+		my $value = '-';
+        
+		for my $which ("$arch-$flavour", "$arch-*", "*-$flavour", "$arch", "*") {
+			if (defined $plcy->{$which}) {
+				$value = $plcy->{$which};
+				last;
+			}
+		}
+		return ($values{$column, $option} eq $value);
+
+        } else {
+                return policy_check_predicate($column, $option, $policy);
+        }
 }
 
 1;
