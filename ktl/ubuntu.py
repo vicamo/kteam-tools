@@ -181,7 +181,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : []
+                'linux' : ['linux-keystone']
             },
             'sha1' : '',
             'md5' : ''
@@ -637,7 +637,8 @@ class Ubuntu:
         'linux',
         'linux-ti-omap4', # maverick, natty
         'linux-armadaxp', # precise, quantal
-        'linux-exynos5', # raring
+        'linux-exynos5',
+        'linux-keystone',
         'linux-mvl-dove', # maverick, karmic, lucid
         'linux-fsl-imx51', # karmic, lucid
         'linux-ec2',
