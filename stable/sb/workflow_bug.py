@@ -173,3 +173,10 @@ class WorkflowBug():
         cdebug('                WorkflowBug::all_dependent_packages_fully_built leave (True)')
         return retval
 
+    # creator
+    #
+    def creator(s, pkg):
+        cdebug('                WorkflowBug::creator enter')
+        retval = s.__package.creator(pkg)
+        cdebug('                WorkflowBug::creator leave (True)')
+        return retval

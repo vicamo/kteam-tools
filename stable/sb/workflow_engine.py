@@ -67,12 +67,12 @@ class WorkflowEngine():
 
         s.state_map = {
             'upload-to-ppa'             : TaskActions({'Confirmed'    : s.upload_to_ppa_confirmed}),
-            'prepare-package'           : TaskActions({'New'          : s.prep_package_main_new,               'In Progress'  : s.prep_package_main_new,       'Fix Released' : s.prep_package_main_new       }),
-            'prepare-package-lbm'       : TaskActions({'New'          : s.prep_package_lbm_new,                'In Progress'  : s.prep_package_lbm_new,        'Fix Released' : s.prep_package_lbm_new        }),
-            'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       'Fix Released' : s.prep_package_meta_new       }),
-            'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, 'Fix Released' : s.prep_package_ports_meta_new }),
-            'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     'Fix Released' : s.prep_package_signed_new     }),
-            'package-testing'           : TaskActions({'New'          : s.package_testing_new,                 'Confirmed'    : s.noop,                        'Fix Released' : s.package_testing_new         }),
+            'prepare-package'           : TaskActions({'New'          : s.prep_package_main_new,               'In Progress'  : s.prep_package_main_new,       }),
+            'prepare-package-lbm'       : TaskActions({'New'          : s.prep_package_lbm_new,                'In Progress'  : s.prep_package_lbm_new,        }),
+            'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
+            'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
+            'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
+            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Confirmed'    : s.pkg_testing_confirmed,       }),
             'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -501,49 +501,65 @@ class WorkflowEngine():
         """
         return False
 
-    def common_prep_package_new(s, taskobj, pkg):
+    # -----------------------------------------------------------------------------------------------------------------------------
+    # Prepare Package Tasks Handling
+
+    # common_prep_package_new
+    #
+    def common_prep_package_new(s, taskobj, pkg, task):
         cdebug('            WorkflowEngine::common_prep_package_new enter')
         if s.wfb.package_fully_built(pkg):
             cdebug('                %s : fully built' % (pkg), 'green')
 
             # This task can be marked "Fix Released"
             #
+            if s.args.dryrun:
+                cinfo('                Dryrun - changing status of %s from %s to %s' % (task, s.wfb.tasks_by_name[task].status, 'Fix Released'))
+                cinfo('                Dryrun - setting assignee of %s to %s' % (task, s.wfb.creator(pkg)))
+            else:
+                cinfo('                changing status of %s from %s to %s' % (task, s.wfb.tasks_by_name[task].status, 'Fix Released'))
+                s.wfb.tasks_by_name[task].status = 'Fix Released'
+
+                try:
+                    if s.args.debug_assignee:
+                        s.wfb.tasks_by_name[task].assignee = s.lp.default_service.launchpad.people[s.args.debug_assignee]
+                    else:
+                        s.wfb.tasks_by_name[task].assignee = s.wfb.creator(pkg)
+                except KeyError:
+                    pass
+
         else:
             cdebug('                %s : not built' % (pkg), 'red')
         cdebug('            WorkflowEngine::common_prep_package_new leave')
 
+    # prep_package_main_new
+    #
     def prep_package_main_new(s, taskobj):
-        s.common_prep_package_new(taskobj, 'main')
+        s.common_prep_package_new(taskobj, 'main', 'prepare-package')
         return False
 
+    # prep_package_meta_new
+    #
     def prep_package_meta_new(s, taskobj):
-        s.common_prep_package_new(taskobj, 'meta')
+        s.common_prep_package_new(taskobj, 'meta', 'prepare-package-meta')
         return False
 
+    # prep_package_ports_meta_new
+    #
     def prep_package_ports_meta_new(s, taskobj):
-        s.common_prep_package_new(taskobj, 'ports-meta')
+        s.common_prep_package_new(taskobj, 'ports-meta', 'prepare-package-ports-meta')
         return False
 
+    # prep_package_signed_new
+    #
     def prep_package_signed_new(s, taskobj):
-        s.common_prep_package_new(taskobj, 'signed')
+        s.common_prep_package_new(taskobj, 'signed', 'prepare-package-signed')
         return False
 
+    # prep_package_lbm_new
+    #
     def prep_package_lbm_new(s, taskobj):
-        s.common_prep_package_new(taskobj, 'lbm')
-        return False
-
-    def package_testing_new(s, taskobj):
-        cdebug('            WorkflowEngine::package_testing_new enter')
-
-        if s.wfb.all_dependent_packages_fully_built():
-            cdebug('                all dependent packages : fully built', 'green')
-
-            # This task can be marked "Fix Released"
-            #
-        else:
-            cdebug('                all dependent packages : not built', 'red')
-
-        cdebug('            WorkflowEngine::package_testing_new leave')
+        s.common_prep_package_new(taskobj, 'lbm', 'prepare-package-lbm')
         return False
 
     def prep_package_new(s, taskobj):
@@ -580,6 +596,110 @@ class WorkflowEngine():
                 s.final_promote_to_release_tasks(taskobj)
 
         cdebug('            prep_package_new leave')
+        return False
+
+    # -----------------------------------------------------------------------------------------------------------------------------
+    # Package Testing Tasks Handling
+
+    # pkg_testing_new
+    #
+    def pkg_testing_new(s, taskobj):
+        cdebug('            WorkflowEngine::pkg_testing_new enter')
+
+        if s.wfb.all_dependent_packages_fully_built():
+            cdebug('                all dependent packages : fully built', 'green')
+
+            # This task can be marked "Confirmed"
+            #
+            s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
+        else:
+            cdebug('                all dependent packages : not built', 'red')
+
+        cdebug('            WorkflowEngine::pkg_testing_new leave')
+        return False
+
+    # pkg_testing_confirmed
+    #
+    def pkg_testing_confirmed(s, taskobj):
+        """
+        when the prep-package task is set to Fix Released and there is
+        no upload-to-ppa task, we create new tracking bugs for
+        derivative packages, and set the promote-to-proposed task to
+        Confirmed. Otherwise, if upload-to-ppa task is present, just set
+        it to Confirmed if necessary
+        """
+        cdebug('            pkg_testing_confirmed enter')
+
+        if s.projectname == 'kernel-sru-workflow':
+            taskname = 'promote-to-proposed'
+        else:
+            taskname = 'package-testing'
+
+        cdebug('                %s status: %s' % (taskname, s.wfb.tasks_by_name[taskname].status))
+
+        # Even though we came in here do to one of the prepare-package* tasks being
+        # set to 'Fix Released' we don't actually do anything unless the next state
+        # (promote-to-proposed or package-testing) is 'New'.
+        #
+        if s.wfb.tasks_by_name[taskname].status == 'New':
+            # check if all prepare-package tasks are finished
+            if not s.prepare_package_fixed():
+                cdebug('                pkg_testing_confirmed leave (False)')
+                return False
+
+            s.handle_derivatives(taskobj, taskname)
+            s.wfb.tasks_by_name['package-testing'].status = 'Triaged'
+
+        else:
+            cdebug('                doing nothing, the task is not \'New\'')
+
+        cdebug('            pkg_testing_confirmed leave (False)')
+        return False
+
+    # pkg_testing_triaged
+    #
+    def pkg_testing_triaged(s, taskobj):
+        """
+        Right now all we want to do is send some email.
+        """
+        cdebug('            pkg_testing_triaged enter')
+
+        s.wfb.tasks_by_name['package-testing'].status = 'In Progress'
+
+        s.set_tagged_timestamp(taskobj, 'ppa-package-testing-start')
+        s.set_phase(taskobj, 'PPA Testing')
+
+        #-------------------------------------------------------------------
+
+        if s.args.dryrun or s.args.dryrun_email:
+            cinfo('Dryrun - Sending email')
+            return
+
+        cinfo('Sending email')
+
+        if not 'mail_notify' in s.cfg:
+            s.verbose('No mail_notify config found, can\'t send email\n')
+            return
+
+        to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
+        subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
+
+        mcfg = s.cfg['mail_notify']
+        msg  = ''
+        msg += 'Title: %s\n\n' % s.wfb.title
+        msg += 'ID: %s\n' % taskobj.bug.id
+        msg += 'URL: %s\n' % s.bug_url(taskobj.bug.id)
+        msg += 'Version: %s\n' % s.wfb.pkg_version
+        msg += 'Package: %s\n' % s.wfb.pkg_name
+        if '-lts-' in s.wfb.series:
+            series = s.wfb.series.split('-lts-')[1]
+        else:
+            series = s.wfb.series
+        msg += 'Series: %s\n' % series
+        msg += ""
+        s.email.send(mcfg['from_address'], to_address, subj, msg)
+
+        cdebug('            pkg_testing_triaged leave (False)')
         return False
 
     def final_promote_to_release_tasks(s, taskobj):
@@ -729,86 +849,6 @@ class WorkflowEngine():
 
         cdebug('            handle_derivatives leave')
 
-
-    def package_testing_confirmed(s, taskobj):
-        """
-        Right now all we want to do is send some email.
-        """
-        cdebug('            package_testing_confirmed enter')
-
-        s.wfb.tasks_by_name['package-testing'].status = 'In Progress'
-
-        s.set_tagged_timestamp(taskobj, 'ppa-package-testing-start')
-        s.set_phase(taskobj, 'PPA Testing')
-
-        #-------------------------------------------------------------------
-
-        if s.args.dryrun or s.args.dryrun_email:
-            cinfo('Dryrun - Sending email')
-            return
-
-        cinfo('Sending email')
-
-        if not 'mail_notify' in s.cfg:
-            s.verbose('No mail_notify config found, can\'t send email\n')
-            return
-
-        to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
-        subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
-
-        mcfg = s.cfg['mail_notify']
-        msg  = ''
-        msg += 'Title: %s\n\n' % s.wfb.title
-        msg += 'ID: %s\n' % taskobj.bug.id
-        msg += 'URL: %s\n' % s.bug_url(taskobj.bug.id)
-        msg += 'Version: %s\n' % s.wfb.pkg_version
-        msg += 'Package: %s\n' % s.wfb.pkg_name
-        if '-lts-' in s.wfb.series:
-            series = s.wfb.series.split('-lts-')[1]
-        else:
-            series = s.wfb.series
-        msg += 'Series: %s\n' % series
-        msg += ""
-        s.email.send(mcfg['from_address'], to_address, subj, msg)
-
-        cdebug('            package_testing_confirmed leave (False)')
-        return False
-
-    def prep_package_fix_released(s, taskobj):
-        """
-        when the prep-package task is set to Fix Released and there is
-        no upload-to-ppa task, we create new tracking bugs for
-        derivative packages, and set the promote-to-proposed task to
-        Confirmed. Otherwise, if upload-to-ppa task is present, just set
-        it to Confirmed if necessary
-        """
-        cdebug('            prep_package_fix_relesed enter')
-
-        if s.projectname == 'kernel-sru-workflow':
-            taskname = 'promote-to-proposed'
-        else:
-            taskname = 'package-testing'
-
-        cdebug('                %s status: %s' % (taskname, s.wfb.tasks_by_name[taskname].status))
-
-        # Even though we came in here do to one of the prepare-package* tasks being
-        # set to 'Fix Released' we don't actually do anything unless the next state
-        # (promote-to-proposed or package-testing) is 'New'.
-        #
-        if s.wfb.tasks_by_name[taskname].status == 'New':
-            # check if all prepare-package tasks are finished
-            if not s.prepare_package_fixed():
-                cdebug('                prepare_package_fixed leave (False)')
-                return False
-
-            s.handle_derivatives(taskobj, taskname)
-            s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
-
-        else:
-            cdebug('                doing nothing, the task is not \'New\'')
-
-        cdebug('            prepare_package_fixed leave (False)')
-        return False
 
     def has_prep_task(s, taskname):
         if taskname in s.wfb.tasks_by_name:

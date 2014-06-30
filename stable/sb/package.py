@@ -145,16 +145,28 @@ class Sources(object):
                 cinfo('')
 
                 s.__cache[dep]['ppa'] = {}
-                s.__cache[dep]['ppa']['built'] = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.ckt_ppa, version, None)
+                info = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.ckt_ppa, version, None)
+                s.__cache[dep]['ppa']['built']   = info[0]
+                s.__cache[dep]['ppa']['creator'] = info[1]
+                s.__cache[dep]['ppa']['signer']  = info[2]
                 for pocket in ['Proposed', 'Security', 'Updates']:
                     s.__cache[dep][pocket] = {}
-                    s.__cache[dep][pocket]['built'] = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.main_archive, version, pocket)
+                    info = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.main_archive, version, pocket)
+                    s.__cache[dep][pocket]['built']   = info[0]
+                    s.__cache[dep][pocket]['creator'] = info[1]
+                    s.__cache[dep][pocket]['signer']  = info[2]
             else:
                 s.__cache[dep]['ppa'] = {}
-                s.__cache[dep]['ppa']['built'] = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.ckt_ppa, version, None)
+                info = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.ckt_ppa, version, None)
+                s.__cache[dep]['ppa']['built']   = info[0]
+                s.__cache[dep]['ppa']['creator'] = info[1]
+                s.__cache[dep]['ppa']['signer']  = info[2]
                 for pocket in ['Release', 'Proposed']:
                     s.__cache[dep][pocket] = {}
-                    s.__cache[dep][pocket]['built'] = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.main_archive, version, pocket)
+                    info = s.__is_fully_built(s.package.pkgs[dep], abi, s.package.main_archive, version, pocket)
+                    s.__cache[dep][pocket]['built']   = info[0]
+                    s.__cache[dep][pocket]['creator'] = info[1]
+                    s.__cache[dep][pocket]['signer']  = info[2]
 
         for d in s.__cache:
             cwarn('                    %s' % d, 'cyan')
@@ -178,10 +190,10 @@ class Sources(object):
         matches = s.__find_matches(ps, abi, release)
         if matches is not None:
             cdebug('                                match: %s (%s)' % (release, abi), 'green')
-            retval = s.sources_built(matches, archive, package, release, pocket)
+            built, creator, signer = s.sources_built(matches, archive, package, release, pocket)
 
         cdebug('                            Sources::__is_fully_built leave (%s)' % retval, 'blue')
-        return retval
+        return built, creator, signer
 
     # __get_published_sources
     #
@@ -264,12 +276,18 @@ class Sources(object):
         cdebug('                                Sources::sources_built enter', 'blue')
         retval = False
         lst_date = None
+        status = False
+        creator = ''
+        signer  = ''
         for pkg in matches:
             src_id = str(pkg.self).rsplit('/', 1)[1]
             build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
             if build_summaries['status'] == 'FULLYBUILT':
                 cinfo('                                    "%s" %s built (pocket:%s)' % (package, release, pocket), 'green')
                 retval = True
+                status = True
+                creator = pkg.package_creator
+                signer  = pkg.package_signer
             else:
                 cinfo('                                    "%s" %s not fully built yet, skipping (pocket:%s)' % (package, release, pocket), 'green')
             # prefer newer published items...
@@ -278,7 +296,7 @@ class Sources(object):
                     continue
             lst_date = pkg.date_published
         cdebug('                                Sources::sources_built leave (%s)' % retval, 'blue')
-        return retval
+        return status, creator, signer
 
     # fully_built
     #
@@ -310,6 +328,38 @@ class Sources(object):
                 break
 
         cdebug('                        Sources::all_dependent_packages_fully_built leave (%s)' % retval)
+        return retval
+
+    # creator
+    #
+    def creator(s, pkg, pocket=None):
+        cdebug('                        Sources::creator enter')
+        cdebug('                            pkg: %s' % pkg)
+        retval = None
+        if pocket is None:
+            for pocket in s.__cache[pkg]:
+                if s.__cache[pkg][pocket]['built']:
+                    retval = s.__cache[pkg][pocket]['creator']
+                    break
+        else:
+            retval = s.__cache[pkg][pocket]['creator']
+        cdebug('                        Sources::creator leave')
+        return retval
+
+    # signer
+    #
+    def signer(s, pkg, pocket=None):
+        cdebug('                        Sources::signer enter')
+        cdebug('                            pkg: %s' % pkg)
+        retval = None
+        if pocket is None:
+            for pocket in s.__cache[pkg]:
+                if s.__cache[pkg][pocket]['built']:
+                    retval = s.__cache[pkg][pocket]['signer']
+                    break
+        else:
+            retval = s.__cache[pkg][pocket]['signer']
+        cdebug('                        Sources::signer leave')
         return retval
 
 # Package
@@ -452,5 +502,23 @@ class Package():
         cdebug('                    Package::all_dependent_packages_fully_built enter')
         retval = s.__sources.all_dependent_packages_fully_built()
         cdebug('                    Package::all_dependent_packages_fully_built leave (%s)' % retval)
+        return retval
+
+    # creator
+    #
+    def creator(s, pkg, pocket=None):
+        cdebug('                    Package::creator enter')
+        cdebug('                        pkg: %s' % pkg)
+        retval = s.__sources.creator(pkg, pocket)
+        cdebug('                    Package::creator leave (%s)' % retval)
+        return retval
+
+    # signer
+    #
+    def signer(s, pkg, pocket=None):
+        cdebug('                    Package::signer enter')
+        cdebug('                        pkg: %s' % pkg)
+        retval = s.__sources.signer(pkg, pocket)
+        cdebug('                    Package::signer leave (%s)' % retval)
         return retval
 
