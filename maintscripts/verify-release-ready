@@ -227,10 +227,12 @@ class VerifyReleaseReady():
         #
         if found_tracker and tracker_id != 'warning':
             branch = Git.current_branch()
-            if branch not in ['master', 'master-next']:
+            if branch not in ['master', 'master-next'] and not branch.endswith('-next'):
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
+                l = 0
                 for line in master_changelog[1]['content']:
+                    l += 1
                     if found_tracker:
                         if '#' in line:
                             (junk, master_tracker_id) = line.split('#')
@@ -242,8 +244,8 @@ class VerifyReleaseReady():
                 if found_tracker:
                     if tracker_id != master_tracker_id:
                         unique_tracker = True
-                    else:
-                        print('%s != %s' % (tracker_id, master_tracker_id))
+
+
                 s.status('unique release tracking bug', unique_tracker)
 
         s.verify_content()
