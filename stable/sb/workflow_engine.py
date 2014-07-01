@@ -72,7 +72,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Confirmed'    : s.pkg_testing_confirmed,       }),
+            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Confirmed'    : s.pkg_testing_confirmed,       'Triaged' : s.pkg_testing_triaged}),
             'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
