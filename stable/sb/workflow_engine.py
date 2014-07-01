@@ -72,7 +72,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Confirmed'    : s.pkg_testing_confirmed,       'Triaged' : s.pkg_testing_triaged}),
+            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new}),
             'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -621,6 +621,8 @@ class WorkflowEngine():
         if s.wfb.all_dependent_packages_fully_built():
             cdebug('                all dependent packages : fully built', 'green')
 
+            s.__promote_to_proposed(taskobj)
+
             # This task can be marked "Confirmed"
             #
             s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
@@ -630,17 +632,14 @@ class WorkflowEngine():
         cdebug('            WorkflowEngine::pkg_testing_new leave')
         return False
 
-    # pkg_testing_confirmed
+    # __promote_to_proposed
     #
-    def pkg_testing_confirmed(s, taskobj):
+    def __promote_to_proposed(s, taskobj):
         """
-        when the prep-package task is set to Fix Released and there is
-        no upload-to-ppa task, we create new tracking bugs for
-        derivative packages, and set the promote-to-proposed task to
-        Confirmed. Otherwise, if upload-to-ppa task is present, just set
-        it to Confirmed if necessary
         """
-        cdebug('            pkg_testing_confirmed enter')
+        cdebug('            __promote_to_proposed enter')
+
+        retval = False
 
         if s.projectname == 'kernel-sru-workflow':
             taskname = 'promote-to-proposed'
@@ -656,25 +655,25 @@ class WorkflowEngine():
         if s.wfb.tasks_by_name[taskname].status == 'New':
             # check if all prepare-package tasks are finished
             if not s.prepare_package_fixed():
-                cdebug('                pkg_testing_confirmed leave (False)')
-                return False
-
-            s.handle_derivatives(taskobj, taskname)
-            s.wfb.tasks_by_name['package-testing'].status = 'Triaged'
+                cdebug('                __promote_to_proposed leave (False)')
+            else:
+                s.handle_derivatives(taskobj, taskname)
+                s.__ppa_announce(taskobj)
+                retval = True
 
         else:
             cdebug('                doing nothing, the task is not \'New\'')
 
-        cdebug('            pkg_testing_confirmed leave (False)')
-        return False
+        cdebug('            __promote_to_proposed leave (False)')
+        return retval
 
-    # pkg_testing_triaged
+    # __ppa_announce
     #
-    def pkg_testing_triaged(s, taskobj):
+    def __ppa_announce(s, taskobj):
         """
         Right now all we want to do is send some email.
         """
-        cdebug('            pkg_testing_triaged enter')
+        cdebug('            __ppa_announce enter')
 
         s.wfb.tasks_by_name['package-testing'].status = 'In Progress'
 
@@ -711,7 +710,7 @@ class WorkflowEngine():
         msg += ""
         s.email.send(mcfg['from_address'], to_address, subj, msg)
 
-        cdebug('            pkg_testing_triaged leave (False)')
+        cdebug('            __ppa_announce leave (False)')
         return False
 
     def final_promote_to_release_tasks(s, taskobj):
