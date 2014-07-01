@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 #
 
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 import re
 
-from datetime                           import datetime
-
-from ktl.workflow                       import Properties
-from ktl.bugs                           import DeltaTime
 from ktl.ubuntu                         import Ubuntu
-from ktl.utils                          import date_to_string
 
 from sb.exceptions                      import GeneralError, ErrorExit
 from sb.log                             import cinfo, cdebug, cerror, cwarn
@@ -105,9 +99,8 @@ class Sources(object):
         cdebug('                    Sources::__init__ enter', 'blue')
 
         s.package = package
+        s.__cache = None
 
-        s.__cache = {}
-        s.__determine_build_status()
         cdebug('                    Sources::__init__ leave', 'blue')
 
     # __determine_build_status
@@ -115,6 +108,7 @@ class Sources(object):
     def __determine_build_status(s):
         cdebug('                        Sources::__determine_build_status enter', 'blue')
 
+        s.__cache = {}
         for dep in iter(s.package.pkgs):
             cinfo('')
             cinfo('                            %s:' % dep, 'yellow')
@@ -190,7 +184,7 @@ class Sources(object):
         matches = s.__find_matches(ps, abi, release)
         if matches is not None:
             cdebug('                                match: %s (%s)' % (release, abi), 'green')
-            built, creator, signer = s.sources_built(matches, archive, package, release, pocket)
+            built, creator, signer = s.__sources_built(matches, archive, package, release, pocket)
 
         cdebug('                            Sources::__is_fully_built leave (%s)' % retval, 'blue')
         return built, creator, signer
@@ -270,10 +264,10 @@ class Sources(object):
         cdebug('                                Sources::__find_matches leave (%s)' % match, 'blue')
         return matches
 
-    # sources_built
+    # __sources_built
     #
-    def sources_built(s, matches, archive, package, release, pocket):
-        cdebug('                                Sources::sources_built enter', 'blue')
+    def __sources_built(s, matches, archive, package, release, pocket):
+        cdebug('                                Sources::__sources_built enter', 'blue')
         retval = False
         lst_date = None
         status = False
@@ -295,7 +289,7 @@ class Sources(object):
                 if lst_date > pkg.date_published:
                     continue
             lst_date = pkg.date_published
-        cdebug('                                Sources::sources_built leave (%s)' % retval, 'blue')
+        cdebug('                                Sources::__sources_built leave (%s)' % retval, 'blue')
         return status, creator, signer
 
     # fully_built
@@ -303,6 +297,10 @@ class Sources(object):
     def fully_built(s, pkg):
         cdebug('                        Sources::fully_built enter')
         retval = False
+
+        if s.__cache is None:
+            s.__determine_build_status()
+
         for pocket in s.__cache[pkg]:
             if s.__cache[pkg][pocket]['built']:
                 retval = True
@@ -315,6 +313,10 @@ class Sources(object):
     def all_dependent_packages_fully_built(s):
         cdebug('                        Sources::all_dependent_packages_fully_built enter')
         retval = True
+
+        if s.__cache is None:
+            s.__determine_build_status()
+
         for pkg in s.__cache:
             pkg_built = False
             for pocket in s.__cache[pkg]:
@@ -336,6 +338,10 @@ class Sources(object):
         cdebug('                        Sources::creator enter')
         cdebug('                            pkg: %s' % pkg)
         retval = None
+
+        if s.__cache is None:
+            s.__determine_build_status()
+
         if pocket is None:
             for pocket in s.__cache[pkg]:
                 if s.__cache[pkg][pocket]['built']:
@@ -352,6 +358,10 @@ class Sources(object):
         cdebug('                        Sources::signer enter')
         cdebug('                            pkg: %s' % pkg)
         retval = None
+
+        if s.__cache is None:
+            s.__determine_build_status()
+
         if pocket is None:
             for pocket in s.__cache[pkg]:
                 if s.__cache[pkg][pocket]['built']:
