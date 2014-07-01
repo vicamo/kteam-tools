@@ -17,6 +17,7 @@ class WorkflowBugTask(object):
         setattr(s, 'name', task_name)
         setattr(s, 'importance', lp_task.importance)
         setattr(s, 'lp_task', lp_task)
+        s.__modified = False
         s.bug = lp_task.bug
 
     # status
@@ -34,6 +35,7 @@ class WorkflowBugTask(object):
             cinfo('Dryrun - Set task %s to state %s' % (s.name, val), 'red')
         else:
             if s.status != val:
+                s.__modified = True
                 s.lp_task.status = val
                 s.__status = None
                 cinfo('            Task %s status: %s' % (s.name, val), 'red')
@@ -69,6 +71,12 @@ class WorkflowBugTask(object):
                 s.__assignee = None
             else:
                 cinfo('            Task %s already assigned to %s' % (s.name, val), 'red')
+
+    # modified
+    #
+    @property
+    def modified(s):
+        return s.__modified
 
 # WorkflowBug
 #
@@ -195,3 +203,17 @@ class WorkflowBug():
     @property
     def series(s):
         return s.__package.series
+
+    # modified
+    #
+    @property
+    def modified(s):
+        '''
+        Have any of the tasks statuses been changed?
+        '''
+        retval = False
+        for t in s.tasks_by_name:
+            if s.tasks_by_name[t].modified:
+                retval = True
+                break
+        return retval

@@ -146,6 +146,7 @@ class WorkflowEngine():
     # crank
     #
     def crank(s, bugid, sauron):
+        cdebug('WorkflowEngine::crank enter')
         s.initialize()
 
         s.sauron = sauron
@@ -153,13 +154,22 @@ class WorkflowEngine():
         cinfo('')
         cinfo('Processing: %s' % s.printlink, 'cyan')
 
-        bug = WorkflowBug(s.lp.default_service, s.projects_tracked, bugid, sauron, s.args.dryrun)
-        if bug.is_valid:
-            try:
-                s.process_bug_tasks(bug)
+        # If the bug was modified (task status changed) on that crank of the bug then
+        # crank it again.
+        #
+        modified = True
+        while modified:
+            bug = WorkflowBug(s.lp.default_service, s.projects_tracked, bugid, sauron, s.args.dryrun)
+            if bug.is_valid:
+                try:
+                    modified = s.process_bug_tasks(bug)
 
-            except PackageError:
-                pass
+                except PackageError:
+                    pass
+            else:
+                modified = False
+
+        cdebug('WorkflowEngine::crank leave')
 
     # process_bug_tasks
     #
@@ -168,6 +178,7 @@ class WorkflowEngine():
         Go through every workflow task and perform the associated actions
         based on the current state (status) of that task.
         '''
+        cdebug('    WorkflowEngine::process_bug_tasks enter')
         # Determine this bugs project.
         #
         for task in shankbug.lpbug.tasks:
@@ -233,7 +244,8 @@ class WorkflowEngine():
         # Now flush any property changes to the bug description
         s.props.flush()
 
-        return
+        cdebug('    WorkflowEngine::process_bug_tasks leave (%s)' % shankbug.modified)
+        return shankbug.modified
 
     def bug_url(s, bug_id):
         if s.args.staging:
@@ -488,9 +500,9 @@ class WorkflowEngine():
         return True
 
     def upload_to_ppa_confirmed(s, taskobj):
-        cdebug('upload_to_ppa_confirmed enter')
+        cdebug('            upload_to_ppa_confirmed enter')
         s.set_phase(taskobj, 'ReadyToBePackaged')
-        cdebug('upload_to_ppa_confirmed leave (True)')
+        cdebug('            upload_to_ppa_confirmed leave (True)')
         return True
 
     # noop
