@@ -392,7 +392,7 @@ class Package():
             cwarn('        Unable to check package builds for this bug: either the package name or')
             cwarn('        the version are not properly indicated in the bug title.')
             raise PackageError(['Unable to check package builds for this bug: either the package name or',
-                                'the version are not properly indicated in the bug title.'])
+                                'the version is not properly indicated in the bug title.'])
 
         setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
 
