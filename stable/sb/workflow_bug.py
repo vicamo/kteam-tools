@@ -3,7 +3,7 @@
 from logging                            import info, debug, error, warning, basicConfig, INFO, DEBUG, WARNING
 
 from sb.log                             import cinfo, cdebug
-from sb.package                         import Package
+from sb.package                         import Package, PackageError
 
 # WorkflowBugTask
 #
@@ -87,26 +87,29 @@ class WorkflowBug():
         #
         s.is_valid = s.check_is_valid(s.lpbug)
 
-        s.__package = Package(s.lp, s)
+        try:
+            s.__package = Package(s.lp, s)
 
-        cinfo('                      title: "%s"' % s.title, 'blue')
-        cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
-        cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
-        cinfo('                     series: "%s"' % s.__package.series, 'blue')
-        for d in s.__package.pkgs:
-            cinfo('                        dep: "%s"' % d, 'blue')
+            cinfo('                      title: "%s"' % s.title, 'blue')
+            cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
+            cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
+            cinfo('                     series: "%s"' % s.__package.series, 'blue')
+            for d in s.__package.pkgs:
+                cinfo('                        dep: "%s"' % d, 'blue')
 
-        if s.is_valid:
-            cinfo('    Targeted Project:', 'cyan')
-            cinfo('        %s' % s.targeted_project)
-            cinfo('')
-            s.properties = s.lpbug.properties
-            if len(s.properties) > 0:
-                cinfo('    Properties:', 'cyan')
-                for prop in s.properties:
-                    cinfo('        %s: %s' % (prop, s.properties[prop]))
+            if s.is_valid:
+                cinfo('    Targeted Project:', 'cyan')
+                cinfo('        %s' % s.targeted_project)
+                cinfo('')
+                s.properties = s.lpbug.properties
+                if len(s.properties) > 0:
+                    cinfo('    Properties:', 'cyan')
+                    for prop in s.properties:
+                        cinfo('        %s: %s' % (prop, s.properties[prop]))
 
-            s.tasks_by_name = s.create_tasks_by_name()
+                s.tasks_by_name = s.create_tasks_by_name()
+        except PackageError:
+            s.is_valid = False
 
     # check_is_valid
     #
@@ -180,3 +183,15 @@ class WorkflowBug():
         retval = s.__package.creator(pkg)
         cdebug('                WorkflowBug::creator leave (True)')
         return retval
+
+    @property
+    def pkg_name(s):
+        return s.__package.name
+
+    @property
+    def pkg_version(s):
+        return s.__package.version
+
+    @property
+    def series(s):
+        return s.__package.series
