@@ -621,11 +621,10 @@ class WorkflowEngine():
         if s.wfb.all_dependent_packages_fully_built():
             cdebug('                all dependent packages : fully built', 'green')
 
-            s.__promote_to_proposed(taskobj)
-
-            # This task can be marked "Confirmed"
-            #
-            s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
+            if s.__promote_to_proposed(taskobj):
+                # This task can be marked "Confirmed"
+                #
+                s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
         else:
             cdebug('                all dependent packages : not built', 'red')
 
@@ -655,7 +654,7 @@ class WorkflowEngine():
         if s.wfb.tasks_by_name[taskname].status == 'New':
             # check if all prepare-package tasks are finished
             if not s.prepare_package_fixed():
-                cdebug('                __promote_to_proposed leave (False)')
+                cdebug('                __promote_to_proposed leave (%s)' % retval)
             else:
                 s.handle_derivatives(taskobj, taskname)
                 s.__ppa_announce(taskobj)
@@ -664,7 +663,7 @@ class WorkflowEngine():
         else:
             cdebug('                doing nothing, the task is not \'New\'')
 
-        cdebug('            __promote_to_proposed leave (False)')
+        cdebug('            __promote_to_proposed leave (%s)' % retval)
         return retval
 
     # __ppa_announce
