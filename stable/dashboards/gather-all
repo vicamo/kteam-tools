@@ -1,0 +1,189 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+
+from dash.cmdline                       import Cmdline, CmdlineError
+from dash.dbg                           import Dbg
+from dash.utils                         import json_load, FileDoesntExist, dump
+
+from lpltk.LaunchpadService             import LaunchpadService
+import json
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+class LinuxGatherer():
+    """
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg, lp):
+        Dbg.enter("LinuxGatherer.__init__")
+        self.lp = lp
+        self.cfg = cfg
+        Dbg.leave("LinuxGatherer.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        """
+        Dbg.enter("LinuxGatherer.initialize")
+
+        self.distro        = self.lp.distributions['ubuntu']
+        self.linux_package = self.distro.get_source_package('linux')
+
+        # self.cfg['args'][0] should be the name of the data file that we are updating.
+        #
+        try:
+            self.data = json_load(self.cfg['args'][0])
+        except FileDoesntExist:
+            e.print_std_error()
+            raise Exit()
+
+        Dbg.leave("LinuxGatherer.initialize")
+
+    # bug_operation
+    #
+    def bug_operation(self, bug):
+        """
+        This is the method that actually works on the individual bugs. Making changes
+        to status, adding comments, adding tags, etc. are all done here.
+        """
+        Dbg.enter("LinuxGatherer.bug_operation")
+
+        try:
+            Dbg.verbose("id: %s\n" % bug.id)
+
+            bug_date = bug.date_created.strftime('%Y-%m-%d')
+
+            try:
+                self.data['bugs_by_date'][bug_date].append(bug.id)
+            except KeyError:
+                try:
+                    self.data['bugs_by_date'][bug_date] = [bug.id]
+                except KeyError:
+                    self.data['bugs_by_date'] = {}
+                    self.data['bugs_by_date'][bug_date] = [bug.id]
+
+        except:
+            print(bug.id)
+            print("  *** Warning: Exception thrown while processing %s" % (bug.id))
+            raise
+
+        Dbg.leave("LinuxGatherer.bug_operation")
+
+    # run
+    #
+    def run(self):
+        Dbg.enter("LinuxGatherer.run")
+        retval = True
+
+        self.initialize()
+
+        search_status = ["New", "Confirmed", "Triaged", "Incomplete (with response)", "Incomplete (without response)", "In Progress", "Fix Committed", "Fix Released", "Expired", "Opinion", "Invalid", "Won't Fix"] # A list of the bug statuses that we care about
+        Dbg.verbose("Searching the package for matching tasks.\n")
+        tasks = self.linux_package.search_tasks(status=search_status)
+
+        for task in tasks:
+            self.bug_operation(task.bug)
+            break
+
+        dump(self.data)
+
+        with open(self.cfg['args'][0], 'w') as f:
+            f.write(json.dumps(self.data, sort_keys=True, indent=4))
+
+        Dbg.leave("LinuxGatherer.run")
+        return retval
+
+# Gather
+#
+class Gather():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("Gather.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("Gather.__init__")
+
+    # gatherer_startup
+    #
+    def gatherer_startup(self):
+        """
+        """
+        Dbg.enter('Gather.gatherers_startup')
+
+        self.gatherer = LinuxGatherer(self.cfg, self.lp)
+
+        # Yes, the verbose handling is a little stupid right now, it will get
+        # cleaned up "soon".
+        #
+        if 'verbose' in self.cfg:
+            self.gatherer.verbose = self.cfg['verbose']
+
+        Dbg.leave('Gather.gatherers_startup')
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("Gather.main")
+
+        Dbg.verbose("Connecting to LaunchPad...")
+        self.lp = LaunchpadService(self.cfg)
+        Dbg.verbose("  connected.\n")
+
+        try:
+            self.gatherer_startup()
+            self.gatherer.run()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("Gather.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'kernel-team-linux-gatherer'
+    defaults['read_only'] = True
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = Gather(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

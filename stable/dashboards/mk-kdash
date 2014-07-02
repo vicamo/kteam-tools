@@ -1,0 +1,5 @@
+#!/bin/sh
+#sru-report --archive-versions > sru-data.json
+#scp people.canonical.com:/home/kernel/public_html/reports/sru-data.json .
+scp people.canonical.com:/home/kernel/public_html/reports/kernel-sru-workflow.json .
+./generate-dashboard kernel-stable-dashboard.rc > k-dashboard.tmp; mv k-dashboard.tmp web/kernel-stable-dashboard.html

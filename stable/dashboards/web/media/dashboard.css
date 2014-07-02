@@ -1,0 +1,275 @@
+/****
+
+Font sizes to be used.
+Base is set to 0.75em or 12px (if browser default is 16px).
+    0.8em 10px -- smallest text
+    1em (12px) -- body
+    ?em 14px -- navigation
+    1.3em 16px -- h3
+    1.8em (22px) -- h2
+    em 30px -- h1
+
+****/
+
+.dash-body {
+        background: #eceae8 url('bg_pattern.png') repeat top left;
+           padding: 0;
+       font-family: 'UbuntuBeta Regular', Ubuntu, 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif;
+         font-size: 0.75em;
+       line-height: 1.5em;
+             color: #000;
+            margin: 0 0 40px 0;
+}
+
+#dash-header {
+  background-color: #dd4814;
+             color: #fff;
+           padding: 15px 30px;
+     border-radius: 0 0 6px 6px;
+        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#dash-header h1 {
+            margin: 0;
+         font-size: 1.5em;
+}
+
+#dash-timestamp {
+        text-align: right;
+         font-size: 0.8em;
+             float: right;
+}
+
+#dash-timestamp p {
+            margin: 0;
+}
+
+div.dash-center-wrap {
+	text-align: left;
+}
+
+div.dash-center {
+        text-align: center;
+            margin: 0px;
+            margin: auto;
+             width: 960px;
+}
+
+div.dash-center-content {
+        text-align: left;
+}
+
+div.dash-section {
+     border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        background: white;
+           padding: 20px;
+     margin-bottom: 20px;
+}
+
+#status .left {
+    width: 20%;
+}
+
+#dash-table tr td.legend {
+    padding-right: 15px;
+    background: #e9e7e5;
+    text-align: left;
+    font-size: 0.8em;
+}
+
+#dash-table tr td {
+    text-align: left;
+    border: 1px solid #e9e7e5;
+}
+
+.red {
+    color: red;
+}
+
+#dash-table strong.green {
+    color: green;
+}
+
+#dash-table strong.red {
+    color: red;
+}
+
+.available {
+    color: green;
+}
+
+.disabled {
+    color: red;
+    font-size: 0.8em;
+}
+
+a {
+    color: #5e2750;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-weight: normal;
+}
+
+h2 {
+    margin: 1.3em 0 1em 15px;
+    font-size: 1.8em;
+    line-height: 26px;
+    }
+
+h3, h4{
+    margin: 0;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.clear {
+    clear: both;
+}
+
+.page-center-wrap {
+	text-align: left;
+}
+.page-center {
+	text-align: center;
+	margin: 0px;
+	margin: auto;
+    width: 960px;
+}
+.page-center-content {
+    text-align: left;
+}
+
+#header {
+    background-color: #2c001e;
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.description {
+    font-size: 0.8em;
+    color: #787878;
+}
+
+.safety {
+    position: relative;
+}
+
+#incidents,
+#record {
+   font-size: 1.3em;
+   position: absolute;
+   color: white;
+   font-weight: bold;
+}
+
+#incidents {
+   top: 13px;
+   left: 128px;
+}
+
+#record {
+   top: 71px;
+   left: 215px;
+}
+
+.info-block {
+    margin-bottom: 30px;
+}
+
+.quicklinks {
+    overflow: auto;
+    width: 100%;
+}
+
+.section-footer {
+    overflow: auto;
+    width: 100%;
+}
+
+.left, .right {
+    width: 45%;
+}
+
+.left.third {
+    width: 33%;
+}
+
+.left {
+    float: left;
+}
+
+.left ul {
+    list-style: none;
+    padding: 0;
+}
+
+.right {
+    float:right;
+}
+
+.deployment .left {
+    width: 28%;
+    line-height: 1.1em;
+}
+
+.up,
+.down {
+    font-size: 1.8em;
+}
+.up {
+    color: green;
+}
+
+.down{
+    color: red;
+}
+
+.staging-updates {
+    float:left
+}
+
+.staging-updates .revdata {
+    font-size: 1.2em;
+}
+
+.revdata {
+    font-size: 1.8em;
+    line-height: 1.3em;
+    font-weight: bold;
+    padding-right: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing:0;
+}
+
+td {
+    padding: 2px 4px;
+}
+
+#report_meta {
+    text-align: right;
+    font-size: 0.8em;
+    float: right;
+}
+#report_meta p {
+    margin: 0;
+}

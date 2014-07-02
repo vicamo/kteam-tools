@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+from datetime                           import datetime, timedelta
+
+from dash.cmdline                       import Cmdline, CmdlineError
+from dash.dbg                           import Dbg
+from dash.utils                         import json_load, FileDoesntExist, dump, stdo
+
+import json
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# GenTimeData
+#
+class GenTimeData():
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("GenTimeData.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("GenTimeData.__init__")
+
+    def report_start(self):
+        print(""" <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script type="text/javascript" src="http://people.canonical.com/~kernel/reports/js/jquery-latest.js"></script>
+        <script type="text/javascript" src="http://people.canonical.com/~bradf/media/highstock/js/highstock.js"></script>
+        <title>Linux Bug Volume</title>
+    </head>
+    <body>
+    <div id="highchart" style="width: 1000px; height: 500px;"></div>
+        <script type="text/javascript">
+        $(function () {
+            chart = new Highcharts.StockChart({
+                chart: {
+                    renderTo: 'highchart',
+                    alignTicks: false
+                },
+
+                title: {
+                    text: 'Linux Bug Volume'
+                },
+
+                rangeSelector: {
+                    selected: 1
+                },
+
+                series: [
+                    {
+                        /*type: 'column',*/
+                        step: true,
+                        name: 'Linux Bug Volume',""")
+
+    def report_finish(self):
+        print("""                ],
+            });
+        });
+
+        </script>
+    </body>
+</html>
+<!-- vi:set ts=4 sw=4 expandtab syntax=mako: -->""")
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("GenTimeData.main")
+
+        # self.cfg['args'][0] should be the name of the data file that we are updating.
+        #
+        try:
+            self.data   = json_load(self.cfg['args'][0])
+            self.events = json_load(self.cfg['args'][1])
+
+            self.report_start()
+
+            x = []
+            print('                        id: \'dataseries\',')
+            print('                        data: [')
+            line = 0
+            for date in sorted(self.data['bugs_by_date']):
+                dt = datetime.strptime(date, '%Y-%m-%d')
+                #x.append([float(dt.strftime("%s")) * 1000, len(self.data['bugs_by_date'][date])])
+                m = float(dt.strftime("%s")) * 1000
+                stdo("                                [%13.0f, %d]" % (m, len(self.data['bugs_by_date'][date])))
+                line += 1
+                if line < len(self.data['bugs_by_date']):
+                    stdo(",")
+                stdo("\n")
+            print('                            ]')
+            print('                        },')
+            #dump(x)
+
+            if len(self.events) > 0:
+                print('                {')
+                print('                    type: \'flags\',')
+                print('                    data: [')
+                line = 0
+                for date in sorted(self.events):
+                    dt = datetime.strptime(date, '%Y-%m-%d')
+                    m = float(dt.strftime("%s")) * 1000
+                    js = dt.strftime('Date.UTC(%Y, %m, %d)')
+                    stdo('                        {x: %13.0f, title: \'%s\'}' % (m, self.events[date][0]))
+                    #stdo('        {x: %s, title: \'%s\'}' % (js, self.events[date][0]))
+
+                    line += 1
+                    if line < len(self.events):
+                        stdo(",")
+                    stdo("\n")
+
+                print('                    ],')
+                print('                    onSeries: \'dataseries\',')
+                print('                    shape: \'squarepin\'')
+                print('                }')
+
+            self.report_finish()
+
+        except FileDoesntExist:
+            e.print_std_error()
+            raise Exit()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("GenTimeData.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = GenTimeData(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

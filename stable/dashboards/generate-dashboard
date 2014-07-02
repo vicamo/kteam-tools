@@ -1,0 +1,227 @@
+#!/usr/bin/env python
+#
+
+from __future__                         import absolute_import, print_function, unicode_literals
+from sys                                import argv
+from os                                 import path, listdir
+from getopt                             import getopt, GetoptError
+from datetime                           import datetime
+import json
+
+from dash.utils                         import stdo, error, json_load, file_load, FileDoesntExist, string_to_date, dump
+from dash.dbg                           import Dbg
+from dash.cfg                           import Cfg, CfgError
+
+from mako.template                      import Template
+from mako.exceptions                    import RichTraceback
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>]                                               \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) > 0:
+                    cfg['rc'] = args[0]
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# GenerateDashboard
+#
+class GenerateDashboard():
+    """
+    This class/script builds a number of reports based on the data in a "report
+    configuration file" and the bug database.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("GenerateDashboard.__init__")
+        self.cfg    = cfg
+        Dbg.leave("GenerateDashboard.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("GenerateDashboard.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            # Load the reports configuration file
+            #
+            self.dash = json_load(self.cfg['rc'])
+            self.mako_template = Template(file_load(self.dash['template']))
+
+        except FileDoesntExist as e:
+            e.print_std_error()
+            raise Exit()
+
+        except KeyboardInterrupt:
+            raise Exit()
+
+        except CfgError as e:
+            error(e)
+            raise Exit()
+
+        finally:
+            Dbg.leave("GenerateDashboard.initialize")
+
+        return
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("GenerateDashboard.main")
+
+        try:
+            self.initialize()
+
+            data = {}
+            try:
+                for section in self.dash['data']:
+                    file_name = self.dash['data'][section]
+                    data[section] = json_load(file_name)
+            except FileDoesntExist as e:
+                e.print_std_error()
+                raise Exit()
+
+            try:
+                template = self.mako_template.render(config = self.dash, data = data, timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M'))
+                print(template)
+            except:
+                traceback = RichTraceback()
+                for (filename, lineno, function, line) in traceback.traceback:
+                    print("File %s, line %s, in %s" % (filename, lineno, function))
+                    print(line, "\n")
+                print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("GenerateDashboard.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = GenerateDashboard(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

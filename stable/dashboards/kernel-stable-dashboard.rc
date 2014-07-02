@@ -1,0 +1,8 @@
+{
+    "template" : "web/templates/kernel-stable-dashboard.mako",
+    "title"    : "Kernel Stable Team Dashboard",
+    "data"     : {
+        "sru" : "sru-data.json",
+        "workflow" : "kernel-sru-workflow.json"
+    }
+}

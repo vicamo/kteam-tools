@@ -1,0 +1,159 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+
+from dash.cmdline                       import Cmdline, CmdlineError
+from dash.dbg                           import Dbg
+from dash.srus                          import UbuntuReleases
+
+from lpltk.LaunchpadService             import LaunchpadService
+
+import json
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+class UploadQueuesGatherer():
+    """
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg, lp):
+        self.cfg = cfg
+        self.lp  = lp
+
+        self.ubuntu = lp.launchpad.distributions['ubuntu']
+        self.archive = self.ubuntu.getArchive(name='primary')
+
+    # get_queue_count
+    #
+    def get_queue_count(self, status, distro_series, pocket):
+        """
+        Return the number of results of the given queue page URL.
+        """
+        retval = len(distro_series.getPackageUploads(status=status, archive=self.archive, pocket=pocket))
+        return retval
+
+    # run
+    #
+    def run(self):
+        Dbg.enter("UploadQueuesGatherer.run")
+
+        try:
+            data = {}
+            releases = UbuntuReleases(self.lp.launchpad)
+
+            for q in ['Proposed', 'Backports']:
+                Dbg.verbose('%s\n' % q)
+                data[q] = {}
+                for r in releases:
+                    Dbg.verbose('    %s\n' % r)
+                    if not releases[r]['active']:
+                        Dbg.verbose('        Not active\n')
+                    else:
+                        data[q][releases[r]['name']] = {}
+                        data[q][releases[r]['name']]['unapproved'] = self.get_queue_count('Unapproved', releases[r]['series'], q)
+                        data[q][releases[r]['name']]['new']        = self.get_queue_count('New',        releases[r]['series'], q)
+                        #data[q][releases[r]['name']]['accepted']   = self.get_queue_count('Accepted',   releases[r]['series'], q)
+                        #data[q][releases[r]['name']]['done']       = self.get_queue_count('Done',       releases[r]['series'], q)
+                        #Dbg.verbose('        unapproved: %02d    new: %02d    accepted: %02d    done: %02d\n' % (data[q][releases[r]['name']]['unapproved'], data[q][releases[r]['name']]['new'], data[q][releases[r]['name']]['accepted'], data[q][releases[r]['name']]['done']))
+
+            with open('upload-queues-stats.json', 'w') as f:
+                f.write(json.dumps(data, sort_keys=True, indent=4))
+
+        except:
+            raise
+
+        Dbg.leave("UploadQueuesGatherer.run")
+        return
+
+# Gather
+#
+class Gather():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("Gather.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("Gather.__init__")
+
+    # gatherer_startup
+    #
+    def gatherer_startup(self):
+        """
+        """
+        Dbg.enter('Gather.gatherers_startup')
+
+        self.gatherer = UploadQueuesGatherer(self.cfg, self.lp)
+
+        # Yes, the verbose handling is a little stupid right now, it will get
+        # cleaned up "soon".
+        #
+        if 'verbose' in self.cfg:
+            self.gatherer.verbose = self.cfg['verbose']
+
+        Dbg.leave('Gather.gatherers_startup')
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("Gather.main")
+
+        Dbg.verbose("Connecting to LaunchPad...")
+        self.lp = LaunchpadService(self.cfg)
+        Dbg.verbose("  connected.\n")
+
+        try:
+            self.gatherer_startup()
+            self.gatherer.run()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("Gather.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'kernel-team-dashboard-gatherer'
+    defaults['read_only'] = True
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = Gather(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

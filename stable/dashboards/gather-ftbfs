@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+
+from dash.cmdline                       import Cmdline, CmdlineError
+from dash.dbg                           import Dbg
+from dash.ftbfs                         import Ftbfs
+
+from lpltk.LaunchpadService             import LaunchpadService
+import json
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+class FtbfsGatherer():
+    """
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg, lp):
+        self.cfg = cfg
+        self.lp  = lp
+
+    def person_info(self, owner):
+        if owner is None:
+            print("                   owner: None")
+        else:
+            print("                   owner:")
+            print("                        name: %s" % owner.name)
+
+    def distro_series_info(self, series):
+        print("            distro series:")
+        print("                            name: %s" % series.name)
+        print("                full series name: %s" % series.fullseriesname)
+
+    def product_series_info(self, series):
+        print("           product series:")
+        print("                        name: %s" % series.name)
+
+    def packageset_info(self, packageset):
+        print("package set:")
+        print("                    name: %s" % (packageset.name))
+        print("             description: %s" % (packageset.description))
+        self.person_info(packageset.owner)
+        self.distro_series_info(packageset.distroseries)
+        print("            date created: %s" % (packageset.date_created))
+        print("                      id: %s" % (packageset.id))
+        print("    relative build score: %s" % (packageset.relative_build_score))
+
+    def source_package_info(self, src):
+        print("source package:")
+        print("            display name: %s" % (src.displayname))
+        print("                    name: %s" % (src.name))
+        self.product_series_info(src.productseries)
+        self.distro_series_info(src.distroseries)
+
+    # run
+    #
+    def run(self):
+        Dbg.enter("FtbfsGatherer.run")
+
+        retval = True
+
+        stats = Ftbfs(self.lp.launchpad)
+
+        with open('ftbfs-stats.json', 'w') as f:
+            f.write(json.dumps(stats, sort_keys=True, indent=4))
+
+        #print("Failure                Main       |           Ports")
+        #print("                   i386    amd64  |  armel    armhf    powerpc")
+        #for state in problem_states:
+        #    s = states[state]['__stats__']
+        #    if state == 'Failed to build':
+        #        stdo("%-20s" % "build")
+        #    elif state == 'Dependency wait':
+        #        stdo("%-20s" % "waiting")
+        #    elif state == 'Chroot problem':
+        #        stdo("%-20s" % "chroot")
+        #    elif state == 'Failed to upload':
+        #        stdo("%-20s" % "upload")
+
+        #    for a in ('i386', 'amd64', 'armel', 'armhf', 'powerpc'):
+        #        try:
+        #            stdo('%4d    ' % s[a])
+        #        except KeyError:
+        #            stdo('    0    ')
+        #    stdo('\n')
+
+        Dbg.leave("FtbfsGatherer.run")
+        return retval
+
+# Gather
+#
+class Gather():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("Gather.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("Gather.__init__")
+
+    # gatherer_startup
+    #
+    def gatherer_startup(self):
+        """
+        Setup the list of bug handler plugins that this script will use.
+
+        The plugin list is pulled in here because we only want to do it once
+        and not every time the bug_handler is called. And also, because this
+        method is called after the base class has created self.lp.
+        """
+        Dbg.enter('Gather.gatherers_startup')
+
+        self.gatherer = FtbfsGatherer(self.cfg, self.lp)
+
+        # Yes, the verbose handling is a little stupid right now, it will get
+        # cleaned up "soon".
+        #
+        if 'verbose' in self.cfg:
+            self.gatherer.verbose = self.cfg['verbose']
+
+        Dbg.leave('Gather.gatherers_startup')
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("Gather.main")
+
+        Dbg.verbose("Connecting to LaunchPad...")
+        self.lp = LaunchpadService(self.cfg)
+        Dbg.verbose("  connected.\n")
+
+        try:
+            self.gatherer_startup()
+            self.gatherer.run()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("Gather.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'kernel-team-dashboard-gatherer'
+    defaults['read_only'] = True
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = Gather(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

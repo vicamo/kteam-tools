@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+
+from dash.cmdline                       import Cmdline, CmdlineError
+from dash.dbg                           import Dbg
+from dash.builders                      import Builders
+
+from lpltk.LaunchpadService             import LaunchpadService
+import json
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+class BuildersGatherer():
+    """
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg, lp):
+        self.lp = lp
+        self.cfg = cfg
+
+    # run
+    #
+    def run(self):
+        Dbg.enter("BuildersGatherer.run")
+        retval = True
+
+        stats = Builders(self.lp.launchpad).stats()
+
+        with open('builder-stats.json', 'w') as f:
+            f.write(json.dumps(stats, sort_keys=True, indent=4))
+
+        Dbg.leave("BuildersGatherer.run")
+        return retval
+
+# Gather
+#
+class Gather():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("Gather.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("Gather.__init__")
+
+    # gatherer_startup
+    #
+    def gatherer_startup(self):
+        """
+        Setup the list of bug handler plugins that this script will use.
+
+        The plugin list is pulled in here because we only want to do it once
+        and not every time the bug_handler is called. And also, because this
+        method is called after the base class has created self.lp.
+        """
+        Dbg.enter('Gather.gatherers_startup')
+
+        self.gatherer = BuildersGatherer(self.cfg, self.lp)
+
+        # Yes, the verbose handling is a little stupid right now, it will get
+        # cleaned up "soon".
+        #
+        if 'verbose' in self.cfg:
+            self.gatherer.verbose = self.cfg['verbose']
+
+        Dbg.leave('Gather.gatherers_startup')
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("Gather.main")
+
+        Dbg.verbose("Connecting to LaunchPad...")
+        self.lp = LaunchpadService(self.cfg)
+        Dbg.verbose("  connected.\n")
+
+        try:
+            self.gatherer_startup()
+            self.gatherer.run()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("Gather.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'kernel-team-dashboard-gatherer'
+    defaults['read_only'] = True
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = Gather(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

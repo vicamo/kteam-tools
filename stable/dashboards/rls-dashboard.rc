@@ -1,0 +1,10 @@
+{
+    "template" : "web/templates/rls-dashboard.mako",
+    "title"    : "Release Dashboard",
+    "data"     : {
+        "builders"      : "builder-stats.json",
+        "ftbfs"         : "ftbfs-stats.json",
+        "srus"          : "sru-stats.json",
+        "upload-queues" : "upload-queues-stats.json"
+    }
+}

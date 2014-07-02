@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Release Dashboard</title>
+        <link rel="stylesheet" href="media/dashboard.css" type="text/css" media="screen" />
+    </head>
+
+
+    <body id="target" class="dash-body">
+    </body>
+    <script type="text/javascript">
+        var t;
+        function request_html() {
+            var httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = handleResponse;
+            httpRequest.open("GET", "rls-dashboard.html");
+            httpRequest.setRequestHeader("Cache-Control", "no-cache");
+            httpRequest.send();
+        }
+
+        function handleResponse(e) {
+            if ((e.target.readyState == XMLHttpRequest.DONE) && (e.target.status == 200)) {
+                document.getElementById("target").innerHTML = e.target.responseText;
+            }
+        }
+
+        function main() {
+            request_html();
+            t = setTimeout("main()", 1000 * 60);
+        }
+
+        window.onload = main;
+    </script>
+
+</html>
+<!-- vi:set ts=4 sw=4 expandtab: -->
+

@@ -1,0 +1,263 @@
+/****
+
+Font sizes to be used.
+Base is set to 0.75em or 12px (if browser default is 16px).
+    0.8em 10px -- smallest text
+    1em (12px) -- body
+    ?em 14px -- navigation
+    1.3em 16px -- h3
+    1.8em (22px) -- h2
+    em 30px -- h1
+
+****/
+
+.dash-body {
+        background: #eceae8 url('bg_pattern.png') repeat top left;
+           padding: 0;
+       font-family: 'UbuntuBeta Regular', Ubuntu, 'Bitstream Vera Sans', 'DejaVu Sans', Tahoma, sans-serif;
+         font-size: 0.75em;
+       line-height: 1.5em;
+             color: #000;
+            margin: 0 0 40px 0;
+}
+
+#dash-header {
+  background-color: #2c001e;
+             color: #fff;
+           padding: 15px 30px;
+     border-radius: 0 0 6px 6px;
+        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+#dash-header h1 {
+            margin: 0;
+         font-size: 1.5em;
+}
+
+#dash-timestamp {
+        text-align: right;
+         font-size: 0.8em;
+             float: right;
+}
+
+#dash-timestamp p {
+            margin: 0;
+}
+
+div.dash-content {
+        text-align: left;
+            margin: 0px;
+            margin: auto;
+             width: 960px;
+}
+
+div.dash-section {
+     border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        background: white;
+           padding: 20px;
+     margin-bottom: 20px;
+          position: relative;
+	    height: auto;
+}
+
+div.dash-sub-section {
+             width: 100%;
+     margin-bottom: 30px;
+	    height: auto;
+}
+
+div.dash-sub-section-full {
+             width: 100%;
+     margin-bottom: 30px;
+}
+
+div.dash-section-footer {
+    overflow: auto;
+    width: 100%;
+}
+
+div.dash-sub-section-left .dash-sub-section-right {
+             width: 45%;
+     margin-bottom: 30px;
+}
+
+div.dash-sub-section-wrap {
+          position: relative;
+	    height: auto;
+}
+
+div.dash-sub-section-left {
+          position: relative;
+}
+
+div.dash-sub-section-right {
+          position: relative;
+}
+
+div.dash-left {
+             width: 45%;
+}
+
+div.dash-right {
+             width: 45%;
+          position: absolute;
+	     right: 0;
+	       top: 0;
+          overflow: auto;
+}
+
+a {
+    color: #5e2750;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-weight: normal;
+}
+
+h2 {
+    margin: 1.3em 0 1em 15px;
+    font-size: 1.8em;
+    line-height: 26px;
+    }
+
+h3, h4{
+    margin: 0;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.clear {
+    clear: both;
+}
+
+.description {
+    font-size: 0.8em;
+    color: #787878;
+}
+
+.safety {
+    position: relative;
+}
+
+#incidents,
+#record {
+   font-size: 1.3em;
+   position: absolute;
+   color: white;
+   font-weight: bold;
+}
+
+#incidents {
+   top: 13px;
+   left: 128px;
+}
+
+#record {
+   top: 71px;
+   left: 215px;
+}
+
+.info-block {
+    margin-bottom: 30px;
+}
+
+.quicklinks {
+    overflow:auto;
+    width: 100%;
+}
+
+.left, .right {
+    width: 45%;
+}
+
+.left.third {
+    width: 33%;
+}
+
+.left {
+    position: relative;
+}
+
+.left ul {
+    list-style: none;
+    padding: 0;
+}
+
+.right {
+    float:right;
+}
+
+.deployment .left {
+    width: 28%;
+    line-height: 1.1em;
+}
+
+#status .left {
+    width: 10%;
+}
+
+.up,
+.down {
+    font-size: 1.8em;
+}
+.up {
+    color: green;
+}
+
+.down{
+    color: red;
+}
+
+.staging-updates {
+    float:left
+}
+
+.staging-updates .revdata {
+    font-size: 1.2em;
+}
+
+.revdata {
+    font-size: 1.8em;
+    line-height: 1.3em;
+    font-weight: bold;
+    padding-right: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing:0;
+}
+
+td {
+    padding: 2px 4px;
+}
+
+#bugs-table tr td.legend {
+    padding-right: 15px;
+    background: #e9e7e5;
+    text-align: left;
+    font-size: 0.8em;
+}
+
+#bugs-table tr td {
+    text-align: center;
+    border: 1px solid #e9e7e5;
+}
+
+#bugs-table strong.green {
+    color: green;
+}
+
+#bugs-table strong.red {
+    color: red;
+}
+
