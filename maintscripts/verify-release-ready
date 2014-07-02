@@ -4,7 +4,7 @@
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
 
-from ktl.utils                          import stdo, eout
+from ktl.utils                          import stdo, eout, run_command
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
@@ -290,7 +290,14 @@ class VerifyReleaseReady():
         if not tag_found:
             s.status(msg, False) # the specified commit.
             s.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
-
+        else:
+            # Verify tag has been pushed!
+            msg = 'tag pushed'
+            status, result = run_command("git ls-remote --tags origin %s" % expected)
+            if status == 0 and expected in result[0]:
+                s.status(msg, True)
+            else:
+                s.status(msg, 'warning')
 
     def verify_content(s):
         changelog = Debian.changelog()
