@@ -208,6 +208,27 @@ class Shankster(threading.Thread):
                         except ShellError as e:
                             s.output.reply(e.output)
 
+                elif cmd.startswith('update '):
+                    c = cmd.split()
+                    location = '/srv/kernel.ubuntu.com/www/sru'
+                    if 'reports' in c[1]:
+                        sh_cmd = '(cd %s;make shankbot)' % location
+                        try:
+                            (rc, output) = sh(sh_cmd)
+                            s.output.reply(who + ', ' + 'reports updated', target)
+                        except ShellError as e:
+                            s.output.reply(e.output)
+
+                    elif c[1].endswith('.html'):
+                        sh_cmd = '(cd %s;make %s)' % (location, c[1])
+                        try:
+                            (rc, output) = sh(sh_cmd)
+                            s.output.reply(who + ', ' + '%s updated' % (c[1]), target)
+                        except ShellError as e:
+                            s.output.reply(e.output)
+
+                        pass
+
                 else:
                     s.output.reply(who + ', ' + 'sorry, I don\'t know how to do that', target)
 
@@ -338,6 +359,10 @@ class IrcShankbot(SingleServerIRCBot):
             s.reply(who + ', ' + '         Perform a \'git pull\' on the repository where the bot is running. This, in combination', target)
             s.reply(who + ', ' + '         with \'die\' is a way to make changes to the bot code and get it to restart. Or, to get', target)
             s.reply(who + ', ' + '         any of the other code (sru-workflow-manager) updated remotely.', target)
+            s.reply(who + ', ' + '  update reports', target)
+            s.reply(who + ', ' + '         Update the kernel-sru-workflow.html and kernel-stable-dashboard.html reports', target)
+            s.reply(who + ', ' + '  update <report>', target)
+            s.reply(who + ', ' + '         Update a specific report (you need to know what you are doing)', target)
             s.reply(who + ', ' + '  moin', target)
             s.reply(who + ', ' + '         replies with "moin"', target)
             s.reply(who + ', ' + ' ', target)
@@ -374,6 +399,10 @@ class IrcShankbot(SingleServerIRCBot):
 
         elif cmd.startswith('thank'):
             s.reply(who + ', ' + s.say_your_welcome(), target)
+
+        elif cmd.startswith('update '):
+            s.enqueue_cmd(who, cmd, target)
+            s.reply(who + ', ' + 'I\'m on it boss', target)
 
         else:
 
