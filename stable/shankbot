@@ -201,10 +201,13 @@ class Shankster(threading.Thread):
                     if ' ' in cmd:
                         # Another arg parser here would probably be the right thing.
                         cmd = cmd.split()
-                        sh_cmd = './swm --bugs=%s' % cmd[1]
+                        sh_cmd = './swm --debug --verbose --bugs=%s' % cmd[1]
                         try:
                             (rc, output) = sh(sh_cmd)
                             s.output.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
+                            with open("/tmp/shanky.log", "w") as f:
+                                for l in output:
+                                    f.write(l)
                         except ShellError as e:
                             s.output.reply(e.output)
 
