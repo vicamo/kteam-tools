@@ -301,10 +301,14 @@ class Sources(object):
         if s.__cache is None:
             s.__determine_build_status()
 
-        for pocket in s.__cache[pkg]:
-            if s.__cache[pkg][pocket]['built']:
-                retval = True
-                break
+        try:
+            for pocket in s.__cache[pkg]:
+                if s.__cache[pkg][pocket]['built']:
+                    retval = True
+                    break
+        except KeyError:
+            pass # Eat the KeyError and return False
+
         cdebug('                        Sources::fully_built leave (%s)' % retval)
         return retval
 
@@ -319,10 +323,13 @@ class Sources(object):
 
         for pkg in s.__cache:
             pkg_built = False
-            for pocket in s.__cache[pkg]:
-                if s.__cache[pkg][pocket]['built']:
-                    pkg_built = True
-                    break
+            try:
+                for pocket in s.__cache[pkg]:
+                    if s.__cache[pkg][pocket]['built']:
+                        pkg_built = True
+                        break
+            except KeyError:
+                pass # Eat the KeyError and return False
 
             if not pkg_built:
                 cdebug('                            %s is not fully built yet.' % pkg, 'red')
