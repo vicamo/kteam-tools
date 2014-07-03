@@ -178,7 +178,7 @@ class MorningBugReport():
         """
         retval = None
         try:
-            response = urlopen('http://people.canonical.com/~kernel/reports/1-day-window.json')
+            response = urlopen('http://kernel.ubuntu.com/sru/1-day-window.json')
             retval = json.loads(response.read())
         except URLError as e:
             print(e.reason)
@@ -307,7 +307,7 @@ class MorningBugReport():
             retval += self.per_package_report(pkg, new_bugs['packages'][pkg])
 
         retval += '\n'
-        retval += 'An online version of this report can be found at: http://people.canonical.com/~kernel/reports/1-day-new.html\n'
+        retval += 'An online version of this report can be found at: http://kernel.ubuntu.com/sru/1-day-new.html\n'
 
         retval += '\n\n\n'
         retval += 'The Top 10 Hot List Bugs (based on bug heat)\n\n'
