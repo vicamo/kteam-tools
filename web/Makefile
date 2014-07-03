@@ -17,7 +17,9 @@ sru-report.html: sru-data.json scripts/sru2html
 versions.html: sru-data.json scripts/versions2html
 	scripts/versions2html $< > $@
 
-
+shankbot: kernel-sru-workflow.html
+	cp *.json dashboards
+	(cd dashboards;./generate-dashboard kernel-stable-dashboard.rc > k-dashboard.tmp && cp k-dashboard.tmp web/kernel-stable-dashboard.html)
 
 regressions-data: regressions-potential-data.json regressions-release-data.json regressions-update-data.json regressions-proposed-data.json
 
