@@ -10,6 +10,7 @@ from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
 from ktl.ubuntu                         import Ubuntu
 from ktl.termcolor                      import colored
+from launchpadlib.launchpad		import Launchpad
 import re
 import ConfigParser
 
@@ -36,6 +37,8 @@ class VerifyReleaseReady():
         s.passed = 0
         s.failed = 0
         s.delimiter = 40
+        # add launchpadlib support
+        s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
 
     # initialize
     #
@@ -248,6 +251,10 @@ class VerifyReleaseReady():
 
                 s.status('unique release tracking bug', unique_tracker)
 
+        # Verify the bugs in the changelog are public, targeted against linux and the
+        # proper series, and marked Fix Committed.
+        s.verify_changelog_bugs()
+
         s.verify_content()
 
     def verify_closing_commit(s, cl1, commit, version):
@@ -298,6 +305,37 @@ class VerifyReleaseReady():
                 s.status(msg, True)
             else:
                 s.status(msg, 'warning')
+
+    def verify_changelog_bugs(s):
+        master_changelog = Debian.master_changelog()
+        changelog_bugs = master_changelog[1]['bugs']
+        changelog_series = master_changelog[1]['series']
+
+        for bug in changelog_bugs:
+            # Error on private or invalid bugs
+            try:
+                lp_bug = s.lp.bugs[bug]
+            except:
+                s.status('LP: #%s: invalid/private bug number' % bug, 'error')
+                continue
+
+            # Ignore kernel-release-tracking-bug's
+            if 'kernel-release-tracking-bug' in lp_bug.tags:
+                continue
+
+            # check bug tasks, is it linux and fix committed?
+            is_targeted_to_linux = False
+            is_fix_committed = False
+            for task in lp_bug.bug_tasks:
+                if task.self_link.find('https://api.launchpad.net/1.0/ubuntu/%s/+source/linux/' % changelog_series):
+                    is_targeted_to_linux = True
+                    if task.status == u'Fix Committed':
+                        is_fix_committed = True
+
+            if not is_targeted_to_linux:
+                s.status('LP: #%s not targeted to linux/%s' % bug, changelog_series, 'warning')
+            if not is_fix_committed:
+                s.status('LP: #%s is not fix committed' % bug, 'warning')
 
     def verify_content(s):
         changelog = Debian.changelog()
