@@ -8,7 +8,7 @@
 from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, dump
 from ktl.kernel                         import Kernel
-from re                                 import compile
+from re                                 import compile, findall
 from os                                 import path, listdir, walk
 
 # DebianError
@@ -30,6 +30,8 @@ class Debian:
 
     package_rc = compile("^(linux[-\S])*.*$")
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
+    bug_line_rc = compile("LP:\s#[0-9]+(,\s*#[0-9]+)*")
+    bug_rc = compile("#([0-9]+)")
 
     # debian_directories
     #
@@ -133,6 +135,8 @@ class Debian:
             raise DebianError("The first line in the changelog is not a version line.")
 
         content = []
+        bugs = []
+
         for line in changelog_contents:
             m = cls.version_line_rc.match(line)
             if m != None:
@@ -154,6 +158,7 @@ class Debian:
                 section['pocket']  = pocket
                 section['content'] = content
                 section['package'] = package
+                section['bugs'] = set(bugs)
 
                 m = cls.version_rc.match(version)
                 if m != None:
@@ -165,7 +170,15 @@ class Debian:
 
                 retval.append(section)
                 content = []
+                bugs = []
             else:
+                # find bug numbers and append them to the list
+                bug_line_matches = cls.bug_line_rc.match(line)
+                if bug_line_matches != 0:
+                    bug_matches = findall(cls.bug_rc,line)
+                    if bug_matches:
+                        bugs.extend( bug_matches )
+
                 content.append(line)
 
         return retval
