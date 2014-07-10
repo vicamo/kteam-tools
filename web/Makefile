@@ -88,7 +88,7 @@ kernel-sru-workflow.html: kernel-sru-workflow.json
 
 .PHONY : kernel-cves.html
 kernel-cves.html: scripts/kernel-cves
-	scripts/kernel-cves
+	(cd kteam-tools/cvescripts;python kernel-cves.py); mv kteam-tools/cvescripts/kernel-cves.html .
 
 .PHONY : kt-meeting.txt
 kt-meeting.txt: scripts/kt-meeting-stats
