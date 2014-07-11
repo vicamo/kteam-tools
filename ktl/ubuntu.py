@@ -178,6 +178,7 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
+                'linux-keystone' : { 'meta' : 'linux-meta-keystone' },
             },
             'derivative-packages' :
             {
