@@ -120,7 +120,7 @@ while (<STDIN>) {
 		} elsif ($ok ne '') {
 			print "$config=$ok\n";
 		} else {
-			print "## $config UNABLE TO FIX <$policy>\n";
+			print "## $config UNABLE TO FIX <$column> <$policy>\n";
 		}
 	}
 }
