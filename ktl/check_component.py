@@ -161,7 +161,7 @@ class CheckComponent():
             package.startswith('linux-meta-lts-') or
             package.startswith('linux-signed-lts-')):
             return self.main_component
-        if package in ['linux-ec2', 'linux-ti-omap4', 'linux-armadaxp', 'linux-touchstone']:
+        if package in ['linux-ec2', 'linux-ti-omap4', 'linux-armadaxp', 'linux-keystone']:
             return self.main_component
         return self.default_component
 
