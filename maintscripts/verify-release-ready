@@ -330,21 +330,24 @@ class VerifyReleaseReady():
             is_targeted_to_package = False
             is_targeted_to_series = False
             is_fix_committed = False
-
             for task in lp_bug.bug_tasks:
                 task_display_name = task.bug_target_display_name.lower()
+                # if the display name 'linux (ubuntu X)' matches our package continue
                 if changelog_source_package in task_display_name:
                     is_targeted_to_package = True
-                    if (changelog_series in task_display_name) or (changelog_series == s.lp_devel_series.displayname.lower()):
+                    # if the display name contains the series, or we are devel continue
+                    if (changelog_series in task_display_name) or \
+                       (changelog_series == s.lp_devel_series.displayname.lower()):
                         is_targeted_to_series = True
-                    if task.status == u'Fix Committed':
-                        is_fix_committed = True
+                        # if we are on a devel or series targeted task check status of that task
+                        if task.status == u'Fix Committed':
+                            is_fix_committed = True
 
             # display status based on results
             if not is_targeted_to_package:
-                s.status('LP: #%s target is not package %s' % (bug, changelog_source_package), False)
+                s.status('LP: #%s is not package %s' % (bug, changelog_source_package), False)
             if not is_targeted_to_series:
-                s.status('LP: #%s target is not series %s' % (bug, changelog_series), 'warning')
+                s.status('LP: #%s is not series %s' % (bug, changelog_series), 'warning')
             if not is_fix_committed:
                 s.status('LP: #%s is not fix committed' % bug, 'warning')
 
