@@ -30,7 +30,7 @@ class Debian:
 
     package_rc = compile("^(linux[-\S])*.*$")
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
-    bug_line_rc = compile("LP:\s#[0-9]+(,\s*#[0-9]+)*")
+    bug_line_rc = compile("LP:\s#[0-9]+")
     bug_rc = compile("#([0-9]+)")
 
     # debian_directories

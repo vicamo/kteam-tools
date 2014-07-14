@@ -39,6 +39,8 @@ class VerifyReleaseReady():
         s.delimiter = 40
         # add launchpadlib support
         s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
+        s.lp_ubuntu = s.lp.distributions['ubuntu']
+        s.lp_devel_series = s.lp_ubuntu.current_series
 
     # initialize
     #
@@ -307,33 +309,42 @@ class VerifyReleaseReady():
                 s.status(msg, 'warning')
 
     def verify_changelog_bugs(s):
-        master_changelog = Debian.master_changelog()
-        changelog_bugs = master_changelog[1]['bugs']
-        changelog_series = master_changelog[1]['series']
+        master_changelog = Debian.master_changelog()[1]
+        changelog_bugs = master_changelog['bugs']
+        changelog_series = master_changelog['series']
+        changelog_source_package = master_changelog['package']
 
         for bug in changelog_bugs:
             # Error on private or invalid bugs
             try:
                 lp_bug = s.lp.bugs[bug]
             except:
-                s.status('LP: #%s: invalid/private bug number' % bug, 'error')
+                s.status('LP: #%s: invalid/private bug number' % bug, False)
                 continue
 
             # Ignore kernel-release-tracking-bug's
             if 'kernel-release-tracking-bug' in lp_bug.tags:
                 continue
 
-            # check bug tasks, is it linux and fix committed?
-            is_targeted_to_linux = False
+            # check bug tasks, is series/package/status correct?
+            is_targeted_to_package = False
+            is_targeted_to_series = False
             is_fix_committed = False
+
             for task in lp_bug.bug_tasks:
-                if task.self_link.find('https://api.launchpad.net/1.0/ubuntu/%s/+source/linux/' % changelog_series):
-                    is_targeted_to_linux = True
+                task_display_name = task.bug_target_display_name.lower()
+                if changelog_source_package in task_display_name:
+                    is_targeted_to_package = True
+                    if (changelog_series in task_display_name) or (changelog_series == s.lp_devel_series.displayname.lower()):
+                        is_targeted_to_series = True
                     if task.status == u'Fix Committed':
                         is_fix_committed = True
 
-            if not is_targeted_to_linux:
-                s.status('LP: #%s not targeted to linux/%s' % bug, changelog_series, 'warning')
+            # display status based on results
+            if not is_targeted_to_package:
+                s.status('LP: #%s target is not package %s' % (bug, changelog_source_package), False)
+            if not is_targeted_to_series:
+                s.status('LP: #%s target is not series %s' % (bug, changelog_series), 'warning')
             if not is_fix_committed:
                 s.status('LP: #%s is not fix committed' % bug, 'warning')
 
