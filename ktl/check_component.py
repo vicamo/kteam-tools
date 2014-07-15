@@ -4,6 +4,7 @@
 from ktl.utils                          import error
 import re
 from kernel_versions                    import KernelVersions
+from ktl.log                            import cdebug
 
 #
 # CheckComponent
@@ -15,27 +16,29 @@ from kernel_versions                    import KernelVersions
 class CheckComponent():
 
     def __init__(self, lp):
+        cdebug('CheckComponent::__init__ enter')
         self.lp = lp
-        # note: for package names with ABI in the name, replace the
-        # number with the string 'ABI'
-        self.override_db = { 'hardy': {
-                               'linux-meta' : {
-                                 'linux-restricted-modules-server' : 'restricted'
-                               },
-                               'linux-backports-modules-2.6.24' : {
-                                 'updates-modules-2.6.24-ABI-lpia-di' : 'main'
-                               }
-                             }
-                           }
+
+        self.main_packages = [
+                'linux-ec2',
+                'linux-ti-omap4',
+                'linux-armadaxp',
+                'linux-keystone',
+                'linux-meta-keystone'
+            ]
+
         self.release_db = {}
         self.abi_db = {}
+        self.kv = KernelVersions()
+        cdebug('CheckComponent::__init__ leave')
         return
 
     def load_release_components(self, series, package):
+        cdebug('        CheckComponent::load_release_components enter')
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = KernelVersions().current_in_pocket('release', series, package)
+        rel_ver = self.kv.current_in_pocket('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -50,37 +53,42 @@ class CheckComponent():
                     bname = bin_pkg.binary_package_name
                     bcomponent = bin_pkg.component_name
                     self.release_db[package][bname] = bcomponent
+        cdebug('        CheckComponent::load_release_components leave')
         return
 
-    def entry_override_db(self, series, package, bin_pkg, default):
-        if series in self.override_db:
-            if package in self.override_db[series]:
-                if bin_pkg in self.override_db[series][package]:
-                    return self.override_db[series][package][bin_pkg]
-        return default
+    def default_component(self, default, series, package, bin_pkg):
+        cdebug('    CheckComponent::default_component enter')
 
-    def default_component(self, dcomponent, series, package, bin_pkg):
         if not self.release_db:
             self.load_release_components(series, package)
-        if package in self.release_db:
-            if bin_pkg in self.release_db[package]:
-                return self.release_db[package][bin_pkg]
-        return dcomponent
 
-    def override_component(self, dcomponent, series, package, bin_pkg):
-        comp = self.entry_override_db(series, package, bin_pkg, None)
-        if comp:
-            return comp
-        if series != 'hardy' and package == 'linux-meta':
-            if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and
-                (not bin_pkg.endswith('-preempt'))):
-                return 'main'
-        return self.default_component(dcomponent, series, package, bin_pkg)
+        try:
+            retval = self.release_db[package][bin_pkg]
+        except KeyError:
+            retval = default
 
-    def main_component(self, dcomponent, series, package, bin_pkg):
+        cdebug('    CheckComponent::default_component leave (%s)' % retval)
+        return retval
+
+    def override_component(self, default, series, package, bin_pkg):
+        cdebug('    CheckComponent::override_component enter')
+        retval = None
+        if package == 'linux-meta':
+            if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and (not bin_pkg.endswith('-preempt'))):
+                retval = 'main'
+
+        if not retval:
+            retval = self.default_component(default, series, package, bin_pkg)
+        cdebug('    CheckComponent::override_component leave (%s)' % retval)
+        return retval
+
+    def main_component(self, default, series, package, bin_pkg):
+        cdebug('    CheckComponent::main_component enter')
+        cdebug('    CheckComponent::main_component leave (main)')
         return 'main'
 
     def name_abi_transform(self, name):
+        cdebug('    CheckComponent::name_abi_transform enter')
         if not name:
             return name
         abi = re.findall('([0-9]+\.[^ ]+)', name)
@@ -97,24 +105,28 @@ class CheckComponent():
                     version = version[0]
                     name = name.replace('%s-%s' % (version, abi),
                                         '%s-ABI' % version)
+        cdebug('    CheckComponent::name_abi_transform leave (%s)' % name)
         return name
 
     def linux_abi_component(self, dcomponent, series, package, bpkg):
+        cdebug('    CheckComponent::linux_abi_component enter')
         if package in self.abi_db:
             mpkg = self.name_abi_transform(bpkg)
             if mpkg in self.abi_db[package]:
-                return self.entry_override_db(series, package, mpkg,
-                                              self.abi_db[package][mpkg])
+                cdebug('    CheckComponent::linux_abi_component leave')
+                return self.abi_db[package][mpkg]
             else:
                 if package.startswith('linux-backports-modules-'):
                     if not bpkg or not bpkg.endswith('-preempt'):
+                        cdebug('    CheckComponent::linux_abi_component leave (main)')
                         return 'main'
+                cdebug('    CheckComponent::linux_abi_component leave (universe)')
                 return 'universe'
 
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = KernelVersions().current_in_pocket('release', series, package)
+        rel_ver = self.kv.current_in_pocket('release', series, package)
         if rel_ver:
             pkg_rel = archive.getPublishedSources(exact_match=True,
                         source_name=package,
@@ -132,45 +144,54 @@ class CheckComponent():
                 self.abi_db[package] = {}
         else:
             self.abi_db[package] = {}
+        cdebug('    CheckComponent::linux_abi_component leave (?)')
         return self.linux_abi_component(dcomponent, series, package, bpkg)
 
     def component_function(self, series, package):
+        '''
+        Determine which method to use to figure out where the components should be ('main' or 'universe').
+        '''
+        cdebug("    CheckComponent::component_function enter")
+        retval = self.default_component
+
         if (package == 'linux') or (package == 'linux-signed') or (package == 'linux-ppc'):
-            # Everything on linux package should be on 'main'. Except
-            # for hardy and lucid, where we had some things on universe
-            # etc., so we use the linux_abi_component that will check
-            # also where packages were on 'release' pocket
-            if series in [ 'hardy', 'lucid' ]:
-                return self.linux_abi_component
-            return self.main_component
-        if (package == 'linux-meta'):
-            # Some precise meta packages were new and never released
-            # originally, so they will default to 'universe' in the
-            # checker. All of them should be on main anyway, so always
-            # return 'main'
+            # All linux package components should be in 'main' except for lucid where there
+            # were some things on universe.
+            #
+            if series in [ 'lucid' ]:
+                retval = self.linux_abi_component
+            else:
+                retval = self.main_component
+
+        elif (package == 'linux-meta'):
+            # Some precise meta packages were new and never released originally, so they will
+            # default to 'universe' in the checker. All of them should be on main anyway, so
+            # always return 'main'
+            #
             if series in [ 'precise' ]:
-                return self.main_component
-            return self.override_component
-        if package.startswith('linux-backports-modules-'):
-            return self.linux_abi_component
-        if package.startswith('linux-restricted-modules-'):
-            return self.linux_abi_component
-        if package.startswith('linux-ubuntu-modules-'):
-            return self.linux_abi_component
-        if (package.startswith('linux-lts-') or
-            package.startswith('linux-meta-lts-') or
-            package.startswith('linux-signed-lts-')):
-            return self.main_component
-        if package in ['linux-ec2', 'linux-ti-omap4', 'linux-armadaxp', 'linux-keystone', 'linux-meta-keystone']:
-            return self.main_component
-        return self.default_component
+                retval = self.main_component
+            else:
+                retval = self.override_component
+
+        elif package.startswith('linux-backports-modules-'):
+            retval = self.linux_abi_component
+
+        elif (package.startswith('linux-lts-') or package.startswith('linux-meta-lts-') or package.startswith('linux-signed-lts-')):
+            retval = self.main_component
+
+        elif package in self.main_packages:
+            retval = self.main_component
+
+        cdebug("    CheckComponent::component_function leave")
+        return retval
 
     def get_published_sources(self, series, package, version, pocket):
+        cdebug("    CheckComponent::get_published_sources enter")
         if not version:
-            version = KernelVersions().current_in_pocket(pocket, series, package)
+            version = self.kv.current_in_pocket(pocket, series, package)
             if not version:
-                error("No upload of %s for %s is currently available in"
-                      " the %s pocket" % (package, series, pocket))
+                error("No upload of %s for %s is currently available in" " the %s pocket" % (package, series, pocket))
+                cdebug("    CheckComponent::get_published_sources leave (None)")
                 return None
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
@@ -182,9 +203,15 @@ class CheckComponent():
                                          version=version)
         if not ps:
             error("No results returned by getPublishedSources")
+        cdebug("    CheckComponent::get_published_sources leave (ps)")
         return ps
 
     def components_list(self, series, package, version, pocket, ps = None):
+        '''
+        Return a list of all the source and binary components for a given package.
+        '''
+        cdebug("CheckComponent::components_list enter")
+
         clist = []
         if not ps:
             ps = self.get_published_sources(series, package, version, pocket)
@@ -197,9 +224,16 @@ class CheckComponent():
                 clist.append([bin_pkg.binary_package_name,
                               bin_pkg.binary_package_version,
                               bin_pkg.component_name])
+
+        cdebug("CheckComponent::components_list leave")
         return clist
 
     def mismatches_list(self, series, package, version, pocket, ps = None):
+        '''
+        Return a list of the source and binary components that are not in the correct repository.
+        '''
+        cdebug("CheckComponent::mismatches_list enter")
+
         mlist = []
         self.release_db = {}
         self.abi_db = {}
@@ -209,6 +243,8 @@ class CheckComponent():
         if ps:
             src_pkg = ps[0]
             component = get_component('universe', series, package, None)
+            cdebug("        src package name: %s" % src_pkg.source_package_name, 'cyan')
+            cdebug("            src_pkg.component_name: %s      component: %s" % (src_pkg.component_name, component), 'cyan')
             if src_pkg.component_name != component:
                 mlist.append([src_pkg.source_package_name,
                               src_pkg.source_package_version,
@@ -216,10 +252,14 @@ class CheckComponent():
             for bin_pkg in src_pkg.getPublishedBinaries():
                 pkg_name = bin_pkg.binary_package_name
                 component = get_component('universe', series, package, pkg_name)
+                cdebug("        bin package name: %s" % bin_pkg.binary_package_name, 'cyan')
+                cdebug("            bin_pkg.component_name: %s      component: %s" % (bin_pkg.component_name, component), 'cyan')
                 if bin_pkg.component_name != component:
                     mlist.append([bin_pkg.binary_package_name,
                                   bin_pkg.binary_package_version,
                                   bin_pkg.component_name, component])
+
+        cdebug("CheckComponent::mismatches_list leave")
         return mlist
 
 # vi:set ts=4 sw=4 expandtab:
