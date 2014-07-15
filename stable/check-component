@@ -7,6 +7,8 @@ from ktl.check_component                import CheckComponent
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
+from logging                            import basicConfig, INFO, DEBUG, WARNING
+from ktl.log                            import Clog
 
 # This script uses the CheckComponent class for listing components or
 # checking for component mismatches using the launchpad api
@@ -68,6 +70,8 @@ class Cmdline:
         stdo("                         Just list the component where the packages are in, don't do any     \n")
         stdo("                         mismatch check                                                      \n")
         stdo("                                                                                             \n")
+        stdo("        --dbg            Be more verbose                                                     \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s oneiric linux                                                                     \n" % self.cfg['app_name'])
 
@@ -82,8 +86,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'pocket=', 'package_version=',
-                         'list']
+            optsLong  = ['help', 'staging', 'pocket=', 'package_version=', 'list', 'dbg']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -92,6 +95,9 @@ class Cmdline:
 
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
+
+                elif (opt == '--dbg'):
+                    self.cfg['dbg'] = True
 
                 elif opt in '--pocket':
                     self.cfg['pocket'] = val
@@ -130,6 +136,7 @@ class CheckComponentCli(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['dbg'] = False
 
     # initialize
     #
@@ -154,6 +161,11 @@ class CheckComponentCli(StdApp):
             self.initialize()
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
+
+            if self.cfg['dbg']:
+                log_format = "%(levelname)s - %(message)s"
+                basicConfig(level=DEBUG, format=log_format)
+                Clog.dbg = True
 
             series = self.cfg['series']
             package = self.cfg['package']
