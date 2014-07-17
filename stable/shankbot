@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+# ./shankbot --server=irc.canonical.com:6697 --user=bradf:kthxbye --channel='##kbot' --nick=kbot
+#
 # TODO:
 #      run as a daemon
 #      check for lock before running sru-workflow-manager
@@ -195,7 +197,8 @@ class Shankster(threading.Thread):
                         (rc, output) = sh('./swm')
                         s.output.reply(who + ', ' + 'I shanked them all', target)
                     except ShellError as e:
-                        s.output.reply(e.output)
+                        for l in e.output:
+                            s.output.reply(who + ', ' + l)
 
                 elif cmd.startswith('shank '):
                     if ' ' in cmd:
@@ -209,7 +212,8 @@ class Shankster(threading.Thread):
                                 for l in output:
                                     f.write(l)
                         except ShellError as e:
-                            s.output.reply(e.output)
+                            for l in e.output:
+                                s.output.reply(who + ', ' + l)
 
                 elif cmd.startswith('update '):
                     c = cmd.split()
@@ -220,7 +224,8 @@ class Shankster(threading.Thread):
                             (rc, output) = sh(sh_cmd)
                             s.output.reply(who + ', ' + 'reports updated', target)
                         except ShellError as e:
-                            s.output.reply(e.output)
+                            for l in e.output:
+                                s.output.reply(who + ', ' + l)
 
                     elif c[1].endswith('.html'):
                         sh_cmd = '(cd %s;make %s)' % (location, c[1])
@@ -228,9 +233,11 @@ class Shankster(threading.Thread):
                             (rc, output) = sh(sh_cmd)
                             s.output.reply(who + ', ' + '%s updated' % (c[1]), target)
                         except ShellError as e:
-                            s.output.reply(e.output)
+                            for l in e.output:
+                                s.output.reply(who + ', ' + l)
 
-                        pass
+                elif cmd.startswith('test '):
+                    s.handle_test_request(cmd, who, target)
 
                 else:
                     s.output.reply(who + ', ' + 'sorry, I don\'t know how to do that', target)
@@ -239,6 +246,26 @@ class Shankster(threading.Thread):
                 g_q_lock.release()
 
             time.sleep(1)
+
+    # handle_test_request
+    #
+    def handle_test_request(s, cmd, who, target):
+        print("cmd: '%s'" % cmd)
+        sh_cmd = cmd.replace('test', 'request submit')
+        try:
+            (rc, output) = sh(sh_cmd)
+            s.output.reply(who + ', ' + 'your test request has been queued up', target)
+            if '--help' in sh_cmd:
+                for l in output:
+                    s.output.reply(who + ', ' + l)
+
+            with open("/tmp/shanky.log", "w") as f:
+                for l in output:
+                    f.write(l)
+
+        except ShellError as e:
+            for l in e.output:
+                s.output.reply(who + ', ' + l)
 
 # IrcShankbot
 #
@@ -406,6 +433,10 @@ class IrcShankbot(SingleServerIRCBot):
         elif cmd.startswith('update '):
             s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'I\'m on it boss', target)
+
+        elif cmd.startswith('test '):
+            s.enqueue_cmd(who, cmd, target)
+            s.reply(who + ', ' + 'roger, roger', target)
 
         else:
 
