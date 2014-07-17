@@ -460,12 +460,6 @@ class Ubuntu:
                 'linux-meta-mvl-dove',
                 'linux-meta-fsl-imx51',
                 'linux-backports-modules-2.6.32',
-                'linux-lts-backport-oneiric',
-                'linux-meta-lts-backport-oneiric',
-                'linux-lts-backport-natty',
-                'linux-meta-lts-backport-natty',
-                'linux-lts-backport-maverick',
-                'linux-meta-lts-backport-maverick'
             ],
             'dependent-packages' :
             {
@@ -475,25 +469,10 @@ class Ubuntu:
                     'lbm' : 'linux-backports-modules-2.6.32'
                 },
                 'linux-ec2' : { 'meta' : 'linux-meta-ec2' },
-                'linux-lts-backport-oneiric' : {
-                    'meta' : 'linux-meta-lts-backport-oneiric'
-                },
-                'linux-lts-backport-natty' : {
-                    'meta' : 'linux-meta-lts-backport-natty'
-                },
-                'linux-lts-backport-maverick' : {
-                    'meta' : 'linux-meta-lts-backport-maverick'
-                }
             },
             'derivative-packages' :
             {
                 'linux' : [ 'linux-ec2' ]
-            },
-            'backport-packages' :
-            {
-                'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
-                'linux-lts-backport-natty' : [ 'linux', '11.04' ],
-                'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
             },
             'sha1' : '298cbfdb55fc64d1135f06b3bed3c8748123c183',
             'md5' : '4b1f6f6fac43a23e783079db589fc7e2'
@@ -667,9 +646,9 @@ class Ubuntu:
 
         'linux-ubuntu-modules-2.6.24',
 
-        'linux-lts-backport-maverick',
-        'linux-lts-backport-natty',
-        'linux-lts-backport-oneiric',
+        #'linux-lts-backport-maverick',
+        #'linux-lts-backport-natty',
+        #'linux-lts-backport-oneiric',
         #'linux-lts-quantal',
         'linux-meta-lts-backport-maverick',
         'linux-meta-lts-backport-natty',
