@@ -1,0 +1,151 @@
+#!/usr/bin/env python
+#
+
+# This is part of the infrastructure for getting test jobs running on the Jenkins
+# server in the lab. The idea is that a file in a directory is created, rsync'd
+# to the Jenkins server and processed there. We are using rsync to do the queue
+# processing.
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG
+from os                                 import path, mkdir, close, listdir, remove
+from ktl.log                            import cdebug, cwarn
+import json
+from tempfile                           import mkstemp
+
+# JobRequest
+#
+class JobRequest():
+
+    # __init__
+    #
+    def __init__(s, args):
+        cdebug('    JobRequest::__init__ enter')
+        s.queue_dir = '/srv/jobs-queue/testing'
+        s.args = args
+        cdebug('    JobRequest::__init__ leave')
+
+    # submit
+    #
+    def submit(s):
+        cdebug('    JobRequest::submit enter')
+
+        status = 1
+        if not path.exists(s.queue_dir):
+            mkdir(s.queue_dir)
+
+        job = {}
+
+        job['series'] = s.args.series
+        job['arch']   = s.args.arch
+        job['url']    = s.args.debs_url
+        job['ppa']    = s.args.ppa
+        job['tests']  = s.args.tests
+        job['system'] = s.args.system
+
+        for k in job:
+            cdebug('        %6s: %s' % (k, job[k]))
+
+        job_str = json.dumps(job, sort_keys=True, indent=4)
+
+        (f, p) = mkstemp(dir=s.queue_dir)
+        with open(p, "w+") as j:
+            j.write(job_str)
+        close(f)
+        status = 0
+
+        cdebug('    JobRequest::submit leave (%d)' % status)
+        return status
+
+    # consume
+    #
+    def consume(s):
+        cdebug('    JobRequest::consume enter')
+
+        status = 1
+        retval = None
+        for f in listdir(s.queue_dir):
+            filename = path.join(s.queue_dir, f)
+            if path.isfile(filename):
+                cdebug("        " + filename)
+
+            with open(filename, 'r') as j:
+                retval = json.load(j)
+
+            remove(path.join(s.queue_dir, f))
+            status = 0
+            break
+
+        cdebug('    JobRequest::consume leave (%d)' % status)
+        return status, retval
+
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+    def submit(s):
+        return JobRequest(s.args).submit()
+
+    def consume(s):
+        status, j = JobRequest(s.args).consume()
+        if j:
+            print(json.dumps(j, sort_keys=True, indent=4))
+        return status
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I submit and consume job requests to/from the request pool.  Hopefully, they will turn into jobs on the Jenkins
+server.
+    '''
+    app_epilog = '''
+examples:
+    Request --help
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    subparsers = parser.add_subparsers()
+
+    submit_parser = subparsers.add_parser('submit')
+    submit_parser.set_defaults(func=TheApp.submit)
+    submit_parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    submit_parser.add_argument('--series', required=True, help='The series that is to be installed on the test system.')
+    submit_parser.add_argument('--arch', help='The architecture (amd64 or i386) that is to be installed on the test system. If not specified then all arches are tested.')
+    submit_parser.add_argument('--debs-url', default=None, help='A pointer to a set of kernel deb packages that are to be installed.')
+    submit_parser.add_argument('--ppa', default=None, help='A ppa name to update packages from.')
+    submit_parser.add_argument('--tests', default=None, help='A list of the tests to be run. If not specified, all "default" tests are run.')
+    submit_parser.add_argument('--system', default=None, help='A specific system to run the tests on. If not specified, all systems in the testing pool will be used.')
+
+    consume_parser = subparsers.add_parser('consume')
+    consume_parser.set_defaults(func=TheApp.consume)
+    consume_parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    app = TheApp(args)
+    exit(args.func(app))
+
+# vi:set ts=4 sw=4 expandtab:
+
