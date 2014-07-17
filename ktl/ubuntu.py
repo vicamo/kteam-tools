@@ -194,7 +194,7 @@ class Ubuntu:
             'series_version' : '13.10',
             'kernel'    : '3.11.0',
             'name'      : 'saucy',
-            'supported' : True,
+            'supported' : False,
             # adjust packages when this goes live
             'packages'  :
             [
