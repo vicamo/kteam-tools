@@ -253,7 +253,7 @@ class Ubuntu:
             'series_version' : '12.10',
             'kernel'    : '3.5.0',
             'name'      : 'quantal',
-            'supported' : True,
+            'supported' : False,
             # adjust packages when this goes live
             'packages'  :
             [
