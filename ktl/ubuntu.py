@@ -451,14 +451,10 @@ class Ubuntu:
             'packages' :
             [
                 'linux',
-                'linux-fsl-imx51',
-                'linux-mvl-dove',
                 'linux-ec2',
                 'linux-meta',
                 'linux-ports-meta',
                 'linux-meta-ec2',
-                'linux-meta-mvl-dove',
-                'linux-meta-fsl-imx51',
                 'linux-backports-modules-2.6.32',
             ],
             'dependent-packages' :
@@ -620,15 +616,11 @@ class Ubuntu:
         'linux-armadaxp', # precise, quantal
         'linux-exynos5',
         'linux-keystone',
-        'linux-mvl-dove', # maverick, karmic, lucid
-        'linux-fsl-imx51', # karmic, lucid
         'linux-ec2',
         'linux-meta',
         'linux-meta-ec2',
-        'linux-meta-mvl-dove', # maverick, karmic, lucid
         'linux-meta-ti-omap4', # maverick, natty
         'linux-meta-armadaxp', # precise, quantal
-        'linux-meta-fsl-imx51', # karmic, lucid ?
         'linux-ports-meta',
         'linux-source-2.6.15',
 
