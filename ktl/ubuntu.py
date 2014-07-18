@@ -342,9 +342,9 @@ class Ubuntu:
             },
             'backport-packages' :
             {
-                'linux-lts-quantal' : [ 'linux', '12.10' ],
-                'linux-lts-raring' : [ 'linux', '13.04' ],
-                'linux-lts-saucy' : [ 'linux', '13.10' ],
+                #'linux-lts-quantal' : [ 'linux', '12.10' ],
+                #'linux-lts-raring' : [ 'linux', '13.04' ],
+                #'linux-lts-saucy' : [ 'linux', '13.10' ],
                 'linux-lts-trusty' : [ 'linux', '14.04' ],
             },
             'sha1' : '',
@@ -650,9 +650,9 @@ class Ubuntu:
         #'linux-lts-backport-natty',
         #'linux-lts-backport-oneiric',
         #'linux-lts-quantal',
-        'linux-meta-lts-backport-maverick',
-        'linux-meta-lts-backport-natty',
-        'linux-meta-lts-backport-oneiric',
+        #'linux-meta-lts-backport-maverick',
+        #'linux-meta-lts-backport-natty',
+        #'linux-meta-lts-backport-oneiric',
         #'linux-meta-lts-quantal',
     ]
 
