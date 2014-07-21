@@ -1229,6 +1229,7 @@ class WorkflowEngine():
         if not s.prepare_package_fixed():
             cdebug('            promote_to_release_fix_released leave')
             return
+
         if (s.wfb.tasks_by_name['package-testing'].status != 'Fix Released' or
             s.wfb.tasks_by_name['package-testing'].status != 'Invalid'):
             s.wfb.tasks_by_name['package-testing'].status = "Won't Fix"
@@ -1239,11 +1240,11 @@ class WorkflowEngine():
             cdebug('            promote_to_release_fix_released leave')
             return
 
-        if not s.check_component_in_pocket(taskobj,
-                    'kernel-Promote-to-release-end',
-                    'release'):
+        if not s.check_component_in_pocket(taskobj, 'kernel-Promote-to-release-end', 'release'):
             cdebug('            promote_to_release_fix_released leave: False')
             return False
+
+        s.final_promote_to_release_tasks(taskobj)
 
         s.wfb.tasks_by_name[s.projectname].status = 'Fix Released'
         s.set_phase(taskobj, 'Released')
