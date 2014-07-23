@@ -72,7 +72,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new}),
+            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Fix Released' : s.package_testing_fix_committed }),
             'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -725,9 +725,8 @@ class WorkflowEngine():
             # user on zinc, we can't use ssh.
             #
             #cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
-            cmd = '\'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
-            cdebug(cmd)
-            status, result = run_command(cmd)
+            with open('/srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html' % series, 'w') as f:
+                f.write('<html>%s</html>' % s.wfb.title)
 
     def handle_derivatives(s, taskobj, taskname):
         cdebug('            handle_derivatives enter')
@@ -1182,13 +1181,13 @@ class WorkflowEngine():
             cdebug('            regression_testing_fix_released leave (False)')
             return False
 
-    def package_testing_fix_released(s, taskobj):
+    def package_testing_fix_committed(s, taskobj):
         """
         When package-testing is set to Fix Released, that means the
         development kernel passed all wanted testing and is acked to go
         to the release pocket by the Ubuntu Kernel Team
         """
-        cdebug('            package_testing_fix_released enter')
+        cdebug('            package_testing_fix_committed enter')
         try:
             if s.wfb.tasks_by_name['promote-to-release'].status == 'New':
                 # if this is a derivative tracking bug, first wait until
@@ -1201,7 +1200,7 @@ class WorkflowEngine():
                 # If the master bug's tasks are not completely ready.
                 #
                 if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
-                    cdebug('            package_testing_fix_released leave (False)')
+                    cdebug('            package_testing_fix_committed leave (False)')
                     return False
 
                 # Set promote-to-proposed
@@ -1212,7 +1211,7 @@ class WorkflowEngine():
                 s.set_phase(taskobj, 'CopyToRelease')
         except:
             cerror('Exception thrown processing the package-testing task when set to Fix Released')
-        cdebug('            package_testing_fix_released leave (False)')
+        cdebug('            package_testing_fix_committed leave (False)')
         return False
 
     def promote_to_release_fix_released(s, taskobj):
