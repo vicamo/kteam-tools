@@ -182,11 +182,10 @@ class KernelVersion:
     version = None
     patchlevel = None
     sublevel = None
-    plus = 0
 
     # __init__
     #
-    def __init__(self, kver, plus):
+    def __init__(self, kver):
         if isinstance(kver, basestring):
             kver = kver.split('.')
             if len(kver) > 1:
@@ -206,7 +205,6 @@ class KernelVersion:
             else:
                 # sublevel is optional: if not specified, assume 0
                 self.sublevel = 0
-        self.plus = plus
 
     # compare against current kernel version
     # returns:
@@ -351,21 +349,10 @@ class ApplyStablePatches(StdApp):
                     sline = s.group(0)
                     s2 = cchint.search(sline)
                     while s2:
-                        plus = 0
-                        if (s2.group('gr')):
-                            plus = 1
-                        elif (s2.group('ge') or s2.group('ge') or s2.group('plus')
-                            or s2.group('later')):
-                            plus = 2
                         if 'verbose' in self.cfg:
-                            pf = ""
-                            if plus == 1:
-                                pf = "> "
-                            elif plus == 2:
-                                pf = ">= "
-                            stdo("\ncommit %s is marked for version %s%s" %
-                                 (c, pf, s2.group('kver')))
-                        forvers.append(KernelVersion(s2.group('kver'), plus))
+                            stdo("\ncommit %s is marked for version %s" %
+                                 (c, s2.group('kver')))
+                        forvers.append(KernelVersion(s2.group('kver')))
                         sline = sline[s2.end():]
                         s2 = cchint.search(sline)
                     if 'verbose' in self.cfg and forvers:
@@ -440,7 +427,7 @@ class ApplyStablePatches(StdApp):
                 mkdir(fixed_dir)
             if not path.exists(discarded_dir):
                 mkdir(discarded_dir)
-            kernel = KernelVersion(Kernel().version(), False)
+            kernel = KernelVersion(Kernel().version())
 	    if 'check_already' in self.cfg:
 		status, result = run_command('git show-branch --merge-base HEAD master')
 		if status == 0:
@@ -481,18 +468,9 @@ class ApplyStablePatches(StdApp):
                     if change[1]:
                         ignore = True
                         for kver in change[1]:
-                            if kver.plus == 1:
-                                if kernel.compare(kver) > 0:
-                                    ignore = False
-                                    break
-                            elif kver.plus == 2:
-                                if kernel.compare(kver) >= 0:
-                                    ignore = False
-                                    break
-                            else:
-                                if kernel.compare(kver) == 0:
-                                    ignore = False
-                                    break
+                            if kernel.compare(kver) >= 0:
+                                ignore = False
+                                break
                         if ignore:
                             ignored_file = '%s/%s' % (ignored_dir, filename)
                             if path.exists(ignored_file):
