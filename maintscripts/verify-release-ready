@@ -541,7 +541,7 @@ class VerifyReleaseReady():
             eout(colored(e.msg, 'red'))
 
         except GitError as e:
-            eout(colored(e.msg[0], 'red'))
+            eout(colored(e.msg, 'red'))
 
         except KernelError as e:
             eout(colored(e.msg, 'red'))
