@@ -88,12 +88,13 @@ class PackagePockets:
 
     def all_viable(s):
         result = []
+        version = None
         for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
             #print(version, pockets[version])
             if s.pockets[version] != ['Proposed']:
                 result.append(version)
 
-        if version and s.pockets[version] == ['Proposed']:
+        if version in s.pockets and s.pockets[version] == ['Proposed']:
             result.append(version)
 
         return result
