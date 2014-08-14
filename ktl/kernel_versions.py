@@ -93,7 +93,7 @@ class PackagePockets:
             if s.pockets[version] != ['Proposed']:
                 result.append(version)
 
-        if s.pockets[version] == ['Proposed']:
+        if version and s.pockets[version] == ['Proposed']:
             result.append(version)
 
         return result
