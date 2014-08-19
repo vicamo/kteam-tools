@@ -22,6 +22,8 @@ from threading                          import Thread, Event
 from ktl.ircbot                         import SingleServerIRCBot
 from ktl.irclib                         import nm_to_n, irc_lower
 from ktl.shell                          import sh, ShellError
+import urllib
+from launchpadlib.launchpad             import Launchpad
 
 # Pinky's exclamations.
 #
@@ -179,10 +181,13 @@ class Shankster(threading.Thread):
         s.q = q
         s.output = output
         s.exit_flag = False
+        s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
 
     # run
     #
     def run(s):
+
+        s.handle_check_request()
         while not s.exit_flag:
             g_q_lock.acquire()
             if not s.q.empty():
@@ -239,6 +244,10 @@ class Shankster(threading.Thread):
                 elif cmd.startswith('test '):
                     s.handle_test_request(cmd, who, target)
 
+                elif cmd.startswith('check your privates'):
+                    s.handle_check_request()
+                    s.output.reply(who +', ' + 'All checked', target)
+
                 else:
                     s.output.reply(who + ', ' + 'sorry, I don\'t know how to do that', target)
 
@@ -266,6 +275,29 @@ class Shankster(threading.Thread):
         except ShellError as e:
             for l in e.output:
                 s.output.reply(who + ', ' + l)
+
+    # handle_check_request
+    #
+    def handle_check_request(s):
+        if not s.exit_flag:
+            try:
+                f = urllib.urlopen('http://people.canonical.com/~kernel/status/bug-pending')
+                data = f.read().split('\n')
+                for l in data:
+                    if l == '': continue
+                    v = l.split()
+                    try:
+                        lp_bug = s.lp.bugs[v[0]]
+                    except:
+                        # This must be a private bug
+                        #
+                        s.output.reply("NOTICE:  %s master-next appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[0]))
+
+            except:
+                s.output.reply("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
+                raise
+
+            threading.Timer(30, s.handle_check_request, [], {}).start()
 
 # IrcShankbot
 #
@@ -435,6 +467,10 @@ class IrcShankbot(SingleServerIRCBot):
             s.reply(who + ', ' + 'I\'m on it boss', target)
 
         elif cmd.startswith('test '):
+            s.enqueue_cmd(who, cmd, target)
+            s.reply(who + ', ' + 'roger, roger', target)
+
+        elif cmd.startswith('check'):
             s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'roger, roger', target)
 
