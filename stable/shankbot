@@ -245,7 +245,7 @@ class Shankster(threading.Thread):
                     s.handle_test_request(cmd, who, target)
 
                 elif cmd.startswith('check your privates'):
-                    s.handle_check_request()
+                    s.handle_check_request(manual=True)
                     s.output.reply(who +', ' + 'All checked', target)
 
                 else:
@@ -278,7 +278,7 @@ class Shankster(threading.Thread):
 
     # handle_check_request
     #
-    def handle_check_request(s):
+    def handle_check_request(s, manual=False):
         if not s.exit_flag:
             try:
                 f = urllib.urlopen('http://people.canonical.com/~kernel/status/bug-pending')
@@ -297,7 +297,8 @@ class Shankster(threading.Thread):
                 s.output.reply("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
                 raise
 
-            threading.Timer(30, s.handle_check_request, [], {}).start()
+            if not manual:
+                threading.Timer((60*30), s.handle_check_request, [], {}).start()
 
 # IrcShankbot
 #
