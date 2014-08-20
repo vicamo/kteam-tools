@@ -134,6 +134,7 @@ class OutputManager(Thread):
         s.delay = delay
         s.event = Event()
         s.queue = []
+        s.notice_queue = []
 
     def run(s):
         while 1:
@@ -142,10 +143,24 @@ class OutputManager(Thread):
                 msg,target = s.queue.pop(0)
                 s.connection.privmsg(target, msg)
                 sleep(s.delay)
+            while s.notice_queue:
+                msg,target = s.notice_queue.pop(0)
+                s.connection.notice(target, msg)
+                sleep(s.delay)
             s.event.clear()
 
     def send(s, msg, target):
+        debug('OutputManager::send')
+        debug('       msg: %s' % msg)
+        debug('    target: %s' % target)
         s.queue.append((msg,target))
+        s.event.set()
+
+    def notice(s, msg, target):
+        debug('OutputManager::notice')
+        debug('       msg: %s' % msg)
+        debug('    target: %s' % target)
+        s.notice_queue.append((msg,target))
         s.event.set()
 
 # ErrorExit
@@ -291,10 +306,10 @@ class Shankster(threading.Thread):
                     except:
                         # This must be a private bug
                         #
-                        s.output.reply("NOTICE:  %s master-next appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[0]))
+                        s.output.notice("NOTICE:  %s master-next appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[0]))
 
             except:
-                s.output.reply("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
+                s.output.notice("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
                 raise
 
             if not manual:
@@ -358,6 +373,9 @@ class IrcShankbot(SingleServerIRCBot):
     def say_private(s, nick, text):
         "Send private message of TEXT to NICK."
         s.queue.send(text,nick)
+
+    def notice(s, text):
+        s.queue.notice(text, s.channel)
 
     def reply(s, text, to_private=None):
         "Send TEXT to either public channel or TO_PRIVATE nick (if defined)."
@@ -472,6 +490,10 @@ class IrcShankbot(SingleServerIRCBot):
             s.reply(who + ', ' + 'roger, roger', target)
 
         elif cmd.startswith('check'):
+            s.enqueue_cmd(who, cmd, target)
+            s.reply(who + ', ' + 'roger, roger', target)
+
+        elif cmd.startswith('notice'):
             s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'roger, roger', target)
 
