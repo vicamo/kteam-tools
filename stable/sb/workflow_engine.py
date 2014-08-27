@@ -344,6 +344,49 @@ class WorkflowEngine():
         s.email.send(from_addr, dest, subj, msg)
         return
 
+    def send_ppc64el_test_request(s, task, pocket):
+        """
+        Send email with upload announcement
+        """
+        s.verbose('        ')
+        if s.args.dryrun or s.args.dryrun_email:
+            cinfo('Dryrun - Sending upload announcement')
+            return
+        cinfo('Sending upload announcement')
+
+        from_addr = None
+        if 'mail_notify' in s.cfg:
+            if 'from_address' in s.cfg['mail_notify']:
+                from_addr = s.cfg['mail_notify']['from_address']
+        if not from_addr:
+            cwarn('        No valid email config found, can\'t send upload announcement')
+            return
+
+        dest  = "paul.larson@canonical.com, brad.figg@canonical.com"
+
+        bug = task.bug
+        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
+        abi_bump = s.has_new_abi()
+
+        subj = "[" + series + "] " + s.wfb.pkg_name + " " + s.wfb.pkg_version + " uploaded"
+        if abi_bump:
+            subj += " (ABI bump)"
+
+        msg  = "Paul,\n\nA new " + series + " kernel has been uploaded into "
+        msg += pocket + ". "
+        if abi_bump:
+            msg += "Note the ABI bump. "
+        msg += "\nThe full changelog about all bug fixes contained in this "
+        msg += "upload can be found at:\n\n"
+        msg += "https://launchpad.net/ubuntu/" + series + "/+source/"
+        msg += s.wfb.pkg_name + "/" + s.wfb.pkg_version + "\n\n"
+        msg += "Please test this kernel on PPC64EL hardware.\n\n"
+        msg += "-- \nThis message was created by an automated script,"
+        msg += " maintained by the\nUbuntu Kernel Team."
+
+        s.email.send(from_addr, dest, subj, msg)
+        return
+
     def send_status_update(s, taskobj, message):
         """
         Send a status update to twitter, status.net, identi.ca, etc
@@ -719,6 +762,9 @@ class WorkflowEngine():
             s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
             s.set_phase(taskobj, 'Testing')
             s.send_upload_announcement(taskobj, 'proposed')
+
+            if s.wfb.series in ['trusty', 'utopic']:
+                s.send_ppc64el_test_request(taskobj, 'proposed')
 
             series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
             # If this is running remotely we need to use ssh. If it's running as the kernel-ppa
