@@ -10,7 +10,8 @@
 #      provide list of current sru bugs
 #
 
-from os                                 import getenv, path, getcwd, chdir
+import os
+import errno
 import string
 import random
 import re
@@ -24,6 +25,10 @@ from ktl.irclib                         import nm_to_n, irc_lower
 from ktl.shell                          import sh, ShellError
 import urllib
 from launchpadlib.launchpad             import Launchpad
+
+# The named pipe used for getting messages from the sru workflow manager.
+#
+shank_pipe_path = "/tmp/shank.pipe"
 
 # Pinky's exclamations.
 #
@@ -202,7 +207,14 @@ class Shankster(threading.Thread):
     #
     def run(s):
 
-        s.handle_check_request()
+        try:
+            os.mkfifo(shank_pipe_path)
+        except OSError:
+            pass
+
+        s.shank_pipe = os.open(shank_pipe_path, os.O_RDONLY |os.O_NONBLOCK)
+        s.every_30_minutes()
+        s.every_30_seconds()
         while not s.exit_flag:
             g_q_lock.acquire()
             if not s.q.empty():
@@ -260,7 +272,7 @@ class Shankster(threading.Thread):
                     s.handle_test_request(cmd, who, target)
 
                 elif cmd.startswith('check your privates'):
-                    s.handle_check_request(manual=True)
+                    s.handle_check_request()
                     s.output.reply(who +', ' + 'All checked', target)
 
                 else:
@@ -270,6 +282,7 @@ class Shankster(threading.Thread):
                 g_q_lock.release()
 
             time.sleep(1)
+        os.close(s.shank_pipe)
 
     # handle_test_request
     #
@@ -291,29 +304,72 @@ class Shankster(threading.Thread):
             for l in e.output:
                 s.output.reply(who + ', ' + l)
 
+    # every_30_minutes
+    #
+    def every_30_minutes(s):
+        """
+        Perform certain operations regularly.
+        """
+        if not s.exit_flag:
+            s.handle_check_request()
+            threading.Timer((60*30), s.every_30_minutes, [], {}).start()
+
     # handle_check_request
     #
-    def handle_check_request(s, manual=False):
+    def handle_check_request(s):
+        """
+        Pull the bug list that the CVE tools generate and see if any of them are
+        private. If they are, tell the world.
+        """
+        try:
+            f = urllib.urlopen('http://people.canonical.com/~kernel/status/bug-pending')
+            data = f.read().split('\n')
+            for l in data:
+                if l == '': continue
+                v = l.split()
+                try:
+                    lp_bug = s.lp.bugs[v[0]]
+                except:
+                    # This must be a private bug
+                    #
+                    s.output.notice("NOTICE:  %s %s appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[2], v[0]))
+
+        except:
+            s.output.notice("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
+            raise
+
+    # every_30_seconds
+    #
+    def every_30_seconds(s):
+        """
+        Perform certain operations regularly.
+        """
         if not s.exit_flag:
+            s.check_the_pipe()
+            threading.Timer(30, s.every_30_seconds, [], {}).start()
+
+    # check_the_pipe
+    #
+    def check_the_pipe(s):
+        """
+        Check the communication pipe to see if there are any messages to be
+        relayed to the irc channel.
+        """
+        while True:
             try:
-                f = urllib.urlopen('http://people.canonical.com/~kernel/status/bug-pending')
-                data = f.read().split('\n')
-                for l in data:
-                    if l == '': continue
-                    v = l.split()
-                    try:
-                        lp_bug = s.lp.bugs[v[0]]
-                    except:
-                        # This must be a private bug
-                        #
-                        s.output.notice("NOTICE:  %s %s appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[2], v[0]))
+                msg = os.read(s.shank_pipe, 1024)
+            except OSError as err:
+                if err.errno == errno.EAGAIN or err.errno == errno.EWOULDBLOCK:
+                    msg = None
+                else:
+                    raise
 
-            except:
-                s.output.notice("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
-                raise
+            if msg == '':
+                break
 
-            if not manual:
-                threading.Timer((60*30), s.handle_check_request, [], {}).start()
+            if msg is not None:
+                for x in msg.split('\n'):
+                    s.output.notice(x.strip())
 
 # IrcShankbot
 #
@@ -461,14 +517,14 @@ class IrcShankbot(SingleServerIRCBot):
 
         elif 'status' == cmd:
             s.reply(who + ', ' + 'ack, this is going to take a minute or two', target)
-            origin = getcwd()
+            origin = os.getcwd()
             try:
-                chdir('../web')
+                os.chdir('../web')
                 sh('make kernel-sru-workflow.json', ignore_result=True)
                 with open('kernel-sru-workflow.json', 'r') as f:
                     sru_bugs = json.loads(f.read())
             finally:
-                chdir(origin)
+                os.chdir(origin)
 
         elif 'shank' == cmd:
             s.enqueue_cmd(who, cmd, target)
@@ -518,10 +574,10 @@ class IrcShankbot(SingleServerIRCBot):
     def run(s):
         retval = 1
         try:
-            if not path.exists('./sru-workflow-manager'):
+            if not os.path.exists('./sru-workflow-manager'):
                 raise ErrorExit('Unable to find "./sru-workflow-manager". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
 
-            if not path.exists('../web/Makefile'):
+            if not os.path.exists('../web/Makefile'):
                 raise ErrorExit('Unable to find "../web/Makefile". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
 
             s.start()
@@ -548,7 +604,7 @@ class IrcShankbot(SingleServerIRCBot):
         return retval
 
 if __name__ == '__main__':
-    if getenv('DEBUG'):
+    if os.getenv('DEBUG'):
         LOGLEVEL = DEBUG
     else:
         LOGLEVEL = INFO

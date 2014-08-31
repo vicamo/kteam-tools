@@ -19,6 +19,10 @@ from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
 from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
 
+# The named pipe used for getting messages to shankbot, the irc bot.
+#
+shank_pipe_path = "/tmp/shank.pipe"
+
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
 
@@ -298,6 +302,10 @@ class WorkflowEngine():
                     return False
         return True
 
+    def send_to_shankbot(s, msg):
+        with open(shank_pipe_path, 'w') as shank_pipe:
+            shank_pipe.write(msg)
+
     def send_upload_announcement(s, task, pocket):
         """
         Send email with upload announcement
@@ -329,6 +337,8 @@ class WorkflowEngine():
         subj = "[" + series + "] " + s.wfb.pkg_name + " " + s.wfb.pkg_version + " uploaded"
         if abi_bump:
             subj += " (ABI bump)"
+
+        s.send_to_shankbot(subj)
 
         msg  = "A new " + series + " kernel has been uploaded into "
         msg += pocket + ". "
