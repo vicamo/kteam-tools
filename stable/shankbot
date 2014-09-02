@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 #
-# ./shankbot --server=irc.canonical.com:6697 --user=bradf:kthxbye --channel='##shank' --nick=shanky
-#
 # TODO:
 #      run as a daemon
 #      check for lock before running sru-workflow-manager
