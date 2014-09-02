@@ -437,11 +437,22 @@ class IrcShankbot(SingleServerIRCBot):
             if len(a) > 1:
                 s.do_command(e, string.strip(a[1]), from_nick)
         else:
-            #var bugChat = regexp.MustCompile(`(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))`)
-            m = re.search('(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))', e.arguments()[0])
-            if m is not None:
-                debug('LP: #%s'% m.group(1))
-                s.do_command(e, 'bug:%s' % m.group(1), from_nick)
+            m = re.findall('(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))', e.arguments()[0])
+            if m:
+                debug('stage 1')
+                for g in m:
+                    for bug_id in g:
+                        if bug_id is not '':
+                            s.do_command(e, 'bug:%s' % bug_id, from_nick)
+
+            else:
+                m = re.findall('\\b[lL][pP]:?\s?#?([0-9]+)(,\s*#?[0-9]+)*\\b', e.arguments()[0])
+                if m:
+                    debug('stage 2')
+                    for g in m:
+                        for bug_id in g:
+                            if bug_id is not '':
+                                s.do_command(e, 'bug:%s' % bug_id, from_nick)
 
         return
 
