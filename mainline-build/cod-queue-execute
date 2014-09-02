@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# cod-execute -- pick up jobs from the COD queue and execute them sequentially
+#
+P="cod-execute"
+
+key="$HOME/.ssh/mainline-publish"
+
+if [ ! -f "$key" ]; then
+	echo "$P: $key: no queue key found ... run skipped"
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+lock_tmp="$HOME/COD/.LOCK-$$"
+lock="$HOME/COD/.LOCK-queue"
+jobf="$HOME/COD/.job"
+
+# One at a time please...
+echo "$$" >"$lock_tmp"
+if ! ln "$lock_tmp" "$lock" 2>/dev/null; then
+	rm -f "$lock_tmp"
+	echo "$P: queue runner already running ... quitting"
+	exit 0
+fi
+rm -f "$lock_tmp"
+
+# Run things in the queue.
+while :
+do
+	ssh -i "$key" kernel-ppa@zinc.ubuntu.com \
+		queue pick mainline | sed -e "s@^@$here/@" >"$jobf"
+	
+	job=`cat "$jobf"`
+	if [ "$job" = '' ]; then
+		break
+	fi
+
+	echo "$P: executing $job ..."
+	echo "$P: `cat "$jobf"`"
+	/bin/bash "$jobf"
+	echo "$P: execute-complete $job (rc=$?)"
+
+	echo "$P: syncing results to kernel.ubuntu.com ..."
+	rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@zinc.ubuntu.com:incoming/ && \
+		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload"
+	echo "$P: sync complete"
+
+	ssh -i "$key" kernel-ppa@zinc.ubuntu.com \
+		queue complete
+	
+	echo "$P: job-complete $job"
+
+	rm -f "$jobf"
+done
+
+# We are done and out of here, let the next player have a turn.
+echo "$P: queue run complete"
+rm -f "$lock"
