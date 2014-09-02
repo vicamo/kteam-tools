@@ -746,6 +746,7 @@ class WorkflowEngine():
 
         to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
         subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
+        s.send_to_shankbot(subj)
 
         mcfg = s.cfg['mail_notify']
         msg  = ''
