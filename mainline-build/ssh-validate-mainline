@@ -1,0 +1,48 @@
+#!/bin/bash
+P="ssh-validate"
+
+who="$1"
+
+#echo "$SSH_ORIGINAL_COMMAND" 1>&2
+
+# Belt and braces
+case "$SSH_ORIGINAL_COMMAND" in
+*[\;\|\<\>]*)
+	echo "$P: invalid command" 1>&2
+	exit 1
+	;;
+esac
+
+case "$SSH_ORIGINAL_COMMAND" in
+"rsync --server -vlogDtpre.iLsf . incoming/")
+	incoming="$HOME/incoming"
+	lock_tmp="$incoming/.LOCK-$$"
+	lock="$incoming/.LOCK"
+
+	# One at a time please...
+	mkdir -p "$incoming"
+
+	echo "$$" >"$lock_tmp"
+	while ! ln "$lock_tmp" "$lock" 2>/dev/null
+	do
+	    echo "$P: incoming locked ... waiting" 1>&2
+	    sleep 20
+	done
+	rm -f "$lock_tmp"
+
+	# Perform the sync ...
+	$SSH_ORIGINAL_COMMAND
+
+	# We are done.
+	rm -f "$lock"
+	;;
+"queue pick mainline")
+	exec "$HOME/kteam-tools/queue/queue" -w "$who" pick mainline
+	;;
+"queue complete")
+	exec "$HOME/kteam-tools/queue/queue" -w "$who" complete
+	;;
+*)
+	echo "$P: invalid command" 1>&2
+	exit 1
+esac

@@ -1,7 +1,7 @@
 #!/bin/bash
 P="cod-crack-trigger"
 
-set -e
+#set -e
 
 here=`dirname $0`
 case "$here" in

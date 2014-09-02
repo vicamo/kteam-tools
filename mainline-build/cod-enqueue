@@ -7,34 +7,14 @@
 #
 P="cod-enqueue"
 
-queue="$HOME/COD/queue"
-mkdir -p "$queue"
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
 
-if [ "$#" -lt 2 ]; then
-	echo "Usage: $P <priority A|B|C> <cmd> ..." 1>&2
-	exit 1
-fi
 priority="$1"
-shift
+cmd=`basename "$2"`
+shift 2
 
-tag()
-{
-	cmd=`basename "$1"`
-	shift
-	echo "$cmd $@" | sed -r -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g' -e 's@[ /]@_@g'
-}
-tag=`tag "$@"`
-
-time=`date +%s`
-entry="$priority.$time.$tag.$$"
-
-tmp="$queue/.$entry"
-
-echo "$@" >"$tmp"
-
-if ! mv "$tmp" "$queue/$entry"; then
-	echo "$P: $tag -- enqueue failed" 1>&2
-	exit 1
-fi
-
-echo "$P: $tag -- enqueued"
+exec $here/../queue/queue enqueue mainline "$priority" "$cmd" "$@"
