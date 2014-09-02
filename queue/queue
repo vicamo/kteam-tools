@@ -1,0 +1,89 @@
+#!/bin/bash
+#
+# queue-enqueue <type> <priority> <cmd> ...
+#
+P="queue"
+
+queue="$HOME/queue"
+N="$queue/N"
+Q="$queue/Q"
+R="$queue/R"
+O="$queue/O"
+mkdir -p "$N" "$Q" "$R" "$O"
+
+if [ "$#" -lt 1 ]; then
+	echo "Usage: $P <cmd> <args>" 1>&2
+	echo "       $P enqueue <type> <prio A|B|C> <cmd> ..." 1>&2
+	exit 1
+fi
+cmd="$1"
+shift
+
+case "$cmd" in
+enqueue)
+	if [ "$#" -lt 2 ]; then
+		echo "Usage: $P $cmd <type> <prio A|B|C> <cmd> ..." 1>&2
+		exit 1
+	fi
+	which="$1"
+	priority="$1"
+	shift 2
+
+	time=`date +%s`
+	job=`mktemp "$N/$priority.$time.$which.XXXXXXXX"`
+
+	echo "$@" >>"$job"
+
+	entry=`echo "$job" | sed -e "s@^$N@$Q@"`
+	bentry="$entry"
+
+	while ! ln "$job" "$entry"
+	do
+		entry="$bentry.$RANDOM"
+	done
+	rm -f "$job"
+
+	echo "$P: $entry -- enqueued" >&2
+	;;
+
+queue)
+	for i in "$R"/* "$Q"/*
+	do
+		[ ! -f "$i" ] && continue
+
+		read cmd args <"$i" 
+		cmd=`basename "$cmd"`
+		echo "$i: $cmd $args" | sed -r -e "s@^$queue/@@" -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g'
+	done
+	;;
+
+pick)
+	if [ "$#" -ne 2 ]; then
+		echo "Usage: $P <who> <which>" 1>&2
+		exit 1
+	fi
+	who="$1"
+	which="$2"
+	shift 2
+
+	for entry in "$Q/"*.$which.* ""
+	do
+		[ ! -f "$entry" ] && continue
+
+		rentry=`echo "$entry" | sed -e "s@^$Q@$R@"`
+
+		echo "CANDIDATE: $entry"
+		if mv "$entry" "$rentry" 2>/dev/null; then
+			entry="$rentry"
+			break
+		fi
+	done
+
+	if [ "$entry" != "" ]; then
+		oentry=`echo "$entry" | sed -e "s@^$R@$O@"`
+		echo "$who" >"$oentry"
+		echo "$P: $entry -- picked" >&2
+		cat "$entry"
+	fi
+	;;
+esac
