@@ -7,6 +7,17 @@ P="queue"
 Q="$HOME/queue"
 mkdir -p "$Q"
 
+who=""
+case "$1" in
+-w)	who="$2"; shift 2;;
+esac
+
+case "$who" in
+*/*)
+	echo "$P: $who: invalid" 1>&2
+	exit 1
+esac
+
 if [ "$#" -lt 1 ]; then
 	echo "Usage: $P <cmd> <args>" 1>&2
 	echo "       $P enqueue <type> <prio A|B|C> <cmd> ..." 1>&2
@@ -58,13 +69,11 @@ queue)
 	;;
 
 pick)
-	if [ "$#" -ne 2 ]; then
-		echo "Usage: $P <who> <which>" 1>&2
+	if [ "$who" = "" -o "$#" -ne 1 ]; then
+		echo "Usage: $P -w <who> pick <which>" 1>&2
 		exit 1
 	fi
-	who="$1"
-	which="$2"
-	shift 2
+	which="$1"
 
 	if [ -f "$Q/$who.O" ]; then
 		echo "$P: ERROR already executing job" >&2
@@ -92,12 +101,10 @@ pick)
 	fi
 	;;
 complete)
-	if [ "$#" -ne 1 ]; then
-		echo "Usage: $P <who>" 1>&2
+	if [ "$who" = "" -o "$#" -ne 0 ]; then
+		echo "Usage: $P -w <who> complete" 1>&2
 		exit 1
 	fi
-	who="$1"
-	shift 1
 
 	if [ ! -f "$Q/$who.O" ]; then
 		echo "$P: ERROR not executing job" >&2
