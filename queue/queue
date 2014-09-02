@@ -1,15 +1,11 @@
 #!/bin/bash
 #
-# queue-enqueue <type> <priority> <cmd> ...
+# queue [-w <who>] <cmd> ...
 #
 P="queue"
 
-queue="$HOME/queue"
-N="$queue/N"
-Q="$queue/Q"
-R="$queue/R"
-O="$queue/O"
-mkdir -p "$N" "$Q" "$R" "$O"
+Q="$HOME/queue"
+mkdir -p "$Q"
 
 if [ "$#" -lt 1 ]; then
 	echo "Usage: $P <cmd> <args>" 1>&2
@@ -26,34 +22,38 @@ enqueue)
 		exit 1
 	fi
 	which="$1"
-	priority="$1"
+	priority="$2"
 	shift 2
 
 	time=`date +%s`
-	job=`mktemp "$N/$priority.$time.$which.XXXXXXXX"`
-
-	echo "$@" >>"$job"
-
-	entry=`echo "$job" | sed -e "s@^$N@$Q@"`
-	bentry="$entry"
-
-	while ! ln "$job" "$entry"
+	while :
 	do
-		entry="$bentry.$RANDOM"
+		job=`mktemp "$Q/$priority.$time.$which.XXXXXXXX.N"`
+		echo "$@" >>"$job"
+
+		entry=`echo "$job" | sed -e 's@.N$@.Q@'`
+
+		if mv "$job" "$entry" 2>/dev/null; then
+			break
+		fi
+
+		rm -f "$job"
 	done
-	rm -f "$job"
 
 	echo "$P: $entry -- enqueued" >&2
 	;;
 
 queue)
-	for i in "$R"/* "$Q"/*
+	for i in "$Q"/*.{R,Q}
 	do
-		[ ! -f "$i" ] && continue
+		{
+			cmd=''
+			read cmd args <"$i"
+		} 2>/dev/null
+		[ "$cmd" = '' ] && continue
 
-		read cmd args <"$i" 
 		cmd=`basename "$cmd"`
-		echo "$i: $cmd $args" | sed -r -e "s@^$queue/@@" -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g'
+		echo "$i: $cmd $args" | sed -r -e "s@^$Q/@@" -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g'
 	done
 	;;
 
@@ -66,13 +66,16 @@ pick)
 	which="$2"
 	shift 2
 
-	for entry in "$Q/"*.$which.* ""
+	if [ -f "$Q/$who.O" ]; then
+		echo "$P: ERROR already executing job" >&2
+		exit 1
+	fi
+
+	for entry in "$Q/"*.$which.*.Q ""
 	do
-		[ ! -f "$entry" ] && continue
+		rentry=`echo "$entry" | sed -e 's@.Q$@.R@'`
 
-		rentry=`echo "$entry" | sed -e "s@^$Q@$R@"`
-
-		echo "CANDIDATE: $entry"
+		#echo "CANDIDATE: $entry"
 		if mv "$entry" "$rentry" 2>/dev/null; then
 			entry="$rentry"
 			break
@@ -80,10 +83,28 @@ pick)
 	done
 
 	if [ "$entry" != "" ]; then
-		oentry=`echo "$entry" | sed -e "s@^$R@$O@"`
-		echo "$who" >"$oentry"
+		basename "$entry" >"$Q/$who.O"
 		echo "$P: $entry -- picked" >&2
 		cat "$entry"
+	else
+		echo "$P: ERROR no jobs available" >&2
+		exit 1
 	fi
+	;;
+complete)
+	if [ "$#" -ne 1 ]; then
+		echo "Usage: $P <who>" 1>&2
+		exit 1
+	fi
+	who="$1"
+	shift 1
+
+	if [ ! -f "$Q/$who.O" ]; then
+		echo "$P: ERROR not executing job" >&2
+		exit 1
+	fi
+
+	entry=`cat "$Q/$who.O"`
+	rm -f "$Q/$entry" "$Q/$who.O"
 	;;
 esac
