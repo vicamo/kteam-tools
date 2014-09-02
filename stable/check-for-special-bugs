@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+#
+# shank is the "stable bot" or "stab-bot".
+#
+
+from os                                 import path
+import json
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG, WARNING
+from sb.log                             import Clog, cinfo, cdebug, cwarn, cnotice, cerror
+from ktl.shanky                         import send_to_shankbot
+
+# Specials
+#
+class Specials():
+    '''
+    Some LP bugs are more special than others.
+    '''
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+        s.old = None
+        s.new = None
+
+        s.people = [
+            'Mark Shuttleworth',
+            'Jane Silber',
+            'Robbie Williamson',
+            'Pete Graner',
+            'Rick Spencer',
+            'Martin Stadtler',
+            'Leann Ogasawara'
+        ]
+
+    # main
+    #
+    def main(s):
+        '''
+        This drives the overall process. It gets a list of the bugs that need to
+        be worked (if not specified) and then runs through each of them.
+        '''
+        try:
+            if path.exists(s.args.old):
+                with open(s.args.old, 'r') as f:
+                    s.old = json.load(f)
+            else:
+                print("The specified file (%s) does not exist." % s.args.old)
+
+            if path.exists(s.args.new):
+                with open(s.args.new, 'r') as f:
+                    s.new = json.load(f)
+            else:
+                print("The specified file (%s) does not exist." % s.args.new)
+
+            if s.old is not None and s.new is not None:
+                for package in s.new['packages'].items():
+                    for bug in package[1]['bugs'].items():
+
+                        try:
+                            ob = s.old['packages'][package[0]]['bugs'][bug[0]]
+                        except KeyError:
+                            # This must be a new bug that "old" doesn't know anything about. Check
+                            # if this is a "special" bug.
+                            #
+                            cdebug("New - %s: LP: #%s  %s" % (package[0], bug[0], bug[1]['owner']))
+
+                            # Special people
+                            #
+                            o = bug[1]['owner']
+                            if o in s.people:
+                                cdebug("Special person")
+                                msg = '%s has filed: "%s"     https://launchpad.net/bugs/%s' % (o, bug[1]['title'], bug[0])
+                                send_to_shankbot(msg)
+
+            with open(s.args.old, 'w') as f:
+                f.write(json.dumps(s.new, sort_keys=True, indent=4))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        return 0
+
+    # end of main
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I look for special bugs.
+    '''
+    app_epilog = '''
+examples:
+    specials <old.json> <new.json>
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--verbose',                    action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--debug',                      action='store_true', default=False, help='')
+    parser.add_argument('--logfile',                                         default=None,  help='Where to log the output.')
+    parser.add_argument('old',   metavar='old.json',   type=str, nargs=1, help='The json output from an older run of collect-window-data.')
+    parser.add_argument('new',   metavar='new.json',   type=str, nargs=1, help='The json output from a more recent run of collect-window-data.')
+    args = parser.parse_args()
+
+    args.old = args.old[0]
+    args.new = args.new[0]
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
+        Clog.dbg = True
+    elif args.verbose:
+        basicConfig(filename=args.logfile, level=INFO, format=log_format)
+    else:
+        basicConfig(filename=args.logfile, level=WARNING, format=log_format)
+
+    app = Specials(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab:
+
