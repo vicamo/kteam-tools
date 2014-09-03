@@ -47,7 +47,7 @@ repo_remote_url()
 }
 
 repo_remote_url_set	'linux'			'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'
-repo_remote_url_set	'url_2.6.32.y.33.z'	'git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git'
+repo_remote_url_set	'2.6.32.y.33.z'		'git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git'
 repo_remote_url_set	'linux-stable'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git'
 repo_remote_url_set	'ubuntu-stable'		'git://kernel.ubuntu.com/herton/linux-stable.git'
 repo_remote_url_set	'drm-2.6'		'git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6'
