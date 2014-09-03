@@ -40,7 +40,7 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/cod-enqueue" "B" "$here/mainline-build" "$remotes" "$commit"
+	"$here/cod-enqueue" "B" "$here/mainline-build" "${remotes// /,}" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"

@@ -22,6 +22,8 @@ abi="$3"
 base="$4"
 date="$5"
 
+remotes="${remotes//,/ }"
+
 master_tree_select
 
 # Ensure we have the commit identified.
