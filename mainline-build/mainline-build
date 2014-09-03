@@ -25,7 +25,7 @@ remotes="${remotes//,/ }"
 master_tree_select
 
 # Ensure we have the commit identified.
-repo_remote_update $remotes
+repo_remote_update_list $remotes
 
 full_version=`git cat-file -p "$commit:Makefile" | awk '
 	/^VERSION/	{ version=$3 }
