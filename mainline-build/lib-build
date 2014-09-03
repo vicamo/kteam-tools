@@ -23,37 +23,45 @@ master_tree_select()
 	fi
 }
 
-ubuntu_series="hardy lucid maverick natty oneiric precise quantal raring saucy trusty utopic"
-
 # Map remote names to real URLs for use when remotes are missing.
+repo_remote_url_set()
+{
+        local remote="$1"
+
+        remote=${remote//./__dt__}
+        remote=${remote//-/__mi__}
+        remote=${remote//+/__pl__}
+
+	eval url_${remote}='"$2"'
+}
+
 repo_remote_url()
 {
-	local match="$1"
-	local remote
-	local url
+        local remote="$1"
 
-	case " $ubuntu_series " in
-	*\ $match\ *)
-		RET="$master_repo/ubuntu-$match.git"; 
-		return
-		;;
-	esac
+        remote=${remote//./__dt__}
+        remote=${remote//-/__mi__}
+        remote=${remote//+/__pl__}
 
-	while read remote url
-	do
-		[ "$remote" = "$match" ] && break;
-	done <<EORL
-linus		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-2.6.32.y.33.z	git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git
-linux-stable	git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-ubuntu-stable	git://kernel.ubuntu.com/herton/linux-stable.git
-drm-2.6		git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
-drm-intel	git://anongit.freedesktop.org/drm-intel
-debloat-testing	git://git.infradead.org/debloat-testing.git
-extended-stable	git://kernel.ubuntu.com/ubuntu/linux.git
-EORL
-	RET="$url"
+	eval RET="\$url_${remote}"
 }
+
+repo_remote_url_set	'linux'			'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'
+repo_remote_url_set	'url_2.6.32.y.33.z'	'git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git'
+repo_remote_url_set	'linux-stable'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git'
+repo_remote_url_set	'ubuntu-stable'		'git://kernel.ubuntu.com/herton/linux-stable.git'
+repo_remote_url_set	'drm-2.6'		'git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6'
+repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
+repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
+repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
+
+repo_remote_url_set	'hardy'			'git://kernel.ubuntu.com/ubuntu/ubuntu-hardy.git'
+repo_remote_url_set	'precise'		'git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git'
+repo_remote_url_set	'quantal'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal.git'
+repo_remote_url_set	'raring'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring.git'
+repo_remote_url_set	'saucy'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git'
+repo_remote_url_set	'trusty'		'git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git'
+repo_remote_url_set	'utopic'		'git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git'
 
 # Update a specific remote to the latest available, if the remote is missing
 # then add it using the urls above.
