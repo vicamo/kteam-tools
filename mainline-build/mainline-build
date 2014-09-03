@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 if [ "$#" -ne 2 -a "$#" -ne 5 ]; then
 	echo "Usage: $0 <remotes> <tag>" 1>&2
 	echo "Usage: $0 <remotes> <commit> <abi> <out> <date>" 1>&2
