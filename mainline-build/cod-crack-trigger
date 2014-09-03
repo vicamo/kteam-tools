@@ -25,9 +25,9 @@ master_tree_select
 #
 # UPSTREAM COD: builds of upstream tree tips
 #
-repo_remote_update_list linus drm-2.6 drm-intel debloat-testing extended-stable
+remotes="linus drm-2.6 drm-intel debloat-testing extended-stable"
+repo_remote_update_list $remotes
 
-refresh=1
 date="`date +%F`"
 while read branch abi base parent
 do
@@ -57,15 +57,8 @@ do
 		continue
 	fi
 
-	# We need to build it, so make sure our ubuntu repositories
-	# are up to date to build against.
-	if [ "$refresh" -eq 1 ]; then
-		repo_remote_update_list $ubuntu_series
-		refresh=0
-	fi
-	
 	"$here/cod-enqueue" "C" \
-		"$here/mainline-build" "$tip" "$abi" "$base" "$date"
+		"$here/mainline-build" "$remotes" "$tip" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
 drm-2.6/drm-next				996	drm-next

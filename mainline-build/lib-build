@@ -86,3 +86,30 @@ repo_remote_update_list()
 		repo_remote_update "$remote"
 	done
 }
+
+#
+# Add and update the upstream repositories as needed.
+#
+repo_update_ubuntu()
+{
+	local repo="$1"
+	local series="$2"
+	local series_repo
+
+	(
+		if [ ! -d "$master_main/$repo" ]; then
+			echo "$P: creating initial repo ($repo) ..."
+			mkdir -p "$master_main/$repo"
+			cd "$master_main/$repo" && git init
+		else
+			cd "$master_main/$repo"
+		fi
+		series_repo=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
+		series_repo="$master_repo/$series_repo.git"
+		if ! git remote | grep "$series" >/dev/null 2>&1; then
+			echo "$P: adding $series remote ($series_repo)..."
+			git remote add "$series" "$series_repo"
+		fi
+		git fetch "$series" || true
+	)
+}

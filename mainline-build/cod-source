@@ -13,6 +13,8 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+. "$here/lib-build"
+
 ppa="$1"
 repo="$2"
 series="$3"
@@ -50,7 +52,8 @@ echo "*** BUILDING SOURCE: ppa:$ppa repo:$repo commit:$commit series:$series tag
 
 build_release="precise"
 
-master_main="$HOME/COD"
+repo_update_ubuntu "$repo" "$series"
+
 master_tree="$master_main/$repo"
 
 cd "$master_tree" || exit 1
@@ -86,8 +89,7 @@ else
 	for debian in 'debian.master' 'debian' 'meta-source/debian'
 	do
 		[ -d "$debian" ] && break
-	done 
-fi
+	done fi
 changelog="$debian/changelog"
 
 unreleased=`head -1 "$changelog" | grep -c UNRELEASED`

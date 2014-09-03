@@ -44,15 +44,6 @@ do
 		break
 	fi
 
-	echo "$P: update-trees $job ..."
-	# We are going to use the master linux build tree.
-	master_tree_select
-
-	# Pull in all trees containing tags we wish to build.
-	repo_remote_update_list linus 2.6.32.y.33.z linux-stable extended-stable
-	repo_remote_update_list $ubuntu_series
-	repo_remote_update_list drm-2.6 drm-intel debloat-testing extended-stable
-
 	echo "$P: execute-start $job ..."
 	echo "$P: `cat "$jobf"`"
 	/bin/bash "$jobf"
