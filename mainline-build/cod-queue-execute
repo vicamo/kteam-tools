@@ -31,8 +31,6 @@ if ! ln "$lock_tmp" "$lock" 2>/dev/null; then
 fi
 rm -f "$lock_tmp"
 
-. "$here/lib-build"
-
 # Run things in the queue.
 while :
 do
