@@ -73,10 +73,10 @@ repo_remote_update()
 
 	repo_remote_url "$remote"; url="$RET"
 
-	curr=`git config "remote.$remote.url"`
-	if [ "$curr" != "" -a "$curr" != "$url" ]; then
+	curr=`git config "remote.$remote.url" || true`
+	if [ "$curr" != "$url" ]; then
 		echo "$P: removing $remote remote ($curr) ..."
-		git remote rm "$remote"
+		git remote rm "$remote" || true
 		curr=""
 	fi
 	if [ "$curr" = "" ]; then
