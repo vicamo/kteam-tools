@@ -51,7 +51,8 @@ enqueue)
 		rm -f "$job"
 	done
 
-	echo "$P: $entry -- enqueued" >&2
+	echo "$P: cmd: $@ -- enqueued" >&2
+	echo "$P: entry: $entry -- enqueued" >&2
 	;;
 
 queue)
