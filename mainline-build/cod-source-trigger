@@ -147,15 +147,12 @@ do
 	fi
 done <<EOL
 test-devel utopic linux master-next linux-meta master -
-test-devel trusty linux goldfish linux-meta goldfish -
-test-devel trusty linux grouper linux-meta grouper -
-test-devel trusty linux maguro linux-meta maguro -
-test-devel trusty linux mako linux-meta mako -
-test-devel trusty linux manta linux-meta manta -
+test-devel utopic linux goldfish linux-meta goldfish -
+test-devel utopic linux grouper linux-meta grouper -
+test-devel utopic linux maguro linux-meta maguro -
+test-devel utopic linux mako linux-meta mako -
+test-devel utopic linux manta linux-meta manta -
 pre-proposed trusty linux master-next linux-meta master no-release
-pre-proposed saucy linux master-next linux-meta master no-release
-pre-proposed quantal linux master-next linux-meta master no-release
-pre-proposed quantal linux-lbm master no-release
 pre-proposed precise linux master-next linux-meta master no-release
 pre-proposed precise linux-lbm master no-release
 pre-proposed precise linux lts-backport-raring-next - - no-release
