@@ -331,7 +331,10 @@ class GenWorkflowReport():
         try:
             retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-stable-phase']
         except KeyError:
-            retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-phase']
+            try:
+                retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-phase']
+            except KeyError:
+                retval += '                                            <td> %s </td>\n' % '*broken* (missing kernel-phase)'
         retval += '                                        </tr>\n'
         retval += '                                        <tr style="font-weight: bold;">\n'
         retval += '                                            <td width="30" align="right"> Tags: </td>\n'
