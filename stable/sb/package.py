@@ -275,20 +275,24 @@ class Sources(object):
         signer  = ''
         for pkg in matches:
             src_id = str(pkg.self).rsplit('/', 1)[1]
-            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
-            if build_summaries['status'] == 'FULLYBUILT':
-                cinfo('                                    "%s" %s built (pocket:%s)' % (package, release, pocket), 'green')
-                retval = True
-                status = True
-                creator = pkg.package_creator
-                signer  = pkg.package_signer
-            else:
-                cinfo('                                    "%s" %s not fully built yet, skipping (pocket:%s)' % (package, release, pocket), 'green')
-            # prefer newer published items...
-            if lst_date:
-                if lst_date > pkg.date_published:
-                    continue
-            lst_date = pkg.date_published
+            try:
+                build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+                if build_summaries['status'] == 'FULLYBUILT':
+                    cinfo('                                    "%s" %s built (pocket:%s)' % (package, release, pocket), 'green')
+                    retval = True
+                    status = True
+                    creator = pkg.package_creator
+                    signer  = pkg.package_signer
+                else:
+                    cinfo('                                    "%s" %s not fully built yet, skipping (pocket:%s)' % (package, release, pocket), 'green')
+                # prefer newer published items...
+                if lst_date:
+                    if lst_date > pkg.date_published:
+                        continue
+                lst_date = pkg.date_published
+            except:
+                cerror("Exception thrown geting the build summaries ... (is this keystone?)")
+                pass # Added when I started getting "UTTP Error 401: Unauthorized" for keystone kernels
         cdebug('                                Sources::__sources_built leave (%s)' % retval, 'blue')
         return status, creator, signer
 
