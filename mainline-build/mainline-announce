@@ -1,33 +1,43 @@
 #!/usr/bin/python
+from __future__                         import print_function
 import smtplib
 import sys
 import os
+from ktl.shanky                         import send_to_shankbot
 
 commit = sys.argv[1]
 published = sys.argv[2]
+
+params = {'commit': commit, 'published': published, 'user': os.environ['USER']}
+params['url'] = "http://kernel.ubuntu.com/{user}/mainline/{published}".format(**params)
+
+# Send to shanky for publication in IRC.
+msg = "mainline build: {commit} complete at {url}/".format(**params)
+##print(msg)
+send_to_shankbot(msg)
 
 # Add the From: and To: headers at the start!
 msg  = """From: Mainline Builds <kernel-team@lists.ubuntu.com>\r
 To: Kernel Team <kernel-team@lists.ubuntu.com>\r
 Reply-to: Kernel Team <kernel-team@lists.ubuntu.com>\r
-Subject: Mainline Build %(commit)s\r
+Subject: Mainline Build {commit}\r
 \r
-The mainline build for %(commit)s is now complete and available at the URL\r
+The mainline build for {commit} is now complete and available at the URL\r
 below:\r
 \r
-    http://kernel.ubuntu.com/~%(user)s/mainline/%(published)s/\r
+    {url}/\r
 \r
 See the CHANGES file for the list of changes from the previous version:\r
 \r
-    http://kernel.ubuntu.com/~%(user)s/mainline/%(published)s/CHANGES\r
+    {url}/CHANGES\r
 \r
 Note that these builds do not contain any Ubuntu specific patches and\r
 are not supported.\r
 \r
 Kernel Team\r
-""" % ({'commit': commit, 'published': published, 'user': os.environ['USER']})
+""".format(**params)
 
-print msg;
+print(msg)
 
 server = smtplib.SMTP('lists.ubuntu.com')
 server.set_debuglevel(0)
