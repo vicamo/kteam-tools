@@ -9,7 +9,7 @@ commit = sys.argv[1]
 published = sys.argv[2]
 
 params = {'commit': commit, 'published': published, 'user': os.environ['USER']}
-params['url'] = "http://kernel.ubuntu.com/{user}/mainline/{published}".format(**params)
+params['url'] = "http://kernel.ubuntu.com/~{user}/mainline/{published}".format(**params)
 
 # Send to shanky for publication in IRC.
 msg = "mainline build: {commit} complete at {url}/".format(**params)
