@@ -383,7 +383,7 @@ class Shankster(threading.Thread):
         except:
             # This must be a private bug
             #
-            s.output.reply("Bug #%s may be private (I can't find it in LP)." % bug_id)
+            s.output.reply("LP: #%s may be private (I can't find it in LP)." % bug_id)
 
 # IrcShankbot
 #
