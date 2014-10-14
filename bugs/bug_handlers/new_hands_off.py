@@ -81,6 +81,14 @@ class NewHandsOff(BugHandler):
                 Dbg.why('Has a watch link.\n')
                 break
 
+            # A bug that is opened by bugproxy LP User. 
+            # Request per apw for IBM bugs. 
+            #
+            if 'bugproxy' is bug.owner:
+                retval = False
+                Dbg.why('Bug was opened by bugproxy.\n')
+                break
+
             break;
 
         Dbg.ret('NewHandsOff.run', retval)
