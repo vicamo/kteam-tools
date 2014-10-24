@@ -144,7 +144,7 @@ case $SUITE in
 			;;
 		esac
 		;;
-	natty|oneiric|precise|quantal|android|raring|saucy|trusty|utopic|vivid)
+	oneiric|precise|android|trusty|utopic|vivid)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -162,7 +162,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|quantal|android|raring|saucy|trusty|utopic|vivid)
+	precise|android|trusty|utopic|vivid)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -174,7 +174,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	saucy|trusty|utopic|vivid)
+	trusty|utopic|vivid)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-powerpc-linux-gnu g++-powerpc-linux-gnu";
@@ -187,17 +187,14 @@ esac
 
 case $SUITE in
 	precise)
-		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency linux-headers-generic-lts-quantal libpci-dev libaudit-dev python-dev";
+		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency libpci-dev libaudit-dev python-dev";
 		case ${ARCH} in
 			i386)
 				ADDPKG="$ADDPKG linux-headers-generic-pae linux-headers-lowlatency-pae";
 			;;
 		esac
 	;;
-	quantal)
-		ADDPKG="$ADDPKG flex bison";
-	;;
-	raring|saucy|trusty|utopic|vivid)
+	trusty|utopic|vivid)
 		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
 	android)
@@ -214,7 +211,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	saucy|trusty|utopic|vivid)
+	trusty|utopic|vivid)
 		# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
 		ADDPKG="$ADDPKG gcc-4.6 gcc-4.7"
 		case $ARCH in
