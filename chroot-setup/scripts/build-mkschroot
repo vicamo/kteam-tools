@@ -144,7 +144,7 @@ case $SUITE in
 			;;
 		esac
 		;;
-	natty|oneiric|precise|quantal|android|raring|saucy|trusty|utopic)
+	natty|oneiric|precise|quantal|android|raring|saucy|trusty|utopic|vivid)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -162,7 +162,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|quantal|android|raring|saucy|trusty|utopic)
+	precise|quantal|android|raring|saucy|trusty|utopic|vivid)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -174,7 +174,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	saucy|trusty|utopic)
+	saucy|trusty|utopic|vivid)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-powerpc-linux-gnu g++-powerpc-linux-gnu";
@@ -197,7 +197,7 @@ case $SUITE in
 	quantal)
 		ADDPKG="$ADDPKG flex bison";
 	;;
-	raring|saucy|trusty|utopic)
+	raring|saucy|trusty|utopic|vivid)
 		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
 	android)
@@ -214,7 +214,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	saucy|trusty|utopic)
+	saucy|trusty|utopic|vivid)
 		# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
 		ADDPKG="$ADDPKG gcc-4.6 gcc-4.7"
 		case $ARCH in
@@ -229,7 +229,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	trusty|utopic)
+	trusty|utopic|vivid)
 		ADDPKG="$ADDPKG libiberty-dev pkg-config dh-systemd"
 		case $ARCH in
 			amd64|i386) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-arm-linux-androideabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu"
