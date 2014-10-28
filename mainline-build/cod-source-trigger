@@ -146,12 +146,8 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-test-devel utopic linux master-next linux-meta master -
-test-devel utopic linux goldfish linux-meta goldfish -
-test-devel utopic linux grouper linux-meta grouper -
-test-devel utopic linux maguro linux-meta maguro -
-test-devel utopic linux mako linux-meta mako -
-test-devel utopic linux manta linux-meta manta -
+test-devel vivid linux master-next linux-meta master -
+pre-proposed utopic linux master-next linux-meta master -
 pre-proposed trusty linux master-next linux-meta master no-release
 pre-proposed precise linux master-next linux-meta master no-release
 pre-proposed precise linux-lbm master no-release
@@ -159,5 +155,10 @@ pre-proposed precise linux lts-backport-raring-next - - no-release
 pre-proposed lucid linux master-next linux-meta master no-release
 pre-proposed lucid linux-lbm master no-release
 EOL
+#pre-proposed utopic linux goldfish linux-meta goldfish -
+#pre-proposed utopic linux grouper linux-meta grouper -
+#pre-proposed utopic linux maguro linux-meta maguro -
+#pre-proposed utopic linux mako linux-meta mako -
+#pre-proposed utopic linux manta linux-meta manta -
 #pre-proposed raring linux-lbm master no-release
 #pre-proposed raring linux master-next linux-meta master no-release

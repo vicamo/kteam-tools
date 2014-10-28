@@ -62,6 +62,7 @@ repo_remote_url_set	'raring'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-rar
 repo_remote_url_set	'saucy'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git'
 repo_remote_url_set	'trusty'		'git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git'
 repo_remote_url_set	'utopic'		'git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git'
+repo_remote_url_set	'vivid'			'git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git'
 
 # Update a specific remote to the latest available, if the remote is missing
 # then add it using the urls above.
