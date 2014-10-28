@@ -58,31 +58,36 @@ class PackagePockets:
 
         # Take the latest pocket the package made it into as its 'pocket'.
         s.pockets = {}
+        s.published = {}
         for pub in pubs:
-            #print(pub.source_package_version, pub.pocket, pub.status)
-            if pub.status == 'Deleted':
-                continue
+            logging.debug("publication: %s %s %s" % (pub.source_package_version, pub.pocket, pub.status))
             version = pub.source_package_version
             pocket = pub.pocket
+
+            # Record all pockets a version has been in.
             if version not in s.pockets:
                 s.pockets[version] = []
             if pocket not in s.pockets[version]:
                 s.pockets[version].append(pocket)
-        
+
+            # Record the Published version in a pocket.
+            if pub.status == 'Published':
+                s.published[pocket] = version
+
 
     def current_in_pocket(s, pocket, infer_release=False):
         '''Get the current version of this package published in the specified pocket'''
         pocket = pocket.capitalize()
 
-        result = None
-        for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
-            if pocket in s.pockets[version]:
-                result = version
-            # If a package is introduced post release then there is no -release
-            # version, the very first -updates version stands in for this version.
-            if infer_release and not result and \
-                    pocket == 'Release' and 'Updates' in s.pockets[version]:
-                result = version
+        logging.debug('current_in_pocket: %s' % (pocket,))
+
+        result = s.published.get(pocket)
+
+        # If a package is introduced post release then there is no -release
+        # version, the very first -updates version stands in for this version.
+        if infer_release and not result and \
+                pocket == 'Release':
+            result = s.published.get('Updates')
 
         return result
 
