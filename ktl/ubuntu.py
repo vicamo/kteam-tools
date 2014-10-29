@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 
+import re
 from ktl.dbg                    import Dbg
 
 #
@@ -793,9 +794,12 @@ class Ubuntu:
         if package.startswith('linux-lts-'):
             Dbg.verbose('package condition 2\n')
             for entry in self.db.itervalues():
-                if entry['name'] in version:
+                # starting with trusty, the lts packages now include the series
+                # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
+                # instead of 3.16.0-23.31~trusty1
+                expected = '.*~(%s\.\d+|%s\d+)' % (entry['series_version'], entry['name'])
+                if re.match(expected, version):
                     retval = entry['name']
-
         else:
             Dbg.verbose('package condition 1\n')
             for entry in self.db.itervalues():
