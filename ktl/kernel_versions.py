@@ -74,6 +74,14 @@ class PackagePockets:
             if pub.status == 'Published':
                 s.published[pocket] = version
 
+        s.published_infer = s.published
+
+        if 'Release' not in s.published:
+            for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+                if 'Updates' in s.pockets[version]:
+                    s.published_infer['Release'] = version
+                    break
+
 
     def current_in_pocket(s, pocket, infer_release=False):
         '''Get the current version of this package published in the specified pocket'''
@@ -81,13 +89,12 @@ class PackagePockets:
 
         logging.debug('current_in_pocket: %s' % (pocket,))
 
-        result = s.published.get(pocket)
-
         # If a package is introduced post release then there is no -release
         # version, the very first -updates version stands in for this version.
-        if infer_release and not result and \
-                pocket == 'Release':
-            result = s.published.get('Updates')
+        if infer_release:
+            result = s.published_infer.get(pocket)
+        else:
+            result = s.published.get(pocket)
 
         return result
 
