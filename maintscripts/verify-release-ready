@@ -468,7 +468,8 @@ class VerifyReleaseReady():
             'linux-lts-quantal',
             'linux-lts-raring',
             'linux-lts-saucy',
-            'linux-lts-trusty'
+            'linux-lts-trusty',
+            'linux-lts-utopic'
         ]
 
         non_kernel_packages = [
@@ -480,10 +481,12 @@ class VerifyReleaseReady():
             'linux-meta-lts-quantal',
             'linux-meta-lts-saucy',
             'linux-meta-lts-trusty',
+            'linux-meta-lts-utopic',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
             'linux-signed-lts-saucy',
             'linux-signed-lts-trusty',
+            'linux-signed-lts-utopic',
             'linux-backports-modules-3.5.0',
             'linux-backports-modules-3.2.0',
             'linux-backports-modules-2.6.32',
