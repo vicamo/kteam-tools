@@ -84,8 +84,9 @@ class NewHandsOff(BugHandler):
             # A bug that is opened by bugproxy LP User. 
             # Request per apw for IBM bugs. 
             #
-            if 'bugproxy' is bug.owner:
-                retval = False
+            owner = bug.owner.display_name
+            if owner == 'bugproxy':
+                retval = False 
                 Dbg.why('Bug was opened by bugproxy.\n')
                 break
 
