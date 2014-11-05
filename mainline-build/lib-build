@@ -12,14 +12,21 @@ master_repo="git://kernel.ubuntu.com/ubuntu"
 # Select the master tree, creating it if necessary.
 master_tree_select()
 {
+	repo_select "$master_tree"
+}
+
+# Select a repo, make it if it does not exist, and init it in git
+# in preparation for a repo_remote_update().
+repo_select()
+{
 	# Build us a master tree if we do not have one.
-	if [ ! -d "$master_tree" ]; then
+	if [ ! -d "$1" ]; then
 		echo "$P: creating primary build tree ..."
-		mkdir -p "$master_tree"
-		cd "$master_tree"
+		mkdir -p "$1"
+		cd "$1"
 		git init
 	else
-		cd "$master_tree"
+		cd "$1"
 	fi
 }
 
@@ -54,6 +61,9 @@ repo_remote_url_set	'drm-2.6'		'git://git.kernel.org/pub/scm/linux/kernel/git/ai
 repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
 repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
+
+repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
+repo_remote_url_set	'stable-queue-3.2'	'git://git.kernel.org/pub/scm/linux/kernel/git/bwh/linux-3.2.y-queue.git'
 
 repo_remote_url_set	'hardy'			'git://kernel.ubuntu.com/ubuntu/ubuntu-hardy.git'
 repo_remote_url_set	'precise'		'git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git'

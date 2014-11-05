@@ -71,6 +71,8 @@ extended-stable/linux-3.8.y-review		992     linux-3.8.y.z-review
 extended-stable/linux-3.8.y-queue		991     linux-3.8.y.z-queue	linux-3.8.y.z-review
 extended-stable/linux-3.11.y-review		992     linux-3.11.y.z-review
 extended-stable/linux-3.11.y-queue		991     linux-3.11.y.z-queue	linux-3.11.y.z-review
+extended-stable/linux-3.16.y-review		992     linux-3.16.y.z-review
+extended-stable/linux-3.16.y-queue		991     linux-3.16.y.z-queue	linux-3.16.y.z-review
 EOL
 # Also allocated
 # 995: sconklin -- wayland
