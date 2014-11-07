@@ -1,0 +1,107 @@
+#!/bin/bash
+P="cod-stable-queue"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <push location>" 1>&2
+	exit 1
+fi
+push_to="$1"
+
+. "$here/lib-build"
+
+stable_tree="$master_main/linux"
+queue_tree="$master_main/stable-queue"
+
+# Make sure we have a linux-stable branch to work in.
+repo_select "$stable_tree"
+repo_remote_update "linux-stable"
+
+while read repo ignore
+do
+	repo_select "$queue_tree"
+	repo_remote_update "$repo"
+
+	# See if it has changed.
+	tree_was=`git log --format="%T" -1 "$repo/master" 2>/dev/null`
+	tree_is=`git log --format="%T" -1 "$repo"`
+	if [ "$tree_was" = "$tree_is" ]; then
+		: #continue
+	fi
+
+	git checkout -f -b "$repo-$$" "$repo/master"
+	git branch -M "$repo"
+
+	for version in `ls releases | sed -e 's/\.[^\.]*$//' | sort -uV`
+	do
+		case ",$ignore," in
+		*,$version,*)
+			echo "$version: marked as replaced ... ignored"
+			continue
+			;;
+		esac
+
+		latest=`ls -1 releases | grep "^$version\." | sort -V | tail -1`
+
+		echo "$version -> $latest"
+		if [ "$latest" = "" ]; then
+			latest="$version"
+		fi
+
+		(
+			ignore=0
+
+			branch="stable-queue-$version"
+			tbranch="new-$$-$branch"
+			repo_select "$stable_tree"
+
+			slatest=`git tag -l | grep "^v$version\." | sort -V | tail -1`
+			if dpkg --compare-versions "0$slatest" gt "0v$latest"; then
+				echo "$latest: not latest version in stable ... switched to $slatest ignoring queue"
+				latest="${slatest#v}"
+				ignore=1
+			fi
+
+			tree_base=`git log --format="%T" -1 "v$latest" 2>/dev/null`
+			if [ "$tree_base" = "" ]; then
+				echo "$latest: no tag for latest ... ignored"
+				continue
+			fi
+
+			git branch "$tbranch" "v$latest"
+			if [ "$ignore" = 0 -a -d "$queue_tree/queue-$version" ]; then
+				git checkout -f "$tbranch"
+				rm -rf .git/rebase-apply
+				git quiltimport --author 'UNKNOWN <unknown@example.com>' --patches "$queue_tree/queue-$version"
+			fi
+			# See if it has changed.
+			tree_was=`git log --format="%T" -1 "$branch" 2>/dev/null`
+			tree_is=`git log --format="%T" -1 "$tbranch"`
+			if [ "$tree_was" != "$tree_is" ]; then
+				git branch -M "$tbranch" "$branch"
+			else
+				# If we are on the branch to delete, move elsewhere ...
+				onit=`git symbolic-ref HEAD`
+				if [ "$onit" = "refs/heads/$tbranch" ]; then
+					git checkout "$branch"
+				fi
+				git branch -D "$tbranch"
+			fi
+		)
+	done
+done <<EOL
+stable-queue		3.2
+stable-queue-3.2
+EOL
+
+# PUBLISH
+repo_select "$stable_tree"
+git push --force "$push_to" \
+	`git for-each-ref --format '%(refname)' 'refs/heads/stable-queue-*'`

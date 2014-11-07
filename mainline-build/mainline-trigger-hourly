@@ -15,6 +15,11 @@ esac
 "$here/cod-tags-trigger"
 
 #
+# STABLE QUEUE: coversion of the stable queue quilt trees
+#
+"$here/cod-stable-queue" "/srv/kernel.ubuntu.com/git/kernel-ppa/stable-queue-branches.git"
+
+#
 # UBUNTU SOURCE: source package uploads, tips of the ubuntu trees etc
 #
 "$here/cod-source-trigger"
