@@ -33,7 +33,7 @@ do
 	tree_was=`git log --format="%T" -1 "$repo/master" 2>/dev/null`
 	tree_is=`git log --format="%T" -1 "$repo"`
 	if [ "$tree_was" = "$tree_is" ]; then
-		: #continue
+		continue
 	fi
 
 	git checkout -f -b "$repo-$$" "$repo/master"
