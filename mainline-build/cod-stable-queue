@@ -64,7 +64,7 @@ do
 
 			slatest=`git tag -l | grep "^v$version\." | sort -V | tail -1`
 			if dpkg --compare-versions "0$slatest" gt "0v$latest"; then
-				echo "$latest: not latest version in stable ... switched to $slatest ignoring queue"
+				echo "$latest: not latest version in stable ... switched to $slatest"
 				latest="${slatest#v}"
 				ignore=1
 			fi
@@ -76,10 +76,14 @@ do
 			fi
 
 			git branch "$tbranch" "v$latest"
-			if [ "$ignore" = 0 -a -d "$queue_tree/queue-$version" ]; then
-				git checkout -f "$tbranch" --
-				rm -rf .git/rebase-apply
-				git quiltimport --author 'UNKNOWN <unknown@example.com>' --patches "$queue_tree/queue-$version"
+			if [ -d "$queue_tree/queue-$version" ]; then
+				if [ "$ignore" = 0 ]; then
+					git checkout -f "$tbranch" --
+					rm -rf .git/rebase-apply
+					git quiltimport --author 'UNKNOWN <unknown@example.com>' --patches "$queue_tree/queue-$version"
+				else
+					echo "$latest: ignoring queue"
+				fi
 			fi
 			# See if it has changed.
 			tree_was=`git log --format="%T" -1 "$branch" 2>/dev/null`
