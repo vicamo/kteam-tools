@@ -1,0 +1,75 @@
+#!/usr/bin/python3
+
+import ast
+import urllib.request
+import re
+import os
+import sys
+
+from operator import itemgetter
+
+url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
+url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
+
+(url,) = sys.argv[1:2]
+vreports = sys.argv[2:]
+
+#arch_re = re.compile('ARCH=([^,]*)')
+
+tree = ast.literal_eval(urllib.request.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+#with open("XX", "rb") as fd:
+#    tree = ast.literal_eval(fd.read().decode('utf-8'))
+
+#vreport = '3.16.0-17-generic'
+#vreport = '3.13.0-38-generic'
+
+for vreport in vreports:
+    version = {}
+    for job in tree['jobs']:
+        #print(job['name'])
+        #print(job['description'])
+        name = job['name']
+
+        #print(job['builds'][0])
+        seen = False
+        # Ensure we treat runs in latest build in the latest kernel first order.
+        for build in sorted(job['builds'], key=itemgetter('number', 'timestamp'), reverse=True):
+            if 'description' not in build or not build['description']:
+                continue
+            (kver, pver) = build['description'].split(' ')
+
+            if vreport == 'latest':
+                vreport = kver
+
+            if kver != vreport and not seen:
+                continue
+            seen = True
+
+            if build['result'] == 'SUCCESS':
+                status = 'GOOD'
+            elif build['result'] == None:
+                status = 'MISSING'
+            else:
+                status = 'FAIL-ALWAYS'
+
+            ##print(name, kver, pver, status)
+
+            if name not in version:
+                version[name] = status
+                continue
+
+            # If this is the latest report, and we are missing a job, call it all
+            # missing
+            if kver == vreport and version[name] == 'GOOD' and status == 'MISSING':
+                version[name] = 'MISSING'
+
+            # Work out if this has ever worked, if so it is a regression.
+            if version[name] == 'FAIL-ALWAYS' and status == 'GOOD':
+                version[name] = 'FAIL-REGRESSION'
+                break
+
+        if name not in version:
+            version[name] = 'MISSING'
+                
+    for package in sorted(version):
+        print(vreport, package, version[package])
