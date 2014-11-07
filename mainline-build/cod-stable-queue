@@ -108,4 +108,4 @@ EOL
 # PUBLISH
 repo_select "$stable_tree"
 git push --force "$push_to" \
-	`git for-each-ref --format '%(refname)' 'refs/heads/stable-queue-*'`
+	`git for-each-ref --format '%(refname)' 'refs/heads/stable-queue-*' 'refs/tags/v*'`
