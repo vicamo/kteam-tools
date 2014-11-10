@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import ast
+import urllib.request
+import re
+import os
+import sys
+import apt_pkg
+
+from operator import itemgetter
+from optparse import OptionParser
+from functools import cmp_to_key
+
+parser = OptionParser()
+parser.add_option("-f", "--removed", dest="removed", action="append",
+                  help="mark package as removed from the primary release")
+
+(options, args) = parser.parse_args()
+
+#url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
+#url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
+
+versions = {}
+packages = {}
+jobs = {}
+for url in args:
+    tree = ast.literal_eval(urllib.request.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+
+    for job in tree['jobs']:
+        #print(job['name'])
+        #print(job['description'])
+        name = job['name'].split('-').pop()
+
+        #print(job['builds'][0])
+        seen = False
+        # Ensure we treat runs in latest build in the latest kernel first order.
+        for build in sorted(job['builds'], key=itemgetter('number', 'timestamp')):
+            if 'description' not in build or not build['description']:
+                continue
+            (kver, pver) = build['description'].split(' ')
+            if '-' not in kver:
+                continue
+            (pkg, pver) = pver.split('/')
+            if pkg == '':
+                continue
+
+            if build['result'] == 'SUCCESS':
+                status = 'GOOD'
+            elif build['result'] == None:
+                status = 'RUN'
+            else:
+                status = 'FAIL'
+
+            ##print(name, kver, pver, status)
+            packages[name] = True
+            versions[kver] = True
+            jobs[name, kver] = status
+
+apt_pkg.init_system()
+vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
+
+print("""<html>
+<head>
+<title>DKMS Matrix</title>
+<style>
+.GOOD { background-color: green; }
+.RUN { background-color: yellow; }
+.FAIL { background-color: orange; }
+.REGR { background-color: red; }
+table.matrix {
+    border-collapse: collapse;
+}
+table.matrix, table.matrix th, table.matrix td {
+   border: 1px solid black;
+} 
+</style>
+</head>
+<body>
+<h1>DKMS Matrix</h1>
+<table class="matrix">
+""")
+
+print("<tr><th>")
+for version in vlist:
+    print("<th>" + version, end='')
+print("<th></tr>")
+
+hclass = {
+    ('GOOD', 'FAIL'): 'REGR'
+}
+
+for package in sorted(packages):
+    print("<tr><th>" + package)
+    (pstatus, status) = ("&nbsp;", "&nbsp;")
+    for version in vlist:
+        (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
+        print('<td class="' + hclass.get((pstatus, status), status) + '">' + status, end='')
+    print("<th>" + package + "</tr>")
+
+print("""</table>
+</body>
+</html>""")
