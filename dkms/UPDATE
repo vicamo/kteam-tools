@@ -9,7 +9,7 @@ esac
 out="public_html/info/dkms-matrix.html"
 
 "$here/dkms-jenkins-matrix" \
-	"https://jenkins.qa.ubuntu.com/view/DKMS/view/U%20KT-PPA%20-generic/" \
+	"https://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic/" \
 	"https://jenkins.qa.ubuntu.com/view/DKMS/view/V%20KT-PPA%20-generic/" \
     >"$out.new"
 
