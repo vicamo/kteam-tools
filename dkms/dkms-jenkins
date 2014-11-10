@@ -8,27 +8,25 @@ import sys
 
 from operator import itemgetter
 
-url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
-url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
+#url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
+#url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
 
-(url,) = sys.argv[1:2]
-vreports = sys.argv[2:]
+versions = zip(sys.argv[1::2], sys.argv[2::2])
 
-#arch_re = re.compile('ARCH=([^,]*)')
+jstate = {}
+jseen = {}
+count = 0
+for (url, vreport) in versions:
+    count += 1
+    tree = ast.literal_eval(urllib.request.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
 
-tree = ast.literal_eval(urllib.request.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
-#with open("XX", "rb") as fd:
-#    tree = ast.literal_eval(fd.read().decode('utf-8'))
-
-#vreport = '3.16.0-17-generic'
-#vreport = '3.13.0-38-generic'
-
-for vreport in vreports:
-    version = {}
     for job in tree['jobs']:
         #print(job['name'])
         #print(job['description'])
-        name = job['name']
+        name = job['name'].split('-').pop()
+
+        if name not in jseen:
+            jseen[name] = count
 
         #print(job['builds'][0])
         seen = False
@@ -54,22 +52,26 @@ for vreport in vreports:
 
             ##print(name, kver, pver, status)
 
-            if name not in version:
-                version[name] = status
+            if name not in jstate:
+                jstate[name] = status
                 continue
 
             # If this is the latest report, and we are missing a job, call it all
             # missing
-            if kver == vreport and version[name] == 'GOOD' and status == 'MISSING':
-                version[name] = 'MISSING'
+            if kver == vreport and jstate[name] == 'GOOD' and status == 'MISSING':
+                jstate[name] = 'MISSING'
 
             # Work out if this has ever worked, if so it is a regression.
-            if version[name] == 'FAIL-ALWAYS' and status == 'GOOD':
-                version[name] = 'FAIL-REGRESSION'
+            if jstate[name] == 'FAIL-ALWAYS' and status == 'GOOD':
+                jstate[name] = 'FAIL-REGRESSION(' + kver + ')'
                 break
 
-        if name not in version:
-            version[name] = 'MISSING'
+        if name not in jstate:
+            jstate[name] = 'MISSING'
+
+for package in jstate:
+    if jseen[package] > 1:
+        jstate[package] = 'REMOVED?'
                 
-    for package in sorted(version):
-        print(vreport, package, version[package])
+for package in sorted(jstate):
+    print(package, jstate[package], jseen[package])
