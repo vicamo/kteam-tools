@@ -7,11 +7,18 @@ import os
 import sys
 
 from operator import itemgetter
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-f", "--removed", dest="removed", action="append",
+                  help="mark package as removed from the primary release")
+
+(options, args) = parser.parse_args()
 
 #url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
 #url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
 
-versions = zip(sys.argv[1::2], sys.argv[2::2])
+versions = zip(args[0::2], args[1::2])
 
 jstate = {}
 jseen = {}
@@ -25,9 +32,6 @@ for (url, vreport) in versions:
         #print(job['description'])
         name = job['name'].split('-').pop()
 
-        if name not in jseen:
-            jseen[name] = count
-
         #print(job['builds'][0])
         seen = False
         # Ensure we treat runs in latest build in the latest kernel first order.
@@ -35,6 +39,9 @@ for (url, vreport) in versions:
             if 'description' not in build or not build['description']:
                 continue
             (kver, pver) = build['description'].split(' ')
+            (pkg, pver) = pver.split('/')
+            if pkg == '':
+                continue
 
             if vreport == 'latest':
                 vreport = kver
@@ -42,6 +49,9 @@ for (url, vreport) in versions:
             if kver != vreport and not seen:
                 continue
             seen = True
+
+            if count == 1 and kver == vreport:
+                jseen[name] = True
 
             if build['result'] == 'SUCCESS':
                 status = 'GOOD'
@@ -70,8 +80,11 @@ for (url, vreport) in versions:
             jstate[name] = 'MISSING'
 
 for package in jstate:
-    if jseen[package] > 1:
-        jstate[package] = 'REMOVED?'
+    if package not in jseen:
+        if options.removed and package in options.removed:
+            jstate[package] = 'REMOVED'
+        else:
+            jstate[package] = 'MISSING'
                 
 for package in sorted(jstate):
-    print(package, jstate[package], jseen[package])
+    print(package, jstate[package])
