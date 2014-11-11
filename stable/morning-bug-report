@@ -309,12 +309,12 @@ class MorningBugReport():
         retval += '\n'
         retval += 'An online version of this report can be found at: http://kernel.ubuntu.com/sru/1-day-new.html\n'
 
-        retval += '\n\n\n'
-        retval += 'The Top 10 Hot List Bugs (based on bug heat)\n\n'
+        #retval += '\n\n\n'
+        #retval += 'The Top 10 Hot List Bugs (based on bug heat)\n\n'
 
-        retval += self.hot_list_report(hot_bugs)
+        #retval += self.hot_list_report(hot_bugs)
 
-        retval += '\n'
+        #retval += '\n'
         retval += 'The full Kernel Team Host List can be found at: http://people.canonical.com/~kernel/reports/_kernel_hot_.html\n'
 
         return retval
@@ -327,7 +327,8 @@ class MorningBugReport():
         try:
             self.initialize()
             new_bugs = self.get_24hr_bug_data()
-            hot_bugs = self.get_kernel_hot_list_data()
+            #hot_bugs = self.get_kernel_hot_list_data()
+            hot_bugs = None
             the_report = self.report(new_bugs, hot_bugs)
 
             self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % new_bugs['updated'], the_report)
