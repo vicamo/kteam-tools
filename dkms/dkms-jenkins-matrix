@@ -8,6 +8,7 @@ import re
 import os
 import sys
 import apt_pkg
+import shlex
 
 from operator import itemgetter
 from optparse import OptionParser
@@ -22,44 +23,54 @@ parser.add_option("-f", "--removed", dest="removed", action="append",
 #url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/U%20-generic'
 #url = 'http://jenkins.qa.ubuntu.com/view/DKMS/view/T%20Proposed%20-generic/'
 
-versions = {}
-packages = {}
-jobs = {}
-for url in args:
-    tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
-
-    for job in tree['jobs']:
-        #print(job['name'])
-        #print(job['description'])
-        name = job['name'].split('-').pop()
-
-        #print(job['builds'][0])
-        seen = False
-        # Ensure we treat runs in latest build in the latest kernel first order.
-        for build in sorted(job['builds'], key=itemgetter('number', 'timestamp')):
-            if 'description' not in build or not build['description']:
-                continue
-            (kver, pver) = build['description'].split(' ')
-            if '-' not in kver:
-                continue
-            (pkg, pver) = pver.split('/')
-            if pkg == '':
-                continue
-
-            if build['result'] == 'SUCCESS':
-                status = 'GOOD'
-            elif build['result'] == None:
-                status = 'RUN'
-            else:
-                status = 'FAIL'
-
-            ##print(name, kver, pver, status)
-            packages[name] = True
-            versions[kver] = True
-            jobs[name, kver] = status
-
 apt_pkg.init_system()
-vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
+
+packages = {}
+groups = []
+for line in sys.stdin:
+    a = shlex.split(line.strip())
+    (group, urls) = (a[0], a[1:])
+
+    versions = {}
+    jobs = {}
+    for url in urls:
+        tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+
+        for job in tree['jobs']:
+            #print(job['name'])
+            #print(job['description'])
+            name = job['name'].split('-').pop()
+
+            #print(job['builds'][0])
+            seen = False
+            # Ensure we treat runs in latest build in the latest kernel first order.
+            for build in sorted(job['builds'], key=itemgetter('number', 'timestamp')):
+                if 'description' not in build or not build['description']:
+                    continue
+                (kver, pver) = build['description'].split(' ')
+                if '-' not in kver:
+                    continue
+                (pkg, pver) = pver.split('/')
+                if pkg == '':
+                    continue
+
+                if build['result'] == 'SUCCESS':
+                    status = 'GOOD'
+                elif build['result'] == None:
+                    status = 'RUN'
+                else:
+                    status = 'FAIL'
+
+                ##print(name, kver, pver, status)
+                packages[name] = True
+                versions[kver] = True
+                jobs[name, kver] = status
+
+    vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
+    vlist = vlist[-3:]
+    groups.append((group, vlist, jobs))
+
+packages = sorted(packages)
 
 print("""<html>
 <head>
@@ -83,8 +94,20 @@ table.matrix, table.matrix th, table.matrix td {
 """)
 
 print("<tr><th>")
-for version in vlist:
-    print("<th>" + version, end='')
+cols = []
+for (group, vlist, jobs) in groups:
+    cols.append('<th colspan="' + str(len(vlist)) + '">' + group)
+print("<th>&nbsp;".join(cols))
+print("<th></tr>")
+    
+print("<tr><th>")
+cols = []
+for (group, vlist, jobs) in groups:
+    grp = ''
+    for version in vlist:
+        grp += "<th>" + version
+    cols.append(grp)
+print("<th>&nbsp;".join(cols))
 print("<th></tr>")
 
 hclass = {
@@ -94,9 +117,14 @@ hclass = {
 for package in sorted(packages):
     print("<tr><th>" + package)
     (pstatus, status) = ("&nbsp;", "&nbsp;")
-    for version in vlist:
-        (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
-        print('<td class="' + hclass.get((pstatus, status), status) + '">' + status, end='')
+    cols = []
+    for (group, vlist, jobs) in groups:
+        grp = ''
+        for version in vlist:
+            (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
+            grp += '<td class="' + hclass.get((pstatus, status), status) + '">' + status
+        cols.append(grp)
+    print("<th>&nbsp;".join(cols))
     print("<th>" + package + "</tr>")
 
 print("""</table>
