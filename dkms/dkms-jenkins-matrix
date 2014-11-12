@@ -28,7 +28,7 @@ packages = {}
 groups = []
 for line in sys.stdin:
     a = shlex.split(line.strip())
-    (group, urls) = (a[0], a[1:])
+    (link, group, urls) = (a[0], a[1], a[2:])
 
     versions = {}
     jobs = {}
@@ -68,7 +68,7 @@ for line in sys.stdin:
     vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
     if options.versions:
         vlist = vlist[-options.versions:]
-    groups.append((group, vlist, jobs))
+    groups.append((group, link, vlist, jobs))
 
 packages = sorted(packages)
 
@@ -95,14 +95,14 @@ table.matrix, table.matrix th, table.matrix td {
 
 print("<tr><th>")
 cols = []
-for (group, vlist, jobs) in groups:
-    cols.append('<th colspan="' + str(len(vlist)) + '">' + group)
+for (group, link, vlist, jobs) in groups:
+    cols.append('<th colspan="{0}"><a href="{1}">{2}</a>'.format(str(len(vlist)), link, group))
 print("<th>&nbsp;".join(cols))
 print("<th></tr>")
     
 print("<tr><th>")
 cols = []
-for (group, vlist, jobs) in groups:
+for (group, link, vlist, jobs) in groups:
     grp = ''
     for version in vlist:
         grp += "<th>" + version
@@ -118,7 +118,7 @@ for package in sorted(packages):
     print("<tr><th>" + package)
     (pstatus, status) = ("&nbsp;", "&nbsp;")
     cols = []
-    for (group, vlist, jobs) in groups:
+    for (group, link, vlist, jobs) in groups:
         grp = ''
         for version in vlist:
             (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
