@@ -15,8 +15,7 @@ from optparse import OptionParser
 from functools import cmp_to_key
 
 parser = OptionParser()
-parser.add_option("-f", "--removed", dest="removed", action="append",
-                  help="mark package as removed from the primary release")
+parser.add_option("-v", "--versions", type="int", help="Number of versions to show in the matrix")
 
 (options, args) = parser.parse_args()
 
@@ -67,7 +66,8 @@ for line in sys.stdin:
                 jobs[name, kver] = status
 
     vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
-    vlist = vlist[-3:]
+    if options.versions:
+        vlist = vlist[-options.versions:]
     groups.append((group, vlist, jobs))
 
 packages = sorted(packages)
