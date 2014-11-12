@@ -6,8 +6,8 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-out="public_html/info"
-out="."
+out="$HOME/public_html/info/dkms"
+mkdir -p "$out"
 
 # Generate each series summary.
 while read -r file line
