@@ -55,13 +55,13 @@ OptParser.add_option(
 OptParser.add_option(
     "--previous_release", dest="previous_release", action="store", default="",
     help="The tag or commit of the top of the previous stable release, eg."
-         "v3.5.7, we will consider stable patches from that up to HEAD."
+         "v3.16.7-ckt1, we will consider stable patches from that up to HEAD."
 )
 OptParser.add_option(
     "--new_version", dest="new_version", action="store", default="",
     help="The version for the set of stable patches to be released. "
          "It's the new version to be displayed in subject/body of the email"
-         "announcement sent out, eg. 3.6.6"
+         "announcement sent out, eg. 3.16.7-ckt2"
 )
 OptParser.add_option(
     "--edit", dest="edit", action="store_true", default=False,
@@ -128,7 +128,7 @@ if v1 == "1" or v2 == "2":
     basever = "%s.%s.%s" % (v1, v2, v3)
 else:
     basever = "%s.%s"  % (v1, v2)
-ann_ver = "%s.y.z" % basever
+ann_ver = "%s.y-ckt" % basever
 vstable = opts.new_version
 rangestart = opts.previous_release
 rangeend = "v%s" % vstable
@@ -143,19 +143,19 @@ for entry in cclist:
     mailbody.append("Cc: " + entry)
 mailbody.extend([
     "From: " + opts.sender,
-    "Subject: [%s extended stable] Linux %s" % (ann_ver, vstable),
+    "Subject: [%s stable] Linux %s" % (ann_ver, vstable),
     "X-Extended-Stable: %s" % (basever),
     "",
     "I am announcing the release of the Linux %s kernel." % (vstable),
     "",
-    "The updated %s.y tree can be found at: " % (basever),
+    "The updated %s.y-ckt tree can be found at: " % (basever),
     "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y" % (basever),
     "and can be browsed at:",
     "  http://kernel.ubuntu.com/git?p=ubuntu/linux.git;h=refs/heads/linux-%s.y;a=shortlog" % (basever),
     "",
     "The diff from %s is posted as a follow-up to this email." % (rangestart),
     "",
-    "The %s.y extended stable tree is maintained by the Ubuntu Kernel Team."
+    "The %s.y-ckt extended stable tree is maintained by the Canonical Kernel Team."
     % (basever),
     "For more info, see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable",
     "",
@@ -190,7 +190,7 @@ for line in mailbody:
     fp.write(line + "\n")
 fp.flush()
 dp.write("From: " + opts.sender + "\n")
-dp.write("Subject: Re: [%s extended stable] Linux %s\n" % (ann_ver, vstable))
+dp.write("Subject: Re: [%s stable] Linux %s\n" % (ann_ver, vstable))
 dp.write("X-Extended-Stable: %s\n\n" % (basever))
 dp.flush()
 cmd = "git diff " + rangestart + ".." + rangeend + " >> " + dp.name
