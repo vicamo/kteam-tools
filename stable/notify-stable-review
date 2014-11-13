@@ -100,14 +100,14 @@ class Cmdline:
 
         --previous_release=<version tag or commit>
                          The tag or commit of the top of the previous stable
-                         release, e.g. v3.5.7, we will get the stable patches
+                         release, e.g. v3.16.7-ckt1, we will get the stable patches
                          from that up to HEAD.
 
         --new_version=<version string>
                          The version for the set of stable patches in review
                          to be released.  It's the new version to be displayed
                          in subject/body of the email announcement sent out,
-                         e.g. 3.6.6
+                         e.g. 3.16.7-ckt2
 
         --no-validate
                          Send the --no-validate option to 'git send-email'.
@@ -115,7 +115,7 @@ class Cmdline:
                          contains more than 998 characteres.
 
     Examples:
-        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7.1
+        %s --dry-run --previous_release=v3.16.7-ckt1 --new_version=3.16.7-ckt2
 """ % ( app_name, app_name ))
 
     # process
@@ -217,7 +217,7 @@ git://kernel.ubuntu.com/ubuntu/linux.git  %s
 The review period for version %s will be open for the next three days.
 To report a problem, please reply to the relevant follow-up patch message.
 
-For more information about the Linux %s.z extended stable kernel version,
+For more information about the Linux %s-ckt extended stable kernel version,
 see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
 
  -%s
@@ -234,7 +234,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
         new_ver = self.cfg['new_version']
         old_head = self.cfg['previous_release']
 
-        ann_ver = "%s.z" % base_ver
+        ann_ver = "%s-ckt" % base_ver
 
         # Get the number of patches, diffstat and shortlog from
         # previous release
@@ -261,7 +261,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
         mailbody += "From: " + sender + '\n'
         for entry in self.tolist:
             mailbody += "To: " + entry + '\n'
-        mailbody += ("Subject: [%s extended stable] Linux %s stable review"
+        mailbody += ("Subject: [%s stable] Linux %s stable review"
                      % (ann_ver, new_ver) + "\n")
         mailbody += "X-Extended-Stable: %s\n" % (main_ver)
         mailbody += self.message_text(base_ver, new_ver, patch_cnt, sender)
@@ -318,7 +318,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
                     if not subject:
                         if 'Subject:' in line:
                             line = line.replace("Subject: [PATCH ",
-                                                "Subject: [PATCH %s " % (basever))
+                                                "Subject: [PATCH %s.y-ckt " % (basever))
                             subject = True
 
                     if subject and not header_add:
