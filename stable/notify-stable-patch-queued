@@ -61,7 +61,7 @@ OptParser.add_option(
 OptParser.add_option(
     "--version", dest="version", action="store", default="",
     help="sets the kernel version displayed in the subject of the "
-         "notification emails, e.g. 3.16.7-ckt")
+         "notification emails, e.g. 3.16.y-ckt")
 OptParser.add_option(
     "--target", dest="tversion", action="store",
     help="sets the patch target version (e.g. 3.16.7-ckt1) displayed in the "
