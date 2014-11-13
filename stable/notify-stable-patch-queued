@@ -90,7 +90,7 @@ if opts.sender == "":
     print "EE: No mail sender was set!"
     exit(1)
 
-if opts.option == "":
+if opts.version == "":
     print "EE: No kernel version was set!"
     exit(1)
 
