@@ -59,12 +59,12 @@ OptParser.add_option(
          "patch."
 )
 OptParser.add_option(
-    "--version", dest="version", action="store", default="3.5.y.z",
+    "--version", dest="version", action="store", default="",
     help="sets the kernel version displayed in the subject of the "
-         "notification emails, default is %default")
+         "notification emails, e.g. 3.16.7-ckt1")
 OptParser.add_option(
     "--target", dest="tversion", action="store",
-    help="sets the patch target version (e.g. 3.8.13.2) displayed in the "
+    help="sets the patch target version (e.g. 3.16.7-ckt1) displayed in the "
          "body of the notification emails")
 OptParser.add_option(
     "--dry-run", dest="dryrun", action="store_true", default=False,
@@ -90,6 +90,10 @@ if opts.sender == "":
     print "EE: No mail sender was set!"
     exit(1)
 
+if opts.option == "":
+    print "EE: No kernel version was set!"
+    exit(1)
+
 if opts.blacklist != None:
     SobBlacklist = SobBlacklist + opts.blacklist
 
@@ -101,7 +105,7 @@ def AssembleMailBody(version, subject, patchlines):
     else:
         tversion_para = ""
     mailbody = [
-        "Subject: [" + version + " extended stable] Patch \"" + subject +
+        "Subject: [" + version + " stable] Patch \"" + subject +
         "\" has been added to staging queue",
         "X-Extended-Stable: " + bversion[:-1],
         "",
