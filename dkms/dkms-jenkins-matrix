@@ -32,18 +32,20 @@ for line in sys.stdin:
 
     versions = {}
     jobs = {}
+    links = {}
     for url in urls:
         tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
 
         for job in tree['jobs']:
-            #print(job['name'])
-            #print(job['description'])
+            #print(job['name'], file=sys.stderr)
+            #print(job['description'], file=sys.stderr)
             name = job['name'].split('-').pop()
 
             #print(job['builds'][0])
             seen = False
             # Ensure we treat runs in latest build in the latest kernel first order.
             for build in sorted(job['builds'], key=itemgetter('number', 'timestamp')):
+                #print(build['description'], file=sys.stderr)
                 if 'description' not in build or not build['description']:
                     continue
                 (kver, pver) = build['description'].split(' ')
@@ -64,11 +66,12 @@ for line in sys.stdin:
                 packages[name] = True
                 versions[kver] = True
                 jobs[name, kver] = status
+                links[name, kver] = build['url']
 
     vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
     if options.versions:
         vlist = vlist[-options.versions:]
-    groups.append((group, link, vlist, jobs))
+    groups.append((group, link, vlist, jobs, links))
 
 packages = sorted(packages)
 
@@ -95,14 +98,14 @@ table.matrix, table.matrix th, table.matrix td {
 
 print("<tr><th>")
 cols = []
-for (group, link, vlist, jobs) in groups:
+for (group, link, vlist, jobs, links) in groups:
     cols.append('<th colspan="{0}"><a href="{1}">{2}</a>'.format(str(len(vlist)), link, group))
 print("<th>&nbsp;".join(cols))
 print("<th></tr>")
     
 print("<tr><th>")
 cols = []
-for (group, link, vlist, jobs) in groups:
+for (group, link, vlist, jobs, links) in groups:
     grp = ''
     for version in vlist:
         grp += "<th>" + version
@@ -118,11 +121,16 @@ for package in sorted(packages):
     print("<tr><th>" + package)
     (pstatus, status) = ("&nbsp;", "&nbsp;")
     cols = []
-    for (group, link, vlist, jobs) in groups:
+    for (group, link, vlist, jobs, links) in groups:
         grp = ''
         for version in vlist:
             (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
-            grp += '<td class="' + hclass.get((pstatus, status), status) + '">' + status
+
+            if (package, version) in links:
+                 fmt = '<td class="{0}"><a href="{1}">{2}</a>'
+            else:
+                 fmt = '<td class="{0}">{2}'
+            grp += fmt.format(hclass.get((pstatus, status), status), links.get((package, version), ''), status)
         cols.append(grp)
     print("<th>&nbsp;".join(cols))
     print("<th>" + package + "</tr>")
