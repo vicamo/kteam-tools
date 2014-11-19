@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from os                     import system, getenv, path
+from os.path                import exists
 from sys                    import exit
 from subprocess             import Popen, PIPE, call
 from optparse               import OptionParser
@@ -68,6 +69,12 @@ OptParser.add_option(
     help="allow editing the cover-letter by launching an editor.  Usually "
          "not needed, but may be useful to edit the last release email "
          "(i.e., when a kernel reaches EOL)"
+)
+OptParser.add_option(
+    "--gen-changelog", dest="changelog", action="store_true", default=False,
+    help="Generates a ChangeLog file and 3 files containing the diff "
+         "between the two tags/commits: a text file, a gzip compressed "
+         "file and an xz compressed file."
 )
 (opts, args) = OptParser.parse_args()
 
@@ -236,5 +243,28 @@ if opts.dryrun:
 
 fp.close()
 dp.close()
+
+if opts.changelog == True:
+    patch_file = "patch-%s" % (vstable)
+    patch_file_tmp = patch_file + "-tmp"
+    changelog_file = "ChangeLog-%s" % (vstable)
+
+    if exists(patch_file) or exists(patch_file_tmp) or exists(changelog_file):
+        print "\nERROR: One of the following files already exists: "
+        print " - %s\n - %s\n - %s" % (patch_file, patch_file_tmp, changelog_file)
+        print "Aborting generation of changelog and patches"
+        exit(1)
+
+    system("git diff " + rangestart + ".." + rangeend + " > " + patch_file_tmp)
+    system("cp " + patch_file_tmp + " " + patch_file)
+    system("gzip " + patch_file)
+    system("cp " + patch_file_tmp + " " + patch_file)
+    system("xz -z " + patch_file)
+    system("cp " + patch_file_tmp + " " + patch_file)
+    system("git log " + rangestart + ".." + rangeend + " > " + changelog_file)
+    system("rm -f " + patch_file_tmp)
+    print "\nNOTE: Generated the following files:"
+    print " - " + changelog_file
+    print " - " + patch_file + "{.gz,.xz}"
 
 # vi:set ts=4 sw=4 expandtab:
