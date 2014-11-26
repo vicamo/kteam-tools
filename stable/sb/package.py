@@ -439,7 +439,7 @@ class Package():
         #                             /           .- kernel version (group(2))
         #                            /           /          .- version/abi separator (group(3))
         #                           /           /          /
-        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d]*)")
+        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
         #                                                       /      /       /
         #                                                      /      /       .- backport extra (m.group(6))
         #                                                     /      .- upload number (m.group(5))
@@ -450,10 +450,10 @@ class Package():
         m = ver_rc.search(txt)
         if m is not None:
             matched = True
-            #info('         package: %s\n' % m.group(1))
-            #info('         version: %s%s%s.%s%s\n' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
-            #info('          kernel: %s\n' % m.group(2))
-            #info('             abi: %s\n' % m.group(4))
+            cinfo('         package: %s\n' % m.group(1))
+            cinfo('         version: %s%s%s.%s%s\n' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
+            cinfo('          kernel: %s\n' % m.group(2))
+            cinfo('             abi: %s\n' % m.group(4))
 
             setattr(s, 'name', m.group(1))
             setattr(s, 'version', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
