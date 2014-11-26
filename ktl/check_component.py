@@ -58,6 +58,9 @@ class CheckComponent():
 
     def default_component(self, default, series, package, bin_pkg):
         cdebug('    CheckComponent::default_component enter')
+        cdebug("            default: %s" % default)
+        cdebug("             series: %s" % series)
+        cdebug("            package: %s" % package)
 
         if not self.release_db:
             self.load_release_components(series, package)
@@ -72,10 +75,15 @@ class CheckComponent():
 
     def override_component(self, default, series, package, bin_pkg):
         cdebug('    CheckComponent::override_component enter')
+        cdebug("            default: %s" % default)
+        cdebug("             series: %s" % series)
+        cdebug("            package: %s" % package)
+        cdebug("            bin_pkg: %s" % bin_pkg)
         retval = None
         if package == 'linux-meta':
-            if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and (not bin_pkg.endswith('-preempt'))):
-                retval = 'main'
+            if bin_pkg:
+                if bin_pkg.startswith('linux-backports-modules-') or bin_pkg.startswith('linux-hwe-') or bin_pkg.startswith('linux-image-hwe-'):
+                    retval = 'main'
 
         if not retval:
             retval = self.default_component(default, series, package, bin_pkg)
@@ -182,6 +190,9 @@ class CheckComponent():
         elif package in self.main_packages:
             retval = self.main_component
 
+        else:
+            cdebug("        NO MATCH")
+
         cdebug("    CheckComponent::component_function leave")
         return retval
 
@@ -233,6 +244,10 @@ class CheckComponent():
         Return a list of the source and binary components that are not in the correct repository.
         '''
         cdebug("CheckComponent::mismatches_list enter")
+        cdebug("         series: %s" % series)
+        cdebug("        package: %s" % package)
+        cdebug("        version: %s" % version)
+        cdebug("         pocket: %s" % pocket)
 
         mlist = []
         self.release_db = {}
@@ -246,18 +261,15 @@ class CheckComponent():
             cdebug("        src package name: %s" % src_pkg.source_package_name, 'cyan')
             cdebug("            src_pkg.component_name: %s      component: %s" % (src_pkg.component_name, component), 'cyan')
             if src_pkg.component_name != component:
-                mlist.append([src_pkg.source_package_name,
-                              src_pkg.source_package_version,
-                              src_pkg.component_name, component])
+                mlist.append([src_pkg.source_package_name, src_pkg.source_package_version, src_pkg.component_name, component])
+
             for bin_pkg in src_pkg.getPublishedBinaries():
                 pkg_name = bin_pkg.binary_package_name
                 component = get_component('universe', series, package, pkg_name)
                 cdebug("        bin package name: %s" % bin_pkg.binary_package_name, 'cyan')
                 cdebug("            bin_pkg.component_name: %s      component: %s" % (bin_pkg.component_name, component), 'cyan')
                 if bin_pkg.component_name != component:
-                    mlist.append([bin_pkg.binary_package_name,
-                                  bin_pkg.binary_package_version,
-                                  bin_pkg.component_name, component])
+                    mlist.append([bin_pkg.binary_package_name, bin_pkg.binary_package_version, bin_pkg.component_name, component])
 
         cdebug("CheckComponent::mismatches_list leave")
         return mlist
