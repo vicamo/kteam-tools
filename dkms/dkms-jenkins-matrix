@@ -128,7 +128,7 @@ for package in sorted(packages):
     for (group, link, vlist, jobs, links) in groups:
         grp = ''
         for version in vlist:
-            (pstatus, status) = (status if status != "&nbsp;" else pstatus, jobs.get((package, version), "&nbsp;"))
+            (pstatus, status) = (status if status == 'GOOD' else pstatus, jobs.get((package, version), "&nbsp;"))
 
             if (package, version) in links:
                  fmt = '<td class="{0}"><a href="{1}">{2}</a>'
