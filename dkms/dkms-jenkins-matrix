@@ -99,7 +99,11 @@ table.matrix, table.matrix th, table.matrix td {
 print("<tr><th>")
 cols = []
 for (group, link, vlist, jobs, links) in groups:
-    cols.append('<th colspan="{0}"><a href="{1}">{2}</a>'.format(str(len(vlist)), link, group))
+    if link != '-':
+        fmt = '<th colspan="{0}"><a href="{1}">{2}</a>'
+    else:
+        fmt = '<th colspan="{0}">{2}'
+    cols.append(fmt.format(str(len(vlist)), link, group))
 print("<th>&nbsp;".join(cols))
 print("<th></tr>")
     

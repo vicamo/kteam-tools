@@ -19,7 +19,7 @@ do
 
 	file="$out/$file"
 
-	echo "$file $line" | "$here/dkms-jenkins-matrix" >"$file.new"
+	echo "- $line" | "$here/dkms-jenkins-matrix" >"$file.new"
 	mv -f "$file.new" "$file"
 done <"$here/dkms-jenkins-matrix.conf"
 
