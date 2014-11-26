@@ -202,7 +202,12 @@ class VerifyReleaseReady():
         config = ConfigParser.RawConfigParser()
         if config.read('debian/gbp.conf'):
             expect_tag_format = config.get('buildpackage', 'debian-tag')
-            expect_tag = expect_tag_format%{'version':version}
+            v = version
+            # Starting with trusty, the lts backports closing commit and the tag
+            # contain '~<series_version>' (e.g. '~14.04.1')
+            if 'linux-lts-' in cl1['package'] and cl1['release'] != 'precise':
+                v = cl1['version']
+            expect_tag = expect_tag_format%{'version':v}
             s.verify_tag(log, expect_tag)
         else:
             s.status('missing debian/gbp.conf', 'warning')
@@ -288,6 +293,8 @@ class VerifyReleaseReady():
         # **NOTE: There can be multiple tags associated with the specific commit.
         #
         tag_found = False
+        # '~' are illegal characters in tags, and shall be replaced by an '_'
+        expected = expected.replace('~', '_')
         msg = 'correct tag (%s)' % expected
         s.verbose('closing commit sha1: %s' % log['commits'][0]['sha1'])
         tags = Git.tags(contains=log['commits'][0]['sha1'])
