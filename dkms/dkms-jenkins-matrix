@@ -69,8 +69,20 @@ for line in sys.stdin:
                 links[name, kver] = build['url']
 
     vlist = sorted(versions.keys(), key=cmp_to_key(apt_pkg.version_compare))
+
+    # Apply history to determine if a FAIL is a regression (REGR).
+    for package in packages:
+        good = False
+        for version in vlist:
+            status = jobs.get((package, version))
+            if status == 'GOOD':
+                good = True
+            elif good and status == 'FAIL':
+                jobs[package, version] = 'REGR'
+
     if options.versions:
         vlist = vlist[-options.versions:]
+
     groups.append((group, link, vlist, jobs, links))
 
 packages = sorted(packages)
@@ -117,24 +129,18 @@ for (group, link, vlist, jobs, links) in groups:
 print("<th>&nbsp;".join(cols))
 print("<th></tr>")
 
-hclass = {
-    ('GOOD', 'FAIL'): 'REGR'
-}
-
 for package in sorted(packages):
     print("<tr><th>" + package)
-    (pstatus, status) = ("&nbsp;", "&nbsp;")
     cols = []
     for (group, link, vlist, jobs, links) in groups:
         grp = ''
         for version in vlist:
-            (pstatus, status) = (status if status == 'GOOD' else pstatus, jobs.get((package, version), "&nbsp;"))
-
             if (package, version) in links:
                  fmt = '<td class="{0}"><a href="{1}">{2}</a>'
             else:
                  fmt = '<td class="{0}">{2}'
-            grp += fmt.format(hclass.get((pstatus, status), status), links.get((package, version), ''), status)
+            status = jobs.get((package, version), '&nbsp;')
+            grp += fmt.format(status, links.get((package, version), ''), status)
         cols.append(grp)
     print("<th>&nbsp;".join(cols))
     print("<th>" + package + "</tr>")
