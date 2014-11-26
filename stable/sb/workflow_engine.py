@@ -819,7 +819,13 @@ class WorkflowEngine():
                 bp_entries = entry['backport-packages']
                 for bp_entry in iter(bp_entries):
                     if (bp_entries[bp_entry][0] == s.wfb.pkg_name and bp_entries[bp_entry][1] == record['series_version']):
-                        bp_list.append([bp_entry, entry['name']])
+                        # For trusty and future backports we are changing the naming convention to
+                        # be ~<series_version> instead of ~<series_name>.
+                        #
+                        if entry['name'] == 'precise':
+                            bp_list.append([bp_entry, entry['name']])
+                        else:
+                            bp_list.append([bp_entry, entry['series_version']])
 
         der_bug_list = []
         bp_bug_list  = []
