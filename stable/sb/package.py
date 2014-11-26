@@ -450,10 +450,10 @@ class Package():
         m = ver_rc.search(txt)
         if m is not None:
             matched = True
-            cinfo('         package: %s\n' % m.group(1))
-            cinfo('         version: %s%s%s.%s%s\n' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
-            cinfo('          kernel: %s\n' % m.group(2))
-            cinfo('             abi: %s\n' % m.group(4))
+            cdebug('         package: %s' % m.group(1))
+            cdebug('         version: %s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
+            cdebug('          kernel: %s' % m.group(2))
+            cdebug('             abi: %s' % m.group(4))
 
             setattr(s, 'name', m.group(1))
             setattr(s, 'version', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
