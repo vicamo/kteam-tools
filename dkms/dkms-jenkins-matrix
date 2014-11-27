@@ -16,6 +16,7 @@ from functools import cmp_to_key
 
 parser = OptionParser()
 parser.add_option("-v", "--versions", type="int", help="Number of versions to show in the matrix")
+parser.add_option("", "--urlmap", type="string", action="append", nargs=2, help="URL mapping <from> <to>")
 
 (options, args) = parser.parse_args()
 
@@ -149,12 +150,19 @@ for package in sorted(packages):
     for (group, link, vlist, jobs, links) in groups:
         grp = ''
         for version in vlist:
+            fmt = '<td class="{0}"><a href="{1}">{2}</a>'
             if (package, version) in links:
-                 fmt = '<td class="{0}"><a href="{1}">{2}</a>'
+                url = links[package, version]
+                #(chg, to) = ('http://jenkins.qa.ubuntu.com/', 'http://d-jenkins.ubuntu-ci:8080/')
+                if options.urlmap:
+                    for (chg, to) in options.urlmap:
+                        if url.startswith(chg):
+                            url = to + url[len(chg):]
             else:
-                 fmt = '<td class="{0}">{2}'
+                fmt = '<td class="{0}">{2}'
+                url = None
             status = jobs.get((package, version), '&nbsp;')
-            grp += fmt.format(status, links.get((package, version), ''), status)
+            grp += fmt.format(status, url, status)
         cols.append(grp)
     print("<th>&nbsp;".join(cols))
     print("<th>" + package + "</tr>")
