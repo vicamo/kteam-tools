@@ -860,7 +860,7 @@ class WorkflowEngine():
                 cinfo('        Dryrun - Would open tracking bug for backport package %s' % (bp_pkg[0]))
                 continue
             try:
-                bug = tb.open(bp_pkg[0], '%s~%s1' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
+                bug = tb.open(bp_pkg[0], '%s~%s.1' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
             except:
                 traceback.print_exc()
                 bug = None
