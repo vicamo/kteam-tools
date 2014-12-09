@@ -823,9 +823,9 @@ class WorkflowEngine():
                         # be ~<series_version> instead of ~<series_name>.
                         #
                         if entry['name'] == 'precise':
-                            bp_list.append([bp_entry, entry['name']])
+                            bp_list.append([bp_entry, "%s1" % entry['name']])             # precise backports are versioned <kernel-version>~precise1
                         else:
-                            bp_list.append([bp_entry, entry['series_version']])
+                            bp_list.append([bp_entry, "%s.1" % entry['series_version']])  # post-precise lts backports are versioned <kernel-version>~<series-version>.1
 
         der_bug_list = []
         bp_bug_list  = []
@@ -860,7 +860,7 @@ class WorkflowEngine():
                 cinfo('        Dryrun - Would open tracking bug for backport package %s' % (bp_pkg[0]))
                 continue
             try:
-                bug = tb.open(bp_pkg[0], '%s~%s.1' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
+                bug = tb.open(bp_pkg[0], '%s~%s' % (s.wfb.pkg_version, bp_pkg[1]), s.has_new_abi(), taskobj.bug.id)
             except:
                 traceback.print_exc()
                 bug = None
