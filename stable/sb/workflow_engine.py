@@ -929,6 +929,8 @@ class WorkflowEngine():
         cdebug('                check_component_in_pocket enter')
         cdebug('                    tstamp_prop: ' + tstamp_prop)
         bug = taskobj.bug
+        cdebug('                   taskobj.name: %s' % taskobj.name, 'green')
+        cdebug('                         pocket: %s' % pocket, 'green')
 
         # Set promote-to-proposed timestamp first, used for checking below
         s.set_tagged_timestamp(taskobj, tstamp_prop)
@@ -995,10 +997,12 @@ class WorkflowEngine():
             dep_ver2 = '%s.%s' % (main_version, pkg_abi)
         mis_lst = []
         for pkg in pkg_list:
+            cdebug('                    pkg: %s' % pkg, 'green')
             if pkg == s.wfb.pkg_name:
                 check_ver = s.wfb.pkg_version
             else:
                 check_ver = None
+
             ps = check_component.get_published_sources(series_name, pkg, check_ver, pocket)
             if not ps:
                 if check_ver:
@@ -1038,6 +1042,7 @@ class WorkflowEngine():
                 msgbody  = "The following packages ended up in the wrong"
                 msgbody += " component in the -%s pocket:\n" % (pocket)
                 for item in mis_lst:
+                    cdebug('                           %s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
                     msgbody += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
                 bugbody = msgbody
                 bugbody += "\n\nOnce this is fixed, set the "
@@ -1596,7 +1601,7 @@ class WorkflowEngine():
             cdebug('            check_for_final_close leave: False')
             return False
 
-        if (( s.wfb.tasks_by_name['promote-to-updates'].status == 'Fix Released') and
+        if ((s.wfb.tasks_by_name['promote-to-updates'].status == 'Fix Released') and
             (s.wfb.tasks_by_name['promote-to-security'].status == 'Invalid' or
             s.wfb.tasks_by_name['promote-to-security'].status == 'Fix Released')):
 
@@ -1604,12 +1609,8 @@ class WorkflowEngine():
             current_time = datetime.utcnow()
             pok_sec = True
             if s.wfb.tasks_by_name['promote-to-security'].status == 'Fix Released':
-                pok_sec = s.check_component_in_pocket(taskobj,
-                            'kernel-stable-Promote-to-updates-end',
-                            'security')
-            pok_upd = s.check_component_in_pocket(taskobj,
-                        'kernel-stable-Promote-to-updates-end',
-                        'updates')
+                pok_sec = s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-updates-end', 'security')
+            pok_upd = s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-updates-end', 'updates')
             if not (pok_sec and pok_upd):
                 cdebug('            check_for_final_close leave: False')
                 return False
