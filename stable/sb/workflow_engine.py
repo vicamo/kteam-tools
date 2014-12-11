@@ -962,21 +962,24 @@ class WorkflowEngine():
                 return False
 
         # Do the checking for proper packages in pocket->component
-        series_name = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
+        series_name     = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         check_component = CheckComponent(s.lp.production_service)
-        name_meta = 'linux-meta'
+
+        name_meta       = 'linux-meta'
         name_ports_meta = 'linux-ports-meta'
-        name_signed = 'linux-signed'
+        name_signed     = 'linux-signed'
         name_split = s.wfb.pkg_name.split('-', 1)
         if len(name_split) > 1:
-            name_meta = '%s-meta-%s' % (name_split[0], name_split[1])
+            name_meta       = '%s-meta-%s'       % (name_split[0], name_split[1])
             name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
-            name_signed = '%s-signed-%s' % (name_split[0], name_split[1])
+            name_signed     = '%s-signed-%s'     % (name_split[0], name_split[1])
 
-        name_map = { 'prepare-package-lbm' : 'linux-backports-modules',
-                     'prepare-package-meta' : name_meta,
-                     'prepare-package-ports-meta' : name_ports_meta,
-                     'prepare-package-signed' : name_signed }
+        name_map = {
+                'prepare-package-lbm'        : 'linux-backports-modules',
+                'prepare-package-meta'       : name_meta,
+                'prepare-package-ports-meta' : name_ports_meta,
+                'prepare-package-signed'     : name_signed
+            }
         ver_split = s.wfb.pkg_version.split('-')
         main_version = ver_split[0]
         pkg_list = [ s.wfb.pkg_name ]
