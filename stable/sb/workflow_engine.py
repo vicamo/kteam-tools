@@ -921,6 +921,40 @@ class WorkflowEngine():
                 return True
         return False
 
+    # _publishing_settle_time
+    #
+    def _publishing_settle_time(s, bug, tstamp_prop, pocket):
+        '''
+        Determine if we have waited long enough for the archive to have published the packages. Usually
+        an archive admin sets the promote-to-<pocket> task to "Fix Released" right away after doing the copy.
+        However, actual publishing takes more time.
+
+        Someone said that the publishing could take at most 1 hour to complete. Therefore, we wait 1 hour
+        before we do the "final" processing which verifies all the components got copied to the right places
+        in the archive.
+        '''
+        cdebug('                    _publishing_settle_time enter')
+
+        if not s.args.ignore_timestamp:
+            if tstamp_prop in bug.properties:
+                date_str = bug.properties[tstamp_prop]
+                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+                delta = DeltaTime(timestamp, datetime.utcnow())
+                if delta.hours < 1:
+                    cinfo('                Waiting 1 hour after promote-to-%s was Fix Released (%d)' % (pocket, delta.hours))
+                    cdebug('                   timestamp : %s' % str(timestamp))
+                    cdebug('                         now : %s' % str(datetime.utcnow()))
+                    cdebug('                       delta : %s' % str(delta))
+                    cdebug('                    _publishing_settle_time leave (False)')
+                    return False
+            else:
+                cdebug('                     tstamp_prop (%s) not in bug.properties' % tstamp_prop)
+                cdebug('                    _publishing_settle_time leave (False)')
+                return False
+
+        cdebug('                    _publishing_settle_time leave (True)')
+        return True
+
     def check_component_in_pocket(s, taskobj, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied
@@ -935,31 +969,9 @@ class WorkflowEngine():
         # Set promote-to-proposed timestamp first, used for checking below
         s.set_tagged_timestamp(taskobj, tstamp_prop)
 
-        # Wait publishing tasks to complete. Usually archive admin sets
-        # the promote-to-<pocket> task to Fix Released right away after
-        # doing the copy, but actual publishing takes more time. It's
-        # said that the publishing should take at most 1 hour to
-        # complete, but could be a bit more in some cases, or could
-        # vary. Anyway, just wait arbitrarily 1 hour before we do the
-        # actual processing, to avoid sru-workflow-manager to complain
-        # about packages in wrong component while real copying/publishing
-        # still didn't finish
-        if not s.args.ignore_timestamp:
-            if tstamp_prop in bug.properties:
-                date_str = bug.properties[tstamp_prop]
-                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-                delta = DeltaTime(timestamp, datetime.utcnow())
-                if delta.hours < 1:
-                    cinfo('                Waiting 1 hour after promote-to-%s was Fix Released (%d)' % (pocket, delta.hours))
-                    cdebug('                   timestamp : %s' % str(timestamp))
-                    cdebug('                         now : %s' % str(datetime.utcnow()))
-                    cdebug('                       delta : %s' % str(delta))
-                    cdebug('                check_component_in_pocket leave (False)')
-                    return False
-            else:
-                cdebug('                     tstamp_prop (%s) not in bug.properties' % tstamp_prop)
-                cdebug('                check_component_in_pocket leave (False)')
-                return False
+        if not s._publishing_settle_time(bug, tstamp_prop, pocket):
+            cdebug('                check_component_in_pocket leave (False)')
+            return False
 
         # Do the checking for proper packages in pocket->component
         series_name     = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
