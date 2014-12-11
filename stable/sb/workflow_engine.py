@@ -79,7 +79,7 @@ class WorkflowEngine():
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
             'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,          'Fix Released' : s.regression_testing_fix_released}),
             'promote-to-updates'        : TaskActions({'Fix Released' : s.check_for_final_close}),
-            'promote-to-security'       : TaskActions({'Fix Released' : s.check_for_final_close}),
+            'promote-to-security'       : TaskActions({}),
             'promote-to-release'        : TaskActions({'Fix Released' : s.promote_to_release_fix_released}),
             'security-signoff'          : TaskActions({'Invalid'      : s.security_signoff_finished,           'Fix Released' : s.security_signoff_finished}),
         }
