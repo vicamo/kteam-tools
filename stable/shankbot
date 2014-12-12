@@ -144,11 +144,17 @@ class OutputManager(Thread):
             s.event.wait()
             while s.queue:
                 msg,target = s.queue.pop(0)
-                s.connection.privmsg(target, msg)
+                try:
+                    s.connection.privmsg(target, msg)
+                except:
+                    s.connection.privmsg(target, "I tried, but doing that made me puke.")
                 sleep(s.delay)
             while s.notice_queue:
                 msg,target = s.notice_queue.pop(0)
-                s.connection.notice(target, msg)
+                try:
+                    s.connection.notice(target, msg)
+                except:
+                    s.connection.privmsg(target, "I tried, but doing that made me puke.")
                 sleep(s.delay)
             s.event.clear()
 
