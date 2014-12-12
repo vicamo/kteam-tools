@@ -19,6 +19,7 @@ from ktl.shanky                         import send_to_shankbot
 from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
 from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
+import logging
 
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
@@ -915,12 +916,6 @@ class WorkflowEngine():
         cdebug('            handle_derivatives leave')
 
 
-    def has_prep_task(s, taskname):
-        if taskname in s.wfb.tasks_by_name:
-            if s.wfb.tasks_by_name[taskname].status == "Fix Released":
-                return True
-        return False
-
     # _publishing_settle_time
     #
     def _publishing_settle_time(s, bug, tstamp_prop, pocket):
@@ -973,80 +968,54 @@ class WorkflowEngine():
             cdebug('                check_component_in_pocket leave (False)')
             return False
 
-        # Do the checking for proper packages in pocket->component
-        series_name     = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         check_component = CheckComponent(s.lp.production_service)
 
-        name_meta       = 'linux-meta'
-        name_ports_meta = 'linux-ports-meta'
-        name_signed     = 'linux-signed'
-        name_split = s.wfb.pkg_name.split('-', 1)
-        if len(name_split) > 1:
-            name_meta       = '%s-meta-%s'       % (name_split[0], name_split[1])
-            name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
-            name_signed     = '%s-signed-%s'     % (name_split[0], name_split[1])
-
-        name_map = {
-                'prepare-package-lbm'        : 'linux-backports-modules',
-                'prepare-package-meta'       : name_meta,
-                'prepare-package-ports-meta' : name_ports_meta,
-                'prepare-package-signed'     : name_signed
-            }
-        ver_split = s.wfb.pkg_version.split('-')
-        main_version = ver_split[0]
-        pkg_list = [ s.wfb.pkg_name ]
-        for name in iter(name_map):
-            if s.has_prep_task(name):
-                if 'lbm' in name:
-                    pkg_list.append('%s-%s' % (name_map[name], main_version))
-                else:
-                    pkg_list.append(name_map[name])
+        pkg_list = s.wfb.relevant_packages_list()
 
         missing_pkg = []
         pkg_abi = ''
-        dep_ver1 = main_version
-        dep_ver2 = main_version
-        if len(ver_split) > 1:
-            pkg_abi = ver_split[1].split('.')[0]
-            dep_ver1 = '%s-%s' % (main_version, pkg_abi)
-            dep_ver2 = '%s.%s' % (main_version, pkg_abi)
         mis_lst = []
         for pkg in pkg_list:
-            cdebug('                    pkg: %s' % pkg, 'green')
             if pkg == s.wfb.pkg_name:
                 check_ver = s.wfb.pkg_version
             else:
                 check_ver = None
 
-            ps = check_component.get_published_sources(series_name, pkg, check_ver, pocket)
+            ps = check_component.get_published_sources(s.wfb.series, pkg, check_ver, pocket)
             if not ps:
                 if check_ver:
                     missing_pkg.append([pkg, check_ver])
-                elif pkg == name_signed:
+                elif 'linux-signed' in pkg:
                     missing_pkg.append([pkg, 'for version=%s' % (s.wfb.pkg_version)])
                 else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
+                    missing_pkg.append([pkg, 'with ABI=%s' % (s.wfb.abi)])
                 continue
 
-            if pkg == name_signed:
+            if 'linux-signed' in pkg:
                 src_ver = ps[0].source_package_version
                 if src_ver.startswith(s.wfb.pkg_version):
-                    mis_lst.extend(check_component.mismatches_list(series_name,
+                    mis_lst.extend(check_component.mismatches_list(s.wfb.series,
                                    pkg, ps[0].source_package_version,
                                    pocket, ps))
                 else:
                     missing_pkg.append([pkg, 'for version=%s' % (s.wfb.pkg_version)])
             elif not check_ver:
                 src_ver = ps[0].source_package_version
-                # special hardcoded case for lrm on hardy...
-                if src_ver.startswith(dep_ver1) or src_ver.startswith(dep_ver2):
-                    mis_lst.extend(check_component.mismatches_list(series_name,
+
+                # source_package_version for linux-ports-meta and linux-meta is
+                # <kernel-version>.<abi>.<upload #> and for linux-backports-modules
+                # it is <kernel-version-<abi>.<upload #>
+                #
+                v1 = s.wfb.kernel_version + '.' + s.wfb.abi
+                v2 = s.wfb.kernel_version + '-' + s.wfb.abi
+                if src_ver.startswith(v1) or src_ver.startswith(v2):
+                    mis_lst.extend(check_component.mismatches_list(s.wfb.series,
                                    pkg, ps[0].source_package_version,
                                    pocket, ps))
                 else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
+                    missing_pkg.append([pkg, 'with ABI=%s' % (s.wfb.abi)])
             else:
-                mis_lst.extend(check_component.mismatches_list(series_name,
+                mis_lst.extend(check_component.mismatches_list(s.wfb.series,
                                pkg, check_ver, pocket, ps))
 
         if not missing_pkg:
