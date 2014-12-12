@@ -204,6 +204,14 @@ class WorkflowBug():
     def series(s):
         return s.__package.series
 
+    @property
+    def abi(s):
+        return s.__package.abi
+
+    @property
+    def kernel_version(s):
+        return s.__package.kernel
+
     # modified
     #
     @property
@@ -217,3 +225,53 @@ class WorkflowBug():
                 retval = True
                 break
         return retval
+
+    # _has_prep_task
+    #
+    def _has_prep_task(s, taskname):
+        if taskname in s.tasks_by_name:
+            if s.tasks_by_name[taskname].status == "Fix Released":
+                return True
+        return False
+
+    # relevant_packages_list
+    #
+    def relevant_packages_list(s):
+        '''
+        For every tracking bug there are 'prepare-package-*' tasks. Not every tracking bug has all the
+        same 'prepare-pacakge-*' tasks. Also, there is a specific package associated with each of the
+        'prepare-package-*' tasks.
+
+        This method builds a list of the packages that are relevant to this particular bug.
+        '''
+        cdebug('                WorkflowBug::relevant_packages_list enter')
+        name_meta       = 'linux-meta'
+        name_ports_meta = 'linux-ports-meta'
+        name_signed     = 'linux-signed'
+        name_split = s.pkg_name.split('-', 1)
+        if len(name_split) > 1:
+            name_meta       = '%s-meta-%s'       % (name_split[0], name_split[1])
+            name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
+            name_signed     = '%s-signed-%s'     % (name_split[0], name_split[1])
+
+        name_map = {
+                'prepare-package-lbm'        : 'linux-backports-modules',
+                'prepare-package-meta'       : name_meta,
+                'prepare-package-ports-meta' : name_ports_meta,
+                'prepare-package-signed'     : name_signed
+            }
+        ver_split = s.pkg_version.split('-')
+        main_version = ver_split[0]
+        package_list = [ s.pkg_name ]
+        for name in iter(name_map):
+            if s._has_prep_task(name):
+                if 'lbm' in name:
+                    package_list.append('%s-%s' % (name_map[name], main_version))
+                else:
+                    package_list.append(name_map[name])
+
+        for p in package_list:
+            cdebug('                    pkg: %s' % p)
+        cdebug('                WorkflowBug::relevant_packages_list leave')
+        return package_list
+
