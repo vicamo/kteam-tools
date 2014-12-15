@@ -968,6 +968,8 @@ class WorkflowEngine():
             cdebug('                check_component_in_pocket leave (False)')
             return False
 
+        # Refactor done:
+        #
         check_component = CheckComponent(s.lp.production_service)
 
         pkg_list = s.wfb.relevant_packages_list()
@@ -1040,11 +1042,14 @@ class WorkflowEngine():
                 cdebug('                check_component_in_pocket leave (False)')
                 return False
         else:
-            # Even if we already waited 1 hour, wait more (1 day) before
-            # complaining if we don't find the packages published to
-            # the pocket, in case the copy/publishing take more hours
-            # after promote-to-<pocket> is set to Fix Released the first
+            # Even if we already waited 1 hour, wait more (1 day) before complaining if we
+            # don't find the packages published to the pocket, in case the copy/publishing
+            # take more hours after promote-to-<pocket> is set to Fix Released the first
             # time
+            #
+            date_str = bug.properties[tstamp_prop]
+            timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+            delta = DeltaTime(timestamp, datetime.utcnow())
             if delta.days >= 1:
                 s.wfb.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
                 msgbody  = "Promote-to-%s is Fix Released, but " % (pocket)
@@ -1580,7 +1585,7 @@ class WorkflowEngine():
         """
         cdebug('            check_for_final_close enter')
 
-        if s.wfb.tasks_by_name[s.projectname].status == 'Fix Released':
+        if s.wfb.tasks_by_name[s.projectname].status == 'Fix Released' and not s.sauron:
             cdebug('                Bug already closed, aborting check')
             cdebug('            check_for_final_close leave: False')
             return False
