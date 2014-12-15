@@ -259,17 +259,17 @@ class CheckComponent():
         if ps:
             src_pkg = ps[0]
             component = get_component('universe', series, package, None)
-            cdebug("        src package name: %s" % src_pkg.source_package_name, 'cyan')
-            cdebug("            src_pkg.component_name: %s      component: %s" % (src_pkg.component_name, component), 'cyan')
             if src_pkg.component_name != component:
+                cdebug("        src package name: %s" % src_pkg.source_package_name, 'cyan')
+                cdebug("            src_pkg.component_name: %s      component: %s" % (src_pkg.component_name, component), 'cyan')
                 mlist.append([src_pkg.source_package_name, src_pkg.source_package_version, src_pkg.component_name, component])
 
             for bin_pkg in src_pkg.getPublishedBinaries():
                 pkg_name = bin_pkg.binary_package_name
                 component = get_component('universe', series, package, pkg_name)
-                cdebug("        bin package name: %s" % bin_pkg.binary_package_name, 'cyan')
-                cdebug("            bin_pkg.component_name: %s      component: %s" % (bin_pkg.component_name, component), 'cyan')
                 if bin_pkg.component_name != component:
+                    cdebug("        bin package name: %s" % bin_pkg.binary_package_name, 'cyan')
+                    cdebug("            bin_pkg.component_name: %s      component: %s" % (bin_pkg.component_name, component), 'cyan')
                     mlist.append([bin_pkg.binary_package_name, bin_pkg.binary_package_version, bin_pkg.component_name, component])
 
         cdebug("CheckComponent::mismatches_list leave")
