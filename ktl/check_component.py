@@ -83,7 +83,8 @@ class CheckComponent():
         if package == 'linux-meta':
             if bin_pkg:
                 if bin_pkg.startswith('linux-backports-modules-') or bin_pkg.startswith('linux-hwe-') or bin_pkg.startswith('linux-image-hwe-'):
-                    retval = 'main'
+                    if not bin_pkg.endswith('-preempt'):
+                        retval = 'main'
 
         if not retval:
             retval = self.default_component(default, series, package, bin_pkg)
