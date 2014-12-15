@@ -96,7 +96,7 @@ class CheckComponent():
         return 'main'
 
     def name_abi_transform(self, name):
-        cdebug('    CheckComponent::name_abi_transform enter')
+        cdebug('        CheckComponent::name_abi_transform enter')
         if not name:
             return name
         abi = re.findall('([0-9]+\.[^ ]+)', name)
@@ -113,7 +113,7 @@ class CheckComponent():
                     version = version[0]
                     name = name.replace('%s-%s' % (version, abi),
                                         '%s-ABI' % version)
-        cdebug('    CheckComponent::name_abi_transform leave (%s)' % name)
+        cdebug('        CheckComponent::name_abi_transform leave (%s)' % name)
         return name
 
     def linux_abi_component(self, dcomponent, series, package, bpkg):
