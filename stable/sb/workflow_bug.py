@@ -24,12 +24,18 @@ class WorkflowBugTask(object):
     #
     @property
     def status(s):
+        '''
+        Property: Gets the status for the task.
+        '''
         if s.__status is None:
             s.__status = s.lp_task.status
         return s.__status
 
     @status.setter
     def status(s, val):
+        '''
+        Property: Sets the status for the task.
+        '''
         if s.dryrun:
             cinfo('        ')
             cinfo('Dryrun - Set task %s to state %s' % (s.name, val), 'red')
@@ -46,6 +52,9 @@ class WorkflowBugTask(object):
     #
     @property
     def assignee(s):
+        '''
+        Property: Gets the assignee for the task.
+        '''
         if s.__assignee is None:
             assignee = s.lp_task.assignee
             if assignee is None:
@@ -55,6 +64,9 @@ class WorkflowBugTask(object):
 
     @assignee.setter
     def assignee(s, val):
+        '''
+        Property: Sets the assignee for the task.
+        '''
         if s.dryrun:
             cinfo('        ')
             cinfo('Dryrun - Assign task %s to %s' % (s.name, val), 'red')
@@ -81,9 +93,17 @@ class WorkflowBugTask(object):
 # WorkflowBug
 #
 class WorkflowBug():
+    '''
+    A helper class. Tries to encapsulate most of the common methods for working with the
+    workflow bug.
+    '''
     # __init__
     #
     def __init__(s, lp, projects, bugid, sauron=False, dryrun=False):
+        '''
+        When instantiated the bug's title is processed to find out information about the
+        related package. This information is cached.
+        '''
         s.lp = lp
         s.lpbug = s.lp.get_bug(bugid)
         s.projects = projects
@@ -115,7 +135,7 @@ class WorkflowBug():
                     for prop in s.properties:
                         cinfo('        %s: %s' % (prop, s.properties[prop]))
 
-                s.tasks_by_name = s.create_tasks_by_name()
+                s.tasks_by_name = s._create_tasks_by_name_mapping()
         except PackageError:
             s.is_valid = False
 
@@ -123,7 +143,8 @@ class WorkflowBug():
     #
     def check_is_valid(s, bug):
         '''
-        Determine if this bug is one that we wan't to be processing.
+        Determine if this bug is one that we wan't to be processing. Bugs that we
+        should not be processing are ones that are not currently "In Progress".
         '''
         retval = True
         for t in s.lpbug.tasks:
@@ -142,9 +163,9 @@ class WorkflowBug():
 
         return retval
 
-    # create_tasks_by_name
+    # _create_tasks_by_name_mapping
     #
-    def create_tasks_by_name(s):
+    def _create_tasks_by_name_mapping(s):
         '''
         We are only interested in the tasks that are specific to the workflow project. Others
         are ignored.
@@ -171,45 +192,68 @@ class WorkflowBug():
     # package_fully_built
     #
     def package_fully_built(s, pkg):
-        cdebug('                WorkflowBug::package_fully_built enter')
+        '''
+        For the package specified, the status of whether or not it is fully built
+        is returned.
+        '''
         retval = s.__package.fully_built(pkg)
-        cdebug('                WorkflowBug::package_fully_built leave (True)')
         return retval
 
     # all_dependent_packages_fully_built
     #
     def all_dependent_packages_fully_built(s):
-        cdebug('                WorkflowBug::all_dependent_packages_fully_built enter')
+        '''
+        For the kernel package associated with this bug, the status of whether or
+        not all lf the dependent packages (meta, signed, lbm, etc.) are fully built
+        is returned.
+        '''
         retval = s.__package.all_dependent_packages_fully_built()
-        cdebug('                WorkflowBug::all_dependent_packages_fully_built leave (True)')
         return retval
 
     # creator
     #
     def creator(s, pkg):
-        cdebug('                WorkflowBug::creator enter')
+        '''
+        Returns the name of the person that created the source package.
+        '''
         retval = s.__package.creator(pkg)
-        cdebug('                WorkflowBug::creator leave (True)')
         return retval
 
     @property
     def pkg_name(s):
+        '''
+        Property: The name of the package associated with this bug.
+        '''
         return s.__package.name
 
     @property
     def pkg_version(s):
+        '''
+        Returns the full version as specified in the bug title.
+        '''
         return s.__package.version
 
     @property
     def series(s):
+        '''
+        Decoded from the kernel version in the bug title, the series name associated
+        with that kernel version is returned.
+        '''
         return s.__package.series
 
     @property
     def abi(s):
+        '''
+        The abi number from the full version in the bug title is returned.
+        '''
         return s.__package.abi
 
     @property
     def kernel_version(s):
+        '''
+        Decoded from the version string in the title, the kernel version is returned.
+        This is just the kernel version without the ABI or upload number.
+        '''
         return s.__package.kernel
 
     # modified
