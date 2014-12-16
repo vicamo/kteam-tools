@@ -191,7 +191,6 @@ class WorkflowEngine():
         master_task_name = s.projectname
 
         s.wfb = shankbug
-        s.wfb.tasks_by_name = s.wfb.tasks_by_name
 
         # initialize any per-bug variables that we use
         s.bugtags = []
