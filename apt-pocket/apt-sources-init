@@ -1,13 +1,22 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 -a "$#" -ne 3 ]; then 
-	echo "Usage: $0 <master config> v1|v2 [<prefix>]" 1>&2
+if [ "$#" -lt 1 -a "$#" -gt 3 ]; then 
+	echo "Usage: $0 <master config> [v1|v2] [<prefix>]" 1>&2
 	echo "       v1: precise and older" 1>&2
 	echo "       v2: quantal and newer" 1>&2
 	exit 1
 fi
 base="$1"
-mode="$2"
+
+if [ "$#" -ge 2 ]; then
+	mode="$2"
+else
+	if dpkg --compare-versions `lsb_release -sr` le '12.04'; then
+		mode='v1'
+	else
+		mode='v2'
+	fi
+fi
 
 name="`head -1 "$base" | sed -e 's/\[//' -e 's/\]//'`"
 if [ "$#" = 3 ]; then
@@ -16,7 +25,7 @@ else
 	prefix="${name%%-*}"
 fi
 
-echo "name<$name> prefix<$prefix>"
+echo "name<$name> prefix<$prefix> mode<$mode>"
 case "$mode" in
 v1)
 	for pocket in security updates proposed
