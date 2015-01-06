@@ -341,7 +341,7 @@ class WorkflowEngine():
         if abi_bump:
             subj += " (ABI bump)"
 
-        send_to_shankbot(subj)
+        send_to_shankbot(subj + '\n')
 
         msg  = "A new " + series + " kernel has been uploaded into "
         msg += pocket + ". "
@@ -398,11 +398,10 @@ class WorkflowEngine():
 
     # set_phase
     #
-    """
-    Add the phase we're entering as a 'property',
-    along with a time stamp
-    """
     def set_phase(s, taskobj, phasetext):
+        """
+        Add the phase we're entering as a 'property', along with a time stamp.
+        """
         bug_prop = 'kernel'
         if s.projectname == 'kernel-sru-workflow':
             bug_prop += '-stable'
@@ -706,7 +705,7 @@ class WorkflowEngine():
 
         to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
         subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
-        send_to_shankbot(subj)
+        send_to_shankbot(subj + '\n')
 
         mcfg = s.cfg['mail_notify']
         msg  = ''
