@@ -4,7 +4,7 @@
 #
 
 from ktl.check_component                import CheckComponent
-from ktl.utils                          import stdo, date_to_string, run_command
+from ktl.utils                          import stdo, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.workflow                       import Properties
 from ktl.tracking_bug                   import TrackingBug
@@ -734,12 +734,6 @@ class WorkflowEngine():
             s.send_upload_announcement(taskobj, 'proposed')
 
             series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
-            # If this is running remotely we need to use ssh. If it's running as the kernel-ppa
-            # user on zinc, we can't use ssh.
-            #
-            #cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
-            with open('/srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html' % series, 'w') as f:
-                f.write('<html>%s</html>' % s.wfb.title)
 
     def handle_derivatives(s, taskobj, taskname):
         cdebug('            handle_derivatives enter')
@@ -871,9 +865,6 @@ class WorkflowEngine():
             s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-start')
             s.set_phase(taskobj, 'Testing')
             s.send_upload_announcement(taskobj, 'proposed')
-
-            cmd = 'ssh zinc.canonical.com \'echo "<html>%s</html>" > /srv/kernel.ubuntu.com/www/kernel-pkg-status/%s.html\'' % (s.wfb.title, series)
-            status, result = run_command(cmd)
 
         cdebug('            handle_derivatives leave')
 
