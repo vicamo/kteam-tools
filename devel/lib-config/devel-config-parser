@@ -172,6 +172,7 @@ def read_kconfig(base, filename):
             elif a[0] == 'menu':
                 emit(A)
                 A = {'file': filename, 'prompt': a[1], 'menu': True, 'deps': ''}
+                add_deps_list(A, ifs)
             elif a[0] == 'comment':
                 emit(A)
                 A = {'file': filename, 'prompt': a[1], 'comment': True, 'deps': ''}
