@@ -56,7 +56,7 @@ for line in sys.stdin:
 
     if (menu_old, menu_new) not in menu_renames:
         menu_renames.append((menu_old, menu_new))
-    #print(which + '\t' + '>>'.join(new) + '\t' + '>>'.join(old))
+        #print('APW', fname, menu_old, '->', menu_new)
 
 for (old, new) in menu_renames:
     print('menu-rename\t' + new + "\t" + old)
