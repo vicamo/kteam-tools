@@ -38,7 +38,7 @@ if [ "$current" != '-' ]; then
 
 	annot_current="$annotations"
 	if [ "$annot_current" = "" ]; then
-		annot_current="$there_next/debian.master/config/annotations"
+		annot_current="$there_current/debian.master/config/annotations"
 	fi
 	case "$annot_current" in
 	/*) ;;
