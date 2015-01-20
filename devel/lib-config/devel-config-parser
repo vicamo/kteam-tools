@@ -207,6 +207,8 @@ def read_kconfig(base, filename):
                 A['type'] = a[0]
                 if len(a) > 1:
                     A['prompt'] = a[1]
+                if len(a) > 2 and a[2] == 'if':
+                    add_deps(A, ' '.join(a[3:]))
             elif a[0] == 'def_bool':
                 A['type'] = 'bool'
             elif a[0] == 'def_tristate':
