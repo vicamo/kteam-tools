@@ -22,12 +22,30 @@ list="/tmp/list.$$"
 	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder "$base/CONFIGS-renames"
 } | LANG=C sort | uniq >"$list"
 
+copy_raw() {
+	local menu="$1"
+
+	patn=`echo "$menu *" | sed \
+		-e 's/ROOT>>//g' \
+		-e 's@/@\\\\/@g' \
+		-e 's@(@\\\\(@g' \
+		-e 's@)@\\\\)@g' \
+		-e 's@ *>> *@ *>> *@g'
+	`
+	awk '
+		/^# Menu: '"$patn"'$/		{ found=1; print; next }
+		/^# Menu:/			{ found=0; last }
+		(found == 1)			{ print }
+	' <"$annot_in"
+}
+
 copy_menu() {
 	local menu="$1"
+	local what
 
 	name=`echo "$menu" | sed \
 		-e 's/ROOT>>//g' \
-		-e 's/>>/ >> /g'
+		-e 's/ *>> */ >> /g'
 	`
 	patn=`echo "$menu *" | sed \
 		-e 's/ROOT>>//g' \
@@ -38,29 +56,60 @@ copy_menu() {
 	`
 	#echo "$name ... " 1>&2
 
-	echo "# Menu: $name"
-	awk '
-		/^# Menu: '"$patn"'$/		{ found=1; next }
-		/^# Menu:/			{ found=0; next }
-		(found == 1)			{ print }
-	' <"$annot_in" | sed -e '
+	{
+		echo "# Menu: $name"
+		# Copy over anything which is _not_ a configuration option.
+		awk '
+			/^# Menu: '"$patn"'$/		{ found=1; next }
+			/^# Menu:/			{ found=0; last }
+			/^CONFIG_/			{ next }
+			(found == 1)			{ print }
+		' <"$annot_in" 
+		echo ""
+	} | sed -e '
 		:a
 		/^\n*$/{$d;N;ba
 		}
 	'
+	# Copy over any configuration option listed.
+	what=`cat "$list" | grep "^E $menu>>>" | 
+		awk -F'>' '{ print $NF }' |
+		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ 	]/'`
+	[ "$what" != "" ] && egrep -h "^$what" "$annot_in"
 	echo ""
 }
 
-{
-	echo "M HEADER"
-	cat "$list"
-} | grep '^M ' | \
+copy_raw "HEADER" >"$annot_out"
+
+cat "$list" | grep '^M ' | \
 while read junk menu
 do
 	copy_menu "$menu"
-done >"$annot_out"
+done >>"$annot_out"
 
-# Validate we have copied over every section.
+# Work out if we lost any configuration options on the way.
+grep ^CONFIG_ "$annot_in" | sort >"$list.in"
+grep ^CONFIG_ "$annot_out" | sort >"$list.out"
+
+join -t '' -v1 "$list.in" "$list.out" >"$list.awol_config"
+
+cp "$list.in" APW-in
+cp "$list.out" APW-out
+cp "$list.awol_config" APW-awol
+
+if [ $(wc -l <"$list.awol_config") != "0" ]; then
+	{
+		echo ""
+		echo "## v- UNMATCHED CONFIGS"
+		echo ""
+		cat "$list.awol_config"
+		echo ""
+		echo "## ^- UNMATCHED CONFIGS"
+		echo ""
+	} >>"$annot_out"
+fi
+
+# Validate we have copied over every non empty section.
 <"$annot_in" \
 awk '
 	/^# Menu: /			{ which=$0; next }
@@ -70,15 +119,19 @@ awk '
 
 <"$annot_out" \
 awk '
-	/^# Menu: /			{ which=$0; next }
+	/^# Menu: /			{ if (which != "") { print which; }; which=$0; next }
 	/^$/				{ next }
 	(which != "")			{ print which; which=""}
 ' | sed -e 's/  *$//' -e 's/ *>> */ >> /g' | sort >"$list.out"
-join -t\b -v1 "$list.in" "$list.out" | grep -v '^# Menu: FOOTER' >"$list.missing"
+join -t '' -v1 "$list.in" "$list.out" | grep -v '^# Menu: FOOTER' >"$list.missing"
 
-# Work out what if anything is missing -- and copy it over.
+# Work out which sections are missing -- and copy it over.
 if [ $(wc -l <"$list.missing") != "0" ]; then
 	{
+		what=`awk '{ print $1 }' <"$list.awol_config" | \
+			tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ 	]/'`
+		[ "$what" = "" ] && what="__pattern_not_found__"
+
 		echo ""
 		echo "## v- UNMATCHED MENUS"
 		echo ""
@@ -86,12 +139,23 @@ if [ $(wc -l <"$list.missing") != "0" ]; then
 		do
 			echo "WARNING: unknown -- $menu" 1>&2
 			copy_menu "$menu"
+			copy_raw "$menu" | egrep -h "^$what"
+			echo ""
 		done <"$list.missing"
 		echo "## ^- UNMATCHED MENUS"
 		echo ""
 	} >>"$annot_out"
 fi
 
-copy_menu "FOOTER" >>"$annot_out"
+# Drop the bottom back on the bottom.
+copy_raw "FOOTER" >>"$annot_out"
 
-rm -f "$list" "$list.in" "$list.out" "$list.missing"
+# De-duplicate the result.
+awk '
+	/^$/		{ print; next }
+	/^#/		{ print; next }
+	($0 in seen)	{ next }
+			{ seen[$0] = 1; print }
+' <"$annot_out" >"$list"
+mv "$list" "$annot_out"
+rm -f "$list" "$list.in" "$list.out" "$list.missing" "$list.awol_config"
