@@ -74,6 +74,16 @@ def entry_default(entry):
     return default
 
 
+def menu_material(entry):
+    if 'menu' in entry or \
+       'menuconfig' in entry or \
+       'choice' in entry or \
+       ('config' in entry and 'prompt' in entry and len(entry['children']) > 2):
+        return True
+    else:
+        return False
+
+
 (cache, cmd) = sys.argv[1:3]
 args = sys.argv[3:]
 
@@ -162,15 +172,15 @@ elif cmd == 'genrenames':
         if 'parent' in entry:
             parent = entry['parent']
             while True:
-                if 'menu' in parent or 'menuconfig' in parent:
-                    #if 'prompt' in parent:
-                    #    pname.insert(0, parent['prompt'])
-                    #else:
-                    #    pname.insert(0, parent['config'])
-                    if 'config' in parent:
-                        pname.insert(0, parent['config'])
-                    else:
+                if menu_material(parent):
+                    if 'prompt' in parent:
                         pname.insert(0, parent['prompt'])
+                    else:
+                        pname.insert(0, parent['config'])
+                    #if 'config' in parent:
+                    #    pname.insert(0, parent['config'])
+                    #else:
+                    #    pname.insert(0, parent['prompt'])
                 if 'parent' not in parent:
                     break
                 parent = parent['parent']
@@ -231,7 +241,7 @@ elif cmd == 'genorder':
         if 'parent' in entry:
             parent = entry['parent']
             while True:
-                if 'menu' in parent or 'menuconfig' in parent:
+                if menu_material(parent):
                     if 'prompt' in parent:
                         pname.insert(0, parent['prompt'])
                     else:
@@ -245,7 +255,7 @@ elif cmd == 'genorder':
         else:
             akey = []
 
-        if ('menu' in entry or 'menuconfig' in entry) and len(entry['children']) > 0:
+        if menu_material(entry) and len(entry['children']) > 0:
             out_rename('M', '>>'.join(pname + [ mname ] + akey))
             if 'config' in entry:
                 out_rename('E', '>>'.join(pname + [ mname ] + akey), entry['config'])
