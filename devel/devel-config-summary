@@ -17,6 +17,7 @@ while :
 do
 	case "$1" in
 	--html)		format="html"; shift ;;
+	--text)		format="text"; shift ;;
 	--previous)	current="$2"; shift 2 ;;
 	--annotations)	annotations="$2"; shift 2 ;;
 	*)		break 2 ;;
