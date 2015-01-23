@@ -37,6 +37,10 @@ def emit(a):
     if 'prompt' not in a or 'comment' in a:
         return
 
+    D = None
+    #if 'config' in a and a['config'] == 'IWLWIFI_UAPSD':
+    #    D = a['config']
+
     #if 'menu' in a and 'prompt' in a and a['file'].startswith('arch/'):
     #    arch = a['file'].split('/')[1]
     #    a['prompt'] += ' (' + arch + ')'
@@ -49,9 +53,13 @@ def emit(a):
     # on them, or the surrounding menu otherwise.
     for parent in menu:
         if 'menu' in parent:
+            if D:
+                print(D, "join: menu")
             join(a, parent)
             break
         elif 'choice' in parent:
+            if D:
+                print(D, "join: choice")
             if 'choice' in a:
                 raise ValueError('choice in choice')
             join(a, parent)
@@ -59,6 +67,8 @@ def emit(a):
         elif 'config' in parent:
             match = re.search(r'\b' + parent['config'] + r'(=n)?\b', a['deps'])
             if match:
+                if D:
+                    print(D, "join: config dep", parent['config'])
                 #print("PARENT: ", parent['config'])
                 join(a, parent)
                 break
@@ -206,7 +216,7 @@ def read_kconfig(base, filename):
                     a[0] = 'bool'
                 A['type'] = a[0]
                 if len(a) > 1:
-                    A['prompt'] = a[1]
+                    A['prompt'] = a[1].strip()
                 if len(a) > 2 and a[2] == 'if':
                     add_deps(A, ' '.join(a[3:]))
             elif a[0] == 'def_bool':
@@ -214,7 +224,7 @@ def read_kconfig(base, filename):
             elif a[0] == 'def_tristate':
                 A['type'] = 'tristate'
             elif a[0] == 'prompt':
-                A['prompt'] = a[1]
+                A['prompt'] = a[1].strip()
                 if len(a) > 2 and a[2] == 'if':
                     add_deps(A, ' '.join(a[3:]))
             elif a[0] == 'depends' and a[1] == 'on':
