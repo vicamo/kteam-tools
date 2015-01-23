@@ -15,6 +15,7 @@ from ktl.bugs                           import DeltaTime
 from ktl.termcolor                      import colored
 import traceback
 from ktl.shanky                         import send_to_shankbot
+from ktl/msgq                           import MsgQueue
 
 from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
@@ -355,6 +356,30 @@ class WorkflowEngine():
         msg += " maintained by the\nUbuntu Kernel Team."
 
         s.email.send(from_addr, dest, subj, msg)
+
+        # Send a message to the message queue. This will kick off testing.
+        #
+        hwe = False
+        if '-lts-' in s.wfb.series:
+            hwe = True
+        msg = {
+            "key"            : "kernel.publish.proposed.%s" % series,
+            "op"             : "sru",
+            "who"            : "kernel",
+            "pocket"         : "proposed",
+            "date"           : str(datetime.utcnow()),
+            "series-name"    : series,
+            "series-version" : s.ubuntu.index_by_series_name[series],
+            "hwe"            : hwe,
+            "bug id"         : taskobj.bug.id,
+            "url"            : s.bug_url(taskobj.bug.id)
+            "version"        : msg += 'Version: %s\n' % s.wfb.pkg_version
+            "package"        : msg += 'Package: %s\n' % s.wfb.pkg_name
+        }
+
+        mq = MsgQueue()
+        mq.publish(msg['key'], msg)
+
         return
 
     def send_status_update(s, taskobj, message):
@@ -686,41 +711,28 @@ class WorkflowEngine():
         """
         cdebug('            __ppa_announce enter')
 
-        s.wfb.tasks_by_name['package-testing'].status = 'In Progress'
-
-        s.set_tagged_timestamp(taskobj, 'ppa-package-testing-start')
-        s.set_phase(taskobj, 'PPA Testing')
-
-        #-------------------------------------------------------------------
-
-        if s.args.dryrun or s.args.dryrun_email:
-            cinfo('Dryrun - Sending email')
-            return
-
-        cinfo('Sending email')
-
-        if not 'mail_notify' in s.cfg:
-            s.verbose('No mail_notify config found, can\'t send email\n')
-            return
-
-        to_address = "brad.figg@canonical.com, ubuntu.kernel.bot@gmail.com"
-        subj =  '%s: %s Available in PPA' % (s.wfb.pkg_name, s.wfb.pkg_version)
-        send_to_shankbot(subj + '\n')
-
-        mcfg = s.cfg['mail_notify']
-        msg  = ''
-        msg += 'Title: %s\n\n' % s.wfb.title
-        msg += 'ID: %s\n' % taskobj.bug.id
-        msg += 'URL: %s\n' % s.bug_url(taskobj.bug.id)
-        msg += 'Version: %s\n' % s.wfb.pkg_version
-        msg += 'Package: %s\n' % s.wfb.pkg_name
+        # Send a message to the message queue. This will kick off testing.
+        #
+        hwe = False
         if '-lts-' in s.wfb.series:
-            series = s.wfb.series.split('-lts-')[1]
-        else:
-            series = s.wfb.series
-        msg += 'Series: %s\n' % series
-        msg += ""
-        s.email.send(mcfg['from_address'], to_address, subj, msg)
+            hwe = True
+        msg = {
+            "key"            : "kernel.publish.ppa.%s" % series,
+            "op"             : "sru",
+            "who"            : "kernel",
+            "pocket"         : "ppa",
+            "date"           : str(datetime.utcnow()),
+            "series-name"    : series,
+            "series-version" : s.ubuntu.index_by_series_name[series],
+            "hwe"            : hwe,
+            "bug id"         : taskobj.bug.id,
+            "url"            : s.bug_url(taskobj.bug.id)
+            "version"        : msg += 'Version: %s\n' % s.wfb.pkg_version
+            "package"        : msg += 'Package: %s\n' % s.wfb.pkg_name
+        }
+
+        mq = MsgQueue()
+        mq.publish(msg['key'], msg)
 
         cdebug('            __ppa_announce leave (False)')
         return False
