@@ -15,7 +15,7 @@ from ktl.bugs                           import DeltaTime
 from ktl.termcolor                      import colored
 import traceback
 from ktl.shanky                         import send_to_shankbot
-from ktl/msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueue
 
 from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
