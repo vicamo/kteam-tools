@@ -371,10 +371,10 @@ class WorkflowEngine():
             "series-name"    : series,
             "series-version" : s.ubuntu.index_by_series_name[series],
             "hwe"            : hwe,
-            "bug id"         : taskobj.bug.id,
-            "url"            : s.bug_url(taskobj.bug.id)
-            "version"        : msg += 'Version: %s\n' % s.wfb.pkg_version
-            "package"        : msg += 'Package: %s\n' % s.wfb.pkg_name
+            "bug id"         : task.bug.id,
+            "url"            : s.bug_url(task.bug.id),
+            "version"        : s.wfb.pkg_version,
+            "package"        : s.wfb.pkg_name,
         }
 
         mq = MsgQueue()
@@ -711,6 +711,7 @@ class WorkflowEngine():
         """
         cdebug('            __ppa_announce enter')
 
+        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         # Send a message to the message queue. This will kick off testing.
         #
         hwe = False
@@ -726,9 +727,9 @@ class WorkflowEngine():
             "series-version" : s.ubuntu.index_by_series_name[series],
             "hwe"            : hwe,
             "bug id"         : taskobj.bug.id,
-            "url"            : s.bug_url(taskobj.bug.id)
-            "version"        : msg += 'Version: %s\n' % s.wfb.pkg_version
-            "package"        : msg += 'Package: %s\n' % s.wfb.pkg_name
+            "url"            : s.bug_url(taskobj.bug.id),
+            "version"        : s.wfb.pkg_version,
+            "package"        : s.wfb.pkg_name,
         }
 
         mq = MsgQueue()
