@@ -14,7 +14,7 @@ case "$SSH_ORIGINAL_COMMAND" in
 esac
 
 case "$SSH_ORIGINAL_COMMAND" in
-"rsync --server -vlogDtpre.iLsf . incoming/")
+"rsync --server -vlogDtpre.iLsfx . incoming/"|"rsync --server -vlogDtpre.iLsf . incoming/")
 	incoming="$HOME/incoming"
 	lock_tmp="$incoming/.LOCK-$$"
 	lock="$incoming/.LOCK"
@@ -42,7 +42,10 @@ case "$SSH_ORIGINAL_COMMAND" in
 "queue complete")
 	exec "$HOME/kteam-tools/queue/queue" -w "$who" complete
 	;;
+"test")
+	echo "SUCCESSFUL LOGIN"
+	;;
 *)
-	echo "$P: invalid command" 1>&2
+	echo "$P: invalid command $SSH_ORIGINAL_COMMAND" 1>&2
 	exit 1
 esac
