@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ "$#" -lt 4 -o "$#" -gt 5 ]; then
+	echo "Usage: $0 <name> <title> <warn> <alert> [<note>]" 1>&2
+	exit 1
+fi
+name="$1"
+title="$2"
+warn="$3"
+alert="$4"
+note="$5"
+
+# If this is a filename then use it as is, else use the default location.
+case "$name" in
+*/*)	;;
+*)
+	name="$HOME/public_html/status/$name.dashboard"
+	;;
+esac
+
+# If the alert starts with a + then add it to the warn time.
+case "$alert" in
++*)	let alert="$warn$alert" ;;
+esac
+
+# Fix the description.
+title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+
+echo "$title `date +%s` $warn $alert $note" >"$name.new"
+mv -f "$name.new" "$name"
