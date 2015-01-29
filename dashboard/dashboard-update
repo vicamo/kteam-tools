@@ -64,7 +64,7 @@ function pageLoaded() {
 	    Date.now = function() { return new Date().getTime(); }
 	}
 	now = Math.floor(Date.now() / 1000)
-	if ((now - $now) > 330) {
+	if ((now - $now) > (300 + 60 + 30)) {
 		document.getElementById("dashboard").style.background = "red";
 	}
 }
