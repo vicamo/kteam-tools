@@ -42,6 +42,6 @@ ofile="$out/regressions.txt"
 "$here/dkms-jenkins-matrix" --regressions <"$here/dkms-jenkins-matrix.conf" >"$ofile.new"
 mv -f "$ofile.new" "$ofile"
 
-ofile="$out/dashboard.txt"
-echo "rebuild `date +%s` 2700 4500" >"$ofile.new"
+ofile="$out/dkms.dashboard"
+echo "Scheduled%sRebuild `date +%s` 2700 4500" >"$ofile.new"
 mv -f "$ofile.new" "$ofile"
