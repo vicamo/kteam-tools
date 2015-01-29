@@ -37,9 +37,7 @@ case "$SSH_ORIGINAL_COMMAND" in
 	rm -f "$lock"
 	;;
 "queue pick mainline")
-    ofile="$HOME/public_html/status/mainline-queue-$who.dashboard"
-    echo "$who%squeue%scheck `date +%s` 14400 28800" >"$ofile.new"
-    mv -f "$ofile.new" "$ofile"
+    "$HOME/kteam-tools/dashboard-status" "queue-$who" "$who queue check" 1h 4h
 
 	exec "$HOME/kteam-tools/queue/queue" -w "$who" pick mainline
 	;;
