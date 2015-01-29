@@ -242,6 +242,27 @@ root['file'] = filename
 
 read_kconfig(directory, filename)
 
+#def flatten(parent):
+#    new_children = []
+#    promoted = False
+#    for entry in parent['children']:
+#        if 'children' in entry:
+#            flatten(entry)
+#        new_children.append(entry)
+#        if 'menu' not in entry and 'menuconfig' not in entry and \
+#            'choice' not in entry and 'choice' not in parent and \
+#           len(entry['children']) < 2:
+#            for child in entry['children']:
+#                print("FLATTEN: promoting", child.get('config', entry.get('prompt', '??')))
+#                child['parent'] = parent
+#                new_children.append(child)
+#                promoted = True
+#            entry['children'] = []
+#    if promoted:
+#        print("FLATTEN2:", len(parent['children']), len(new_children))
+#    parent['children'] = new_children
+            
+
 def fake_menu(parent):
     is_menu = False
     for entry in parent['children']:
@@ -256,7 +277,8 @@ def fake_menu(parent):
 
     return is_menu
 
-fake_menu(root)
+#flatten(root)
+#fake_menu(root)
 
 with open(cache, "wb+") as cfd:
     pickle.dump({
