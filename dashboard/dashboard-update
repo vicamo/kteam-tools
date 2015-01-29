@@ -6,13 +6,13 @@ state="$out/dashboard-state"
 mkdir -p "$state"
 
 now=`date +%s`
-date=`date`
+date=`date '+%d-%b-%Y %H:%M'`
 
 {
 	while read file title url
 	do
 		# Get this if we can ... ignore it, we will use the previous data.
-		wget -O "$state/$file.new" "$url" && mv "$state/$file.new" "$state/$file"
+		wget -q -O "$state/$file.new" "$url" && mv "$state/$file.new" "$state/$file"
 
 		if [ -f "$state/$file" ]; then
 			while read -r line
@@ -54,14 +54,27 @@ table.status, table.status th, table.status td {
    border: 1px solid black;
 } 
 </style>
+<script>
+function pageLoaded() {
+	if (!Date.now) {
+	    Date.now = function() { return new Date().getTime(); }
+	}
+	now = Math.floor(Date.now() / 1000)
+	if ((now - $now) > 330) {
+		document.getElementById("mystatus").style.background = "red";
+	}
+}
+</script>
 </head>
-<body>
+<body onload="pageLoaded()">
 <h1>Kernel Dashboard ($date)</h1>
-<table class="status">
-<tr><th colspan=2 width=50%>Tool<th width=10%>Status</tr>
+<table width=60% class="status">
+<tr><th colspan=2>Tool<th>Status</tr>
 EOL
 
 	#last_title=''
+	echo "Dashboard Scheduled%sUpdate - $time" >>"$status.txt.new"
+	echo "<tr id=\"mystatus\" class=\"good\"><td>Dashboard<td>Sheduled Update<td>$date</tr>" >>"$status.html.new"
 	while read section title tag time warning alert
 	do
 		let delta="$now-$time"
@@ -72,6 +85,7 @@ EOL
 		else
 			mode="good"
 		fi
+		echo "$section $tag $time $warning $alert"
 		echo "$title $tag $delta $mode" >>"$status.txt.new"
 
 		title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
