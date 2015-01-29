@@ -18,9 +18,14 @@ case "$name" in
 	;;
 esac
 
-# If the alert starts with a + then add it to the warn time.
+# Handle basic multipliers.
+case "$warn" in
+*m)	let warn="${warn%m}*60" ;;
+*h)	let warn="${warn%h}*3600" ;;
+esac
 case "$alert" in
-+*)	let alert="$warn$alert" ;;
+*m)	let alert="${alert%m}*60" ;;
+*h)	let alert="${alert%h}*3600" ;;
 esac
 
 # Fix the description.
