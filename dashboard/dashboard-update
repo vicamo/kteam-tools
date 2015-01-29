@@ -28,8 +28,8 @@ cve-autotriage CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-au
 cve-matrix CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-matrix.dashboard
 mainline-daily Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
 mainline-hourly Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
-mainline-queue-gomeisa Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-queue-gomeisa.dashboard
-mainline-queue-tangerine Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-queue-tangerine.dashboard
+mainline-queue-gomeisa Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-gomeisa.dashboard
+mainline-queue-tangerine Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-tangerine.dashboard
 EOL
 } | {
 
