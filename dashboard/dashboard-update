@@ -37,7 +37,7 @@ EOL
 	cat - <<EOL >"$status.html.new"
 <html>
 <head>
-<meta http-equiv="refresh" content="120">
+<meta http-equiv="refresh" content="60">
 <title>Kernel Dashboard</title>
 <style>
 .good { background-color: green; }
