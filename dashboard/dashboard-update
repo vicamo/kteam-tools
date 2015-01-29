@@ -35,6 +35,7 @@ mainline-cleanup Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/m
 mainline-cod-incoming-publish Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
 mainline-queue-gomeisa Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-gomeisa.dashboard
 mainline-queue-tangerine Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-tangerine.dashboard
+shankbot-swm ShankBot http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
 EOL
 } | {
 
