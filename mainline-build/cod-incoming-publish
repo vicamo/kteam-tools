@@ -102,4 +102,8 @@ done
 # We are done.
 rm -f "$lock"
 
+ofile="$HOME/public_html/status/mainline-cod-incoming-publish.dashboard"
+echo "Incoming%sPublish `date +%s` 1800 2700" >"$ofile.new"
+mv -f "$ofile.new" "$ofile"
+
 echo "$P: publishing run complete"
