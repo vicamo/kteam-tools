@@ -8,7 +8,10 @@ mkdir -p "$state"
 now=`date +%s`
 date=`date '+%d-%b-%Y %H:%M'`
 
+let later="$now+100"
+
 {
+	echo "dashboard Dashboard Scheduled%sUpdate $now $later $later"
 	while read file title url
 	do
 		# Get this if we can ... ignore it, we will use the previous data.
@@ -61,7 +64,7 @@ function pageLoaded() {
 	}
 	now = Math.floor(Date.now() / 1000)
 	if ((now - $now) > 330) {
-		document.getElementById("mystatus").style.background = "red";
+		document.getElementById("dashboard").style.background = "red";
 	}
 }
 </script>
@@ -69,13 +72,10 @@ function pageLoaded() {
 <body onload="pageLoaded()">
 <h1>Kernel Dashboard ($date)</h1>
 <table width=60% class="status">
-<tr><th colspan=2>Tool<th>Status</tr>
+<tr><th colspan=2>Tool<th>Last<th>Notes</tr>
 EOL
-
 	#last_title=''
-	echo "Dashboard Scheduled%sUpdate - $time" >>"$status.txt.new"
-	echo "<tr id=\"mystatus\" class=\"good\"><td>Dashboard<td>Sheduled Update<td>$date</tr>" >>"$status.html.new"
-	while read section title tag time warning alert
+	while read section title tag time warning alert message
 	do
 		let delta="$now-$time"
 		if [ "$delta" -gt "$alert" ]; then
@@ -96,8 +96,23 @@ EOL
 		#else
 		#	last_title="$title"
 		#fi
-		let deltam="$delta / 60"
-		echo "<tr class=\"$mode\"><td>$title<td>$tag<td>${deltam}m ago</tr>" >>"$status.html.new"
+
+		# Ensure we do not execute something other than a number.
+		#let time="$time + 0"
+		#time=`date --date=@$time '+%d-%b-%Y %H:%M'`
+
+		let delta="$delta / 60"
+		ext='m'
+		if [ "$delta" -ge 60 ]; then
+			let delta="$delta / 60"
+			ext='h'
+
+			if [ "$delta" -ge "24" ]; then
+				let delta="$delta / 24"
+				ext='d'
+			fi
+		fi
+		echo "<tr id=\"$section\" class=\"$mode\"><td>$title<td>$tag<td>$delta$ext<td>$message</tr>" >>"$status.html.new"
 	done
 
 	cat - <<EOL >>"$status.html.new"
