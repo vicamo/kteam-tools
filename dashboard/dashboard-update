@@ -1,0 +1,92 @@
+#!/bin/bash
+
+out="$HOME/public_html/status"
+state="$out/dashboard-state"
+
+mkdir -p "$state"
+
+now=`date +%s`
+date=`date`
+
+{
+	while read file title url
+	do
+		# Get this if we can ... ignore it, we will use the previous data.
+		wget -O "$state/$file.new" "$url" && mv "$state/$file.new" "$state/$file"
+
+		if [ -f "$state/$file" ]; then
+			while read -r line
+			do
+				echo "$file $title $line"
+			done <"$state/$file"
+		else
+			echo "$file $title MISSING%sDASHBOARD $now -1 -1"
+		fi
+	done <<EOL
+dkms-matrix DKMS%sMatrix http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
+cve-autotriage CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
+cve-matrix CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-matrix.dashboard
+mainline-daily Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
+mainline-hourly Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
+EOL
+} | {
+
+	status="$out/dashboard"
+
+	: >"$status.txt.new"
+	cat - <<EOL >"$status.html.new"
+<html>
+<head>
+<title>Kernel Dashboard</title>
+<style>
+.good { background-color: green; }
+.warn { background-color: yellow; }
+.alert { background-color: red; }
+table.status {
+    border-collapse: collapse;
+}
+table.status, table.status th, table.status td {
+   border: 1px solid black;
+} 
+</style>
+</head>
+<body>
+<h1>Kernel Dashboard ($date)</h1>
+<table class="status">
+<tr><th colspan=2 width=50%>Tool<th width=10%>Status</tr>
+EOL
+
+	#last_title=''
+	while read section title tag time warning alert
+	do
+		let delta="$now-$time"
+		if [ "$delta" -gt "$alert" ]; then
+			mode="alert"
+		elif [ "$delta" -gt "$warning" ]; then
+			mode="warn"
+		else
+			mode="good"
+		fi
+		echo "$title $tag $delta $mode" >>"$status.txt.new"
+
+		title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
+		tag=`echo "$tag" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
+		
+		#if [ "$last_title" = "$title" ]; then
+		#	title="&nbsp;"
+		#else
+		#	last_title="$title"
+		#fi
+		let deltam="$delta / 60"
+		echo "<tr class=\"$mode\"><td>$title<td>$tag<td>${deltam}m ago</tr>" >>"$status.html.new"
+	done
+
+	cat - <<EOL >>"$status.html.new"
+</table>
+</body>
+</html>
+EOL
+
+	mv -f "$status.html.new" "$status.html"
+	mv -f "$status.txt.new" "$status.txt"
+}
