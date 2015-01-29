@@ -14,8 +14,4 @@ esac
 #
 "$here/cod-crack-trigger"
 
-ofile="$HOME/public_html/status/mainline-daily.dashboard"
-echo "Daily%sTrigger `date +%s` 87300 89100" >"$ofile.new"
-mv -f "$ofile.new" "$ofile"
-
 echo "$P: trigger run complete"
