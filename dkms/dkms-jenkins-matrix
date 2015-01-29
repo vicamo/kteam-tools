@@ -17,6 +17,7 @@ from functools import cmp_to_key
 parser = OptionParser()
 parser.add_option("-v", "--versions", type="int", help="Number of versions to show in the matrix")
 parser.add_option("", "--urlmap", type="string", action="append", nargs=2, help="URL mapping <from> <to>")
+parser.add_option("-r", "--regressions", action="store_true", help="Regressions Summary")
 
 (options, args) = parser.parse_args()
 
@@ -34,6 +35,7 @@ for line in sys.stdin:
     versions = {}
     jobs = {}
     links = {}
+    regression = {}
     limit = None
     for url in urls:
         if url.startswith("--limit="):
@@ -91,6 +93,18 @@ for line in sys.stdin:
             elif good and status == 'FAIL':
                 jobs[package, version] = 'REGR'
 
+    # Determine if each version is a regression on the previous one.
+    prev = vlist[0]
+    for version in vlist[1:]:
+        regression[version] = False
+        for package in packages:
+            pstatus = jobs.get((package, prev))
+            status = jobs.get((package, version))
+
+            if pstatus == 'GOOD' and status != 'GOOD':
+                regression[version] = True
+        prev = version
+
     if options.versions:
         vlist = vlist[-options.versions:]
 
@@ -98,7 +112,14 @@ for line in sys.stdin:
     if limit:
         vlist = [v for v in vlist if apt_pkg.version_compare(v, limit) >= 0]
 
-    groups.append((group, link, vlist, jobs, links))
+    groups.append((group, link, vlist, jobs, links, regression))
+
+
+if options.regressions:
+    for (group, link, vlist, jobs, links, regression) in groups:
+        for version in vlist:
+            print(group + ":" + version + ":" + str(regression.get(version)))
+    sys.exit(0)
 
 packages = sorted(packages)
 
@@ -125,7 +146,7 @@ table.matrix, table.matrix th, table.matrix td {
 
 print("<tr><th>")
 cols = []
-for (group, link, vlist, jobs, links) in groups:
+for (group, link, vlist, jobs, links, regression) in groups:
     if link != '-':
         fmt = '<th colspan="{0}"><a href="{1}">{2}</a>'
     else:
@@ -136,7 +157,7 @@ print("<th></tr>")
     
 print("<tr><th>")
 cols = []
-for (group, link, vlist, jobs, links) in groups:
+for (group, link, vlist, jobs, links, regression) in groups:
     grp = ''
     for version in vlist:
         grp += "<th>" + version
@@ -147,7 +168,7 @@ print("<th></tr>")
 for package in sorted(packages):
     print("<tr><th>" + package)
     cols = []
-    for (group, link, vlist, jobs, links) in groups:
+    for (group, link, vlist, jobs, links, regression) in groups:
         grp = ''
         for version in vlist:
             fmt = '<td class="{0}"><a href="{1}">{2}</a>'

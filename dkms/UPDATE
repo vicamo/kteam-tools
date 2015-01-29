@@ -37,3 +37,7 @@ while read line; do echo "int-$line"; done <"$here/dkms-jenkins-matrix.conf" | \
 	"$here/dkms-jenkins-matrix" --versions 3 >"$ofile.new" \
 		--urlmap http://jenkins.qa.ubuntu.com/ http://d-jenkins.ubuntu-ci:8080/
 mv -f "$ofile.new" "$ofile"
+
+ofile="$out/regressions.txt"
+"$here/dkms-jenkins-matrix" --regressions <"$here/dkms-jenkins-matrix.conf" >"$ofile.new"
+mv -f "$ofile.new" "$ofile"
