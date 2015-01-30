@@ -11,8 +11,8 @@ date=`date '+%d-%b-%Y %H:%M'`
 let later="$now+100"
 
 {
-	echo "dashboard Dashboard Scheduled%sUpdate $now $later $later"
-	while read file title url
+	echo "dashboard Dashboard `hostname` Scheduled%sUpdate $now $later $later"
+	while read file title host url
 	do
 		# Get this if we can ... ignore it, we will use the previous data.
 		wget -q -O "$state/$file.new" "$url" && mv "$state/$file.new" "$state/$file"
@@ -20,24 +20,24 @@ let later="$now+100"
 		if [ -f "$state/$file" ]; then
 			while read -r line
 			do
-				echo "$file $title $line"
+				echo "$file $title $host $line"
 			done <"$state/$file"
 		else
-			echo "$file $title MISSING%sDASHBOARD $now -1 -1"
+			echo "$file $title $host MISSING%sDASHBOARD $now -1 -1"
 		fi
 	done <<EOL
-dkms-matrix DKMS%sMatrix%s(people) http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
-cve-autotriage CVE%sAutotriage%s(people) http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
-cve-matrix CVE%sAutotriage%s(people) http://people.canonical.com/~kernel/status/cve-matrix.dashboard
-mainline-daily Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
-mainline-hourly Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
-mainline-cleanup Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-cleanup.dashboard
-mainline-cod-incoming-publish Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
-gomeisa-mainline-queue Mainline%sBuilds%s(gomeisa) http://zinc.canonical.com/~kernel-ppa/status/gomeisa-mainline-queue.dashboard
-tangerine-mainline-queue Mainline%sBuilds%s(tangerine) http://zinc.canonical.com/~kernel-ppa/status/tangerine-mainline-queue.dashboard
-zinc-update-repos Maintenance%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/zinc-update-repos.dashboard
-gomeisa-update-repos Maintenance%s(gomeisa) http://zinc.canonical.com/~kernel-ppa/status/gomeisa-update-repos.dashboard
-shankbot-swm ShankBot%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
+dkms-matrix DKMS%sMatrix people http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
+cve-autotriage CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
+cve-matrix CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-matrix.dashboard
+mainline-daily Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
+mainline-hourly Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
+mainline-cleanup Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-cleanup.dashboard
+mainline-cod-incoming-publish Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
+gomeisa-mainline-queue Mainline%sBuilds gomeisa http://zinc.canonical.com/~kernel-ppa/status/gomeisa-mainline-queue.dashboard
+tangerine-mainline-queue Mainline%sBuilds tangerine http://zinc.canonical.com/~kernel-ppa/status/tangerine-mainline-queue.dashboard
+zinc-update-repos Maintenance zinc http://zinc.canonical.com/~kernel-ppa/status/zinc-update-repos.dashboard
+gomeisa-update-repos Maintenance gomeisa http://zinc.canonical.com/~kernel-ppa/status/gomeisa-update-repos.dashboard
+shankbot-swm ShankBot zinc http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
 EOL
 } | {
 
@@ -75,10 +75,10 @@ function pageLoaded() {
 <body onload="pageLoaded()">
 <h1>Kernel Dashboard ($date)</h1>
 <table width=60% class="status">
-<tr><th colspan=2>Tool<th>Last<th>Notes</tr>
+<tr><th colspan=3>Tool<th>Last<th>Notes</tr>
 EOL
 	#last_title=''
-	while read section title tag time warning alert message
+	while read section title host tag time warning alert message
 	do
 		let delta="$now-$time"
 		if [ "$delta" -gt "$alert" ]; then
@@ -89,7 +89,7 @@ EOL
 			mode="good"
 		fi
 		echo "$section $tag $time $warning $alert"
-		echo "$title $tag $delta $mode" >>"$status.txt.new"
+		echo "$title $tag $host $delta $mode" >>"$status.txt.new"
 
 		title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 		tag=`echo "$tag" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
@@ -115,7 +115,7 @@ EOL
 				ext='d'
 			fi
 		fi
-		echo "<tr id=\"$section\" class=\"$mode\"><td>$title<td>$tag<td>$delta$ext<td>$message</tr>" >>"$status.html.new"
+		echo "<tr id=\"$section\" class=\"$mode\"><td>$title<td>$tag<td>$host<td>$delta$ext<td>$message</tr>" >>"$status.html.new"
 	done
 
 	cat - <<EOL >>"$status.html.new"
