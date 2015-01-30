@@ -26,7 +26,7 @@ let later="$now+100"
 			echo "$file $title $host MISSING%sDASHBOARD $now -1 -1"
 		fi
 	done <<EOL
-dkms-matrix DKMS%sMatrix people http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
+dkms-matrix DKMS%sMatrix people http://people.canonical.com/~kernel/statuss/dkms.dashboard
 cve-autotriage CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
 cve-matrix CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-matrix.dashboard
 mainline-daily Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
