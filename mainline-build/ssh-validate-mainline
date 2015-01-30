@@ -37,8 +37,6 @@ case "$SSH_ORIGINAL_COMMAND" in
 	rm -f "$lock"
 	;;
 "queue pick mainline")
-    "$HOME/kteam-tools/dashboard/dashboard-status" "$who-mainline-queue" "$who queue check" 1h 4h
-
 	exec "$HOME/kteam-tools/queue/queue" -w "mainline-$who" pick mainline
 	;;
 "queue complete")
