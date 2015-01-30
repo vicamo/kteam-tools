@@ -24,8 +24,4 @@ esac
 #
 "$here/cod-source-trigger"
 
-ofile="$HOME/public_html/status/mainline-hourly.dashboard"
-echo "Hourly%sTrigger `date +%s` 4500 6300" >"$ofile.new"
-mv -f "$ofile.new" "$ofile"
-
 echo "$P: trigger run complete"

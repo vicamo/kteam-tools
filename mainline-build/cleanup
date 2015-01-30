@@ -23,8 +23,4 @@ do
 	"$here/cleanup-daily-one" "$which"
 done
 
-ofile="$HOME/public_html/status/mainline-cleanup.dashboard"
-echo "Daily%sCleanup `date +%s` 87300 89100" >"$ofile.new"
-mv -f "$ofile.new" "$ofile"
-	
 exit 0
