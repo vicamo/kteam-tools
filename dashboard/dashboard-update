@@ -26,16 +26,18 @@ let later="$now+100"
 			echo "$file $title MISSING%sDASHBOARD $now -1 -1"
 		fi
 	done <<EOL
-dkms-matrix DKMS%sMatrix http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
-cve-autotriage CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
-cve-matrix CVE%sAutotriage http://people.canonical.com/~kernel/status/cve-matrix.dashboard
-mainline-daily Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
-mainline-hourly Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
-mainline-cleanup Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-cleanup.dashboard
-mainline-cod-incoming-publish Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
-mainline-queue-gomeisa Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-gomeisa.dashboard
-mainline-queue-tangerine Mainline%sBuilds http://zinc.canonical.com/~kernel-ppa/status/queue-mainline-tangerine.dashboard
-shankbot-swm ShankBot http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
+dkms-matrix DKMS%sMatrix%s(people) http://people.canonical.com/~kernel/info/dkms/dkms.dashboard
+cve-autotriage CVE%sAutotriage%s(people) http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
+cve-matrix CVE%sAutotriage%s(people) http://people.canonical.com/~kernel/status/cve-matrix.dashboard
+mainline-daily Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
+mainline-hourly Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
+mainline-cleanup Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-cleanup.dashboard
+mainline-cod-incoming-publish Mainline%sBuilds%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
+gomeisa-mainline-queue Mainline%sBuilds%s(gomeisa) http://zinc.canonical.com/~kernel-ppa/status/gomeisa-mainline-queue.dashboard
+tangerine-mainline-queue Mainline%sBuilds%s(tangerine) http://zinc.canonical.com/~kernel-ppa/status/tangerine-mainline-queue.dashboard
+zinc-update-repos Maintenance%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/zinc-update-repos.dashboard
+gomeisa-update-repos Maintenance%s(gomeisa) http://zinc.canonical.com/~kernel-ppa/status/gomeisa-update-repos.dashboard
+shankbot-swm ShankBot%s(zinc) http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
 EOL
 } | {
 
