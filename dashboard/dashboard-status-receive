@@ -1,0 +1,34 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <prefix>" 1>&2
+	exit 1
+fi
+prefix="$1"
+
+# Read the remote request.
+read -r file title warn alert note
+
+# Validate.
+case "$file" in
+*/*)
+	echo "Error: file specifier invalid (/ attempted)"
+	exit 2
+	;;
+$prefix*)
+	;;
+*)
+	echo "Error: file specifier invalid (prefix $prefix missing in $file)"
+	exit 2
+esac
+
+# Decode the title, because it will get reencoded shortly.
+title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
+
+exec "$here/dashboard-status" "$file" "$title" "$warn" "$alert" "$note"

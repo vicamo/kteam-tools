@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ "$#" -lt 4 -o "$#" -gt 5 ]; then
+	echo "Usage: $0 <name> <title> <warn> <alert> [<note>]" 1>&2
+	exit 1
+fi
+name="$1"
+title="$2"
+warn="$3"
+alert="$4"
+note="$5"
+
+# Encode the title for transport.
+title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+
+echo "$name $title $warn $alert $note" | \
+	ssh -i ~/.ssh/mainline-publish kernel-ppa@zinc.canonical.com dashboard-status
