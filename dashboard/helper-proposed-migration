@@ -18,7 +18,7 @@ now=`date  +%s`
 # Record out fun.
 out="$HOME/public_html/status/proposed-watcher.dashboard"
 {
-    echo "Update%sWatcher $now 20m 30m"
-    echo "Proposed%sMigration $time 35m 60m"
+    echo "Update%sWatcher $now 1200 1800"
+    echo "Proposed%sMigration $time 2100 3600"
 } >"$out.new"
 mv -f "$out.new" "$out"

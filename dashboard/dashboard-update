@@ -40,6 +40,7 @@ people-update-lptk Maintenance people http://people.canonical.com/~kernel/status
 zinc-update-repos Maintenance zinc http://zinc.canonical.com/~kernel-ppa/status/zinc-update-repos.dashboard
 gomeisa-update-repos Maintenance gomeisa http://zinc.canonical.com/~kernel-ppa/status/gomeisa-update-repos.dashboard
 zinc-shankbot-swm ShankBot zinc http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
+zinc-proposed-watcher Proposed%sMigration zinc http://zinc.canonical.com/~kernel-ppa/status/proposed-watcher.dashboard
 EOL
 } | {
 
