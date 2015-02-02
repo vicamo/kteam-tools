@@ -1,0 +1,20 @@
+#!/bin/bash
+
+rm -f update_output.txt
+wget -qO update_output.txt http://people.canonical.com/~ubuntu-archive/proposed-migration/update_output.txt
+
+# extract and convert the last build time ...
+read x x time <update_output.txt
+time=`echo "$time" | sed -e 's@\.@/@' -e 's@\.@/@'`
+time=`date --date="$time" +%s`
+
+# And ... now is ...
+now=`date  +%s`
+
+# Record out fun.
+out="$HOME/public_html/status/proposed-watcher.dashboard"
+{
+    echo "Update%sWatcher $now 20m 30m"
+    echo "Proposed%sMigration $time 35m 60m"
+} >"$out.new"
+mv -f "$out.new" "$out"
