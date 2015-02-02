@@ -1,10 +1,14 @@
 #!/bin/bash
 
-rm -f update_output.txt
-wget -qO update_output.txt http://people.canonical.com/~ubuntu-archive/proposed-migration/update_output.txt
+outd="$HOME/public_html/status/dashboard-state/helper"
+mkdir -p "$outd"
+out="$outd/proposed-migration"
+
+rm -f "$out"
+wget -qO "$out" http://people.canonical.com/~ubuntu-archive/proposed-migration/update_output.txt
 
 # extract and convert the last build time ...
-read x x time <update_output.txt
+read x x time <"$out"
 time=`echo "$time" | sed -e 's@\.@/@' -e 's@\.@/@'`
 time=`date --date="$time" +%s`
 
