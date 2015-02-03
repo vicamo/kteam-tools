@@ -25,23 +25,7 @@ let later="$now+100"
 		else
 			echo "$file $title $host MISSING%sDASHBOARD $now -1 -1"
 		fi
-	done <<EOL
-people-dkms-matrix DKMS%sMatrix people http://people.canonical.com/~kernel/status/dkms.dashboard
-people-cve-autotriage CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-autotriage.dashboard
-people-cve-matrix CVE%sAutotriage people http://people.canonical.com/~kernel/status/cve-matrix.dashboard
-zinc-mainline-daily Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-daily.dashboard
-zinc-mainline-hourly Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-hourly.dashboard
-zinc-mainline-cleanup Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-cleanup.dashboard
-zinc-mainline-cod-incoming-publish Mainline%sBuilds zinc http://zinc.canonical.com/~kernel-ppa/status/mainline-cod-incoming-publish.dashboard
-gomeisa-mainline-queue Mainline%sBuilds gomeisa http://zinc.canonical.com/~kernel-ppa/status/gomeisa-mainline-queue.dashboard
-tangerine-mainline-queue Mainline%sBuilds tangerine http://zinc.canonical.com/~kernel-ppa/status/tangerine-mainline-queue.dashboard
-people-update-tools Maintenance people http://people.canonical.com/~kernel/status/update-tools.dashboard
-people-update-lptk Maintenance people http://people.canonical.com/~kernel/status/update-lptk.dashboard
-zinc-update-repos Maintenance zinc http://zinc.canonical.com/~kernel-ppa/status/zinc-update-repos.dashboard
-gomeisa-update-repos Maintenance gomeisa http://zinc.canonical.com/~kernel-ppa/status/gomeisa-update-repos.dashboard
-zinc-shankbot-swm ShankBot zinc http://zinc.canonical.com/~kernel-ppa/status/shankbot-swm.dashboard
-zinc-proposed-watcher Proposed%sMigration zinc http://zinc.canonical.com/~kernel-ppa/status/proposed-watcher.dashboard
-EOL
+	done <"$0.conf"
 } | {
 
 	status="$out/dashboard"
