@@ -63,6 +63,11 @@ do
 	name=`echo "$menu" | sed \
 		-e 's/ROOT>>//g' 
 	`
+	#case "$name" in
+	#"Device Drivers>>USB support>>Support for Host-side USB")		;;
+	#*)									continue ;;
+	#esac
+
 	#what_menu "$list" "$menu"
 	echo "$name ... " 1>&2
 	list_menu "$name" "$menu" ""

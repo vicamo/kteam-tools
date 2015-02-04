@@ -192,6 +192,7 @@ if ($format eq 'wiki') {
 		"<tr$f__row_class>";
 	}
 	sub html_table_cell {
+		$_[0] =~ s@LP[:#]+([0-9]+)@<a href="http://bugs.launchpad.net/bugs/\1">LP:\1</a>@g;
 		if ($_[1]) {
 			"<td title=\"" . $_[1]. "\">" . $_[0];
 		} else {
