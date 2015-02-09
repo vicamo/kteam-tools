@@ -12,8 +12,6 @@ my $P = $P0;
 
 use PredicateEngine qw(policy_check %values);
 
-$values{'APW'} = 1234;
-
 my %options;
 my @options;
 my @ioptions;
@@ -34,6 +32,9 @@ my $format = 'wiki';
 my $interesting = 0;
 my $worthy = 0;
 my $worthy_seen = 0;
+
+my $limit_want = "";
+my $limit_not = "";
 
 while (1) {
 	if ($ARGV[0] eq '--required') {
@@ -78,6 +79,16 @@ while (1) {
 
 	} elsif ($ARGV[0] eq '--worthy') {
 		$worthy = 1;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--limit-want') {
+		$limit_want = $ARGV[1];
+		shift @ARGV;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--limit-not') {
+		$limit_not = $ARGV[1];
+		shift @ARGV;
 		shift @ARGV;
 
 	} else {
@@ -287,6 +298,9 @@ for my $column (@columns) {
 		} else {
 			next;
 		}
+
+		next if ($limit_want ne "" && $opt !~ /$limit_want/);
+		next if ($limit_not  ne "" && $opt =~ /$limit_not/);
 
 		$values{$column, $opt} = $is;
 

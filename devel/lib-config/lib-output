@@ -14,29 +14,37 @@ output_info() {
 }
 
 function rebuild() {
-	local what="$1"
-	local not="$2"
-	local out
-	rm -f "tmp/*" "tmp/.required"
+	out__want="$1"
+	out__not="$2"
 
-	[ "$what" = "" ] && what="^NOT_VALID"
-	[ "$not" = "" ] && not="^NOT_VALID"
-
-	for i in `ls -1 "$configs"`
-
-	do
-		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" >"tmp/$out"
-	done
+	[ "$out__want" = "" ] && out__want="^NOT_VALID"
+	[ "$out__not" = "" ] && out__not="^NOT_VALID"
 }
+
+#function rebuild() {
+#	local what="$1"
+#	local not="$2"
+#	local out
+#	rm -f "tmp/*" "tmp/.required"
+#
+#	[ "$what" = "" ] && what="^NOT_VALID"
+#	[ "$not" = "" ] && not="^NOT_VALID"
+#
+#	for i in `ls -1 "$configs"`
+#
+#	do
+#		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
+#		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" >"tmp/$out"
+#	done
+#}
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --format "$out__format" --info "../$out__info" $@ *)
+	(cd "$configs"; "$here/config-compare" --limit-want "$out__want" --limit-not "$out__not" --format "$out__format" --info "../../$out__info" $@ *)
 }
 function config-cmp-nopolicy() {
-	(cd tmp; "$here/config-compare" --format "$out__format" --no-policy --info "../$out__info" $@ *)
+	(cd "$configs"; "$here/config-compare" --limit-want "$out__want" --limit-not "$out__not" --format "$out__format" --no-policy --info "../../$out__info" $@ *)
 }
 function config-cmp-interesting() {
-	(cd tmp; "$here/config-compare" --format "$out__format" --interesting --info "../$out__info" $@ *) 
+	(cd "$configs"; "$here/config-compare" --limit-want "$out__want" --limit-not "$out__not" --format "$out__format" --interesting --info "../../$out__info" $@ *) 
 }
 
 level='===='

@@ -32,8 +32,9 @@ function what_menu()
 
         what=`cat "$list" | grep "^E $menu>>>" | 
 		awk -F'>' '{ print $NF }' |
-		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ =]/'`
+		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)$/'`
 }
+#		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ =]/'`
 #		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ 	]/'`
 
 function list_menu()
