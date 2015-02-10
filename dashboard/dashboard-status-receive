@@ -13,7 +13,7 @@ fi
 prefix="$1"
 
 # Read the remote request.
-read -r file title warn alert note
+read -r file
 
 # Validate.
 case "$file" in
@@ -28,7 +28,4 @@ $prefix*)
 	exit 2
 esac
 
-# Decode the title, because it will get reencoded shortly.
-title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
-
-exec "$here/dashboard-status" "$file" "$title" "$warn" "$alert" "$note"
+exec "$here/dashboard-status-bulk" "$file"

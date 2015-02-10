@@ -1,5 +1,11 @@
 #!/bin/bash
 
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 outd="$HOME/public_html/status/dashboard-helper"
 mkdir -p "$outd"
 out="$outd/proposed-migration"
@@ -15,10 +21,8 @@ time=`date --date="$time" +%s`
 # And ... now is ...
 now=`date  +%s`
 
-# Record out fun.
-out="$HOME/public_html/status/dashboard-info/proposed-watcher.dashboard"
+# Record that we ran, and when proposed-migration last reported.
 {
     echo "Update%sWatcher $now 1200 1800"
     echo "Proposed%sMigration $time 2100 3600"
-} >"$out.new"
-mv -f "$out.new" "$out"
+} | "$here/dashboard-status-bulk" "proposed-watcher"

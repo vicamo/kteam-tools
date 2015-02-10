@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <name>" 1>&2
+	exit 1
+fi
+name="$1"
+
+# If this is a filename then use it as is, else use the default location.
+case "$name" in
+*/*)	;;
+*)
+	mkdir -p "$HOME/public_html/status/dashboard-info"
+	name="$HOME/public_html/status/dashboard-info/$name.dashboard"
+	;;
+esac
+
+while read title stamp warn alert note
+do
+	# Handle basic multipliers.
+	case "$warn" in
+	*m)	let warn="${warn%m}*60" ;;
+	*h)	let warn="${warn%h}*3600" ;;
+	esac
+	case "$alert" in
+	*m)	let alert="${alert%m}*60" ;;
+	*h)	let alert="${alert%h}*3600" ;;
+	esac
+
+	echo "$title $stamp $warn $alert $note"
+done >"$name.new"
+
+# All done install it.
+mv -f "$name.new" "$name"

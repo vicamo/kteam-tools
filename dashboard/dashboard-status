@@ -10,27 +10,8 @@ warn="$3"
 alert="$4"
 note="$5"
 
-# If this is a filename then use it as is, else use the default location.
-case "$name" in
-*/*)	;;
-*)
-	mkdir -p "$HOME/public_html/status/dashboard-info"
-	name="$HOME/public_html/status/dashboard-info/$name.dashboard"
-	;;
-esac
-
-# Handle basic multipliers.
-case "$warn" in
-*m)	let warn="${warn%m}*60" ;;
-*h)	let warn="${warn%h}*3600" ;;
-esac
-case "$alert" in
-*m)	let alert="${alert%m}*60" ;;
-*h)	let alert="${alert%h}*3600" ;;
-esac
-
 # Fix the description.
 title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 
-echo "$title `date +%s` $warn $alert $note" >"$name.new"
-mv -f "$name.new" "$name"
+# Make a simple update.
+echo "$title `date +%s` $warn $alert $note" | "$0-bulk" "$name"
