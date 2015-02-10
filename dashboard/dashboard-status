@@ -14,7 +14,8 @@ note="$5"
 case "$name" in
 */*)	;;
 *)
-	name="$HOME/public_html/status/$name.dashboard"
+	mkdir -p "$HOME/public_html/status/dashboard-info"
+	name="$HOME/public_html/status/dashboard-info/$name.dashboard"
 	;;
 esac
 

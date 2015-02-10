@@ -1,6 +1,6 @@
 #!/bin/bash
 
-outd="$HOME/public_html/status/dashboard-state/helper"
+outd="$HOME/public_html/status/dashboard-helper"
 mkdir -p "$outd"
 out="$outd/proposed-migration"
 
@@ -16,7 +16,7 @@ time=`date --date="$time" +%s`
 now=`date  +%s`
 
 # Record out fun.
-out="$HOME/public_html/status/proposed-watcher.dashboard"
+out="$HOME/public_html/status/dashboard-info/proposed-watcher.dashboard"
 {
     echo "Update%sWatcher $now 1200 1800"
     echo "Proposed%sMigration $time 2100 3600"
