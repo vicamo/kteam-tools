@@ -21,6 +21,7 @@ from sb.package                         import Package, PackageError
 from sb.workflow_bug                    import WorkflowBug
 from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
 import logging
+import json
 
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
@@ -379,6 +380,8 @@ class WorkflowEngine():
 
         mq = MsgQueue()
         mq.publish(msg['key'], msg)
+
+        s.email.send(from_addr, "brad.figg@canonical.com", subj, json.dumps(msg, sort_keys=True, indent=4))
 
         return
 
