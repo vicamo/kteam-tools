@@ -67,14 +67,25 @@ EOL
 	#last_title=''
 	while read section title host tag time warning alert message
 	do
-		let delta="$now-$time"
-		if [ "$delta" -gt "$alert" ]; then
-			mode="alert"
-		elif [ "$delta" -gt "$warning" ]; then
-			mode="warn"
+		if [ "$warning$alert" = '--' ]; then
+			delta='-'
+			case "$time" in
+			G)	mode="good" ;;
+			W)	mode="warn" ;;
+			A)	mode="alert" ;;
+			*)	mode="warn" ;;
+			esac
 		else
-			mode="good"
+			let delta="$now-$time"
+			if [ "$delta" -gt "$alert" ]; then
+				mode="alert"
+			elif [ "$delta" -gt "$warning" ]; then
+				mode="warn"
+			else
+				mode="good"
+			fi
 		fi
+
 		echo "$section $tag $time $warning $alert"
 		echo "$title $tag $host $delta $mode" >>"$status.txt.new"
 
@@ -91,18 +102,21 @@ EOL
 		#let time="$time + 0"
 		#time=`date --date=@$time '+%d-%b-%Y %H:%M'`
 
-		let delta="$delta / 60"
-		ext='m'
-		if [ "$delta" -ge 60 ]; then
+		if [ "$delta" != '-' ]; then
 			let delta="$delta / 60"
-			ext='h'
+			ext='m'
+			if [ "$delta" -ge 60 ]; then
+				let delta="$delta / 60"
+				ext='h'
 
-			if [ "$delta" -ge "24" ]; then
-				let delta="$delta / 24"
-				ext='d'
+				if [ "$delta" -ge "24" ]; then
+					let delta="$delta / 24"
+					ext='d'
+				fi
 			fi
+			delta="$delta$ext"
 		fi
-		echo "<tr id=\"$section\" class=\"$mode\"><td>$title<td>$tag<td>$host<td>$delta$ext<td>$message</tr>" >>"$status.html.new"
+		echo "<tr id=\"$section\" class=\"$mode\"><td>$title<td>$tag<td>$host<td>$delta<td>$message</tr>" >>"$status.html.new"
 	done
 
 	cat - <<EOL >>"$status.html.new"
