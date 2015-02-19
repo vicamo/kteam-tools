@@ -1,17 +1,19 @@
 #!/bin/bash
 
-if [ "$#" -lt 4 -o "$#" -gt 5 ]; then
-	echo "Usage: $0 <name> <title> <warn> <alert> [<note>]" 1>&2
+if [ "$#" -lt 5 -o "$#" -gt 6 ]; then
+	echo "Usage: $0 <group> <name> <title> <warn> <alert> [<note>]" 1>&2
 	exit 1
 fi
-name="$1"
-title="$2"
-warn="$3"
-alert="$4"
-note="$5"
+group="$1"
+name="$2"
+title="$3"
+warn="$4"
+alert="$5"
+note="$6"
 
-# Fix the description.
+# Fix the group and description.
+group=`echo "$group" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 
 # Make a simple update.
-echo "$title `date +%s` $warn $alert $note" | "$0-bulk" "$name"
+echo "$group $title `date +%s` $warn $alert $note" | "$0-bulk" "$name"

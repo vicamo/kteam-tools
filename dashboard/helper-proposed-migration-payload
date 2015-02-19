@@ -18,8 +18,8 @@ dt = state['generated-date']
 now_ts = int((now - epoch).total_seconds())
 run_ts = int((dt - epoch).total_seconds())
 
-print("Update%sWatcher", now_ts, 1200, 1800)
-print("Proposed%sMigration", run_ts, 2100, 3600)
+print("Proposed%sMigration", "Update%sWatcher", now_ts, 1200, 1800)
+print("Proposed%sMigration", "Proposed%sMigration", run_ts, 2100, 3600)
 
 for source in state['sources']:
     if source['source'] == 'linux':
@@ -36,4 +36,4 @@ for source in state['sources']:
                     else:
                         tstate = 'W'
 
-                    print('Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+                    print('Proposed%sMigration', 'Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)

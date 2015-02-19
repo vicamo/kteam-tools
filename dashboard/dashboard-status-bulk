@@ -15,7 +15,7 @@ case "$name" in
 	;;
 esac
 
-while read title stamp warn alert note
+while read group title stamp warn alert note
 do
 	# Handle basic multipliers.
 	case "$warn" in
@@ -27,7 +27,7 @@ do
 	*h)	let alert="${alert%h}*3600" ;;
 	esac
 
-	echo "$title $stamp $warn $alert $note"
+	echo "$group $title $stamp $warn $alert $note"
 done >"$name.new"
 
 # All done install it.
