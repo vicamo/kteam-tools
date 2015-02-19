@@ -16,4 +16,4 @@ group=`echo "$group" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 
 # Make a simple update.
-echo "$group $title `date +%s` $warn $alert $note" | "$0-bulk" "$name"
+echo "$group `uname -n` $title `date +%s` $warn $alert $note" | "$0-bulk" "$name"
