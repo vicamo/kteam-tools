@@ -36,4 +36,4 @@ for source in state['sources']:
                     else:
                         tstate = 'W'
 
-                    print("Autopkgtest%s" + source['source'] + '-' + source['new-version'], tstate, '-', '-', state)
+                    print('Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
