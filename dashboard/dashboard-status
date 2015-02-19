@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ "$#" -lt 5 -o "$#" -gt 6 ]; then
-	echo "Usage: $0 <group> <name> <title> <warn> <alert> [<note>]" 1>&2
+	echo "Usage: $0 <name> <group> <title> <warn> <alert> [<note>]" 1>&2
 	exit 1
 fi
-group="$1"
-name="$2"
+name="$1"
+group="$2"
 title="$3"
 warn="$4"
 alert="$5"
