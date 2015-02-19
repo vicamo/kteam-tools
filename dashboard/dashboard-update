@@ -67,7 +67,8 @@ do
 	let n="$n+1"
 
 	if [ "$title" != "$last_title" ]; then
-		let n="$n+3"
+		[ "$last_title" != '' ] && let n="$n+1"
+		let n="$n+2"
 		last_title="$title"
 	fi
 done <"$status.txt.new"
@@ -84,7 +85,6 @@ do
 	let n="$n+1"
 
 	if [ "$title" != "$last_title" ]; then
-		last_title="$title"
 
 		# Poor mans abs()
 		let distance="($n - $halfway) * ($n - $halfway)"
@@ -92,13 +92,21 @@ do
 		if [ "$distance" -lt "$min_distance" ]; then
 			min_distance="$distance"
 			min_where="$n"
-			echo "$title $distance $min_distance $min_where"
+			#echo "$title $distance $min_distance $min_where"
 		fi
-		let n="$n+3"
+		[ "$last_title" != '' ] && let n="$n+1"
+		let n="$n+2"
+		last_title="$title"
 	fi
 done <"$status.txt.new"
 
-echo "$halfway $min_distance $min_where"
+let spacing="$halfway-$min_where"
+spacing2=0
+if [ "$spacing" -lt 0 ]; then
+	let spacing2="-$spacing"
+	let spacing=0
+fi
+#echo "$halfway $min_distance $min_where $spacing $spacing2"
 
 cat - <<EOL >"$status.html.new"
 <html>
@@ -149,19 +157,25 @@ do
 	if [ "$n" = "$min_where" ]; then
 		echo "</table><td class=\"columns\" width=50%><table class=\"status\" width=100%>" >>"$status.html.new"
 		last_title=''
+		spacing="$spacing2"
 	fi
 
 	title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 	tag=`echo "$tag" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 	
 	if [ "$last_title" != "$title" ]; then
-		let n="$n+3"
-		if [ "$last_title" != "" ]; then
+		if [ "$last_title" != '' ]; then
 			echo "<tr class=\"gap\"><td >&nbsp;</tr>" >>"$status.html.new"
+			let n="$n+1"
+			if [ "$spacing" -gt 0 ]; then
+				echo "<tr class=\"gap\"><td >&nbsp;</tr>" >>"$status.html.new"
+				let spacing="$spacing-1"
+			fi
 		fi
+		let n="$n+2"
 		last_title="$title"
 
-		echo "<tr><th colspan=4>$n $min_where $title</tr>" >>"$status.html.new"
+		echo "<tr><th colspan=4>$title</tr>" >>"$status.html.new"
 		echo "<tr><th>Tool<th>Host<th>Last<th>Notes</tr>" >>"$status.html.new"
 	fi
 
