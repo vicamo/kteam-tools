@@ -13,25 +13,34 @@ let later="$now+100"
 status="$out/dashboard"
 
 {
-	echo "dashboard Dashboard `hostname` Scheduled%sUpdate $now $later $later"
-	while read file title host url
+	while read file section host url type
 	do
 		# Get this if we can ... ignore it, we will use the previous data.
-		wget -q -O "$state/$file.new" "$url" && mv "$state/$file.new" "$state/$file"
+		wget -q -O "$state/$file.tmp" "$url"
 
-		if [ -f "$state/$file" ]; then
+		if [ -f "$state/$file.tmp" ]; then
 			while read -r line
 			do
-				echo "$file $title $host $line"
-			done <"$state/$file"
+				echo "$section $host $line"
+			done <"$state/$file.tmp"
 		else
-			echo "$file $title $host MISSING%sDASHBOARD $now -1 -1"
-		fi
+			echo "$section $host MISSING%sDASHBOARD $now -1 -1"
+		fi >"$state/$file.new"
+		mv "$state/$file.new" "$state/$file.dash"
+		rm -f "$state/$file.tmp"
 	done <"$0.conf"
+	echo "000-Dashboard `hostname` Scheduled%sUpdate $now $later $later"
+	cat "$state"/*.dash
+} | sort | {
+	while read -r line
+	do
+		echo "$line" 1>&2
+		echo "$line"
+	done
 } | {
 	: >"$status.txt.new"
-	last_title=''
-	while read section title host tag time warning alert message
+	last_section=''
+	while read section host title time warning alert message
 	do
 		if [ "$warning$alert" = '--' ]; then
 			delta='-'
@@ -52,8 +61,7 @@ status="$out/dashboard"
 			fi
 		fi
 
-		echo "$section $tag $time $warning $alert"
-		echo "$title $tag $host $delta $mode $message" >>"$status.txt.new"
+		echo "$section $host $title $delta $mode $message" >>"$status.txt.new"
 	done
 }
 
@@ -61,15 +69,15 @@ status="$out/dashboard"
 # Generate the HTML tables from the .txt status summary.
 #
 n=0
-last_title=''
-while read title tag host delta mode message
+last_section=''
+while read section host title delta mode message
 do
 	let n="$n+1"
 
-	if [ "$title" != "$last_title" ]; then
-		[ "$last_title" != '' ] && let n="$n+1"
+	if [ "$section" != "$last_section" ]; then
+		[ "$last_section" != '' ] && let n="$n+1"
 		let n="$n+2"
-		last_title="$title"
+		last_section="$section"
 	fi
 done <"$status.txt.new"
 total="$n"
@@ -79,12 +87,12 @@ min_distance="$total"
 min_where=0
 
 n=0
-last_title=''
-while read title tag host delta mode message
+last_section=''
+while read section host title delta mode message
 do
 	let n="$n+1"
 
-	if [ "$title" != "$last_title" ]; then
+	if [ "$section" != "$last_section" ]; then
 
 		# Poor mans abs()
 		let distance="($n - $halfway) * ($n - $halfway)"
@@ -92,11 +100,11 @@ do
 		if [ "$distance" -lt "$min_distance" ]; then
 			min_distance="$distance"
 			min_where="$n"
-			#echo "$title $distance $min_distance $min_where"
+			#echo "$section $distance $min_distance $min_where"
 		fi
-		[ "$last_title" != '' ] && let n="$n+1"
+		[ "$last_section" != '' ] && let n="$n+1"
 		let n="$n+2"
-		last_title="$title"
+		last_section="$section"
 	fi
 done <"$status.txt.new"
 
@@ -149,22 +157,22 @@ function pageLoaded() {
 <table width=100% class="columns"><td class="columns" width=50%>
 <table width=100% class="status">
 EOL
-last_title=''
+last_section=''
 n=0
-while read title tag host delta mode message
+while read section host title delta mode message
 do
 	let n="$n+1"
 	if [ "$n" = "$min_where" ]; then
 		echo "</table><td class=\"columns\" width=50%><table class=\"status\" width=100%>" >>"$status.html.new"
-		last_title=''
+		last_section=''
 		spacing="$spacing2"
 	fi
 
+	section=`echo "$section" | sed -e 's/%s/ /g' -e 's/%p/%/g' -e 's/^000-//'`
 	title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
-	tag=`echo "$tag" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 	
-	if [ "$last_title" != "$title" ]; then
-		if [ "$last_title" != '' ]; then
+	if [ "$last_section" != "$section" ]; then
+		if [ "$last_section" != '' ]; then
 			echo "<tr class=\"gap\"><td >&nbsp;</tr>" >>"$status.html.new"
 			let n="$n+1"
 			if [ "$spacing" -gt 0 ]; then
@@ -173,9 +181,9 @@ do
 			fi
 		fi
 		let n="$n+2"
-		last_title="$title"
+		last_section="$section"
 
-		echo "<tr><th colspan=4>$title</tr>" >>"$status.html.new"
+		echo "<tr><th colspan=4>$section</tr>" >>"$status.html.new"
 		echo "<tr><th>Tool<th>Host<th>Last<th>Notes</tr>" >>"$status.html.new"
 	fi
 
@@ -197,7 +205,13 @@ do
 		fi
 		delta="$delta$ext"
 	fi
-	echo "<tr id=\"$section\" class=\"$mode\"><td>$tag<td>$host<td>$delta<td>$message</tr>" >>"$status.html.new"
+	
+	if [ "$section" = "Dashboard" ]; then
+		id=" id=\"dashboard\""
+	else
+		id=''
+	fi
+	echo "<tr$id class=\"$mode\"><td>$title<td>$host<td>$delta<td>$message</tr>" >>"$status.html.new"
 done <"$status.txt.new"
 
 cat - <<EOL >>"$status.html.new"
