@@ -13,21 +13,15 @@ let later="$now+100"
 status="$out/dashboard"
 
 {
-	while read file section host url type
+	while read file url
 	do
 		# Get this if we can ... ignore it, we will use the previous data.
-		wget -q -O "$state/$file.tmp" "$url"
+		wget -q -O "$state/$file.new" "$url"
 
-		if [ -f "$state/$file.tmp" ]; then
-			while read -r line
-			do
-				echo "$section $host $line"
-			done <"$state/$file.tmp"
-		else
-			echo "$section $host MISSING%sDASHBOARD $now -1 -1"
-		fi >"$state/$file.new"
+		if [ ! -f "$state/$file.new" ]; then
+			echo "UNKNOWN UNKNOWN MISSING%sDASHBOARD $now -1 -1 $url" >"$state/$file.new"
+		fi
 		mv "$state/$file.new" "$state/$file.dash"
-		rm -f "$state/$file.tmp"
 	done <"$0.conf"
 	echo "000-Dashboard `hostname` Scheduled%sUpdate $now $later $later"
 	cat "$state"/*.dash
