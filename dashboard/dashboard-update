@@ -1,7 +1,7 @@
 #!/bin/bash
 
 out="$HOME/public_html/status"
-state="$out/dashboard-state"
+state="$out/dashboard-status"
 
 mkdir -p "$state"
 
