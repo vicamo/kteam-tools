@@ -32,7 +32,13 @@ status="$out/dashboard"
 	done <"$0.conf"
 	echo "Dashboard `hostname` Scheduled%sUpdate $now $later $later"
 	cat "$state"/*.dash
-} | sed -e 's/^Dashboard /000-Dashboard /' | sort | sed -e 's/^000-Dashboard /Dashboard /' | {
+} | sed \
+	-e 's/^Dashboard /000-Dashboard /' \
+	-e 's/^Host:/ZZZ-Host:/' | \
+    sort | sed \
+	-e 's/^000-Dashboard /Dashboard /' \
+	-e 's/^ZZZ-Host:/Host:/' | \
+{
 	while read -r line
 	do
 		echo "$line" 1>&2
