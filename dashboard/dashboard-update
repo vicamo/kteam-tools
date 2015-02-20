@@ -108,7 +108,7 @@ if [ "$spacing" -lt 0 ]; then
 	let spacing2="-$spacing"
 	let spacing=0
 fi
-#echo "$halfway $min_distance $min_where $spacing $spacing2"
+echo "$halfway $min_distance $min_where $spacing $spacing2"
 
 cat - <<EOL >"$status.html.new"
 <html>
