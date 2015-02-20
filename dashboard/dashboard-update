@@ -69,16 +69,16 @@ do
 	let n="$n+1"
 
 	if [ "$section" != "$last_section" ]; then
-		[ "$last_section" != '' ] && let n="$n+1"
-		let n="$n+2"
+		let n="$n+3"
 		last_section="$section"
 	fi
 done <"$status.txt.new"
-total="$n"
-let halfway="$total/2"
+# When we split we remove one blank line plus we suppress the one at the top.
+let total="$n-2"
+let halfway="($total/2)"
 
-min_distance="$total"
-min_where=0
+let min_distance="$total"
+let min_where="0"
 
 n=0
 last_section=''
@@ -87,14 +87,15 @@ do
 	let n="$n+1"
 
 	if [ "$section" != "$last_section" ]; then
-
 		# Poor mans abs()
-		let distance="($n - $halfway) * ($n - $halfway)"
+		let distance="$total-($n*2)"
+		# abs(distance)
+		distance="${distance#-}"
 
+		echo "DIFF: $section distance=$distance min_distance=$min_distance min_where=$min_where"
 		if [ "$distance" -lt "$min_distance" ]; then
 			min_distance="$distance"
 			min_where="$n"
-			#echo "$section $distance $min_distance $min_where"
 		fi
 		[ "$last_section" != '' ] && let n="$n+1"
 		let n="$n+2"
@@ -102,13 +103,13 @@ do
 	fi
 done <"$status.txt.new"
 
-let spacing="$halfway-$min_where"
+let spacing="$total-($min_where*2)"
 spacing2=0
 if [ "$spacing" -lt 0 ]; then
 	let spacing2="-$spacing"
 	let spacing=0
 fi
-echo "$halfway $min_distance $min_where $spacing $spacing2"
+echo "total=$total halfway=$halfway min_distance=$min_distance min_where=$min_where $(($total-$min_where)) spacing=$spacing spacing2=$spacing2"
 
 cat - <<EOL >"$status.html.new"
 <html>
@@ -128,7 +129,7 @@ table.status {
 }
 table.status tr.gap, table.status tr.gap td {
   border: 0px;
-  padding-bottom: 1px;
+  padding: 1px;
 }
 table.status tr, table.status th, table.status td {
   border: 1px solid black;
@@ -177,7 +178,7 @@ do
 		let n="$n+2"
 		last_section="$section"
 
-		echo "<tr><th colspan=4>$section</tr>" >>"$status.html.new"
+		echo "<tr><th colspan=4>$((n-2)) $section</tr>" >>"$status.html.new"
 		echo "<tr><th>Tool<th>Host<th>Last<th>Notes</tr>" >>"$status.html.new"
 	fi
 
