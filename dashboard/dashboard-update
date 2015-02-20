@@ -30,9 +30,9 @@ status="$out/dashboard"
 			mv "$state/$file.new" "$state/$file"
 		done <"$state/$dhost.all"
 	done <"$0.conf"
-	echo "000-Dashboard `hostname` Scheduled%sUpdate $now $later $later"
+	echo "Dashboard `hostname` Scheduled%sUpdate $now $later $later"
 	cat "$state"/*.dash
-} | sort | {
+} | sed -e 's/^Dashboard /000-Dashboard /' | sort | sed -e 's/^000-Dashboard /Dashboard /' | {
 	while read -r line
 	do
 		echo "$line" 1>&2
