@@ -103,7 +103,7 @@ do
 	fi
 done <"$status.txt.new"
 
-let spacing="$total-($min_where*2)"
+let spacing="$total-(($min_where-1)*2)"
 spacing2=0
 if [ "$spacing" -lt 0 ]; then
 	let spacing2="-$spacing"
