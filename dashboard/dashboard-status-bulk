@@ -1,17 +1,26 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <name>" 1>&2
+if [ "$#" -ne 1 -a "$#" -ne 2 ]; then
+	echo "Usage: $0 <name> [<host>]" 1>&2
 	exit 1
 fi
 name="$1"
+host="$2"
+[ "$#" -lt 2 ] && host=`uname -n`
 
-# If this is a filename then use it as is, else use the default location.
+# If this is a filename then use it as is, else use the default location, adding the
+# host if not specified.
+case "$name" in
+*/*)		;;
+$host-*)	;;
+*)		name="$host-$name" ;;
+esac
+
 case "$name" in
 */*)	;;
 *)
-	mkdir -p "$HOME/public_html/status/dashboard-info"
-	name="$HOME/public_html/status/dashboard-info/$name.dashboard"
+	mkdir -p "$HOME/public_html/status/dashboard-status"
+	name="$HOME/public_html/status/dashboard-status/$name.dash"
 	;;
 esac
 
