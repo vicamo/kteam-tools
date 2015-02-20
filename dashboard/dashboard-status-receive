@@ -7,10 +7,10 @@ case "$here" in
 esac
 
 if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <prefix>" 1>&2
+	echo "Usage: $0 <who>" 1>&2
 	exit 1
 fi
-prefix="$1"
+who="$1"
 
 # Read the remote request.
 read -r file
@@ -21,11 +21,6 @@ case "$file" in
 	echo "Error: file specifier invalid (/ attempted)"
 	exit 2
 	;;
-$prefix*)
-	;;
-*)
-	echo "Error: file specifier invalid (prefix $prefix missing in $file)"
-	exit 2
 esac
 
-exec "$here/dashboard-status-bulk" "$file"
+exec "$here/dashboard-status-bulk" "$file" "$who"

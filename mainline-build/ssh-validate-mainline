@@ -43,7 +43,7 @@ case "$SSH_ORIGINAL_COMMAND" in
 	exec "$HOME/kteam-tools/queue/queue" -w "mainline-$who" complete
 	;;
 "dashboard-status")
-    "$HOME/kteam-tools/dashboard/dashboard-status-receive" "$who-"
+    "$HOME/kteam-tools/dashboard/dashboard-status-receive" "$who"
     ;;
 "test")
 	echo "SUCCESSFUL LOGIN"
