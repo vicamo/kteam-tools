@@ -92,7 +92,7 @@ do
 		# abs(distance)
 		distance="${distance#-}"
 
-		echo "DIFF: $section distance=$distance min_distance=$min_distance min_where=$min_where"
+		#echo "DIFF: $section distance=$distance min_distance=$min_distance min_where=$min_where"
 		if [ "$distance" -lt "$min_distance" ]; then
 			min_distance="$distance"
 			min_where="$n"
@@ -109,7 +109,7 @@ if [ "$spacing" -lt 0 ]; then
 	let spacing2="-$spacing"
 	let spacing=0
 fi
-echo "total=$total halfway=$halfway min_distance=$min_distance min_where=$min_where $(($total-$min_where)) spacing=$spacing spacing2=$spacing2"
+#echo "total=$total halfway=$halfway min_distance=$min_distance min_where=$min_where $(($total-$min_where)) spacing=$spacing spacing2=$spacing2"
 
 cat - <<EOL >"$status.html.new"
 <html>
@@ -178,7 +178,7 @@ do
 		let n="$n+2"
 		last_section="$section"
 
-		echo "<tr><th colspan=4>$((n-2)) $section</tr>" >>"$status.html.new"
+		echo "<tr><th colspan=4>$section</tr>" >>"$status.html.new"
 		echo "<tr><th>Tool<th>Host<th>Last<th>Notes</tr>" >>"$status.html.new"
 	fi
 
