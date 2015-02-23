@@ -52,9 +52,13 @@ for line in sys.stdin:
 
                         print('Proposed%sMigration', host, 'Test%s(dep-8)%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
 
+    # If the run completed since it was triggered, all is good, else give it 35
+    # minutes to get there, after that warn for a further hour, then alert.
     if run_ts > needed_ts:
         tstate = "G"
     elif (now_ts - needed_ts) < 2100:
+        tstate = "G"
+    elif (now_ts - needed_ts) < 5700:
         tstate = "W"
     else:
         tstate = "A"
