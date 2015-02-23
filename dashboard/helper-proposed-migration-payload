@@ -43,6 +43,6 @@ for yfile in sys.argv[1:]:
                         else:
                             tstate = 'W'
 
-                        print('Proposed%sMigration', host, 'Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+                        print('Proposed%sMigration', host, 'Test%s(dep-8)%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
 
 print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
