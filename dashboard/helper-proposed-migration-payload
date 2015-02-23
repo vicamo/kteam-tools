@@ -15,7 +15,10 @@ epoch = datetime.utcfromtimestamp(0)
 now_ts = int((now - epoch).total_seconds())
 host = os.uname()[1]
 
-for yfile in sys.argv[1:]:
+for line in sys.stdin:
+    (yfile, needed) = line.strip().split()
+    needed_ts = int(needed)
+
     state = None
     if not os.path.exists(yfile):
         continue
@@ -30,7 +33,14 @@ for yfile in sys.argv[1:]:
     dt = state['generated-date']
     run_ts = int((dt - epoch).total_seconds())
 
-    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", run_ts, 2100, 3600)
+    if run_ts > needed_ts:
+        tstate = "G"
+    elif (now_ts - needed_ts) < 2100:
+        tstate = "W"
+    else:
+        tstate = "A"
+
+    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_ts, run_ts))
 
     for source in state['sources']:
         if source['source'] == 'linux':
