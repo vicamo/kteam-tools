@@ -20,13 +20,17 @@ for yfile in sys.argv[1:]:
     if not os.path.exists(yfile):
         continue
 
-    with open(sys.argv[1]) as yfd:
+    name = os.path.basename(yfile)
+    if name.endswith('.migration'):
+        name = name[0:-10]
+
+    with open(yfile) as yfd:
             state = yaml.load(yfd)
 
     dt = state['generated-date']
     run_ts = int((dt - epoch).total_seconds())
 
-    print("Proposed%sMigration", host, "Proposed%sMigration", run_ts, 2100, 3600)
+    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", run_ts, 2100, 3600)
 
     for source in state['sources']:
         if source['source'] == 'linux':

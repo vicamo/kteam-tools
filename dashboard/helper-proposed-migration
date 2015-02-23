@@ -6,13 +6,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-outd="$HOME/public_html/status/dashboard-helper"
-mkdir -p "$outd"
-out="$outd/proposed-migration"
+out="$HOME/public_html/status/dashboard-helper/proposed-migration"
+mkdir -p "$out"
 
 while read name url
 do
-	file="$out-$name"
+	file="$out/$name"
 	rm -f "$file.new"
 	wget -qO "$file.new" "$url"
 	if [ -f "$file.new" ]; then
@@ -25,5 +24,5 @@ utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/upd
 EOL
 
 # Record that we ran, and when proposed-migration last reported.
-"$here/helper-proposed-migration-payload" "$out"*.migration | \
+"$here/helper-proposed-migration-payload" "$out/"*.migration | \
     "$here/dashboard-status-bulk" "proposed-watcher"
