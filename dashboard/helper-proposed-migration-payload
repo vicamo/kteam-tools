@@ -33,13 +33,6 @@ for line in sys.stdin:
     dt = state['generated-date']
     run_ts = int((dt - epoch).total_seconds())
 
-    if run_ts > needed_ts:
-        tstate = "G"
-    elif (now_ts - needed_ts) < 2100:
-        tstate = "W"
-    else:
-        tstate = "A"
-
     for source in state['sources']:
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
@@ -58,6 +51,13 @@ for line in sys.stdin:
                             tstate = 'W'
 
                         print('Proposed%sMigration', host, 'Test%s(dep-8)%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+
+    if run_ts > needed_ts:
+        tstate = "G"
+    elif (now_ts - needed_ts) < 2100:
+        tstate = "W"
+    else:
+        tstate = "A"
 
     print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_ts, run_ts))
 
