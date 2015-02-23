@@ -2,6 +2,7 @@
 from __future__ import print_function;
 
 import os
+import os.path
 import sys
 import yaml
 import re
@@ -9,34 +10,39 @@ from datetime import datetime
 
 re_extract = re.compile(r'^autopkgtest for (\S+) (\S+):.*?<span .*?>(.*?)</span>')
 
-state = None
-with open(sys.argv[1]) as yfd:
-	state = yaml.load(yfd)
-
 now = datetime.now()
 epoch = datetime.utcfromtimestamp(0)
-dt = state['generated-date']
 now_ts = int((now - epoch).total_seconds())
-run_ts = int((dt - epoch).total_seconds())
-
 host = os.uname()[1]
 
+for yfile in sys.argv[1:]:
+    state = None
+    if not os.path.exists(yfile):
+        continue
+
+    with open(sys.argv[1]) as yfd:
+            state = yaml.load(yfd)
+
+    dt = state['generated-date']
+    run_ts = int((dt - epoch).total_seconds())
+
+    print("Proposed%sMigration", host, "Proposed%sMigration", run_ts, 2100, 3600)
+
+    for source in state['sources']:
+        if source['source'] == 'linux':
+            for excuse in source['excuses']:
+                if excuse.startswith('autopkgtest'):
+                    match = re_extract.match(excuse)
+                    if match:
+                        (test, state) = (match.group(1), match.group(3))
+
+                        if state == 'Pass':
+                            tstate = 'G'
+                        elif state ==  'Regression':
+                            tstate = 'A'
+                        else:
+                            tstate = 'W'
+
+                        print('Proposed%sMigration', host, 'Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+
 print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
-print("Proposed%sMigration", host, "Proposed%sMigration", run_ts, 2100, 3600)
-
-for source in state['sources']:
-    if source['source'] == 'linux':
-        for excuse in source['excuses']:
-            if excuse.startswith('autopkgtest'):
-                match = re_extract.match(excuse)
-                if match:
-                    (test, state) = (match.group(1), match.group(3))
-
-                    if state == 'Pass':
-                        tstate = 'G'
-                    elif state ==  'Regression':
-                        tstate = 'A'
-                    else:
-                        tstate = 'W'
-
-                    print('Proposed%sMigration', host, 'Autopkgtest%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)

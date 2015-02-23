@@ -10,12 +10,17 @@ outd="$HOME/public_html/status/dashboard-helper"
 mkdir -p "$outd"
 out="$outd/proposed-migration"
 
-rm -f "$out"
-wget -qO "$out" http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml
-
-# And ... now is ...
-now=`date  +%s`
+while read name url
+do
+	file="$out-name"
+	rm -f "$file"
+	wget -qO "$file.new" "$url"
+done <<EOL
+devel http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml
+trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/update_excuses.yaml
+utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml
+EOL
 
 # Record that we ran, and when proposed-migration last reported.
-"$here/helper-proposed-migration-payload" "$out" | \
+"$here/helper-proposed-migration-payload" "$out"-* | \
     "$here/dashboard-status-bulk" "proposed-watcher"
