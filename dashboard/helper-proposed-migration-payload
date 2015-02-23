@@ -18,7 +18,6 @@ host = os.uname()[1]
 for line in sys.stdin:
     (yfile, needed) = line.strip().split()
     needed_ts = int(needed)
-    needed = datetime.fromtimestamp(needed_ts)
 
     state = None
     if not os.path.exists(yfile):
@@ -38,7 +37,7 @@ for line in sys.stdin:
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
-                    needed_ts = now_ts
+                    needed_ts = run_ts
                 if source['source'] == 'linux':
                     match = re_extract.match(excuse)
                     if match:
@@ -64,9 +63,11 @@ for line in sys.stdin:
     else:
         tstate = "A"
 
+    needed = datetime.fromtimestamp(needed_ts)
+
     needed_str = str(now - needed).split('.')[0]
     run_str = str(now - run).split('.')[0]
-    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_str, run_str))
+    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} {2} run={1}".format(needed_str, run_str, (now_ts - needed_ts)))
 
 
 print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
