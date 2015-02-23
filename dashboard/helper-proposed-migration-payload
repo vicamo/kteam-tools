@@ -40,12 +40,12 @@ for line in sys.stdin:
     else:
         tstate = "A"
 
-    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_ts, run_ts))
-
     for source in state['sources']:
-        if source['source'] == 'linux':
-            for excuse in source['excuses']:
-                if excuse.startswith('autopkgtest'):
+        for excuse in source['excuses']:
+            if excuse.startswith('autopkgtest'):
+                if 'Test in progress' in excuse:
+                    needed_ts = now_ts
+                if source['source'] == 'linux':
                     match = re_extract.match(excuse)
                     if match:
                         (test, state) = (match.group(1), match.group(3))
@@ -58,5 +58,8 @@ for line in sys.stdin:
                             tstate = 'W'
 
                         print('Proposed%sMigration', host, 'Test%s(dep-8)%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+
+    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_ts, run_ts))
+
 
 print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
