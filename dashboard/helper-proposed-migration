@@ -42,6 +42,7 @@ timestamp()
 		echo "$file $stamp"
 	done <<EOL
 devel http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/vivid/Release http://ftpmaster.internal/ubuntu/dists/vivid-proposed/Release
+precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/precise-updates/Release http://ftpmaster.internal/ubuntu/dists/precise-proposed/Release
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/trusty-updates/Release http://ftpmaster.internal/ubuntu/dists/trusty-proposed/Release
 utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/utopic-updates/Release http://ftpmaster.internal/ubuntu/dists/trusty-proposed/Release
 EOL
