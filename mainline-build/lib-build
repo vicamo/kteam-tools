@@ -7,6 +7,7 @@ master_tree="$master_main/linux"
 master_state="$master_main/state"
 
 #master_repo="/srv/kernel.ubuntu.com/git/ubuntu"
+archive_repo="git://kernel.ubuntu.com/ubuntu-archive"
 master_repo="git://kernel.ubuntu.com/ubuntu"
 
 # Select the master tree, creating it if necessary.
@@ -65,7 +66,14 @@ repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
 repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
 repo_remote_url_set	'stable-queue-3.2'	'git://git.kernel.org/pub/scm/linux/kernel/git/bwh/linux-3.2.y-queue.git'
 
-repo_remote_url_set	'hardy'			'git://kernel.ubuntu.com/ubuntu/ubuntu-hardy.git'
+repo_remote_url_set	'hardy'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy.git'
+repo_remote_url_set	'intrepid'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid.git'
+repo_remote_url_set	'jaunty'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty.git'
+repo_remote_url_set	'karmic'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic.git'
+repo_remote_url_set	'lucid'			'git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git'
+repo_remote_url_set	'maverick'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick.git'
+repo_remote_url_set	'natty'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty.git'
+repo_remote_url_set	'oneiric'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric.git'
 repo_remote_url_set	'precise'		'git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git'
 repo_remote_url_set	'quantal'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal.git'
 repo_remote_url_set	'raring'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring.git'
