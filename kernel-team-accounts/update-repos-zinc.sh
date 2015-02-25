@@ -27,9 +27,9 @@ do
 done <<EOL
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git	linux.git
 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git	linux-stable.git
-git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6		testing/drm-2.6
+git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6		testing/drm-2.6.git
 git://anongit.freedesktop.org/drm-intel					testing/drm-intel.git
-git://git.infradead.org/debloat-testing.git				testing/debloat-testing
+git://git.infradead.org/debloat-testing.git				testing/debloat-testing.git
 EOL
 
 rm -f $LOCK
