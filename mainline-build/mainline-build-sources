@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -f "COMMIT" ]; then
+	echo "WARNING: no COMMIT: `pwd`"
+	exit 1
+fi
+
 commit=`cat COMMIT`
 
 case "$commit" in
