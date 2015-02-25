@@ -2,8 +2,13 @@
 
 commit=`cat COMMIT`
 
+case "$commit" in
+*rc[0-9]*)	repo="linux.git" ;;
+*)		repo="linux-stable.git" ;;
+esac
+
 {
-	echo "git://kernel.ubuntu.com/virgin/linux.git $commit"
+	echo "git://kernel.ubuntu.com/virgin/$repo $commit"
 	for patch in ????-*
 	do
 		echo "$patch"
@@ -18,7 +23,7 @@ These binary packages represent builds of Linus' kernel tree at the commit below
 
 To obtain the source from which they are built clone the tree below:
 
-    git://kernel.ubuntu.com/virgin/linux.git
+    git://kernel.ubuntu.com/virgin/$repo
 
 checkout the commit (above), and apply the following patches:
 
