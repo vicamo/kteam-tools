@@ -23,11 +23,10 @@ do
 		mkdir -p `dirname ${repo}`
 		git clone --bare ${url} ${repo}
 	fi
-	(cd ${repo}; git fetch origin)
+	(cd ${repo} && git fetch origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git	linux.git
 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git	linux-stable.git
-git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6		testing/drm-2.6.git
 git://anongit.freedesktop.org/drm-intel					testing/drm-intel.git
 git://git.infradead.org/debloat-testing.git				testing/debloat-testing.git
 EOL
