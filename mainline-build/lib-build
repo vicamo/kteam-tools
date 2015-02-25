@@ -54,13 +54,17 @@ repo_remote_url()
 	eval RET="\$url_${remote}"
 }
 
-repo_remote_url_set	'linus'			'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'
+#repo_remote_url_set	'linus'			'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git'
+repo_remote_url_set	'linus'			'git://kernel.ubuntu.com/virgin/linux.git'
 repo_remote_url_set	'2.6.32.y.33.z'		'git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git'
-repo_remote_url_set	'linux-stable'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git'
+#repo_remote_url_set	'linux-stable'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git'
+repo_remote_url_set	'linux-stable'		'git://kernel.ubuntu.com/virgin/linux-stable.git'
 repo_remote_url_set	'ubuntu-stable'		'git://kernel.ubuntu.com/herton/linux-stable.git'
 repo_remote_url_set	'drm-2.6'		'git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6'
-repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
-repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
+#repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
+repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/drm-intel.git'
+#repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
+repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
 
 repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
