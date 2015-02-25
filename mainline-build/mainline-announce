@@ -18,7 +18,7 @@ params = {'commit': commit, 'published': published, 'user': os.environ['USER'], 
 params['url'] = "http://kernel.ubuntu.com/~{user}/mainline/{published}".format(**params)
 
 # Send to shanky for publication in IRC.
-msg = "mainline build: {commit} {reason} complete at {url}/".format(**params)
+msg = "mainline build: {commit} {reason} complete at {url}/\n".format(**params)
 ##print(msg)
 send_to_shankbot(msg)
 
