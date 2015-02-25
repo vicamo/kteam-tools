@@ -89,4 +89,7 @@ fi
 if [ -f "$master_main/BUILT" ]; then
 	mv "$master_main/BUILT" "$html"
 fi
+
 mv "$master_main"/*.patch "$html"
+
+( cd "$html" && "$here/mainline-build-sources" )

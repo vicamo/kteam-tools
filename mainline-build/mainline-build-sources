@@ -1,0 +1,36 @@
+#!/bin/bash
+
+commit=`cat COMMIT`
+
+{
+	echo "git://kernel.ubuntu.com/virgin/linux.git $commit"
+	for patch in ????-*
+	do
+		echo "$patch"
+	done
+} >"SOURCES"
+
+{
+    cat - <<EOL
+These binary packages represent builds of Linus' kernel tree at the commit below:
+
+    $commit
+
+To obtain the source from which they are built clone the tree below:
+
+    git://kernel.ubuntu.com/virgin/linux.git
+
+checkout the commit (above), and apply the following patches:
+
+EOL
+    for patch in ????-*
+    do
+        echo "    $patch"
+    done
+    cat - <<EOL
+
+This is summarised in the SOURCES file with these binaries.
+
+For further information see: http://wiki.ubuntu.com/Kernel/MainlineBuilds
+EOL
+} >"README"
