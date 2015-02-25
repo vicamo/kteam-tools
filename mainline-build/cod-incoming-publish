@@ -36,22 +36,23 @@ do
 	build=${build#./}
 
 	echo "$P: $build: publishing ..."
+	announce=-2
 	if [ -d "$outgoing/$build" ]; then
 		echo "$P: $build: result already published, removing previous ..."
 		rm -rf "$outgoing/$build"
+		announce=-1
 	fi
-	announce=0
 	mkdir -p "$outgoing/`dirname "$build"`"
 	mv "$incoming/mainline/$build" "$outgoing/$build" && \
 	{
 		case "$build" in
 		*/*)	;;
-		*)	announce=1 ;;
+		*)	announce="${announce#-}" ;;
 		esac
 	}
-	if [ "$announce" -eq 1 ]; then
+	if [ "$announce" -gt 0 ]; then
 		echo "$P: $build: announcing ..."
-		"$here/mainline-announce" `cat "$outgoing/$build/COMMIT"` "$build"
+		"$here/mainline-announce" `cat "$outgoing/$build/COMMIT"` "$build" "$announce"
 	fi
 done
 

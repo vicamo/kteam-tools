@@ -7,6 +7,7 @@ from ktl.shanky                         import send_to_shankbot
 
 commit = sys.argv[1]
 published = sys.argv[2]
+build = sys.argv[3]
 
 params = {'commit': commit, 'published': published, 'user': os.environ['USER']}
 params['url'] = "http://kernel.ubuntu.com/~{user}/mainline/{published}".format(**params)
@@ -17,7 +18,8 @@ msg = "mainline build: {commit} complete at {url}/".format(**params)
 send_to_shankbot(msg)
 
 # Add the From: and To: headers at the start!
-msg  = """From: Mainline Builds <kernel-team@lists.ubuntu.com>\r
+if build == 2:
+    msg  = """From: Mainline Builds <kernel-team@lists.ubuntu.com>\r
 To: Kernel Team <kernel-team@lists.ubuntu.com>\r
 Reply-to: Kernel Team <kernel-team@lists.ubuntu.com>\r
 Subject: Mainline Build {commit}\r
@@ -37,10 +39,10 @@ are not supported.\r
 Kernel Team\r
 """.format(**params)
 
-print(msg)
+    print(msg)
 
-server = smtplib.SMTP('lists.ubuntu.com')
-server.set_debuglevel(0)
-server.sendmail('apw@canonical.com',
-		'kernel-team@lists.ubuntu.com', msg)
-server.quit()
+    server = smtplib.SMTP('lists.ubuntu.com')
+    server.set_debuglevel(0)
+    server.sendmail('apw@canonical.com',
+                    'kernel-team@lists.ubuntu.com', msg)
+    server.quit()
