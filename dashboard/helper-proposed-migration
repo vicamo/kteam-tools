@@ -33,7 +33,7 @@ timestamp()
 
 		# Look at the triggers for a base timestamp.
 		stamp=0
-		for pocket in 
+		for pocket in $pockets
 		do
 			purl="http://ftpmaster.internal/ubuntu/dists/$pocket/Release"
 			timestamp "$purl"
@@ -45,7 +45,7 @@ timestamp()
 devel http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml vivid vivid-updates vivid-proposed
 precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise/update_excuses.yaml precise precise-updates precise-proposed
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/update_excuses.yaml trusty trusty-updates trusty-proposed
-utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml utopic utopic-updatese utopic-proposed
+utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml utopic utopic-updates utopic-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" | \
     "$here/dashboard-status-bulk" "proposed-watcher"
