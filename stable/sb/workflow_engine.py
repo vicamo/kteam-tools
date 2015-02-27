@@ -366,7 +366,7 @@ class WorkflowEngine():
         msg = {
             "key"            : "kernel.publish.proposed.%s" % series,
             "op"             : "sru",
-            "who"            : "kernel",
+            "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : series,
@@ -723,7 +723,7 @@ class WorkflowEngine():
         msg = {
             "key"            : "kernel.publish.ppa.%s" % series,
             "op"             : "sru",
-            "who"            : "kernel",
+            "who"            : ["kernel"],
             "pocket"         : "ppa",
             "date"           : str(datetime.utcnow()),
             "series-name"    : series,
