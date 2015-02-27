@@ -33,18 +33,19 @@ timestamp()
 
 		# Look at the triggers for a base timestamp.
 		stamp=0
-		for turl in $pockets
+		for pocket in 
 		do
-			timestamp "$turl"
+			purl="http://ftpmaster.internal/ubuntu/dists/$pocket/Release"
+			timestamp "$purl"
 			[ "$RET" -gt "$stamp" ] && stamp="$RET"
 		done
 
 		echo "$file $stamp"
 	done <<EOL
-devel http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/vivid/Release http://ftpmaster.internal/ubuntu/dists/vivid-proposed/Release
-precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/precise-updates/Release http://ftpmaster.internal/ubuntu/dists/precise-proposed/Release
-trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/trusty-updates/Release http://ftpmaster.internal/ubuntu/dists/trusty-proposed/Release
-utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml http://ftpmaster.internal/ubuntu/dists/utopic-updates/Release http://ftpmaster.internal/ubuntu/dists/trusty-proposed/Release
+devel http://people.canonical.com/~ubuntu-archive/proposed-migration/update_excuses.yaml vivid vivid-updates vivid-proposed
+precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise/update_excuses.yaml precise precise-updates precise-proposed
+trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/update_excuses.yaml trusty trusty-updates trusty-proposed
+utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml utopic utopic-updatese utopic-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" | \
     "$here/dashboard-status-bulk" "proposed-watcher"
