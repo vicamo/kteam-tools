@@ -33,7 +33,6 @@ do
 	# See if it has changed.
 	tree_was=`git log --format="%T" -1 "$repo/master" 2>/dev/null`
 	tree_is=`git log --format="%T" -1 "$repo"`
-	tree_was=''
 	if [ "$tree_was" = "$tree_is" ]; then
 		continue
 	fi
