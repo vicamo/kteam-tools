@@ -8,6 +8,7 @@ case "$here" in
 /*) ;;
 *)  here="`pwd`/$here" ;;
 esac
+#here="$HOME/kteam-tools/mainline-build"
 
 if [ "$#" != 1 ]; then
 	echo "Usage: $0 <push location>" 1>&2
@@ -32,6 +33,7 @@ do
 	# See if it has changed.
 	tree_was=`git log --format="%T" -1 "$repo/master" 2>/dev/null`
 	tree_is=`git log --format="%T" -1 "$repo"`
+	tree_was=''
 	if [ "$tree_was" = "$tree_is" ]; then
 		continue
 	fi
@@ -39,7 +41,12 @@ do
 	git checkout -f -b "$repo-$$" "$repo/master"
 	git branch -M "$repo"
 
-	for version in `ls releases | sed -e 's/\.[^\.]*$//' | sort -uV`
+	versions=`(
+		ls releases 2>/dev/null | sed -e 's/\.[^\.]*$//';
+		ls -d queue-* 2>/dev/null | sed -e 's/^queue-//'; 
+	    ) | sort -uV`
+	echo "VERSIONS:<$versions>"
+	for version in $versions
 	do
 		case ",$ignore," in
 		*,$version,*)
@@ -50,10 +57,10 @@ do
 
 		latest=`ls -1 releases | grep "^$version\." | sort -V | tail -1`
 
-		echo "$version -> $latest"
 		if [ "$latest" = "" ]; then
 			latest="$version"
 		fi
+		echo "$version -> $latest"
 
 		(
 			ignore=0
