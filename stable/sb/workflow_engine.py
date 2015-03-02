@@ -336,9 +336,9 @@ class WorkflowEngine():
                 dest += ", %s" % (addr)
 
         bug = task.bug
-        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         abi_bump = s.has_new_abi()
 
+        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
         subj = "[" + series + "] " + s.wfb.pkg_name + " " + s.wfb.pkg_version + " uploaded"
         if abi_bump:
             subj += " (ABI bump)"
@@ -737,6 +737,18 @@ class WorkflowEngine():
 
         mq = MsgQueue()
         mq.publish(msg['key'], msg)
+
+        from_addr = None
+        if 'mail_notify' in s.cfg:
+            if 'from_address' in s.cfg['mail_notify']:
+                from_addr = s.cfg['mail_notify']['from_address']
+
+        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
+        subj = "[" + series + "] " + s.wfb.pkg_name + " " + s.wfb.pkg_version + " uploaded to ppa"
+        if s.has_new_abi():
+            subj += " (ABI bump)"
+
+        s.email.send(from_addr, "brad.figg@canonical.com", subj, json.dumps(msg, sort_keys=True, indent=4))
 
         cdebug('            __ppa_announce leave (False)')
         return False
