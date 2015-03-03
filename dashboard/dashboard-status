@@ -1,22 +1,40 @@
 #!/bin/bash
 
-if [ "$#" -lt 5 -o "$#" -gt 6 ]; then
+# We must have a name, otherwise handle the arguments as below.
+if [ "$#" -lt 2 ]; then
 	echo "Usage: $0 <name> <group> <title> <warn> <alert> [<note>]" 1>&2
+	echo "Usage: $0 <name> [<group>] [<title>] [<warn>] [<alert>] [<note>] [<key=value>]..." 1>&2
 	exit 1
 fi
+
+declare -a keys
+
+# Pick off the default positions.
 name="$1"
-group="$2"
-title="$3"
-warn="$4"
-alert="$5"
-note="$6"
+shift
+for fixed in group title warn alert note
+do
+	case "$1" in
+	*=*|'')	break ;;
+	esac
+	# Encode things that need it.
+	value=`echo "$1" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+	keys[${#keys[*]}]="$fixed=$value"
+	shift
+done
 
-# Encode things that need it.
-group=`echo "$group" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
-title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
-note=`echo "$note" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+for arg in "$@"
+do
+	case "$arg" in
+	*=*)	;;
+	*)	echo "$arg: invalid after key=value pair" 1>&2
+		exit 1
+		;;
+	esac
+	# Encode things that need it.
+	value=`echo "$arg" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+	keys[${#keys[*]}]="$value"
+	shift
+done
 
-[ "$note" != '' ] && note=" note=$note"
-
-# Make a simple update.
-echo "V2 group=$group host=`uname -n` title=$title stamp=`date +%s` warning=$warn alert=$alert$note" | "$0-bulk" "$name"
+echo "V2 ${keys[*]}" | "$0-bulk" "$name"
