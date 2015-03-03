@@ -23,6 +23,7 @@ parse_reset()
 	R_alert='-'
 	R_note='-'
 	R_state='-'
+	R_order='50'
 }
 parse_emit()
 {
@@ -70,7 +71,7 @@ parse_emit()
 	# If we do not have a host, copy the rhost over.
 	[ "$R_host" = '-' -a "$R_rhost" != '-' ] && R_host="$R_rhost"
 
-	echo "$R_group $R_host $R_title $delta $R_state $R_note"
+	echo "$R_group $R_order $R_title $R_host $delta $R_state $R_note"
 }
 parse_v1()
 {
@@ -110,13 +111,13 @@ parse_v2()
 			wget -q -O "$state/$file.new" "$url"
 
 			if [ ! -f "$state/$file.new" ]; then
-				echo "UNKNOWN UNKNOWN MISSING%sDASHBOARD $now -1 -1 $url" >"$state/$file.new"
+				echo "UNKNOWN 0 UNKNOWN MISSING%sDASHBOARD 0 unknown $url" >"$state/$file.new"
 			fi
 			mv "$state/$file.new" "$state/$file"
 		done <"$state/$dhost.all"
 	done <"$0.conf"
 
-	echo "Dashboard `hostname` Scheduled%sUpdate 0 good"
+	echo "Dashboard 10 Scheduled%sUpdate `hostname` 0 good"
 	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
@@ -156,7 +157,7 @@ parse_v2()
 #
 n=0
 last_section=''
-while read section host title delta mode message
+while read section order title host delta mode message
 do
 	let n="$n+1"
 
@@ -174,7 +175,7 @@ let min_where="0"
 
 n=0
 last_section=''
-while read section host title delta mode message
+while read section order title host delta mode message
 do
 	let n="$n+1"
 
@@ -247,7 +248,7 @@ function pageLoaded() {
 EOL
 last_section=''
 n=0
-while read section host title delta mode message
+while read section order title host delta mode message
 do
 	let n="$n+1"
 	if [ "$n" = "$min_where" ]; then
