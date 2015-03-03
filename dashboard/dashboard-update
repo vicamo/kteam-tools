@@ -19,16 +19,21 @@ parse_reset()
 parse_v1()
 {
 	parse_reset
-	read R_section R_host R_title R_stamp R_warning R_alert R_message <"$1"
+	read R_section R_host R_title R_stamp R_warning R_alert R_message
 }
 parse_v2()
 {
+	local ret
+
 	parse_reset
-	read -a R <"$1"
+	read -a R || return 1
+
 	for param in "${R[@]}"
 	do
 		declare -g "R_$param"
 	done
+
+	return 0
 }
 
 {
@@ -57,13 +62,16 @@ parse_v2()
 		# v2 V2 section=Host:%sgloin host=gloin title=Update%sChroots stamp=1425297795 warning=90000 alert=93600 
 		read version junk <"$file"
 		case "$version" in
-		V2)		parse_v2 "$file" ;;
+		V2)		parse="parse_v2" ;;
 		V[0-9]*)	echo "Unknown version $R_section -- ignored"
 				continue ;;
-		*)		parse_v1 "$file"
+		*)		parse="parse_v1" ;;
 		esac
 
-		echo "$R_section $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
+		while $parse
+		do
+			echo "$R_section $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
+		done <"$file"
 	done
 } | sed \
 	-e 's/^Dashboard /000-Dashboard /' \
