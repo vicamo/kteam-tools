@@ -15,6 +15,12 @@ epoch = datetime.utcfromtimestamp(0)
 now_ts = int((now - epoch).total_seconds())
 host = os.uname()[1]
 
+
+def encode(*args):
+    out = [str(a).replace('%', '%p').replace(' ', '%s') for a in args]
+    print(*out)
+
+
 for line in sys.stdin:
     (yfile, needed) = line.strip().split()
     needed_ts = int(needed)
@@ -50,7 +56,7 @@ for line in sys.stdin:
                         else:
                             tstate = 'W'
 
-                        print('Proposed%sMigration', host, 'Test%s(dep-8)%s' + source['source'] + '-' + source['new-version'] + '%s' + test, tstate, '-', '-', state)
+                        encode('Proposed Migration', host, 'Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test, tstate, '-', '-', state)
 
     # If the run completed since it was triggered, all is good, else give it 35
     # minutes to get there, after that warn for a further hour, then alert.
@@ -67,6 +73,6 @@ for line in sys.stdin:
 
     needed_str = str(now - needed).split('.')[0]
     run_str = str(now - run).split('.')[0]
-    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0}%srun={1}".format(needed_str, run_str))
+    encode("Proposed Migration", host, "Proposed Migration (" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_str, run_str))
 
-print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
+encode("Proposed Migration", host, "Update Watcher", now_ts, 1200, 1800)
