@@ -22,32 +22,65 @@ parse_reset()
 	R_warning='-'
 	R_alert='-'
 	R_note='-'
+	R_state='-'
 }
 parse_emit()
 {
-	# Handle basic multipliers.
-	case "$R_warning" in
-	*m)	let R_warning="${R_warning%m}*60" ;;
-	*h)	let R_warning="${R_warning%h}*3600" ;;
-	esac
-	case "$R_alert" in
-	*m)	let R_alert="${R_alert%m}*60" ;;
-	*h)	let R_alert="${R_alert%h}*3600" ;;
+	# Handle basic multipliers -- add the iteration interval of the
+	# dashboard itself.
+	if [ "$R_warning" != '-' ]; then
+		case "$R_warning" in
+		*m)	let R_warning="${R_warning%m}*60" ;;
+		*h)	let R_warning="${R_warning%h}*3600" ;;
+		esac
+		let R_warning="$R_warning+(5*60)"
+	fi
+	if [ "$R_alert" != '-' ]; then
+		case "$R_alert" in
+		*m)	let R_alert="${R_alert%m}*60" ;;
+		*h)	let R_alert="${R_alert%h}*3600" ;;
+		esac
+		let R_alert="$R_alert+(5*60)"
+	fi
+
+	# Map direct state assigment.
+	case "$R_state" in
+	-)	;;
+	G)	R_state="good" ;;
+	W)	R_state="warn" ;;
+	A)	R_state="alert" ;;
+	*)	R_state="unknown" ;;
 	esac
 
-	# Add the iteration interval of the dashboard itself.
-	let R_warning="$R_warning+(5*60)"
-	let R_alert="$R_alert+(5*60)"
+	# Apply time limits if the state is not yet known and we have a stamp.
+	delta='-'
+	if [ "$R_state" = '-' -a "$R_stamp" != '-' ]; then
+		let delta="$now-$R_stamp"
+		if [ "$delta" -gt "$R_alert" ]; then
+			R_state="alert"
+		elif [ "$delta" -gt "$R_warning" ]; then
+			R_state="warn"
+		else
+			R_state="good"
+		fi
+	fi
+
+	[ "$R_state" = '-' ] && R_state='unknown'
 
 	# If we do not have a host, copy the rhost over.
-	[ "$R_host" = '-' -a "$R_rhost" ] && R_host="$R_rhost"
+	[ "$R_host" = '-' -a "$R_rhost" != '-' ] && R_host="$R_rhost"
 
-	echo "$R_group $R_host $R_title $R_stamp $R_warning $R_alert $R_note"
+	echo "$R_group $R_host $R_title $delta $R_state $R_note"
 }
 parse_v1()
 {
 	parse_reset
-	read R_group R_host R_title R_stamp R_warning R_alert R_note
+	read R_group R_host R_title R_stamp R_warning R_alert R_note || return 1
+
+	[ "$R_warning$R_alert" = '--' ] && R_state="$R_stamp"
+	[ "$R_note" = '' ] && R_note='-'
+
+	return 0
 }
 parse_v2()
 {
@@ -83,7 +116,7 @@ parse_v2()
 		done <"$state/$dhost.all"
 	done <"$0.conf"
 
-	echo "Dashboard `hostname` Scheduled%sUpdate $now $later $later"
+	echo "Dashboard `hostname` Scheduled%sUpdate 0 good"
 	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
@@ -116,33 +149,7 @@ parse_v2()
 		echo "$line" 1>&2
 		echo "$line"
 	done
-} | {
-	: >"$status.txt.new"
-	last_section=''
-	while read section host title time warning alert message
-	do
-		if [ "$warning$alert" = '--' ]; then
-			delta='-'
-			case "$time" in
-			G)	mode="good" ;;
-			W)	mode="warn" ;;
-			A)	mode="alert" ;;
-			*)	mode="warn" ;;
-			esac
-		else
-			let delta="$now-$time"
-			if [ "$delta" -gt "$alert" ]; then
-				mode="alert"
-			elif [ "$delta" -gt "$warning" ]; then
-				mode="warn"
-			else
-				mode="good"
-			fi
-		fi
-
-		echo "$section $host $title $delta $mode $message" >>"$status.txt.new"
-	done
-}
+} >"$status.txt.new"
 
 #
 # Generate the HTML tables from the .txt status summary.
@@ -205,6 +212,7 @@ cat - <<EOL >"$status.html.new"
 .good { background-color: green; }
 .warn { background-color: yellow; }
 .alert { background-color: red; }
+.unknown { background-color: orange; }
 table.columns td.columns {
   vertical-align: top;
 }
