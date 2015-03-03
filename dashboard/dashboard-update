@@ -51,7 +51,7 @@ parse_v2()
 	done <"$0.conf"
 
 	echo "Dashboard `hostname` Scheduled%sUpdate $now $later $later"
-	for file in *.dash
+	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
 		# v2 V2 section=Host:%sgloin host=gloin title=Update%sChroots stamp=1425297795 warning=90000 alert=93600 
