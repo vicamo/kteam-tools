@@ -24,19 +24,12 @@ case "$name" in
 	;;
 esac
 
-while read group host title stamp warn alert note
+# Record the reporting host.
+while read entry
 do
-	# Handle basic multipliers.
-	case "$warn" in
-	*m)	let warn="${warn%m}*60" ;;
-	*h)	let warn="${warn%h}*3600" ;;
+	case "$entry" in
+	V2\ *)	echo "$entry rhost=$host" ;;
 	esac
-	case "$alert" in
-	*m)	let alert="${alert%m}*60" ;;
-	*h)	let alert="${alert%h}*3600" ;;
-	esac
-
-	echo "$group $host $title $stamp $warn $alert $note"
 done >"$name.new"
 
 # All done install it.

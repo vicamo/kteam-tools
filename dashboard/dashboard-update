@@ -14,16 +14,40 @@ status="$out/dashboard"
 
 parse_reset()
 {
-	read R_group R_host R_title R_stamp R_warning R_alert R_message <"/dev/null"
+	R_group='-'
+	R_host='-'
+	R_rhost='-'
+	R_title='-'
+	R_stamp='-'
+	R_warning='-'
+	R_alert='-'
+	R_note='-'
 }
 parse_emit()
 {
-	echo "$R_group $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
+	# Handle basic multipliers.
+	case "$R_warning" in
+	*m)	let R_warning="${R_warning%m}*60" ;;
+	*h)	let R_warning="${R_warning%h}*3600" ;;
+	esac
+	case "$R_alert" in
+	*m)	let R_alert="${R_alert%m}*60" ;;
+	*h)	let R_alert="${R_alert%h}*3600" ;;
+	esac
+
+	# Add the iteration interval of the dashboard itself.
+	let R_warning="$R_warning+(5*60)"
+	let R_alert="$R_alert+(5*60)"
+
+	# If we do not have a host, copy the rhost over.
+	[ "$R_host" = '-' -a "$R_rhost" ] && R_host="$R_rhost"
+
+	echo "$R_group $R_host $R_title $R_stamp $R_warning $R_alert $R_note"
 }
 parse_v1()
 {
 	parse_reset
-	read R_group R_host R_title R_stamp R_warning R_alert R_message
+	read R_group R_host R_title R_stamp R_warning R_alert R_note
 }
 parse_v2()
 {
@@ -63,7 +87,9 @@ parse_v2()
 	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
-		# v2 V2 section=Host:%sgloin host=gloin title=Update%sChroots stamp=1425297795 warning=90000 alert=93600 
+		# v2 V2 group=Host:%sgloin host=gloin title=Update%sChroots stamp=1425297795 warning=90000 alert=93600 
+
+		# Assume that the first line is representative of all the enclosed entries.
 		read version junk <"$file"
 		case "$version" in
 		V2)		parse="parse_v2" ;;
@@ -72,6 +98,7 @@ parse_v2()
 		*)		parse="parse_v1" ;;
 		esac
 
+		# Read and emit all of the lines.
 		while $parse
 		do
 			parse_emit
@@ -224,6 +251,7 @@ do
 	section=`echo "$section" | sed -e 's/%s/ /g' -e 's/%p/%/g' -e 's/^000-//'`
 	title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 	message=`echo "$message" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
+	[ "$message" = '-' ] && message=''
 	
 	if [ "$last_section" != "$section" ]; then
 		if [ "$last_section" != '' ]; then

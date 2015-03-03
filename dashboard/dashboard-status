@@ -11,9 +11,12 @@ warn="$4"
 alert="$5"
 note="$6"
 
-# Fix the group and description.
+# Encode things that need it.
 group=`echo "$group" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
 title=`echo "$title" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+note=`echo "$note" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
+
+[ "$note" != '' ] && note=" note=$note"
 
 # Make a simple update.
-echo "$group `uname -n` $title `date +%s` $warn $alert $note" | "$0-bulk" "$name"
+echo "V2 group=$group host=`uname -n` title=$title stamp=`date +%s` warning=$warn alert=$alert$note" | "$0-bulk" "$name"
