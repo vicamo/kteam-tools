@@ -14,12 +14,16 @@ status="$out/dashboard"
 
 parse_reset()
 {
-	read R_section R_host R_title R_stamp R_warning R_alert R_message <"/dev/null"
+	read R_group R_host R_title R_stamp R_warning R_alert R_message <"/dev/null"
+}
+parse_emit()
+{
+	echo "$R_group $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
 }
 parse_v1()
 {
 	parse_reset
-	read R_section R_host R_title R_stamp R_warning R_alert R_message
+	read R_group R_host R_title R_stamp R_warning R_alert R_message
 }
 parse_v2()
 {
@@ -63,14 +67,14 @@ parse_v2()
 		read version junk <"$file"
 		case "$version" in
 		V2)		parse="parse_v2" ;;
-		V[0-9]*)	echo "Unknown version $R_section -- ignored"
+		V[0-9]*)	echo "Unknown version $version -- ignored"
 				continue ;;
 		*)		parse="parse_v1" ;;
 		esac
 
 		while $parse
 		do
-			echo "$R_section $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
+			parse_emit
 		done <"$file"
 	done
 } | sed \
