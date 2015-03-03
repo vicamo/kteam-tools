@@ -100,4 +100,5 @@ emit({
     'stamp':    now_ts,
     'warning':  1200,
     'alert':    1800,
+    'order':    10,
 })
