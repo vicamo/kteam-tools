@@ -29,6 +29,7 @@ while read entry
 do
 	case "$entry" in
 	V2\ *)	echo "$entry rhost=$host" ;;
+	*)	echo "$entry" ;;
 	esac
 done >"$name.new"
 
