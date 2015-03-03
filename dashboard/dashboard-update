@@ -12,6 +12,25 @@ let later="$now+100"
 
 status="$out/dashboard"
 
+parse_reset()
+{
+	read R_section R_host R_title R_stamp R_warning R_alert R_message <"/dev/null"
+}
+parse_v1()
+{
+	parse_reset
+	read R_section R_host R_title R_stamp R_warning R_alert R_message <"$1"
+}
+parse_v2()
+{
+	parse_reset
+	read -a R <"$1"
+	for param in "${R[@]}"
+	do
+		declare -g "R_$param"
+	done
+}
+
 {
 	while read dhost url
 	do
@@ -30,8 +49,22 @@ status="$out/dashboard"
 			mv "$state/$file.new" "$state/$file"
 		done <"$state/$dhost.all"
 	done <"$0.conf"
+
 	echo "Dashboard `hostname` Scheduled%sUpdate $now $later $later"
-	cat "$state"/*.dash
+	for file in *.dash
+	do
+		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
+		# v2 V2 section=Host:%sgloin host=gloin title=Update%sChroots stamp=1425297795 warning=90000 alert=93600 
+		read version junk <"$file"
+		case "$version" in
+		V2)		parse_v2 "$file" ;;
+		V[0-9]*)	echo "Unknown version $R_section -- ignored"
+				continue ;;
+		*)		parse_v1 "$file"
+		esac
+
+		echo "$R_section $R_host $R_title $R_stamp $R_warning $R_alert $R_message"
+	done
 } | sed \
 	-e 's/^Dashboard /000-Dashboard /' \
 	-e 's/^Host:/ZZZ-Host:/' | \
