@@ -15,7 +15,7 @@ shift
 for fixed in group title warn alert note
 do
 	case "$1" in
-	*=*|'')	break ;;
+	*=*|'')		break ;;
 	esac
 	# Encode things that need it.
 	value=`echo "$1" | sed -e 's/%/%p/g' -e 's/ /%s/g'`
@@ -23,10 +23,14 @@ do
 	shift
 done
 
+host=0
+stamp=0
 for arg in "$@"
 do
 	case "$arg" in
-	*=*)	;;
+	*=*)		;;
+	host=*)		host=1 ;;
+	stamp=*)	stamp=1 ;;
 	*)	echo "$arg: invalid after key=value pair" 1>&2
 		exit 1
 		;;
@@ -36,5 +40,9 @@ do
 	keys[${#keys[*]}]="$value"
 	shift
 done
+
+# Fill in required and defaulted values.
+[ "$host" -eq 0 ] && keys[${#keys[*]}]="host=`uname -n`"
+[ "$stamp" -eq 0 ] && keys[${#keys[*]}]="stamp=`date +%s`"
 
 echo "V2 ${keys[*]}" | "$0-bulk" "$name"
