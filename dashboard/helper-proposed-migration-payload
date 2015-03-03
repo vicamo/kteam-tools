@@ -16,9 +16,15 @@ now_ts = int((now - epoch).total_seconds())
 host = os.uname()[1]
 
 
-def encode(*args):
-    out = [str(a).replace('%', '%p').replace(' ', '%s') for a in args]
-    print(*out)
+def encode(a):
+    return str(a).replace('%', '%p').replace(' ', '%s')
+
+
+def emit(record):
+    row = 'V2'
+    for key, value in record.items():
+        row += " {0}={1}".format(key, encode(value))
+    print(row)
 
 
 for line in sys.stdin:
@@ -56,7 +62,13 @@ for line in sys.stdin:
                         else:
                             tstate = 'W'
 
-                        encode('Proposed Migration', host, 'Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test, tstate, '-', '-', state)
+                        emit({
+                            'group':    'Proposed Migration',
+                            'host':     host,
+                            'title':    'Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test,
+                            'state':    tstate,
+                            'note':     state,
+                        })
 
     # If the run completed since it was triggered, all is good, else give it 35
     # minutes to get there, after that warn for a further hour, then alert.
@@ -73,6 +85,19 @@ for line in sys.stdin:
 
     needed_str = str(now - needed).split('.')[0]
     run_str = str(now - run).split('.')[0]
-    encode("Proposed Migration", host, "Proposed Migration (" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_str, run_str))
+    emit({
+        'group':    'Proposed Migration',
+        'host':     host,
+        'title':    'Migration (' + name + ')',
+        'state':    tstate,
+        'note':     'needed={0} run={1}'.format(needed_str, run_str),
+    })
 
-encode("Proposed Migration", host, "Update Watcher", now_ts, 1200, 1800)
+emit({
+    'group':    'Proposed Migration',
+    'host':     host,
+    'title':    'Update Watcher',
+    'stamp':    now_ts,
+    'warning':  1200,
+    'alert':    1800,
+})
