@@ -211,6 +211,7 @@ do
 
 	section=`echo "$section" | sed -e 's/%s/ /g' -e 's/%p/%/g' -e 's/^000-//'`
 	title=`echo "$title" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
+	message=`echo "$message" | sed -e 's/%s/ /g' -e 's/%p/%/g'`
 	
 	if [ "$last_section" != "$section" ]; then
 		if [ "$last_section" != '' ]; then

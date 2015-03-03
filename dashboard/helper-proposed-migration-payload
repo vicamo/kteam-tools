@@ -67,6 +67,6 @@ for line in sys.stdin:
 
     needed_str = str(now - needed).split('.')[0]
     run_str = str(now - run).split('.')[0]
-    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0} run={1}".format(needed_str, run_str))
+    print("Proposed%sMigration", host, "Proposed%sMigration%s(" + name + ")", tstate, '-', '-', "needed={0}%srun={1}".format(needed_str, run_str))
 
 print("Proposed%sMigration", host, "Update%sWatcher", now_ts, 1200, 1800)
