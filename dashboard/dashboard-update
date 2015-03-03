@@ -71,7 +71,13 @@ parse_emit()
 	# If we do not have a host, copy the rhost over.
 	[ "$R_host" = '-' -a "$R_rhost" != '-' ] && R_host="$R_rhost"
 
-	echo "$R_group $R_order $R_title $R_host $delta $R_state $R_note"
+	case "$R_group" in
+	Dashboard)	gorder="00" ;;
+	Host:*)		gorder="90" ;;
+	*)		gorder="50" ;;
+	esac
+
+	echo "$gorder $R_group $R_order $R_title $R_host $delta $R_state $R_note"
 }
 parse_v1()
 {
@@ -117,7 +123,7 @@ parse_v2()
 		done <"$state/$dhost.all"
 	done <"$0.conf"
 
-	echo "Dashboard 10 Scheduled%sUpdate `hostname` 0 good"
+	echo "00 Dashboard 10 Scheduled%sUpdate `hostname` 0 good"
 	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
@@ -138,26 +144,16 @@ parse_v2()
 			parse_emit
 		done <"$file"
 	done
-} | sed \
-	-e 's/^Dashboard /000-Dashboard /' \
-	-e 's/^Host:/ZZZ-Host:/' | \
-    sort | sed \
-	-e 's/^000-Dashboard /Dashboard /' \
-	-e 's/^ZZZ-Host:/Host:/' | \
-{
-	while read -r line
-	do
-		echo "$line" 1>&2
-		echo "$line"
-	done
-} >"$status.txt.new"
+} | \
+    sort | \
+    tee "$status.txt.new"
 
 #
 # Generate the HTML tables from the .txt status summary.
 #
 n=0
 last_section=''
-while read section order title host delta mode message
+while read gorder section order title host delta mode message
 do
 	let n="$n+1"
 
@@ -175,7 +171,7 @@ let min_where="0"
 
 n=0
 last_section=''
-while read section order title host delta mode message
+while read gorder section order title host delta mode message
 do
 	let n="$n+1"
 
@@ -248,7 +244,7 @@ function pageLoaded() {
 EOL
 last_section=''
 n=0
-while read section order title host delta mode message
+while read gorder section order title host delta mode message
 do
 	let n="$n+1"
 	if [ "$n" = "$min_where" ]; then
