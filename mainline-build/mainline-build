@@ -93,4 +93,4 @@ fi
 
 mv "$master_main"/*.patch "$html"
 
-( cd "$html" && "$here/mainline-build-sources" )
+( cd "$html" && "$here/mainline-build-sources" && "$here/mainline-build-checksum" )
