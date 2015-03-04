@@ -1,0 +1,15 @@
+#!/bin/bash
+
+dir=`pwd`
+version=`basename "$dir"`
+
+{
+    echo "# Checksums for $version, check with the command below:"
+    echo "#     shasum -c CHECKSUMS"
+    echo "#"
+    echo "# Checksums-Sha1:"
+    shasum -a 1 COMMIT ????-* *.deb
+    echo "#"
+    echo "# Checksums-Sha256:"
+    shasum -a 256 COMMIT ????-* *.deb
+} >CHECKSUMS
