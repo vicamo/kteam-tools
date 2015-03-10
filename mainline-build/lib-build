@@ -62,7 +62,7 @@ repo_remote_url_set	'linux-stable'		'git://kernel.ubuntu.com/virgin/linux-stable
 repo_remote_url_set	'ubuntu-stable'		'git://kernel.ubuntu.com/herton/linux-stable.git'
 repo_remote_url_set	'drm-2.6'		'git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6'
 #repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
-repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/drm-intel.git'
+repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/testing/drm-intel.git'
 #repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
 repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
