@@ -18,7 +18,7 @@ now_ts = int((now - epoch).total_seconds())
         #$(this).find('tbody').toggleClass('hidden')
 print("""<html>
 <head>
-<meta id="refresh" http-equiv="refresh" content="60">
+<meta id="refresh" http-equiv="refresh" content="90">
 <title>Kernel Dashboard</title>
 <script type="text/javascript" src="jquery-1.11.2.min.js"></script>
 <script type="text/javascript">
@@ -87,7 +87,7 @@ $(function() {
 
     // Refresh automatically, note this needs to be sooner that the above
     // http-equiv="refresh" so we have control over the URL we pass.
-    setTimeout(jumpto, 10000);  
+    setTimeout(jumpto, 60000);  
 })
 </script>
 <style>
