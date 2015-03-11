@@ -65,12 +65,8 @@ airlied--linux/drm-next				996	drm-next
 drm-intel/drm-intel-next			997	drm-intel-next
 drm-intel/drm-intel-nightly			994	drm-intel-nightly
 debloat-testing/master				993	debloat-testing
-extended-stable/linux-3.5.y-review		992     linux-3.5.y.z-review
-extended-stable/linux-3.5.y-queue		991     linux-3.5.y.z-queue	linux-3.5.y.z-review
-extended-stable/linux-3.8.y-review		992     linux-3.8.y.z-review
-extended-stable/linux-3.8.y-queue		991     linux-3.8.y.z-queue	linux-3.8.y.z-review
-extended-stable/linux-3.11.y-review		992     linux-3.11.y.z-review
-extended-stable/linux-3.11.y-queue		991     linux-3.11.y.z-queue	linux-3.11.y.z-review
+extended-stable/linux-3.13.y-review		992     linux-3.13.y.z-review
+extended-stable/linux-3.13.y-queue		991     linux-3.13.y.z-queue	linux-3.13.y.z-review
 extended-stable/linux-3.16.y-review		992     linux-3.16.y.z-review
 extended-stable/linux-3.16.y-queue		991     linux-3.16.y.z-queue	linux-3.16.y.z-review
 EOL
