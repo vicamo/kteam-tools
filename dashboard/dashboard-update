@@ -1,5 +1,11 @@
 #!/bin/bash
 
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 out="$HOME/public_html/status"
 state="$out/dashboard-status"
 
@@ -308,5 +314,11 @@ cat - <<EOL >>"$status.html.new"
 </html>
 EOL
 
+"$here/dashboard-update-html" <"$status.txt.new" >"$status.html2.new"
+
+if [ ! -f "$out/jquery-1.11.2.min.js" ]; then
+	cp -p "$here/jquery-1.11.2.min.js" "$out/jquery-1.11.2.min.js"
+fi
+mv -f "$status.html2.new" "$status.html2"
 mv -f "$status.html.new" "$status.html"
 mv -f "$status.txt.new" "$status.txt"

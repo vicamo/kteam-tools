@@ -1,0 +1,185 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import sys
+from datetime import datetime
+
+now = datetime.now()
+epoch = datetime.utcfromtimestamp(0)
+now_ts = int((now - epoch).total_seconds())
+
+#
+# Generate the HTML tables from the .txt status summary.
+#
+	    #document.getElementById("section:Dashboard:h1").style.background = "red";
+	    #document.getElementById("section:Dashboard:h2").style.background = "red";
+	    #document.getElementById("twist:Dashboard").style.display = "table-row-group";
+
+        #$(this).find('tbody').toggleClass('hidden')
+print("""<html>
+<head>
+<meta id="refresh" http-equiv="refresh" content="60">
+<title>Kernel Dashboard</title>
+<script type="text/javascript" src="jquery-1.11.2.min.js"></script>
+<script type="text/javascript">
+$('html').addClass('js');
+
+function jumpto() {
+    query=""
+    
+    $('.twist').each(function(){
+        if ($(this).hasClass('good')) {
+            if (!$(this).hasClass('hidden')) {
+                // overridden shown
+                query += "&" + $(this).attr('id').slice(7) + "=show"
+            }
+        } else {
+            if ($(this).hasClass('hidden')) {
+                // overridden hidden
+                query += "&" + $(this).attr('id').slice(7) + "=hide"
+            }
+        }
+    })
+    if (query != "") {
+        query = "?" + query.slice(1)
+    }
+
+    url = location.href.split('?')[0]
+    location.replace(url + query)
+}
+
+$(function() {
+    $('.twist-trigger').click(function(){
+        id = $(this).attr('twist')
+        $("#" + id).toggleClass('hidden')
+        jumpto()
+    })
+    if (!Date.now) {
+	Date.now = function() { return new Date().getTime(); }
+    }
+    now = Math.floor(Date.now() / 1000)
+    if ((now - """ + str(now_ts) + """) > (300 + 60 + 30 /* - 300 - 60 - 25 */)) {
+        $('#section--Dashboard').addClass('alert').removeClass('good')
+        $('#entry--Dashboard--Scheduled-Update').addClass('alert').removeClass('good')
+        $('#twist--Dashboard').removeClass('hidden')
+    }
+
+    // Rip the query string into bits.
+    var attr = {};
+    var pairs = window.location.search.slice(1).split('&');
+    pairs.forEach(function(pair) {
+        pair = pair.split('=');
+        attr[pair[0]] = decodeURIComponent(pair[1] || '');
+    })
+
+    // Apply any section hide/show overrides.
+    $('.twist').each(function() {
+        id = $(this).attr('id').slice(7)
+
+        if (id in attr) {
+            if (attr[id] == 'show') {
+                $(this).removeClass('hidden')
+            } else if (attr[id] == 'hide') {
+                $(this).addClass('hidden')
+            }
+        }
+    })
+
+    // Refresh automatically, note this needs to be sooner that the above
+    // http-equiv="refresh" so we have control over the URL we pass.
+    setTimeout(jumpto, 10000);  
+})
+</script>
+<style>
+.good { background-color: green; }
+.warn { background-color: yellow; }
+.alert { background-color: red; }
+.unknown { background-color: orange; }
+table.columns td.columns {
+  vertical-align: top;
+}
+table.status {
+  border: 0px;
+  border-collapse: collapse;
+}
+table.status tr.gap, table.status tr.gap td {
+  border: 0px;
+  padding: 1px;
+}
+table.status tr, table.status th, table.status td {
+  border: 1px solid black;
+}
+.js .hidden {
+  display: none;
+}
+</style>
+</head>
+<body>
+<h1>Kernel Dashboard (""" + now.strftime('%d-%b-%Y %H:%M') + """)</h1>
+<table width=60% class="status">""")
+
+#.js .tbodyalert, .js .tbodyshow {
+#  display: table-row-group;
+#}
+
+state = {}
+entries = []
+for line in sys.stdin:
+    a = line.strip().split()
+    (gorder, section, order, title, host, delta, mode, message) = line.strip().split()
+
+    section = section.replace('%s', ' ').replace('%p', '%')
+    title   = title.replace('%s', ' ').replace('%p', '%')
+    message = message.replace('%s', ' ').replace('%p', '%')
+
+    if delta != '-':
+        delta = int(delta)
+        delta = delta / 60
+        ext = 'm'
+        if delta >= 60:
+            delta = delta / 60
+            ext = 'h'
+
+            if delta >= 24:
+                delta = delta / 24
+                ext = 'd'
+
+        delta = str(delta) + ext
+
+    if mode == 'alert':
+        state[section] = mode
+    elif mode == 'warn' and state.get(section, None) not in ('alert'):
+        state[section] = mode
+    elif mode == 'good' and state.get(section, None) not in ('alert', 'warn'):
+        state[section] = mode
+    entries.append((gorder, section, order, title, host, delta, mode, message))
+
+
+def genid(*args):
+    return '--'.join(args).replace(' ', '-').replace(':', '-')
+
+    
+last_section = ''
+for (gorder, section, order, title, host, delta, mode, message) in entries:
+    if message == '-':
+        message = ''
+	
+    if last_section != section:
+        if last_section != '':
+            print("</tbody>")
+            print("<tr class=\"gap\"><td></tr>")
+        last_section = section
+
+        print("<tr id=\"" + genid('section', section) + "\" class=\"" + state[section] + "\"><th class=\"twist-trigger\" twist=\"" + genid('twist', section) + "\" colspan=4>" + section + "</tr>")
+        classes = "twist " + state[section]
+        if state[section] == 'good':
+            classes += " hidden"
+        print("<tbody id=\"" + genid('twist', section) + "\" class=\"" + classes + "\">")
+        print("<tr class=\"good\"><th>Tool<th>Host<th>Last<th>Notes</tr>")
+
+    print("<tr id=\"" + genid('entry', section, title) + "\" class=\"" + mode + "\"><td>" + title + "<td>" + host + "<td>" + delta + "<td>" + message + "</tr>")
+
+print("""</table>
+</table>
+</body>
+</html>""")
