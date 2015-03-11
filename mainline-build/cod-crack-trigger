@@ -25,7 +25,7 @@ master_tree_select
 #
 # UPSTREAM COD: builds of upstream tree tips
 #
-remotes="linus drm-2.6 drm-intel debloat-testing extended-stable"
+remotes="linus airlied--linux drm-intel debloat-testing extended-stable"
 repo_remote_update_list $remotes
 
 date="`date +%F`"
@@ -61,7 +61,7 @@ do
 		"$here/mainline-build" "${remotes// /,}" "$tip" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
-drm-2.6/drm-next				996	drm-next
+airlied--linux/drm-next				996	drm-next
 drm-intel/drm-intel-next			997	drm-intel-next
 drm-intel/drm-intel-nightly			994	drm-intel-nightly
 debloat-testing/master				993	debloat-testing
