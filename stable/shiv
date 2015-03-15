@@ -1,0 +1,381 @@
+#!/usr/bin/env python
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+import socket
+import threading
+import Queue
+from ktl.log                            import cdebug, center, cleave
+import ssl
+from ktl.msgq                           import MsgQueue
+import json
+import re
+from string                             import punctuation
+
+class IrcClientCommand(object):
+    """
+    A command to the client thread. Each command type has its associated
+    data:
+
+    SEND:       Data string
+    EXIT:       None
+    """
+    SEND, EXIT, NOTICE = range(3)
+
+    def __init__(s, type, data=None):
+        s.type = type
+        s.data = data
+
+class IrcClient(threading.Thread):
+    """
+    Implements the threading.Thread interface (start, join, etc.) and
+    can be controlled via the cmd_q Queue attribute. Replies are placed in
+    the reply_q Queue attribute.
+    """
+
+    # __init__
+    #
+    def __init__(s, cmd_q=Queue.Queue(), reply_q=Queue.Queue(), cfg={}, msgq=None):
+        super(IrcClient, s).__init__()
+        s.cmd_q = cmd_q
+        s.reply_q = reply_q
+        s.alive = threading.Event()
+        s.alive.set()
+        s.socket = None
+        s.msgq = msgq
+
+        s.handlers = {
+            IrcClientCommand.EXIT:    s._handle_EXIT,
+            IrcClientCommand.SEND:    s._handle_SEND,
+            IrcClientCommand.NOTICE:  s._handle_NOTICE,
+        }
+        s.cfg = cfg
+        s._connect(cfg['host'], cfg['port'], cfg['ssl'])
+
+    # on_ping
+    #
+    def on_ping(s, line):
+        center('Enter IrcClient::on_ping')
+
+        sent = s.client_ssl_socket.send('PONG %s\r\n' % (line.replace('PING :', '')))
+        cdebug('sending PONG')
+        sent_pong = True
+
+        cleave('Enter IrcClient::on_ping')
+
+    # on_join
+    #
+    def on_join(s, line):
+        center('Enter IrcClient::on_join')
+
+        cdebug('line: "%s"' % line)
+        who = line.split('!')[0].replace(':', '')
+        if who == s.cfg['nick']:
+            cdebug('I just joined')
+            sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], '\o/'))
+        else:
+            cdebug('%s just joined' % who)
+
+        cleave('Enter IrcClient::on_join')
+
+    # privmsg_parse
+    #
+    def privmsg_parse(s, line):
+        center('Enter IrcClient::privmsg_parse')
+
+        cmd  = None
+        chan = None
+        msg  = None
+        who  = None
+        me   = False
+
+        s1 = line.split(':', 2)
+        cdebug('s1: %s' % str(s1))
+
+        # If it's not for me, ignore it
+        #
+        if s1[2].startswith(s.cfg['nick']):
+
+            s2 = s1[1].split(' ')
+            cdebug('s2: %s' % str(s2))
+
+            cdebug('line: "%s"' % line)
+
+            cmd  = s2[1]
+            chan = s2[2]
+            msg  = s1[2].replace(s.cfg['nick'], '', 1).strip(punctuation + ' ')
+
+            who = line.split('!')[0].replace(':', '')
+            cdebug('     cmd: %s' % cmd)
+            cdebug('    chan: %s' % chan)
+            cdebug('     msg: "%s"' % msg)
+            cdebug('     who: %s' % who)
+
+            me = True
+
+        cdebug(' ')
+
+        cleave('Enter IrcClient::privmsg_parse')
+        return [me, cmd, chan, msg, who]
+
+    # on_privmsg
+    #
+    def on_privmsg(s, line):
+        center('Enter IrcClient::on_privmsg')
+
+        (forme, cmd, chan, msg, who) = s.privmsg_parse(line)
+
+        if forme:
+            cdebug('      me: %s' % forme)
+            cdebug('     cmd: %s' % cmd)
+            cdebug('    chan: %s' % chan)
+            cdebug('     msg: "%s"' % msg)
+            cdebug('     who: %s' % who)
+
+            if 'quit' == msg:
+                s.privmsg('%s, I don\'t know how to quit.' % who)
+
+        cleave('Enter IrcClient::on_privmsg')
+
+    # privmsg
+    #
+    def privmsg(s, msg):
+        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], msg))
+
+    # run
+    #
+    def run(s):
+        logged_in     = False
+        sent_password = False
+        sent_nick     = False
+        sent_user     = False
+        sent_pong     = False
+        sent_join     = False
+        sent_hello    = False
+        while s.alive.isSet():
+            if not logged_in:
+                if not sent_password:
+                    cdebug('sending PASS')
+                    sent = s.client_ssl_socket.send('PASS ' + s.cfg['password'] + '\r\n')
+                    sent_password = True
+                elif not sent_nick:
+                    cdebug('sending NICK')
+                    sent = s.client_ssl_socket.send('NICK ' + s.cfg['nick'] + '\r\n')
+                    sent_nick = True
+                elif not sent_user:
+                    cdebug('sending USER')
+                    sent = s.client_ssl_socket.send('USER %s 0 * :%s\r\n' % (s.cfg['user'], s.cfg['name']))
+                    sent_user = True
+                elif sent_pong:
+                    if not sent_join:
+                        cdebug('sending JOIN')
+                        sent = s.client_ssl_socket.send('JOIN ' + s.cfg['channel'] + '\r\n')
+                        sent_join = True
+                        logged_in = True
+
+            try:
+                data = s.client_ssl_socket.recv(4096)
+                lines = data.split('\r\n')
+                for line in lines:
+                    if line == "": continue                             # Ignore blank lines
+
+                    # We only care about 3 commands. PING, JOIN and PRIVMSG.
+                    #
+                    if 'PING ' in line:
+                        s.on_ping(line)
+                        sent_pong = True
+
+                    elif 'JOIN ' in line:
+                        s.on_join(line)
+
+                    elif 'PRIVMSG ' in line:
+                        s.on_privmsg(line)
+                        cdebug('line: "%s"' % line)
+
+                    continue
+
+            except ssl.SSLError:
+                pass
+
+            try:
+                # Queue.get with timeout to allow checking s.alive
+                cmd = s.cmd_q.get(True, 0.1)
+                s.handlers[cmd.type](cmd)
+
+            except Queue.Empty as e:
+                continue
+
+    # join
+    #
+    def join(s, timeout=None):
+        s.alive.clear()
+        threading.Thread.join(s, timeout)
+
+    # _connect
+    #
+    def _connect(s, host, port, use_ssl):
+        center('Enter IrcClient::__init__')
+        s.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.client_socket.connect((host, port))
+        s.client_ssl_socket = ssl.wrap_socket(s.client_socket)
+        s.client_socket.settimeout(1)
+        cleave('Leave IrcClient::__init__')
+
+    # _handle_EXIT
+    #
+    def _handle_EXIT(s, cmd):
+        center('IrcClient::_handle_EXIT')
+        s.alive.clear()
+        s.client_ssl_socket.close()
+        s.client_socket.close()
+        cleave('IrcClient::_handle_EXIT')
+
+    # _handle_SEND
+    #
+    def _handle_SEND(s, cmd):
+        center('IrcClient::_handle_SEND')
+        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], cmd.data))
+        cleave('IrcClient::_handle_SEND')
+
+    # _handle_NOTICE
+    #
+    def _handle_NOTICE(s, cmd):
+        center('IrcClient::_handle_SEND')
+        sent = s.client_ssl_socket.send('NOTICE %s :%s\r\n' % (s.cfg['channel'], cmd.data))
+        cleave('IrcClient::_handle_SEND')
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+        s.queue_name = 'kernel-irc-kmsgq'
+
+    # decode_payload
+    #
+    def decode_payload(s, payload):
+        center('TheApp::decode_payload')
+        retval = []
+        content = ""
+
+        if payload['key'] == 'kernel.irc':
+            content = payload['msg']
+            retval.append(content)
+
+        else:
+            # We don't recognize this payload. Dump out some information that would help
+            # us understand it.
+            #
+            if 'key' in payload:
+                content += 'unknown key: %s' % payload['key']
+            else:
+                content += 'unrecognized payload with no \'key\': %s' % json.dumps(payload, sort_keys=True, indent=4)
+            retval.append(content)
+
+        cleave('TheApp::decode_payload')
+        return retval
+
+    # _handler
+    #
+    def _handler(s, payload):
+        center("TheApp::_handler")
+
+        if 'key' in payload:
+            content = s.decode_payload(payload)
+
+            cdebug('content: "%s"' % str(content))
+
+            if payload['notice']:
+                for line in content:
+                    s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, line))
+            else:
+                for line in content:
+                    s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, line))
+
+        else:
+            content = 'unrecognized payload with no \'key\': %s' % json.dumps(payload, sort_keys=True, indent=4)
+            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, content))
+
+        cleave("TheApp::_handler")
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        center("TheApp::main")
+        retval = 1
+
+        try:
+            if args.local:
+                mq = MsgQueue(address='localhost', port=9123)
+            else:
+                mq = MsgQueue()
+
+            irc_cfg = {
+                'host'     : '91.189.94.183',
+                'port'     : 6697,
+                'ssl'      : True,
+                'user'     : 'bradf',
+                'password' : 'kthxbye',
+                'nick'     : 'shiv',
+                'name'     : 'Kernel Bot',
+                'channel'  : '#stable-kernel',
+            }
+            s.irc = IrcClient(cfg=irc_cfg, msgq=mq)
+            s.irc.start()
+
+            mq.listen(s.args.queue, 'kernel.irc#', s._handler)
+
+            print("done")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.EXIT))
+
+        cleave("TheApp::main")
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('queue', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
