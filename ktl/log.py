@@ -18,11 +18,19 @@ def cerror(msg, color='red'):
 def cnotice(msg, color='yellow'):
     Clog.notice(msg, color)
 
+def center(msg):
+    Clog.enter('Enter ' + msg)
+
+def cleave(msg):
+    Clog.leave('Leave ' + msg)
+
 class Clog:
     '''
     Colored logging.
     '''
     dbg = False
+    color = True
+    indent = 0
 
     @classmethod
     def info(c, msg, color='white'):
@@ -46,5 +54,21 @@ class Clog:
     @classmethod
     def notice(c, msg, color='yellow'):
         c.info(colored(msg, color))
+
+    @classmethod
+    def enter(c, msg):
+        if c.color:
+            c.debug(colored(msg, 'green'))
+        else:
+            c.debug(msg)
+        c.indent += 4
+
+    @classmethod
+    def leave(c, msg):
+        c.indent -= 4
+        if c.color:
+            c.debug(colored(msg, 'green'))
+        else:
+            c.debug(msg)
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
