@@ -1,0 +1,3 @@
+#!/bin/sh
+flock -nx /tmp/shiv.lck -c "$HOME/shankbot/kteam-tools/stable/shiv kernel-irc-shiv"
+$HOME/bin/dashboard-status shiv 'Kernel Testing' 'Shiv Ircbot' 5m 30m
