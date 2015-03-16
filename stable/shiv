@@ -288,18 +288,21 @@ class TheApp():
     #
     def _handler(s, payload):
         center("TheApp::_handler")
+        cdebug('----------------------------------------------------------------------------')
+        print(json.dumps(payload, sort_keys=True, indent=4))
 
         if 'key' in payload:
-            content = s.decode_payload(payload)
+            if payload['key'] == 'kernel.irc':
+                content = s.decode_payload(payload)
 
-            cdebug('content: "%s"' % str(content))
+                cdebug('content: "%s"' % str(content))
 
-            if payload['notice']:
-                for line in content:
-                    s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, line))
-            else:
-                for line in content:
-                    s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, line))
+                if payload['notice']:
+                    for line in content:
+                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, line))
+                else:
+                    for line in content:
+                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, line))
 
         else:
             content = 'unrecognized payload with no \'key\': %s' % json.dumps(payload, sort_keys=True, indent=4)
@@ -334,7 +337,7 @@ class TheApp():
             s.irc = IrcClient(cfg=irc_cfg, msgq=mq)
             s.irc.start()
 
-            mq.listen(s.args.queue, 'kernel.irc#', s._handler)
+            mq.listen(s.args.queue, 'kernel.#', s._handler)
 
             print("done")
             retval = 0
