@@ -13,6 +13,7 @@ import uuid
 import pika.exceptions as exceptions
 import pika.spec as spec
 from pika.utils import is_callable
+import pika.frame as frame
 
 LOGGER = logging.getLogger(__name__)
 MAX_CHANNELS = 32768
