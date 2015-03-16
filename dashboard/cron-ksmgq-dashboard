@@ -1,0 +1,10 @@
+#!/bin/sh
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+flock -nx /tmp/kmsgq-dashboard.lck -c "$here/kmsgq-dashboard kernel-dashboard"
+$HOME/bin/dashboard-status dashboard-kmsgq 'Dashboard' 'Kernel MsgQueue Receiver' 5m 30m

@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+#
+
+import sys
+import os
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, WARNING, info, warning, DEBUG
+from ktl.log                            import cdebug, center, cleave
+from ktl.msgq                           import MsgQueue
+import json
+
+#from lib.grinder                        import JenkinsTestResultsTree, JenkinsTestResultsTreeError
+#from lib.utils                          import string_to_date
+#from lib.jenkins                        import Jenkins
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        center('TheApp::main')
+        retval = 1
+
+        try:
+            details = {}
+            details['key'] = 'kernel.dashboard.status.bulk'
+
+            # title stamp warn alert note
+
+            bulk = []
+            for line in sys.stdin:
+                # title stamp warn alert note
+                entry = {}
+                a = line.strip().split()
+                if a[0] == 'V2':
+                    for kv in a[1:]:
+                        (k, v) = kv.split('=', 1)
+                        entry[k] = v
+                else:
+                    (entry['section'],entry['host'],entry['title'], \
+                     entry['stamp'], entry['warn'], entry['alert']) = a[0:6]
+                    if len(a) == 7:
+                        entry['note'] = a[6]
+                bulk.append(entry)
+
+            details['op']  = 'update'
+            details['rhost'] = os.uname()[1]
+            details['id'] = s.args.groupid
+            details['updates'] = bulk
+
+            # Submit the message to the Message Queue
+            #
+            if s.args.local:
+                mq = MsgQueue(address='localhost', port=9123)
+            else:
+                mq = MsgQueue()
+
+            mq.publish(details['key'], details)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            warning("Aborting ...")
+
+        except Exit:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        cleave('TheApp::main')
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    jc --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument("groupid")
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    try:
+        app = TheApp(args)
+        exit(app.main())
+    except Exit:
+        pass
+
+# vi:set ts=4 sw=4 expandtab:
+

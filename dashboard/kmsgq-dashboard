@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+#
+from __future__ import print_function
+
+import os
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+import socket
+import threading
+import Queue
+from ktl.log                            import cdebug, center, cleave, cerror
+import ssl
+from ktl.msgq                           import MsgQueue
+import json
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+    # _handler_status_bulk
+    #
+    def _handler_status_bulk(s, payload):
+        cdebug("TheApp::_handler_status_bulk")
+        for field in ('id', 'rhost', 'updates'):
+            if field not in payload:
+                cerror("status-bulk: missing {0}, ignored".format(field))
+                return
+        uid = payload['id']
+        if not uid.startswith(payload['rhost'] + '-'):
+            uid = payload['rhost'] + '-' + uid
+        if '/' in uid:
+            cerror("status-bulk: bad id <{0}>, ignored".format(uid))
+            return
+        #for update in payload['updates']:
+        #    for field in ('group', 'title', 'stamp', 'warn', 'alert'):
+        #        if field not in update:
+        #            cerror("status-bulk: status missing {0}, ignored".format(field))
+        #            return
+
+        cdebug("bulk update seems valid")
+
+        sfilen = os.path.join(s.args.statedir, uid + ".new")
+        sfile  = os.path.join(s.args.statedir, uid + ".dash")
+
+        with open(sfilen, "w") as sfd:
+            for update in payload['updates']:
+                line = 'V2 rhost=' + payload['rhost']
+                for key in update.keys():
+                    line += ' ' + key + '=' + update[key]
+                print(line, file=sfd)
+
+        os.rename(sfilen, sfile)
+
+        cdebug("bulk update written")
+
+    # _handler
+    #
+    def _handler(s, payload):
+        cdebug("TheApp::_handler")
+
+        if payload['op'] == 'status-bulk':
+            s._handler_status_bulk(payload)
+        else:
+            cerror("Unknown op <{0}>, ignored".format(payload['op']))
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 1
+
+        try:
+            if args.local:
+                mq = MsgQueue(address='localhost', port=9123)
+            else:
+                mq = MsgQueue()
+            mq.listen(s.args.queue, 'kernel.dashboard.status.bulk', s._handler_status_bulk)
+            #mq.listen(s.args.queue, 'dashboard.#', s._handler)
+
+            print("done")
+            retval = 0
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('queue', help='Name of the queue to use')
+    parser.add_argument('statedir', help='Name of the output state dir')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
