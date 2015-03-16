@@ -1,4 +1,7 @@
 """AMQP Table Encoding/Decoding"""
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import struct
 import decimal
 import calendar

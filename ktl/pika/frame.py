@@ -1,4 +1,7 @@
 """Frame objects that do the frame demarshaling and marshaling."""
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import logging
 import struct
 

@@ -1,5 +1,8 @@
 __version__ = '0.9.14'
 
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import logging
 try:
     # not available in python 2.6

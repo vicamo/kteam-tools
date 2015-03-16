@@ -2,12 +2,14 @@
 implementing the methods and behaviors for an AMQP Channel.
 
 """
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import collections
 import logging
 import warnings
 import uuid
 
-import pika.frame as frame
 import pika.exceptions as exceptions
 import pika.spec as spec
 from pika.utils import is_callable
