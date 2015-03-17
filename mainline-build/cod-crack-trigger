@@ -61,7 +61,7 @@ do
 	# temporary name, and publish that into the crack repository.
 	tag="crack-tip--$base--$date"
 	git tag -d "$tag" || true
-	git tag -d "$tag" "$tip"
+	git tag "$tag" "$tip"
 	git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$tag"
 
 	# Enqueue the job.
