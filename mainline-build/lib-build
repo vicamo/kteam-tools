@@ -110,7 +110,7 @@ repo_remote_update()
 		git remote add "$remote" "$url"
 	fi
 	echo "$P: fetching $remote remote ..."
-	git fetch "$remote" || true
+	git fetch -t "$remote" || true
 }
 
 repo_remote_update_list()
