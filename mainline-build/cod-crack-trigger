@@ -57,12 +57,16 @@ do
 		continue
 	fi
 
-    # We know which repo this tip is in ...
-    remote=`dirname "$branch"`
+	# We cannot assume any remote machine has this sha1 so tag it with a
+	# temporary name, and publish that into the crack repository.
+	tag="crack-tip--$base--$date"
+	git tag -d "$tag" || true
+	git tag -d "$tag" "$tip"
+	git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$tag"
 
-    # Enqueue the job.
+	# Enqueue the job.
 	"$here/cod-enqueue" "C" \
-		"$here/mainline-build" "$remotes" "$tip" "$abi" "$base" "$date"
+		"$here/mainline-build" "crack" "$tag" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
 airlied--linux/drm-next				996	drm-next
