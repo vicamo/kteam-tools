@@ -27,6 +27,7 @@ do
 done <<EOL
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git	linux.git
 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git	linux-stable.git
+linux.git 								testing/crack.git
 git://people.freedesktop.org/~airlied/linux				testing/airlied--linux.git
 git://anongit.freedesktop.org/drm-intel					testing/drm-intel.git
 git://git.infradead.org/debloat-testing.git				testing/debloat-testing.git
