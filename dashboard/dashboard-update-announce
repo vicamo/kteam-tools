@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG, info, warning
+from ktl.msgq                           import MsgQueue
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+examples:
+    listen --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have ssh tunnel setup to the MQ server.')
+    parser.add_argument('before', help='Status file before')
+    parser.add_argument('after', help='Status file before')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    try:
+        if args.local:
+            mq = MsgQueue(address='localhost', port=9123)
+        else:
+            mq = MsgQueue()
+
+        before = {}
+        with file(args.before) as ofd:
+            for line in ofd:
+                (gorder, section, order, title, host, delta, mode, message) = line.strip().split()
+                before[section + ' ' + title + ' ' + host] = mode
+
+        with file(args.after) as nfd:
+            for line in nfd:
+                (gorder, section, order, title, host, delta, mode, message) = line.strip().split()
+
+                tag = section + ' ' + title + ' ' + host
+                mode_before = 'unknown'
+                if tag in before:
+                    mode_before = before[tag]
+
+                if mode_before != 'unknown' and mode_before != mode:
+                    m = 'Dashboard: {0}/{1} (on {2}) now {3}'.format(section, title, host, mode)
+                    m = m.replace('%s', ' ').replace('%p', '%')
+                    msg = {
+                        "key"            : "kernel.irc",
+                        "op"             : "notice",
+                        "msg"            : m,
+                        "notice"         : True
+                    }
+                    mq.publish(msg['key'], msg)
+
+        retval = 0
+
+    # Handle the user presses <ctrl-C>.
+    #
+    except KeyboardInterrupt:
+        warning("Aborting ...")
+
+# vi:set ts=4 sw=4 expandtab:
+

@@ -156,6 +156,8 @@ parse_v2()
 
 "$here/dashboard-update-html" <"$status.txt.new" >"$status.html.new"
 
+"$here/dashboard-update-announce" "$status.txt" "$status.txt.new"
+
 if [ ! -f "$out/jquery-1.11.2.min.js" ]; then
 	cp -p "$here/jquery-1.11.2.min.js" "$out/jquery-1.11.2.min.js"
 fi
