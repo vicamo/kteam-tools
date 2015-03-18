@@ -1,0 +1,46 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -lt 6 ]; then
+	echo "Usage: $0 <daemon> ... -- <group> <title> <warn> <alert> ..." 1>&2
+	exit 1
+fi
+
+daemon="$1"
+name=`basename "$1"`
+shift
+
+# Pull the command line apart, everything before -- is the daemon
+# command, the remainder for dashboard-status
+declare -A args
+while [ "$#" -gt 0 -a "$1" != '--' ]
+do
+    args[${#args[*]}]="$1"
+    shift
+done
+[ "$1" = '--' ] && shift
+
+# Relative filenames are relative to the directory containing sbin/$0
+case "$daemon" in
+/*)		;;
+*)		daemon="$here/../$daemon" ;;
+esac
+
+lck="/tmp/$name.lck"
+
+# Start the daemon in the background -- it remains connected to the lockfile
+# which keeps the locks in place.
+(
+	flock -n 9 || exit 1
+	"$daemon" "${args[@]}" &
+) 9>"$lck"
+
+# Attempt to re-grab an exclusive lock, if this succeeds then the daemon has
+# failed to start.  Timeout after 5s.
+flock -w 5 -x "$lck" -c "exit 0" || \
+    $HOME/bin/dashboard-status "cron-start-$name" "$@"
