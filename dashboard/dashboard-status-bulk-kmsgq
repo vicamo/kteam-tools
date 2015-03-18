@@ -68,7 +68,7 @@ class TheApp():
                 bulk.append(entry)
 
             details['op']  = 'update'
-            details['rhost'] = os.uname()[1]
+            details['rhost'] = s.args.rhost
             details['id'] = s.args.groupid
             if len(bulk):
                 details['updates'] = bulk
@@ -109,6 +109,7 @@ examples:
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument("groupid")
+    parser.add_argument("rhost", nargs='?', default=os.uname()[1])
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
 
