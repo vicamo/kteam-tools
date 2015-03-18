@@ -91,9 +91,9 @@ class TheApp():
         if 'updates' in payload:
             with open(sfilen, "w") as sfd:
                 for update in payload['updates']:
-                    line = 'V2 rhost=' + payload['rhost']
+                    line = 'V2 rhost=' + payload['rhost'].replace('%', '%p').replace(' ', '%s')
                     for key in update.keys():
-                        line += ' ' + key + '=' + str(update[key])
+                        line += ' ' + key + '=' + str(update[key]).replace('%', '%p').replace(' ', '%s')
                     print(line, file=sfd)
 
             os.rename(sfilen, sfile)

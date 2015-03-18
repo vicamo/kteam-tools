@@ -55,7 +55,8 @@ class TheApp():
             for line in sys.stdin:
                 # title stamp warn alert note
                 entry = {}
-                a = line.strip().split()
+                a = [ x.replace('%s', ' ').replace('%p', '%') for x in line.strip().split() ]
+
                 if a[0] == 'V2':
                     for kv in a[1:]:
                         (k, v) = kv.split('=', 1)
