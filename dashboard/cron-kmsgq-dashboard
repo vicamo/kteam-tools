@@ -6,5 +6,10 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-flock -nx /tmp/kmsgq-dashboard.lck -c "$here/kmsgq-dashboard kernel-dashboard $HOME/public_html/status/dashboard-status"
-$HOME/bin/dashboard-status dashboard-kmsgq 'Dashboard' 'Kernel MsgQueue Receiver' 5m 30m
+# Start the daemon in the background.
+flock -nx /tmp/kmsgq-dashboard.lck -c "$here/kmsgq-dashboard kernel-dashboard $HOME/public_html/status/dashboard-status &"
+
+# Attempt to re-grab an exclusive lock, if this succeeds
+# then the daemon has failed to start.  Timeout after 5s.
+flock -w 5 -x /tmp/kmsgq-dashboard.lck -c "exit 0" || \
+    $HOME/bin/dashboard-status dashboard-kmsgq 'Dashboard' 'Kernel MsgQueue Receiver' 5m 30m 
