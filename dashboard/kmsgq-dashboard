@@ -27,6 +27,13 @@ class TheApp():
         '''
         s.args = args
 
+        s.db_name = os.path.join(s.args.statedir, 'state.json')
+        s.db_data = {}
+
+        if os.path.exists(s.db_name):
+            with file(s.db_name) as dbf:
+                s.db_data = json.load(dbf)
+
     # _handler_status_bulk
     #
     def _handler_status_bulk(s, payload):
@@ -49,6 +56,17 @@ class TheApp():
 
         cdebug("bulk update seems valid")
 
+        # Install the new record.
+        s.db_data[uid] = payload['updates']
+
+        # Sync the database back.
+        with open(s.db_name + '.new', 'w') as dbf:
+            json.dump(s.db_data, dbf, indent=4)
+        os.rename(s.db_name + '.new', s.db_name)
+
+        cdebug("status database written")
+
+        # Write out this bulk batch into a file by uid.
         sfilen = os.path.join(s.args.statedir, uid + ".new")
         sfile  = os.path.join(s.args.statedir, uid + ".dash")
 
