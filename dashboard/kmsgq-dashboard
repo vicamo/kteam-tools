@@ -48,18 +48,34 @@ class TheApp():
     #
     def _handler_status_bulk(s, payload):
         cdebug("TheApp::_handler_status_bulk")
+        # Validate the incoming record.
         for field in ('id', 'rhost'):
             if field not in payload:
                 cerror("status-bulk: missing {0}, ignored".format(field))
                 return
-        uid = payload['id']
-        if not uid.startswith(payload['rhost'] + '-'):
-            uid = payload['rhost'] + '-' + uid
-        if '/' in uid:
+        if '/' in payload['id']:
             cerror("status-bulk: bad id <{0}>, ignored".format(uid))
             return
 
         cdebug("bulk update seems valid")
+
+        # If the id does not include the rhost, add it.
+        if not payload['id'].startswith(payload['rhost'] + '-'):
+            payload['id'] = payload['rhost'] + '-' + payload['id']
+        uid = payload['id']
+
+        # Fill in any missing information in the updates.
+        if 'updates' in payload:
+            for update in payload['updates']:
+                if 'order' not in update:
+                    update['order'] = 50
+                if 'group_order' not in update:
+                    if update['group'] == 'Dashboard':
+                        update['gorder'] = 0
+                    elif update['group'].startswith('Host:'):
+                        update['gorder'] = 90
+                    else:
+                        update['gorder'] = 50
 
         # Install the new record.
         if 'updates' in payload:
@@ -77,7 +93,7 @@ class TheApp():
                 for update in payload['updates']:
                     line = 'V2 rhost=' + payload['rhost']
                     for key in update.keys():
-                        line += ' ' + key + '=' + update[key]
+                        line += ' ' + key + '=' + str(update[key])
                     print(line, file=sfd)
 
             os.rename(sfilen, sfile)
