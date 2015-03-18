@@ -70,7 +70,8 @@ class TheApp():
             details['op']  = 'update'
             details['rhost'] = os.uname()[1]
             details['id'] = s.args.groupid
-            details['updates'] = bulk
+            if len(bulk):
+                details['updates'] = bulk
 
             # Submit the message to the Message Queue
             #

@@ -34,11 +34,21 @@ class TheApp():
             with file(s.db_name) as dbf:
                 s.db_data = json.load(dbf)
 
+    # _db_write
+    #
+    def _db_write(s):
+        # Sync the database back.
+        with open(s.db_name + '.new', 'w') as dbf:
+            json.dump(s.db_data, dbf, indent=4)
+        os.rename(s.db_name + '.new', s.db_name)
+
+        cdebug("status database written")
+        
     # _handler_status_bulk
     #
     def _handler_status_bulk(s, payload):
         cdebug("TheApp::_handler_status_bulk")
-        for field in ('id', 'rhost', 'updates'):
+        for field in ('id', 'rhost'):
             if field not in payload:
                 cerror("status-bulk: missing {0}, ignored".format(field))
                 return
@@ -48,36 +58,31 @@ class TheApp():
         if '/' in uid:
             cerror("status-bulk: bad id <{0}>, ignored".format(uid))
             return
-        #for update in payload['updates']:
-        #    for field in ('group', 'title', 'stamp', 'warn', 'alert'):
-        #        if field not in update:
-        #            cerror("status-bulk: status missing {0}, ignored".format(field))
-        #            return
 
         cdebug("bulk update seems valid")
 
         # Install the new record.
-        s.db_data[uid] = payload['updates']
-
-        # Sync the database back.
-        with open(s.db_name + '.new', 'w') as dbf:
-            json.dump(s.db_data, dbf, indent=4)
-        os.rename(s.db_name + '.new', s.db_name)
-
-        cdebug("status database written")
+        if 'updates' in payload:
+            s.db_data[uid] = payload['updates']
+        else:
+            del s.db_data[uid]
+        s._db_write()
 
         # Write out this bulk batch into a file by uid.
         sfilen = os.path.join(s.args.statedir, uid + ".new")
         sfile  = os.path.join(s.args.statedir, uid + ".dash")
 
-        with open(sfilen, "w") as sfd:
-            for update in payload['updates']:
-                line = 'V2 rhost=' + payload['rhost']
-                for key in update.keys():
-                    line += ' ' + key + '=' + update[key]
-                print(line, file=sfd)
+        if 'updates' in payload:
+            with open(sfilen, "w") as sfd:
+                for update in payload['updates']:
+                    line = 'V2 rhost=' + payload['rhost']
+                    for key in update.keys():
+                        line += ' ' + key + '=' + update[key]
+                    print(line, file=sfd)
 
-        os.rename(sfilen, sfile)
+            os.rename(sfilen, sfile)
+        else:
+            os.unlink(sfile)
 
         cdebug("bulk update written")
 
@@ -86,7 +91,7 @@ class TheApp():
     def _handler(s, payload):
         cdebug("TheApp::_handler")
 
-        if payload['op'] == 'status-bulk':
+        if payload['key'] == 'kernel.dashboard.status.bulk':
             s._handler_status_bulk(payload)
         else:
             cerror("Unknown op <{0}>, ignored".format(payload['op']))
@@ -103,8 +108,7 @@ class TheApp():
                 mq = MsgQueue(address='localhost', port=9123)
             else:
                 mq = MsgQueue()
-            mq.listen(s.args.queue, 'kernel.dashboard.status.bulk', s._handler_status_bulk)
-            #mq.listen(s.args.queue, 'dashboard.#', s._handler)
+            mq.listen(s.args.queue, 'kernel.dashboard.status.bulk', s._handler)
 
             print("done")
             retval = 0
