@@ -12,7 +12,7 @@ declare -a keys
 # Pick off the default positions.
 name="$1"
 shift
-for fixed in group title warn alert note
+for fixed in group title warning alert note
 do
 	case "$1" in
 	*=*|'')		break ;;
