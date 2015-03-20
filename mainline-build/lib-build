@@ -110,7 +110,7 @@ repo_remote_update()
 		git remote add "$remote" "$url"
 	fi
 	echo "$P: fetching $remote remote ..."
-	git fetch -t "$remote" || true
+	git fetch "$remote" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' || true
 }
 
 repo_remote_update_list()
@@ -144,6 +144,6 @@ repo_update_ubuntu()
 			echo "$P: adding $series remote ($series_repo)..."
 			git remote add "$series" "$series_repo"
 		fi
-		git fetch "$series" || true
+		git fetch "$series" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' || true
 	)
 }
