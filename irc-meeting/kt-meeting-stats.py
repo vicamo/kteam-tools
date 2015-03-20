@@ -35,7 +35,7 @@ def calculate_change(stat, key):
 
 stats = {}
 
-filename = "/home/kernel/public_html/reports/kt-meeting-stats.txt"
+filename = "$HOME/public_html/reports/kt-meeting-stats.txt"
 if not os.path.exists(filename):
     urllib.urlretrieve("http://people.canonical.com/~kernel/reports/kt-meeting-stats.txt", filename)
 
