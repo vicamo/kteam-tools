@@ -48,4 +48,4 @@ trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty/upd
 utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic/update_excuses.yaml utopic utopic-updates utopic-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" | \
-    "$here/dashboard-status-bulk" "proposed-watcher"
+    "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
