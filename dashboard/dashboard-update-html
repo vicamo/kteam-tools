@@ -151,9 +151,9 @@ for line in sys.stdin:
 
     if mode == 'alert':
         state[section] = mode
-    elif mode == 'warn' and state.get(section, None) not in ('alert'):
+    elif mode == 'warn' and state.get(section, '') not in ('alert'):
         state[section] = mode
-    elif mode == 'good' and state.get(section, None) not in ('alert', 'warn'):
+    elif mode == 'good' and state.get(section, '') not in ('alert', 'warn'):
         state[section] = mode
     entries.append((gorder, section, order, title, host, delta, mode, message))
 
