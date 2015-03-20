@@ -19,10 +19,10 @@ dateDiff (){
     echo $((diffSec/sec*abs))
 }
 
-LASTRUN=`head -1 /home/kernel/public_html/reports/kt-meeting.txt | cut -f3 -d' '`
+LASTRUN=`head -1 $HOME/public_html/reports/kt-meeting.txt | cut -f3 -d' '`
 TODAY=`date +%F`
 DURATION=`dateDiff -d $LASTRUN $TODAY`
 if [ $DURATION -ge 7 ]; then
-	cd /home/kernel/kteam-tools/irc-meeting
-	python kt-meeting-stats.py > /home/kernel/public_html/reports/kt-meeting.txt
+	cd $HOME/kteam-tools/irc-meeting
+	python kt-meeting-stats.py > $HOME/public_html/reports/kt-meeting.txt
 fi
