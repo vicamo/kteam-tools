@@ -1,4 +1,4 @@
 #!/bin/bash
-cd /home/kernel/kteam-tools/cvescripts
+cd $HOME/kteam-tools/cvescripts
 python kernel-cves.py
-mv kernel-cves.html /home/kernel/public_html/reports/
+mv kernel-cves.html $HOME/public_html/reports/
