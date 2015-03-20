@@ -289,7 +289,6 @@ class TheApp():
     def _handler(s, payload):
         center("TheApp::_handler")
         cdebug('----------------------------------------------------------------------------')
-        print(json.dumps(payload, sort_keys=True, indent=4))
 
         if 'key' in payload:
             if payload['key'] == 'kernel.irc':
