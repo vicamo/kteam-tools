@@ -110,7 +110,7 @@ repo_remote_update()
 		git remote add "$remote" "$url"
 	fi
 	echo "$P: fetching $remote remote ..."
-	git fetch "$remote" "+refs/heads/*:refs/remotes/$series/*" '+refs/tags/*:refs/tags/*' || true
+	git fetch "$remote" "+refs/heads/*:refs/remotes/$remote/*" '+refs/tags/*:refs/tags/*' || true
 }
 
 repo_remote_update_list()
