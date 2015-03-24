@@ -146,7 +146,7 @@ class CreateTrackingBug(StdApp):
             title = "%s update to %s stable release" % (series.title(), self.cfg['version'])
 
             # Repository - see if it's a tree we maintain
-            if version.startswith("3.5") or version.startswith("3.8"):
+            if "-ckt" in version:
                 repository = "git://kernel.ubuntu.com/ubuntu/linux.git"
             else:
                 repository = "git://git.kernel.org/"
