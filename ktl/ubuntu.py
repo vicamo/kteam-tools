@@ -223,6 +223,7 @@ class Ubuntu:
             'backport-packages' :
             {
                 'linux-lts-utopic' : [ 'linux', '14.10' ],
+                'linux-lts-vivid' : [ 'linux', '15.04' ],
             },
             'sha1' : '',
             'md5' : ''
