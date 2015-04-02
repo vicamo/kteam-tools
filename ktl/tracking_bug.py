@@ -192,9 +192,9 @@ class TrackingBug:
         #    add all tags for this package name
         taglist = self.wf.initial_tags(package, devel_series)
         if devel_series:
-            taglist.append('blocks-proposed')
+            taglist.append('block-proposed')
         else:
-            taglist.append('blocks-proposed-%s' % series_target)
+            taglist.append('block-proposed-%s' % series_target)
         for itag in taglist:
             bug.tags.append(itag)
 
