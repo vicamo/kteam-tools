@@ -1079,6 +1079,12 @@ class WorkflowEngine():
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
         cdebug('            promote_to_proposed_fix_released enter')
+        # If we've already been through here and already sent out the announcement
+        # don't go through it again.
+        #
+        if 'proposed-announcement-sent' in taskobj.bug.properties:
+            return False
+
         # Exit if processed already
         if s.projectname != 'kernel-development-workflow':
             task = s.wfb.tasks_by_name['verification-testing']
@@ -1100,6 +1106,7 @@ class WorkflowEngine():
             s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
             s.set_testing_to_confirmed(taskobj)
         s.send_upload_announcement(taskobj, 'proposed')
+        s.props.set({'proposed-announcement-sent':True})
 
         # Now tag all bugs verification-needed and spam with a comment
         # Automate this in the future but for now send an email
