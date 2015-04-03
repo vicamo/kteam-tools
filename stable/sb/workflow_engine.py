@@ -77,7 +77,7 @@ class WorkflowEngine():
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
             'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Fix Released' : s.package_testing_fix_committed }),
-            'promote-to-proposed'       : TaskActions({'Fix Released' : s.promote_to_proposed_fix_released}),
+            'promote-to-proposed'       : TaskActions({'New'          : s.promote_to_proposed_new,             'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
             'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,          'Fix Released' : s.regression_testing_fix_released}),
@@ -1017,8 +1017,7 @@ class WorkflowEngine():
                 s.send_comment(taskobj, 'Packages outside of proper component', bugbody)
                 if not s.args.dryrun:
                     s.props.set({tstamp_prop:None})
-                s.send_email(taskobj, '[bug %s] Packages copied to the wrong component'
-                                % (bug.id), msgbody)
+                s.send_email(taskobj, '[bug %s] Packages copied to the wrong component' % (bug.id), msgbody)     # DEBUG <------------------
                 cwarn('                    packages ended up in the wrong pocket')
                 cdebug('                check_component_in_pocket leave (False)')
                 return False
@@ -1064,6 +1063,16 @@ class WorkflowEngine():
             s.wfb.tasks_by_name['security-signoff'].status = 'Confirmed'
             s.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-start')
 
+    def promote_to_proposed_new(s, taskobj):
+        cdebug('            promote_to_proposed_new enter')
+        if s.projectname == 'kernel-development-workflow':
+            cdebug('                Development kernel')
+            if s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-proposed-end', 'proposed'):
+                cdebug('                Set this task to Fix Released')
+                s.wfb.tasks_by_name['promote-to-proposed'].status = 'Fix Released'
+        cdebug('            promote_to_proposed_new leave')
+        return True
+
     def promote_to_proposed_fix_released(s, taskobj):
         """
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
@@ -1071,11 +1080,12 @@ class WorkflowEngine():
         """
         cdebug('            promote_to_proposed_fix_released enter')
         # Exit if processed already
-        task = s.wfb.tasks_by_name['verification-testing']
-        if task.status != 'New':
-            cdebug('                verification-testing task is not "New"')
-            cdebug('            promote_to_proposed_fix_released leave (False)')
-            return False
+        if s.projectname != 'kernel-development-workflow':
+            task = s.wfb.tasks_by_name['verification-testing']
+            if task.status != 'New':
+                cdebug('                verification-testing task is not "New"')
+                cdebug('            promote_to_proposed_fix_released leave (False)')
+                return False
 
         # Check if packages were copied to the right pocket->component
         if not s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-proposed-end', 'proposed'):
@@ -1084,10 +1094,11 @@ class WorkflowEngine():
             return False
 
         # Update remaining time stamps and status, send announcement
-        s.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
-        s.set_phase(taskobj, 'Verification & Testing')
-        s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
-        s.set_testing_to_confirmed(taskobj)
+        if s.projectname != 'kernel-development-workflow':
+            s.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
+            s.set_phase(taskobj, 'Verification & Testing')
+            s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
+            s.set_testing_to_confirmed(taskobj)
         s.send_upload_announcement(taskobj, 'proposed')
 
         # Now tag all bugs verification-needed and spam with a comment
