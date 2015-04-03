@@ -338,6 +338,7 @@ class Workflow:
                 'prepare-package-signed'     : 'canonical-kernel-team',
                 'package-testing'            : 'canonical-kernel-team',
                 'promote-to-release'         : 'ubuntu-archive',
+                'promote-to-proposed'        : 'canonical-kernel-team',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
