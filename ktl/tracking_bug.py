@@ -194,7 +194,7 @@ class TrackingBug:
         if devel_series:
             taglist.append('block-proposed')
         else:
-            taglist.append('block-proposed-%s' % series_target)
+            taglist.append('block-proposed-%s' % targeted_series_name)
         for itag in taglist:
             bug.tags.append(itag)
 
