@@ -42,7 +42,7 @@ examples:
             mq = MsgQueue(address='localhost', port=9123)
         else:
             mq = MsgQueue()
-        mq.listen(args.queue, 'kernel.testing.#', handler)
+        mq.listen(args.queue, 'kernel.#', handler)
 
         retval = 0
 
