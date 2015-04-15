@@ -3,7 +3,7 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG, info, warning
-from lib.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueue
 
 if __name__ == '__main__':
     # Command line argument setup and initial processing
