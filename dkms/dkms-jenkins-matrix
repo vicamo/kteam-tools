@@ -57,7 +57,7 @@ for line in sys.stdin:
                 #print(build['description'], file=sys.stderr)
                 if 'description' not in build or not build['description']:
                     continue
-                (kver, pver) = build['description'].split(' ')
+                (kver, pver) = build['description'].split(' ')[0:2]
                 if '-' not in kver:
                     continue
                 (pkg, pver) = pver.split('/')
