@@ -370,7 +370,7 @@ class WorkflowEngine():
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : series,
-            "series-version" : s.ubuntu.index_by_series_name[series],
+            "series-version" : s.ubuntu.index_by_series_name[series]['series_version'],
             "hwe"            : hwe,
             "bug id"         : task.bug.id,
             "url"            : s.bug_url(task.bug.id),
