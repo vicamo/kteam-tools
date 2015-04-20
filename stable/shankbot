@@ -339,7 +339,8 @@ class Shankster(threading.Thread):
                 except:
                     # This must be a private bug
                     #
-                    s.output.notice("NOTICE:  %s %s appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[2], v[0]))
+                    #s.output.notice("NOTICE:  %s %s appears to have a commit with private bug LP: #%s as the buglink" % (v[1].title(), v[2], v[0]))
+                    pass
 
         except:
             s.output.notice("NOTICE: The urllib.urlopen failed. Is the http://people.canonical.com/~kernel/status/bug-pending missing?")
