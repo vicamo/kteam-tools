@@ -9,4 +9,4 @@ name="$1"
 {
 	echo "$name"
 	cat -
-} | ssh -i ~/.ssh/mainline-publish kernel-ppa@zinc.canonical.com dashboard-status
+} | ssh -i ~/.ssh/mainline-publish kernel-ppa@wani.canonical.com dashboard-status
