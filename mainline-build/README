@@ -1,9 +1,9 @@
-These scripts are used on zinc.canonical.com to produce builds of mainline
+These scripts are used on kernel.canonical.com to produce builds of mainline
 Linux kernels using Ubuntu configuration (as much as possible). This provides
 testers a way to confirm if the bug is fixed upstream and helps in testing of
 upstream kernels too.
 
-For the most part these scripts assume that are on zinc, but you can
+For the most part these scripts assume that are on kernel.u.c, but you can
 build on other machines with a couple of preparation steps.
 
 1) mkdir -p $HOME/COD

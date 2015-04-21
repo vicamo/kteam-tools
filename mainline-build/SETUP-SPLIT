@@ -1,3 +1,10 @@
+WARNING WARNING: this is now out of date
+
+We only need the basic config for one or more builders, and the triggers
+run on the common server again now.
+
+========
+
 = Mainline Build Split Server Setup =
 
 The mainline builds are designed to be split into at least two parts.

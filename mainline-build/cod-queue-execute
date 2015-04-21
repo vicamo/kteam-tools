@@ -34,7 +34,7 @@ rm -f "$lock_tmp"
 # Run things in the queue.
 while :
 do
-	ssh -i "$key" kernel-ppa@zinc.ubuntu.com \
+	ssh -i "$key" kernel-ppa@kernel.ubuntu.com \
 		queue pick mainline | sed -e "s@^@$here/@" >"$jobf"
 	
 	job=`cat "$jobf"`
@@ -48,11 +48,11 @@ do
 	echo "$P: execute-complete $job (rc=$?)"
 
 	echo "$P: syncing results to kernel.ubuntu.com ..."
-	rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@zinc.ubuntu.com:incoming/ && \
+	rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
 		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload"
 	echo "$P: sync complete"
 
-	ssh -i "$key" kernel-ppa@zinc.ubuntu.com \
+	ssh -i "$key" kernel-ppa@kernel.ubuntu.com \
 		queue complete
 	
 	echo "$P: job-complete $job"
