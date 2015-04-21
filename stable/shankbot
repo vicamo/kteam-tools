@@ -21,7 +21,7 @@ from threading                          import Thread, Event
 from ktl.ircbot                         import SingleServerIRCBot
 from ktl.irclib                         import nm_to_n, irc_lower
 from ktl.shell                          import sh, ShellError
-from ktl.utils                          import json_load
+from ktl.utils                          import json_load, o2ascii
 import urllib
 from launchpadlib.launchpad             import Launchpad
 
@@ -666,7 +666,7 @@ if __name__ == '__main__':
     cfg = json_load(args.config)
 
     setattr(args, 'channel',  cfg['channel'])
-    setattr(args, 'nick',     cfg['nick'])
+    setattr(args, 'nick',     o2ascii(cfg['nick']))
     setattr(args, 'user',     cfg['user'])
     setattr(args, 'password', cfg['passwd'])
     setattr(args, 'port',     cfg['port'])
