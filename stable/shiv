@@ -9,6 +9,7 @@ import Queue
 from ktl.log                            import cdebug, center, cleave
 import ssl
 from ktl.msgq                           import MsgQueue
+from ktl.utils                          import json_load
 import json
 import re
 from string                             import punctuation
@@ -311,7 +312,7 @@ class TheApp():
 
     # main
     #
-    def main(s):
+    def main(s, cfg):
         '''
         '''
         center("TheApp::main")
@@ -324,14 +325,14 @@ class TheApp():
                 mq = MsgQueue()
 
             irc_cfg = {
-                'host'     : '91.189.94.183',
-                'port'     : 6697,
+                'host'     : cfg['server'],
+                'port'     : cfg['port'],
                 'ssl'      : True,
-                'user'     : 'bradf',
-                'password' : 'kthxbye',
-                'nick'     : 'shiv',
+                'user'     : cfg['user'],
+                'password' : cfg['passwd'],
+                'nick'     : cfg['nick'],
                 'name'     : 'Kernel Bot',
-                'channel'  : '#stable-kernel',
+                'channel'  : cfg['channel'],
             }
             s.irc = IrcClient(cfg=irc_cfg, msgq=mq)
             s.irc.start()
@@ -361,6 +362,7 @@ examples:
     KernelMQ --help
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--config',  required=True,  type=str, help="Points at the configuration file")
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('queue', help='Name of the queue to use')
@@ -375,8 +377,10 @@ examples:
     else:
         basicConfig(level=WARNING, format=log_format)
 
+    cfg = json_load(args.config)
+
     app = TheApp(args)
-    exit(app.main())
+    exit(app.main(cfg))
 
 
 # vi:set ts=4 sw=4 expandtab:
