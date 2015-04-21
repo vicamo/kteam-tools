@@ -1,6 +1,6 @@
 #!/bin/make
 #
-# This makefile mirrors git repositories from zinc.canonical.com onto github.com.
+# This makefile mirrors git repositories from kernel.ubuntu.com onto github.com.
 # This assumes that the account running this makefile has the keys from
 # kernel-ppa@canonical.com. You must also use some .ssh/config magic:
 #
