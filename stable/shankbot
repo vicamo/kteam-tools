@@ -21,6 +21,7 @@ from threading                          import Thread, Event
 from ktl.ircbot                         import SingleServerIRCBot
 from ktl.irclib                         import nm_to_n, irc_lower
 from ktl.shell                          import sh, ShellError
+from ktl.utils                          import json_load
 import urllib
 from launchpadlib.launchpad             import Launchpad
 
@@ -659,22 +660,17 @@ if __name__ == '__main__':
     app_epilog = '''
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--server',  required=True,  type=str, help='The irc server to be connected to. The port is specified by separating the server name from the port with a \':\'.')
-    parser.add_argument('--nick',    required=True,  type=str, help='Irc nickname to use.')
-    parser.add_argument('--channel', required=True,  type=str, help='The channel the bot is to join.')
-    parser.add_argument('--user',    required=True,  type=str, help='The username to use to connect to the server. If the string contains a \':\' the password follows the \':\'.')
+    parser.add_argument('--config',  required=True,  type=str, help="Points at the configuration file")
     args = parser.parse_args()
 
-    setattr(args, 'port', 6667)
-    if ':' in args.server:
-        (s, p) = args.server.split(':', 1)
-        args.port = int(p)
-        args.server = s
+    cfg = json_load(args.config)
 
-    if ':' in args.user:
-        (u, p) = args.user.split(':', 1)
-        setattr(args, 'password', p)
-        args.user = u
+    setattr(args, 'channel',  cfg['channel'])
+    setattr(args, 'nick',     cfg['nick'])
+    setattr(args, 'user',     cfg['user'])
+    setattr(args, 'password', cfg['passwd'])
+    setattr(args, 'port',     cfg['port'])
+    setattr(args, 'server',   cfg['server'])
 
     app = IrcShankbot(args)
     exit(app.run())
