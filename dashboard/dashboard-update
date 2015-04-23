@@ -129,7 +129,7 @@ parse_v2()
 		done <"$state/$dhost.all"
 	done <"$0.conf"
 
-	echo "00 Dashboard 10 Scheduled%sUpdate `hostname` 0 good -"
+	#echo "00 Dashboard 10 Scheduled%sUpdate `hostname` 0 good -"
 	for file in "$state"/*.dash
 	do
 		# v1 Host:%sgloin gloin Update%sRepos 1425301160 90000 93600 
