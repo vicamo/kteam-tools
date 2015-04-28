@@ -96,13 +96,16 @@ for line in sys.stdin:
     # Determine if each version is a regression on the previous one.
     prev = vlist[0]
     for version in vlist[1:]:
-        regression[version] = False
+        regression[version] = 'G'
         for package in packages:
             pstatus = jobs.get((package, prev))
             status = jobs.get((package, version))
 
-            if pstatus == 'GOOD' and status != 'GOOD':
-                regression[version] = True
+            if pstatus != None and status == None:
+                regression[version] = 'M'
+            elif regression[version] != 'M' and \
+                    pstatus == 'GOOD' and status != 'GOOD':
+                regression[version] = 'R'
         prev = version
 
     if options.versions:
@@ -118,7 +121,7 @@ for line in sys.stdin:
 if options.regressions:
     for (group, link, vlist, jobs, links, regression) in groups:
         for version in vlist:
-            print(group + ":" + version + ":" + str(regression.get(version)))
+            print(group + ":" + version + ":" + regression.get(version))
     sys.exit(0)
 
 packages = sorted(packages)
