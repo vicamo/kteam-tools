@@ -373,12 +373,12 @@ class Ubuntu:
                     'signed' : 'linux-signed-lts-trusty'
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
-                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
-                'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
+                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
+                #'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp', 'linux-lowlatency' ]
+                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ] # 'linux-lowlatency'
             },
             'backport-packages' :
             {
