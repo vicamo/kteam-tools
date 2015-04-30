@@ -133,11 +133,11 @@ class Ubuntu:
     db = {
         '15.04' :
         {
-            'development' : True,        # This is the version that is currently under development
+            'development' : False,        # This is the version that is currently under development
             'series_version' : '15.04',
             'kernel'    : '3.19.0',
             'name'      : 'vivid',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
