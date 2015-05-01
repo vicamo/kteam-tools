@@ -228,7 +228,7 @@ find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
 
 found="0"
 fbranch=""
-for branch in unstable master-next master
+for branch in master-next master
 do
 	let off=-1
 	while :

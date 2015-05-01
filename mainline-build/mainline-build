@@ -45,13 +45,14 @@ v2.6.32*)				master_release="lucid" ;;
 v2.6.33*|v2.6.34*|v2.6.35*)		master_release="maverick" ;;
 v2.6.36*|v2.6.37*|v2.6.38*)		master_release="natty" ;;
 v2.6.39*|v3.0|v3.0.*)			master_release="oneiric" ;;
+v2*)					master_release="hardy" ;; # Catch old stuff.
 v3.1|v3.1.*|v3.2|v3.2.*)		master_release="precise" ;;
 v3.3|v3.3.*|v3.4|v3.4.*|v3.5|v3.5.*)	master_release="quantal" ;;
 v3.6|v3.6.*|v3.7|v3.7.*|v3.8|v3.8.*)	master_release="raring" ;;
 v3.9|v3.9.*|v3.10|v3.10.*|v3.11|v3.11.*)	master_release="saucy" ;;
 v3.12|v3.12.*|v3.13|v3.13.*)			master_release="trusty" ;;
 v3.14|v3.14.*|v3.15|v3.15.*|v3.16|v3.16.*)	master_release="utopic" ;;
-v2*)						master_release="hardy" ;; # Catch old stuff.
+v3.17|v3.17.*|v3.18|v3.18.*|v3.19|v3.19.*)	master_release="unstable" ;;
 *)						master_release="vivid" ;;
 esac
 
