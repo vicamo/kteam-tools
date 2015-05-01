@@ -158,7 +158,7 @@ mailbody.extend([
     "The updated %s.y-ckt tree can be found at: " % (basever),
     "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y" % (basever),
     "and can be browsed at:",
-    "  http://kernel.ubuntu.com/git?p=ubuntu/linux.git;h=refs/heads/linux-%s.y;a=shortlog" % (basever),
+    "    http://kernel.ubuntu.com/git/ubuntu/linux.git/log/?h=linux-%s.y" % (basever),
     "",
     "The diff from %s is posted as a follow-up to this email." % (rangestart),
     "",

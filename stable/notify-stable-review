@@ -210,7 +210,7 @@ This is the start of the review cycle for the Linux %s stable kernel.
 This version contains %s new patches, summarized below.  The new patches are
 posted as replies to this message and also available in this git branch:
 
-http://kernel.ubuntu.com/git?p=ubuntu/linux.git;h=%s;a=shortlog
+http://kernel.ubuntu.com/git/ubuntu/linux.git/log/?h=%s
 
 git://kernel.ubuntu.com/ubuntu/linux.git  %s
 

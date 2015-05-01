@@ -117,8 +117,8 @@ def AssembleMailBody(version, subject, patchlines):
         " extended stable tree ",
         "which can be found at:",
         "",
-        " http://kernel.ubuntu.com/git?p=ubuntu/" +
-        "linux.git;a=shortlog;h=refs/heads/linux-" + bversion + "y-queue",
+	"    http://kernel.ubuntu.com/git/ubuntu/linux.git/log/" +
+		"?h=linux-" + bversion + "y-queue",
         tversion_para,
         "If you, or anyone else, feels it should not be added to this tree,"
         " please ",
