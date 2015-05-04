@@ -487,7 +487,7 @@ class Ubuntu:
             'series_version' : '10.04',
             'kernel' : '2.6.32',
             'name' : 'lucid',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux',
