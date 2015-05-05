@@ -65,7 +65,7 @@ for line in sys.stdin:
                         emit({
                             'group':    'Proposed Migration',
                             'host':     host,
-                            'title':    'Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test,
+                            'title':    name + ': Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test,
                             'state':    tstate,
                             'note':     state,
                         })
