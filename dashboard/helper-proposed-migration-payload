@@ -42,14 +42,18 @@ for line in sys.stdin:
     with open(yfile) as yfd:
             state = yaml.load(yfd)
 
+    title = 'Migration (' + name + ')'
+
     run = state['generated-date']
     run_ts = int((run - epoch).total_seconds())
 
+    tests_running = False
     for source in state['sources']:
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
+                    tests_running = True
                 if source['source'] == 'linux':
                     match = re_extract.match(excuse)
                     if match:
@@ -69,6 +73,8 @@ for line in sys.stdin:
                             'state':    tstate,
                             'note':     state,
                         })
+    if tests_running:
+        title += ' Tests Running'
 
     # If the run completed since it was triggered, all is good, else give it 35
     # minutes to get there, after that warn for a further hour, then alert.
