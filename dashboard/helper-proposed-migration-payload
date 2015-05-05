@@ -94,7 +94,7 @@ for line in sys.stdin:
     emit({
         'group':    'Proposed Migration',
         'host':     host,
-        'title':    'Migration (' + name + ')',
+        'title':    title,
         'state':    tstate,
         'note':     'needed={0} run={1}'.format(needed_str, run_str),
     })
