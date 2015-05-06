@@ -31,3 +31,5 @@ do
 done <<EOL
 kernel-ppa/mirror/ubuntu-wily.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
 EOL
+
+date
