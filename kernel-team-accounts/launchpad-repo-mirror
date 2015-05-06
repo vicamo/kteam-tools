@@ -29,6 +29,8 @@ do
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
 kernel-ppa/mirror/ubuntu-wily.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
+kernel-ppa/mirror/ubuntu-wily-meta.git     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily
+kernel-ppa/mirror/ubuntu-wily-signed.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily
 kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 EOL
 
