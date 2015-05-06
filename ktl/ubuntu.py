@@ -131,6 +131,33 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
+        '15.10' :
+        {
+            'development' : True,        # This is the version that is currently under development
+            'series_version' : '15.10',
+            'kernel'    : '4.0.0',
+            'name'      : 'wily',
+            'supported' : False,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+            ],
+            'dependent-packages' :
+            {
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                },
+            },
+            'derivative-packages' :
+            {
+                'linux' : []
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
         '15.04' :
         {
             'development' : False,        # This is the version that is currently under development
@@ -611,6 +638,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '4.0.0'    : db['15.10'],
         '3.19.0'   : db['15.04'],
         '3.16.0'   : db['14.10'],
         '3.13.0'   : db['14.04'],
@@ -632,6 +660,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'wily'     : db['15.10'],
         'vivid'    : db['15.04'],
         'utopic'   : db['14.10'],
         'trusty'   : db['14.04'],
