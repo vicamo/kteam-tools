@@ -28,8 +28,8 @@ do
     (cd "/srv/kernel.ubuntu.com/git/$repo" && \
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
-kernel-ppa/mirror/ubuntu-wily.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
-kernel-ppa/mirror/unstable.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
+kernel-ppa/mirror/ubuntu-wily.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
+kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 EOL
 
 date
