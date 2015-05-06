@@ -19,6 +19,7 @@ ubuntu/ubuntu-trusty-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ub
 ubuntu/ubuntu-precise.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
 ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
 ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
+ubuntu/ubuntu-precise-lbm             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
 EOL
 
 # MIRROR launchpad -> wani
