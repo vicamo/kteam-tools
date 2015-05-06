@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+# MIRROR wani -> launchpad
+while read repo url
+do
+    echo "*** $repo ..."
+    (cd "/srv/kernel.ubuntu.com/git/$repo" && git push --mirror "$url")
+done <<EOL
+ubuntu/unstable.git                   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
+ubuntu/ubuntu-vivid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
+ubuntu/ubuntu-vivid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
+ubuntu/ubuntu-vivid-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
+ubuntu/ubuntu-utopic.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
+ubuntu/ubuntu-utopic-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
+ubuntu/ubuntu-utopic-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
+ubuntu/ubuntu-trusty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
+ubuntu/ubuntu-trusty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
+ubuntu/ubuntu-trusty-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
+ubuntu/ubuntu-precise.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
+ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
+ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
+EOL
+
+# MIRROR launchpad -> wani
+while read repo url
+do
+    echo "*** $repo ..."
+    (cd "/srv/kernel.ubuntu.com/git/$repo" && \
+        git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
+done <<EOL
+kernel-ppa/mirror/ubuntu-wily.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
+EOL
