@@ -7,7 +7,6 @@ do
     echo "*** $repo ..."
     (cd "/srv/kernel.ubuntu.com/git/$repo" && git push --mirror "$url")
 done <<EOL
-ubuntu/unstable.git                   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 ubuntu/ubuntu-vivid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
 ubuntu/ubuntu-vivid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
 ubuntu/ubuntu-vivid-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
@@ -30,6 +29,7 @@ do
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
 kernel-ppa/mirror/ubuntu-wily.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
+kernel-ppa/mirror/unstable.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 EOL
 
 date
