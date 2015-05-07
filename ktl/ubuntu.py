@@ -241,6 +241,10 @@ class Ubuntu:
                     'meta' : 'linux-meta-lts-utopic',
                     'signed' : 'linux-signed-lts-utopic'
                 },
+                'linux-lts-vivid' : {
+                    'meta' : 'linux-meta-lts-vivid',
+                    'signed' : 'linux-signed-lts-vivid'
+                },
                 'linux-keystone' : { 'meta' : 'linux-meta-keystone' },
             },
             'derivative-packages' :
