@@ -116,35 +116,7 @@ ADDPKG="$ADDPKG xmlto docbook-utils transfig sharutils"
 ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc lzop"
 ADDPKGDEP=
 case $SUITE in
-	dapper)
-		ADDPKG="$ADDPKG kernel-package linux32";
-		ADDPKGDEP="$ADDPKGDEP kernel-package";
-		;;
-	hardy)
-		ADDPKGDEP="$ADDPKGDEP linux";
-		;;
-	jaunty)
-		ADDPKG="$ADDPKG makedumpfile"
-		ADDPKGDEP="$ADDPKGDEP linux";
-		;;
-	karmic)
-		ADDPKG="$ADDPKG makedumpfile"
-		ADDPKGDEP="$ADDPKGDEP linux";
-		;;
-	lucid)
-		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage asciidoc gs"
-		ADDPKGDEP="$ADDPKGDEP linux";
-		;;
-	maverick)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc uboot-mkimage"
-		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
-		case ${ARCH} in
-			i386|amd64)
-				ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
-			;;
-		esac
-		;;
-	oneiric|precise|android|trusty|utopic|vivid|wily)
+	precise|trusty|utopic|vivid|wily)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -162,7 +134,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|android|trusty|utopic|vivid|wily)
+	precise|trusty|utopic|vivid|wily)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -197,15 +169,6 @@ case $SUITE in
 	trusty|utopic|vivid|wily)
 		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
-	android)
-		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
-		ADDPKG="$ADDPKG g++-4.4-multilib bison xsltproc flex gperf lib32ncurses5-dev git curl lsb-release vim zip"
-		ADDPKG="$ADDPKG git-core gnupg flex bison gperf build-essential"
-		ADDPKG="$ADDPKG zip curl libc6-dev libncurses5-dev:i386 x11proto-core-dev"
-		ADDPKG="$ADDPKG libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386"
-		ADDPKG="$ADDPKG libgl1-mesa-dev g++-multilib mingw32 openjdk-6-jdk tofrodos"
-		ADDPKG="$ADDPKG python-markdown libxml2-utils xsltproc zlib1g-dev:i386"
-		;;
 	*)
 		;;
 esac
@@ -229,15 +192,13 @@ case $SUITE in
 	trusty|utopic|vivid|wily)
 		ADDPKG="$ADDPKG libiberty-dev pkg-config dh-systemd"
 		case $ARCH in
-			amd64|i386) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-arm-linux-androideabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu"
+			amd64|i386) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu"
 			;;
 		esac
 		;;
 esac
 
 case $SUITE in
-	android) _SUITE=precise
-		;;
 	*) _SUITE=$SUITE
 		;;
 	esac
@@ -357,31 +318,6 @@ if $DOINSTALL; then
 	# Add some extra packages
 	#
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
-	case $SUITE in
-		android)
-			# https://wiki.canonical.com/PES/Engineering/Premium/UDS-R/Android/BuildingAOSP
-			echo Installing android Java packages
-			if [ -d /var/local/oab ]
-			then
-				cp -v /var/local/oab/*.deb $TARGET/root
-				JF=
-				for i in /var/local/oab/*.deb; do
-					JF="$JF /root/`basename $i`"
-				done
-				${SCHROOTCMD} -- dpkg -i $JF
-				${SCHROOTCMD} -- apt-get -f -y --force-yes install
-				${SCHROOTCMD} -- apt-get install sun-java6-jdk
-			else
-				${SCHROOTCMD} -- apt-get -y --force-yes install wget
-				${SCHROOTCMD} -- wget --no-check-certificate https://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
-				${SCHROOTCMD} -- chmod +x /root/oab-java6.sh
-				${SCHROOTCMD} -- bash /root/oab-java6.sh
-				${SCHROOTCMD} -- apt-get -y --force-yes install sun-java6-jdk
-			fi
-			;;
-		*)
-			;;
-	esac
 fi
 
 PKGLIST=/tmp/$$.pkglist
