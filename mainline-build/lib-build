@@ -105,8 +105,8 @@ repo_remote_url_set	'utopic-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-utopic
 repo_remote_url_set	'vivid'			'git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git'
 repo_remote_url_set	'vivid-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git'
 
-repo_remote_url_set	'wani'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wani'
-repo_remote_url_set	'wani-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wani'
+repo_remote_url_set	'wily'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily'
+repo_remote_url_set	'wily-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily'
 
 repo_remote_url_set	'unstable'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable'
 
