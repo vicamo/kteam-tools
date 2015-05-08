@@ -24,7 +24,7 @@ echo "$$" >"$lock_tmp"
 while ! ln "$lock_tmp" "$lock" 2>/dev/null
 do
     echo "$P: incoming locked ... waiting" 1>&2
-    exit 1
+    sleep 15
 done
 rm -f "$lock_tmp"
 
