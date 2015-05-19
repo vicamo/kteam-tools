@@ -121,7 +121,7 @@ for line in sys.stdin:
 if options.regressions:
     for (group, link, vlist, jobs, links, regression) in groups:
         for version in vlist:
-            print(group + ":" + version + ":" + regression.get(version))
+            print(group + ":" + version + ":" + regression.get(version, "UNKNOWN"))
     sys.exit(0)
 
 packages = sorted(packages)
