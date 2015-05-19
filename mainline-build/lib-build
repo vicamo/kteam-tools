@@ -108,6 +108,7 @@ repo_remote_url_set	'lucid-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-m
 
 repo_remote_url_set	'precise'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise'
 repo_remote_url_set	'precise-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise'
+repo_remote_url_set	'precise-lbm'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise'
 repo_remote_url_set	'trusty'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty'
 repo_remote_url_set	'trusty-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty'
 repo_remote_url_set	'utopic'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic'
