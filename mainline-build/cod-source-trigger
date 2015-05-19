@@ -153,9 +153,9 @@ pre-proposed trusty linux master-next linux-meta master no-release
 pre-proposed precise linux master-next linux-meta master no-release
 pre-proposed precise linux-lbm master no-release
 pre-proposed precise linux lts-backport-trusty - - no-release
-pre-proposed lucid linux master-next linux-meta master no-release
-pre-proposed lucid linux-lbm master no-release
 EOL
+#pre-proposed lucid linux master-next linux-meta master no-release
+#pre-proposed lucid linux-lbm master no-release
 #pre-proposed utopic linux goldfish linux-meta goldfish -
 #pre-proposed utopic linux grouper linux-meta grouper -
 #pre-proposed utopic linux maguro linux-meta maguro -
