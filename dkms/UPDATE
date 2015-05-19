@@ -18,24 +18,24 @@ do
 	esac
 
 	ofile="$out/$file"
-	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new"
+	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new" \
+		--urlmap http://d-jenkins.ubuntu-ci:8080/ http://jenkins.qa.ubuntu.com/
 	mv -f "$ofile.new" "$ofile"
 
 	ofile="$out/int-$file"
-	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new" \
-		--urlmap http://jenkins.qa.ubuntu.com/ http://d-jenkins.ubuntu-ci:8080/
+	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new"
 	mv -f "$ofile.new" "$ofile"
 done <"$here/dkms-jenkins-matrix.conf"
 
 # Generate the common summary.
 ofile="$out/dkms-matrix.html"
-"$here/dkms-jenkins-matrix" --versions 3 <"$here/dkms-jenkins-matrix.conf" >"$ofile.new"
+"$here/dkms-jenkins-matrix" --versions 3 <"$here/dkms-jenkins-matrix.conf" >"$ofile.new" \
+	--urlmap http://d-jenkins.ubuntu-ci:8080/ http://jenkins.qa.ubuntu.com/
 mv -f "$ofile.new" "$ofile"
 
 ofile="$out/int-matrix.html"
 while read line; do echo "int-$line"; done <"$here/dkms-jenkins-matrix.conf" | \
-	"$here/dkms-jenkins-matrix" --versions 3 >"$ofile.new" \
-		--urlmap http://jenkins.qa.ubuntu.com/ http://d-jenkins.ubuntu-ci:8080/
+	"$here/dkms-jenkins-matrix" --versions 3 >"$ofile.new"
 mv -f "$ofile.new" "$ofile"
 
 ofile="$out/regressions.txt"
