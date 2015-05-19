@@ -146,7 +146,7 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-test-devel wani linux master-next linux-meta master -
+test-devel wily linux master-next linux-meta master -
 pre-proposed vivid linux master-next linux-meta master -
 pre-proposed utopic linux master-next linux-meta master -
 pre-proposed trusty linux master-next linux-meta master no-release
