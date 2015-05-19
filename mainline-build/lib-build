@@ -163,7 +163,7 @@ repo_update_ubuntu()
 
 	(
 		repo_select "$master_main/$repo"
-		remote=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
+		remote=`echo "$repo" | sed -e "s/linux/$series/"`
 		repo_remote_url "$remote"; url="$RET"
 
 		repo_remote_update_as "$series" "$url"
