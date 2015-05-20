@@ -57,6 +57,5 @@ utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic uto
 vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 wily http://people.canonical.com/~ubuntu-archive/proposed-migration/wily wily wily-updates wily-proposed
 EOL
-} | "$here/helper-proposed-migration-payload"
-# | \
-#    "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
+} | "$here/helper-proposed-migration-payload" | \
+    "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
