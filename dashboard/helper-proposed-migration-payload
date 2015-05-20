@@ -28,7 +28,7 @@ def emit(record):
 
 
 for line in sys.stdin:
-    (yfile, needed) = line.strip().split()
+    (yfile, hfile, needed) = line.strip().split()
     needed_ts = int(needed)
 
     state = None
@@ -40,7 +40,21 @@ for line in sys.stdin:
         name = name[0:-10]
 
     with open(yfile) as yfd:
-            state = yaml.load(yfd)
+        state = yaml.load(yfd)
+
+    results = {}
+    if os.path.exists(hfile):
+        with open(hfile) as hfd:
+            for line in hfd:
+                arg = line.strip().split()
+
+                # BODGE: ignore binary linux from linux-meta
+                if arg[3] == 'linux' and '-' in arg[4]:
+                    key = arg[3] + '-' + arg[4]
+                    key2 = arg[0] + '-' + arg[1]
+                    if key not in results:
+                        results[key] = {}
+                    results[key][key2] = arg
 
     title = 'Migration (' + name + ')'
 
@@ -57,24 +71,42 @@ for line in sys.stdin:
                 if source['source'] == 'linux':
                     match = re_extract.match(excuse)
                     if match:
-                        (test, state) = (match.group(1), match.group(3))
+                        (test, tversion, state) = (match.group(1), match.group(2), match.group(3))
 
                         if state == 'Pass':
-                            tstate = 'G'
+                            tstate = 'PASS'
                         elif state ==  'Regression':
-                            tstate = 'A'
+                            tstate = 'FAIL'
                         else:
-                            tstate = 'W'
+                            tstate = 'RUNNING'
 
-                        emit({
-                            'group':    'Proposed Migration',
-                            'host':     host,
-                            'title':    name + ': Test (dep-8) ' + source['source'] + '-' + source['new-version'] + ' ' + test,
-                            'state':    tstate,
-                            'note':     state,
-                        })
+                        key = source['source'] + '-' + source['new-version']
+                        key2 = test + '-' + tversion
+                        if key not in results:
+                            results[key] = []
+                        results[key][key2] = [test, tversion, tstate, source['source'], source['new-version']]
+
     if tests_running:
         title += ' Tests Running'
+
+    keyl = sorted(results.keys(), reverse=True)
+    if len(keyl) > 0:
+        key = keyl[0]
+        for key2 in results[key]:
+            arg = results[key][key2]
+
+            if arg[2] == 'FAIL':
+                tstate = 'F'
+            else:
+                tstate = 'G'
+
+            emit({
+                'group':    'Proposed Migration',
+                'host':     host,
+                'title':    arg[0] + '-' + arg[1] + ': Test (dep-8) ' + arg[3] + '-' + arg[4],
+                'state':    tstate,
+                'note':     arg[2],
+            })
 
     # If the run completed since it was triggered, all is good, else give it 35
     # minutes to get there, after that warn for a further hour, then alert.
