@@ -103,7 +103,7 @@ for line in sys.stdin:
             emit({
                 'group':    'Proposed Migration',
                 'host':     host,
-                'title':    arg[0] + '-' + arg[1] + ': Test (dep-8) ' + arg[3] + '-' + arg[4],
+                'title':    name + ': ' + arg[0] + '-' + arg[1] + ': Test (dep-8) ' + arg[3] + '-' + arg[4],
                 'state':    tstate,
                 'note':     arg[2],
             })
@@ -129,6 +129,7 @@ for line in sys.stdin:
         'title':    title,
         'state':    tstate,
         'note':     'needed={0} run={1}'.format(needed_str, run_str),
+        'order':    40,
     })
 
 emit({
