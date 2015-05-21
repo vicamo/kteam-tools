@@ -47,7 +47,7 @@ for line in sys.stdin:
             for line in hfd:
                 arg = line.strip().split()
 
-                if arg[3] == 'linux':
+                if arg[3].startswith('linux'):
                     key = arg[3] + '-' + arg[4]
                     key2 = arg[0] + '-' + arg[1]
                     if key not in results:
@@ -66,7 +66,7 @@ for line in sys.stdin:
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
                     tests_running = True
-                if source['source'] == 'linux':
+                if source['source'].startswith('linux'):
                     match = re_extract.match(excuse)
                     if match:
                         (test, tversion, state) = (match.group(1), match.group(2), match.group(3))
