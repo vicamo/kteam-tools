@@ -93,8 +93,6 @@ for line in sys.stdin:
     if tests_running:
         title += ' Tests Running'
 
-    print(results)
-
     for key1 in sorted(results.keys()):
         keyl = sorted(results[key1].keys(), reverse=True)
         if len(keyl) > 0:
