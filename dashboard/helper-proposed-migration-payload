@@ -110,7 +110,7 @@ for line in sys.stdin:
                 emit({
                     'group':    'Proposed Migration',
                     'host':     host,
-                    'title':    name + ': Test ' + arg[0] + '-' + arg[1] + ' for ' + arg[3] + '-' + arg[4],
+                    'title':    name + ': ' + arg[3] + '-' + arg[4] + ' test ' + arg[0] + '-' + arg[1],
                     'state':    tstate,
                     'note':     arg[2],
                 })
