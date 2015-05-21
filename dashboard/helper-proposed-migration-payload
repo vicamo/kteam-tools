@@ -134,6 +134,7 @@ for line in sys.stdin:
         'title':    title,
         'state':    tstate,
         'note':     'needed={0} run={1}'.format(needed_str, run_str),
+        'order':    40,
     })
 
 emit({
