@@ -101,7 +101,7 @@ for line in sys.stdin:
                 arg = results[key1][key2][key3]
 
                 if arg[2] == 'FAIL':
-                    tstate = 'A'
+                    tstate = 'W'
                 else:
                     tstate = 'G'
 
