@@ -72,8 +72,8 @@ kernel-testing.git		git://kernel.ubuntu.com/ubuntu/kernel-testing.git				-		--ba
 autotest.git			git://kernel.ubuntu.com/ubuntu/autotest.git					-		--bare
 autotest-client-tests.git	git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git			-		--bare
 instrument-lib.git		git://kernel.ubuntu.com/ubuntu/instrument-lib.git				-		--bare
-kteam-tools-bare.git		git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-		--bare
-kteam-tools.git			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
+kteam-tools.git			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-		--bare
+kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
 rm -f $LOCK
