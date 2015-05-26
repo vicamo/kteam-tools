@@ -36,43 +36,49 @@ http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-vivid/linux-lts-vivid_3.1
 EOL
 
 # Clone and update all our current repos.
-while read repo url ref flags
+while read repo url ref
 do
+	case "$repo" in
+	*.git)		bare='--bare' ;;
+	*)		bare='' ;;
+	esac
+
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
-			git clone $flags --reference "$ref" "$url" "$repo"
+			git clone $bare --reference "$ref" "$url" "$repo"
 		else
-			git clone $flags "$url" "$repo"
+			git clone $bare "$url" "$repo"
 		fi
 	else
 		(cd "$repo" && 
-			git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
+			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+			[ -d .git ] && git checkout -qf)
 	fi
 done <<EOL
 linux.git			git://kernel.ubuntu.com/virgin/linux.git
-ubuntu-precise.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise	linux.git	--bare
-ubuntu-precise-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise	-		--bare
-ubuntu-precise-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise	-		--bare
-ubuntu-trusty.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty		linux.git	--bare
-ubuntu-trusty-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty	-		--bare
-ubuntu-trusty-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty	-		--bare
-ubuntu-utopic.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic		linux.git	--bare
-ubuntu-utopic-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic	-		--bare
-ubuntu-utopic-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic	-		--bare
-ubuntu-vivid.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid		linux.git	--bare
-ubuntu-vivid-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid	-		--bare
-ubuntu-vivid-signed.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid	-		--bare
-ubuntu-wily.git			git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily		linux.git	--bare
-ubuntu-wily-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily	-		--bare
-ubuntu-wily-signed.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily	-		--bare
-ubuntu-precise-lbm.git		git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git				-		--bare
-linux-firmware.git		git://kernel.ubuntu.com/ubuntu/linux-firmware.git				-		--bare
-wireless-crda.git		git://kernel.ubuntu.com/ubuntu/wireless-crda.git				-		--bare
-kernel-testing.git		git://kernel.ubuntu.com/ubuntu/kernel-testing.git				-		--bare
-autotest.git			git://kernel.ubuntu.com/ubuntu/autotest.git					-		--bare
-autotest-client-tests.git	git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git			-		--bare
-instrument-lib.git		git://kernel.ubuntu.com/ubuntu/instrument-lib.git				-		--bare
-kteam-tools.git			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-		--bare
+ubuntu-precise.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise	linux.git
+ubuntu-precise-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise	-
+ubuntu-precise-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise	-
+ubuntu-trusty.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty		linux.git
+ubuntu-trusty-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty	-
+ubuntu-trusty-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty	-
+ubuntu-utopic.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic		linux.git
+ubuntu-utopic-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic	-
+ubuntu-utopic-signed.git	git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic	-
+ubuntu-vivid.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid		linux.git
+ubuntu-vivid-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid	-
+ubuntu-vivid-signed.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid	-
+ubuntu-wily.git			git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily		linux.git
+ubuntu-wily-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily	-
+ubuntu-wily-signed.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily	-
+ubuntu-precise-lbm.git		git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git				-
+linux-firmware.git		git://kernel.ubuntu.com/ubuntu/linux-firmware.git				-
+wireless-crda.git		git://kernel.ubuntu.com/ubuntu/wireless-crda.git				-
+kernel-testing.git		git://kernel.ubuntu.com/ubuntu/kernel-testing.git				-
+autotest.git			git://kernel.ubuntu.com/ubuntu/autotest.git					-
+autotest-client-tests.git	git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git			-
+instrument-lib.git		git://kernel.ubuntu.com/ubuntu/instrument-lib.git				-
+kteam-tools.git			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
