@@ -8,6 +8,7 @@ fi
 commit=`cat COMMIT`
 
 case "$commit" in
+cod/tip/*)	repo="testing/crack.git" ;;
 *rc[0-9]*)	repo="linux.git" ;;
 *)		repo="linux-stable.git" ;;
 esac
