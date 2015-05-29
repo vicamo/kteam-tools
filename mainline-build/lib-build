@@ -69,7 +69,7 @@ repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-te
 repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
 
 repo_remote_url_set	'crack'			'git://kernel.ubuntu.com/virgin/testing/crack.git'
-repo_remote_url_set	'crack-push'		'git://kernel.ubuntu.com/virgin/testing/crack.git'
+repo_remote_url_set	'crack-push'		'/srv/kernel.ubuntu.com/git/virgin/testing/crack.git'
 
 repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
 repo_remote_url_set	'stable-queue-3.2'	'git://git.kernel.org/pub/scm/linux/kernel/git/bwh/linux-3.2.y-queue.git'
