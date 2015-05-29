@@ -82,7 +82,7 @@ else
 fi
 
 mkdir -p "$html"
-sha1=`git log -1 --pretty=%H '$commit' 2>/dev/null`
+sha1=`git log -1 --pretty=%H "$commit" 2>/dev/null`
 {
 	echo "$commit"
 	echo "$sha1"
