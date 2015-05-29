@@ -29,6 +29,9 @@ repo_remote_update_list $remotes
 # Work out where we are going to push the tags et al to.
 repo_remote_url "crack-push"; push_url="$RET"
 
+# Keep the master branch in the crack repository up to date.
+git push "$push_url" "linus/master:master"
+
 #
 # UPSTREAM TAGS: Find all the new upstream release tags.
 #
