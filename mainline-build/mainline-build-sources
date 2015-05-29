@@ -5,7 +5,11 @@ if [ ! -f "COMMIT" ]; then
 	exit 1
 fi
 
-commit=`cat COMMIT`
+{
+	read commit
+	read sha1
+} <"COMMIT"
+[ "$sha1" = "" ] && sha1='unknown'
 
 case "$commit" in
 cod/tip/*)	repo="testing/crack.git" ;;
@@ -14,7 +18,7 @@ cod/tip/*)	repo="testing/crack.git" ;;
 esac
 
 {
-	echo "git://kernel.ubuntu.com/virgin/$repo $commit"
+	echo "git://kernel.ubuntu.com/virgin/$repo $commit $sha1"
 	for patch in ????-*
 	do
 		echo "$patch"
@@ -25,13 +29,13 @@ esac
     cat - <<EOL
 These binary packages represent builds of Linus' kernel tree at the commit below:
 
-    $commit
+    $commit ($sha1)
 
-To obtain the source from which they are built clone the tree below:
+To obtain the source from which they are built fetch the commit below:
 
-    git://kernel.ubuntu.com/virgin/$repo
+    git://kernel.ubuntu.com/virgin/$repo $commit
 
-checkout the commit (above), and apply the following patches:
+and apply the following patches on top in the order below:
 
 EOL
     for patch in ????-*
