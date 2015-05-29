@@ -52,7 +52,7 @@ do
 	}
 	if [ "$announce" -gt 0 ]; then
 		echo "$P: $build: announcing ..."
-		"$here/mainline-announce" `cat "$outgoing/$build/COMMIT"` "$build" "$announce"
+		"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce"
 	fi
 done
 
