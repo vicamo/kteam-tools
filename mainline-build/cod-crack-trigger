@@ -24,8 +24,7 @@ master_tree_select
 
 #
 # UPSTREAM COD: builds of upstream tree tips
-#
-remotes="linus airlied--linux drm-intel debloat-testing extended-stable"
+remotes="linus airlied--linux drm-intel extended-stable"
 repo_remote_update_list $remotes
 
 # Work out where we are going to push the tags et al to.
@@ -79,7 +78,6 @@ linus/master					999	daily
 airlied--linux/drm-next				996	drm-next
 drm-intel/drm-intel-next			997	drm-intel-next
 drm-intel/drm-intel-nightly			994	drm-intel-nightly
-debloat-testing/master				993	debloat-testing
 extended-stable/linux-3.13.y-review		992     linux-3.13.y.z-review
 extended-stable/linux-3.13.y-queue		991     linux-3.13.y.z-queue	linux-3.13.y.z-review
 extended-stable/linux-3.16.y-review		992     linux-3.16.y.z-review
@@ -87,8 +85,6 @@ extended-stable/linux-3.16.y-queue		991     linux-3.16.y.z-queue	linux-3.16.y.z-
 extended-stable/linux-3.19.y-review		992     linux-3.19.y.z-review
 extended-stable/linux-3.19.y-queue		991     linux-3.19.y.z-queue	linux-3.19.y.z-review
 EOL
-# Also allocated
-# 995: sconklin -- wayland
 #
 # NOTE: if you add a daily build above ensure it is recorded on the
 # TopicBranches page, and also ensure you add it to the cleanup script.
