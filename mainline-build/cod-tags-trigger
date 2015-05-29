@@ -26,6 +26,9 @@ master_tree_select
 remotes="linus 2.6.32.y.33.z linux-stable extended-stable"
 repo_remote_update_list $remotes
 
+# Work out where we are going to push the tags et al to.
+repo_remote_url "crack-push"; push_url="$RET"
+
 #
 # UPSTREAM TAGS: Find all the new upstream release tags.
 #
@@ -43,7 +46,7 @@ do
 	# Note if this fails the job will fail, but it is better that the job
         # is created and logged so we can rerun it rather than never knowing
         # about it.
-        git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$commit"
+        git push "$push_url" tag "$commit"
 
 	"$here/cod-enqueue" "B" "$here/mainline-build" "crack" "$commit"
 done <"$tags_list.added"

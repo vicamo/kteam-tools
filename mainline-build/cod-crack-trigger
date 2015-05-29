@@ -28,6 +28,9 @@ master_tree_select
 remotes="linus airlied--linux drm-intel debloat-testing extended-stable"
 repo_remote_update_list $remotes
 
+# Work out where we are going to push the tags et al to.
+repo_remote_url "crack-push"; push_url="$RET"
+
 date="`date +%F`"
 while read branch abi base parent
 do
@@ -66,7 +69,7 @@ do
 	# Note if this fails the job will fail, but it is better that the job
 	# is created and logged so we can rerun it rather than never knowing
 	# about it.
-	git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$tag"
+	git push "$push_url" tag "$tag"
 
 	# Enqueue the job.
 	"$here/cod-enqueue" "C" \
