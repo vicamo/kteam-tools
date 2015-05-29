@@ -40,7 +40,12 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/cod-enqueue" "B" "$here/mainline-build" "${remotes// /,}" "$commit"
+	# Note if this fails the job will fail, but it is better that the job
+        # is created and logged so we can rerun it rather than never knowing
+        # about it.
+        git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$commit"
+
+	"$here/cod-enqueue" "B" "$here/mainline-build" "crack" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
