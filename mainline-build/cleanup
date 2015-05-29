@@ -7,19 +7,9 @@ case "$here" in
 esac
 
 # Cleanup the daily build
-for which in \
-	"$HOME/public_html/mainline/daily" \
-	"$HOME/public_html/mainline/drm-next" \
-	"$HOME/public_html/mainline/drm-intel-next" \
-	"$HOME/public_html/mainline/drm-intel-fixes" \
-	"$HOME/public_html/mainline/drm-intel-nightly" \
-	"$HOME/public_html/mainline/linux-3.5.y.z-review" \
-	"$HOME/public_html/mainline/linux-3.5.y.z-queue" \
-	"$HOME/public_html/mainline/linux-3.8.y.z-review" \
-	"$HOME/public_html/mainline/linux-3.8.y.z-queue" \
-	"$HOME/public_html/mainline/linux-3.11.y.z-review" \
-	"$HOME/public_html/mainline/linux-3.11.y.z-queue"
+for which in "$HOME/public_html/mainline"/*/current
 do
+	which=`dirname "$which"`
 	"$here/cleanup-daily-one" "$which"
 done
 
