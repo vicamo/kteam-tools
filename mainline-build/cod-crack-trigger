@@ -59,9 +59,13 @@ do
 
 	# We cannot assume any remote machine has this sha1 so tag it with a
 	# temporary name, and publish that into the crack repository.
-	tag="crack-tip--$base--$date"
+	tag="crack-tip/$base/$date"
 	git tag -d "$tag" || true
 	git tag "$tag" "$tip"
+
+	# Note if this fails the job will fail, but it is better that the job
+	# is created and logged so we can rerun it rather than never knowing
+	# about it.
 	git push /srv/kernel.ubuntu.com/git/virgin/testing/crack.git tag "$tag"
 
 	# Enqueue the job.
