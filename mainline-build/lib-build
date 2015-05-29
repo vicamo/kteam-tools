@@ -65,7 +65,7 @@ repo_remote_url_set	'airlied--linux'	'git://kernel.ubuntu.com/virgin/testing/air
 #repo_remote_url_set	'drm-intel'		'git://anongit.freedesktop.org/drm-intel'
 repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/testing/drm-intel.git'
 #repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
-repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
+#repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://kernel.ubuntu.com/ubuntu/linux.git'
 
 repo_remote_url_set	'crack'			'git://kernel.ubuntu.com/virgin/testing/crack.git'
