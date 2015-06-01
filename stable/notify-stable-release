@@ -41,7 +41,10 @@ OptParser = OptionParser(
     "Usage: %prog [options]",
     epilog = "This command is intended to be run after a stable "
              "update has been released. It will send out a mail that "
-             "announces that it is available now."
+             "announces that it is available now.  It will also generate "
+             "a ChangeLog file and 3 files containing the diff between the "
+             "two tags/commits: a text file, a gzip compressed file and an "
+             "xz compressed file."
 )
 OptParser.add_option(
     "--dry-run", dest="dryrun", action="store_true", default=False,
@@ -72,9 +75,8 @@ OptParser.add_option(
 )
 OptParser.add_option(
     "--gen-changelog", dest="changelog", action="store_true", default=False,
-    help="Generates a ChangeLog file and 3 files containing the diff "
-         "between the two tags/commits: a text file, a gzip compressed "
-         "file and an xz compressed file."
+    help="When using '--dry-run', ChangeLog and patches are not generated.  "
+         "Using this option forces the generation of these files."
 )
 (opts, args) = OptParser.parse_args()
 
@@ -244,7 +246,7 @@ if opts.dryrun:
 fp.close()
 dp.close()
 
-if opts.changelog == True:
+if (opts.dryrun == False) or (opts.dryrun == True and opts.changelog == True):
     patch_file = "patch-%s" % (vstable)
     patch_file_tmp = patch_file + "-tmp"
     changelog_file = "ChangeLog-%s" % (vstable)
@@ -266,5 +268,8 @@ if opts.changelog == True:
     print "\nNOTE: Generated the following files:"
     print " - " + changelog_file
     print " - " + patch_file + "{.gz,.xz}"
+
+    print "\nYou can use the following to upload these files into kernel.ubuntu.com:"
+    print " scp %s %s{,.gz,.xz} kernel.ubuntu.com:/srv/kernel.ubuntu.com/www/stable/" % (changelog_file, patch_file)
 
 # vi:set ts=4 sw=4 expandtab:
