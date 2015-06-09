@@ -13,3 +13,5 @@ version=`basename "$dir"`
     echo "# Checksums-Sha256:"
     shasum -a 256 COMMIT ????-* *.deb
 } >CHECKSUMS
+rm -f CHECKSUMS.gpg
+gpg -a -b --sign --output CHECKSUMS.gpg CHECKSUMS
