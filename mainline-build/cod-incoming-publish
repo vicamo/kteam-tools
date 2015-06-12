@@ -45,6 +45,10 @@ do
 	mkdir -p "$outgoing/`dirname "$build"`"
 	mv "$incoming/mainline/$build" "$outgoing/$build" && \
 	{
+		# Sign the publication.
+		rm -f "$outgoing/$build/CHECKSUMS.gpg"
+		gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
+
 		case "$build" in
 		*/*)	;;
 		*)	announce="${announce#-}" ;;
