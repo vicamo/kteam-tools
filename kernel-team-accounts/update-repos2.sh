@@ -72,6 +72,8 @@ ubuntu-wily.git			git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+g
 ubuntu-wily-meta.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily	-
 ubuntu-wily-signed.git		git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily	-
 ubuntu-precise-lbm.git		git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git				-
+ubuntu-wily.git			git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily		linux.git
+unstable.git			git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable	linux.git
 linux-firmware.git		git://kernel.ubuntu.com/ubuntu/linux-firmware.git				-
 wireless-crda.git		git://kernel.ubuntu.com/ubuntu/wireless-crda.git				-
 kernel-testing.git		git://kernel.ubuntu.com/ubuntu/kernel-testing.git				-
