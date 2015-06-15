@@ -9,6 +9,8 @@ esac
 out="$HOME/public_html/info/dkms"
 mkdir -p "$out"
 
+err=0
+
 # Generate each series summary.
 while read -r file line
 do
@@ -20,10 +22,12 @@ do
 	ofile="$out/$file"
 	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new" \
 		--urlmap http://d-jenkins.ubuntu-ci:8080/ http://jenkins.qa.ubuntu.com/
+	[ "$?" -ne 0 ] && err=1
 	mv -f "$ofile.new" "$ofile"
 
 	ofile="$out/int-$file"
 	echo "- $line" | "$here/dkms-jenkins-matrix" >"$ofile.new"
+	[ "$?" -ne 0 ] && err=1
 	mv -f "$ofile.new" "$ofile"
 done <"$here/dkms-jenkins-matrix.conf"
 
@@ -31,13 +35,18 @@ done <"$here/dkms-jenkins-matrix.conf"
 ofile="$out/dkms-matrix.html"
 "$here/dkms-jenkins-matrix" --versions 3 <"$here/dkms-jenkins-matrix.conf" >"$ofile.new" \
 	--urlmap http://d-jenkins.ubuntu-ci:8080/ http://jenkins.qa.ubuntu.com/
+[ "$?" -ne 0 ] && err=1
 mv -f "$ofile.new" "$ofile"
 
 ofile="$out/int-matrix.html"
 while read line; do echo "int-$line"; done <"$here/dkms-jenkins-matrix.conf" | \
 	"$here/dkms-jenkins-matrix" --versions 3 >"$ofile.new"
+[ "$?" -ne 0 ] && err=1
 mv -f "$ofile.new" "$ofile"
 
 ofile="$out/regressions.txt"
 "$here/dkms-jenkins-matrix" --regressions <"$here/dkms-jenkins-matrix.conf" >"$ofile.new"
+[ "$?" -ne 0 ] && err=1
 mv -f "$ofile.new" "$ofile"
+
+exit "$err"
