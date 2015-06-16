@@ -64,7 +64,7 @@ while (<STDIN>) {
 	#print "OPTION<$config> EXPECTED<$expected> ONLY<$only> POLICY<$policy>\n";
 
 	if ($only && $only ne 'true') {
-		if ($only eq 'false' || !policy_check($column, $config, $only)) {
+		if ($only eq 'false' || !policy_check($arch, $flavour, $column, $config, $only)) {
 			#print "$config !ONLY\n";
 			next;
 		}
@@ -79,7 +79,7 @@ while (<STDIN>) {
 	if (not exists $values{$column, $config}) {
 		#print "$config MISSING\n";
 		next;
-	} elsif (policy_check($column, $config, $policy)) {
+	} elsif (policy_check($arch, $flavour, $column, $config, $policy)) {
 		#print "$config OK\n";
 		next;
 	} else {
@@ -101,7 +101,7 @@ while (<STDIN>) {
 			}
 
 			$values{$column, $config} = $possible;
-			if (policy_check($column, $config, $policy)) {
+			if (policy_check($arch, $flavour, $column, $config, $policy)) {
 				$ok = $possible;
 			}
 		} else {
@@ -109,7 +109,7 @@ while (<STDIN>) {
 				$possible = $1;
 				#print "POSSIBLE<$possible> POLICY<$policy>\n";
 				$values{$column, $config} = $possible;
-				if (policy_check($column, $config, $policy)) {
+				if (policy_check($arch, $flavour, $column, $config, $policy)) {
 					$ok = $possible;
 					last;
 				}

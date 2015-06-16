@@ -317,7 +317,15 @@ if ($sort) {
 } elsif ($info) {
 	@options = @ioptions;
 }
-	
+
+# Extract the proper arch/flavour pair out of the filename.
+my %arch;
+my %flavour;
+my $archflav;
+for my $column (@columns) {
+	$archflav = $column; $archflav =~ s/config\.flavour\.//;
+	($arch{$column}, $flavour{$column}) = split(/-/, $archflav, 2);
+}
 
 push(@columns, "Policy") if ($policy);
 
@@ -370,7 +378,7 @@ for my $option (@options) {
 		    $policy{$option} ne 'value ?' && 
 		    $column ne 'Policy' &&
 		    defined $values{$column, $option} &&
-		    !policy_check($column, $option, $policy{$option})) {
+		    !policy_check($arch{$column}, $flavour{$column}, $column, $option, $policy{$option})) {
 			$ok = 0;
 			$ok{$column} = 0;
 		} else {

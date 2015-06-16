@@ -143,43 +143,59 @@ sub pred_exec {
 	return ($cut, $res);
 }
 sub policy_check_predicate {
-	my ($column, $option, $policy) = @_;
+	my ($arch, $flavour, $column, $option, $policy) = @_;
 
 	$P = $P0 . ": " . $option;
 
 	# Pull out the arch and flavour from the column name.
-	($pred_attr{'arch'}, $pred_attr{'flavour'}) = split(/-/, $column, 2);
+	($pred_attr{'arch'}, $pred_attr{'flavour'}) = ($arch, $flavour);
 
 	$pred_attr{'column'} = $column;
 	$pred_attr{'option'} = $option;
+
+	$pred_attr{'debug'} = 1 if ($option eq 'CONFIG_VIRT_DRIVERS');
 
 	my ($cut, $res) = pred_exec($policy);
 	#print "CUT<$cut> RES<$res>\n";
 	return $res;
 }
+
+sub policy_check_hash {
+        my ($arch, $flavour, $option, $ovalue, $policy) = @_;
+
+	my ($dbg) = 0;
+	#$dbg = 1 if ($option eq 'CONFIG_VIRT_DRIVERS');
+
+	# Pull together the policy hash.
+	$policy =~ s/:/=>/g;
+	my $plcy = eval($policy);
+
+	if ($dbg) {
+		warn "$option $arch $flavour $policy\n";
+		for my $key (keys %{$plcy}) {
+			warn("  element $key $plcy->{$key}\n");
+		}
+	}
+
+	my $value = '-';
+
+	for my $which ("$arch-$flavour", "$arch-*", "*-$flavour", "$arch", "*") {
+		if (defined $plcy->{$which}) {
+			$value = $plcy->{$which};
+			warn "  match $which $value\n" if ($dbg);
+			last;
+		}
+	}
+	return ($ovalue eq $value);
+}
+
 sub policy_check {
-        my ($column, $option, $policy) = @_;
+        my ($arch, $flavour, $column, $option, $policy) = @_;
 
         if ($policy =~ /^{/) {
-		# Pull out the arch and flavour from the column name.
-		my ($arch, $flavour) = split(/-/, $column, 2);
-
-		# Pull together the policy hash.
-                $policy =~ s/:/=>/g;
-                my $plcy = eval($policy);
-
-		my $value = '-';
-        
-		for my $which ("$arch-$flavour", "$arch-*", "*-$flavour", "$arch", "*") {
-			if (defined $plcy->{$which}) {
-				$value = $plcy->{$which};
-				last;
-			}
-		}
-		return ($values{$column, $option} eq $value);
-
+		return policy_check_hash($arch, $flavour, $option, $values{$column, $option}, $policy);
         } else {
-                return policy_check_predicate($column, $option, $policy);
+                return policy_check_predicate($arch, $flavour, $column, $option, $policy);
         }
 }
 
