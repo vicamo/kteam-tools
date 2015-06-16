@@ -22,12 +22,20 @@ parser.add_option("-f", "--removed", dest="removed", action="append",
 
 versions = zip(args[0::2], args[1::2])
 
+exit = 0
+
 jstate = {}
 jseen = {}
 count = 0
 for (url, vreport) in versions:
     count += 1
-    tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+    tree = None
+    try:
+        tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+    except:
+        sys.stderr.write("{0}: could not fetch URL\n".format(url))
+        exit = 1
+        continue
 
     for job in tree['jobs']:
         #print(job['name'])
@@ -90,3 +98,5 @@ for package in jstate:
                 
 for package in sorted(jstate):
     print(package, jstate[package])
+
+sys.exit(exit)

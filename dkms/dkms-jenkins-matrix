@@ -26,6 +26,8 @@ parser.add_option("-r", "--regressions", action="store_true", help="Regressions 
 
 apt_pkg.init_system()
 
+exit = 0
+
 packages = {}
 groups = []
 for line in sys.stdin:
@@ -42,7 +44,12 @@ for line in sys.stdin:
             limit = url[8:]
             continue
 
-        tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+        try:
+            tree = ast.literal_eval(urllib2.urlopen(url + '/api/python?depth=2').read().decode('utf-8'))
+        except:
+            sys.stderr.write("{0}: could not fetch URL\n".format(url))
+            exit = 1
+            continue
 
         for job in tree['jobs']:
             #print(job['name'], file=sys.stderr)
@@ -194,3 +201,5 @@ for package in sorted(packages):
 print("""</table>
 </body>
 </html>""")
+
+sys.exit(exit)
