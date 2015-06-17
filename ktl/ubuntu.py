@@ -230,6 +230,9 @@ class Ubuntu:
                 'linux-lts-utopic',
                 'linux-meta-lts-utopic',
                 'linux-signed-lts-utopic',
+                'linux-lts-vivid',
+                'linux-meta-lts-vivid',
+                'linux-signed-lts-vivid',
             ],
             'dependent-packages' :
             {
