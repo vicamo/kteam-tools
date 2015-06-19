@@ -167,7 +167,7 @@ if opts.dryrun:
 else:
 	(rc, output) = sh("fakeroot debian/rules startnewrelease")
 	(rc, output) = sh("git add " + changelog)
-	(rc, output) = sh("git commit -F debian/commit-templates/newrelease")
+	(rc, output) = sh("git commit -s -F debian/commit-templates/newrelease")
 
 #------------------------------------------------------------------------------
 # Finally add the changelog and commit everything.
