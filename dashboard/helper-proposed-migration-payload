@@ -113,13 +113,13 @@ for line in sys.stdin:
                     'note':     arg[2],
                 })
 
-    # If the run completed since it was triggered, all is good, else give it 35
-    # minutes to get there, after that warn for a further hour, then alert.
+    # If the run completed since it was triggered, all is good, else give it an 
+    # hour to get there, after that warn for a further hour, then alert.
     if run_ts > needed_ts:
         tstate = "G"
-    elif (now_ts - needed_ts) < 2100:
+    elif (now_ts - needed_ts) < (65*60):
         tstate = "G"
-    elif (now_ts - needed_ts) < 5700:
+    elif (now_ts - needed_ts) < (125*60):
         tstate = "W"
     else:
         tstate = "A"
