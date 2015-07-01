@@ -29,7 +29,8 @@ case "$series" in
 hardy|lucid)			arches="amd64 i386" ;;
 maverick|natty|oneiric)		arches="amd64 i386 armel" ;;
 precise|quantal)		arches="amd64 i386 armel armhf" ;;
-*)				arches="amd64 i386 armhf" ;;
+raring|saucy)			arches="amd64 i386 armhf" ;;
+*)				arches="amd64 i386 armhf ppc64el" ;;
 esac
 
 {
