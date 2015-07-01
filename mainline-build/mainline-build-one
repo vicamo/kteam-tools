@@ -316,7 +316,7 @@ do_chroot "$build_release-i386" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
 echo "-+++- end binary-headers -+++-"
 for arch in $arches; do
-	if [ "$arch" == "armel" -o "$arch" == "armhf" ]; then
+	if [ "$arch" == "armel" -o "$arch" == "armhf" -o "$arch" == "ppc64el" ]; then
 		carch=amd64
 		cross_prefix="dpkg-architecture -a$arch -c"
 	else
