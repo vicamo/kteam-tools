@@ -21,7 +21,8 @@ abinum="$3"
 case "$series" in
 hardy)					build_release="hardy" ;;
 lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
-precise|*)				build_release="precise" ;;
+precise|quantal|raring|saucy)		build_release="precise" ;;
+trusty|*)				build_release="trusty" ;;
 esac
 
 # Arches to build
