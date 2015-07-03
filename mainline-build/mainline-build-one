@@ -317,12 +317,18 @@ do_chroot "$build_release-i386" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
 echo "-+++- end binary-headers -+++-"
 for arch in $arches; do
-	if [ "$arch" == "armel" -o "$arch" == "armhf" -o "$arch" == "ppc64el" ]; then
-		carch=amd64
-		cross_prefix="dpkg-architecture -a$arch -c"
-	else
+	if [ "$arch" = 'amd64' -o "$arch" = 'i386' ]; then
 		carch=$arch
 		cross_prefix=""
+		cross_overrides=""
+	else
+		carch='amd64'
+		cross_prefix="dpkg-architecture -a$arch -c"
+		cross_overrides=""
+
+		if [ "$arch" = "ppc64el" ]; then
+			cross_overrides="BOOT_TARGETS1=vmlinux.strip"
+		fi
 	fi
 	echo "-+++- begin $arch -+++-"
 	do_chroot "$build_release-$carch" \
@@ -332,8 +338,8 @@ for arch in $arches; do
 		# fakeroot is very slow, only use for packaging as per
 		# dpkg-buildpackage.
 	        cat - <<-EOM
-	        $cross_prefix debian/rules do_extras_package=false do_tools=0 no_dumpfile=1 build-arch
-	        $cross_prefix fakeroot debian/rules do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
+	        $cross_prefix debian/rules $cross_overrides do_extras_package=false do_tools=0 no_dumpfile=1 build-arch
+	        $cross_prefix fakeroot debian/rules $cross_overrides do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
 		EOM
 	} | do_chroot "$build_release-$carch" "/bin/bash"
 	echo "-+++- end $arch -+++-"
