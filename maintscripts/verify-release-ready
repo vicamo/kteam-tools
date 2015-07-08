@@ -205,7 +205,7 @@ class VerifyReleaseReady():
             v = version
             # Starting with trusty, the lts backports closing commit and the tag
             # contain '~<series_version>' (e.g. '~14.04.1')
-            if 'linux-lts-' in cl1['package'] and cl1['release'] != 'precise':
+            if 'linux-lts-' in cl1['package']:
                 v = cl1['version']
             expect_tag = expect_tag_format%{'version':v}
             s.verify_tag(log, expect_tag)
