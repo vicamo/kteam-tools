@@ -1,0 +1,70 @@
+#!/usr/bin/python
+
+# Copyright (C) 2015  Canonical Ltd.
+# Authors:
+#   Andy Whitcroft <apw@canonical.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 3 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+
+import logging
+import os
+import sys
+
+import apt_pkg
+
+from ktl.kernel_versions import Launchpad
+
+def ppa_clean(owner, ppa):
+    # Login to launchpad.
+    lp = Launchpad.login_with('ppa-package-cleaner', 'production', version='devel')
+
+    ubuntu = lp.distributions['ubuntu']
+    #if not ppa_owner:
+    #        s.archive = s.ubuntu.getArchive(name='primary')
+    #    else:
+    archive = lp.people[owner].getPPAByName(name=ppa)
+
+    #for series in ubuntu.series:
+    #    if series.active:
+    pubs = archive.getPublishedSources(source_name='',
+                                       exact_match=False,
+                                       status='Superseded')
+
+    for pub in pubs:
+        print(pub.source_package_name, pub.source_package_version, pub.pocket, pub.status)
+        print("DELETE", pub)
+        pub.requestDeletion()
+
+
+if __name__ == "__main__":
+    if os.getenv('DEBUG'):
+        DEBUGLEVEL = logging.DEBUG
+    else:
+        DEBUGLEVEL = logging.WARNING
+
+    logging.basicConfig(level=DEBUGLEVEL,
+                        format="%(asctime)s - %(levelname)s - %(message)s")
+
+    for line in sys.stdin:
+        if line[0] == '#':
+            continue
+
+        args = line.split()
+        if len(args) != 2:
+            print("ERROR: invalid clean specifier:", line.strip(), file=sys.stderr)
+            continue
+
+        print("Cleaning ppa:{0}/{1}".format(args[0], args[1]))
+        ppa_clean(args[0], args[1])
