@@ -75,7 +75,7 @@ class TheApp():
 
             s.mq.listen_start()
 
-            print("done")
+            print("Exiting")
             retval = 0
 
         # Handle the user presses <ctrl-C>.

@@ -8,6 +8,7 @@ esac
 
 cd "$here" || exit 1
 
+echo "Starting `date`"
 exec ./mainline-worker-kmsgq \
 	--command cod-source \
 	--command mainline-build \
