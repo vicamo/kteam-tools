@@ -7,13 +7,14 @@ class MsgQueue():
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel'):
+    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic'):
         s.exchange_name = exchange
 
         params = pika.ConnectionParameters(address, port, connection_attempts=3)
         connection = pika.BlockingConnection(params)
         s.channel = connection.channel()
-        s.channel.exchange_declare(exchange=s.exchange_name, type='topic')
+        s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
+
 
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True):
         def wrapped_handler(channel, method, properties, body):
@@ -24,6 +25,43 @@ class MsgQueue():
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
         s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=True)
         s.channel.start_consuming()
+
+
+    def listen_worker(s, queue_name, routing_key, handler_function, queue_durable=True):
+        def wrapped_handler(channel, method, properties, body):
+            payload = json.loads(body)
+            handler_function(payload)
+            channel.basic_ack(method.delivery_tag)
+
+        auto_delete = False
+        if not queue_name:
+            auto_delete = True
+
+        s.channel.queue_declare(queue_name, durable=queue_durable, auto_delete=auto_delete)
+        s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
+        s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=False)
+        s.channel.basic_qos(prefetch_count=1)
+
+
+    def listen_start(s):
+        s.channel.start_consuming()
+
+
+    def listen_stop(s):
+        s.channel.stop_consuming()
+
+
+    def queue_info(s, queue_name):
+        res = s.channel.queue_declare(queue=queue_name, passive=True)
+
+        if not res:
+            return None
+
+        return {
+            'queue':            res.method.queue,
+            'consumer_count':   res.method.consumer_count,
+            'message_count':    res.method.message_count,
+        }
 
 
     def queue_delete(s, queue_name):

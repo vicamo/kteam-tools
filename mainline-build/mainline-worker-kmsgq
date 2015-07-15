@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+#
+from __future__ import print_function
+
+import os
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, error
+import socket
+import threading
+import Queue
+from ktl.log                            import cdebug, center, cleave, cerror
+from ktl.msgq                           import MsgQueue
+import time
+import subprocess
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+        s.admin = s.args.queue + '-' + s.args.name
+
+    # _handler
+    #
+    def _handler(s, payload):
+        cdebug("TheApp::_handler")
+
+        if 'key' not in payload or 'cmd' not in payload or \
+           not isinstance(payload['cmd'], list) or len(payload['cmd']) < 1:
+            error("invalid work request form, ignored")
+            return
+
+        if payload['key'] == 'admin-' + s.args.name and payload['cmd'][0] == 'quit':
+            s.mq.listen_stop()
+            return
+
+        if payload['cmd'][0] not in s.args.command:
+            error("invalid work request cmd, ignored")
+            return
+
+        # Ensure we look in the current directory for these commands.
+        payload['cmd'][0] = './' + payload['cmd'][0]
+
+        cdebug(payload)
+        try:
+            subprocess.call(payload['cmd'])
+        except OSError:
+            error("work request failed")
+        cdebug(payload)
+
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 1
+
+        try:
+            if args.local:
+                s.mq = MsgQueue(address='localhost', port=9123)
+            else:
+                s.mq = MsgQueue(exchange='kernel-mainline-todo', exchange_type='direct')
+            s.mq.listen_worker(s.args.queue, 'mainline-todo', s._handler)
+            s.mq.listen_worker('', 'admin-' + s.args.name, s._handler)
+
+            s.mq.listen_start()
+
+            print("done")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--command', action='append', default=[], help='Add a valid command to the validator.')
+    parser.add_argument('name', help='Name of this instance in the admin domain')
+    parser.add_argument('queue', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+

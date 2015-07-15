@@ -1,0 +1,15 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+cd "$here" || exit 1
+
+exec ./mainline-worker-kmsgq \
+	--local \
+	--command cod-source \
+	--command mainline-build \
+	`hostname` mainline-todo

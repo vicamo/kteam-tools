@@ -18,3 +18,4 @@ cmd=`basename "$2"`
 shift 2
 
 exec $here/../queue/queue enqueue mainline "$priority" "$cmd" "$@"
+#exec $here/mainline-work-kmsgq "$cmd" "$@"
