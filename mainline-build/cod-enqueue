@@ -15,5 +15,5 @@ esac
 
 priority="A"
 
-exec $here/../queue/queue enqueue mainline "$priority" "$@"
-#exec $here/mainline-work-kmsgq "$@"
+#exec $here/../queue/queue enqueue mainline "$priority" "$@"
+exec $here/mainline-work-kmsgq "$@"
