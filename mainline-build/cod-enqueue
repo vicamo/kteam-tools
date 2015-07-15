@@ -13,8 +13,7 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-priority="$1"
-shift 1
+priority="A"
 
 exec $here/../queue/queue enqueue mainline "$priority" "$@"
 #exec $here/mainline-work-kmsgq "$@"

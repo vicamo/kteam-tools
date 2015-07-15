@@ -99,8 +99,7 @@ do
 	mv -f "$curr.new" "$curr"
 
 	# Queue up the build.
-	"$here/cod-enqueue" "A" \
-		"cod-source" "$ppa" "$repo" "$series" "$tip" "$date"
+	"$here/cod-enqueue" "cod-source" "$ppa" "$repo" "$series" "$tip" "$date"
 
 	# If we are dealing with linux then we need to ensure that linux-meta
 	# is uploaded with an appropriate ABI number.
@@ -138,9 +137,7 @@ do
 		echo "$abi_tip" >"$curr2.new"
 		mv -f "$curr2.new" "$curr2"
 
-		"$here/cod-enqueue" "A" \
-			"cod-source" "$ppa" "$repo2" "$series" \
-				"$branch2" "$date" "$abi_tip"
+		"$here/cod-enqueue" "cod-source" "$ppa" "$repo2" "$series" "$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
 test-devel wily linux master-next linux-meta master -

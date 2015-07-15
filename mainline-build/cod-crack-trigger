@@ -71,8 +71,7 @@ do
 	git push "$push_url" tag "$tag"
 
 	# Enqueue the job.
-	"$here/cod-enqueue" "C" \
-		"mainline-build" "crack" "$tag" "$abi" "$base" "$date"
+	"$here/cod-enqueue" "mainline-build" "crack" "$tag" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
 airlied--linux/drm-next				996	drm-next

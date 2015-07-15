@@ -51,7 +51,7 @@ do
         # about it.
         git push "$push_url" tag "$commit"
 
-	"$here/cod-enqueue" "B" "mainline-build" "crack" "$commit"
+	"$here/cod-enqueue" "mainline-build" "crack" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
