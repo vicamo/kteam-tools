@@ -72,7 +72,7 @@ do
 
 	# Enqueue the job.
 	"$here/cod-enqueue" "C" \
-		"$here/mainline-build" "crack" "$tag" "$abi" "$base" "$date"
+		"mainline-build" "crack" "$tag" "$abi" "$base" "$date"
 done <<EOL
 linus/master					999	daily
 airlied--linux/drm-next				996	drm-next
