@@ -53,9 +53,9 @@ class TheApp():
             # Submit the message to the Message Queue
             #
             if s.args.local:
-                mq = MsgQueue(address='localhost', port=9123)
+                mq = MsgQueue(address='localhost', port=9123, exchange='kernel-mainline-todo')
             else:
-                mq = MsgQueue()
+                mq = MsgQueue(exchange='kernel-mainline-todo')
 
             mq.publish(details['key'], details)
 
