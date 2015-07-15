@@ -27,15 +27,11 @@ class MsgQueue():
         s.channel.start_consuming()
 
 
-    def listen_worker(s, queue_name, routing_key, handler_function, queue_durable=True):
+    def listen_worker(s, queue_name, routing_key, handler_function, queue_durable=True, auto_delete=False):
         def wrapped_handler(channel, method, properties, body):
             payload = json.loads(body)
             handler_function(payload)
             channel.basic_ack(method.delivery_tag)
-
-        auto_delete = False
-        if not queue_name:
-            auto_delete = True
 
         s.channel.queue_declare(queue_name, durable=queue_durable, auto_delete=auto_delete)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)

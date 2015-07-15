@@ -11,4 +11,5 @@ cd "$here" || exit 1
 exec ./mainline-worker-kmsgq \
 	--command cod-source \
 	--command mainline-build \
-	`hostname` mainline-todo
+	`hostname` mainline-todo \
+	"$@"

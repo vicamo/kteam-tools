@@ -71,7 +71,7 @@ class TheApp():
             else:
                 s.mq = MsgQueue(exchange='kernel-mainline-todo', exchange_type='direct')
             s.mq.listen_worker(s.args.queue, 'mainline-todo', s._handler)
-            s.mq.listen_worker('', 'admin-' + s.args.name, s._handler)
+            s.mq.listen_worker('admin-' + s.args.name, 'admin-' + s.args.name, s._handler)
 
             s.mq.listen_start()
 
