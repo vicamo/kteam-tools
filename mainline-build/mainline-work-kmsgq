@@ -58,7 +58,18 @@ class TheApp():
                 mq = MsgQueue(exchange='kernel-mainline-todo')
 
             if s.args.command == ['queue-status']:
-                print(mq.queue_info('mainline-todo'))
+                if len(s.args.command) == 2:
+                    queue = a.args.command[1]
+                else:
+                    queue = 'mainline-todo'
+
+                state = mq.queue_info(queue)
+                print("""\
+Queue:   {0[queue]}
+Pending: {0[message_count]}
+Workers: {0[consumer_count]}\
+""".format(state))
+
             else:
                 mq.publish(details['key'], details)
 
