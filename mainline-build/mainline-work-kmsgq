@@ -57,7 +57,10 @@ class TheApp():
             else:
                 mq = MsgQueue(exchange='kernel-mainline-todo')
 
-            mq.publish(details['key'], details)
+            if s.args.command == ['queue-status']:
+                print(mq.queue_info('mainline-todo'))
+            else:
+                mq.publish(details['key'], details)
 
             retval = 0
 

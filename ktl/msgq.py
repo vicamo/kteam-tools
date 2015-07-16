@@ -35,8 +35,8 @@ class MsgQueue():
 
         s.channel.queue_declare(queue_name, durable=queue_durable, auto_delete=auto_delete)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
-        s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=False)
         s.channel.basic_qos(prefetch_count=1)
+        s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=False)
 
 
     def listen_start(s):
