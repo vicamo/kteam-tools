@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# mainline-worker-kmsgq-runner -- run the job and sync the results up.
+#
+P="mainline-worker-kmsgq-runner"
+
+key="$HOME/.ssh/mainline-publish"
+
+if [ ! -f "$key" ]; then
+	echo "$P: $key: no queue key found ... run skipped"
+	exit 1
+fi
+
+echo "$P: starting job ($@) ..."
+
+"$@"
+
+echo "$P: syncing results to kernel.ubuntu.com ..."
+rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
+	rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload"
+echo "$P: sync complete"

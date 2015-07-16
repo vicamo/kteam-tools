@@ -50,6 +50,7 @@ class TheApp():
 
         # Ensure we look in the current directory for these commands.
         payload['cmd'][0] = './' + payload['cmd'][0]
+        payload['cmd'].insert(0, "./mainline-worker-kmsgq-runner")
 
         cdebug(payload)
         try:
