@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import traceback
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, WARNING, error
 import socket
@@ -11,7 +12,7 @@ import Queue
 from ktl.log                            import cdebug, center, cleave, cerror
 from ktl.msgq                           import MsgQueue
 import time
-import subprocess
+from subprocess                         import Popen
 
 # TheApp
 #
@@ -52,9 +53,26 @@ class TheApp():
 
         cdebug(payload)
         try:
-            subprocess.call(payload['cmd'])
+            print("Starting", payload['cmd'])
+            child = Popen(payload['cmd'])
+            while True:
+                res = child.poll()
+                if res != None:
+                    break
+
+                time.sleep(15)
+                s.mq.connection.process_data_events()
+            print("Complete", payload['cmd'])
+
+
         except OSError:
             error("work request failed")
+
+        except:
+            error("work request exploded")
+            #print(sys.exc_info()[0])
+            print(traceback.format_exc())
+
         cdebug(payload)
 
 
@@ -67,11 +85,12 @@ class TheApp():
 
         try:
             if args.local:
-                s.mq = MsgQueue(address='localhost', port=9123, exchange='kernel-mainline-todo', heartbeat_interval=7200)
+                s.mq = MsgQueue(address='localhost', port=9123, exchange='kernel-mainline-todo', heartbeat_interval=60)
             else:
-                s.mq = MsgQueue(exchange='kernel-mainline-todo', heartbeat_interval=7200)
+                s.mq = MsgQueue(exchange='kernel-mainline-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
+            #raise "FOO"
 
             s.mq.listen_worker(s.args.queue, 'mainline-todo', s._handler)
             s.mq.listen_worker('admin-' + s.args.name, 'admin-' + s.args.name, s._handler, auto_delete=True)

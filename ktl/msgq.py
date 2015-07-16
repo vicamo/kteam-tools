@@ -11,8 +11,8 @@ class MsgQueue():
         s.exchange_name = exchange
 
         params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat_interval=heartbeat_interval)
-        connection = pika.BlockingConnection(params)
-        s.channel = connection.channel()
+        s.connection = pika.BlockingConnection(params)
+        s.channel = s.connection.channel()
         s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
 
 
