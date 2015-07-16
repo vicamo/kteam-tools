@@ -7,10 +7,10 @@ class MsgQueue():
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic'):
+    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None):
         s.exchange_name = exchange
 
-        params = pika.ConnectionParameters(address, port, connection_attempts=3)
+        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat_interval=heartbeat_interval)
         connection = pika.BlockingConnection(params)
         s.channel = connection.channel()
         s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
