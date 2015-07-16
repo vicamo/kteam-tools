@@ -12,5 +12,6 @@ echo "Starting `date`"
 exec ./mainline-worker-kmsgq \
 	--command cod-source \
 	--command mainline-build \
+	--command mainline-flush \
 	`hostname` mainline-todo \
 	"$@"
