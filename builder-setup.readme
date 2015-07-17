@@ -1,0 +1,19 @@
+
+Step by step instructions for setting up a new builder system.
+
+   1. ssh into the builder using an account which can sudo. (ubuntu/ubuntu)
+   2. sudo useradd -d /home/kernel -p ubuntu -m -U kernel -s /bin/bash
+   3. passwd kernel
+      ubuntu
+   4. git clone git://kernel.ubuntu.com/ubuntu/kteam-tools.git
+   5. sudo mkdir -p /home/usr3/chroots
+   6. sudo ln -s /home/usr3 /usr3
+   7. sudo mkdir -p /usr3/ubuntu
+   8. sudo chown kernel.kernel /usr3/ubuntu
+   9. sudo kteam-tools/chroot-setup/make_all
+  10. (cd /usr3/ubuntu; git clone --bare git://kernel.ubuntu.com/virgin/linux.git linux.git)
+  11. kteam-tools/kernel-team-accounts/update-repos2.sh
+  12. (cd kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
+  13. add "apw,bradf,rtg,ogasawara    ALL=NOPASSWD: /bin/su - kernel" to sudoers file
+  14. add "apw,bradf,rtg,ogasawara    ALL=(ALL:ALL) ALL" to sudoers file
+
