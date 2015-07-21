@@ -384,7 +384,7 @@ class ApplyStablePatches(StdApp):
             cc = 1
             ccstable = compile(r'^\s*Cc:.*\b(stable)\b.*', IGNORECASE | MULTILINE)
             cchint = compile(r'((?P<for>\b(for)\b)|(?P<gr>\s*>\s*)|(?P<ge>\s*>=\s*)|(\s*))(?P<v>[v]*)(?P<kver>[0-9]\.[0-9][^\s+,\]]*)(?P<plus>[+]*)[,\]]*((?P<only>[\s]+only)|(?P<later>[\s]+and later)|(\s*))')
-            fixes = compile(r'^\s*Fixes:\s*([a-f0-9]+).*', IGNORECASE | MULTILINE)
+            fixes = compile(r'^\s*Fixes:\s*([a-f0-9]{6,}).*', IGNORECASE | MULTILINE)
             forstable = []
             fixeslist = []
             for c in result:
