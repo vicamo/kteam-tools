@@ -135,7 +135,7 @@ class Ubuntu:
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '15.10',
-            'kernel'    : '4.0.0',
+            'kernel'    : '4.1.0',
             'name'      : 'wily',
             'supported' : False,
             # adjust packages when this goes live
@@ -645,6 +645,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '4.1.0'    : db['15.10'],
         '4.0.0'    : db['15.10'],
         '3.19.0'   : db['15.04'],
         '3.16.0'   : db['14.10'],
