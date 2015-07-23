@@ -57,14 +57,15 @@ if __name__ == "__main__":
     logging.basicConfig(level=DEBUGLEVEL,
                         format="%(asctime)s - %(levelname)s - %(message)s")
 
-    for line in sys.stdin:
-        if line[0] == '#':
-            continue
+    with open(sys.argv[1], 'r') as rfd:
+        for line in rfd:
+            if line[0] == '#':
+                continue
 
-        args = line.split()
-        if len(args) != 2:
-            print("ERROR: invalid clean specifier:", line.strip(), file=sys.stderr)
-            continue
+            args = line.split()
+            if len(args) != 2:
+                print("ERROR: invalid clean specifier:", line.strip(), file=sys.stderr)
+                continue
 
-        print("Cleaning ppa:{0}/{1}".format(args[0], args[1]))
-        ppa_clean(args[0], args[1])
+            print("Cleaning ppa:{0}/{1}".format(args[0], args[1]))
+            ppa_clean(args[0], args[1])
