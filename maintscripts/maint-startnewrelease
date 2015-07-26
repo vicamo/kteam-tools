@@ -73,6 +73,8 @@ if not os.path.isdir(debian_dir):
 	sys.exit(1)
 
 (srcpkg, version, pocket, flags) = GetPackageInfo()
+if '~' in version:
+    lts_version = version.split('~')[1]
 version = version.split("~")[0]
 kversion = version.split("-")[0]
 kabi, krel = version.split("-")[1].split(".")
@@ -135,9 +137,10 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 	if opts.cktppa:
 		cmd += " --ckt-ppa"
         if "-lts-" in srcpkg:
-            v = "Ubuntu-lts-" + version
+            v = "Ubuntu-lts-" + version + '_' + lts_version
         else:
             v = "Ubuntu-" + version
+	print(cmd + " " + v)
 	(rc, output) = sh(cmd + " " + v)
 
 	#----------------------------------------------------------------------
