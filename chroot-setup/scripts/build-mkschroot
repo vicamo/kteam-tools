@@ -41,6 +41,7 @@ SUITE=""
 TARGET=""
 MIRROR=""
 CL_MIRROR=""
+EMULATOR=""
 
 while [ $# -ne 0 ]; do
 	case $1 in
@@ -51,6 +52,9 @@ while [ $# -ne 0 ]; do
 				# Only i386 is supported as non-host target
 				amd64)
 					case $ARCH in
+						armhf)
+							EMULATOR="/usr/bin/qemu-arm*-static"
+							;;
 						amd64|i386)
 							;;
 						*)
@@ -222,6 +226,10 @@ if [ ! -d "$TARGET" ]; then
 	if [ $? -ne 0 ]; then
 		echo "Failed to create <$TARGET>!" >&2
 		exit 1
+	fi
+	if [ "$EMULATOR" != "" ]; then
+		mkdir -p "$TARGET/usr/bin"
+		cp $EMULATOR "$TARGET/usr/bin/"
 	fi
 else
 	if $CFGEXISTS; then
