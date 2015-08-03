@@ -62,13 +62,13 @@ for line in sys.stdin:
     run = state['generated-date']
     run_ts = int((run - epoch).total_seconds())
 
-    tests_running = False
+    tests_running = 'idle'
     for source in state['sources']:
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
-                    tests_running = True
+                    tests_running = 'running'
                 if source['source'] == 'linux' or source['source'].startswith('linux-lts-'):
                     match = re_extract.match(excuse)
                     if match:
@@ -89,9 +89,6 @@ for line in sys.stdin:
                         if key2 not in results[key1]:
                             results[key1][key2] = {}
                         results[key1][key2][key3] = [test, tversion, tstate, source['source'], source['new-version']]
-
-    if tests_running:
-        title += ' Tests Running'
 
     for key1 in sorted(results.keys()):
         keyl = sorted(results[key1].keys(), reverse=True)
@@ -133,7 +130,7 @@ for line in sys.stdin:
         'host':     host,
         'title':    title,
         'state':    tstate,
-        'note':     'needed={0} run={1}'.format(needed_str, run_str),
+        'note':     'needed={0} run={1} tests='.format(needed_str, run_str, tests_running),
         'order':    40,
     })
 
