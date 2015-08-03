@@ -130,7 +130,7 @@ for line in sys.stdin:
         'host':     host,
         'title':    title,
         'state':    tstate,
-        'note':     'needed={0} run={1} tests='.format(needed_str, run_str, tests_running),
+        'note':     'needed={0} run={1} tests={2}'.format(needed_str, run_str, tests_running),
         'order':    40,
     })
 
