@@ -20,7 +20,7 @@ print("""<html>
 <head>
 <meta id="refresh" http-equiv="refresh" content="90">
 <title>Kernel Dashboard</title>
-<script type="text/javascript" src="jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="jquery-1.11.3.min.js"></script>
 <script type="text/javascript">
 $('html').addClass('js');
 
