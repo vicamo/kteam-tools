@@ -117,9 +117,9 @@ for line in sys.stdin:
     # hour to get there, after that warn for a further hour, then alert.
     if run_ts > needed_ts:
         tstate = "G"
-    elif (now_ts - needed_ts) < (65*60):
-        tstate = "G"
     elif (now_ts - needed_ts) < (125*60):
+        tstate = "G"
+    elif (now_ts - needed_ts) < (185*60):
         tstate = "W"
     else:
         tstate = "A"
