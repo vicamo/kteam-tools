@@ -289,7 +289,10 @@ def RetrieveABI(tmpdir, abi_arch_dir, flavour):
 #------------------------------------------------------------------------------
 # When not running in test mode, make sure the new abi directory exists.
 #------------------------------------------------------------------------------
-abi_dir = os.path.join(debian_dir, "abi", version)
+
+# if this is an LTS backport kernel, get version without the tag
+ver = version.split('~')[0]
+abi_dir = os.path.join(debian_dir, "abi", ver)
 if not opts.dryrun and not os.path.isdir(abi_dir):
 	os.mkdir(abi_dir)
 
