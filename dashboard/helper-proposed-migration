@@ -53,7 +53,6 @@ timestamp()
 	done <<EOL
 precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise precise precise-updates precise-proposed
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty trusty trusty-updates trusty-proposed
-utopic http://people.canonical.com/~ubuntu-archive/proposed-migration/utopic utopic utopic-updates utopic-proposed
 vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 wily http://people.canonical.com/~ubuntu-archive/proposed-migration/wily wily wily-updates wily-proposed
 EOL
