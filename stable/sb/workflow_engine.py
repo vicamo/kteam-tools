@@ -23,6 +23,8 @@ from sb.log                             import cinfo, cdebug, cwarn, cnotice, ce
 import logging
 import json
 
+import urllib
+
 def verbose(msg, color='green'):
     stdo(colored(msg, color))
 
@@ -76,7 +78,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'package-testing'           : TaskActions({'New'          : s.pkg_testing_new,                     'Fix Released' : s.package_testing_fix_committed }),
+            'automated-testing'         : TaskActions({'Confirmed'    : s.automated_testing_confirmed}),
             'promote-to-proposed'       : TaskActions({'New'          : s.promote_to_proposed_new,             'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -87,6 +89,7 @@ class WorkflowEngine():
             'security-signoff'          : TaskActions({'Invalid'      : s.security_signoff_finished,           'Fix Released' : s.security_signoff_finished}),
         }
 
+        s.dkms_regressions_url = "https://people.canonical.com/~kernel/status/dashboard-helper/proposed-migration/regressions.txt"
         s.lp = lp
 
     def verbose(s, msg, color='green'):
@@ -234,6 +237,7 @@ class WorkflowEngine():
             except KeyError:
                 cerror('            ' + s.printlink)
                 cerror('            Error: No action found for state <%s> and task <%s>' % (task.status, workflow_task_name))
+                action = None
 
             if action is None:
                 cinfo('            Action: No action for task %s in state %s' % (task.name, task.status))
@@ -653,104 +657,86 @@ class WorkflowEngine():
     # -----------------------------------------------------------------------------------------------------------------------------
     # Package Testing Tasks Handling
 
-    # pkg_testing_new
+    # Possible DKMS states: PASS, ALWAYSFAIL, IGNORED, DEPENDS, RUNNING, NBS, REGRESSION
     #
-    def pkg_testing_new(s, taskobj):
-        cdebug('            WorkflowEngine::pkg_testing_new enter')
-
-        if s.wfb.all_dependent_packages_fully_built():
-            cdebug('                all dependent packages : fully built', 'green')
-
-            if s.__promote_to_proposed(taskobj):
-                # This task can be marked "Confirmed"
-                #
-                s.wfb.tasks_by_name['package-testing'].status = 'Confirmed'
-        else:
-            cdebug('                all dependent packages : not built', 'red')
-
-        cdebug('            WorkflowEngine::pkg_testing_new leave')
+    # - 'automated-testing' will transition to 'Incomplete' if state is 'REGRESSION'
+    # - 'automated-testing' will transition to 'Fix Released' if state is 'PASS', 'ALWAYSFAIL' or 'IGNORED'
+    # - any other state will be ignored and we'll continue to poll the URL
+    #
+    def dkms_is_regression(s, state):
+        if state != None and state.upper() == 'REGRESSION':
+            return True
+        return False
+    def dkms_is_pass(s, state):
+        if state != None and state.upper() in ['PASS', 'ALWAYSFAIL', 'IGNORED']:
+            return True
         return False
 
-    # __promote_to_proposed
-    #
-    def __promote_to_proposed(s, taskobj):
-        """
-        """
-        cdebug('            __promote_to_proposed enter')
+    def check_dkms_regression(s, taskobj, package, version, dkms_data):
+        for l in dkms_data:
+            # Just in case we have a malformed line (e.g., when the file is being created)
+            if (len(l.split()) > 3):
+                # line format:
+                # series package version state notes (optional)
+                res = l.split()
+                if res[0] == s.wfb.series and res[1] == package and res[2] == version:
+                    state = res[3]
+                    cdebug('            State for DMKS %s %s in %s: %s' % (package, version, s.wfb.series, state))
 
-        retval = False
+                    if s.dkms_is_regression(state):
+                        if s.args.dryrun:
+                            cinfo('            Dryrun - Would set automated-testing to Incomplete')
+                        else:
+                            s.wfb.tasks_by_name['automated-testing'].status = 'Incomplete'
+                            msgbody = "DKMS has regressed with version %s of package %s in %s\n" % (version, package, s.wfb.series)
+                            msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
+                            msgbody += "Please verify DKMS test results in %s\n" % s.dkms_regressions_url
+                            s.send_comment(taskobj, 'DKMS regression tests failure', msgbody)
+                    return state
+        cwarn('            Failed to get state for DMKS %s %s in %s' % (package, version, s.wfb.series))
+        return None
 
-        if s.projectname == 'kernel-sru-workflow':
-            taskname = 'promote-to-proposed'
-        else:
-            taskname = 'package-testing'
+    def automated_testing_confirmed(s, taskobj):
+        cdebug('            WorkflowEngine::automated_testing_confirmed enter')
 
-        cdebug('                %s status: %s' % (taskname, s.wfb.tasks_by_name[taskname].status))
+        tests_pass = True
 
-        # Even though we came in here do to one of the prepare-package* tasks being
-        # set to 'Fix Released' we don't actually do anything unless the next state
-        # (promote-to-proposed or package-testing) is 'New'.
-        #
-        if s.wfb.tasks_by_name[taskname].status == 'New':
-            # check if all prepare-package tasks are finished
-            if not s.prepare_package_fixed():
-                cdebug('                __promote_to_proposed leave (%s)' % retval)
+        # Start by retrieving DKMS regression data
+        try:
+            f = urllib.urlopen(s.dkms_regressions_url)
+            data = f.read().split('\n')
+            f.close()
+        except IOError:
+            cerror('            Failed to read from DKMS regressions data URL "%s"', s.dkms_regressions_url)
+            cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
+            return False
+
+        # Check main package
+        state = s.check_dkms_regression(taskobj, s.wfb.pkg_name, s.wfb.pkg_version, data)
+        if s.dkms_is_regression(state):
+            cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
+            return False
+        if not s.dkms_is_pass(state):
+            tests_pass = False
+
+        # Then, check all the other packages (-meta, -signed, ...)
+        pkg_list = s.wfb.relevant_packages_list()
+        check_component = CheckComponent(s.lp.production_service)
+        for pkg in pkg_list:
+            ps = check_component.get_published_sources(s.wfb.series, pkg, None, 'proposed')
+            state = s.check_dkms_regression(taskobj, pkg, ps[0].source_package_version, data)
+            if s.dkms_is_regression(state):
+                cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
+                return False
+            if not s.dkms_is_pass(state):
+                tests_pass = False
+
+        if tests_pass:
+            if s.args.dryrun:
+                cinfo('            Dryrun - Would set automated-testing to Fix Released')
             else:
-                s.handle_derivatives(taskobj, taskname)
-                s.__ppa_announce(taskobj)
-                retval = True
-
-        else:
-            cdebug('                doing nothing, the task is not \'New\'')
-
-        cdebug('            __promote_to_proposed leave (%s)' % retval)
-        return retval
-
-    # __ppa_announce
-    #
-    def __ppa_announce(s, taskobj):
-        """
-        Right now all we want to do is send some email.
-        """
-        cdebug('            __ppa_announce enter')
-
-        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
-        # Send a message to the message queue. This will kick off testing.
-        #
-        hwe = False
-        if '-lts-' in s.wfb.series:
-            hwe = True
-        msg = {
-            "key"            : "kernel.publish.ppa.%s" % series,
-            "op"             : "sru",
-            "who"            : ["kernel"],
-            "pocket"         : "ppa",
-            "date"           : str(datetime.utcnow()),
-            "series-name"    : series,
-            "series-version" : s.ubuntu.index_by_series_name[series],
-            "hwe"            : hwe,
-            "bug id"         : taskobj.bug.id,
-            "url"            : s.bug_url(taskobj.bug.id),
-            "version"        : s.wfb.pkg_version,
-            "package"        : s.wfb.pkg_name,
-        }
-
-        mq = MsgQueue()
-        mq.publish(msg['key'], msg)
-
-        from_addr = None
-        if 'mail_notify' in s.cfg:
-            if 'from_address' in s.cfg['mail_notify']:
-                from_addr = s.cfg['mail_notify']['from_address']
-
-        series = s.ubuntu.series_name(s.wfb.pkg_name, s.wfb.pkg_version)
-        subj = "[" + series + "] " + s.wfb.pkg_name + " " + s.wfb.pkg_version + " uploaded to ppa"
-        if s.has_new_abi():
-            subj += " (ABI bump)"
-
-        s.email.send(from_addr, "brad.figg@canonical.com", subj, json.dumps(msg, sort_keys=True, indent=4))
-
-        cdebug('            __ppa_announce leave (False)')
+                s.wfb.tasks_by_name['automated-testing'].status = 'Fix Released'
+        cdebug('            WorkflowEngine::automated_testing_confirmed leave')
         return False
 
     def final_promote_to_release_tasks(s, taskobj):
@@ -1105,6 +1091,9 @@ class WorkflowEngine():
             s.set_phase(taskobj, 'Verification & Testing')
             s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
             s.set_testing_to_confirmed(taskobj)
+        # automated-testing is also performed in devel kernels
+        if s.wfb.tasks_by_name['automated-testing'].status == 'New':
+            s.wfb.tasks_by_name['automated-testing'].status = 'Confirmed'
         s.send_upload_announcement(taskobj, 'proposed')
         s.props.set({'proposed-announcement-sent':True})
 
@@ -1230,39 +1219,6 @@ class WorkflowEngine():
             cdebug('            regression_testing_fix_released leave (False)')
             return False
 
-    def package_testing_fix_committed(s, taskobj):
-        """
-        When package-testing is set to Fix Released, that means the
-        development kernel passed all wanted testing and is acked to go
-        to the release pocket by the Ubuntu Kernel Team
-        """
-        cdebug('            package_testing_fix_committed enter')
-        try:
-            if s.wfb.tasks_by_name['promote-to-release'].status == 'New':
-                # if this is a derivative tracking bug, first wait until
-                # that packages on the master tracking bug are also ready or
-                # already promoted. The way derivative package bugs are
-                # opened already ensures this, but check the tasks on the
-                # master bug anyway just in case...
-                tsk_st = { 'promote-to-release' : [ 'Confirmed', 'Fix Released' ] }
-
-                # If the master bug's tasks are not completely ready.
-                #
-                if s.verify_master_bug_tasks(taskobj.bug, tsk_st) <= 0:
-                    cdebug('            package_testing_fix_committed leave (False)')
-                    return False
-
-                # Set promote-to-proposed
-                s.wfb.tasks_by_name['promote-to-release'].status = 'Confirmed'
-                # Add time stamp and status
-                s.set_tagged_timestamp(taskobj, 'kernel-Package-testing-end')
-                s.set_tagged_timestamp(taskobj, 'kernel-Promote-to-release-start')
-                s.set_phase(taskobj, 'CopyToRelease')
-        except:
-            cerror('Exception thrown processing the package-testing task when set to Fix Released')
-        cdebug('            package_testing_fix_committed leave (False)')
-        return False
-
     def promote_to_release_fix_released(s, taskobj):
         """
         When promote-to-release is set to Fix Released, the development
@@ -1277,10 +1233,6 @@ class WorkflowEngine():
         if not s.prepare_package_fixed():
             cdebug('            promote_to_release_fix_released leave')
             return
-
-        if (s.wfb.tasks_by_name['package-testing'].status != 'Fix Released' or
-            s.wfb.tasks_by_name['package-testing'].status != 'Invalid'):
-            s.wfb.tasks_by_name['package-testing'].status = "Won't Fix"
 
         # Do we halted processing?
         if (s.wfb.tasks_by_name[s.projectname].status != 'In Progress'):
@@ -1378,9 +1330,9 @@ class WorkflowEngine():
             True  - Testing completed and successful.
             False - Testing incomplete or failed.
         '''
-        retval = False
         regression_testing_ok = False
         certification_testing_ok = False
+        automated_testing_ok = False
 
         if s.wfb.tasks_by_name['regression-testing'].status == 'Invalid':
             regression_testing_ok = True
@@ -1392,7 +1344,10 @@ class WorkflowEngine():
         elif 'certification-testing-passed' in s.bugtags:
             certification_testing_ok = True
 
-        return regression_testing_ok and certification_testing_ok
+        if s.wfb.tasks_by_name['automated-testing'].status in ['Invalid', 'Fix Released']:
+            automated_testing_ok = True
+
+        return regression_testing_ok and certification_testing_ok and automated_testing_ok
 
     def hold_updates_security_copy(s):
         """
@@ -1458,6 +1413,7 @@ class WorkflowEngine():
             s.verify_state('certification-testing', ['Invalid', 'Fix Released'])
             s.verify_state('regression-testing',    ['Invalid', 'Fix Released'])
             s.verify_state('security-signoff',      ['Invalid', 'Fix Released'])
+            s.verify_state('automated-testing',     ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
             s.verify_state('promote-to-security',   ['New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released'])

@@ -124,7 +124,7 @@ class Workflow:
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-ports-meta' : 'canonical-kernel-team',
                 'prepare-package-signed'     : 'canonical-kernel-team',
-                'package-testing'            : 'canonical-kernel-team',
+                'automated-testing'          : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
@@ -152,7 +152,6 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
-                'package-testing'            : 'canonical-kernel-team',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -170,7 +169,6 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
-                'package-testing'            : 'canonical-kernel-team',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
@@ -186,7 +184,6 @@ class Workflow:
                 'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'package-testing'            : 'canonical-hwe-arm-kernel',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
@@ -202,7 +199,6 @@ class Workflow:
                 'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'package-testing'            : 'canonical-hwe-arm-kernel',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
@@ -218,7 +214,6 @@ class Workflow:
                 'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'package-testing'            : 'canonical-hwe-arm-kernel',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
@@ -230,7 +225,6 @@ class Workflow:
                 'prepare-package'            : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-signed'     : 'canonical-kernel-team',
-                'package-testing'            : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
@@ -254,7 +248,6 @@ class Workflow:
                 'regression-testing'         : 'ubuntustudio-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'package-testing'            : 'ubuntustudio-kernel-team',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -271,7 +264,6 @@ class Workflow:
                 'regression-testing'         : 'ben-collins',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'package-testing'            : 'ben-collins',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -287,7 +279,7 @@ class Workflow:
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-ports-meta' : 'canonical-kernel-team',
                 'prepare-package-signed'     : 'canonical-kernel-team',
-                'package-testing'            : 'canonical-kernel-team',
+                'automated-testing'          : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
@@ -321,9 +313,7 @@ class Workflow:
             'task_assignment' : {
                 'prepare-package'            : 'ben-collins',
                 'prepare-package-meta'       : 'ben-collins',
-                'package-testing'            : 'ben-collins',
                 'promote-to-release'         : 'ubuntu-archive',
-                'package-testing'            : 'ben-collins',
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -336,7 +326,7 @@ class Workflow:
                 'prepare-package-lbm'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-signed'     : 'canonical-kernel-team',
-                'package-testing'            : 'canonical-kernel-team',
+                'automated-testing'          : 'canonical-kernel-team',
                 'promote-to-release'         : 'ubuntu-archive',
                 'promote-to-proposed'        : 'canonical-kernel-team',
                 },

@@ -15,7 +15,7 @@ class PrepPackage():
         if s.targeted_project == 'kernel-sru-workflow':
             s.taskname = 'promote-to-proposed'
         else:
-            s.taskname = 'package-testing'
+            s.taskname = 'automated-testing'
 
         # Tests for required preconditions
         #
