@@ -8,7 +8,8 @@ import yaml
 import re
 from datetime import datetime
 
-re_extract = re.compile(r'^autopkgtest for (\S+) (\S+):.*?<span .*?>(.*?)</span>')
+re_extract_adt = re.compile(r'^autopkgtest for (\S+) (\S+):.*?(<a.*?>.*)')
+re_extract_adt_result = re.compile(r'<a.*?>(.*?):\s*<span.*?>(.*?)</span>')
 
 now = datetime.now()
 epoch = datetime.utcfromtimestamp(0)
@@ -70,26 +71,25 @@ for line in sys.stdin:
     tests_running = 'idle'
     for source in state['sources']:
         if 'cruft-arch' in source['reason']:
-            result([source['source'], source['new-version'], 'NBS BLOCK', source['source'], source['new-version']])
+            result([source['source'], source['new-version'], 'NBS Block', source['source'], source['new-version']])
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
                     tests_running = 'running'
-                match = re_extract.match(excuse)
+                match = re_extract_adt.match(excuse)
                 if match:
-                    (test, tversion, state) = (match.group(1), match.group(2), match.group(3))
+                    (test, tversion, arch_results) = (match.group(1), match.group(2), match.group(3))
 
-                    if state == 'Pass':
-                        tstate = 'PASS'
-                    elif state ==  'Regression':
-                        tstate = 'FAIL'
-                    elif state == 'Test in progress':
-                        tstate = 'RUNNING'
-                    elif state == 'Always failed':
-                        tstate = 'KNOWN-BAD'
-                    else:
-                        tstate = 'UNKNOWN:' + state
+                    tstate = 'Pass'
+                    state_order = ('Pass', 'Always failed', 'Test in progress', 'Regression', 'UNKNOWN')
+                    for (arch, state) in re_extract_adt_result.findall(arch_results):
+                        if state not in state_order:
+                            print("UNKNOWN", state)
+                            state = 'UNKNOWN'
+
+                        if state_order.index(state) > state_order.index(tstate):
+                            tstate = state
 
                     result([test, tversion, tstate, source['source'], source['new-version']])
 
@@ -100,7 +100,7 @@ for line in sys.stdin:
             for key3 in results[key1][key2]:
                 arg = results[key1][key2][key3]
 
-                if arg[2] in ('FAIL', 'NBS BLOCK'):
+                if arg[2] in ('Regression', 'NBS Block'):
                     tstate = 'W'
                 else:
                     tstate = 'G'
