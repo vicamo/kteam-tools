@@ -10,6 +10,7 @@ from datetime import datetime
 
 re_extract_adt = re.compile(r'^autopkgtest for (\S+) (\S+):.*?(<a.*?>.*)')
 re_extract_adt_result = re.compile(r'<a.*?>(.*?):\s*<span.*?>(.*?)</span>')
+re_extract_force = re.compile(r'^Should wait for (\S+) (\S+) test, but forced')
 
 now = datetime.now()
 epoch = datetime.utcfromtimestamp(0)
@@ -72,26 +73,37 @@ for line in sys.stdin:
     for source in state['sources']:
         if 'cruft-arch' in source['reason']:
             result([source['source'], source['new-version'], 'NBS Block', source['source'], source['new-version']])
+        result_list = []
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
                     tests_running = 'running'
-                match = re_extract_adt.match(excuse)
-                if match:
-                    (test, tversion, arch_results) = (match.group(1), match.group(2), match.group(3))
 
-                    tstate = 'Pass'
-                    state_order = ('Pass', 'Always failed', 'Test in progress', 'Regression', 'UNKNOWN')
-                    for (arch, state) in re_extract_adt_result.findall(arch_results):
-                        if state not in state_order:
-                            print("UNKNOWN", state)
-                            state = 'UNKNOWN'
+            match = re_extract_adt.match(excuse)
+            if match:
+                (test, tversion, arch_results) = (match.group(1), match.group(2), match.group(3))
 
-                        if state_order.index(state) > state_order.index(tstate):
-                            tstate = state
+                tstate = 'Pass'
+                state_order = ('Pass', 'Always failed', 'Test in progress', 'Regression', 'UNKNOWN')
+                for (arch, state) in re_extract_adt_result.findall(arch_results):
+                    if state not in state_order:
+                        print("UNKNOWN", state)
+                        state = 'UNKNOWN'
 
-                    result([test, tversion, tstate, source['source'], source['new-version']])
+                    if state_order.index(state) > state_order.index(tstate):
+                        tstate = state
+
+                result_list.append([test, tversion, tstate, source['source'], source['new-version']])
+
+            match = re_extract_force.match(excuse)
+            if match:
+                (test, tversion) = (match.group(1), match.group(2))
+                drop = result_list.pop()
+                if (test, tversion) == (drop[0], drop[1]):
+                    drop[2] = 'FORCED'
+                result_list.append(drop)
+
 
     for key1 in sorted(results.keys()):
         keyl = sorted(results[key1].keys(), reverse=True)
