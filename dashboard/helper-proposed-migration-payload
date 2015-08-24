@@ -26,6 +26,19 @@ def emit(record):
     print(row)
 
 
+def result(arg):
+    if arg[3] in ('linux', 'linux-meta', 'linux-signed') or \
+       arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-'):
+        key1 = arg[3]
+        key2 = arg[4]
+        key3 = arg[0] + '_' + arg[1]
+        if key1 not in results:
+            results[key1] = {}
+        if key2 not in results[key1]:
+            results[key1][key2] = {}
+        results[key1][key2][key3] = arg
+
+
 for line in sys.stdin:
     (yfile, hfile, needed) = line.strip().split()
     needed_ts = int(needed)
@@ -47,15 +60,7 @@ for line in sys.stdin:
             for line in hfd:
                 arg = line.strip().split()
 
-                if arg[3] == 'linux' or arg[3].startswith('linux-lts-'):
-                    key1 = arg[3]
-                    key2 = arg[4]
-                    key3 = arg[0] + '-' + arg[1]
-                    if key1 not in results:
-                        results[key1] = {}
-                    if key2 not in results[key1]:
-                        results[key1][key2] = {}
-                    results[key1][key2][key3] = arg
+                result(arg)
 
     title = name + ': Migration'
 
@@ -64,31 +69,27 @@ for line in sys.stdin:
 
     tests_running = 'idle'
     for source in state['sources']:
+        if 'cruft-arch' in source['reason']:
+            result([source['source'], source['new-version'], 'NBS BLOCK', source['source'], source['new-version']])
         for excuse in source['excuses']:
             if excuse.startswith('autopkgtest'):
                 if 'Test in progress' in excuse:
                     needed_ts = run_ts
                     tests_running = 'running'
-                if source['source'] == 'linux' or source['source'].startswith('linux-lts-'):
-                    match = re_extract.match(excuse)
-                    if match:
-                        (test, tversion, state) = (match.group(1), match.group(2), match.group(3))
+                match = re_extract.match(excuse)
+                if match:
+                    (test, tversion, state) = (match.group(1), match.group(2), match.group(3))
 
-                        if state == 'Pass':
-                            tstate = 'PASS'
-                        elif state ==  'Regression':
-                            tstate = 'FAIL'
-                        else:
-                            tstate = 'RUNNING'
+                    if state == 'Pass':
+                        tstate = 'PASS'
+                    elif state ==  'Regression':
+                        tstate = 'FAIL'
+                    elif state == 'Test in progress':
+                        tstate = 'RUNNING'
+                    else:
+                        tstate = 'UNKNOWN:' + state
 
-                        key1 = source['source']
-                        key2 = source['new-version']
-                        key3 = test + '-' + tversion
-                        if key1 not in results:
-                            results[key1] = {}
-                        if key2 not in results[key1]:
-                            results[key1][key2] = {}
-                        results[key1][key2][key3] = [test, tversion, tstate, source['source'], source['new-version']]
+                    result([test, tversion, tstate, source['source'], source['new-version']])
 
     for key1 in sorted(results.keys()):
         keyl = sorted(results[key1].keys(), reverse=True)
@@ -97,7 +98,7 @@ for line in sys.stdin:
             for key3 in results[key1][key2]:
                 arg = results[key1][key2][key3]
 
-                if arg[2] == 'FAIL':
+                if arg[2] in ('FAIL', 'NBS BLOCK'):
                     tstate = 'W'
                 else:
                     tstate = 'G'
@@ -105,7 +106,7 @@ for line in sys.stdin:
                 emit({
                     'group':    'Proposed Migration',
                     'host':     host,
-                    'title':    name + ': ' + arg[3] + '-' + arg[4] + ' test ' + arg[0] + '-' + arg[1],
+                    'title':    name + ': ' + arg[3] + '_' + arg[4] + ' test ' + arg[0] + '_' + arg[1],
                     'state':    tstate,
                     'note':     arg[2],
                 })
