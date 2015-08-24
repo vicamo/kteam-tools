@@ -86,6 +86,8 @@ for line in sys.stdin:
                         tstate = 'FAIL'
                     elif state == 'Test in progress':
                         tstate = 'RUNNING'
+                    elif state == 'Always failed':
+                        tstate = 'KNOWN-BAD'
                     else:
                         tstate = 'UNKNOWN:' + state
 
