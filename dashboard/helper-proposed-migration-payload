@@ -72,37 +72,37 @@ for line in sys.stdin:
     tests_running = 'idle'
     for source in state['sources']:
         if 'cruft-arch' in source['reason']:
-            result([source['source'], source['new-version'], 'NBS Block', source['source'], source['new-version']])
-        result_list = []
-        for excuse in source['excuses']:
-            if excuse.startswith('autopkgtest'):
-                if 'Test in progress' in excuse:
-                    needed_ts = run_ts
-                    tests_running = 'running'
+            result([source['source'], source['new-version'], 'NBS', source['source'], source['new-version']])
 
-            match = re_extract_adt.match(excuse)
-            if match:
-                (test, tversion, arch_results) = (match.group(1), match.group(2), match.group(3))
 
-                tstate = 'Pass'
-                state_order = ('Pass', 'Always failed', 'Test in progress', 'Regression', 'UNKNOWN')
-                for (arch, state) in re_extract_adt_result.findall(arch_results):
-                    if state not in state_order:
-                        print("UNKNOWN", state)
-                        state = 'UNKNOWN'
+        forced_reasons = []
+        if 'forced-reason' in source:
+            for reason_str in source['forced-reason']:
+                forced_reasons.append(reason_str.split())
 
-                    if state_order.index(state) > state_order.index(tstate):
-                        tstate = state
+        if 'tests' in source:
+            if 'autopkgtest' in source['tests']:
+                for test_ver in source['tests']['autopkgtest']:
+                    test_result = source['tests']['autopkgtest'][test_ver]
+                    (test, tversion) = test_ver.split()
 
-                result_list.append([test, tversion, tstate, source['source'], source['new-version']])
+                    tstate = 'PASS'
+                    state_order = ('PASS', 'ALWAYSFAIL', 'RUNNING', 'REGRESSION')
 
-            match = re_extract_force.match(excuse)
-            if match:
-                (test, tversion) = (match.group(1), match.group(2))
-                drop = result_list.pop()
-                if (test, tversion) == (drop[0], drop[1]):
-                    drop[2] = 'FORCED'
-                result_list.append(drop)
+                    for arch in test_result:
+                        state = test_result[arch][0]
+                        if state == 'RUNNING':
+                            needed_ts = run_ts
+                            tests_running = 'running'
+                        if state_order.index(state) > state_order.index(tstate):
+                            tstate = state
+
+                for reason_arg in forced_reasons:
+                    if reason_arg[0] == 'skiptest' or \
+                       reason_arg[0] == 'badtest' and reason_arg[1] == test and reason_arg[2] == tversion:
+                        if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
+                            tstate = 'IGNORED'
+                result([test, tversion, tstate, source['source'], source['new-version']])
 
 
     for key1 in sorted(results.keys()):
@@ -112,7 +112,7 @@ for line in sys.stdin:
             for key3 in results[key1][key2]:
                 arg = results[key1][key2][key3]
 
-                if arg[2] in ('Regression', 'NBS Block'):
+                if arg[2] in ('REGRESSION', 'NBS'):
                     tstate = 'W'
                 else:
                     tstate = 'G'
