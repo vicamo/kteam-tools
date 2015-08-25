@@ -28,6 +28,7 @@ def emit(record):
     print(row)
 
 
+state_order = ('PASS', 'ALWAYSFAIL', 'IGNORED', 'RUNNING', 'NBS', 'REGRESSION')
 def result(arg):
     if arg[3] in ('linux', 'linux-meta', 'linux-signed') or \
        arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-'):
@@ -40,9 +41,22 @@ def result(arg):
             results[key1][key2] = {}
         results[key1][key2][key3] = arg
 
+        # Record per package state.
+        key = (arg[5], arg[3], arg[4])
+        cstate = package_results.get(key, [ 'PASS', [] ])
+        if state_order.index(arg[2]) > state_order.index(cstate[0]):
+            cstate[0] = arg[2]
+        if state_order.index(arg[2]) > state_order.index('PASS'):
+            cstate[1].append(arg[0] + ' ' + arg[1] + ' ' + arg[2])
+        
+        package_results[key] = cstate
 
+
+package_result = sys.argv[1]
+
+package_results = {}
 for line in sys.stdin:
-    (yfile, hfile, needed) = line.strip().split()
+    (series, yfile, hfile, needed) = line.strip().split()
     needed_ts = int(needed)
 
     state = None
@@ -72,7 +86,7 @@ for line in sys.stdin:
     tests_running = 'idle'
     for source in state['sources']:
         if 'cruft-arch' in source['reason']:
-            result([source['source'], source['new-version'], 'NBS', source['source'], source['new-version']])
+            result([source['source'], source['new-version'], 'NBS', source['source'], source['new-version'], series])
 
 
         forced_reasons = []
@@ -87,7 +101,6 @@ for line in sys.stdin:
                     (test, tversion) = test_ver.split()
 
                     tstate = 'PASS'
-                    state_order = ('PASS', 'ALWAYSFAIL', 'RUNNING', 'REGRESSION')
 
                     for arch in test_result:
                         state = test_result[arch][0]
@@ -102,7 +115,7 @@ for line in sys.stdin:
                        reason_arg[0] == 'badtest' and reason_arg[1] == test and reason_arg[2] == tversion:
                         if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
                             tstate = 'IGNORED'
-                result([test, tversion, tstate, source['source'], source['new-version']])
+                result([test, tversion, tstate, source['source'], source['new-version'], series])
 
 
     for key1 in sorted(results.keys()):
@@ -148,6 +161,14 @@ for line in sys.stdin:
         'note':     'needed={0} run={1} tests={2}'.format(needed_str, run_str, tests_running),
         'order':    40,
     })
+
+with open(package_result, 'w') as rfd:
+    for result in package_results:
+        (series, package, version) = result
+        (state, notes) = package_results[result]
+
+        print(series, package, version, state, ','.join(notes), file=rfd)
+
 
 emit({
     'group':    'Proposed Migration',
