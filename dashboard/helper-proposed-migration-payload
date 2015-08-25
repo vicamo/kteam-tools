@@ -57,12 +57,12 @@ for line in sys.stdin:
         state = yaml.load(yfd)
 
     results = {}
-    if os.path.exists(hfile):
-        with open(hfile) as hfd:
-            for line in hfd:
-                arg = line.strip().split()
-
-                result(arg)
+#    if os.path.exists(hfile):
+#        with open(hfile) as hfd:
+#            for line in hfd:
+#                arg = line.strip().split()
+#
+#                result(arg)
 
     title = name + ': Migration'
 
