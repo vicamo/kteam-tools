@@ -128,7 +128,20 @@ for line in sys.stdin:
 if options.regressions:
     for (group, link, vlist, jobs, links, regression) in groups:
         for version in vlist:
-            print(group + ":" + version + ":" + regression.get(version, "UNKNOWN"))
+            (series, package, junk) = group.split(' ', 2)
+            series = series.lower()
+            state = regression.get(version, "M") 
+
+            if state == 'M':
+                state = 'RUNNING'
+            elif state == 'R':
+                state = 'REGRESSION'
+            elif state == 'G':
+                state = 'PASS'
+            else:
+                state = 'UNKNOWN'
+                
+            print(series, package, version, state, '-')
     sys.exit(0)
 
 packages = sorted(packages)
