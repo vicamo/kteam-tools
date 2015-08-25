@@ -32,14 +32,6 @@ timestamp()
 			ln -f "$outd/$fname" "$file.migration"
 		fi
 
-		# Get the file $series.history iff it has changed.
-		urlt="$url.history"
-		fname=`basename "$urlt"`
-		(cd "$outd" && wget -qN -nd "$urlt")
-		if [ -f "$outd/$fname" ]; then
-			ln -f "$outd/$fname" "$file.history"
-		fi
-
 		# Look at the triggers for a base timestamp.
 		stamp=0
 		for pocket in $pockets
@@ -49,7 +41,7 @@ timestamp()
 			[ "$RET" -gt "$stamp" ] && stamp="$RET"
 		done
 
-		echo "$name $file.migration $file.history $stamp"
+		echo "$name $file.migration $stamp"
 	done <<EOL
 precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise precise precise-updates precise-proposed
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty trusty trusty-updates trusty-proposed
