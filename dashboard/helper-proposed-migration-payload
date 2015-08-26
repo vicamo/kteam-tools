@@ -28,7 +28,7 @@ def emit(record):
     print(row)
 
 
-state_order = ('PASS', 'ALWAYSFAIL', 'IGNORED', 'RUNNING', 'NBS', 'REGRESSION')
+state_order = ('PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'NBS', 'REGRESSION')
 def result(arg):
     if arg[3] in ('linux', 'linux-meta', 'linux-signed') or \
        arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-'):
@@ -46,7 +46,7 @@ def result(arg):
         cstate = package_results.get(key, [ 'PASS', [] ])
         if state_order.index(arg[2]) > state_order.index(cstate[0]):
             cstate[0] = arg[2]
-        if arg[2] not in ('PASS', 'ALWAYSFAIL', 'RUNNING'):
+        if arg[2] not in ('PASS', 'ALWAYSFAIL', 'RUNNING', 'DEPENDS'):
             cstate[1].append(arg[0] + ' ' + arg[1] + ' ' + arg[2])
         
         package_results[key] = cstate
@@ -88,6 +88,8 @@ for line in sys.stdin:
             for reason_str in source['forced-reason']:
                 forced_reasons.append(reason_str.split())
 
+        if 'reason' in source and 'depends' in source['reason']:
+            result([source['source'], source['new-version'], 'DEPENDS', source['source'], source['new-version'], series])
         if 'tests' in source:
             if 'autopkgtest' in source['tests']:
                 for test_ver in source['tests']['autopkgtest']:
