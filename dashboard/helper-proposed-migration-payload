@@ -46,7 +46,7 @@ def result(arg):
         cstate = package_results.get(key, [ 'PASS', [] ])
         if state_order.index(arg[2]) > state_order.index(cstate[0]):
             cstate[0] = arg[2]
-        if state_order.index(arg[2]) > state_order.index('PASS'):
+        if state_order.index(arg[2]) > state_order.index('ALWAYSFAIL'):
             cstate[1].append(arg[0] + ' ' + arg[1] + ' ' + arg[2])
         
         package_results[key] = cstate
