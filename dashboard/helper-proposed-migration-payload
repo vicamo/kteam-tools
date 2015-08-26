@@ -110,6 +110,9 @@ for line in sys.stdin:
                             if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
                                 tstate = 'IGNORED'
                     result([test, tversion, tstate, source['source'], source['new-version'], series])
+            else:
+                 if source['is-candidate']:
+                    result([source['source'], source['new-version'], 'PASS', source['source'], source['new-version'], series])
 
 
     for key1 in sorted(results.keys()):
