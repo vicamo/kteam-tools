@@ -104,12 +104,12 @@ for line in sys.stdin:
                         if state_order.index(state) > state_order.index(tstate):
                             tstate = state
 
-                for reason_arg in forced_reasons:
-                    if reason_arg[0] == 'skiptest' or \
-                       reason_arg[0] == 'badtest' and reason_arg[1] == test and reason_arg[2] == tversion:
-                        if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
-                            tstate = 'IGNORED'
-                result([test, tversion, tstate, source['source'], source['new-version'], series])
+                    for reason_arg in forced_reasons:
+                        if reason_arg[0] == 'skiptest' or \
+                           reason_arg[0] == 'badtest' and reason_arg[1] == test and reason_arg[2] == tversion:
+                            if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
+                                tstate = 'IGNORED'
+                    result([test, tversion, tstate, source['source'], source['new-version'], series])
 
 
     for key1 in sorted(results.keys()):
