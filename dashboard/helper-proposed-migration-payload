@@ -82,14 +82,16 @@ for line in sys.stdin:
         if 'cruft-arch' in source['reason']:
             result([source['source'], source['new-version'], 'NBS', source['source'], source['new-version'], series])
 
-
         forced_reasons = []
         if 'forced-reason' in source:
             for reason_str in source['forced-reason']:
                 forced_reasons.append(reason_str.split())
 
-        if 'reason' in source and 'depends' in source['reason']:
+        if 'tests' in source and 'autopkgtest' in source['tests']:
+            pass
+        elif 'reason' in source and 'depends' in source['reason']:
             result([source['source'], source['new-version'], 'DEPENDS', source['source'], source['new-version'], series])
+
         if 'tests' in source:
             if 'autopkgtest' in source['tests']:
                 for test_ver in source['tests']['autopkgtest']:
