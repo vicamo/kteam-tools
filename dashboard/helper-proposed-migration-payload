@@ -31,7 +31,8 @@ def emit(record):
 state_order = ('PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'NBS', 'REGRESSION')
 def result(arg):
     if arg[3] in ('linux', 'linux-meta', 'linux-signed') or \
-       arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-'):
+       arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-') or \
+       arg[3].startswith('linux-backports-modules-'):
         key1 = arg[3]
         key2 = arg[4]
         key3 = arg[0] + '_' + arg[1]
