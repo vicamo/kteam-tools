@@ -89,7 +89,7 @@ for line in sys.stdin:
 
         # If we ran tests then we are installable.
         if 'tests' in source:
-            pass
+            result([source['source'], source['new-version'], 'PASS', source['source'], source['new-version'], series])
         elif 'reason' in source and 'depends' in source['reason']:
             result([source['source'], source['new-version'], 'DEPENDS', source['source'], source['new-version'], series])
 
