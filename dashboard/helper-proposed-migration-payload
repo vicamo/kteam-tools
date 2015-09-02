@@ -87,7 +87,8 @@ for line in sys.stdin:
             for reason_str in source['forced-reason']:
                 forced_reasons.append(reason_str.split())
 
-        if 'tests' in source and 'autopkgtest' in source['tests']:
+        # If we ran tests then we are installable.
+        if 'tests' in source:
             pass
         elif 'reason' in source and 'depends' in source['reason']:
             result([source['source'], source['new-version'], 'DEPENDS', source['source'], source['new-version'], series])
