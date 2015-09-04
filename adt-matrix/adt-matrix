@@ -1,0 +1,445 @@
+#!/usr/bin/python3
+
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2013-2015 Canonical Ltd.
+# Authors:
+#   Andy Whitcroft <apw@ubuntu.com>
+# Based in part on autopkgtest.py by:
+#   Colin Watson <cjwatson@ubuntu.com>
+#   Jean-Baptiste Lallement <jean-baptiste.lallement@canonical.com>
+#   Martin Pitt <martin.pitt@ubuntu.com>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+import os
+import time
+import json
+import tarfile
+import io
+import copy
+import itertools
+import re
+import apt_pkg
+from urllib.parse import urlencode
+from urllib.request import urlopen
+from functools import cmp_to_key
+
+def srchash(src):
+    '''archive hash prefix for source package'''
+
+    if src.startswith('lib'):
+        return src[:4]
+    else:
+        return src[0]
+
+
+class AutoPackageTest(object):
+    """autopkgtest integration
+
+    Look for autopkgtest jobs to run for each update that is otherwise a
+    valid candidate, and collect the results.  If an update causes any
+    autopkgtest jobs to be run, then they must all pass before the update is
+    accepted.
+    """
+
+    def __init__(self, series = None, archs = [], packages = []):
+        self.cache = {}
+
+        self.series = series
+        self.archs = archs
+        self.packages = packages
+
+        self.seen = {}
+        self.results = {}
+
+        self.cache_file = self.series + ".cache"
+
+        if os.path.exists(self.cache_file):
+            with open(self.cache_file) as cfd:
+                tmp = json.load(cfd)
+                self.seen = tmp['seen']
+                self.results = tmp['results']
+
+            self.log_verbose('Read previous results from {}'.format(self.cache_file))
+        else:
+            self.log_verbose('Read previous results from {} -- initialising'.format(self.cache_file))
+
+
+    def log_error(self, msg):
+        print('E: [%s] - %s' % (time.asctime(), msg))
+
+
+    def log_verbose(self, msg):
+        print('I: [%s] - %s' % (time.asctime(), msg))
+
+
+    #
+    # AMQP/cloud interface helpers
+    #
+    def fetch_swift_results(self, swift_url, src, arch, trigger=None):
+        '''Download new results for source package/arch from swift'''
+
+        src_arch_key = src + ' ' + arch
+
+        # prepare query: get all runs with a timestamp later than latest_stamp
+        # for this package/arch; '@' is at the end of each run timestamp, to
+        # mark the end of a test run directory path
+        # example: <autopkgtest-wily>wily/amd64/libp/libpng/20150630_054517@/result.tar
+        query = {'delimiter': '@',
+                 'prefix': '%s/%s/%s/%s/' % (self.series, arch, srchash(src), src)}
+        try:
+            query['marker'] = query['prefix'] + self.seen[src_arch_key]
+        except KeyError:
+            # no stamp yet, download all results
+            pass
+
+        # request new results from swift
+        url = os.path.join(swift_url, 'autopkgtest-' + self.series)
+        url += '?' + urlencode(query)
+        try:
+            f = urlopen(url)
+            if f.getcode() == 200:
+                result_paths = f.read().decode().strip().splitlines()
+            elif f.getcode() == 204:  # No content
+                result_paths = []
+            else:
+                self.log_error('Failure to fetch swift results from %s: %u' %
+                               (url, f.getcode()))
+                f.close()
+                return
+            f.close()
+        except IOError as e:
+            self.log_error('Failure to fetch swift results from %s: %s' % (url, str(e)))
+            return
+
+        for p in result_paths:
+            self.fetch_one_result(
+                os.path.join(swift_url, 'autopkgtest-' + self.series, p, 'result.tar'),
+                src, arch, trigger)
+
+    fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-\S+)\s+(\S+)')
+    def fetch_one_result(self, url, src, arch, trigger=None):
+        '''Download one result URL for source/arch
+
+        Remove matching pending_tests entries. If trigger is given (src, ver)
+        it is added to the triggers of that result.
+        '''
+
+        src_arch_key = src + ' ' + arch
+
+        try:
+            f = urlopen(url)
+            if f.getcode() == 200:
+                tar_bytes = io.BytesIO(f.read())
+                f.close()
+            else:
+                self.log_error('Failure to fetch %s: %u' % (url, f.getcode()))
+                return
+        except IOError as e:
+            self.log_error('Failure to fetch %s: %s' % (url, str(e)))
+            return
+
+        (kernel_pkg, kernel_ver) = (None, None)
+        try:
+            with tarfile.open(None, 'r', tar_bytes) as tar:
+                exitcode = int(tar.extractfile('exitcode').read().strip())
+                srcver = tar.extractfile('testpkg-version').read().decode().strip()
+                (ressrc, ver) = srcver.split()
+                for line in tar.extractfile('testbed-packages'):
+                    match = self.fetch_one_kernel_pat.match(line.decode().strip())
+                    if match:
+                        if not kernel_ver or apt_pkg.version_compare(match.group(2), kernel_ver) >= 0:
+                            (kernel_pkg, kernel_ver) = (match.group(1), match.group(2))
+        except (KeyError, ValueError, tarfile.TarError) as e:
+            self.log_error('%s is damaged: %s' % (url, str(e)))
+            # we can't just ignore this, as it would leave an orphaned request
+            # in pending.txt; consider it tmpfail
+            exitcode = 16
+            ressrc = src
+            ver = None
+
+        if src != ressrc:
+            self.log_error('%s is a result for package %s, but expected package %s' %
+                           (url, ressrc, src))
+            return
+
+        stamp = os.path.basename(os.path.dirname(url))
+        # allow some skipped tests, but nothing else
+        passed = exitcode in [0, 2]
+
+        self.log_verbose('Fetched test result for %s/%s/%s %s: %s' % (
+            src, ver, arch, stamp, passed and 'pass' or 'fail'))
+
+        # add this result
+        if kernel_pkg:
+            if ver is not None:
+                results = self.results.setdefault(kernel_ver, {}).setdefault(src, {})
+                results[arch] = (ver, passed)
+
+        # update latest_stamp
+        if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
+            self.seen[src_arch_key] = stamp
+
+    #
+    # Public API
+    #
+    def save(self):
+        tmp = { 'seen': self.seen, 'results': self.results }
+        with open(self.cache_file + '.new', 'w') as cfd:
+            json.dump(tmp, cfd, indent=2)
+        os.rename(self.cache_file + '.new', self.cache_file)
+        self.log_verbose('Saved results to {}'.format(self.cache_file))
+
+
+    def update(self):
+        for pkg in self.packages:
+            for arch in self.archs:
+                print("DOING:", pkg, arch)
+                adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
+
+
+    def results_matrix(self):
+        result = {}
+        verlist = sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
+        for pkg in self.packages:
+            good_ever = {}
+            for ver in verlist:
+                some_good = False
+                some_fail = False
+                some_regr = False
+                for arch in self.archs:
+                    if pkg in self.results[ver] and arch in self.results[ver][pkg]:
+                        (version, status) = self.results[ver][pkg][arch]
+                        if status:
+                            good_ever[arch] = True
+                            some_good = True
+                        elif arch in good_ever:
+                            some_regr = True
+                        else:
+                            some_fail = True
+
+                if some_regr:
+                    status = 'REGR'
+                elif some_fail:
+                    status = 'FAIL'
+                elif some_good:
+                    status = 'GOOD'
+                else:
+                    status = None
+
+                if status:
+                    tmp = result.setdefault(ver, {})
+                    tmp[pkg] = status
+
+        return result
+        
+
+    def matrix(self):
+        page = """<html>
+<head>
+<title>DKMS Matrix</title>
+<style>
+.GOOD { background-color: green; }
+.RUN { background-color: yellow; }
+.FAIL { background-color: orange; }
+.REGR { background-color: red; }
+table.matrix {
+    border-collapse: collapse;
+}
+table.matrix, table.matrix th, table.matrix td {
+   border: 1px solid black;
+} 
+</style>
+</head>
+<body>
+<h1>DKMS Matrix</h1>
+<table class="matrix">
+"""
+
+        results = self.results_matrix()
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
+        page += '<tr><th>'
+        for ver in verlist:
+            page += '<th>' + ver
+        page += '</tr>'
+        for pkg in self.packages:
+            page += '<tr><th>' + pkg
+            for ver in verlist:
+                if pkg in results[ver]:
+                    page += '<td class="{0}">{0}'.format(results[ver][pkg])
+                else:
+                    page += '<td>&nbsp;'
+            page += '</tr>'
+
+        page += """</table>
+</body>
+</html>
+"""
+        return page
+
+
+series = 'precise'
+update = True
+
+if series == 'wily':
+    adt = AutoPackageTest(
+        series = 'wily',
+        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
+        packages = sorted([
+            'acpi-call',
+            'asic0x',
+            'bbswitch',
+            'bcmwl',
+            'blktap-dkms',
+            'broadcom-sta',
+            'dahdi-linux',
+            'dm-writeboost',
+            'fglrx-installer',
+            'fglrx-installer-updates',
+            'flashcache',
+            'fwts',
+            'glibc',
+            'iscsitarget',
+            'langford',
+            'lime-forensics',
+            'linux',
+            'lttng-modules',
+            'lxc',
+            'nat-rtsp',
+            'ndiswrapper',
+            'nvidia-graphics-drivers-304',
+            'nvidia-graphics-drivers-304-updates',
+            'nvidia-graphics-drivers-340',
+            'nvidia-graphics-drivers-340-updates',
+            'nvidia-graphics-drivers-352',
+            'nvidia-graphics-drivers-352-updates',
+            'openafs',
+            'open-iscsi',
+            'open-vm-tools',
+            'oss4',
+            'r8168',
+            'rt-tests',
+            'sl-modem',
+            'sysdig',
+            'tp-smapi',
+            'v4l2loopback',
+            'virtualbox',
+            'west-chamber',
+            'xtables-addons',
+        ])
+    )
+
+if series == 'trusty':
+    adt = AutoPackageTest(
+        series = 'trusty',
+        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
+        packages = sorted([
+            'bbswitch',
+            'bcmwl',
+            'blcr',
+            'blktap-dkms',
+            'broadcom-sta',
+            'dahdi-linux',
+            'eglibc',
+            'fglrx-installer',
+            'fglrx-installer-updates',
+            'flashcache',
+            'fwts',
+            'iscsitarget',
+            'langford',
+            'lime-forensics',
+            'linux',
+            'linux-lts-utopic',
+            'linux-lts-vivid',
+            'lttng-modules',
+            'lxc',
+            'nat-rtsp',
+            'ndiswrapper',
+            'nvidia-graphics-drivers-173',
+            'nvidia-graphics-drivers-304',
+            'nvidia-graphics-drivers-304-updates',
+            'nvidia-graphics-drivers-340',
+            'nvidia-graphics-drivers-340-updates',
+            'nvidia-graphics-drivers-346',
+            'nvidia-graphics-drivers-346-updates',
+            'openafs',
+            'open-iscsi',
+            'openswan',
+            'openvswitch',
+            'oss4',
+            'r8168',
+            'rt-tests',
+            'sl-modem',
+            'speakup',
+            'tp-smapi',
+            'v4l2loopback',
+            'virtualbox',
+            'west-chamber',
+            'xtables-addons',
+        ])
+    )
+
+if series == 'precise':
+    adt = AutoPackageTest(
+        series = 'precise',
+        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
+        packages = sorted([
+            'bbswitch',
+            'bcmwl',
+            'blcr',
+            'blktap-dkms',
+            'crystalhd',
+            'dahdi-linux',
+            'fglrx-installer',
+            'fglrx-installer-updates',
+            'iscsitarget',
+            'lttng-modules',
+            'lxc',
+            'ndiswrapper',
+            'nvidia-graphics-drivers-173',
+            'nvidia-graphics-drivers-304',
+            'nvidia-graphics-drivers-304-updates',
+            'nvidia-graphics-drivers-331',
+            'nvidia-graphics-drivers-331-updates',
+            'nvidia-graphics-drivers-96',
+            'nvidia-graphics-drivers-96-updates',
+            'open-vm-tools',
+            'openafs',
+            'openswan',
+            'openvswitch',
+            'openvswitch-lts-raring',
+            'openvswitch-lts-saucy',
+            'oss4',
+            'pvcam-dkms',
+            'rt-tests',
+            'sl-modem',
+            'speakup',
+            'tp-smapi',
+            'v4l2loopback',
+            'virtualbox',
+            'west-chamber',
+            'xtables-addons',
+        ])
+    )
+# http://autopkgtest.ubuntu.com/packages/l/linux/wily/amd64/
+
+apt_pkg.init_system()
+
+#adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', 'linux', 'amd64')
+if update:
+    adt.update()
+    adt.save()
+
+matrix = adt.matrix()
+
+with open(series + '.html', 'w') as mfd:
+    print(matrix, end=None, file=mfd)
