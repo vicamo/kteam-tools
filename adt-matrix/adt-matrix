@@ -183,7 +183,7 @@ class AutoPackageTest(object):
         if kernel_pkg:
             if ver is not None:
                 results = self.results.setdefault(kernel_ver, {}).setdefault(src, {})
-                results[arch] = (ver, passed)
+                results[arch] = (passed, ver, os.path.dirname(url) + '/')
 
         # update latest_stamp
         if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
@@ -207,7 +207,7 @@ class AutoPackageTest(object):
                 adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
-    def results_matrix(self):
+    def results_matrix(self, title, url=None):
         result = {}
         verlist = sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
         for pkg in self.packages:
@@ -218,7 +218,7 @@ class AutoPackageTest(object):
                 some_regr = False
                 for arch in self.archs:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
-                        (version, status) = self.results[ver][pkg][arch]
+                        (status, version, url) = self.results[ver][pkg][arch]
                         if status:
                             good_ever[arch] = True
                             some_good = True
@@ -240,13 +240,13 @@ class AutoPackageTest(object):
                     tmp = result.setdefault(ver, {})
                     tmp[pkg] = status
 
-        return result
+        return (title, url, result)
         
 
     def matrix(self):
         page = """<html>
 <head>
-<title>DKMS Matrix</title>
+<title>ADT Test Matrix</title>
 <style>
 .GOOD { background-color: green; }
 .RUN { background-color: yellow; }
@@ -265,12 +265,20 @@ table.matrix, table.matrix th, table.matrix td {
 <table class="matrix">
 """
 
-        results = self.results_matrix()
+        (title, url, results) = self.results_matrix('linux')
+
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
-        page += '<tr><th>'
+
+        # Title ...
+        page += '<tr><th rowspan=2><th colspan={0}>{1}<th rowspan=2></tr>'.format(len(verlist), title)
+
+        # Versions ...
+        page += '<tr>'
         for ver in verlist:
             page += '<th>' + ver
         page += '</tr>'
+
+        # Data ...
         for pkg in self.packages:
             page += '<tr><th>' + pkg
             for ver in verlist:
@@ -278,7 +286,7 @@ table.matrix, table.matrix th, table.matrix td {
                     page += '<td class="{0}">{0}'.format(results[ver][pkg])
                 else:
                     page += '<td>&nbsp;'
-            page += '</tr>'
+            page += '<th>' + pkg + '</tr>'
 
         page += """</table>
 </body>
@@ -287,159 +295,151 @@ table.matrix, table.matrix th, table.matrix td {
         return page
 
 
-series = 'precise'
-update = True
-
-if series == 'wily':
-    adt = AutoPackageTest(
-        series = 'wily',
-        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
-        packages = sorted([
-            'acpi-call',
-            'asic0x',
-            'bbswitch',
-            'bcmwl',
-            'blktap-dkms',
-            'broadcom-sta',
-            'dahdi-linux',
-            'dm-writeboost',
-            'fglrx-installer',
-            'fglrx-installer-updates',
-            'flashcache',
-            'fwts',
-            'glibc',
-            'iscsitarget',
-            'langford',
-            'lime-forensics',
-            'linux',
-            'lttng-modules',
-            'lxc',
-            'nat-rtsp',
-            'ndiswrapper',
-            'nvidia-graphics-drivers-304',
-            'nvidia-graphics-drivers-304-updates',
-            'nvidia-graphics-drivers-340',
-            'nvidia-graphics-drivers-340-updates',
-            'nvidia-graphics-drivers-352',
-            'nvidia-graphics-drivers-352-updates',
-            'openafs',
-            'open-iscsi',
-            'open-vm-tools',
-            'oss4',
-            'r8168',
-            'rt-tests',
-            'sl-modem',
-            'sysdig',
-            'tp-smapi',
-            'v4l2loopback',
-            'virtualbox',
-            'west-chamber',
-            'xtables-addons',
-        ])
-    )
-
-if series == 'trusty':
-    adt = AutoPackageTest(
-        series = 'trusty',
-        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
-        packages = sorted([
-            'bbswitch',
-            'bcmwl',
-            'blcr',
-            'blktap-dkms',
-            'broadcom-sta',
-            'dahdi-linux',
-            'eglibc',
-            'fglrx-installer',
-            'fglrx-installer-updates',
-            'flashcache',
-            'fwts',
-            'iscsitarget',
-            'langford',
-            'lime-forensics',
-            'linux',
-            'linux-lts-utopic',
-            'linux-lts-vivid',
-            'lttng-modules',
-            'lxc',
-            'nat-rtsp',
-            'ndiswrapper',
-            'nvidia-graphics-drivers-173',
-            'nvidia-graphics-drivers-304',
-            'nvidia-graphics-drivers-304-updates',
-            'nvidia-graphics-drivers-340',
-            'nvidia-graphics-drivers-340-updates',
-            'nvidia-graphics-drivers-346',
-            'nvidia-graphics-drivers-346-updates',
-            'openafs',
-            'open-iscsi',
-            'openswan',
-            'openvswitch',
-            'oss4',
-            'r8168',
-            'rt-tests',
-            'sl-modem',
-            'speakup',
-            'tp-smapi',
-            'v4l2loopback',
-            'virtualbox',
-            'west-chamber',
-            'xtables-addons',
-        ])
-    )
-
-if series == 'precise':
-    adt = AutoPackageTest(
-        series = 'precise',
-        archs = ['amd64', 'i386', 'ppc64el', 'armhf'],
-        packages = sorted([
-            'bbswitch',
-            'bcmwl',
-            'blcr',
-            'blktap-dkms',
-            'crystalhd',
-            'dahdi-linux',
-            'fglrx-installer',
-            'fglrx-installer-updates',
-            'iscsitarget',
-            'lttng-modules',
-            'lxc',
-            'ndiswrapper',
-            'nvidia-graphics-drivers-173',
-            'nvidia-graphics-drivers-304',
-            'nvidia-graphics-drivers-304-updates',
-            'nvidia-graphics-drivers-331',
-            'nvidia-graphics-drivers-331-updates',
-            'nvidia-graphics-drivers-96',
-            'nvidia-graphics-drivers-96-updates',
-            'open-vm-tools',
-            'openafs',
-            'openswan',
-            'openvswitch',
-            'openvswitch-lts-raring',
-            'openvswitch-lts-saucy',
-            'oss4',
-            'pvcam-dkms',
-            'rt-tests',
-            'sl-modem',
-            'speakup',
-            'tp-smapi',
-            'v4l2loopback',
-            'virtualbox',
-            'west-chamber',
-            'xtables-addons',
-        ])
-    )
-# http://autopkgtest.ubuntu.com/packages/l/linux/wily/amd64/
-
 apt_pkg.init_system()
 
-#adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', 'linux', 'amd64')
-if update:
-    adt.update()
-    adt.save()
+archs = ['amd64', 'i386', 'ppc64el', 'armhf']
+package_seed = {
+    'precise': [
+                'bbswitch',
+                'bcmwl',
+                'blcr',
+                'blktap-dkms',
+                'crystalhd',
+                'dahdi-linux',
+                'fglrx-installer',
+                'fglrx-installer-updates',
+                'iscsitarget',
+                'lttng-modules',
+                'lxc',
+                'ndiswrapper',
+                'nvidia-graphics-drivers-173',
+                'nvidia-graphics-drivers-304',
+                'nvidia-graphics-drivers-304-updates',
+                'nvidia-graphics-drivers-331',
+                'nvidia-graphics-drivers-331-updates',
+                'nvidia-graphics-drivers-96',
+                'nvidia-graphics-drivers-96-updates',
+                'open-vm-tools',
+                'openafs',
+                'openswan',
+                'openvswitch',
+                'openvswitch-lts-raring',
+                'openvswitch-lts-saucy',
+                'oss4',
+                'pvcam-dkms',
+                'rt-tests',
+                'sl-modem',
+                'speakup',
+                'tp-smapi',
+                'v4l2loopback',
+                'virtualbox',
+                'west-chamber',
+                'xtables-addons',
+            ],
+    'trusty': [
+                'bbswitch',
+                'bcmwl',
+                'blcr',
+                'blktap-dkms',
+                'broadcom-sta',
+                'dahdi-linux',
+                'eglibc',
+                'fglrx-installer',
+                'fglrx-installer-updates',
+                'flashcache',
+                'fwts',
+                'iscsitarget',
+                'langford',
+                'lime-forensics',
+                'linux',
+                'linux-lts-utopic',
+                'linux-lts-vivid',
+                'lttng-modules',
+                'lxc',
+                'nat-rtsp',
+                'ndiswrapper',
+                'nvidia-graphics-drivers-173',
+                'nvidia-graphics-drivers-304',
+                'nvidia-graphics-drivers-304-updates',
+                'nvidia-graphics-drivers-340',
+                'nvidia-graphics-drivers-340-updates',
+                'nvidia-graphics-drivers-346',
+                'nvidia-graphics-drivers-346-updates',
+                'openafs',
+                'open-iscsi',
+                'openswan',
+                'openvswitch',
+                'oss4',
+                'r8168',
+                'rt-tests',
+                'sl-modem',
+                'speakup',
+                'tp-smapi',
+                'v4l2loopback',
+                'virtualbox',
+                'west-chamber',
+                'xtables-addons',
+            ],
+    'wily': [
+                'acpi-call',
+                'asic0x',
+                'bbswitch',
+                'bcmwl',
+                'blktap-dkms',
+                'broadcom-sta',
+                'dahdi-linux',
+                'dm-writeboost',
+                'fglrx-installer',
+                'fglrx-installer-updates',
+                'flashcache',
+                'fwts',
+                'glibc',
+                'iscsitarget',
+                'langford',
+                'lime-forensics',
+                'linux',
+                'lttng-modules',
+                'lxc',
+                'nat-rtsp',
+                'ndiswrapper',
+                'nvidia-graphics-drivers-304',
+                'nvidia-graphics-drivers-304-updates',
+                'nvidia-graphics-drivers-340',
+                'nvidia-graphics-drivers-340-updates',
+                'nvidia-graphics-drivers-352',
+                'nvidia-graphics-drivers-352-updates',
+                'openafs',
+                'open-iscsi',
+                'open-vm-tools',
+                'oss4',
+                'r8168',
+                'rt-tests',
+                'sl-modem',
+                'sysdig',
+                'tp-smapi',
+                'v4l2loopback',
+                'virtualbox',
+                'west-chamber',
+                'xtables-addons',
+            ],
+}
 
-matrix = adt.matrix()
+update = True
+#for series in [ 'precise', 'trusty', 'wily' ]:
+for series in [ 'wily' ]:
+    adt = AutoPackageTest(
+            series = series,
+            archs = archs,
+            packages = package_seed[series]
+        )
+    # http://autopkgtest.ubuntu.com/packages/l/linux/wily/amd64/
 
-with open(series + '.html', 'w') as mfd:
-    print(matrix, end=None, file=mfd)
+    #adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', 'linux', 'amd64')
+    if update:
+        adt.update()
+        adt.save()
+
+    matrix = adt.matrix()
+
+    with open(series + '.html', 'w') as mfd:
+        print(matrix, end=None, file=mfd)

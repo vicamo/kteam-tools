@@ -196,7 +196,7 @@ case $SUITE in
 	trusty|utopic|vivid|wily)
 		ADDPKG="$ADDPKG libiberty-dev pkg-config dh-systemd"
 		case $ARCH in
-			amd64) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu"
+			amd64) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu"
 			;;
 		esac
 		;;
