@@ -78,7 +78,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'automated-testing'         : TaskActions({'Confirmed'    : s.automated_testing_confirmed}),
+            'automated-testing'         : TaskActions({'New'          : s.automated_testing_new,               'Confirmed'    : s.automated_testing_confirmed  }),
             'promote-to-proposed'       : TaskActions({'New'          : s.promote_to_proposed_new,             'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -656,6 +656,47 @@ class WorkflowEngine():
 
     # -----------------------------------------------------------------------------------------------------------------------------
     # Package Testing Tasks Handling
+
+    def automated_testing_new(s, taskobj):
+        cdebug('            WorkflowEngine::automated_testing_new enter')
+        if s.wfb.all_dependent_packages_fully_built():
+            cdebug('                all dependent packages : fully built', 'green')
+            s.__promote_to_proposed(taskobj)
+        else:
+            cdebug('                all dependent packages : not built', 'red')
+        cdebug('            WorkflowEngine::automated_testing_new leave')
+        return False
+
+    def __promote_to_proposed(s, taskobj):
+        """
+        """
+        cdebug('            __promote_to_proposed enter')
+
+        retval = False
+
+        if s.projectname == 'kernel-sru-workflow':
+            taskname = 'promote-to-proposed'
+        else:
+            taskname = 'automated-testing'
+
+        cdebug('                %s status: %s' % (taskname, s.wfb.tasks_by_name[taskname].status))
+
+        # Even though we came in here do to one of the prepare-package* tasks being
+        # set to 'Fix Released' we don't actually do anything unless the next state
+        # (promote-to-proposed or automated-testing) is 'New'.
+        #
+        if s.wfb.tasks_by_name[taskname].status == 'New':
+            # check if all prepare-package tasks are finished
+            if not s.prepare_package_fixed():
+                cdebug('                __promote_to_proposed leave (%s)' % retval)
+            else:
+                s.handle_derivatives(taskobj, taskname)
+                retval = True
+        else:
+            cdebug('                doing nothing, the task is not \'New\'')
+
+        cdebug('            __promote_to_proposed leave (%s)' % retval)
+        return retval
 
     # Possible DKMS states: PASS, ALWAYSFAIL, IGNORED, DEPENDS, RUNNING, NBS, REGRESSION
     #
