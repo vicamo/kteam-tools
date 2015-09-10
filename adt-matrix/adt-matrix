@@ -190,8 +190,8 @@ class AutoPackageTest(object):
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
 
-        self.log_verbose('Fetched test result for %s/%s/%s %s: %s' % (
-            src, ver, arch, stamp, passed and 'pass' or 'fail'))
+        self.log_verbose('Fetched test result for %s/%s/%s %s: %s (kernel %s %s)' % (
+            src, ver, arch, stamp, passed and 'pass' or 'fail', kernel_pkg, kernel_ver))
 
         # add this result
         if kernel_pkg:
