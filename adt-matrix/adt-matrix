@@ -22,6 +22,7 @@ from __future__ import print_function
 # GNU General Public License for more details.
 
 import os
+import sys
 import time
 import json
 import tarfile
@@ -490,24 +491,25 @@ package_seed = {
             ],
 }
 
-update = True
-for series in [ 'precise', 'trusty', 'vivid', 'wily' ]:
-    package = 'linux'
-    adt = AutoPackageTest(
-            series = series,
-            source = package,
-            archs = archs,
-            packages = package_seed[series]
-        )
+for line in sys.stdin:
+    packages = line.split()
+    series = packages.pop(0)
 
-    if update:
+    for package in packages:
+        adt = AutoPackageTest(
+                series = series,
+                source = package,
+                archs = archs,
+                packages = package_seed[series]
+            )
+
         adt.update()
         adt.save()
 
-    matrix = adt.matrix()
+        matrix = adt.matrix()
 
-    html = series + '-' + package + '.html'
-    with open(html + '.new', 'w') as mfd:
-        print(matrix, end=None, file=mfd)
+        html = series + '-' + package + '.html'
+        with open(html + '.new', 'w') as mfd:
+            print(matrix, end=None, file=mfd)
 
-    os.rename(html + '.new', html)
+        os.rename(html + '.new', html)
