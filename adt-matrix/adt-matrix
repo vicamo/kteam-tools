@@ -257,16 +257,18 @@ class AutoPackageTest(object):
                     tmp[pkg] = status
 
 
-        status = {}
+        status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0 }
         ver = verlist[-1]
         for pkg in self.packages:
             if pkg in result[ver]:
-                status[result[ver][pkg][0:4]] = True
-        for summary in [ 'REGR', 'FAIL', 'GOOD', None ]:
-            if summary in status:
-                break
+                status[result[ver][pkg][0:4]] += 1
+        
+        summary = []
+        for state in [ 'REGR', 'FAIL', 'GOOD', None ]:
+            if state and status[state] > 0:
+                summary.append(state + ": " + str(status[state]))
 
-        return (summary, ver, result)
+        return (' '.join(summary), ver, result)
 
 
     def matrix(self):
@@ -390,7 +392,7 @@ table.matrix, table.matrix th, table.matrix td {
 
             os.rename(html + '.new', html)
 
-            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {4}"><td>{0}<td>{1}<td>{3}<td>{4}</tr>\n'.format(series, package, html, version, summary), file=indexf)
+            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{4}</tr>\n'.format(series, package, html, version, summary, summary[0:4]), file=indexf)
 
     print("""\
 </table>
