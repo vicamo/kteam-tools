@@ -327,29 +327,52 @@ archs = ['amd64', 'i386', 'ppc64el', 'armhf']
 with open("package-relation.json") as seedf:
     package_seed = json.load(seedf)
 
-for line in sys.stdin:
-    packages = line.split()
-    series = packages.pop(0)
+index = "index.html"
+with open(index + ".new", "w") as indexf:
+    print("""\
+<html>
+<head>
+<title>ADT Test Matrix</title>
+</head>
+<body>
+<h1>ADT Test Matrix</h1>
+<ul>
+""", file=indexf)
+    
+    for line in sys.stdin:
+        packages = line.split()
+        series = packages.pop(0)
 
-    for package in packages:
-        if series + '-' + package in package_seed:
-            seed = package_seed[series + '-' + package]
-        else:
-            seed = [ package ]
-        adt = AutoPackageTest(
-                series = series,
-                source = package,
-                archs = archs,
-                packages = seed,
-            )
+        for package in packages:
+            key = series + '-' + package
+            if key in package_seed:
+                seed = package_seed[key]
+            else:
+                seed = [ package ]
+            adt = AutoPackageTest(
+                    series = series,
+                    source = package,
+                    archs = archs,
+                    packages = seed,
+                )
 
-        adt.update()
-        adt.save()
+            adt.update()
+            adt.save()
 
-        matrix = adt.matrix()
+            matrix = adt.matrix()
 
-        html = series + '-' + package + '.html'
-        with open(html + '.new', 'w') as mfd:
-            print(matrix, end=None, file=mfd)
+            html = series + '-' + package + '.html'
+            with open(html + '.new', 'w') as mfd:
+                print(matrix, end=None, file=mfd)
 
-        os.rename(html + '.new', html)
+            os.rename(html + '.new', html)
+
+            print('<li><a href="{2}">{0} {1}</a>\n'.format(series, package, html), file=indexf)
+
+    print("""\
+</ul>
+</body>
+</html>
+""", file=indexf)
+
+os.rename(index + ".new", index)
