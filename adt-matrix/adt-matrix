@@ -262,29 +262,29 @@ class AutoPackageTest(object):
 
 
     def matrix(self):
+        (title, url, results) = self.results_matrix(self.source + " on " + self.series)
+
         page = """<html>
 <head>
-<title>ADT Test Matrix</title>
+<title>ADT Test Matrix -- {0}</title>
 <style>
-.GOOD { background-color: green; }
-.RUN { background-color: yellow; }
-.MISS { background-color: yellow; }
-.FAIL { background-color: orange; }
-.REGR { background-color: red; }
-table.matrix {
+.GOOD {{ background-color: green; }}
+.RUN {{ background-color: yellow; }}
+.MISS {{ background-color: yellow; }}
+.FAIL {{ background-color: orange; }}
+.REGR {{ background-color: red; }}
+table.matrix {{
     border-collapse: collapse;
-}
-table.matrix, table.matrix th, table.matrix td {
+}}
+table.matrix, table.matrix th, table.matrix td {{
    border: 1px solid black;
-} 
+}} 
 </style>
 </head>
 <body>
-<h1>ADT Test Matrix for """ + self.source + """</h1>
+<h1>ADT Test Matrix for {0}</h1>
 <table class="matrix">
-"""
-
-        (title, url, results) = self.results_matrix(self.source)
+""".format(title)
 
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
@@ -490,26 +490,24 @@ package_seed = {
             ],
 }
 
-update = False
 update = True
 for series in [ 'precise', 'trusty', 'vivid', 'wily' ]:
-#for series in [ 'vivid' ]:
+    package = 'linux'
     adt = AutoPackageTest(
             series = series,
-            source = 'linux',
+            source = package,
             archs = archs,
             packages = package_seed[series]
         )
-    # http://autopkgtest.ubuntu.com/packages/l/linux/wily/amd64/
 
-    #adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', 'linux', 'amd64')
     if update:
         adt.update()
         adt.save()
 
     matrix = adt.matrix()
 
-    with open(series + '.html.new', 'w') as mfd:
+    html = series + '-' + package + '.html'
+    with open(html + '.new', 'w') as mfd:
         print(matrix, end=None, file=mfd)
 
-    os.rename(series + '.html.new', series + '.html')
+    os.rename(html + '.new', html)
