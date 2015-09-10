@@ -42,6 +42,15 @@ def srchash(src):
         return src[0]
 
 
+def pkg_link(pkg, series):
+    return "http://autopkgtest.ubuntu.com/packages/{0}/{1}/".format(srchash(pkg), pkg)
+
+
+def pkg_arch_link(pkg, series, arch):
+    link = "http://autopkgtest.ubuntu.com/packages/{0}/{1}/{2}/{3}/".format(srchash(pkg), pkg, series, arch)
+    return '<a href="{1}">{0}</a>'.format(arch, link)
+
+
 class AutoPackageTest(object):
     """autopkgtest integration
 
@@ -51,10 +60,11 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, archs = [], packages = []):
+    def __init__(self, series = None, source = None, archs = [], packages = []):
         self.cache = {}
 
         self.series = series
+        self.source = source
         self.archs = archs
         self.packages = packages
 
@@ -203,7 +213,7 @@ class AutoPackageTest(object):
     def update(self):
         for pkg in self.packages:
             for arch in self.archs:
-                print("DOING:", pkg, arch)
+                #print("DOING:", pkg, arch)
                 adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
@@ -213,25 +223,30 @@ class AutoPackageTest(object):
         for pkg in self.packages:
             good_ever = {}
             for ver in verlist:
-                some_good = False
-                some_fail = False
-                some_regr = False
+                some_good = []
+                some_fail = []
+                some_regr = []
+                some_miss = []
                 for arch in self.archs:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
-                        (status, version, url) = self.results[ver][pkg][arch]
+                        (status, version, rurl) = self.results[ver][pkg][arch]
                         if status:
                             good_ever[arch] = True
-                            some_good = True
+                            some_good.append(arch)
                         elif arch in good_ever:
-                            some_regr = True
+                            some_regr.append(arch)
                         else:
-                            some_fail = True
+                            some_fail.append(arch)
+                    #elif ver == verlist[-1]:
+                    #    some_miss.append(arch)
 
-                if some_regr:
-                    status = 'REGR'
-                elif some_fail:
-                    status = 'FAIL'
-                elif some_good:
+                if len(some_regr):
+                    status = 'REGR ' + ' '.join(some_regr)
+                elif len(some_fail):
+                    status = 'FAIL ' + ' '.join(some_fail)
+                elif len(some_miss):
+                    status = 'MISS ' + ' '.join(some_miss)
+                elif len(some_good):
                     status = 'GOOD'
                 else:
                     status = None
@@ -241,7 +256,7 @@ class AutoPackageTest(object):
                     tmp[pkg] = status
 
         return (title, url, result)
-        
+
 
     def matrix(self):
         page = """<html>
@@ -250,6 +265,7 @@ class AutoPackageTest(object):
 <style>
 .GOOD { background-color: green; }
 .RUN { background-color: yellow; }
+.MISS { background-color: yellow; }
 .FAIL { background-color: orange; }
 .REGR { background-color: red; }
 table.matrix {
@@ -265,7 +281,7 @@ table.matrix, table.matrix th, table.matrix td {
 <table class="matrix">
 """
 
-        (title, url, results) = self.results_matrix('linux')
+        (title, url, results) = self.results_matrix(self.source)
 
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
@@ -280,13 +296,18 @@ table.matrix, table.matrix th, table.matrix td {
 
         # Data ...
         for pkg in self.packages:
-            page += '<tr><th>' + pkg
+            page += '<tr><th><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series))
             for ver in verlist:
                 if pkg in results[ver]:
-                    page += '<td class="{0}">{0}'.format(results[ver][pkg])
+                    archs = results[ver][pkg].split()
+                    status = archs.pop(0)
+    
+                    page += '<td class="{0}">{0}'.format(status)
+                    for arch in archs:
+                        page += ' ' + pkg_arch_link(pkg, self.series, arch)
                 else:
                     page += '<td>&nbsp;'
-            page += '<th>' + pkg + '</tr>'
+            page += '<th><a href="{1}">{0}</a></tr>\n'.format(pkg, pkg_link(pkg, self.series))
 
         page += """</table>
 </body>
@@ -380,6 +401,48 @@ package_seed = {
                 'west-chamber',
                 'xtables-addons',
             ],
+    'vivid': [
+                'acpi-call',
+                'asic0x',
+                'bbswitch',
+                'bcmwl',
+                'blcr',
+                'blktap-dkms',
+                'broadcom-sta',
+                'dahdi-linux',
+                'fglrx-installer',
+                'fglrx-installer-updates',
+                'flashcache',
+                'fwts',
+                'glibc',
+                'iscsitarget',
+                'langford',
+                'lime-forensics',
+                'linux',
+                'lttng-modules',
+                'lxc',
+                'nat-rtsp',
+                'ndiswrapper',
+                'nvidia-graphics-drivers-304',
+                'nvidia-graphics-drivers-304-updates',
+                'nvidia-graphics-drivers-340',
+                'nvidia-graphics-drivers-340-updates',
+                'nvidia-graphics-drivers-346',
+                'nvidia-graphics-drivers-346-updates',
+                'open-iscsi',
+                'open-vm-tools',
+                'openafs',
+                'oss4',
+                'r8168',
+                'rt-tests',
+                'sl-modem',
+                'sysdig',
+                'tp-smapi',
+                'v4l2loopback',
+                'virtualbox',
+                'west-chamber',
+                'xtables-addons',
+            ],
     'wily': [
                 'acpi-call',
                 'asic0x',
@@ -424,11 +487,13 @@ package_seed = {
             ],
 }
 
+update = False
 update = True
-#for series in [ 'precise', 'trusty', 'wily' ]:
-for series in [ 'wily' ]:
+for series in [ 'precise', 'trusty', 'vivid', 'wily' ]:
+#for series in [ 'vivid' ]:
     adt = AutoPackageTest(
             series = series,
+            source = 'linux',
             archs = archs,
             packages = package_seed[series]
         )
