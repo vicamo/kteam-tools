@@ -66,6 +66,7 @@ class AutoPackageTest(object):
 
     def __init__(self, series = None, source = None, archs = [], packages = []):
         self.cache = {}
+        self.dirty = False
 
         self.series = series
         self.source = source
@@ -139,6 +140,8 @@ class AutoPackageTest(object):
             self.fetch_one_result(
                 os.path.join(swift_url, 'autopkgtest-' + self.series, p, 'result.tar'),
                 src, arch, trigger)
+            self.dirty = True
+
 
     fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-\S+)\s+(\S+)')
     def fetch_one_result(self, url, src, arch, trigger=None):
@@ -203,25 +206,24 @@ class AutoPackageTest(object):
         if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
             self.seen[src_arch_key] = stamp
 
-    #
-    # Public API
-    #
-    def save(self):
-        tmp = { 'seen': self.seen, 'results': self.results }
-        with open(self.cache_file + '.new', 'w') as cfd:
-            json.dump(tmp, cfd, indent=2)
-        os.rename(self.cache_file + '.new', self.cache_file)
-        self.log_verbose('Saved results to {}'.format(self.cache_file))
-
 
     def update(self):
         for pkg in self.packages:
             for arch in self.archs:
-                #print("DOING:", pkg, arch)
                 adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
-    def results_matrix(self, title, url=None):
+    def save(self):
+        if self.dirty:
+            tmp = { 'seen': self.seen, 'results': self.results }
+            with open(self.cache_file + '.new', 'w') as cfd:
+                json.dump(tmp, cfd, indent=2)
+            os.rename(self.cache_file + '.new', self.cache_file)
+            self.log_verbose('Saved results to {}'.format(self.cache_file))
+            dirty = False
+
+
+    def results_data(self):
         result = {}
         verlist = sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
         for pkg in self.packages:
@@ -230,7 +232,6 @@ class AutoPackageTest(object):
                 some_good = []
                 some_fail = []
                 some_regr = []
-                some_miss = []
                 for arch in self.archs:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (status, version, rurl) = self.results[ver][pkg][arch]
@@ -241,15 +242,11 @@ class AutoPackageTest(object):
                             some_regr.append(arch)
                         else:
                             some_fail.append(arch)
-                    #elif ver == verlist[-1]:
-                    #    some_miss.append(arch)
 
                 if len(some_regr):
                     status = 'REGR ' + ' '.join(some_regr)
                 elif len(some_fail):
                     status = 'FAIL ' + ' '.join(some_fail)
-                elif len(some_miss):
-                    status = 'MISS ' + ' '.join(some_miss)
                 elif len(some_good):
                     status = 'GOOD'
                 else:
@@ -259,11 +256,22 @@ class AutoPackageTest(object):
                     tmp = result.setdefault(ver, {})
                     tmp[pkg] = status
 
-        return (title, url, result)
+
+        status = {}
+        ver = verlist[-1]
+        for pkg in self.packages:
+            if pkg in result[ver]:
+                status[result[ver][pkg][0:4]] = True
+        for summary in [ 'REGR', 'FAIL', 'GOOD', None ]:
+            if summary in status:
+                break
+
+        return (summary, ver, result)
 
 
     def matrix(self):
-        (title, url, results) = self.results_matrix(self.source + " on " + self.series)
+        title = self.source + " on " + self.series
+        (summary, version, results) = self.results_data()
 
         page = """<html>
 <head>
@@ -272,7 +280,7 @@ class AutoPackageTest(object):
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS {{ background-color: yellow; }}
-.FAIL {{ background-color: orange; }}
+.FAIL {{ background-color: yellow; }}
 .REGR {{ background-color: red; }}
 table.matrix {{
     border-collapse: collapse;
@@ -317,7 +325,7 @@ table.matrix, table.matrix th, table.matrix td {{
 </body>
 </html>
 """
-        return page
+        return (version, summary, page)
 
 
 apt_pkg.init_system()
@@ -333,10 +341,25 @@ with open(index + ".new", "w") as indexf:
 <html>
 <head>
 <title>ADT Test Matrix</title>
+<style>
+.GOOD { background-color: green; }
+.RUN { background-color: yellow; }
+.MISS { background-color: yellow; }
+.FAIL { background-color: yellow; }
+.REGR { background-color: red; }
+table.matrix {
+    border-collapse: collapse;
+}
+table.matrix, table.matrix th, table.matrix td {
+   border: 1px solid black;
+} 
+.pointer { cursor: pointer; }
+</style>
 </head>
 <body>
 <h1>ADT Test Matrix</h1>
-<ul>
+<table class="matrix">
+<tr><th>Series<th>Package<th>Latest Version<td>Status</tr>
 """, file=indexf)
     
     for line in sys.stdin:
@@ -356,10 +379,10 @@ with open(index + ".new", "w") as indexf:
                     packages = seed,
                 )
 
-            adt.update()
+            #adt.update()
             adt.save()
 
-            matrix = adt.matrix()
+            (version, summary, matrix) = adt.matrix()
 
             html = series + '-' + package + '.html'
             with open(html + '.new', 'w') as mfd:
@@ -367,10 +390,10 @@ with open(index + ".new", "w") as indexf:
 
             os.rename(html + '.new', html)
 
-            print('<li><a href="{2}">{0} {1}</a>\n'.format(series, package, html), file=indexf)
+            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {4}"><td>{0}<td>{1}<td>{3}<td>{4}</tr>\n'.format(series, package, html, version, summary), file=indexf)
 
     print("""\
-</ul>
+</table>
 </body>
 </html>
 """, file=indexf)
