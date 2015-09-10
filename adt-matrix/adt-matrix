@@ -509,5 +509,7 @@ for series in [ 'precise', 'trusty', 'vivid', 'wily' ]:
 
     matrix = adt.matrix()
 
-    with open(series + '.html', 'w') as mfd:
+    with open(series + '.html.new', 'w') as mfd:
         print(matrix, end=None, file=mfd)
+
+    os.rename(series + '.html.new', series + '.html')
