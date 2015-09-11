@@ -387,7 +387,7 @@ table.matrix, table.matrix th, table.matrix td {
                     packages = seed,
                 )
 
-            #adt.update()
+            adt.update()
             adt.save()
 
             (version, summary, matrix) = adt.matrix()
