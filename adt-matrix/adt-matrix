@@ -224,6 +224,7 @@ class AutoPackageTest(object):
 
 
     def results_data(self):
+        counts = {}
         result = {}
         verlist = sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
         for pkg in self.packages:
@@ -256,6 +257,9 @@ class AutoPackageTest(object):
                     tmp = result.setdefault(ver, {})
                     tmp[pkg] = status
 
+                    counts.setdefault(ver, 0)
+                    counts[ver] += 1
+
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0 }
         ver = verlist[-1]
@@ -267,6 +271,8 @@ class AutoPackageTest(object):
         for state in [ 'REGR', 'FAIL', 'GOOD', None ]:
             if state and status[state] > 0:
                 summary.append(state + ": " + str(status[state]))
+
+        summary.append("Total: " + str(counts.get(ver, 0)) + '/' + str(len(self.packages)))
 
         return (' '.join(summary), ver, result)
 
@@ -381,7 +387,7 @@ table.matrix, table.matrix th, table.matrix td {
                     packages = seed,
                 )
 
-            adt.update()
+            #adt.update()
             adt.save()
 
             (version, summary, matrix) = adt.matrix()
