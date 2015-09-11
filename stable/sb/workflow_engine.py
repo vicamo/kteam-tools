@@ -78,9 +78,9 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'automated-testing'         : TaskActions({'New'          : s.automated_testing_new,               'Confirmed'    : s.automated_testing_confirmed  }),
+            'automated-testing'         : TaskActions({'Confirmed'    : s.automated_testing_confirmed  }),
             'promote-to-proposed'       : TaskActions({'New'          : s.promote_to_proposed_new,             'Fix Released' : s.promote_to_proposed_fix_released}),
-            'verification-testing'      : TaskActions({'Fix Released' : s.verification_testing_fix_released}),
+            'verification-testing'      : TaskActions({'New'          : s.verification_testing_new,            'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
             'regression-testing'        : TaskActions({'Invalid'      : s.regression_testing_invalid,          'Fix Released' : s.regression_testing_fix_released}),
             'promote-to-updates'        : TaskActions({'Fix Released' : s.check_for_final_close}),
@@ -657,14 +657,14 @@ class WorkflowEngine():
     # -----------------------------------------------------------------------------------------------------------------------------
     # Package Testing Tasks Handling
 
-    def automated_testing_new(s, taskobj):
-        cdebug('            WorkflowEngine::automated_testing_new enter')
+    def verification_testing_new(s, taskobj):
+        cdebug('            WorkflowEngine::verification_testing_new enter')
         if s.wfb.all_dependent_packages_fully_built():
             cdebug('                all dependent packages : fully built', 'green')
             s.__promote_to_proposed(taskobj)
         else:
             cdebug('                all dependent packages : not built', 'red')
-        cdebug('            WorkflowEngine::automated_testing_new leave')
+        cdebug('            WorkflowEngine::verification_testing_new leave')
         return False
 
     def __promote_to_proposed(s, taskobj):
