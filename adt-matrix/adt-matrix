@@ -272,14 +272,16 @@ class AutoPackageTest(object):
             if state and status[state] > 0:
                 summary.append(state + ": " + str(status[state]))
 
-        summary.append("Total: " + str(counts.get(ver, 0)) + '/' + str(len(self.packages)))
+        #summary.append("Total: " + str(counts.get(ver, 0)) + '/' + str(len(self.packages)))
 
-        return (' '.join(summary), ver, result)
+        summary_str = ' '.join(summary)
+
+        return ((summary_str[0:4], summary_str, ver, counts.get(ver, 0), len(self.packages)), result)
 
 
     def matrix(self):
         title = self.source + " on " + self.series
-        (summary, version, results) = self.results_data()
+        (info, results) = self.results_data()
 
         page = """<html>
 <head>
@@ -333,7 +335,7 @@ table.matrix, table.matrix th, table.matrix td {{
 </body>
 </html>
 """
-        return (version, summary, page)
+        return (info, page)
 
 
 apt_pkg.init_system()
@@ -367,7 +369,7 @@ table.matrix, table.matrix th, table.matrix td {
 <body>
 <h1>ADT Test Matrix</h1>
 <table class="matrix">
-<tr><th>Series<th>Package<th>Latest Version<th>Status</tr>
+<tr><th>Series<th>Package<th>Latest Version<th>Counts<th>Status</tr>
 """, file=indexf)
     
     for line in sys.stdin:
@@ -390,7 +392,8 @@ table.matrix, table.matrix th, table.matrix td {
             adt.update()
             adt.save()
 
-            (version, summary, matrix) = adt.matrix()
+            (info, matrix) = adt.matrix()
+            (state, summary, version, count, total) = info
 
             html = series + '-' + package + '.html'
             with open(html + '.new', 'w') as mfd:
@@ -398,7 +401,7 @@ table.matrix, table.matrix th, table.matrix td {
 
             os.rename(html + '.new', html)
 
-            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{4}</tr>\n'.format(series, package, html, version, summary, summary[0:4]), file=indexf)
+            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td>{4}</tr>\n'.format(series, package, html, version, summary, state, count, total), file=indexf)
 
     print("""\
 </table>
