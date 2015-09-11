@@ -367,7 +367,7 @@ table.matrix, table.matrix th, table.matrix td {
 <body>
 <h1>ADT Test Matrix</h1>
 <table class="matrix">
-<tr><th>Series<th>Package<th>Latest Version<td>Status</tr>
+<tr><th>Series<th>Package<th>Latest Version<th>Status</tr>
 """, file=indexf)
     
     for line in sys.stdin:
