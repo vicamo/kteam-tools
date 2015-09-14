@@ -178,7 +178,7 @@ for line in sys.stdin:
     # Work out the britney status for kernel packages.
     for record in state['sources']:
         if record['source'].startswith('linux-meta'):
-            britney.append((name, record['source'], record['new-version'], get_status(state, record)))
+            britney.append((series, record['source'], record['new-version'], get_status(state, record)))
 
 
     # If the run completed since it was triggered, all is good, else give it an 
