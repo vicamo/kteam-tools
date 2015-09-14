@@ -81,7 +81,7 @@ def get_status(state, record):
                     return status
 
     if 'block' in record['reason']:
-        return "GOOD"
+        return "PASS"
 
     return "UNKNOWN"
  
