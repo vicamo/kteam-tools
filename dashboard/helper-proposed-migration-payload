@@ -73,12 +73,12 @@ def get_status(state, record):
         for line in record['excuses']:
             if line.startswith('Depends:'):
                 bits = line.strip().split()
-                status = 'MISSING'
                 for record2 in state['sources']:
                     if record2['source'] == bits[2]:
                         status = get_status(state, record2)
-                if status != "PASS":
-                    return status
+                        if status != "PASS":
+                            return status
+                return 'PASS'
 
     if 'block' in record['reason']:
         return "PASS"
