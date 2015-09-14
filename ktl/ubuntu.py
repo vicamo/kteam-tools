@@ -143,6 +143,8 @@ class Ubuntu:
             [
                 'linux',
                 'linux-meta',
+                'linux-raspi2',
+                'linux-meta-raspi2',
             ],
             'dependent-packages' :
             {
@@ -150,10 +152,11 @@ class Ubuntu:
                     'meta'   : 'linux-meta',
                     'signed' : 'linux-signed'
                 },
+                'linux-raspi2' : { 'meta' : 'linux-meta-raspi2' },
             },
             'derivative-packages' :
             {
-                'linux' : []
+                'linux' : [ 'linux-raspi2' ]
             },
             'sha1' : '',
             'md5' : ''
