@@ -48,7 +48,8 @@ trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty tru
 vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 wily http://people.canonical.com/~ubuntu-archive/proposed-migration/wily wily wily-updates wily-proposed
 EOL
-} | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" | \
+} | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" "$out/overall.txt.new" | \
     "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
 
 mv -f "$out/regressions.txt.new" "$out/regressions.txt"
+mv -f "$out/overall.txt.new" "$out/overall.txt"

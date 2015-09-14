@@ -53,8 +53,42 @@ def result(arg):
         package_results[key] = cstate
 
 
-package_result = sys.argv[1]
+def get_status(state, record):
+    if record['is-candidate']:
+        return "PASS"
+    if 'cruft-arch' in record['reason']:
+        return "NBS"
+    if 'autopkgtest' in record['reason']:
+        # Check for running tests.
+        running = False
+        for pkg in record['tests']['autopkgtest']:
+            for arch in record['tests']['autopkgtest'][pkg]:
+                if record['tests']['autopkgtest'][pkg][arch][0] == 'RUNNING':
+                    running = True
+        if running:
+            return "RUNNING"
+        else:
+            return "REGRESSION"
+    if 'depends' in record['reason']:
+        for line in record['excuses']:
+            if line.startswith('Depends:'):
+                bits = line.strip().split()
+                status = 'MISSING'
+                for record2 in state['sources']:
+                    if record2['source'] == bits[2]:
+                        status = get_status(state, record2)
+                if status != "PASS":
+                    return status
 
+    if 'block' in record['reason']:
+        return "GOOD"
+
+    return "UNKNOWN"
+ 
+
+(package_result, overall_result) = sys.argv[1:]
+
+britney = []
 package_results = {}
 for line in sys.stdin:
     (series, yfile, needed) = line.strip().split()
@@ -103,12 +137,12 @@ for line in sys.stdin:
                     tstate = 'PASS'
 
                     for arch in test_result:
-                        state = test_result[arch][0]
+                        cstate = test_result[arch][0]
                         if state == 'RUNNING':
                             needed_ts = run_ts
                             tests_running = 'running'
-                        if state_order.index(state) > state_order.index(tstate):
-                            tstate = state
+                        if state_order.index(cstate) > state_order.index(tstate):
+                            tstate = cstate
 
                     for reason_arg in forced_reasons:
                         if reason_arg[0] == 'skiptest' or \
@@ -121,25 +155,31 @@ for line in sys.stdin:
                     result([source['source'], source['new-version'], 'PASS', source['source'], source['new-version'], series])
 
 
-    for key1 in sorted(results.keys()):
-        keyl = sorted(results[key1].keys(), reverse=True)
-        if len(keyl) > 0:
-            key2 = keyl[0]
-            for key3 in results[key1][key2]:
-                arg = results[key1][key2][key3]
+#    for key1 in sorted(results.keys()):
+#        keyl = sorted(results[key1].keys(), reverse=True)
+#        if len(keyl) > 0:
+#            key2 = keyl[0]
+#            for key3 in results[key1][key2]:
+#                arg = results[key1][key2][key3]
+#
+#                if arg[2] in ('REGRESSION', 'NBS'):
+#                    tstate = 'W'
+#                else:
+#                    tstate = 'G'
+#
+#                emit({
+#                    'group':    'Proposed Migration',
+#                    'host':     host,
+#                    'title':    name + ': ' + arg[3] + '_' + arg[4] + ' test ' + arg[0] + '_' + arg[1],
+#                    'state':    tstate,
+#                    'note':     arg[2],
+#                })
 
-                if arg[2] in ('REGRESSION', 'NBS'):
-                    tstate = 'W'
-                else:
-                    tstate = 'G'
+    # Work out the britney status for kernel packages.
+    for record in state['sources']:
+        if record['source'].startswith('linux-meta'):
+            britney.append((record['source'], record['new-version'], get_status(state, record)))
 
-                emit({
-                    'group':    'Proposed Migration',
-                    'host':     host,
-                    'title':    name + ': ' + arg[3] + '_' + arg[4] + ' test ' + arg[0] + '_' + arg[1],
-                    'state':    tstate,
-                    'note':     arg[2],
-                })
 
     # If the run completed since it was triggered, all is good, else give it an 
     # hour to get there, after that warn for a further hour, then alert.
@@ -172,6 +212,22 @@ with open(package_result, 'w') as rfd:
 
         print(series, package, version, state, ','.join(notes), file=rfd)
 
+with open(overall_result, 'w') as ofd:
+    for result in britney:
+        (package, version, state) = result
+        print(series, package, version, state, '', file=ofd)
+
+        if state in ('REGRESSION', 'NBS'):
+            tstate = 'W'
+        else:
+            tstate = 'G'
+
+        emit({
+            'group':    'Proposed Migration',
+            'host':     host,
+            'title':    series + ': ' + package + '_' + version + ' migration status ' + state,
+            'state':    tstate,
+        })
 
 emit({
     'group':    'Proposed Migration',
