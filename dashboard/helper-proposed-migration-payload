@@ -225,8 +225,9 @@ with open(overall_result, 'w') as ofd:
         emit({
             'group':    'Proposed Migration',
             'host':     host,
-            'title':    series + ': ' + package + '_' + version + ' migration status ' + state,
+            'title':    series + ': ' + package + '_' + version + ' migration status',
             'state':    tstate,
+            'note':     state,
         })
 
 emit({
