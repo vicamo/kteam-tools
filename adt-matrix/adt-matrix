@@ -64,7 +64,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, archs = [], packages = []):
+    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None):
         self.cache = {}
         self.dirty = False
 
@@ -72,6 +72,8 @@ class AutoPackageTest(object):
         self.source = source
         self.archs = archs
         self.packages = packages
+        self.version_low = version_low
+        self.version_high = version_high
 
         self.seen = {}
         self.results = {}
@@ -143,7 +145,28 @@ class AutoPackageTest(object):
             self.dirty = True
 
 
+    def version_valid(self, version):
+        if not version:
+            return False
+        if self.version_low and apt_pkg.version_compare(version, self.version_low) < 0:
+            return False
+        if self.version_high and apt_pkg.version_compare(version, self.version_high) >= 0:
+            return False
+        return True
+
+
+    def version_list(self):
+        verlist = []
+        for version in sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare)):
+            if self.version_valid(version):
+                verlist.append(version)
+
+        return verlist
+
+
     fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-\S+)\s+(\S+)')
+    # Linux 4.2.0-10-generic #11-Ubuntu SMP Sun Sep 13 11:23:03 UTC 2015"
+    testinfo_kernel_version_pat = re.compile(r'^Linux\s+(\S+?-\S+?)(-\S+)\s#(\S+)-Ubuntu')
     def fetch_one_result(self, url, src, arch, trigger=None):
         '''Download one result URL for source/arch
 
@@ -166,16 +189,24 @@ class AutoPackageTest(object):
             return
 
         (kernel_pkg, kernel_ver) = (None, None)
+        testinfo = None
         try:
             with tarfile.open(None, 'r', tar_bytes) as tar:
                 exitcode = int(tar.extractfile('exitcode').read().strip())
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
-                for line in tar.extractfile('testbed-packages'):
-                    match = self.fetch_one_kernel_pat.match(line.decode().strip())
-                    if match:
-                        if not kernel_ver or apt_pkg.version_compare(match.group(2), kernel_ver) >= 0:
-                            (kernel_pkg, kernel_ver) = (match.group(1), match.group(2))
+                if ressrc == self.source:
+                    (kernel_pkg, kernel_ver) = (ressrc, ver)
+                else:
+                    for line in tar.extractfile('testbed-packages'):
+                        match = self.fetch_one_kernel_pat.match(line.decode().strip())
+                        if match:
+                            if not kernel_ver or apt_pkg.version_compare(match.group(2), kernel_ver) >= 0:
+                                (kernel_pkg, kernel_ver) = (match.group(1), match.group(2))
+                try:
+                    testinfo = json.load(tar.extractfile('testinfo.json'))
+                except (KeyError, ValueError, tarfile.TarError) as e:
+                    pass
         except (KeyError, ValueError, tarfile.TarError) as e:
             self.log_error('%s is damaged: %s' % (url, str(e)))
             # we can't just ignore this, as it would leave an orphaned request
@@ -183,6 +214,13 @@ class AutoPackageTest(object):
             exitcode = 16
             ressrc = src
             ver = None
+
+        # If we have testinfo then we may have a real kernel version.
+        if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
+            if 'kernel_version' in testinfo:
+                match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
+                if match:
+                    (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3))
 
         if src != ressrc:
             self.log_error('%s is a result for package %s, but expected package %s' %
@@ -197,10 +235,9 @@ class AutoPackageTest(object):
             src, ver, arch, stamp, passed and 'pass' or 'fail', kernel_pkg, kernel_ver))
 
         # add this result
-        if kernel_pkg:
-            if ver is not None:
-                results = self.results.setdefault(kernel_ver, {}).setdefault(src, {})
-                results[arch] = (passed, ver, os.path.dirname(url) + '/')
+        if kernel_pkg and kernel_ver:
+            results = self.results.setdefault(kernel_ver, {}).setdefault(src, {})
+            results[arch] = (passed, ver, os.path.dirname(url) + '/')
 
         # update latest_stamp
         if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
@@ -226,7 +263,7 @@ class AutoPackageTest(object):
     def results_data(self):
         counts = {}
         result = {}
-        verlist = sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
+        verlist = self.version_list()
         for pkg in self.packages:
             good_ever = {}
             for ver in verlist:
@@ -373,35 +410,35 @@ table.matrix, table.matrix th, table.matrix td {
 """, file=indexf)
     
     for line in sys.stdin:
-        packages = line.split()
-        series = packages.pop(0)
+        (series, package, ver_low, ver_high) = line.split()
 
-        for package in packages:
-            key = series + '-' + package
-            if key in package_seed:
-                seed = package_seed[key]
-            else:
-                seed = [ package ]
-            adt = AutoPackageTest(
-                    series = series,
-                    source = package,
-                    archs = archs,
-                    packages = seed,
-                )
+        key = series + '-' + package
+        if key in package_seed:
+            seed = package_seed[key]
+        else:
+            seed = [ package ]
+        adt = AutoPackageTest(
+                series = series,
+                source = package,
+                archs = archs,
+                packages = seed,
+                version_low = ver_low,
+                version_high = ver_high,
+            )
 
-            adt.update()
-            adt.save()
+        adt.update()
+        adt.save()
 
-            (info, matrix) = adt.matrix()
-            (state, summary, version, count, total) = info
+        (info, matrix) = adt.matrix()
+        (state, summary, version, count, total) = info
 
-            html = series + '-' + package + '.html'
-            with open(html + '.new', 'w') as mfd:
-                print(matrix, end=None, file=mfd)
+        html = series + '-' + package + '.html'
+        with open(html + '.new', 'w') as mfd:
+            print(matrix, end=None, file=mfd)
 
             os.rename(html + '.new', html)
 
-            print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td>{4}</tr>\n'.format(series, package, html, version, summary, state, count, total), file=indexf)
+        print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td>{4}</tr>\n'.format(series, package, html, version, summary, state, count, total), file=indexf)
 
     print("""\
 </table>
