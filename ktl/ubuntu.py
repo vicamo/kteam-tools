@@ -131,7 +131,7 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
-        '15.10.x' :
+        '15.10' :
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '15.10',
@@ -157,33 +157,6 @@ class Ubuntu:
             'derivative-packages' :
             {
                 'linux' : [ 'linux-raspi2' ]
-            },
-            'sha1' : '',
-            'md5' : ''
-        },
-        '15.10' :
-        {
-            'development' : True,        # This is the version that is currently under development
-            'series_version' : '15.10',
-            'kernel'    : '4.1.0',
-            'name'      : 'wily',
-            'supported' : False,
-            # adjust packages when this goes live
-            'packages'  :
-            [
-                'linux',
-                'linux-meta',
-            ],
-            'dependent-packages' :
-            {
-                'linux' : {
-                    'meta'   : 'linux-meta',
-                    'signed' : 'linux-signed'
-                },
-            },
-            'derivative-packages' :
-            {
-                'linux' : []
             },
             'sha1' : '',
             'md5' : ''
