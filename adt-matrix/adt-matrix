@@ -267,33 +267,19 @@ class AutoPackageTest(object):
         for pkg in self.packages:
             good_ever = {}
             for ver in verlist:
-                some_good = []
-                some_miss = []
-                some_fail = []
-                some_regr = []
+                status = { 'REGR': [], 'FAIL': [], 'GOOD': [], 'MISS': [] }
                 for arch in self.archs:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
-                        (status, version, rurl) = self.results[ver][pkg][arch]
-                        if status:
+                        (tstatus, version, rurl) = self.results[ver][pkg][arch]
+                        if tstatus:
                             good_ever[arch] = True
-                            some_good.append(arch)
+                            status['GOOD'].append(arch)
                         elif arch in good_ever:
-                            some_regr.append(arch)
+                            status['REGR'].append(arch)
                         else:
-                            some_fail.append(arch)
+                            status['FAIL'].append(arch)
                     else:
-                        some_miss.append(arch)
-
-                if len(some_regr):
-                    status = 'REGR ' + ' '.join(some_regr)
-                elif len(some_fail):
-                    status = 'FAIL ' + ' '.join(some_fail)
-                elif len(some_good):
-                    status = 'GOOD'
-                #elif ver == verlist[-1]:
-                #    status = 'MISS ' + ' '.join(some_miss)
-                else:
-                    status = None
+                        status['MISS'].append(arch)
 
                 if status:
                     tmp = result.setdefault(ver, {})
@@ -309,7 +295,8 @@ class AutoPackageTest(object):
             ver = verlist[-1]
             for pkg in self.packages:
                 if pkg in result[ver]:
-                    status[result[ver][pkg][0:4]] += 1
+                    for key in status:
+                        status[key] += len(result[ver][pkg][key])
         
         summary = []
         for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
@@ -334,7 +321,7 @@ class AutoPackageTest(object):
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS {{ background-color: yellow; }}
-.FAIL {{ background-color: yellow; }}
+.FAIL {{ background-color: orange; }}
 .REGR {{ background-color: red; }}
 table.matrix {{
     border-collapse: collapse;
@@ -363,14 +350,24 @@ table.matrix, table.matrix th, table.matrix td {{
         # Data ...
         for pkg in self.packages:
             page += '<tr><th><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series))
+            state_list = [ 'REGR', 'FAIL', 'GOOD' ]
             for ver in verlist:
+                # Care about missing results in the last running version only
+                if ver == verlist[-1]:
+                    state_list = [ 'REGR', 'FAIL', 'MISS', 'GOOD' ]
                 if pkg in results[ver]:
-                    archs = results[ver][pkg].split()
-                    status = archs.pop(0)
-    
-                    page += '<td class="{0}">{0}'.format(status)
-                    for arch in archs:
-                        page += ' ' + pkg_arch_link(pkg, self.series, arch)
+                    status = None
+                    status_human = ''
+                    for state in state_list:
+                        if len(results[ver][pkg][state]) > 0:
+                            if not status:
+                                status = state
+
+                            status_human += state + " "
+                            for arch in results[ver][pkg][state]:
+                                status_human += pkg_arch_link(pkg, self.series, arch) + " "
+
+                    page += '<td class="{0}">{1}'.format(status, status_human)
                 else:
                     page += '<td>&nbsp;'
             page += '<th><a href="{1}">{0}</a></tr>\n'.format(pkg, pkg_link(pkg, self.series))
