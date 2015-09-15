@@ -403,16 +403,26 @@ with open(index + ".new", "w") as indexf:
 table.matrix {
     border-collapse: collapse;
 }
-table.matrix, table.matrix th, table.matrix td {
-   border: 1px solid black;
-} 
+#table.matrix, table.matrix th, table.matrix td {
+#   border: 1px solid black;
+#} 
+table.matrix th {
+    text-align: left;
+}
+table.matrix td {
+    padding: 5px;
+}
+#.row:nth-child(6n+1) { background-color: darkgrey }
+#.row:nth-child(6n+2) { background-color: darkgrey }
+#.row:nth-child(6n+3) { background-color: darkgrey }
+.row:nth-child(even) { background-color: lightgrey }
 .pointer { cursor: pointer; }
 </style>
 </head>
 <body>
 <h1>ADT Test Matrix</h1>
 <table class="matrix">
-<tr><th>Series<th>Package<th>Latest Version<th>Counts<th>Status<th>Migration Status</tr>
+<tr class="row"><th>Series<th>Package<th>Latest Version<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
 """, file=indexf)
     
     for line in sys.stdin:
@@ -435,8 +445,8 @@ table.matrix, table.matrix th, table.matrix td {
                 version_high = ver_high,
             )
 
-        adt.update()
-        adt.save()
+        #adt.update()
+        #adt.save()
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info
@@ -449,7 +459,7 @@ table.matrix, table.matrix th, table.matrix td {
 
         mig_pkg = package.replace('linux', 'linux-meta')
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + mig_pkg
-        print('<tr class="{8}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td><a href=\"{2}\">{4}</a><td><a href=\"{9}\">{8}</a></tr>\n'.format(series, package, html, version, summary, state, count, total, migration, mig_url), file=indexf)
+        print('<tr class="row"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td><a href="{2}">{4}</a><td class="{8}"><a href="{9}">{8}</a></tr>\n'.format(series, package, html, version, summary, state, count, total, migration, mig_url), file=indexf)
 
     print("""\
 </table>
