@@ -445,8 +445,8 @@ table.matrix td {
                 version_high = ver_high,
             )
 
-        #adt.update()
-        #adt.save()
+        adt.update()
+        adt.save()
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info
