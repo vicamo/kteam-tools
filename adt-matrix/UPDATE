@@ -19,7 +19,6 @@ do
 	package2=`echo "$package" | sed -e 's/^linux/linux-meta/'`
 
 	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney"`
-	[ "$migration" = '' ] && migration="MIGRATED"
 	echo "$series $package $low $high $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"

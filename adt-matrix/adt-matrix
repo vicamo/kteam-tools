@@ -64,7 +64,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None):
+    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None, track_missing = True):
         self.cache = {}
         self.dirty = False
 
@@ -74,6 +74,7 @@ class AutoPackageTest(object):
         self.packages = packages
         self.version_low = version_low
         self.version_high = version_high
+        self.track_missing = track_missing
 
         self.seen = {}
         self.results = {}
@@ -353,7 +354,7 @@ table.matrix, table.matrix th, table.matrix td {{
             state_list = [ 'REGR', 'FAIL', 'GOOD' ]
             for ver in verlist:
                 # Care about missing results in the last running version only
-                if ver == verlist[-1]:
+                if self.track_missing and ver == verlist[-1]:
                     state_list = [ 'REGR', 'FAIL', 'MISS', 'GOOD' ]
                 if pkg in results[ver]:
                     status = None
@@ -426,7 +427,12 @@ table.matrix td {
 """, file=indexf)
     
     for line in sys.stdin:
-        (series, package, ver_low, ver_high, migration) = line.split()
+        bits = line.split()
+        migrated = False
+        if len(bits) < 5:
+            bits.append('MIGRATED')
+            migrated = True
+        (series, package, ver_low, ver_high, migration) = bits
 
         key = series + "-" + package
         if key in package_seed:
@@ -443,6 +449,7 @@ table.matrix td {
                 packages = seed,
                 version_low = ver_low,
                 version_high = ver_high,
+                track_missing = not migrated,
             )
 
         adt.update()
