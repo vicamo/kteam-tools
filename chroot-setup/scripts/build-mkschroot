@@ -203,6 +203,15 @@ case $SUITE in
 esac
 
 case $SUITE in
+	wily)
+		case $ARCH in
+			amd64|i386) ADDPKG="$ADDPKG libssl-dev"
+			;;
+		esac
+		;;
+esac
+
+case $SUITE in
 	*) _SUITE=$SUITE
 		;;
 	esac
