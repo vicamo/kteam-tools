@@ -58,6 +58,8 @@ def get_status(state, record):
         return "PASS"
     if 'cruft-arch' in record['reason']:
         return "NBS"
+    if 'build-arch' in record['reason']:
+        return "RUNNING"
     if 'autopkgtest' in record['reason']:
         # Check for running tests.
         running = False
