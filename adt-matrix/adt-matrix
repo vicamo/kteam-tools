@@ -393,6 +393,7 @@ with open(index + ".new", "w") as indexf:
 <head>
 <title>ADT Test Matrix</title>
 <style>
+.MIGRATED { background-color: darkgray; }
 .PASS { background-color: green; }
 .RUNNING { background-color: yellow; }
 .MISSING { background-color: yellow; }
