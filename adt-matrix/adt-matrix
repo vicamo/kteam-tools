@@ -305,7 +305,7 @@ class AutoPackageTest(object):
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
-        if len(verlist) > 1:
+        if len(verlist) > 0:
             ver = verlist[-1]
             for pkg in self.packages:
                 if pkg in result[ver]:
