@@ -1,0 +1,25 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <britney state>" 1>&2
+fi
+
+britney="$1"
+
+while read series package low high
+do
+	[ "$series" = '#' ] && continue
+
+	package2=`echo "$package" | sed -e 's/^linux/linux-meta/'`
+
+	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney"`
+	[ "$migration" = '' ] && migration="MIGRATED"
+	echo "$series $package $low $high $migration"
+done <"$here/adt-matrix.conf" | \
+	"$here/adt-matrix"
