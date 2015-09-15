@@ -1,130 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
-# shank is the "stable bot" or "stab-bot".
+# SWM - SRU Workflow Manager  (aka: shankbot)
 #
 
-from os                                 import path
-from ktl.utils                          import stdo
-from datetime                           import datetime
-from urllib2                            import HTTPError
-from ktl.messaging                      import Email, Status
-from ktl.termcolor                      import colored
-import json
-from lazr.restfulclient.errors          import HTTPError
+import sys
+import os
+sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO, DEBUG, WARNING
-from sb.log                             import Clog, cinfo, cdebug, cwarn, cnotice, cerror
-from sb.launchpad                       import Launchpad
-from sb.workflow_engine                 import WorkflowEngine
+from logging                            import basicConfig, DEBUG, WARNING, INFO
+import yaml
 
-def verbose(msg, color='green'):
-    stdo(colored(msg, color))
-
-# TaskActions
-#
-class TaskActions(dict):
-    '''
-    For every workflow task there is one or more action(s) that are to
-    be perfomed on it. The action the be performed depends on the current
-    state (status) of that task.
-
-    This class (a dictionary) helps building the master dictionary of
-    tasks and actions.
-    '''
-    # __init__
-    #
-    def __init__(s, d, *args):
-        dict.__init__(s, *args)
-        s.actions = {}
-
-        # Initialize them all to 'None'
-        #
-        for t in ['New', 'Incomplete', 'Opinion', 'Invalid', 'Won\'t Fix', 'Expired', 'Confirmed', 'Triaged', 'In Progress', 'Fix Committed', 'Fix Released', 'Unknown']:
-            s[t] = None
-
-        # Set the individual ones that have a non-None value
-        #
-        for k in d:
-            s[k] = d[k]
-
-# WorkflowManager
-#
-class WorkflowManager():
-    # __init__
-    #
-    def __init__(s, args):
-        s.args = args
-
-    # get_buglist
-    #
-    def get_buglist(s, project):
-        '''
-        Perform a search of Launchpad to get a list of all the bugs that match
-        our criteria.
-
-        A list of the bug ids is returned.
-        '''
-        retval = []
-
-        search_tags            = [   # A list of the tags we care about
-                'kernel-release-tracking-bug'
-            ]
-        search_tags_combinator = "All"
-        search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
-        search_since           = datetime(year=2013, month=1, day=1)
-        lp_project = s.lp.default_service.projects[project]
-        tasks = lp_project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
-
-        for task in tasks:
-            bug = task.bug
-            cinfo('found: %s' % bug.id)
-            retval.append(bug.id)
-
-        return retval
-
-    # main
-    #
-    def main(s):
-        '''
-        This drives the overall process. It gets a list of the bugs that need to
-        be worked (if not specified) and then runs through each of them.
-        '''
-        try:
-            # Load our config options.
-            #
-            cfg_path = path.dirname(__file__) + '/sru-workflow.cfg'
-            with open(cfg_path, 'r') as f:
-                s.cfg = json.load(f)
-
-            s.lp = Launchpad(s.args.staging)
-
-            s.projects_tracked = [ 'kernel-development-workflow', 'kernel-sru-workflow' ]
-            engine = WorkflowEngine(s.args, s.lp)
-            engine.cfg = s.cfg                              # This needs fixing!
-            engine.projects_tracked = s.projects_tracked    # .. and this
-            if s.args.bugs:
-                for bugid in s.args.bugs:
-                    engine.crank(bugid, s.args.sauron)
-
-            else:
-                for project in s.projects_tracked:
-                    cinfo('Project: %s' % project)
-
-                    for bugid in s.get_buglist(project):
-                        try:
-                            engine.crank(bugid, s.args.sauron)
-                        except HTTPError.PreconditionFailed as e:
-                            pass
-
-        # Handle the user presses <ctrl-C>.
-        #
-        except KeyboardInterrupt:
-            pass
-
-        return 0
-
-    # end of main
+from wfl.log                            import Clog, center, cleave, cdebug
+from wfl.manager                        import WorkflowManager
+from wfl.bugmail                        import BugMailConfigFileMissing
+from wfl.bug                            import WorkflowBug
+from wfl.task                           import WorkflowBugTask
 
 if __name__ == '__main__':
     # Command line argument setup and initial processing
@@ -134,55 +26,65 @@ I do increadible things to kernel workflow bugs.
     '''
     app_epilog = '''
 examples:
-    sb
-    sb --verbose
-    sb --verbose --dry-run
-    sb --verbose --staging
-    sb --bugs=1134424,1133589
+    swm
+    swm --debug
+    swm --bugs 1134424 1133589
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--verbose',                    action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--debug',                      action='store_true', default=False, help='')
-    parser.add_argument('--debug-assignee',                                  default=None,  help='')
-    parser.add_argument('--dryrun',                     action='store_true', default=False, help='Don\'t modify the bug(s). Should be used with --verbose.')
-    parser.add_argument('--dryrun-email',               action='store_true', default=False, help='')
-    parser.add_argument('--dryrun-derivative-trackers', action='store_true', default=False, help='')
-    parser.add_argument('--dryrun-ignore-promotions',   action='store_true', default=False, help='')
-    parser.add_argument('--staging',                    action='store_true', default=False, help='Use the staging LP service instead of the production one.')
+    parser.add_argument('--dryrun',                     action='store_true', default=False, help='Make no permanent changes.')
+    parser.add_argument('--no-status-changes',          action='store_true', default=False, help='Make no status changes.')
+    parser.add_argument('--no-phase-changes',           action='store_true', default=False, help='Make no phase changes.')
+    parser.add_argument('--no-assignments',             action='store_true', default=False, help='Make no assignee assignments.')
+    parser.add_argument('--no-announcements',           action='store_true', default=False, help='Send no email, msgq or other announcements.')
+    parser.add_argument('--no-timestamps',              action='store_true', default=False, help='Don\'t set any timestamps in the properties.')
     parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
-    parser.add_argument('--ignore-timestamp',           action='store_true', default=False, help='Don\'t check timestamps during operation.')
-    parser.add_argument('--bugs',                                            default=None,  help='A comma seperated list of bug ids. Only these bug ids will be processed.')
-    parser.add_argument('--logfile',                                         default=None,  help='Where to log the output.')
+    parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
+    parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')
+    parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
+
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    log_format = "%(levelname)s - %(message)s"
     if args.debug:
+        log_format = "%(levelname)s - %(message)s"
         basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
         Clog.dbg = True
-    elif args.verbose:
-        basicConfig(filename=args.logfile, level=INFO, format=log_format)
     else:
-        basicConfig(filename=args.logfile, level=WARNING, format=log_format)
+        log_format = "%(message)s"
+        basicConfig(filename=args.logfile, level=INFO, format=log_format)
+        Clog.dbg = False
 
-    if args.bugs:
-        args.bugs = args.bugs.replace(' ', '')
-        if ',' in args.bugs:
-            args.bugs = args.bugs.split(',')
-        else:
-            args.bugs = [args.bugs]
+    center('__main__')
+    if args.debug:
+        cdebug('Configuration:')
+        for arg in vars(args):
+            cdebug('    %s: %s' % (arg, getattr(args, arg)))
 
     try:
-        app = WorkflowManager(args)
-        exit(app.main())
-    except HTTPError, err:
-        if err.code == 503:
-            print 'Launchpad server is down (503)'
-        else:
-            print 'Launchpad returned error %d' % err.code
-            raise
+        # Pass along any "global" settings to the WorkflowBugTask.
+        #
+        WorkflowBug.sauron            = args.sauron
+        WorkflowBug.dryrun            = args.dryrun
+        WorkflowBug.no_status_changes = args.no_status_changes
+        WorkflowBug.no_phase_changes  = args.no_phase_changes
+        WorkflowBug.no_assignments    = args.no_assignments
+        WorkflowBug.no_announcements  = args.no_announcements
+        WorkflowBug.no_timestamps     = args.no_timestamps
+        WorkflowBug.local_msgqueue_port = args.local_msgqueue_port
+
+        WorkflowBugTask.dryrun = WorkflowBug.dryrun
+        WorkflowBugTask.no_status_changes = WorkflowBug.no_status_changes
+        WorkflowBugTask.no_assignments = WorkflowBug.no_assignments
+        WorkflowBugTask.no_timestamps = WorkflowBug.no_timestamps
+
+        retval = WorkflowManager(args).manage()
+    except BugMailConfigFileMissing as e:
+        print(e.message)
+        retval = -1
+    cleave('__main__ (%s)' % (retval))
+    exit(retval)
 
 # vi:set ts=4 sw=4 expandtab:
-

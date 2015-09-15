@@ -1,9 +1,0 @@
-[
-    {
-        "series name" : "raring",
-        "title": "linux: <version to be filled> -proposed tracker",
-        "ops" : [
-            "p2p_advance_timestamp"
-        ]
-    }
-]

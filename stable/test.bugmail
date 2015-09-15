@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+from wfl.log                            import Clog, center, cleave
+from wfl.bugmail                        import BugMail
+
+
+class Tester(object):
+    # __init__
+    #
+    def __init__(s, args):
+        center(s.__class__.__name__ + '.__init__')
+        s.args = args
+        cleave(s.__class__.__name__ + '.__init__')
+
+    # test
+    #
+    # For the testing I'm doing here I'm not trying to verify that the interfaces
+    # are correct but that they 'work' and don't throw exceptions.
+    #
+    def test(s):
+        center(s.__class__.__name__ + '.test')
+
+        BugMail.load_cfg('email.yaml')
+        BugMail.send('Running test.bugmail', 'This is a test, this is only a test.')
+
+        cleave(s.__class__.__name__ + '.test')
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I test the BugMail class.
+    '''
+    app_epilog = '''
+examples:
+    test.bug
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug',  action='store_true',  default=False, help='')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format  = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(filename=None, level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        basicConfig(filename=None, level=WARNING, format=log_format)
+        Clog.dbg = False
+
+    center('__main__')
+
+    tester = Tester(args)
+    tester.test()
+
+    cleave('__main__')
+
+# vi:set ts=4 sw=4 expandtab:

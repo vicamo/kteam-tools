@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+#
+import sys
+import os
+sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+from wfl.launchpad                      import Launchpad
+from wfl.log                            import Clog, center, cleave, cdebug
+from wfl.bug                            import WorkflowBug
+
+
+class Tester(object):
+    # __init__
+    #
+    def __init__(s, args):
+        center(s.__class__.__name__ + '.__init__')
+        s.args = args
+        s._lp = None
+        cleave(s.__class__.__name__ + '.__init__')
+
+    @property
+    def lp(s):
+        if s._lp is None:
+            cdebug(" . Connecting to Launchpad")
+            s._lp = Launchpad(False)
+        return s._lp
+
+    def good(s, msg):
+        print('[PASS]    ' + msg)
+
+    def bad(s, msg):
+        print('[FAIL]    ' + msg)
+
+    def verify_tasks(s, bug):
+        sru_tasks = [
+            'verification-testing',
+            'promote-to-updates',
+            'prepare-package',
+            'automated-testing',
+            'prepare-package-signed',
+            'promote-to-security',
+            'promote-to-proposed',
+            'prepare-package-meta',
+            'regression-testing',
+            'kernel-sru-workflow',
+            'certification-testing',
+            'security-signoff',
+        ]
+
+        passed = True
+        for t in bug.tasks_by_name:
+            if t not in sru_tasks:
+                passed = False
+            else:
+                sru_tasks.remove(t)
+        if len(sru_tasks) > 0:
+            passed = False
+
+        if passed:
+            s.good('package_fully_built')
+        else:
+            s.bad('package_fully_built')
+
+    # test
+    #
+    # For the testing I'm doing here I'm not trying to verify that the interfaces
+    # are correct but that they 'work' and don't throw exceptions.
+    #
+    def test(s):
+        center(s.__class__.__name__ + '.test')
+
+        for bugid in s.args.bugs:
+            cdebug('LP: #' + bugid)
+            bug = WorkflowBug(s.lp.default_service, bugid, sauron=s.args.sauron, dryrun=False)
+
+            # bjf # is_valid
+            # bjf #
+            # bjf try:
+            # bjf     bug.is_valid
+            # bjf     s.good('check_is_valid')
+            # bjf except:
+            # bjf     s.bad('check_is_valid')
+
+            # bjf # tasks_by_name
+            # bjf #
+            # bjf s.verify_tasks(bug)
+
+            # bjf # package_fully_built
+            # bjf #
+            # bjf try:
+            # bjf     bug.package_fully_built(bug.pkg_name)
+            # bjf     s.good('package_fully_built')
+            # bjf except:
+            # bjf     s.bad('package_fully_built')
+
+            # bjf # all_dependent_packages_fully_built
+            # bjf #
+            # bjf try:
+            # bjf     bug.all_dependent_packages_fully_built
+            # bjf     s.good('all_dependent_packages_fully_built')
+            # bjf except:
+            # bjf     s.bad('all_dependent_packages_fully_built')
+
+            # bjf # ready_for_testing
+            # bjf #
+            # bjf try:
+            # bjf     bug.ready_for_testing
+            # bjf     s.good('ready_for_testing')
+            # bjf except:
+            # bjf     s.bad('ready_for_testing')
+
+            # bjf # creator
+            # bjf #
+            # bjf try:
+            # bjf     bug.creator(bug.pkg_name)
+            # bjf     s.good('creator')
+            # bjf except:
+            # bjf     s.bad('creator')
+
+            # bjf # set_phase
+            # bjf #
+            # bjf try:
+            # bjf     bug.set_phase('test.bug - testing')
+            # bjf     s.good('set_phase')
+            # bjf except:
+            # bjf     s.bad('set_phase')
+
+            # bjf # add_comment
+            # bjf #
+            # bjf try:
+            # bjf     bug.add_comment('test.bug - testing', 'This is a test, this is only a test.')
+            # bjf     s.good('add_comment')
+            # bjf except:
+            # bjf     s.bad('add_comment')
+
+            bug.check_component_in_pocket('test.bug-test-test-test-end', 'proposed')
+
+        cleave(s.__class__.__name__ + '.test')
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I test the WorkflowBug class.
+    '''
+    app_epilog = '''
+examples:
+    test.bug
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug',  action='store_true',  default=False, help='')
+    parser.add_argument('--sauron', action='store_true',  default=False, help='')
+    parser.add_argument('bugs',  metavar='BUGS', nargs=1, default=None,  help='A single Launchpad bug id that is to be processed.')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format  = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(filename=None, level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        basicConfig(filename=None, level=WARNING, format=log_format)
+        Clog.dbg = False
+
+    center('__main__')
+
+    tester = Tester(args)
+    tester.test()
+
+    cleave('__main__')
+
+# vi:set ts=4 sw=4 expandtab:

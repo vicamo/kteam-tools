@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+#
+import sys
+import os
+sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO
+from wfl.log                            import Clog, center, cleave, cdebug
+from wfl.launchpad                      import Launchpad
+from wfl.bug                            import WorkflowBug
+
+# Pkg
+#
+class Pkg(object):
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s):
+        s._lp = None
+
+    @property
+    def lp(s):
+        if s._lp is None:
+            s._lp = Launchpad(False)
+        return s._lp
+
+    # main
+    #
+    def main(s, args):
+        center("Enter Pkg::main")
+        retval = 1
+
+        for bugid in args.bugs:
+            s.printlink = '%s : (%s)' % (bugid, s.lp.bug_url(bugid))
+            cdebug('')
+            cdebug('Processing: %s' % s.printlink, 'cyan')
+            print('Processing: %s' % s.printlink)
+
+            bug = WorkflowBug(s.lp.default_service, bugid)
+            status = bug.package_fully_built('main')
+            print('      Main package built: %s' % status)
+            status = bug.ready_for_testing
+            print('Dependent packages built: %s' % status)
+            print('       Ready for testing: %s' % bug.ready_for_testing)
+
+        cleave("Leave Pkg::main")
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+examples:
+    ./pkg 1498170 --debug
+                This is a Wily tracking bug.
+
+    ./pkg 1498065 --debug
+                This is a Precise tracking bug.
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out lots of stuff.')
+    parser.add_argument('bugs', type=str, nargs=1, help='The tracking bug we want package information displayed about.')
+
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        Clog.dbg = True
+        basicConfig(filename=None, level=DEBUG, format="%(levelname)s - %(message)s")
+    else:
+        log_format = "%(message)s"
+        basicConfig(filename=None, level=INFO, format=log_format)
+        Clog.dbg = False
+
+    app = Pkg()
+    exit(app.main(args))
+
+# vi:set ts=4 sw=4 expandtab syntax=python:

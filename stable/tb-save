@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+#
+# Collect Bug Data (CBD)
+#
+
+import sys
+import os
+sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG
+
+from datetime                           import datetime
+import json
+from wfl.launchpad                      import Launchpad
+from wfl.bug                            import WorkflowBug
+from wfl.log                            import cdebug, center, cleave
+
+# TheApp
+#
+class TheApp():
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        center(s.__class__.__name__ + '.__init__')
+        s.args = args
+        s._lp = None
+        cleave(s.__class__.__name__ + '.__init__')
+
+    @property
+    def lp(s):
+        if s._lp is None:
+            cdebug(" . Connecting to Launchpad")
+            s._lp = Launchpad(False)
+        return s._lp
+
+    # __initialize
+    #
+    # A separate initialize that we can control when it gets called (not
+    # when the object is instantiated).
+    #
+    def __initialize(s):
+        center(s.__class__.__name__ + '.__initialize')
+        s.cfg = {}
+        s.cfg['read_only'] = True
+        s.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-bug-data'
+        s.cfg['launchpad_services_root'] = os.getenv('LP_SERVICE', 'qastaging')
+        cleave(s.__class__.__name__ + '.__initialize')
+        return
+
+    # __get_relevant_task
+    #
+    def __get_relevant_task(s, bug):
+        center(s.__class__.__name__ + '.__get_relevant_task')
+        retval = None
+        for t in bug.tasks:
+            task       = t.bug_target_name
+            p = task.replace(' (Ubuntu)', '')
+            print(p)
+            if p in ['kernel-sru-workflow', 'kernel-development-workflow']:
+                retval = t
+                break
+        cleave(s.__class__.__name__ + '.__get_relevant_task')
+        return retval
+
+    # __verbose_bug_info
+    #
+    def __verbose_bug_info(s, bug):
+        print(" ")
+        print("    %s: %s" % (bug.id, bug.title))
+        print(" ")
+
+        tags = ""
+        for t in bug.tags:
+            tags += t
+            tags += " "
+        print("        Tags:")
+        print("            %s" % (tags))
+
+        tasks = bug.tasks
+        print("        Tasks:")
+        for task in tasks:
+            print("            %45s %20s %20s" % (task.bug_target_name, task.status, task.importance))
+
+    # date_to_string
+    #
+    def date_to_string(s, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    def string_to_date(s, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    # bug_needs_attention
+    #
+    def bug_needs_attention(s, bug, package, db):
+        retval = False
+
+        if bug.id in db['bug-collections'][package]['bugs']:
+            retval = True
+        else:
+            retval = False
+
+        return retval
+
+    # main
+    #
+    def main(s):
+        center(s.__class__.__name__ + '.main')
+        try:
+            s.__initialize()
+            info = {}
+
+            WorkflowBug.sauron = True
+            for bugid in s.args.bugs:
+                cdebug(bugid)
+                bug = WorkflowBug(s.lp.default_service, bugid)
+
+                info['title'] = bug.title
+                info['properties'] = bug.lpbug.properties
+                info['bugid'] = bugid
+
+                tasks = {}
+                for t in sorted(bug.tasks_by_name):
+                    wt = bug.tasks_by_name[t]
+                    lptask = wt.lp_task.lp_bug_task
+                    assignee = lptask.assignee
+                    if assignee is not None:
+                        tasks[t] = (wt.status, lptask.assignee.name)
+                info['tasks'] = tasks
+
+                with open('%s.json' % bugid, 'w') as f:
+                    f.write(json.dumps(info, sort_keys=True, indent=4))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Keyboard interrupt")
+            pass
+
+        cleave(s.__class__.__name__ + '.main')
+        return
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+examples:
+    rtb-snapshot snap1.json
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug',  action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab:

@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+from os                                 import path
+from logging                            import basicConfig, DEBUG, WARNING
+from manager                            import WorkflowManager
+
+import unittest
+import argparse
+
+from launchpad_stub                     import LaunchpadStub
+
+class TestPrepareTask(unittest.TestCase):
+    def setUp(s):
+        # s.id() returns a string identifying the specific test case
+        # it contains:
+        # <modules>.<class>.<test method> (e.g. __main__.TestPrepareTask.test_0001_prepare_package)
+        #
+        # Use this to identify the test filename
+        prefix = s.__module__ + "." + s.__class__.__name__ + ".test_"
+        s.assertTrue(s.id().startswith(prefix), "test id with unexpected format: %s" % s.id())
+        filename = s.id().split(prefix)[1]
+        testcase = "test-cases/" + filename
+        s.args = argparse.Namespace()
+        s.args.bugs = None
+        s.args.testcase = testcase
+        s.workflowmanager = WorkflowManager(s.args, True)
+
+    def tearDown(s):
+        pass
+
+    def verify_single_bug(s, bug):
+        for task in bug.tasks:
+            s.assertTrue(task.status == task.attr['final-status'],
+                         "Wrong status for task '%s' in bug %s (%s != %s)" %
+                         (task.bug_target_name, bug.bugid, task.status, task.attr['final-status']))
+            s.assertTrue(task.importance == task.attr['final-importance'],
+                         "Wrong importance for task '%s' in bug %s (%s != %s)" %
+                         (task.bug_target_name, bug.bugid, task.importance, task.attr['final-importance']))
+            s.assertTrue(task.assignee.display_name == task.attr['final-assignee'],
+                         "Wrong assignee for task '%s' in bug %s (%s != %s)" %
+                         (task.bug_target_name, bug.bugid, task.assignee.display_name, task.attr['final-assignee']))
+
+    def verify_bugs(s, lp):
+        for p in lp.projects:
+            for t in lp.projects[p].tasks:
+                s.verify_single_bug(t.bug)
+
+    def test_0001_prepare_package(s):
+        "prepare-package: package not built, no changes expected"
+        s.workflowmanager.manage()
+        s.assertTrue(s.args.lp != None, "No Launchpad stub instance returned")
+        s.verify_bugs(s.args.lp)
+    def test_0002_prepare_package(s):
+        "prepare-package: package built, task set to 'Fix Released'"
+        s.workflowmanager.manage()
+        s.assertTrue(s.args.lp != None, "No Launchpad stub instance returned")
+        s.verify_bugs(s.args.lp)
+
+if __name__ == '__main__':
+    log_format = "%(levelname)s - %(message)s"
+    basicConfig(filename=None, level=WARNING, format=log_format)
+    unittest.main(verbosity=2)

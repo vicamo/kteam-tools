@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+#
+# SWM - SRU Workflow Manager  (aka: shankbot)
+#
+import sys
+import os
+sys.path.append(os.path.join('..'))
+sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, INFO
+
+from wfl.log                            import Clog, center, cleave
+from wfl.manager                        import WorkflowManager
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I do increadible things to kernel workflow bugs.
+    '''
+    app_epilog = '''
+examples:
+    swm
+    swm --debug
+    swm --bugs 1134424 1133589
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--verbose',                    action='store_true', default=False, help='')
+    parser.add_argument('--debug',                      action='store_true', default=False, help='')
+    parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
+    parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
+    parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
+
+    args = parser.parse_args()
+
+    args.dryrun            = True
+    args.no_assignments    = True
+    args.no_announcements  = True
+    args.no_timestamps     = True
+    args.no_status_changes = True
+    args.no_phase_changes  = True
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.verbose:
+        log_format = "%(message)s"
+        basicConfig(filename=args.logfile, level=INFO, format=log_format)
+        Clog.dbg = False
+    elif args.debug:
+        basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        basicConfig(filename=args.logfile, level=WARNING, format=log_format)
+
+    center('__main__')
+    wfm = WorkflowManager(args)
+    bl = wfm.buglist
+    for bugid in bl:
+        print('    LP: #%s - %s' % (bugid, bl[bugid]))
+    exit(0)
+    cleave('__main__')
+
+# vi:set ts=4 sw=4 expandtab:
