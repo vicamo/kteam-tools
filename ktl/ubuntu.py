@@ -648,8 +648,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '4.2.0'    : db['15.10.x'],
-        '4.1.0'    : db['15.10'],
+        '4.2.0'    : db['15.10'],
         '4.0.0'    : db['15.10'],
         '3.19.0'   : db['15.04'],
         '3.16.0'   : db['14.10'],
@@ -672,7 +671,6 @@ class Ubuntu:
     }
 
     index_by_series_name = {
-        'unstable' : db['15.10.x'],
         'wily'     : db['15.10'],
         'vivid'    : db['15.04'],
         'utopic'   : db['14.10'],
@@ -696,6 +694,8 @@ class Ubuntu:
 
     kernel_source_packages = [
         'linux',
+        'linux-raspi2',
+        'linux-meta-raspi2',
         'linux-ti-omap4', # maverick, natty
         'linux-armadaxp', # precise, quantal
         'linux-exynos5',
