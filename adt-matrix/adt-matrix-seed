@@ -2,8 +2,9 @@
 
 import json
 
-package_seed = {
-    'precise': [
+package_seed = {}
+
+seed = [
                 'bbswitch',
                 'bcmwl',
                 'blcr',
@@ -39,8 +40,11 @@ package_seed = {
                 'virtualbox',
                 'west-chamber',
                 'xtables-addons',
-            ],
-    'trusty': [
+    ]
+package_seed['precise-linux'] = seed
+package_seed['precise-linux-lts-trusty'] = seed
+
+seed = [
                 'bbswitch',
                 'bcmwl',
                 'blcr',
@@ -56,8 +60,6 @@ package_seed = {
                 'langford',
                 'lime-forensics',
                 'linux',
-                'linux-lts-utopic',
-                'linux-lts-vivid',
                 'lttng-modules',
                 'lxc',
                 'nat-rtsp',
@@ -83,8 +85,12 @@ package_seed = {
                 'virtualbox',
                 'west-chamber',
                 'xtables-addons',
-            ],
-    'vivid': [
+    ]
+package_seed['trusty-linux'] = seed + ['linux-lts-utopic', 'linux-lts-vivid']
+package_seed['trusty-linux-lts-utopic'] = seed
+package_seed['trusty-linux-lts-vivid'] = seed
+
+seed = [
                 'acpi-call',
                 'asic0x',
                 'bbswitch',
@@ -125,8 +131,10 @@ package_seed = {
                 'virtualbox',
                 'west-chamber',
                 'xtables-addons',
-            ],
-    'wily': [
+    ]
+package_seed['vivid-linux'] = seed
+
+seed = [
                 'acpi-call',
                 'asic0x',
                 'bbswitch',
@@ -167,8 +175,8 @@ package_seed = {
                 'virtualbox',
                 'west-chamber',
                 'xtables-addons',
-            ],
-}
+    ]
+package_seed['wily-linux'] = seed
 
 with open("package-relation.json", "w") as seedf:
 	json.dump(package_seed, seedf, indent=2)

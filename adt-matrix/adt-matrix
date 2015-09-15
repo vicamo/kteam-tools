@@ -417,10 +417,14 @@ table.matrix, table.matrix th, table.matrix td {
     for line in sys.stdin:
         (series, package, ver_low, ver_high, migration) = line.split()
 
-        if series in package_seed:
-            seed = package_seed[series]
+        key = series + "-" + package
+        if key in package_seed:
+            seed = package_seed[key]
         else:
-            seed = [ package ]
+            seed = []
+        if package not in seed:
+            seed.append(package)
+
         adt = AutoPackageTest(
                 series = series,
                 source = package,
