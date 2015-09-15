@@ -3,7 +3,7 @@
 import json
 
 package_seed = {
-    'precise-linux': [
+    'precise': [
                 'bbswitch',
                 'bcmwl',
                 'blcr',
@@ -40,7 +40,7 @@ package_seed = {
                 'west-chamber',
                 'xtables-addons',
             ],
-    'trusty-linux': [
+    'trusty': [
                 'bbswitch',
                 'bcmwl',
                 'blcr',
@@ -84,7 +84,7 @@ package_seed = {
                 'west-chamber',
                 'xtables-addons',
             ],
-    'vivid-linux': [
+    'vivid': [
                 'acpi-call',
                 'asic0x',
                 'bbswitch',
@@ -126,7 +126,7 @@ package_seed = {
                 'west-chamber',
                 'xtables-addons',
             ],
-    'wily-linux': [
+    'wily': [
                 'acpi-call',
                 'asic0x',
                 'bbswitch',

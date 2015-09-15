@@ -268,6 +268,7 @@ class AutoPackageTest(object):
             good_ever = {}
             for ver in verlist:
                 some_good = []
+                some_miss = []
                 some_fail = []
                 some_regr = []
                 for arch in self.archs:
@@ -280,6 +281,8 @@ class AutoPackageTest(object):
                             some_regr.append(arch)
                         else:
                             some_fail.append(arch)
+                    else:
+                        some_miss.append(arch)
 
                 if len(some_regr):
                     status = 'REGR ' + ' '.join(some_regr)
@@ -287,6 +290,8 @@ class AutoPackageTest(object):
                     status = 'FAIL ' + ' '.join(some_fail)
                 elif len(some_good):
                     status = 'GOOD'
+                elif ver == verlist[-1]:
+                    status = 'MISS ' + ' '.join(some_miss)
                 else:
                     status = None
 
@@ -298,14 +303,16 @@ class AutoPackageTest(object):
                     counts[ver] += 1
 
 
-        status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0 }
-        ver = verlist[-1]
-        for pkg in self.packages:
-            if pkg in result[ver]:
-                status[result[ver][pkg][0:4]] += 1
+        status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
+        ver = None
+        if len(verlist) > 1:
+            ver = verlist[-1]
+            for pkg in self.packages:
+                if pkg in result[ver]:
+                    status[result[ver][pkg][0:4]] += 1
         
         summary = []
-        for state in [ 'REGR', 'FAIL', 'GOOD', None ]:
+        for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
             if state and status[state] > 0:
                 summary.append(state + ": " + str(status[state]))
 
@@ -389,11 +396,12 @@ with open(index + ".new", "w") as indexf:
 <head>
 <title>ADT Test Matrix</title>
 <style>
-.GOOD { background-color: green; }
-.RUN { background-color: yellow; }
-.MISS { background-color: yellow; }
+.PASS { background-color: green; }
+.RUNNING { background-color: yellow; }
+.MISSING { background-color: yellow; }
 .FAIL { background-color: yellow; }
-.REGR { background-color: red; }
+.ALWAYSFAIL { background-color: yellow; }
+.REGRESSION { background-color: red; }
 table.matrix {
     border-collapse: collapse;
 }
@@ -406,15 +414,14 @@ table.matrix, table.matrix th, table.matrix td {
 <body>
 <h1>ADT Test Matrix</h1>
 <table class="matrix">
-<tr><th>Series<th>Package<th>Latest Version<th>Counts<th>Status</tr>
+<tr><th>Series<th>Package<th>Latest Version<th>Counts<th>Status<th>Migration Status</tr>
 """, file=indexf)
     
     for line in sys.stdin:
-        (series, package, ver_low, ver_high) = line.split()
+        (series, package, ver_low, ver_high, migration) = line.split()
 
-        key = series + '-' + package
-        if key in package_seed:
-            seed = package_seed[key]
+        if series in package_seed:
+            seed = package_seed[series]
         else:
             seed = [ package ]
         adt = AutoPackageTest(
@@ -438,7 +445,8 @@ table.matrix, table.matrix th, table.matrix td {
 
             os.rename(html + '.new', html)
 
-        print('<tr onclick="window.document.location=\'{2}\';" class="pointer {5}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td>{4}</tr>\n'.format(series, package, html, version, summary, state, count, total), file=indexf)
+        mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
+        print('<tr class="{8}"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td><a href=\"{2}\">{4}</a><td><a href=\"{9}\">{8}</a></tr>\n'.format(series, package, html, version, summary, state, count, total, migration, mig_url), file=indexf)
 
     print("""\
 </table>
