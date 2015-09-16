@@ -64,7 +64,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None, track_missing = True):
+    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None, track_missing = True, flavour = None):
         self.cache = {}
         self.dirty = False
 
@@ -75,6 +75,7 @@ class AutoPackageTest(object):
         self.version_low = version_low
         self.version_high = version_high
         self.track_missing = track_missing
+        self.flavour = flavour
 
         self.seen = {}
         self.results = {}
@@ -149,9 +150,12 @@ class AutoPackageTest(object):
     def version_valid(self, version):
         if not version:
             return False
-        if self.version_low and apt_pkg.version_compare(version, self.version_low) < 0:
+        (ver, flavour) = version.split()
+        if self.flavour and self.flavour != flavour:
             return False
-        if self.version_high and apt_pkg.version_compare(version, self.version_high) >= 0:
+        if self.version_low and apt_pkg.version_compare(ver, self.version_low) < 0:
+            return False
+        if self.version_high and apt_pkg.version_compare(ver, self.version_high) >= 0:
             return False
         return True
 
@@ -165,9 +169,9 @@ class AutoPackageTest(object):
         return verlist
 
 
-    fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-\S+)\s+(\S+)')
+    fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-(\S+))\s+(\S+)')
     # Linux 4.2.0-10-generic #11-Ubuntu SMP Sun Sep 13 11:23:03 UTC 2015"
-    testinfo_kernel_version_pat = re.compile(r'^Linux\s+(\S+?-\S+?)(-\S+)\s#(\S+)-Ubuntu')
+    testinfo_kernel_version_pat = re.compile(r'^Linux\s+(\S+?-\S+?)-(\S+)\s#(\S+)-Ubuntu')
     def fetch_one_result(self, url, src, arch, trigger=None):
         '''Download one result URL for source/arch
 
@@ -197,13 +201,14 @@ class AutoPackageTest(object):
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
                 if ressrc == self.source:
-                    (kernel_pkg, kernel_ver) = (ressrc, ver)
+                    (kernel_pkg, kernel_ver) = (ressrc, ver + ' ' + self.flavour)
                 else:
                     for line in tar.extractfile('testbed-packages'):
                         match = self.fetch_one_kernel_pat.match(line.decode().strip())
                         if match:
-                            if not kernel_ver or apt_pkg.version_compare(match.group(2), kernel_ver) >= 0:
-                                (kernel_pkg, kernel_ver) = (match.group(1), match.group(2))
+                            if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
+                                if match.group(2) != '-virtual':
+                                    (kernel_pkg, kernel_ver) = (match.group(1), match.group(3) + ' ' + match.group(2))
                 try:
                     testinfo = json.load(tar.extractfile('testinfo.json'))
                 except (KeyError, ValueError, tarfile.TarError) as e:
@@ -221,7 +226,7 @@ class AutoPackageTest(object):
             if 'kernel_version' in testinfo:
                 match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
                 if match:
-                    (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3))
+                    (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3) + ' ' + match.group(2))
 
         if src != ressrc:
             self.log_error('%s is a result for package %s, but expected package %s' %
@@ -308,7 +313,11 @@ class AutoPackageTest(object):
 
         summary_str = ' '.join(summary)
 
-        return ((summary_str[0:4], summary_str, ver, counts.get(ver, 0), len(self.packages)), result)
+        if ver:
+            (version, flavour) = ver.split()
+        else:
+            version = None
+        return ((summary_str[0:4], summary_str, version, counts.get(ver, 0), len(self.packages)), result)
 
 
     def matrix(self):
@@ -344,8 +353,9 @@ table.matrix, table.matrix th, table.matrix td {{
 
         # Versions ...
         page += '<tr>'
-        for ver in verlist:
-            page += '<th>' + ver
+        for verflav in verlist:
+            (version, flavour) = verflav.split()
+            page += '<th>' + version
         page += '</tr>'
 
         # Data ...
@@ -381,8 +391,6 @@ table.matrix, table.matrix th, table.matrix td {{
 
 
 apt_pkg.init_system()
-
-archs = ['amd64', 'i386', 'ppc64el', 'armhf']
 
 with open("package-relation.json") as seedf:
     package_seed = json.load(seedf)
@@ -429,10 +437,10 @@ table.matrix td {
     for line in sys.stdin:
         bits = line.split()
         migrated = False
-        if len(bits) < 5:
+        if len(bits) < 6:
             bits.append('MIGRATED')
             migrated = True
-        (series, package, ver_low, ver_high, migration) = bits
+        (series, package, flavour, ver_low, ver_high, migration) = bits
 
         key = series + "-" + package
         if key in package_seed:
@@ -442,18 +450,25 @@ table.matrix td {
         if package not in seed:
             seed.append(package)
 
+        key = 'arch-' + key
+        if key in package_seed:
+            archs = package_seed[key]
+        else:
+            archs = ['amd64', 'i386', 'ppc64el', 'armhf']
+
         adt = AutoPackageTest(
                 series = series,
                 source = package,
                 archs = archs,
                 packages = seed,
+                flavour = flavour,
                 version_low = ver_low,
                 version_high = ver_high,
                 track_missing = not migrated,
             )
 
-        adt.update()
-        adt.save()
+        #adt.update()
+        #adt.save()
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info

@@ -12,13 +12,13 @@ fi
 
 britney="$1"
 
-while read series package low high
+while read series package flavour low high
 do
 	[ "$series" = '#' ] && continue
 
 	package2=`echo "$package" | sed -e 's/^linux/linux-meta/'`
 
 	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney"`
-	echo "$series $package $low $high $migration"
+	echo "$series $package $flavour $low $high $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"
