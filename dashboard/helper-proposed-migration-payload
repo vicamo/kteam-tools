@@ -86,6 +86,20 @@ def get_status(state, record):
         return "PASS"
 
     return "UNKNOWN"
+
+
+def get_hierachy(state, record):    
+    hier = [ record['source'] ]
+
+    if 'excuses' in record:
+        for line in record['excuses']:
+            if line.startswith('Depends:'):
+                bits = line.strip().split()
+                for record2 in state['sources']:
+                    if record2['source'] == bits[2]:
+                        hier += get_hierachy(state, record2)
+
+    return hier
  
 
 (package_result, overall_result) = sys.argv[1:]
@@ -178,10 +192,20 @@ for line in sys.stdin:
 #                })
 
     # Work out the britney status for kernel packages.
+    scanned = []
     for record in state['sources']:
         if record['source'].startswith('linux-meta'):
             britney.append((series, record['source'], record['new-version'], get_status(state, record)))
+            scanned += get_hierachy(state, record)
 
+    # Rescan for non abi bumpers.
+    for record in state['sources']:
+        if record['source'].startswith('linux') and \
+           not record['source'].startswith('linux-meta') and \
+           not record['source'].startswith('linux-signed') and \
+           record['source'] not in scanned:
+            source = record['source'].replace('linux', 'linux-meta')
+            britney.append((series, source, record['new-version'], get_status(state, record)))
 
     # If the run completed since it was triggered, all is good, else give it an 
     # hour to get there, after that warn for a further hour, then alert.
