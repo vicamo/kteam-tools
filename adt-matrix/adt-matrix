@@ -404,6 +404,7 @@ with open(index + ".new", "w") as indexf:
 <style>
 .MIGRATED { background-color: darkgray; }
 .PASS { background-color: green; }
+.BUILDING { background-color: yellow; }
 .RUNNING { background-color: yellow; }
 .MISSING { background-color: yellow; }
 .FAIL { background-color: yellow; }
