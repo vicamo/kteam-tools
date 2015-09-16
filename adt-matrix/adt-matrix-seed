@@ -89,6 +89,9 @@ seed = [
 package_seed['trusty-linux'] = seed + ['linux-lts-utopic', 'linux-lts-vivid']
 package_seed['trusty-linux-lts-utopic'] = seed
 package_seed['trusty-linux-lts-vivid'] = seed
+package_seed['trusty-linux-keystone'] = seed
+
+package_seed['arch-trusty-linux-keystone'] = [ 'armhf' ]
 
 seed = [
                 'acpi-call',
