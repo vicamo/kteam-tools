@@ -467,8 +467,8 @@ table.matrix td {
                 track_missing = not migrated,
             )
 
-        #adt.update()
-        #adt.save()
+        adt.update()
+        adt.save()
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info
