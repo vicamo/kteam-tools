@@ -1,0 +1,79 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import sys
+import os
+import yaml
+import json
+
+
+class AdtMatrixSeed(object):
+    def __init__(self, cache):
+        self.cache_file = cache
+        self.cache = {}
+
+        if os.path.exists(cache):
+            with open(cache) as cachef:
+                tmp = json.load(cachef)
+
+            for seriespkg in tmp:
+                for pkg in tmp[seriespkg]:
+                    for arch in tmp[seriespkg][pkg]:
+                        self.cache.setdefault(seriespkg, {}).setdefault(pkg, {})[arch] = True
+
+    def save(self):
+        with open(self.cache_file + '.new', 'w') as cfd:
+            tmp = {}
+            for seriespkg in self.cache:
+                tmp[seriespkg] = []
+                for pkg in sorted(self.cache[seriespkg]):
+                    tmp_arch = []
+                    for arch in sorted(self.cache[seriespkg][pkg]):
+                        tmp_arch.append(arch)
+                    tmp[seriespkg].append((pkg, tmp_arch))
+                        
+            json.dump(tmp, cfd, indent=2)
+        os.rename(self.cache_file + '.new', self.cache_file)
+
+
+    def britney_hierachy(self, state, record):    
+        hier = [ record ]
+
+        if 'excuses' in record:
+            for line in record['excuses']:
+                if line.startswith('Depends:'):
+                    bits = line.strip().split()
+                    for record2 in state['sources']:
+                        if record2['source'] == bits[2]:
+                            hier += self.britney_hierachy(state, record2)
+
+        return hier
+
+
+    def accumulate(self, series, britney):
+        with open(britney) as britneyf:
+            state = yaml.load(britneyf)
+
+            for record in state['sources']:
+                if not record['source'].startswith('linux-meta'):
+                    continue;
+
+                package = record['source'].replace('linux-meta', 'linux')
+                pcache = self.cache.setdefault(series + '-' + package, {})
+
+                print("TOP LEVEL", record['source'])
+
+                for record2 in self.britney_hierachy(state, record):
+                    print("  MEMBER", record2['source'])
+                    if 'tests' in record2 and 'autopkgtest' in record2['tests']:
+                        for pkg in record2['tests']['autopkgtest']:
+                            for arch in record2['tests']['autopkgtest'][pkg]:
+                                (package, version) = pkg.split()
+                                tmp = pcache.setdefault(package, {})
+                                tmp[arch] = True
+
+matrix_seed = AdtMatrixSeed('package-relation.json')
+for line in sys.stdin:
+    (series, britney) = line.strip().split()
+    matrix_seed.accumulate(series, britney)
+matrix_seed.save()
