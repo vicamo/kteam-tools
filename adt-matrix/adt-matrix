@@ -447,6 +447,7 @@ table.matrix td {
 <tr class="row"><th>Series<th>Package<th>Latest Version<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
 """, file=indexf)
     
+    series_prev = None
     for line in sys.stdin:
         bits = line.split()
         migrated = False
@@ -479,8 +480,10 @@ table.matrix td {
                 track_missing = not migrated,
             )
 
-        adt.update()
-        adt.save()
+        if series_prev != series:
+            series_prev = series
+            adt.update()
+            adt.save()
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info
