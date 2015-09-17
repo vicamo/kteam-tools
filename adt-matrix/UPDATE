@@ -20,7 +20,7 @@ do
 	series=`basename "$seriesmigration"`
 	series="${series#.migration}"
 	echo "$series $seriesmigration"
-done | "$here/adt-series-accumulate"
+done | "$here/adt-seed-accumulate"
 
 while read series package flavour low high
 do
