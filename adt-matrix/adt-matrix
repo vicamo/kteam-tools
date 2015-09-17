@@ -64,13 +64,12 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, archs = [], packages = [], version_low = None, version_high = None, track_missing = True, flavour = None):
+    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, track_missing = True, flavour = None):
         self.cache = {}
         self.dirty = False
 
         self.series = series
         self.source = source
-        self.archs = archs
         self.packages = packages
         self.version_low = version_low
         self.version_high = version_high
@@ -251,8 +250,9 @@ class AutoPackageTest(object):
 
 
     def update(self):
-        for pkg in self.packages:
-            for arch in self.archs:
+        for pkgarchs in self.packages:
+            (pkg, archs) = pkgarchs
+            for arch in archs:
                 adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
@@ -270,11 +270,12 @@ class AutoPackageTest(object):
         counts = {}
         result = {}
         verlist = self.version_list()
-        for pkg in self.packages:
+        for pkgarchs in self.packages:
+            (pkg, archs) = pkgarchs
             good_ever = {}
             for ver in verlist:
                 status = { 'REGR': [], 'FAIL': [], 'GOOD': [], 'MISS': [] }
-                for arch in self.archs:
+                for arch in archs:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl) = self.results[ver][pkg][arch]
                         if tstatus:
@@ -299,7 +300,8 @@ class AutoPackageTest(object):
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
-            for pkg in self.packages:
+            for pkgarchs in self.packages:
+                (pkg, archs) = pkgarchs
                 if pkg in result[ver]:
                     for key in status:
                         status[key] += len(result[ver][pkg][key])
@@ -359,7 +361,8 @@ table.matrix, table.matrix th, table.matrix td {{
         page += '</tr>'
 
         # Data ...
-        for pkg in self.packages:
+        for pkgarchs in self.packages:
+            (pkg, archs) = pkgarchs
             page += '<tr><th><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series))
             state_list = [ 'REGR', 'FAIL', 'GOOD' ]
             for ver in verlist:
@@ -449,18 +452,11 @@ table.matrix td {
         else:
             seed = []
         if package not in seed:
-            seed.append(package)
-
-        key = 'arch-' + key
-        if key in package_seed:
-            archs = package_seed[key]
-        else:
-            archs = ['amd64', 'i386', 'ppc64el', 'armhf']
+            seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
 
         adt = AutoPackageTest(
                 series = series,
                 source = package,
-                archs = archs,
                 packages = seed,
                 flavour = flavour,
                 version_low = ver_low,
