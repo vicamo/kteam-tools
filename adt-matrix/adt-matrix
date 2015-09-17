@@ -51,8 +51,7 @@ def pkg_link(pkg, series):
 
 
 def pkg_arch_link(pkg, series, arch):
-    link = "http://autopkgtest.ubuntu.com/packages/{0}/{1}/{2}/{3}/".format(srchash(pkg), pkg, series, arch)
-    return '<a href="{1}">{0}</a>'.format(arch, link)
+    return "http://autopkgtest.ubuntu.com/packages/{0}/{1}/{2}/{3}/".format(srchash(pkg), pkg, series, arch)
 
 
 class AutoPackageTest(object):
@@ -273,27 +272,31 @@ class AutoPackageTest(object):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             good_ever = {}
-            for ver in verlist:
-                status = { 'REGR': [], 'FAIL': [], 'GOOD': [], 'MISS': [] }
-                for arch in archs:
+            some_ever = {}
+            for arch in archs:
+                for ver in verlist:
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl) = self.results[ver][pkg][arch]
+                        some_ever[arch] = True
                         if tstatus:
                             good_ever[arch] = True
-                            status['GOOD'].append(arch)
+                            status = 'GOOD'
                         elif arch in good_ever:
-                            status['REGR'].append(arch)
+                            status = 'REGR'
                         else:
-                            status['FAIL'].append(arch)
+                            status = 'FAIL'
+                    elif arch in some_ever:
+                        status = 'MISS'
                     else:
-                        status['MISS'].append(arch)
+                        status = None
 
-                if status:
-                    tmp = result.setdefault(ver, {})
-                    tmp[pkg] = status
+                    if status:
+                        tmp = result.setdefault(ver, {})
+                        tmp = tmp.setdefault(pkg, {})
+                        tmp[arch] = status
 
-                    counts.setdefault(ver, 0)
-                    counts[ver] += 1
+                        counts.setdefault(ver, 0)
+                        counts[ver] += 1
 
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
@@ -302,9 +305,9 @@ class AutoPackageTest(object):
             ver = verlist[-1]
             for pkgarchs in self.packages:
                 (pkg, archs) = pkgarchs
-                if pkg in result[ver]:
-                    for key in status:
-                        status[key] += len(result[ver][pkg][key])
+                for arch in archs:
+                    if pkg in result[ver] and arch in result[ver][pkg]:
+                        status[result[ver][pkg][arch]] += 1
         
         summary = []
         for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
@@ -351,40 +354,46 @@ table.matrix, table.matrix th, table.matrix td {{
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
         # Title ...
-        page += '<tr><th rowspan=2><th colspan={0}>{1}<th rowspan=2></tr>'.format(len(verlist), title)
+        page += '<tr><th rowspan="2" colspan="2"><th colspan="{0}">{1}<th rowspan="2" colspan="2"></tr>\n'.format(len(verlist), title)
 
         # Versions ...
         page += '<tr>'
         for verflav in verlist:
             (version, flavour) = verflav.split()
             page += '<th>' + version
-        page += '</tr>'
+        page += '</tr>\n'
 
         # Data ...
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
-            page += '<tr><th><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series))
-            state_list = [ 'REGR', 'FAIL', 'GOOD' ]
-            for ver in verlist:
-                # Care about missing results in the last running version only
-                if self.track_missing and ver == verlist[-1]:
-                    state_list = [ 'REGR', 'FAIL', 'MISS', 'GOOD' ]
-                if pkg in results[ver]:
-                    status = None
-                    status_human = ''
-                    for state in state_list:
-                        if len(results[ver][pkg][state]) > 0:
-                            if not status:
-                                status = state
+            archs_seen = {}
+            for arch in archs:
+                for ver in verlist:
+                    if pkg in results[ver] and arch in results[ver][pkg]:
+                        archs_seen[arch] = True
 
-                            status_human += state + " "
-                            for arch in results[ver][pkg][state]:
-                                status_human += pkg_arch_link(pkg, self.series, arch) + " "
+            archs_good = []
+            for arch in archs:
+                if arch in archs_seen:
+                    archs_good.append(arch)
 
-                    page += '<td class="{0}">{1}'.format(status, status_human)
-                else:
-                    page += '<td>&nbsp;'
-            page += '<th><a href="{1}">{0}</a></tr>\n'.format(pkg, pkg_link(pkg, self.series))
+            for arch in archs_good:
+                page += '<tr>'
+                if arch == archs_good[0]:
+                    page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
+                page += '<td>' + arch
+                for ver in verlist:
+                    if pkg in results[ver] and arch in results[ver][pkg]:
+                        status = results[ver][pkg][arch]
+                        status_link = pkg_arch_link(pkg, self.series, arch)
+
+                        page += '<td class="{0}"><a href="{2}">{1}</a>'.format(status, status, status_link)
+                    else:
+                        page += '<td>&nbsp;'
+                page += '<td>' + arch
+                if arch == archs_good[0]:
+                    page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
+                page += '</tr>\n'
 
         page += """</table>
 </body>
