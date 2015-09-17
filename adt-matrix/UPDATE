@@ -7,10 +7,20 @@ case "$here" in
 esac
 
 if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <britney state>" 1>&2
+	echo "Usage: $0 <britney state directory>" 1>&2
 fi
 
 britney="$1"
+
+# Update package-relation.json
+[ ! -f package-relation.json ] && \
+	cp "$here/package-relation.json-initial" package-relation.json
+for seriesmigration in "$britney"/*.migration
+do
+	series=`basename "$seriesmigration"`
+	series="${series#.migration}"
+	echo "$series $seriesmigration"
+done | "$here/adt-series-accumulate"
 
 while read series package flavour low high
 do
@@ -18,7 +28,7 @@ do
 
 	package2=`echo "$package" | sed -e 's/^linux/linux-meta/'`
 
-	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney"`
+	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney/overall.txt"`
 	echo "$series $package $flavour $low $high $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"
