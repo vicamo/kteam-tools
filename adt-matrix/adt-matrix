@@ -460,7 +460,13 @@ table.matrix td {
             seed = package_seed[key]
         else:
             seed = []
-        if package not in seed:
+
+        seen = False
+        for pkgarchs in seed:
+            (pkg, archs) = pkgarchs
+            if package == pkg:
+                seen = True
+        if not seen:
             seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
 
         adt = AutoPackageTest(
