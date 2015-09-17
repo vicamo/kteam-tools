@@ -17,8 +17,9 @@ class AdtMatrixSeed(object):
                 tmp = json.load(cachef)
 
             for seriespkg in tmp:
-                for pkg in tmp[seriespkg]:
-                    for arch in tmp[seriespkg][pkg]:
+                for pkgarchs in tmp[seriespkg]:
+                    (pkg, archs) = pkgarchs
+                    for arch in archs:
                         self.cache.setdefault(seriespkg, {}).setdefault(pkg, {})[arch] = True
 
     def save(self):
