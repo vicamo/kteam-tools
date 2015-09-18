@@ -36,7 +36,7 @@ import apt_pkg
 from urllib import urlencode
 from urllib2 import urlopen
 from functools import cmp_to_key
-
+from datetime import datetime
 def srchash(src):
     '''archive hash prefix for source package'''
 
@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, track_missing = True, flavour = None):
+    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, track_missing = True, flavour = None, stamp = None):
         self.cache = {}
         self.dirty = False
 
@@ -74,6 +74,7 @@ class AutoPackageTest(object):
         self.version_high = version_high
         self.track_missing = track_missing
         self.flavour = flavour
+        self.stamp = stamp
 
         self.seen = {}
         self.results = {}
@@ -347,9 +348,9 @@ table.matrix, table.matrix th, table.matrix td {{
 </style>
 </head>
 <body>
-<h1>ADT Test Matrix for {0}</h1>
+<h1>ADT Test Matrix for {0} ({1})</h1>
 <table class="matrix">
-""".format(title)
+""".format(title, self.stamp)
 
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
@@ -407,6 +408,8 @@ apt_pkg.init_system()
 with open("package-relation.json") as seedf:
     package_seed = json.load(seedf)
 
+stamp = datetime.now().replace(microsecond=0)
+
 index = "index.html"
 with open(index + ".new", "w") as indexf:
     print("""\
@@ -414,38 +417,38 @@ with open(index + ".new", "w") as indexf:
 <head>
 <title>ADT Test Matrix</title>
 <style>
-.MIGRATED { background-color: darkgray; }
-.PASS { background-color: green; }
-.BUILDING { background-color: yellow; }
-.RUNNING { background-color: yellow; }
-.MISSING { background-color: yellow; }
-.FAIL { background-color: yellow; }
-.ALWAYSFAIL { background-color: yellow; }
-.REGRESSION { background-color: red; }
-table.matrix {
+.MIGRATED {{ background-color: darkgray; }}
+.PASS {{ background-color: green; }}
+.BUILDING {{ background-color: yellow; }}
+.RUNNING {{ background-color: yellow; }}
+.MISSING {{ background-color: yellow; }}
+.FAIL {{ background-color: yellow; }}
+.ALWAYSFAIL {{ background-color: yellow; }}
+.REGRESSION {{ background-color: red; }}
+table.matrix {{
     border-collapse: collapse;
-}
-#table.matrix, table.matrix th, table.matrix td {
+}}
+#table.matrix, table.matrix th, table.matrix td {{
 #   border: 1px solid black;
-#} 
-table.matrix th {
+#}} 
+table.matrix th {{
     text-align: left;
-}
-table.matrix td {
+}}
+table.matrix td {{
     padding: 5px;
-}
-#.row:nth-child(6n+1) { background-color: darkgrey }
-#.row:nth-child(6n+2) { background-color: darkgrey }
-#.row:nth-child(6n+3) { background-color: darkgrey }
-.row:nth-child(even) { background-color: lightgrey }
-.pointer { cursor: pointer; }
+}}
+#.row:nth-child(6n+1) {{ background-color: darkgrey }}
+#.row:nth-child(6n+2) {{ background-color: darkgrey }}
+#.row:nth-child(6n+3) {{ background-color: darkgrey }}
+.row:nth-child(even) {{ background-color: lightgrey }}
+.pointer {{ cursor: pointer; }}
 </style>
 </head>
 <body>
-<h1>ADT Test Matrix</h1>
+<h1>ADT Test Matrix ({0})</h1>
 <table class="matrix">
 <tr class="row"><th>Series<th>Package<th>Latest Version<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
-""", file=indexf)
+""".format(stamp), file=indexf)
     
     series_prev = None
     for line in sys.stdin:
@@ -471,6 +474,7 @@ table.matrix td {
             seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
 
         adt = AutoPackageTest(
+                stamp = stamp,
                 series = series,
                 source = package,
                 packages = seed,
