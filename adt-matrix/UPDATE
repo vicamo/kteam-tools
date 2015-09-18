@@ -18,7 +18,7 @@ britney="$1"
 for seriesmigration in "$britney"/*.migration
 do
 	series=`basename "$seriesmigration"`
-	series="${series#.migration}"
+	series="${series%.migration}"
 	echo "$series $seriesmigration"
 done | "$here/adt-seed-accumulate"
 
