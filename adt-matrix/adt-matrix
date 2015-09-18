@@ -281,6 +281,7 @@ class AutoPackageTest(object):
             some_ever = {}
             for arch in archs:
                 for ver in verlist:
+                    (status, rurl) = (None, None)
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl) = self.results[ver][pkg][arch]
                         some_ever[arch] = True
@@ -295,13 +296,11 @@ class AutoPackageTest(object):
                             status = 'FAIL'
                     elif arch in some_ever:
                         status = 'MISS'
-                    else:
-                        status = None
 
                     if status:
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
-                        tmp[arch] = status
+                        tmp[arch] = (status, rurl)
 
                         counts.setdefault(ver, 0)
                         counts[ver] += 1
@@ -315,7 +314,7 @@ class AutoPackageTest(object):
                 (pkg, archs) = pkgarchs
                 for arch in archs:
                     if pkg in result[ver] and arch in result[ver][pkg]:
-                        status[result[ver][pkg][arch]] += 1
+                        status[result[ver][pkg][arch][0]] += 1
         
         summary = []
         for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
@@ -386,19 +385,24 @@ table.matrix, table.matrix th, table.matrix td {{
                     archs_good.append(arch)
 
             for arch in archs_good:
+                arch_link = pkg_arch_link(pkg, self.series, arch)
+
                 page += '<tr>'
                 if arch == archs_good[0]:
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
-                page += '<td>' + arch
+                page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 for ver in verlist:
                     if pkg in results[ver] and arch in results[ver][pkg]:
-                        status = results[ver][pkg][arch]
-                        status_link = pkg_arch_link(pkg, self.series, arch)
-
-                        page += '<td class="{0}"><a href="{2}">{1}</a>'.format(status, status, status_link)
+                        (status, status_link) = results[ver][pkg][arch]
+                        if status_link:
+                            status_link += 'log.gz'
+                            fmt = '<td class="{0}"><a href="{2}">{1}</a>'
+                        else:
+                            fmt = '<td class="{0}">{1}'
+                        page += fmt.format(status, status, status_link)
                     else:
                         page += '<td>&nbsp;'
-                page += '<td>' + arch
+                page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 if arch == archs_good[0]:
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
                 page += '</tr>\n'
