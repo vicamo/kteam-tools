@@ -78,6 +78,7 @@ class AutoPackageTest(object):
 
         self.seen = {}
         self.results = {}
+        self.latest = {}
 
         self.cache_file = self.series + ".cache"
 
@@ -86,6 +87,7 @@ class AutoPackageTest(object):
                 tmp = json.load(cfd)
                 self.seen = tmp['seen']
                 self.results = tmp['results']
+                self.latest = tmp['latest']
 
             self.log_verbose('Read previous results from {}'.format(self.cache_file))
         else:
@@ -199,6 +201,9 @@ class AutoPackageTest(object):
                 exitcode = int(tar.extractfile('exitcode').read().strip())
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
+                # Accumulate the latest versions of packages seen so we can detect missing results.
+                if ressrc not in self.latest or apt_pkg.version_compare(self.latest[ressrc], ver) < 0:
+                    self.latest[ressrc] = ver
                 if ressrc == self.source:
                     (kernel_pkg, kernel_ver) = (ressrc, ver + ' ' + self.flavour)
                 else:
@@ -258,7 +263,7 @@ class AutoPackageTest(object):
 
     def save(self):
         if self.dirty:
-            tmp = { 'seen': self.seen, 'results': self.results }
+            tmp = { 'seen': self.seen, 'results': self.results, 'latest': self.latest }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
@@ -279,7 +284,9 @@ class AutoPackageTest(object):
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl) = self.results[ver][pkg][arch]
                         some_ever[arch] = True
-                        if tstatus:
+                        if ver == verlist[-1] and version != self.latest[pkg]:
+                            status = 'MISS'
+                        elif tstatus:
                             good_ever[arch] = True
                             status = 'GOOD'
                         elif arch in good_ever:
