@@ -12,6 +12,8 @@ class AdtMatrixSeed(object):
         self.cache_file = cache
         self.cache = {}
 
+        self.britney_cache = {}
+
         if os.path.exists(cache):
             with open(cache) as cachef:
                 tmp = json.load(cachef)
@@ -51,28 +53,34 @@ class AdtMatrixSeed(object):
         return hier
 
 
+    def britney_load(self, series, britney):
+        if series not in self.britney_cache:
+            with open(britney) as britneyf:
+                self.britney_cache[series] = yaml.load(britneyf)
+
+        return self.britney_cache[series]
+
+
     def accumulate(self, series, package, britney):
-        with open(britney) as britneyf:
-            state = yaml.load(britneyf)
+        state = self.britney_load(series, britney)
+        for record in state['sources']:
+            if record['source'] != package:
+                continue;
 
-            for record in state['sources']:
-                if record['source'] != package:
-                    continue;
+            pcache = self.cache.setdefault(series + '-' + package, {})
 
-                pcache = self.cache.setdefault(series + '-' + package, {})
+            debug = [ record['source'] ]
+            for record2 in self.britney_hierachy(state, record):
+                if record2['source'] not in debug:
+                    debug.append(record2['source'])
+                if 'tests' in record2 and 'autopkgtest' in record2['tests']:
+                    for pkg in record2['tests']['autopkgtest']:
+                        for arch in record2['tests']['autopkgtest'][pkg]:
+                            (package, version) = pkg.split()
+                            tmp = pcache.setdefault(package, {})
+                            tmp[arch] = True
 
-                debug = [ record['source'] ]
-                for record2 in self.britney_hierachy(state, record):
-                    if record2['source'] not in debug:
-                        debug.append(record2['source'])
-                    if 'tests' in record2 and 'autopkgtest' in record2['tests']:
-                        for pkg in record2['tests']['autopkgtest']:
-                            for arch in record2['tests']['autopkgtest'][pkg]:
-                                (package, version) = pkg.split()
-                                tmp = pcache.setdefault(package, {})
-                                tmp[arch] = True
-
-                print('META ' + series + ' ' + ' '.join(debug))
+            print('PKG ' + series + ' ' + ' '.join(debug))
 
 
 matrix_seed = AdtMatrixSeed('package-relation.json')
