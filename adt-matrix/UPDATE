@@ -15,20 +15,25 @@ britney="$1"
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
 	cp "$here/package-relation.json-initial" package-relation.json
-for seriesmigration in "$britney"/*.migration
+while read series package flavour low high
 do
-	series=`basename "$seriesmigration"`
-	series="${series%.migration}"
-	echo "$series $seriesmigration"
-done | "$here/adt-seed-accumulate"
+	echo "$series $package $britney/$series.migration"
+done <"$here/adt-matrix.conf" | \
+	"$here/adt-seed-accumulate"
 
 while read series package flavour low high
 do
 	[ "$series" = '#' ] && continue
 
-	package2=`echo "$package" | sed -e 's/^linux/linux-meta/'`
-
-	migration=`awk '/^'"$series $package2"' / { print $NF }' "$britney/overall.txt"`
+	case "$package" in
+	linux-meta*)
+		migration=`awk '/^'"$series $package"' / { print $NF }' "$britney/overall.txt"`
+		[ "$migration" = '' ] && migration="MIGRATED"
+		;;
+	*)
+		migration="-"
+		;;
+	esac
 	echo "$series $package $flavour $low $high $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"

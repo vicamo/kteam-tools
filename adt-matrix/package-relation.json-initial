@@ -1,5 +1,5 @@
 {
-  "trusty-linux": [
+  "trusty-linux-meta": [
     [
       "bbswitch", 
       [
@@ -352,7 +352,7 @@
       ]
     ]
   ], 
-  "wily-linux-mako": [
+  "wily-linux-meta-mako": [
     [
       "acpi-call", 
       [
@@ -543,7 +543,7 @@
       ]
     ]
   ], 
-  "precise-linux-armadaxp": [
+  "precise-linux-meta-armadaxp": [
     [
       "bbswitch", 
       [
@@ -679,7 +679,7 @@
       ]
     ]
   ], 
-  "vivid-linux-mako": [
+  "vivid-linux-meta-mako": [
     [
       "acpi-call", 
       [
@@ -870,7 +870,7 @@
       ]
     ]
   ], 
-  "wily-linux": [
+  "wily-linux-meta": [
     [
       "acpi-call", 
       [
@@ -1223,7 +1223,7 @@
       ]
     ]
   ], 
-  "wily-linux-flo": [
+  "wily-linux-meta-flo": [
     [
       "acpi-call", 
       [
@@ -1414,7 +1414,7 @@
       ]
     ]
   ], 
-  "precise-linux-lts-trusty": [
+  "precise-linux-meta-lts-trusty": [
     [
       "bbswitch", 
       [
@@ -1683,7 +1683,7 @@
       ]
     ]
   ], 
-  "vivid-linux": [
+  "vivid-linux-meta": [
     [
       "acpi-call", 
       [
@@ -2036,7 +2036,7 @@
       ]
     ]
   ], 
-  "precise-linux": [
+  "precise-linux-meta": [
     [
       "bbswitch", 
       [
@@ -2305,7 +2305,7 @@
       ]
     ]
   ], 
-  "trusty-linux-lts-utopic": [
+  "trusty-linux-meta-lts-utopic": [
     [
       "bbswitch", 
       [
@@ -2640,7 +2640,7 @@
       ]
     ]
   ], 
-  "trusty-linux-lts-vivid": [
+  "trusty-linux-meta-lts-vivid": [
     [
       "bbswitch", 
       [
@@ -2966,7 +2966,7 @@
       ]
     ]
   ], 
-  "vivid-linux-flo": [
+  "vivid-linux-meta-flo": [
     [
       "acpi-call", 
       [
@@ -3157,7 +3157,7 @@
       ]
     ]
   ], 
-  "precise-linux-ti-omap4": [
+  "precise-linux-meta-ti-omap4": [
     [
       "bbswitch", 
       [
@@ -3293,7 +3293,7 @@
       ]
     ]
   ], 
-  "trusty-linux-keystone": [
+  "trusty-linux-meta-keystone": [
     [
       "bbswitch", 
       [

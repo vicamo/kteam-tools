@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, track_missing = True, flavour = None, stamp = None):
+    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, flavour = None, stamp = None):
         self.cache = {}
         self.dirty = False
 
@@ -72,7 +72,6 @@ class AutoPackageTest(object):
         self.packages = packages
         self.version_low = version_low
         self.version_high = version_high
-        self.track_missing = track_missing
         self.flavour = flavour
         self.stamp = stamp
 
@@ -465,9 +464,9 @@ table.matrix td {{
     for line in sys.stdin:
         bits = line.split()
         migrated = False
-        if len(bits) < 6:
-            bits.append('MIGRATED')
-            migrated = True
+        for i in range(0, len(bits)):
+            if bits[i] == '-':
+                bits[i] = None
         (series, package, flavour, ver_low, ver_high, migration) = bits
 
         key = series + "-" + package
@@ -492,7 +491,6 @@ table.matrix td {{
                 flavour = flavour,
                 version_low = ver_low,
                 version_high = ver_high,
-                track_missing = not migrated,
             )
 
         if series_prev != series:
