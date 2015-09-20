@@ -460,6 +460,8 @@ table.matrix td {{
 <tr class="row"><th>Series<th>Package<th>Latest Version<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
 """.format(stamp), file=indexf)
     
+    updated = {}
+
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
@@ -493,10 +495,10 @@ table.matrix td {{
                 version_high = ver_high,
             )
 
-        if series_prev != series:
-            series_prev = series
+        if series not in updated:
             adt.update()
             adt.save()
+            updated[series] = True
 
         (info, matrix) = adt.matrix()
         (state, summary, version, count, total) = info
