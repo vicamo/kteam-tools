@@ -271,7 +271,6 @@ class AutoPackageTest(object):
 
 
     def results_data(self):
-        counts = {}
         result = {}
         verlist = self.version_list()
         for pkgarchs in self.packages:
@@ -301,9 +300,6 @@ class AutoPackageTest(object):
                         tmp = tmp.setdefault(pkg, {})
                         tmp[arch] = (status, rurl)
 
-                        counts.setdefault(ver, 0)
-                        counts[ver] += 1
-
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
@@ -312,13 +308,18 @@ class AutoPackageTest(object):
             for pkgarchs in self.packages:
                 (pkg, archs) = pkgarchs
                 for arch in archs:
-                    if pkg in result[ver] and arch in result[ver][pkg]:
+                    if ver in result and pkg in result[ver] and arch in result[ver][pkg]:
                         status[result[ver][pkg][arch][0]] += 1
         
+        count = 0
+        total = 0
         summary = []
         for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
             if state and status[state] > 0:
                 summary.append(state + ": " + str(status[state]))
+                if state != 'MISS':
+                    count += status[state]
+                total += status[state]
 
         #summary.append("Total: " + str(counts.get(ver, 0)) + '/' + str(len(self.packages)))
 
@@ -328,7 +329,9 @@ class AutoPackageTest(object):
             (version, flavour) = ver.split()
         else:
             version = None
-        return ((summary_str[0:4], summary_str, version, counts.get(ver, 0), len(self.packages)), result)
+
+        ### counts are in <jobs>/<packages> which really do not make sense
+        return ((summary_str[0:4], summary_str, version, count, total), result)
 
 
     def matrix(self):
