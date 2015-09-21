@@ -63,16 +63,13 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, flavours = None, stamp = None):
+    def __init__(self, series = None, source = None, packages = [], stamp = None):
         self.cache = {}
         self.dirty = False
 
         self.series = series
         self.source = source
         self.packages = packages
-        self.version_low = version_low
-        self.version_high = version_high
-        self.flavours = flavours.split('/')
         self.stamp = stamp
 
         self.seen = {}
@@ -150,14 +147,9 @@ class AutoPackageTest(object):
     def version_valid(self, version):
         if not version:
             return False
-        (ver, flavour) = version.split()
-        if self.flavours and flavour not in self.flavours:
-            return False
-        if self.version_low and apt_pkg.version_compare(ver, self.version_low) < 0:
-            return False
-        if self.version_high and apt_pkg.version_compare(ver, self.version_high) >= 0:
-            return False
-        return True
+        (ver, package) = version.split()
+
+        return package == self.source
 
 
     def version_list(self):
@@ -167,6 +159,33 @@ class AutoPackageTest(object):
                 verlist.append(version)
 
         return verlist
+
+
+    def version2package(self, series, version, flavour):
+        if flavour == 'omap4':
+            return 'linux-meta-ti-omap4'
+
+        elif flavour in ('keystone', 'armadaxp'):
+            return 'linux-meta-' + flavour
+
+        elif flavour in ('generic', 'generic-lpae', 'virtual'):
+            if series == 'precise':
+                if apt_pkg.version_compare(version, "3.2.0-999") < 0:
+                    return 'linux-meta'
+                elif apt_pkg.version_compare(version, "3.13.0-999") < 0:
+                    return 'linux-meta-lts-trusty'
+
+            elif series == 'trusty':
+                if apt_pkg.version_compare(version, "3.13.0-999") < 0:
+                    return 'linux-meta'
+                if apt_pkg.version_compare(version, "3.16.0-999") < 0:
+                    return 'linux-meta-lts-utopic'
+                elif apt_pkg.version_compare(version, "3.19.0-999") < 0:
+                    return 'linux-meta-lts-vivid'
+
+            return 'linux-meta'
+
+        return 'UNKNOWN'
 
 
     fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-(\S+))\s+(\S+)')
@@ -213,11 +232,25 @@ class AutoPackageTest(object):
                     if 'kernel_version' in testinfo:
                         match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
                         if match:
-                            (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3) + ' ' + match.group(2))
+                            kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
+                            kernel_ver = match.group(1) + '.' + match.group(3)
 
                 # Otherwise: if this is testing a kernel package it should be for that package.
                 if not kernel_pkg and ressrc == self.source:
-                    (kernel_pkg, kernel_ver) = (ressrc, ver + ' ' + self.flavours[0])
+                    (kernel_pkg, kernel_ver) = (ressrc, ver)
+
+#                # Otherwise: See if this is a kernel trigger.
+#                if not kernel_pkg and testinfo and 'custom_environment' in testinfo:
+#                    for varval in testinfo['custom_environment']:
+#                        (var, val) = varval.split('=', 1)
+#                    
+#                        if var == 'ADT_TEST_TRIGGERS':
+#                            for tpkgtver in val.split():
+#                                (tpkg, tver) = tpkgtver.split('/')
+#                                if tpkg.startswith('linux-meta'):
+#                                    bits = tver.split('.')
+#                                    kernel_pkg = tpkg
+#                                    kernel_ver = '.'.join(bits[0:3]) + '-' + bits[4]
 
                 # Otherwise: find the newest kernel installed in the image.
                 if not kernel_pkg:
@@ -225,7 +258,9 @@ class AutoPackageTest(object):
                         match = self.fetch_one_kernel_pat.match(line.decode().strip())
                         if match:
                             if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
-                                (kernel_pkg, kernel_ver) = (match.group(1), match.group(3) + ' ' + match.group(2))
+                                kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
+                                kernel_ver = match.group(3)
+
 
         except (KeyError, ValueError, tarfile.TarError) as e:
             self.log_error('%s is damaged: %s' % (url, str(e)))
@@ -249,7 +284,7 @@ class AutoPackageTest(object):
 
         # add this result
         if kernel_pkg and kernel_ver:
-            results = self.results.setdefault(kernel_ver, {}).setdefault(src, {})
+            results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
             results[arch] = (passed, ver, os.path.dirname(url) + '/')
 
         # update latest_stamp
@@ -422,9 +457,11 @@ table.matrix, table.matrix th, table.matrix td {{
 
 apt_pkg.init_system()
 
+# Read in the package/architecture relationships.
 with open("package-relation.json") as seedf:
     package_seed = json.load(seedf)
 
+# Go.
 stamp = datetime.now().replace(microsecond=0)
 
 index = "index.html"
@@ -472,11 +509,7 @@ table.matrix td {{
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
-        migrated = False
-        for i in range(0, len(bits)):
-            if bits[i] == '-':
-                bits[i] = None
-        (series, package, flavours, ver_low, ver_high, migration) = bits
+        (series, package, migration) = bits
 
         key = series + "-" + package
         if key in package_seed:
@@ -497,9 +530,6 @@ table.matrix td {{
                 series = series,
                 source = package,
                 packages = seed,
-                flavours = flavours,
-                version_low = ver_low,
-                version_high = ver_high,
             )
 
         if series not in updated:

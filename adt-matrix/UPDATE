@@ -15,13 +15,13 @@ britney="$1"
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
 	cp "$here/package-relation.json-initial" package-relation.json
-while read series package flavour low high
+while read series package
 do
 	echo "$series $package $britney/$series.migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate"
 
-while read series package flavour low high
+while read series package
 do
 	[ "$series" = '#' ] && continue
 
@@ -34,6 +34,6 @@ do
 		migration="-"
 		;;
 	esac
-	echo "$series $package $flavour $low $high $migration"
+	echo "$series $package $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"
