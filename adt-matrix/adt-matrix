@@ -512,8 +512,7 @@ table.matrix td {{
 
             os.rename(html + '.new', html)
 
-        mig_pkg = package.replace('linux', 'linux-meta')
-        mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + mig_pkg
+        mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td><a href="{2}">{4}</a><td class="{8}"><a href="{9}">{8}</a></tr>\n'.format(series, package, html, version, summary, state, count, total, migration, mig_url), file=indexf)
 
     print("""\
