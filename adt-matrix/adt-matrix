@@ -247,16 +247,16 @@ class AutoPackageTest(object):
                         (var, val) = varval.split('=', 1)
                     
                         if var == 'ADT_TEST_TRIGGERS':
-                            for tpkgtver in val.split() and '/' in tpkgtver:
-                                (tpkg, tver) = tpkgtver.split('/')
-                                if tpkg.startswith('linux-meta'):
-                                    bits = tver.split('.')
-                                    key = '.'.join(bits[0:4]) + ' ' + tpkg
-                                    kernel_pkg = tpkg
-                                    if key in self.kernel_abi:
-                                        kernel_ver = self.kernel_abi[key]
-                                        print("APW promoting", key, kernel_ver)
-                                
+                            for tpkgtver in val.split():
+                                if '/' in tpkgtver:
+                                    (tpkg, tver) = tpkgtver.split('/')
+                                    if tpkg.startswith('linux-meta'):
+                                        bits = tver.split('.')
+                                        key = '.'.join(bits[0:4]) + ' ' + tpkg
+                                        kernel_pkg = tpkg
+                                        if key in self.kernel_abi:
+                                            kernel_ver = self.kernel_abi[key]
+                                            print("APW promoting", key, kernel_ver)
 
                 # Otherwise: find the newest kernel installed in the image.
                 if not kernel_pkg:
