@@ -460,7 +460,7 @@ table.matrix td {{
 <body>
 <h1>ADT Test Matrix ({0})</h1>
 <table class="matrix">
-<tr class="row"><th>Series<th>Package<th>Latest Version<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
+<tr class="row"><th>Series<th>Package<th>Latest Kernel<th>Counts&nbsp;<th>Status<th>Migration Status</tr>
 """.format(stamp), file=indexf)
     
     updated = {}
