@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, flavour = None, stamp = None):
+    def __init__(self, series = None, source = None, packages = [], version_low = None, version_high = None, flavours = None, stamp = None):
         self.cache = {}
         self.dirty = False
 
@@ -72,7 +72,7 @@ class AutoPackageTest(object):
         self.packages = packages
         self.version_low = version_low
         self.version_high = version_high
-        self.flavour = flavour
+        self.flavours = flavours.split('/')
         self.stamp = stamp
 
         self.seen = {}
@@ -151,7 +151,7 @@ class AutoPackageTest(object):
         if not version:
             return False
         (ver, flavour) = version.split()
-        if self.flavour and self.flavour != flavour:
+        if self.flavours and flavour not in self.flavours:
             return False
         if self.version_low and apt_pkg.version_compare(ver, self.version_low) < 0:
             return False
@@ -201,21 +201,32 @@ class AutoPackageTest(object):
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
                 # Accumulate the latest versions of packages seen so we can detect missing results.
-                if ressrc not in self.latest or apt_pkg.version_compare(self.latest[ressrc], ver) < 0:
+                if not kernel_pkg and ressrc not in self.latest or apt_pkg.version_compare(self.latest[ressrc], ver) < 0:
                     self.latest[ressrc] = ver
-                if ressrc == self.source:
-                    (kernel_pkg, kernel_ver) = (ressrc, ver + ' ' + self.flavour)
-                else:
-                    for line in tar.extractfile('testbed-packages'):
-                        match = self.fetch_one_kernel_pat.match(line.decode().strip())
-                        if match:
-                            if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
-                                if match.group(2) != '-virtual':
-                                    (kernel_pkg, kernel_ver) = (match.group(1), match.group(3) + ' ' + match.group(2))
+
+                # If we have testinfo then we may have a real kernel version.
                 try:
                     testinfo = json.load(tar.extractfile('testinfo.json'))
                 except (KeyError, ValueError, tarfile.TarError) as e:
                     pass
+                if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
+                    if 'kernel_version' in testinfo:
+                        match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
+                        if match:
+                            (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3) + ' ' + match.group(2))
+
+                # Otherwise: if this is testing a kernel package it should be for that package.
+                if not kernel_pkg and ressrc == self.source:
+                    (kernel_pkg, kernel_ver) = (ressrc, ver + ' ' + self.flavours[0])
+
+                # Otherwise: find the newest kernel installed in the image.
+                if not kernel_pkg:
+                    for line in tar.extractfile('testbed-packages'):
+                        match = self.fetch_one_kernel_pat.match(line.decode().strip())
+                        if match:
+                            if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
+                                (kernel_pkg, kernel_ver) = (match.group(1), match.group(3) + ' ' + match.group(2))
+
         except (KeyError, ValueError, tarfile.TarError) as e:
             self.log_error('%s is damaged: %s' % (url, str(e)))
             # we can't just ignore this, as it would leave an orphaned request
@@ -223,13 +234,6 @@ class AutoPackageTest(object):
             exitcode = 16
             ressrc = src
             ver = None
-
-        # If we have testinfo then we may have a real kernel version.
-        if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
-            if 'kernel_version' in testinfo:
-                match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
-                if match:
-                    (kernel_pkg, kernel_ver) = ('linux', match.group(1) + '.' + match.group(3) + ' ' + match.group(2))
 
         if src != ressrc:
             self.log_error('%s is a result for package %s, but expected package %s' %
@@ -472,7 +476,7 @@ table.matrix td {{
         for i in range(0, len(bits)):
             if bits[i] == '-':
                 bits[i] = None
-        (series, package, flavour, ver_low, ver_high, migration) = bits
+        (series, package, flavours, ver_low, ver_high, migration) = bits
 
         key = series + "-" + package
         if key in package_seed:
@@ -493,7 +497,7 @@ table.matrix td {{
                 series = series,
                 source = package,
                 packages = seed,
-                flavour = flavour,
+                flavours = flavours,
                 version_low = ver_low,
                 version_high = ver_high,
             )
