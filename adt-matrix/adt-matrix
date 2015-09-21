@@ -75,6 +75,7 @@ class AutoPackageTest(object):
         self.seen = {}
         self.results = {}
         self.latest = {}
+        self.kernel_abi = {}
 
         self.cache_file = self.series + ".cache"
 
@@ -84,6 +85,7 @@ class AutoPackageTest(object):
                 self.seen = tmp['seen']
                 self.results = tmp['results']
                 self.latest = tmp['latest']
+                self.kernel_abi = tmp['kernel_abi']
 
             self.log_verbose('Read previous results from {}'.format(self.cache_file))
         else:
@@ -239,18 +241,22 @@ class AutoPackageTest(object):
                 if not kernel_pkg and ressrc == self.source:
                     (kernel_pkg, kernel_ver) = (ressrc, ver)
 
-#                # Otherwise: See if this is a kernel trigger.
-#                if not kernel_pkg and testinfo and 'custom_environment' in testinfo:
-#                    for varval in testinfo['custom_environment']:
-#                        (var, val) = varval.split('=', 1)
-#                    
-#                        if var == 'ADT_TEST_TRIGGERS':
-#                            for tpkgtver in val.split():
-#                                (tpkg, tver) = tpkgtver.split('/')
-#                                if tpkg.startswith('linux-meta'):
-#                                    bits = tver.split('.')
-#                                    kernel_pkg = tpkg
-#                                    kernel_ver = '.'.join(bits[0:3]) + '-' + bits[4]
+                # Otherwise: See if this is a kernel trigger.
+                if not kernel_pkg and testinfo and 'custom_environment' in testinfo:
+                    for varval in testinfo['custom_environment']:
+                        (var, val) = varval.split('=', 1)
+                    
+                        if var == 'ADT_TEST_TRIGGERS':
+                            for tpkgtver in val.split() and '/' in tpkgtver:
+                                (tpkg, tver) = tpkgtver.split('/')
+                                if tpkg.startswith('linux-meta'):
+                                    bits = tver.split('.')
+                                    key = '.'.join(bits[0:4]) + ' ' + tpkg
+                                    kernel_pkg = tpkg
+                                    if key in self.kernel_abi:
+                                        kernel_ver = self.kernel_abi[key]
+                                        print("APW promoting", key, kernel_ver)
+                                
 
                 # Otherwise: find the newest kernel installed in the image.
                 if not kernel_pkg:
@@ -284,8 +290,20 @@ class AutoPackageTest(object):
 
         # add this result
         if kernel_pkg and kernel_ver:
+            bits = kernel_ver.replace('-', '.').split('.')
+            key = '.'.join(bits[0:4]) + ' ' + kernel_pkg
+
+            # Promote pending abi results.
+            if key in self.results:
+                self.results[kernel_ver + ' ' + kernel_pkg] = self.results[key]
+                del self.results[key]
+            # Record the current version at this abi.
+            self.kernel_abi[key] = kernel_ver
+
+            # Add this result.
             results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
             results[arch] = (passed, ver, os.path.dirname(url) + '/')
+
 
         # update latest_stamp
         if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
@@ -301,7 +319,8 @@ class AutoPackageTest(object):
 
     def save(self):
         if self.dirty:
-            tmp = { 'seen': self.seen, 'results': self.results, 'latest': self.latest }
+            tmp = { 'seen': self.seen, 'results': self.results, 'latest': self.latest,
+                    'kernel_abi': self.kernel_abi, }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
