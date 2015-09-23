@@ -337,7 +337,8 @@ f_table_row_colour('normal');
 $titles  = f_table_row_start();
 $titles .= f_table_cell(f_em('Option'));
 for my $column (@columns) {
-	$titles .= f_table_cell(f_em($column));
+	my $title = $column; $title =~ s/-config\.flavour\./ /g;
+	$titles .= f_table_cell(f_em($title));
 }
 $titles .= f_table_cell(f_em('Comments'));
 $titles .= f_table_row_end();
