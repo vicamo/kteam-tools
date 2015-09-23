@@ -76,6 +76,7 @@ class AutoPackageTest(object):
         self.results = {}
         self.latest = {}
         self.kernel_abi = {}
+        self.first_good = {}
 
         self.cache_file = self.series + ".cache"
 
@@ -86,6 +87,7 @@ class AutoPackageTest(object):
                 self.results = tmp['results']
                 self.latest = tmp['latest']
                 self.kernel_abi = tmp['kernel_abi']
+                self.first_good = tmp['first_good']
 
             self.log_verbose('Read previous results from {}'.format(self.cache_file))
         else:
@@ -142,7 +144,7 @@ class AutoPackageTest(object):
         for p in result_paths:
             self.fetch_one_result(
                 os.path.join(swift_url, 'autopkgtest-' + self.series, p, 'result.tar'),
-                src, arch, trigger)
+                os.path.basename(p), src, arch, trigger)
             self.dirty = True
 
 
@@ -193,7 +195,7 @@ class AutoPackageTest(object):
     fetch_one_kernel_pat = re.compile(r'^(linux-image-[0-9\.]+-[0-9]+-(\S+))\s+(\S+)')
     # Linux 4.2.0-10-generic #11-Ubuntu SMP Sun Sep 13 11:23:03 UTC 2015"
     testinfo_kernel_version_pat = re.compile(r'^Linux\s+(\S+?-\S+?)-(\S+)\s#(\S+)-Ubuntu')
-    def fetch_one_result(self, url, src, arch, trigger=None):
+    def fetch_one_result(self, url, ident, src, arch, trigger=None):
         '''Download one result URL for source/arch
 
         Remove matching pending_tests entries. If trigger is given (src, ver)
@@ -285,6 +287,12 @@ class AutoPackageTest(object):
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
 
+        # Record the first good test.
+        if passed:
+            key = series + ' ' + src
+            if key not in self.first_good:
+                self.first_good[key] = ident
+
         self.log_verbose('Fetched test result for %s/%s/%s %s: %s (kernel %s %s)' % (
             src, ver, arch, stamp, passed and 'pass' or 'fail', kernel_pkg, kernel_ver))
 
@@ -302,7 +310,7 @@ class AutoPackageTest(object):
 
             # Add this result.
             results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
-            results[arch] = (passed, ver, os.path.dirname(url) + '/')
+            results[arch] = (passed, ver, os.path.dirname(url) + '/', ident)
 
 
         # update latest_stamp
@@ -320,7 +328,7 @@ class AutoPackageTest(object):
     def save(self):
         if self.dirty:
             tmp = { 'seen': self.seen, 'results': self.results, 'latest': self.latest,
-                    'kernel_abi': self.kernel_abi, }
+                    'kernel_abi': self.kernel_abi, 'first_good': self.first_good }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
@@ -339,7 +347,7 @@ class AutoPackageTest(object):
                 for ver in verlist:
                     (status, rurl) = (None, None)
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
-                        (tstatus, version, rurl) = self.results[ver][pkg][arch]
+                        (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
                         some_ever[arch] = True
                         if ver == verlist[-1] and version != self.latest[pkg]:
                             status = 'MISS'
