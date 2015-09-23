@@ -60,17 +60,13 @@ def get_status(state, record):
         return "NBS"
     if 'build-arch' in record['reason']:
         return "BUILDING"
-    if 'autopkgtest' in record['reason']:
-        # Check for running tests.
-        running = False
+    if 'tests' in record and 'autopkgtest' in record['tests']:
         for pkg in record['tests']['autopkgtest']:
             for arch in record['tests']['autopkgtest'][pkg]:
                 if record['tests']['autopkgtest'][pkg][arch][0] == 'RUNNING':
-                    running = True
-        if running:
-            return "RUNNING"
-        else:
-            return "REGRESSION"
+                    return "RUNNING"
+                elif record['tests']['autopkgtest'][pkg][arch][0] == 'REGRESSION':
+                    return "REGRESSION"
     if 'depends' in record['reason']:
         for line in record['excuses']:
             if line.startswith('Depends:'):
@@ -80,7 +76,6 @@ def get_status(state, record):
                         status = get_status(state, record2)
                         if status != "PASS":
                             return status
-                return 'PASS'
 
     if 'block' in record['reason']:
         return "PASS"
