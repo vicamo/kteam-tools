@@ -88,7 +88,11 @@ def get_status(state, record):
     return "UNKNOWN"
 
 
-def get_hierachy(state, record):    
+def get_hierachy(state, record, seen={}):
+    if record['source'] in seen:
+        return []
+    seen[record['source']] = True
+
     hier = [ record['source'] ]
 
     if 'excuses' in record:
@@ -97,7 +101,7 @@ def get_hierachy(state, record):
                 bits = line.strip().split()
                 for record2 in state['sources']:
                     if record2['source'] == bits[2]:
-                        hier += get_hierachy(state, record2)
+                        hier += get_hierachy(state, record2, seen)
 
     return hier
  
