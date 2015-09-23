@@ -297,7 +297,7 @@ class AutoPackageTest(object):
 
         # Record the first good test.
         if passed:
-            key = series + ' ' + src
+            key = series + ' ' + arch + ' ' + src
             if key not in self.first_good:
                 self.first_good[key] = ident
 
@@ -349,14 +349,14 @@ class AutoPackageTest(object):
         verlist = self.version_list()
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
-            good_ever = {}
             some_ever = {}
             for arch in archs:
+                good_ever = {}
                 for ver in verlist:
                     (status, rurl) = (None, None)
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
-                        key = self.series + ' ' + pkg
+                        key = self.series + ' ' + arch + ' ' + pkg
                         some_ever[arch] = True
                         if ver == verlist[-1] and version != self.latest[pkg]:
                             status = 'MISS'
@@ -365,7 +365,8 @@ class AutoPackageTest(object):
                             status = 'GOOD'
                         elif good_ever:
                             status = 'REGR'
-                        elif key in self.first_good and ident.split('_')[0] >= self.first_good[key].split('_')[0]:
+                        ##elif key in self.first_good and ident.split('_')[0] >= self.first_good[key].split('_')[0]:
+                        elif key in self.first_good and ident >= self.first_good[key]:
                             status = 'REGR'
                         else:
                             status = 'FAIL'
