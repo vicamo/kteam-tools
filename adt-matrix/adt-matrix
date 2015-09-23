@@ -348,13 +348,16 @@ class AutoPackageTest(object):
                     (status, rurl) = (None, None)
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
+                        key = self.series + ' ' + pkg
                         some_ever[arch] = True
                         if ver == verlist[-1] and version != self.latest[pkg]:
                             status = 'MISS'
                         elif tstatus:
-                            good_ever[arch] = True
+                            good_ever = True
                             status = 'GOOD'
-                        elif arch in good_ever:
+                        elif good_ever:
+                            status = 'REGR'
+                        elif key in self.first_good and ident.split('_')[0] >= self.first_good[key].split('_')[0]:
                             status = 'REGR'
                         else:
                             status = 'FAIL'
