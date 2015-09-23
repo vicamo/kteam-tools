@@ -39,7 +39,11 @@ class AdtMatrixSeed(object):
         os.rename(self.cache_file + '.new', self.cache_file)
 
 
-    def britney_hierachy(self, state, record):    
+    def britney_hierachy(self, state, record, seen={}):    
+        if record['source'] in seen:
+            return []
+        seen['source'] = True
+
         hier = [ record ]
 
         if 'excuses' in record:
@@ -48,7 +52,7 @@ class AdtMatrixSeed(object):
                     bits = line.strip().split()
                     for record2 in state['sources']:
                         if record2['source'] == bits[2]:
-                            hier += self.britney_hierachy(state, record2)
+                            hier += self.britney_hierachy(state, record2, seen)
 
         return hier
 
