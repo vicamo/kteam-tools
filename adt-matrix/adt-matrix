@@ -216,7 +216,7 @@ class AutoPackageTest(object):
             self.log_error('Failure to fetch %s: %s' % (url, str(e)))
             return
 
-        (kernel_pkg, kernel_ver) = (None, None)
+        (kernel_pkg, kernel_ver, kernel_ver_rough) = (None, None, None)
         testinfo = None
         try:
             with tarfile.open(None, 'r', tar_bytes) as tar:
@@ -232,19 +232,9 @@ class AutoPackageTest(object):
                     testinfo = json.load(tar.extractfile('testinfo.json'))
                 except (KeyError, ValueError, tarfile.TarError) as e:
                     pass
-                if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
-                    if 'kernel_version' in testinfo:
-                        match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
-                        if match:
-                            kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
-                            kernel_ver = match.group(1) + '.' + match.group(3)
 
-                # Otherwise: if this is testing a kernel package it should be for that package.
-                if not kernel_pkg and ressrc == self.source:
-                    (kernel_pkg, kernel_ver) = (ressrc, ver)
-
-                # Otherwise: See if this is a kernel trigger.
-                if not kernel_pkg and testinfo and 'custom_environment' in testinfo:
+                # Work out the trigger package so we put this in a reasonable bucket.
+                if testinfo and 'custom_environment' in testinfo:
                     for varval in testinfo['custom_environment']:
                         (var, val) = varval.split('=', 1)
                     
@@ -256,19 +246,37 @@ class AutoPackageTest(object):
                                         bits = tver.split('.')
                                         key = '.'.join(bits[0:4]) + ' ' + tpkg
                                         kernel_pkg = tpkg
+                                        kernel_ver_rough = tver
                                         if key in self.kernel_abi:
-                                            kernel_ver = self.kernel_abi[key]
-                                            print("APW promoting", key, kernel_ver)
+                                            kernel_ver_rough = self.kernel_abi[key]
+                                            #print("APW promoting", key, kernel_ver)
+
+                # Otherwise: if this is testing a kernel package it should be for that package.
+                if not kernel_ver_rough and ressrc.startswith('linux'):
+                    if not kernel_pkg:
+                        kernel_pkg = ressrc
+                    kernel_ver_rough = ver
+
+                # If we are running on real meta, use the actual version the kit advertises.
+                if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
+                    if 'kernel_version' in testinfo:
+                        match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
+                        if match:
+                            #kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
+                            kernel_ver = match.group(1) + '.' + match.group(3)
+
+                # Otherwise: use the trigger version.
+                if not kernel_ver and kernel_ver_rough:
+                    kernel_ver = kernel_ver_rough
 
                 # Otherwise: find the newest kernel installed in the image.
-                if not kernel_pkg:
+                if not kernel_pkg or not kernel_ver:
                     for line in tar.extractfile('testbed-packages'):
                         match = self.fetch_one_kernel_pat.match(line.decode().strip())
                         if match:
                             if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
                                 kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
                                 kernel_ver = match.group(3)
-
 
         except (KeyError, ValueError, tarfile.TarError) as e:
             self.log_error('%s is damaged: %s' % (url, str(e)))
