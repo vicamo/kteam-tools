@@ -78,6 +78,8 @@ class AutoPackageTest(object):
         self.kernel_abi = {}
         self.first_good = {}
 
+        self.verbose = True
+
         self.cache_file = self.series + ".cache"
 
         if os.path.exists(self.cache_file):
@@ -95,11 +97,13 @@ class AutoPackageTest(object):
 
 
     def log_error(self, msg):
-        print('E: [%s] - %s' % (time.asctime(), msg))
+        if self.verbose:
+            print('    E: [%s] - %s' % (time.asctime(), msg))
 
 
     def log_verbose(self, msg):
-        print('I: [%s] - %s' % (time.asctime(), msg))
+        if self.verbose:
+            print('    I: [%s] - %s' % (time.asctime(), msg))
 
 
     #
@@ -247,15 +251,16 @@ class AutoPackageTest(object):
                                         key = '.'.join(bits[0:4]) + ' ' + tpkg
                                         kernel_pkg = tpkg
                                         kernel_ver_rough = tver
-                                        if key in self.kernel_abi:
-                                            kernel_ver_rough = self.kernel_abi[key]
-                                            #print("APW promoting", key, kernel_ver)
+                                        if key not in self.kernel_abi:
+                                            self.kernel_abi[key] = tver
+                                            #print("APW no meta mapping", key, tver)
+                                        kernel_ver_rough = self.kernel_abi[key]
 
-                # Otherwise: if this is testing a kernel package it should be for that package.
-                if not kernel_ver_rough and ressrc.startswith('linux'):
+                # If this is testing a kernel package it should be for that package.
+                if ressrc.startswith('linux') and not ressrc.startswith('linux-meta'):
                     if not kernel_pkg:
                         kernel_pkg = ressrc
-                    kernel_ver_rough = ver
+                    kernel_ver = ver
 
                 # If we are running on real meta, use the actual version the kit advertises.
                 if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
@@ -265,18 +270,19 @@ class AutoPackageTest(object):
                             #kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
                             kernel_ver = match.group(1) + '.' + match.group(3)
 
-                # Otherwise: use the trigger version.
-                if not kernel_ver and kernel_ver_rough:
-                    kernel_ver = kernel_ver_rough
-
                 # Otherwise: find the newest kernel installed in the image.
                 if not kernel_pkg or not kernel_ver:
                     for line in tar.extractfile('testbed-packages'):
                         match = self.fetch_one_kernel_pat.match(line.decode().strip())
                         if match:
                             if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
-                                kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
                                 kernel_ver = match.group(3)
+                                if not kernel_pkg:
+                                    kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
+
+                # Otherwise: use the trigger version.
+                if not kernel_ver and kernel_ver_rough:
+                    kernel_ver = kernel_ver_rough
 
         except (KeyError, ValueError, tarfile.TarError) as e:
             self.log_error('%s is damaged: %s' % (url, str(e)))
@@ -306,15 +312,23 @@ class AutoPackageTest(object):
 
         # add this result
         if kernel_pkg and kernel_ver:
-            bits = kernel_ver.replace('-', '.').split('.')
-            key = '.'.join(bits[0:4]) + ' ' + kernel_pkg
+            # If this is a real version attempt to promote.
+            if '-' in kernel_ver:
+                bits = kernel_ver.replace('-', '.').split('.')
+                key = '.'.join(bits[0:4]) + ' ' + kernel_pkg
 
-            # Promote pending abi results.
-            if key in self.results:
-                self.results[kernel_ver + ' ' + kernel_pkg] = self.results[key]
-                del self.results[key]
-            # Record the current version at this abi.
-            self.kernel_abi[key] = kernel_ver
+                # Promote pending abi results.
+                if key in self.kernel_abi and '-' not in self.kernel_abi[key]:
+                    key2 = self.kernel_abi[key] + ' ' + kernel_pkg
+                    if key2 in self.results:
+                        #print("APW promoting meta mapping", key, key2, kernel_ver)
+                        self.results[kernel_ver + ' ' + kernel_pkg] = self.results[key2]
+                        del self.results[key2]
+                    #else:
+                    #    print("APW promoting before use", key, key2, kernel_ver)
+
+                # Record the current version at this abi.
+                self.kernel_abi[key] = kernel_ver
 
             # Add this result.
             results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
@@ -365,9 +379,8 @@ class AutoPackageTest(object):
                             status = 'GOOD'
                         elif good_ever:
                             status = 'REGR'
-                        ##elif key in self.first_good and ident.split('_')[0] >= self.first_good[key].split('_')[0]:
-                        elif key in self.first_good and ident >= self.first_good[key]:
-                            status = 'REGR'
+                        #elif key in self.first_good and ident > self.first_good[key]:
+                        #    status = 'REGR'
                         else:
                             status = 'FAIL'
                     elif arch in some_ever:
