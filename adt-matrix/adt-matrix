@@ -63,12 +63,13 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, packages = [], stamp = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None):
         self.cache = {}
         self.dirty = False
 
         self.series = series
         self.source = source
+        self.parent = parent
         self.packages = packages
         self.stamp = stamp
 
@@ -301,12 +302,6 @@ class AutoPackageTest(object):
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
 
-        # Record the first good test.
-        if passed:
-            key = series + ' ' + arch + ' ' + src
-            if key not in self.first_good:
-                self.first_good[key] = ident
-
         self.log_verbose('Fetched test result for %s/%s/%s %s: %s (kernel %s %s)' % (
             src, ver, arch, stamp, passed and 'pass' or 'fail', kernel_pkg, kernel_ver))
 
@@ -333,6 +328,12 @@ class AutoPackageTest(object):
             # Add this result.
             results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
             results[arch] = (passed, ver, os.path.dirname(url) + '/', ident)
+
+            # Record the first good test.
+            if passed:
+                key = ' '.join((series, kernel_pkg, arch, src))
+                if key not in self.first_good:
+                    self.first_good[key] = ident
 
 
         # update latest_stamp
@@ -370,7 +371,10 @@ class AutoPackageTest(object):
                     (status, rurl) = (None, None)
                     if pkg in self.results[ver] and arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
-                        key = self.series + ' ' + arch + ' ' + pkg
+                        key1 = ' '.join((self.series, self.source, arch, pkg))
+                        key2 = ' '.join((self.series, self.parent, arch, pkg))
+
+                        marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
                         some_ever[arch] = True
                         if ver == verlist[-1] and version != self.latest[pkg]:
                             status = 'MISS'
@@ -379,8 +383,8 @@ class AutoPackageTest(object):
                             status = 'GOOD'
                         elif good_ever:
                             status = 'REGR'
-                        #elif key in self.first_good and ident > self.first_good[key]:
-                        #    status = 'REGR'
+                        elif len(marks) and ident > marks[0]:
+                            status = 'REGR'
                         else:
                             status = 'FAIL'
                     elif arch in some_ever:
@@ -561,7 +565,7 @@ table.matrix td {{
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
-        (series, package, migration) = bits
+        (series, package, parent, migration) = bits
 
         key = series + "-" + package
         if key in package_seed:
@@ -581,6 +585,7 @@ table.matrix td {{
                 stamp = stamp,
                 series = series,
                 source = package,
+                parent = parent,
                 packages = seed,
             )
 

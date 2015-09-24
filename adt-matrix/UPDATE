@@ -21,7 +21,7 @@ do
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate"
 
-while read series package
+while read series package parent
 do
 	[ "$series" = '#' ] && continue
 
@@ -34,6 +34,6 @@ do
 		migration="-"
 		;;
 	esac
-	echo "$series $package $migration"
+	echo "$series $package $parent $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"

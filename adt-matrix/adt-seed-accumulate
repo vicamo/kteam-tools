@@ -89,6 +89,6 @@ class AdtMatrixSeed(object):
 
 matrix_seed = AdtMatrixSeed('package-relation.json')
 for line in sys.stdin:
-    (series, package, britney) = line.strip().split()
+    (series, package, parent, britney) = line.strip().split()
     matrix_seed.accumulate(series, package, britney)
 matrix_seed.save()
