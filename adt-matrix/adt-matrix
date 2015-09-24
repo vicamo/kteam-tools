@@ -243,9 +243,11 @@ class AutoPackageTest(object):
                     for varval in testinfo['custom_environment']:
                         (var, val) = varval.split('=', 1)
                     
+                        modern = False
                         if var == 'ADT_TEST_TRIGGERS':
                             for tpkgtver in val.split():
                                 if '/' in tpkgtver:
+                                    modern = True
                                     (tpkg, tver) = tpkgtver.split('/')
                                     if tpkg.startswith('linux-meta'):
                                         bits = tver.split('.')
@@ -256,6 +258,10 @@ class AutoPackageTest(object):
                                             self.kernel_abi[key] = tver
                                             #print("APW no meta mapping", key, tver)
                                         kernel_ver_rough = self.kernel_abi[key]
+        
+                        # This is a triggered event not for linux, ignore.
+                        if modern and not kernel_pkg:
+                            continue
 
                 # If this is testing a kernel package it should be for that package.
                 if ressrc.startswith('linux') and not ressrc.startswith('linux-meta'):
