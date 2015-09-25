@@ -21,6 +21,7 @@ ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ub
 ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
 ubuntu/ubuntu-precise-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
 virgin/testing/crack.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack
+virgin/testing/drm-intel.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel
 EOL
 
 # MIRROR launchpad -> wani
