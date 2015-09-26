@@ -32,7 +32,7 @@ done
 	do
 		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" genrenames
 	done
-} | tee APW-renames | "$here/devel-config-calc-renames" >"$base/CONFIGS-renames"
+} | tee "$base/CONFIGS-debug-renames" | "$here/devel-config-calc-renames" >"$base/CONFIGS-renames"
 
 # Generate the expanded annotations.
 {
@@ -40,7 +40,7 @@ done
 	do
 		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" expand "$base/CONFIGS-renames" <"$annotations"
 	done
-} | tee APW-premerge | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
+} | tee "$base/CONFIGS-debug-premerge" | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
 # Generate a common merged configuration version.
 "$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-"*

@@ -56,7 +56,7 @@ list="/tmp/list.$$"
 	"$here/devel-config-tree" "$base/CONFIGS-parser-x86" genorder "$base/CONFIGS-renames"
 	"$here/devel-config-tree" "$base/CONFIGS-parser-arm" genorder "$base/CONFIGS-renames"
 	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder "$base/CONFIGS-renames"
-} | tee APW-menus | LANG=C sort | uniq >"$list"
+} | tee "$base/CONFIGS-debug-menus" | LANG=C sort | uniq >"$list"
 
 cat "$list" | grep '^M ' | \
 while read junk menu
