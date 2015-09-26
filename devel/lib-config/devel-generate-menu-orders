@@ -50,15 +50,7 @@ function list_menu()
 rm -rf tmp
 mkdir -p tmp
 
-list="/tmp/list.$$"
-{
-	echo "M ROOT"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-x86" genorder "$base/CONFIGS-renames"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-arm" genorder "$base/CONFIGS-renames"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder "$base/CONFIGS-renames"
-} | tee "$base/CONFIGS-debug-menus" | LANG=C sort | uniq >"$list"
-
-cat "$list" | grep '^M ' | \
+cat "$base/CONFIGS-menu-order" | grep '^M ' | \
 while read junk menu
 do
 	name=`echo "$menu" | sed \

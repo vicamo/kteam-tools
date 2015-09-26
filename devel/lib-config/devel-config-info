@@ -42,6 +42,13 @@ done
 	done
 } | tee "$base/CONFIGS-debug-premerge" | "$here/devel-arch-annotations-merge" >"$base/CONFIGS-annotations"
 
+{
+	for arch in $archs
+	do
+		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" genorder "$base/CONFIGS-renames"
+	done
+} | tee "$base/CONFIGS-debug-menus" | LANG=C sort -k 2 | uniq >"$base/CONFIGS-menu-order"
+
 # Generate a common merged configuration version.
 "$here/devel-arch-info-merge" "$base/CONFIGS-info" "$base/CONFIGS-annotations" "$base/CONFIGS-info-"*
 
