@@ -4,8 +4,8 @@ import sys
 import os
 import re
 
-(order, annotations) = sys.argv[1:3]
-config_files = sys.argv[3:]
+(fmt, prefix, order, annotations) = sys.argv[1:5]
+config_files = sys.argv[5:]
 
 
 # Load up the annotations, extracting the policy specifiers.
@@ -141,18 +141,30 @@ def emit_html(entries):
     return (interesting, res)
 
 
-emit_header = emit_header_html
-emit = emit_html
+if fmt == 'html':
+    emit_header = emit_header_html
+    emit = emit_html
+
+
+else:
+    print("UKNOWN FORMAT")
+    sys.exit(1)
+
+
+out_full = open(prefix + "." + fmt, "w")
+out_issues = open(prefix + "-issues." + fmt, "w")
 
 
 def emit_record(record):
     (interesting, data) = emit(entries)
 
     if interesting:
-        print(data)
+        print(data, file=out_issues)
+    print(data, file=out_full)
 
 
-print(emit_header())
+print(emit_header(), file=out_full)
+print(emit_header(), file=out_issues)
 
 # Emit the menus in order.
 entries = []
@@ -177,3 +189,6 @@ with open(order) as orderf:
 if len(entries):
     emit_record(entries)
 
+
+out_issues.close()
+out_full.close()
