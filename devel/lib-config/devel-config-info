@@ -37,7 +37,7 @@ done
 	do
 		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" genorder "$base/CONFIGS-renames"
 	done
-} | tee "$base/CONFIGS-debug-menus" | LANG=C sort -k 2 | uniq >"$base/CONFIGS-menu-order"
+} | tee "$base/CONFIGS-debug-menus" | LANG=C sort -k 2 | "$here/devel-menu-sanitise" >"$base/CONFIGS-menu-order"
 
 {
 	for arch in $archs

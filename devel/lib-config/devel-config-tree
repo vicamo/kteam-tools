@@ -212,8 +212,10 @@ elif cmd == 'genorder':
                 config_generic[rargs[1]] = True
 
 
+    number = 0
     out_seen = {}
     def out_rename(prefix, menu, element=None):
+        global number
         if menu not in out_seen:
             out_seen[menu] = True
             if prefix != 'M':
@@ -221,7 +223,8 @@ elif cmd == 'genorder':
 
         entry = menu
         if element:
-            entry += '>>>' + element
+            number += 1
+            entry += '>>>' + "{:06}".format(number) + '>>>' + element
         for replace in menu_rename:
             if entry.startswith(replace[0]):
                 length = len(replace[0])

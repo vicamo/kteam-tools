@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+
+import sys
+
+seen = {}
+for line in sys.stdin:
+    if '>>>' in line:
+        (x, y, config) = line.strip().split('>>>')
+
+        if config in seen:
+            continue
+
+        seen[config] = True
+    
+    print(line, end='')

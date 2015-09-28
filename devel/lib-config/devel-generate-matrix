@@ -150,36 +150,34 @@ def emit_html(entries):
         res += "<th>" + ' '.join(config)
     res += "<th>Notes</tr>\n"
 
-    count = -1
+    count = 0
     for entry in entries:
-        count = (count + 1) % 6
-
-        (config, vals) = (entry[0], entry[1:])
-        tmp = annot.get(config, {})
+        (config, notes, vals) = (entry[0], entry[1], entry[2:])
 
         rcls = "row_good" + str(count)
         cells = ''
         row_interesting = False
         for (column, entry) in zip(configs, vals):
-            if entry != '-':
+            (have, want) = entry
+            if have != '-':
                 row_interesting = True
             (arch, flavour) = column
             cls = "cell_good"
-            if 'policy' in tmp and tmp['policy']:
-                want = policy_lookup(tmp['policy'], arch, flavour)
-                if want != entry:
+            if want != '?':
+                if want != have:
                     cls = "cell_bad"
                     rcls = "row_bad"
-                    entry += "&nbsp;(&rarr;" + want + ")"
+                    have += "&nbsp;(&rarr;" + want + ")"
                     interesting = True
             elif row_interesting:
                 rcls = "row_warn"
                 interesting = True
-            cells += "<td class=\"" + cls + "\">" + entry
+            cells += "<td class=\"" + cls + "\">" + have
         if row_interesting:
+            count = (count + 1) % 6
             res += "<tr class=\"row " + rcls + "\"><td>" + config 
             res += cells
-            res += "<td>" + tmp.get('note', '') + "</tr>\n"
+            res += "<td>" + notes + "</tr>\n"
     
     res += "</table>"
 
@@ -192,11 +190,54 @@ def emit_footer_html():
 </html>
 """
 
-if fmt == 'html':
-    emit_header = emit_header_html
-    emit = emit_html
-    emit_footer = emit_footer_html
 
+def emit_header_text(title):
+    return '==' + title + '==\r'
+
+
+def emit_text(entries):
+    title = entries.pop(0)
+    #title = title.replace('>>', ' >> ')
+    interesting = False
+
+    res  = "Menu: " + title + "\n"
+
+    res += "Option"
+    for config in configs:
+        res += "\t" + ' '.join(config)
+    res += "\tNotes\n"
+
+    for entry in entries:
+        (config, notes, vals) = (entry[0], entry[1], entry[2:])
+
+        row_interesting = False
+        cells = ''
+        for (column, entry) in zip(configs, vals):
+            (have, want) = entry
+            if have != '-':
+                row_interesting = True
+            (arch, flavour) = column
+            if want != '?':
+                if want != have:
+                    interesting = True
+            elif row_interesting:
+                interesting = True
+            cells += "\t" + have + " " + want
+        if row_interesting:
+            res += config + cells + "\t" + notes + "\n"
+    
+    return (interesting, res)
+
+
+def emit_footer_text():
+    return ''
+
+
+if fmt == 'html':
+    (emit_header, emit, emit_footer) = (emit_header_html, emit_html, emit_footer_html)
+
+elif fmt == 'text':
+    (emit_header, emit, emit_footer) = (emit_header_text, emit_text, emit_footer_text)
 
 else:
     print("UKNOWN FORMAT")
@@ -212,7 +253,7 @@ print(emit_header('Config Review -- Issues'), file=out_issues)
 print(emit_header('Config Review -- Review Items'), file=out_review)
 
 
-def emit_record(record):
+def emit_record(entries):
     (interesting, data) = emit(entries)
 
     if interesting:
@@ -237,17 +278,22 @@ with open(order) as orderf:
             entries = [ title ]
 
         elif line[0] == 'E':
-            config = line.strip().split('>>>')[1]
+            config = line.strip().split('>>>')[2]
             which = 'CONFIG_' + config
-            columns = [ which ]
+            rec = annot.get(which, {})
+            columns = [ which, rec.get('notes', '') ]
             for config in configs:
                 (arch, flavour) = config
-                columns.append(values.get((arch, flavour, which), '-'))
+                if 'policy' in rec and rec['policy']:
+                    want = policy_lookup(rec['policy'], arch, flavour)
+                else:
+                    want = '?'
+                columns.append((values.get((arch, flavour, which), '-'), want))
 
             entries.append(columns)
 
             #print(annot.get(which, {}))
-            flags = annot.get(which, {}).get('flag', {})
+            flags = rec.get('flag', {})
             for mark in marked:
                 if mark in flags:
                     marked[mark].append(columns)

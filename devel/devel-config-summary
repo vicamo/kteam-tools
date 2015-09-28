@@ -86,3 +86,7 @@ fi
 	cat "$next/CONFIGS-annotation-flags"
 	cat "$annot_next"
 } | "$here/lib-config/devel-generate-matrix" "html" "$prefix" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*
+{
+	cat "$next/CONFIGS-annotation-flags"
+	cat "$annot_next"
+} | "$here/lib-config/devel-generate-matrix" "text" "$prefix" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*
