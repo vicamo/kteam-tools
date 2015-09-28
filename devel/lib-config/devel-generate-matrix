@@ -12,23 +12,40 @@ config_files = sys.argv[4:]
 info_option = re.compile(r'\s*(\S+)<(.*?)>')
 annot = {}
 note = {}
+
+form = 1
+
 for line in sys.stdin:
     line = line.strip()
+
+    if line.startswith("# FORMAT: "):
+        a = line.split(None, 2)
+        if a[2] != 2:
+            print("ERROR: unknown format", file.sys.stderr)
+            os.exit(1)
+        form = a[2]
 
     if not line.startswith('CONFIG_'):
         continue
 
-    a = line.split(None, 2)
-    while len(a) < 3:
-        a.append('')
-    (config, value, options) = a
+    if form == 1:
+        a = line.split(None, 2)
+        while len(a) < 3:
+            a.append('')
+        (config, value, options) = a
+
+        # Compatibility
+        if value not in ('-', 'p', 'C'):
+            options += " policy<{'*': '" + value + "'}>"
+
+    # Version 2: config and options only, we never use the format.
+    elif form == 2:
+        a = line.split(None, 1)
+        (config, options) = a
+        
 
     rec = annot.setdefault(config, {})
 
-    # Compatibility
-    if value not in ('-', 'p', 'C'):
-        options += " policy<{'*': '" + value + "'}>"
-    
     for match in info_option.finditer(options):
         cmd = match.group(1)
         if cmd == 'policy':
@@ -47,6 +64,10 @@ for line in sys.stdin:
 
         elif cmd not in rec:
             rec[cmd] = match.group(2)
+
+    # Let a simple wildcard be specified via value.
+    if 'value' in rec and 'policy' not in rec:
+        rec['policy'] = {'*': rec['value'] }
 
 
 for key in annot:
@@ -90,8 +111,16 @@ def emit_header_html(title):
 <head>
 <title>{title}</title>
 <style>
-#.row_bad {{ background-color: red; }}
-.cell_bad {{ color: red; }}
+#.row:nth-child(6n+1) {{ background-color: #eeeeee; }}
+#.row:nth-child(6n+2) {{ background-color: #eeeeee; }}
+#.row:nth-child(6n+3) {{ background-color: #eeeeee; }}
+#.row:nth-child(even) {{ background-color: lightgrey }}
+.row_good3 {{ background-color: #eeeeee; }}
+.row_good4 {{ background-color: #eeeeee; }}
+.row_good5 {{ background-color: #eeeeee; }}
+.row_bad {{ background-color: #ffbac8; }}
+.row_warn {{ background-color: #eee8aa; }}
+#.cell_bad {{ color: red; }}
 table.matrix {{
     border-collapse: collapse;
 }}
@@ -101,10 +130,6 @@ table.matrix th {{
 table.matrix td {{
     padding: 5px;
 }}
-.row:nth-child(6n+1) {{ background-color: #eeeeee; }}
-.row:nth-child(6n+2) {{ background-color: #eeeeee; }}
-.row:nth-child(6n+3) {{ background-color: #eeeeee; }}
-#.row:nth-child(even) {{ background-color: lightgrey }}
 .pointer {{ cursor: pointer; }}
 </style>
 </head>""".format(title=title)
@@ -125,13 +150,19 @@ def emit_html(entries):
         res += "<th>" + ' '.join(config)
     res += "<th>Notes</tr>\n"
 
+    count = -1
     for entry in entries:
+        count = (count + 1) % 6
+
         (config, vals) = (entry[0], entry[1:])
         tmp = annot.get(config, {})
 
-        rcls = "row_good"
+        rcls = "row_good" + str(count)
         cells = ''
+        row_interesting = False
         for (column, entry) in zip(configs, vals):
+            if entry != '-':
+                row_interesting = True
             (arch, flavour) = column
             cls = "cell_good"
             if 'policy' in tmp and tmp['policy']:
@@ -141,10 +172,14 @@ def emit_html(entries):
                     rcls = "row_bad"
                     entry += "&nbsp;(&rarr;" + want + ")"
                     interesting = True
+            elif row_interesting:
+                rcls = "row_warn"
+                interesting = True
             cells += "<td class=\"" + cls + "\">" + entry
-        res += "<tr class=\"row " + rcls + "\"><td>" + config 
-        res += cells
-        res += "<td>" + tmp.get('note', '') + "</tr>\n"
+        if row_interesting:
+            res += "<tr class=\"row " + rcls + "\"><td>" + config 
+            res += cells
+            res += "<td>" + tmp.get('note', '') + "</tr>\n"
     
     res += "</table>"
 

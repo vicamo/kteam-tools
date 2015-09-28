@@ -534,13 +534,13 @@ with open(index + ".new", "w") as indexf:
 <title>ADT Test Matrix</title>
 <style>
 .MIGRATED {{ background-color: darkgray; }}
-.PASS {{ background-color: green; }}
+.GOOD, .PASS {{ background-color: green; }}
 .BUILDING {{ background-color: yellow; }}
 .RUNNING {{ background-color: yellow; }}
 .MISSING {{ background-color: yellow; }}
 .FAIL {{ background-color: yellow; }}
 .ALWAYSFAIL {{ background-color: yellow; }}
-.REGRESSION {{ background-color: red; }}
+.REGR, .REGRESSION {{ background-color: red; }}
 table.matrix {{
     border-collapse: collapse;
 }}
@@ -596,8 +596,8 @@ table.matrix td {{
             )
 
         if series not in updated:
-            adt.update()
-            adt.save()
+            #adt.update()
+            #adt.save()
             updated[series] = True
 
         (info, matrix) = adt.matrix()
@@ -610,7 +610,7 @@ table.matrix td {{
             os.rename(html + '.new', html)
 
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
-        print('<tr class="row"><td>{0}<td>{1}<td>{3}<td>{6}/{7}<td><a href="{2}">{4}</a><td class="{8}"><a href="{9}">{8}</a></tr>\n'.format(series, package, html, version, summary, state, count, total, migration, mig_url), file=indexf)
+        print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td class="{state}"><a href="{detail_url}">{summary}</a><td class="{migration}"><a href="{migration_url}">{migration}</a></tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url), file=indexf)
 
     print("""\
 </table>
