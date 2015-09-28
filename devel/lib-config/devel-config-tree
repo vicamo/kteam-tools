@@ -455,3 +455,9 @@ elif cmd == 'expand':
             continue
 
         print(line, end='')
+
+
+elif cmd == 'annotations':
+    for entry in children_scan(root, []):
+        if 'config' in entry and 'info' in entry:
+            print('CONFIG_' + entry['config'], '-', entry['info'])

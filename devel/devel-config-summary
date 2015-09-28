@@ -82,4 +82,7 @@ fi
 
 #"$here/devel-config-summary-report" "$format" "$current" "$next" "$prefix"
 
-"$here/lib-config/devel-generate-matrix" "html" "$prefix" "$next/CONFIGS-menu-order" "$annot_next" "$next/CONFIGS"/*
+{
+	cat "$next/CONFIGS-annotation-flags"
+	cat "$annot_next"
+} | "$here/lib-config/devel-generate-matrix" "html" "$prefix" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*

@@ -4,54 +4,56 @@ import sys
 import os
 import re
 
-(fmt, prefix, order, annotations) = sys.argv[1:5]
-config_files = sys.argv[5:]
+(fmt, prefix, order) = sys.argv[1:4]
+config_files = sys.argv[4:]
 
 
 # Load up the annotations, extracting the policy specifiers.
 info_option = re.compile(r'\s*(\S+)<(.*?)>')
 annot = {}
 note = {}
-with open(annotations) as annotationsf:
-    for line in annotationsf:
-        line = line.strip()
+for line in sys.stdin:
+    line = line.strip()
 
-        if not line.startswith('CONFIG_'):
-            continue
+    if not line.startswith('CONFIG_'):
+        continue
 
-        a = line.split(None, 2)
-        while len(a) < 3:
-            a.append('')
-        (config, value, options) = a
+    a = line.split(None, 2)
+    while len(a) < 3:
+        a.append('')
+    (config, value, options) = a
 
-        rec = annot.setdefault(config, {})
+    rec = annot.setdefault(config, {})
 
-        # Compatibility
-        if value not in ('-', 'p', 'C'):
-            options += " policy<{'*': '" + value + "'}>"
-        
-        for match in info_option.finditer(options):
-            cmd = match.group(1)
-            if cmd == 'policy':
-                try:
-                    pol = eval(match.group(2))
-                    if cmd in rec and rec[cmd] != pol:
-                        print("ERROR: {}: duplicate policy '{}' '{}'".format(config, rec[cmd], match.group(2)))
-                    rec[cmd] = pol
-                except SyntaxError:
-                    print("ERROR: {}: invalid policy '{}'".format(config, match.group(2)))
-                    rec[cmd] = None
+    # Compatibility
+    if value not in ('-', 'p', 'C'):
+        options += " policy<{'*': '" + value + "'}>"
+    
+    for match in info_option.finditer(options):
+        cmd = match.group(1)
+        if cmd == 'policy':
+            try:
+                pol = eval(match.group(2))
+                if cmd in rec and rec[cmd] != pol:
+                    print("ERROR: {}: duplicate policy '{}' '{}'".format(config, rec[cmd], match.group(2)))
+                rec[cmd] = pol
+            except SyntaxError:
+                print("ERROR: {}: invalid policy '{}'".format(config, match.group(2)))
+                rec[cmd] = None
 
-            elif cmd == 'mark':
-                tmp = rec.setdefault(cmd, {})
-                tmp[match.group(2)] = True
+        elif cmd == 'flag':
+            tmp = rec.setdefault(cmd, {})
+            tmp[match.group(2)] = True
 
-            elif cmd not in rec:
-                rec[cmd] = match.group(2)
+        elif cmd not in rec:
+            rec[cmd] = match.group(2)
 
-            if 'mark' in rec:
-                for key in rec['mark']:
-                    rec['note'] = rec.get('note', '') + ' ' + key
+
+for key in annot:
+    rec = annot[key]
+    if 'flag' in rec:
+        for key in rec['flag']:
+            rec['note'] = rec.get('note', '') + ' ' + key
 
 
 def policy_lookup(policy, arch, flavour):
@@ -125,7 +127,7 @@ def emit_html(entries):
 
     for entry in entries:
         (config, vals) = (entry[0], entry[1:])
-        tmp = annot.setdefault(config, {})
+        tmp = annot.get(config, {})
 
         rcls = "row_good"
         cells = ''
@@ -170,9 +172,9 @@ out_full = open(prefix + "." + fmt, "w")
 out_issues = open(prefix + "-issues." + fmt, "w")
 out_review = open(prefix + "-review." + fmt, "w")
 
-print(emit_header('Config Review'), file=out_full)
-print(emit_header('Config Review Issues'), file=out_issues)
-print(emit_header('Config Review Review Items'), file=out_review)
+print(emit_header('Config Review -- Detail'), file=out_full)
+print(emit_header('Config Review -- Issues'), file=out_issues)
+print(emit_header('Config Review -- Review Items'), file=out_review)
 
 
 def emit_record(record):
@@ -184,6 +186,11 @@ def emit_record(record):
 
 
 # Emit the menus in order.
+marked = {
+    'EXPERIMENTAL': [ 'EXPERIMENTAL Options' ],
+    'DANGEROUS':    [ 'DANGEROUS Options' ],
+    'STAGING':      [ 'STAGING Options' ],
+}
 entries = []
 with open(order) as orderf:
     for line in orderf:
@@ -195,7 +202,8 @@ with open(order) as orderf:
             entries = [ title ]
 
         elif line[0] == 'E':
-            which = 'CONFIG_' + line.strip().split('>>>')[1]
+            config = line.strip().split('>>>')[1]
+            which = 'CONFIG_' + config
             columns = [ which ]
             for config in configs:
                 (arch, flavour) = config
@@ -203,11 +211,21 @@ with open(order) as orderf:
 
             entries.append(columns)
 
+            #print(annot.get(which, {}))
+            flags = annot.get(which, {}).get('flag', {})
+            for mark in marked:
+                if mark in flags:
+                    marked[mark].append(columns)
+
 
 if len(entries):
     emit_record(entries)
 
+for flag in sorted(marked.keys()):
+    (interesting, data) = emit(marked[flag])
+    print(data, file=out_review)
 
+# Close the reports off.
 print(emit_footer(), file=out_review)
 print(emit_footer(), file=out_issues)
 print(emit_footer(), file=out_full)
