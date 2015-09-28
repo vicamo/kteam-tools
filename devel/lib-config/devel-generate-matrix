@@ -24,7 +24,7 @@ with open(annotations) as annotationsf:
             a.append('')
         (config, value, options) = a
 
-        tmp = annot.setdefault(config, {})
+        rec = annot.setdefault(config, {})
 
         # Compatibility
         if value not in ('-', 'p', 'C'):
@@ -35,15 +35,23 @@ with open(annotations) as annotationsf:
             if cmd == 'policy':
                 try:
                     pol = eval(match.group(2))
-                    if cmd in tmp and tmp[cmd] != pol:
-                        print("ERROR: {}: duplicate policy '{}' '{}'".format(config, tmp[cmd], match.group(2)))
-                    tmp[cmd] = pol
+                    if cmd in rec and rec[cmd] != pol:
+                        print("ERROR: {}: duplicate policy '{}' '{}'".format(config, rec[cmd], match.group(2)))
+                    rec[cmd] = pol
                 except SyntaxError:
                     print("ERROR: {}: invalid policy '{}'".format(config, match.group(2)))
-                    tmp[cmd] = None
+                    rec[cmd] = None
 
-            elif cmd not in tmp:
-                tmp[cmd] = match.group(2)
+            elif cmd == 'mark':
+                tmp = rec.setdefault(cmd, {})
+                tmp[match.group(2)] = True
+
+            elif cmd not in rec:
+                rec[cmd] = match.group(2)
+
+            if 'mark' in rec:
+                for key in rec['mark']:
+                    rec['note'] = rec.get('note', '') + ' ' + key
 
 
 def policy_lookup(policy, arch, flavour):
@@ -74,7 +82,7 @@ for config in config_files:
             values[(arch, flavour, config)] = value
 
 
-def emit_header_html():
+def emit_header_html(title):
     res =  """\
 <html>
 <head>
@@ -97,7 +105,7 @@ table.matrix td {{
 #.row:nth-child(even) {{ background-color: lightgrey }}
 .pointer {{ cursor: pointer; }}
 </style>
-</head>""".format(title='Config Summary')
+</head>""".format(title=title)
 
     return res
 
@@ -141,9 +149,16 @@ def emit_html(entries):
     return (interesting, res)
 
 
+def emit_footer_html():
+    return """\
+</body>
+</html>
+"""
+
 if fmt == 'html':
     emit_header = emit_header_html
     emit = emit_html
+    emit_footer = emit_footer_html
 
 
 else:
@@ -153,6 +168,11 @@ else:
 
 out_full = open(prefix + "." + fmt, "w")
 out_issues = open(prefix + "-issues." + fmt, "w")
+out_review = open(prefix + "-review." + fmt, "w")
+
+print(emit_header('Config Review'), file=out_full)
+print(emit_header('Config Review Issues'), file=out_issues)
+print(emit_header('Config Review Review Items'), file=out_review)
 
 
 def emit_record(record):
@@ -162,9 +182,6 @@ def emit_record(record):
         print(data, file=out_issues)
     print(data, file=out_full)
 
-
-print(emit_header(), file=out_full)
-print(emit_header(), file=out_issues)
 
 # Emit the menus in order.
 entries = []
@@ -186,9 +203,15 @@ with open(order) as orderf:
 
             entries.append(columns)
 
+
 if len(entries):
     emit_record(entries)
 
 
+print(emit_footer(), file=out_review)
+print(emit_footer(), file=out_issues)
+print(emit_footer(), file=out_full)
+
+out_review.close()
 out_issues.close()
 out_full.close()
