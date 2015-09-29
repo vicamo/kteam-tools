@@ -527,7 +527,8 @@ with open("package-relation.json") as seedf:
 stamp = datetime.now().replace(microsecond=0)
 
 index = "index.html"
-with open(index + ".new", "w") as indexf:
+overall = "overall.txt"
+with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overallf:
     print("""\
 <html>
 <head>
@@ -596,8 +597,8 @@ table.matrix td {{
             )
 
         if series not in updated:
-            #adt.update()
-            #adt.save()
+            adt.update()
+            adt.save()
             updated[series] = True
 
         (info, matrix) = adt.matrix()
@@ -612,6 +613,8 @@ table.matrix td {{
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td class="{state}"><a href="{detail_url}">{summary}</a><td class="{migration}"><a href="{migration_url}">{migration}</a></tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url), file=indexf)
 
+
+        print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state, summary=summary), file=overallf)
     print("""\
 </table>
 </body>
@@ -619,3 +622,4 @@ table.matrix td {{
 """, file=indexf)
 
 os.rename(index + ".new", index)
+os.rename(overall + ".new", overall)
