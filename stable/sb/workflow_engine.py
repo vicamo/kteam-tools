@@ -1457,8 +1457,8 @@ class WorkflowEngine():
             s.verify_state('automated-testing',     ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
-            s.verify_state('promote-to-security',   ['New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released'])
-            s.verify_state('promote-to-updates',    ['New', 'Confirmed', 'Incomplete', 'Fix Released'])
+            s.verify_state('promote-to-security',   ['New', 'Confirmed', 'In Progress', 'Invalid', 'Incomplete', 'Fix Released'])
+            s.verify_state('promote-to-updates',    ['New', 'Confirmed', 'In Progress', 'Incomplete', 'Fix Released'])
 
             if s.wfb.tasks_by_name[s.projectname].status != 'In Progress':
                 cinfo('                Task %s is NOT In Progress' % s.projectname, 'red')
