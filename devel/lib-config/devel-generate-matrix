@@ -20,10 +20,10 @@ for line in sys.stdin:
 
     if line.startswith("# FORMAT: "):
         a = line.split(None, 2)
-        if a[2] != 2:
-            print("ERROR: unknown format", file.sys.stderr)
+        if int(a[2]) != 2:
+            print("ERROR: unknown format", file=sys.stderr)
             os.exit(1)
-        form = a[2]
+        form = int(a[2])
 
     if not line.startswith('CONFIG_'):
         continue

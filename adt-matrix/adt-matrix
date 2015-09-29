@@ -415,7 +415,7 @@ class AutoPackageTest(object):
         count = 0
         total = 0
         summary = []
-        for state in [ 'REGR', 'FAIL', 'GOOD', 'MISS', None ]:
+        for state in [ 'REGR', 'MISS', 'FAIL', 'GOOD', None ]:
             if state and status[state] > 0:
                 summary.append(state + ": " + str(status[state]))
                 if state != 'MISS':
