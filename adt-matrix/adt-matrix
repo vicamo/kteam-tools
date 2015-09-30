@@ -435,7 +435,7 @@ class AutoPackageTest(object):
         return ((summary_str[0:4], summary_str, version, count, total), result)
 
 
-    def matrix(self):
+    def matrix(self, limit=None, limit_url=None):
         title = self.source + " on " + self.series
         (info, results) = self.results_data()
 
@@ -463,12 +463,24 @@ table.matrix, table.matrix th, table.matrix td {{
 
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
+        race_text = '~'
+        if limit and len(verlist) > limit + 1:
+            limit -= 1
+            verlist = [ verlist[0], 'race' ] + verlist[-limit:]
+
+            if limit_url:
+                race_text='<a href="' + limit_url + '">' + race_text + '</a>'
+
         # Title ...
         page += '<tr><th rowspan="2" colspan="2"><th colspan="{0}">{1}<th rowspan="2" colspan="2"></tr>\n'.format(len(verlist), title)
 
         # Versions ...
         page += '<tr>'
         for verflav in verlist:
+            if verflav == 'race':
+                page += "<th>" + race_text
+                continue
+
             (version, flavour) = verflav.split()
             page += '<th>' + version
         page += '</tr>\n'
@@ -479,6 +491,8 @@ table.matrix, table.matrix th, table.matrix td {{
             archs_seen = {}
             for arch in archs:
                 for ver in verlist:
+                    if ver == 'race':
+                        continue
                     if pkg in results[ver] and arch in results[ver][pkg]:
                         archs_seen[arch] = True
 
@@ -495,6 +509,10 @@ table.matrix, table.matrix th, table.matrix td {{
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 for ver in verlist:
+                    if ver == 'race':
+                        page += "<td>" + race_text
+                        continue
+
                     if pkg in results[ver] and arch in results[ver][pkg]:
                         (status, status_link) = results[ver][pkg][arch]
                         if status_link:
@@ -597,18 +615,30 @@ table.matrix td {{
             )
 
         if series not in updated:
-            adt.update()
-            adt.save()
+            #adt.update()
+            #adt.save()
             updated[series] = True
 
-        (info, matrix) = adt.matrix()
+        # Narrow matrix ...
+        html_all = series + '-' + package + '-all.html'
+        html = series + '-' + package + '.html'
+
+        (info, matrix) = adt.matrix(limit=6, limit_url=html_all)
         (state, summary, version, count, total) = info
 
-        html = series + '-' + package + '.html'
         with open(html + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
 
             os.rename(html + '.new', html)
+
+        # Detail matrix ...
+        (info, matrix) = adt.matrix()
+        (state, summary, version, count, total) = info
+
+        with open(html_all + '.new', 'w') as mfd:
+            print(matrix, end=None, file=mfd)
+
+            os.rename(html_all + '.new', html_all)
 
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url), file=indexf)
