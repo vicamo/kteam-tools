@@ -275,6 +275,8 @@ with open(order) as orderf:
                 emit_record(entries)
 
             title = line.strip()[8:]
+            if title == '':
+                title = 'ROOT'
             entries = [ title ]
 
         elif line[0] == 'E':
