@@ -14,12 +14,18 @@ base="$1"
 annot_in="$2"
 annot_out="$3"
 
+archs=`grep 'ARCH:' "$annot_in" | cut -c 9-`
+if [ "$archs" = '' ]; then
+	archs='x86 arm powerpc'
+fi
+
 list="/tmp/list.$$"
 {
 	echo "M ROOT"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-x86" genorder "$base/CONFIGS-renames"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-arm" genorder "$base/CONFIGS-renames"
-	"$here/devel-config-tree" "$base/CONFIGS-parser-powerpc" genorder "$base/CONFIGS-renames"
+	for arch in $archs
+	do
+		"$here/devel-config-tree" "$base/CONFIGS-parser-$arch" genorder "$base/CONFIGS-renames"
+	done
 } | LANG=C sort | uniq >"$list"
 
 copy_raw() {
