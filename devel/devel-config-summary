@@ -14,6 +14,7 @@ annotations=""
 format="wiki"
 current="-"
 update=1
+configs=1
 while :
 do
 	case "$1" in
@@ -22,6 +23,7 @@ do
 	--previous)	current="$2"; shift 2 ;;
 	--annotations)	annotations="$2"; shift 2 ;;
 	--no-update)	update=0; shift 1 ;;
+	--no-configs)	configs=0; shift 1 ;;
 	*)		break 2 ;;
 	esac
 done
@@ -70,14 +72,16 @@ esac
 
 if [ "$update" -eq 1 ]; then
 	"$here/lib-config/devel-config-info" "$annot_next" "$next"
-	(
-		cd "$next" || exit 1
+	if [ "$configs" -eq 1 ]; then
+		(
+			cd "$next" || exit 1
 
-		fakeroot debian/rules genconfigs >/dev/null 2>&1
-		fakeroot debian/rules genportsconfigs >/dev/null 2>&1
+			fakeroot debian/rules genconfigs >/dev/null 2>&1
+			fakeroot debian/rules genportsconfigs >/dev/null 2>&1
 
-		rm -f CONFIGS/ppc64-* CONFIGS/*highbank*
-	)
+			rm -f CONFIGS/ppc64-* CONFIGS/*highbank*
+		)
+	fi
 fi
 
 #"$here/devel-config-summary-report" "$format" "$current" "$next" "$prefix"
