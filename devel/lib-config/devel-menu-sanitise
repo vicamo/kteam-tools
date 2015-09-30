@@ -4,6 +4,11 @@ import sys
 
 seen = {}
 for line in sys.stdin:
+    if line[0] == 'M':
+        if line in seen:
+            continue
+        seen[line] = True
+
     if '>>>' in line:
         (x, y, config) = line.strip().split('>>>')
 
