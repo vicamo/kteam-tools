@@ -59,7 +59,8 @@ for line in sys.stdin:
         #print('APW', fname, menu_old, '->', menu_new)
 
 for (old, new) in menu_renames:
-    print('menu-rename\t' + new + "\t" + old)
+    if new != 'ROOT':
+        print('menu-rename\t' + new + "\t" + old)
 
 for name in arch_merge:
     if name in arch_part and len(arch_merge[name]) > 1:
