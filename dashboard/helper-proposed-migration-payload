@@ -191,20 +191,20 @@ for line in sys.stdin:
 #                })
 
     # Work out the britney status for kernel packages.
-    scanned = []
+    emitted = []
     for record in state['sources']:
         if record['source'].startswith('linux-meta'):
             britney.append((series, record['source'], record['new-version'], get_status(state, record)))
-            scanned += get_hierachy(state, record)
+            emitted.append(record['source'])
 
     # Rescan for non abi bumpers.
     for record in state['sources']:
         if record['source'].startswith('linux') and \
            not record['source'].startswith('linux-meta') and \
-           not record['source'].startswith('linux-signed') and \
-           record['source'] not in scanned:
+           not record['source'].startswith('linux-signed'):
             source = record['source'].replace('linux', 'linux-meta')
-            britney.append((series, source, record['new-version'], get_status(state, record)))
+            if source not in emitted:
+                britney.append((series, source, record['new-version'], get_status(state, record)))
 
     # If the run completed since it was triggered, all is good, else give it an 
     # hour to get there, after that warn for a further hour, then alert.
