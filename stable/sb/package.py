@@ -161,7 +161,12 @@ class Package():
         cdebug('    abi: %s' % abi,     'yellow')
         cdebug('archive: %s' % archive, 'yellow')
         cdebug('release: %s' % release, 'yellow')
-        cdebug(' pocket: %s' % pocket, 'yellow')
+        if pocket == None:
+            cdebug(' pocket: ppa', 'yellow')
+        else:
+            cdebug(' pocket: %s' % pocket, 'yellow')
+        cdebug('')
+
         retval = False
 
         ps = s.__get_published_sources(package, abi, archive, release, pocket)
@@ -192,15 +197,6 @@ class Package():
         """
 
         center('Sources::__get_published_sources')
-        cdebug('package: %s' % package, 'yellow')
-        cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('archive: %s' % archive, 'yellow')
-        cdebug('release: %s' % release, 'yellow')
-        if pocket == '':
-            cdebug(' pocket: ppa', 'yellow')
-        else:
-            cdebug(' pocket: %s' % pocket, 'yellow')
-        cdebug('')
 
         if pocket and not abi:
             # If the abi is not specified then we are looking for an explicit release in a specific
