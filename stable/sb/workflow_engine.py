@@ -18,7 +18,7 @@ from ktl.shanky                         import send_to_shankbot
 from ktl.msgq                           import MsgQueue
 
 from sb.package                         import Package, PackageError
-from sb.workflow_bug                    import WorkflowBug
+from sb.workflow_bug                    import WorkflowBug, WorkflowBugError
 from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
 import logging
 import json
@@ -170,7 +170,13 @@ class WorkflowEngine():
         #
         modified = True
         while modified:
-            bug = WorkflowBug(s.lp.default_service, s.projects_tracked, bugid, sauron, s.args.dryrun)
+            bug = None
+            try:
+                bug = WorkflowBug(s.lp.default_service, s.projects_tracked, bugid, sauron, s.args.dryrun)
+            except WorkflowBugError:
+                # Bug doesn't exist?
+                modified = False
+                continue
             if bug.is_valid:
                 try:
                     modified = s.process_bug_tasks(bug)

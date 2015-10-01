@@ -4,6 +4,17 @@ from logging                            import info, debug, error, warning, basi
 
 from sb.log                             import cinfo, cdebug
 from sb.package                         import Package, PackageError
+from sb.errors                          import ShankError
+
+# PackageError
+#
+class WorkflowBugError(ShankError):
+    '''
+    Thrown when some goes wrong with the WorkflowBug (e.g. when trying to
+    process a non-existing bug).
+    '''
+    def __init__(s, emsg):
+        super(ShankError, s).__init__(emsg)
 
 # WorkflowBugTask
 #
@@ -105,7 +116,13 @@ class WorkflowBug():
         related package. This information is cached.
         '''
         s.lp = lp
-        s.lpbug = s.lp.get_bug(bugid)
+        try:
+            s.lpbug = s.lp.get_bug(bugid)
+        except KeyError:
+            s.is_valid = False
+            cinfo('Failed to get bug #%s' % bugid, 'red')
+            raise WorkflowBugError('Invalid bug number %s' % bugid)
+
         s.projects = projects
         s.sauron = sauron
         s.title = s.lpbug.title
