@@ -68,6 +68,7 @@ copy_menu() {
 		awk '
 			/^# Menu: '"$patn"'$/		{ found=1; next }
 			/^# Menu:/			{ found=0; last }
+			/^# *$/				{ next }
 			/^CONFIG_/			{ next }
 			(found == 1)			{ print }
 		' <"$annot_in" 
@@ -81,7 +82,15 @@ copy_menu() {
 	what=`cat "$list" | grep "^E $menu>>>" | 
 		awk -F'>' '{ print $NF }' |
 		tr '\n' '|' | sed -e 's/^/CONFIG_(/' -e 's/|$/)[ 	]/'`
-	[ "$what" != "" ] && egrep -h "^$what" "$annot_in"
+	frag="/tmp/frag.$$"
+	if [ "$what" != "" ]; then
+		egrep -h "^$what" "$annot_in" | grep "policy<" >"$frag"
+		[ -s "$frag" ] && cat "$frag"
+		egrep -h "^$what" "$annot_in" | grep -v "policy<" >"$frag"
+		[ -s "$frag" ] && echo "#"
+		[ -s "$frag" ] && cat "$frag"
+		rm -f "$frag"
+	fi
 	echo ""
 }
 
