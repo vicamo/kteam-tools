@@ -224,8 +224,16 @@ class WorkflowBug():
         not all lf the dependent packages (meta, signed, lbm, etc.) are fully built
         is returned.
         '''
-        retval = s.__package.all_dependent_packages_fully_built()
+        retval = s.__package.all_dependent_packages_fully_built
         return retval
+
+    # ready_for_testing
+    #
+    @property
+    def ready_for_testing(s):
+        '''
+        '''
+        return s.__package.ready_for_testing
 
     # creator
     #
