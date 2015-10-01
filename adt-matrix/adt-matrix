@@ -249,7 +249,9 @@ class AutoPackageTest(object):
                                 if '/' in tpkgtver:
                                     modern = True
                                     (tpkg, tver) = tpkgtver.split('/')
-                                    if tpkg.startswith('linux-meta'):
+                                    if tpkg.startswith('linux-meta') or \
+                                       tpkg == 'linux' or \
+                                       tpkg.startswith('linux-lts-'):
                                         bits = tver.split('.')
                                         key = '.'.join(bits[0:4]) + ' ' + tpkg
                                         kernel_pkg = tpkg
@@ -615,8 +617,8 @@ table.matrix td {{
             )
 
         if series not in updated:
-            #adt.update()
-            #adt.save()
+            adt.update()
+            adt.save()
             updated[series] = True
 
         # Narrow matrix ...
