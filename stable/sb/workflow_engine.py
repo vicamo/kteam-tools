@@ -89,7 +89,7 @@ class WorkflowEngine():
             'security-signoff'          : TaskActions({'Invalid'      : s.security_signoff_finished,           'Fix Released' : s.security_signoff_finished}),
         }
 
-        s.dkms_regressions_url = "https://people.canonical.com/~kernel/status/dashboard-helper/proposed-migration/regressions.txt"
+        s.regressions_url = "http://people.canonical.com/~kernel/status/adt-matrix/overall.txt"
         s.lp = lp
 
     def verbose(s, msg, color='green'):
@@ -715,23 +715,23 @@ class WorkflowEngine():
         cdebug('            WorkflowEngine::automated_testing_new leave')
         return False
 
-    # Possible DKMS states: PASS, ALWAYSFAIL, IGNORED, DEPENDS, RUNNING, NBS, REGRESSION
+    # Possible testing states: REGR, FAIL, GOOD, MISS
     #
-    # - 'automated-testing' will transition to 'Incomplete' if state is 'REGRESSION'
-    # - 'automated-testing' will transition to 'Fix Released' if state is 'PASS', 'ALWAYSFAIL' or 'IGNORED'
+    # - 'automated-testing' will transition to 'Incomplete' if state is 'REGR'
+    # - 'automated-testing' will transition to 'Fix Released' if state is 'GOOD', 'FAIL' or 'MISS'
     # - any other state will be ignored and we'll continue to poll the URL
     #
-    def dkms_is_regression(s, state):
-        if state != None and state.upper() == 'REGRESSION':
+    def test_is_regression(s, state):
+        if state != None and state.upper() == 'REGR':
             return True
         return False
-    def dkms_is_pass(s, state):
-        if state != None and state.upper() in ['PASS', 'ALWAYSFAIL', 'IGNORED']:
+    def test_is_pass(s, state):
+        if state != None and state.upper() in ['GOOD', 'FAIL', 'MISS']:
             return True
         return False
 
-    def check_dkms_regression(s, taskobj, package, version, dkms_data):
-        for l in dkms_data:
+    def check_testing_regression(s, taskobj, package, version, test_data):
+        for l in test_data:
             # Just in case we have a malformed line (e.g., when the file is being created)
             if (len(l.split()) > 3):
                 # line format:
@@ -739,61 +739,42 @@ class WorkflowEngine():
                 res = l.split()
                 if res[0] == s.wfb.series and res[1] == package and res[2] == version:
                     state = res[3]
-                    cdebug('            State for DMKS %s %s in %s: %s' % (package, version, s.wfb.series, state))
+                    cdebug('            State for %s %s in %s: %s' % (package, version, s.wfb.series, state))
 
-                    if s.dkms_is_regression(state):
+                    if s.test_is_regression(state):
                         if s.args.dryrun:
                             cinfo('            Dryrun - Would set automated-testing to Incomplete')
                         else:
                             s.wfb.tasks_by_name['automated-testing'].status = 'Incomplete'
-                            msgbody = "DKMS has regressed with version %s of package %s in %s\n" % (version, package, s.wfb.series)
+                            msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (version, package, s.wfb.series)
                             msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
-                            msgbody += "Please verify DKMS test results in %s\n" % s.dkms_regressions_url
-                            s.send_comment(taskobj, 'DKMS regression tests failure', msgbody)
+                            msgbody += "Please verify test results in %s\n" % s.regressions_url
+                            s.send_comment(taskobj, 'Automated-Testing regression', msgbody)
                     return state
-        cwarn('            Failed to get state for DMKS %s %s in %s' % (package, version, s.wfb.series))
+        cwarn('            Failed to get testing state for %s %s in %s' % (package, version, s.wfb.series))
         return None
 
     def automated_testing_confirmed(s, taskobj):
         cdebug('            WorkflowEngine::automated_testing_confirmed enter')
 
-        tests_pass = True
-
-        # Start by retrieving DKMS regression data
+        # Start by retrieving regression data
         try:
-            f = urllib.urlopen(s.dkms_regressions_url)
+            f = urllib.urlopen(s.regressions_url)
             data = f.read().split('\n')
             f.close()
         except IOError:
-            cerror('            Failed to read from DKMS regressions data URL "%s"', s.dkms_regressions_url)
+            cerror('            Failed to read from testing regressions data URL "%s"', s.regressions_url)
             cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
             return False
 
         # Check main package
-        state = s.check_dkms_regression(taskobj, s.wfb.pkg_name, s.wfb.pkg_version, data)
-        if s.dkms_is_regression(state):
-            cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
-            return False
-        if not s.dkms_is_pass(state):
-            tests_pass = False
-
-        # Then, check all the other packages (-meta, -signed, ...)
-        pkg_list = s.wfb.relevant_packages_list()
-        check_component = CheckComponent(s.lp.production_service)
-        for pkg in pkg_list:
-            ps = check_component.get_published_sources(s.wfb.series, pkg, None, 'proposed')
-            state = s.check_dkms_regression(taskobj, pkg, ps[0].source_package_version, data)
-            if s.dkms_is_regression(state):
-                cdebug('            WorkflowEngine::automated_testing_confirmed leave (False)')
-                return False
-            if not s.dkms_is_pass(state):
-                tests_pass = False
-
-        if tests_pass:
+        state = s.check_testing_regression(taskobj, s.wfb.pkg_name, s.wfb.pkg_version, data)
+        if s.test_is_pass(state):
             if s.args.dryrun:
                 cinfo('            Dryrun - Would set automated-testing to Fix Released')
             else:
                 s.wfb.tasks_by_name['automated-testing'].status = 'Fix Released'
+
         cdebug('            WorkflowEngine::automated_testing_confirmed leave')
         return False
 
