@@ -86,11 +86,14 @@ fi
 
 #"$here/devel-config-summary-report" "$format" "$current" "$next" "$prefix"
 
+# Produce a nice text output we can use for repairing annotations.
+{
+	cat "$next/CONFIGS-annotation-flags"
+	cat "$annot_next"
+} | "$here/lib-config/devel-generate-matrix" "text" "$next/CONFIGS-update" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*
+
+# Finally produce the output they wanted.
 {
 	cat "$next/CONFIGS-annotation-flags"
 	cat "$annot_next"
 } | "$here/lib-config/devel-generate-matrix" "html" "$prefix" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*
-{
-	cat "$next/CONFIGS-annotation-flags"
-	cat "$annot_next"
-} | "$here/lib-config/devel-generate-matrix" "text" "$prefix" "$next/CONFIGS-menu-order" "$next/CONFIGS"/*
