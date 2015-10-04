@@ -229,8 +229,8 @@ class AutoPackageTest(object):
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
                 # Accumulate the latest versions of packages seen so we can detect missing results.
-                if not kernel_pkg and ressrc not in self.latest or apt_pkg.version_compare(self.latest[ressrc], ver) < 0:
-                    self.latest[ressrc] = ver
+                key = ' '.join((ressrc, arch))
+                self.latest[key] = ver
 
                 # If we have testinfo then we may have a real kernel version.
                 try:
@@ -249,9 +249,7 @@ class AutoPackageTest(object):
                                 if '/' in tpkgtver:
                                     modern = True
                                     (tpkg, tver) = tpkgtver.split('/')
-                                    if tpkg.startswith('linux-meta') or \
-                                       tpkg == 'linux' or \
-                                       tpkg.startswith('linux-lts-'):
+                                    if tpkg.startswith('linux-meta'):
                                         bits = tver.split('.')
                                         key = '.'.join(bits[0:4]) + ' ' + tpkg
                                         kernel_pkg = tpkg
@@ -260,16 +258,25 @@ class AutoPackageTest(object):
                                             self.kernel_abi[key] = tver
                                             #print("APW no meta mapping", key, tver)
                                         kernel_ver_rough = self.kernel_abi[key]
+
+                                    elif tpkg == 'linux' or \
+                                         tpkg.startswith('linux-lts-'):
+                                        kernel_pkg = tpkg.replace('linux', 'linux-meta')
+                                        kernel_ver_rough = tver
+
         
                         # This is a triggered event not for linux, ignore.
                         if modern and not kernel_pkg:
                             continue
 
                 # If this is testing a kernel package it should be for that package.
-                if ressrc.startswith('linux') and not ressrc.startswith('linux-meta'):
-                    if not kernel_pkg:
-                        kernel_pkg = ressrc
-                    kernel_ver = ver
+                #if ressrc.startswith('linux'):
+                #    if not kernel_pkg:
+                #        if not ressrc.startswith('linux-meta'):
+                #            kernel_pkg = ressrc.replace('linux', 'linux-meta')
+                #        else:
+                #            kernel_pkg = ressrc
+                #    kernel_ver = ver
 
                 # If we are running on real meta, use the actual version the kit advertises.
                 if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
@@ -373,6 +380,18 @@ class AutoPackageTest(object):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             some_ever = {}
+
+            # Find the nominal latest version (latest any arch reports) taking
+            # into account only the latest from each arch to allow versions to 
+            # be deleted.
+            latest = None
+            DBG = ''
+            for arch in archs:
+                key = ' '.join((pkg, arch))
+                if key in self.latest and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
+                    DBG += ' ' + key + ' ' + self.latest[key]
+                    latest = self.latest[key]
+                
             for arch in archs:
                 good_ever = {}
                 for ver in verlist:
@@ -384,7 +403,8 @@ class AutoPackageTest(object):
 
                         marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
                         some_ever[arch] = True
-                        if ver == verlist[-1] and version != self.latest[pkg]:
+                        if ver == verlist[-1] and version != latest:
+                            #print("APW", pkg, version, latest, DBG)
                             status = 'MISS'
                         elif tstatus:
                             good_ever = True
