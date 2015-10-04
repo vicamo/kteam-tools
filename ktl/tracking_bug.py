@@ -253,15 +253,10 @@ class TrackingBug:
                 cdebug('        status: %s; importance: %s' % (task.status, task.importance))
             else:
                 if parts[0] != '':
-                    # Mark the development task as invalid if this is an
-                    # stable tracking bug
-                    if (parts[0] == "linux (Ubuntu)" and series_target.status != "Active Development"):
-                        task.status = "Invalid"
-                    elif parts[0] != "linux (Ubuntu)":
-                        try:
-                            task.importance = "Medium"
-                        except:
-                            cwarn('Failed to set the task (%s) importance to "Medium".' % (task_name))
+                    try:
+                        task.importance = "Medium"
+                    except:
+                        cwarn('Failed to set the task (%s) importance to "Medium".' % (task_name))
                     cdebug('        status: %s; importance: %s' % (task.status, task.importance))
                     continue
                 task.importance = "Medium"
