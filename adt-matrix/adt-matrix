@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False):
         self.cache = {}
         self.dirty = False
 
@@ -72,6 +72,7 @@ class AutoPackageTest(object):
         self.parent = parent
         self.packages = packages
         self.stamp = stamp
+        self.live = live
 
         self.seen = {}
         self.results = {}
@@ -403,7 +404,7 @@ class AutoPackageTest(object):
 
                         marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
                         some_ever[arch] = True
-                        if ver == verlist[-1] and version != latest:
+                        if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
                             status = 'MISS'
                         elif tstatus:
@@ -628,12 +629,16 @@ table.matrix td {{
         if not seen:
             seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
 
+        live = True
+        if migration == 'MIGRATED':
+            live = False
         adt = AutoPackageTest(
                 stamp = stamp,
                 series = series,
                 source = package,
                 parent = parent,
                 packages = seed,
+                live = live,
             )
 
         if series not in updated:
