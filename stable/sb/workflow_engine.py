@@ -718,15 +718,15 @@ class WorkflowEngine():
     # Possible testing states: REGR, FAIL, GOOD, MISS
     #
     # - 'automated-testing' will transition to 'Incomplete' if state is 'REGR'
-    # - 'automated-testing' will transition to 'Fix Released' if state is 'GOOD', 'FAIL' or 'MISS'
-    # - any other state will be ignored and we'll continue to poll the URL
+    # - 'automated-testing' will transition to 'Fix Released' if state is 'GOOD' or 'FAIL'
+    # - any other state (e.g. 'MISS') will be ignored and we'll continue to poll the URL
     #
     def test_is_regression(s, state):
         if state != None and state.upper() == 'REGR':
             return True
         return False
     def test_is_pass(s, state):
-        if state != None and state.upper() in ['GOOD', 'FAIL', 'MISS']:
+        if state != None and state.upper() in ['GOOD', 'FAIL']:
             return True
         return False
 
