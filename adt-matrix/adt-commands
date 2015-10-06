@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <pocket> <linux package>" 1>&2
+	exit 1
+fi
+pocket="$1"
+linux="$2"
+
+series="${pocket%-*}"
+linux_meta=`echo "$linux" | sed -e 's/^linux/linux-meta/g'`
+
+triggers=''
+for package in "$linux" "$linux_meta"
+do
+	version=`rmadison -a source -s "$pocket" "$package" | awk '{print $3}'`
+	if [ "$version" = '' ]; then
+		echo "$package: version unknown in $pocket" 1>&2
+		exit 1
+	fi
+	triggers="$triggers $package/$version"
+done
+$0-payload "$series" $triggers

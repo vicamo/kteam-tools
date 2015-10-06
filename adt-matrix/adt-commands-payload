@@ -1,0 +1,47 @@
+#!/usr/bin/python3
+
+import json
+import sys
+
+# Read in the package/architecture relationships.
+with open("package-relation.json") as seedf:
+    package_seed = json.load(seedf)
+
+series = sys.argv[1]
+triggers = sys.argv[2:]
+
+want = {}
+for trigger in triggers:
+    (package, version) = trigger.split('/')
+    
+    key = '+'.join((series, package))
+    ##print(package, version, key)
+    if key in package_seed:
+        for tpkgarchs in package_seed[key]:
+            (tpkg, arches) = tpkgarchs
+            
+            ##print(package, tpkg)
+            tmp = want.setdefault(tpkg, [])
+            tmp.append(trigger)
+
+forms = {}
+for key in want:
+    forms[' '.join(want[key])] = True
+
+packages_form = {}
+for form in forms:
+    for key in want:
+        if ' '.join(want[key]) == form:
+            packages_form.setdefault(form, []).append(key)
+
+for form in forms:
+    if form in packages_form:
+        cmd = "run-autopkgtest -s " + series
+        for trigger in form.split():
+            cmd += ' --trigger ' + trigger
+        cmd += ' ' + ' '.join(sorted(packages_form[form]))
+
+        print(cmd)
+    
+#print(want)
+#print(forms)
