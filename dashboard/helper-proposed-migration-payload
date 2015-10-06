@@ -76,6 +76,7 @@ def get_status(state, record):
                         status = get_status(state, record2)
                         if status != "PASS":
                             return status
+        return 'BUILDING'
 
     if 'block' in record['reason']:
         return "PASS"
