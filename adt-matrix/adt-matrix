@@ -422,7 +422,7 @@ class AutoPackageTest(object):
                     if status:
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
-                        tmp[arch] = (status, rurl)
+                        tmp[arch] = (status, rurl, version)
 
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
@@ -537,13 +537,13 @@ table.matrix, table.matrix th, table.matrix td {{
                         continue
 
                     if pkg in results[ver] and arch in results[ver][pkg]:
-                        (status, status_link) = results[ver][pkg][arch]
+                        (status, status_link, version) = results[ver][pkg][arch]
                         if status_link:
                             status_link += 'log.gz'
-                            fmt = '<td class="{0}"><a href="{2}">{1}</a>'
+                            fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>'
                         else:
                             fmt = '<td class="{0}">{1}'
-                        page += fmt.format(status, status, status_link)
+                        page += fmt.format(status, status, status_link, pkg + " " + version)
                     else:
                         page += '<td>&nbsp;'
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
