@@ -42,7 +42,7 @@ class AdtMatrixSeed(object):
     def britney_hierachy(self, state, record, seen={}):    
         if record['source'] in seen:
             return []
-        seen['source'] = True
+        seen[record['source']] = True
 
         hier = [ record ]
 
