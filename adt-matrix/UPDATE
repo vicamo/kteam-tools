@@ -34,7 +34,7 @@ do
 		[ "$migration" = '' ] && migration="MIGRATED"
 
 		package2=`echo "$package" | sed -e 's/^linux-meta/linux/'`
-		version2=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package"`
+		version2=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package2"`
 		echo "$series $package2 $version2" 1>&2
 
 		"$here/adt-commands-payload" "$series" "$package/$version" "$package2/$version2" >"$series-$package.cmds.new"

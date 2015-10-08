@@ -33,7 +33,8 @@ for trigger in triggers:
             for tpkg in package_cache['cache-latest'][key][mpkg]:
                 #print(package, mpkg, tpkg)
                 tmp = want.setdefault(tpkg, [])
-                tmp.append(trigger)
+                if trigger not in tmp:
+                    tmp.append(trigger)
 
 forms = {}
 for key in want:
@@ -62,7 +63,6 @@ print("# " + series + " " + master_package + " retrigger missing")
 want = {}
 for trigger in triggers:
     (package, version) = trigger.split('/')
-    
     mkey = '-'.join((series, master_package))
     key = '-'.join((series, package))
     #print(package, version, key)
@@ -78,8 +78,11 @@ for trigger in triggers:
                             archs.append(arch)
                     if len(archs) > 0:
                         tmp = want.setdefault(' '.join(archs), {}).setdefault(tpkg, [])
-                        tmp.append(trigger)
+                        if trigger not in tmp:
+                            tmp.append(trigger)
 
+print(triggers)
+print(want)
 for archs in want:
     forms = {}
     for key in want[archs]:
