@@ -15,9 +15,9 @@ britney="$1"
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
 	cp "$here/package-relation.json-initial" package-relation.json
-while read series package
+while read series package parent
 do
-	echo "$series $package $britney/$series.migration"
+	echo "$series $package $parent $britney/$series.migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate"
 
@@ -37,3 +37,9 @@ do
 	echo "$series $package $parent $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"
+
+while read series package parent
+do
+	"$here/adt-commands" "$series-proposed" "$package"
+done <"$here/adt-matrix.conf" >"rebuild.cmds.new"
+mv -f "rebuild.cmds.new" "rebuild.cmds"

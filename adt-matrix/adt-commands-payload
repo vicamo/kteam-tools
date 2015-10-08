@@ -10,6 +10,16 @@ with open("package-relation.json") as seedf:
 series = sys.argv[1]
 triggers = sys.argv[2:]
 
+(master_package, master_version) = triggers[0].split('/')
+
+# Read in the series cache.
+with open(series + ".cache") as cachef:
+    series_cache = json.load(cachef)
+
+
+print("# " + series + " " + master_package + " retrigger all")
+
+# Generate commands to retrigger all tests.
 want = {}
 for trigger in triggers:
     (package, version) = trigger.split('/')
@@ -43,5 +53,46 @@ for form in forms:
 
         print(cmd)
     
-#print(want)
-#print(forms)
+
+print("")
+print("# " + series + " " + master_package + " retrigger missing")
+
+# Generate commands to retrigger all missing tests.
+for arch in ['amd64', 'i386', 'armhf', 'ppc64el']:
+    want = {}
+    for trigger in triggers:
+        (package, version) = trigger.split('/')
+        
+        mkey = '-'.join((series, master_package))
+        key = '-'.join((series, package))
+        #print(package, version, key)
+        if key in package_cache['cache-latest']:
+            for mpkg in package_cache['cache-latest'][key]:
+                #print(package, mpkg)
+                for tpkg in package_cache['cache-latest'][key][mpkg]:
+                    #print(package, mpkg, tpkg)
+                    if mkey in series_cache['missing'] and tpkg in series_cache['missing'][mkey]:
+                        if arch in series_cache['missing'][mkey][tpkg]:
+                            tmp = want.setdefault(tpkg, [])
+                            tmp.append(trigger)
+
+    forms = {}
+    for key in want:
+        forms[' '.join(want[key])] = True
+
+    packages_form = {}
+    for form in forms:
+        for key in want:
+            if ' '.join(want[key]) == form:
+                packages_form.setdefault(form, []).append(key)
+
+    for form in forms:
+        if form in packages_form:
+            cmd = "run-autopkgtest -s " + series + " -a " + arch
+            for trigger in form.split():
+                cmd += ' --trigger ' + trigger
+            cmd += ' ' + ' '.join(sorted(packages_form[form]))
+
+            print(cmd)
+
+print("")

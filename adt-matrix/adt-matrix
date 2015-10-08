@@ -80,6 +80,7 @@ class AutoPackageTest(object):
         self.latest = {}
         self.kernel_abi = {}
         self.first_good = {}
+        self.missing = {}
 
         self.verbose = True
 
@@ -93,6 +94,8 @@ class AutoPackageTest(object):
                 self.latest = tmp['latest']
                 self.kernel_abi = tmp['kernel_abi']
                 self.first_good = tmp['first_good']
+                if 'missing' in tmp:
+                    self.missing = tmp['missing']
 
             self.log_verbose('Read previous results from {}'.format(self.cache_file))
         else:
@@ -367,8 +370,14 @@ class AutoPackageTest(object):
 
     def save(self):
         if self.dirty:
-            tmp = { 'seen': self.seen, 'results': self.results, 'latest': self.latest,
-                    'kernel_abi': self.kernel_abi, 'first_good': self.first_good }
+            tmp = {
+                'seen':         self.seen,
+                'results':      self.results,
+                'latest':       self.latest,
+                'kernel_abi':   self.kernel_abi,
+                'first_good':   self.first_good,
+                'missing':      self.missing,
+            }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
@@ -379,6 +388,7 @@ class AutoPackageTest(object):
     def results_data(self):
         result = {}
         verlist = self.version_list()
+        miss = {}
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             some_ever = {}
@@ -429,6 +439,12 @@ class AutoPackageTest(object):
                         tmp = tmp.setdefault(pkg, {})
                         tmp[arch] = (status, rurl, version)
 
+                    # Accumulate missing results.
+                    if status == 'MISS':
+                        miss.setdefault(pkg, {})[arch] = True
+
+        # Record the missing status for later use.
+        self.missing[self.series + '-' + self.source] = miss
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
@@ -654,7 +670,6 @@ table.matrix td {{
 
         if series not in updated:
             adt.update()
-            adt.save()
             updated[series] = True
 
         # Narrow matrix ...
@@ -678,6 +693,7 @@ table.matrix td {{
 
             os.rename(html_all + '.new', html_all)
 
+        # Summary index table.
         if not state:
             state = "MISS"
 
@@ -685,6 +701,12 @@ table.matrix td {{
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url), file=indexf)
 
         print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state, summary=summary), file=overallf)
+
+        # We are all done with adt so make sure it is saved if changed.
+        #adt.dirty = True
+        adt.save()
+
+
     print("""\
 </table>
 </body>
