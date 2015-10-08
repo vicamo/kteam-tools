@@ -20,7 +20,7 @@ linux=`echo "$linux_meta" | sed -e 's/^linux-meta/linux/g'`
 triggers=''
 for package in "$linux_meta" "$linux"
 do
-	echo "pocket<$pocket> series<$series> package<$package>" 1>&2
+	#echo "pocket<$pocket> series<$series> package<$package>" 1>&2
 	version=`"$here/../cve-tools/cves-kernel-versions" "$pocket" "$series" "$package"`
 	if [ "$version" = 'None' ]; then
 		echo "$package: version unknown in $pocket" 1>&2
@@ -28,5 +28,5 @@ do
 	fi
 	triggers="$triggers $package/$version"
 done
-echo "commands $series-$pocket $triggers" 1>&2
+echo "adt-commands: $series-$pocket $triggers" 1>&2
 $0-payload "$series" $triggers
