@@ -59,37 +59,43 @@ print("")
 print("# " + series + " " + master_package + " retrigger missing")
 
 # Generate commands to retrigger all missing tests.
-for arch in ['amd64', 'i386', 'armhf', 'ppc64el']:
-    want = {}
-    for trigger in triggers:
-        (package, version) = trigger.split('/')
-        
-        mkey = '-'.join((series, master_package))
-        key = '-'.join((series, package))
-        #print(package, version, key)
-        if key in package_cache['cache-latest']:
-            for mpkg in package_cache['cache-latest'][key]:
-                #print(package, mpkg)
-                for tpkg in package_cache['cache-latest'][key][mpkg]:
-                    #print(package, mpkg, tpkg)
-                    if mkey in series_cache['missing'] and tpkg in series_cache['missing'][mkey]:
+want = {}
+for trigger in triggers:
+    (package, version) = trigger.split('/')
+    
+    mkey = '-'.join((series, master_package))
+    key = '-'.join((series, package))
+    #print(package, version, key)
+    if key in package_cache['cache-latest']:
+        for mpkg in package_cache['cache-latest'][key]:
+            #print(package, mpkg)
+            for tpkg in package_cache['cache-latest'][key][mpkg]:
+                #print(package, mpkg, tpkg)
+                if mkey in series_cache['missing'] and tpkg in series_cache['missing'][mkey]:
+                    archs = []
+                    for arch in ['amd64', 'i386', 'armhf', 'ppc64el']:
                         if arch in series_cache['missing'][mkey][tpkg]:
-                            tmp = want.setdefault(tpkg, [])
-                            tmp.append(trigger)
+                            archs.append(arch)
+                    if len(archs) > 0:
+                        tmp = want.setdefault(' '.join(archs), {}).setdefault(tpkg, [])
+                        tmp.append(trigger)
 
+for archs in want:
     forms = {}
-    for key in want:
-        forms[' '.join(want[key])] = True
+    for key in want[archs]:
+        forms[' '.join(want[archs][key])] = True
 
     packages_form = {}
     for form in forms:
-        for key in want:
-            if ' '.join(want[key]) == form:
+        for key in want[archs]:
+            if ' '.join(want[archs][key]) == form:
                 packages_form.setdefault(form, []).append(key)
 
     for form in forms:
         if form in packages_form:
-            cmd = "run-autopkgtest -s " + series + " -a " + arch
+            cmd = "run-autopkgtest -s " + series
+            for arch in archs.split():
+                cmd += ' -a ' + arch
             for trigger in form.split():
                 cmd += ' --trigger ' + trigger
             cmd += ' ' + ' '.join(sorted(packages_form[form]))
