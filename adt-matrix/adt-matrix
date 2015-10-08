@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None):
         self.cache = {}
         self.dirty = False
 
@@ -71,6 +71,7 @@ class AutoPackageTest(object):
         self.source = source
         self.parent = parent
         self.packages = packages
+        self.packages_latest = latest
         self.stamp = stamp
         self.live = live
 
@@ -419,6 +420,10 @@ class AutoPackageTest(object):
                     elif arch in some_ever:
                         status = 'MISS'
 
+                    # This is only missing if the latest and greatest tests included it.
+                    if status == 'MISS' and pkg not in self.packages_latest:
+                        status = None
+
                     if status:
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
@@ -562,7 +567,7 @@ apt_pkg.init_system()
 
 # Read in the package/architecture relationships.
 with open("package-relation.json") as seedf:
-    package_seed = json.load(seedf)
+    package_cache = json.load(seedf)
 
 # Go.
 stamp = datetime.now().replace(microsecond=0)
@@ -616,8 +621,8 @@ table.matrix td {{
         (series, package, parent, migration) = bits
 
         key = series + "-" + package
-        if key in package_seed:
-            seed = package_seed[key]
+        if key in package_cache['seeds']:
+            seed = package_cache['seeds'][key]
         else:
             seed = []
 
@@ -629,6 +634,11 @@ table.matrix td {{
         if not seen:
             seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
 
+        if key in package_cache['seeds-latest']:
+            latest = package_cache['seeds-latest'][key]
+        else:
+            latest = seed
+
         live = True
         if migration == 'MIGRATED':
             live = False
@@ -638,12 +648,13 @@ table.matrix td {{
                 source = package,
                 parent = parent,
                 packages = seed,
+                latest = latest,
                 live = live,
             )
 
         if series not in updated:
-            adt.update()
-            adt.save()
+            #adt.update()
+            #adt.save()
             updated[series] = True
 
         # Narrow matrix ...

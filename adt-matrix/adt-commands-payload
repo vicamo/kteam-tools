@@ -5,7 +5,7 @@ import sys
 
 # Read in the package/architecture relationships.
 with open("package-relation.json") as seedf:
-    package_seed = json.load(seedf)
+    package_cache = json.load(seedf)
 
 series = sys.argv[1]
 triggers = sys.argv[2:]
@@ -14,15 +14,15 @@ want = {}
 for trigger in triggers:
     (package, version) = trigger.split('/')
     
-    key = '+'.join((series, package))
+    key = '-'.join((series, package))
     ##print(package, version, key)
-    if key in package_seed:
-        for tpkgarchs in package_seed[key]:
-            (tpkg, arches) = tpkgarchs
-            
-            ##print(package, tpkg)
-            tmp = want.setdefault(tpkg, [])
-            tmp.append(trigger)
+    if key in package_cache['cache-latest']:
+        for mpkg in package_cache['cache-latest'][key]:
+            #print(package, mpkg)
+            for tpkg in package_cache['cache-latest'][key][mpkg]:
+                #print(package, mpkg, tpkg)
+                tmp = want.setdefault(tpkg, [])
+                tmp.append(trigger)
 
 forms = {}
 for key in want:

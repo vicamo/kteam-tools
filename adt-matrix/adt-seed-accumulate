@@ -11,6 +11,7 @@ class AdtMatrixSeed(object):
     def __init__(self, cache):
         self.cache_file = cache
         self.cache = {}
+        self.latest = {}
 
         self.britney_cache = {}
 
@@ -18,24 +19,39 @@ class AdtMatrixSeed(object):
             with open(cache) as cachef:
                 tmp = json.load(cachef)
 
-            for seriespkg in tmp:
-                for pkgarchs in tmp[seriespkg]:
-                    (pkg, archs) = pkgarchs
-                    for arch in archs:
-                        self.cache.setdefault(seriespkg, {}).setdefault(pkg, {})[arch] = True
+            self.cache = tmp['cache']
+            self.latest = tmp['cache-latest']
 
     def save(self):
         with open(self.cache_file + '.new', 'w') as cfd:
-            tmp = {}
+
+            # seeds: make a list based output for adt-matrix.
+            seeds = {}
             for seriespkg in self.cache:
-                tmp[seriespkg] = []
+                seeds[seriespkg] = []
                 for pkg in sorted(self.cache[seriespkg]):
                     tmp_arch = []
                     for arch in sorted(self.cache[seriespkg][pkg]):
                         tmp_arch.append(arch)
-                    tmp[seriespkg].append((pkg, tmp_arch))
+                    seeds[seriespkg].append((pkg, tmp_arch))
                         
-            json.dump(tmp, cfd, indent=2)
+            # seeds: make a list based output for adt-matrix.
+            latest_merged = {}
+            for master in self.latest:
+                latest_merged[master] = {}
+                for member in self.latest[master]:
+                    for key in self.latest[master][member]:
+                        tmp = latest_merged[master].setdefault(key, [])
+                        new = list(set(tmp + self.latest[master][member][key].keys()))
+                        latest_merged[master][key] = new
+
+            out = {
+                'cache':            self.cache,
+                'cache-latest':     self.latest,
+                'seeds':            seeds,
+                'seeds-latest':     latest_merged,
+            }
+            json.dump(out, cfd, indent=2)
         os.rename(self.cache_file + '.new', self.cache_file)
 
 
@@ -71,21 +87,23 @@ class AdtMatrixSeed(object):
             if record['source'] != package:
                 continue;
 
+            # The persistant list holds any package we ever tested against.
             pcache = self.cache.setdefault(series + '-' + package, {})
+            # The current lists holds those we tested on in the most recent test run.
+            lcache = self.latest.setdefault(series + '-' + package, {})
 
             debug = [ record['source'] ]
             for record2 in self.britney_hierachy(state, record):
-                tcache = self.cache.setdefault(series + '+' + record2['source'], {})
                 if record2['source'] not in debug:
                     debug.append(record2['source'])
                 if 'tests' in record2 and 'autopkgtest' in record2['tests']:
+                    # If we have a list, this becomes the new list.
+                    tcache = lcache[record2['source']] = {}
                     for pkg in record2['tests']['autopkgtest']:
                         for arch in record2['tests']['autopkgtest'][pkg]:
                             (package, version) = pkg.split()
-                            tmp = pcache.setdefault(package, {})
-                            tmp[arch] = True
-                            tmp = tcache.setdefault(package, {})
-                            tmp[arch] = True
+                            pcache.setdefault(package, {})[arch] = True
+                            tcache.setdefault(package, {})[arch] = True
 
             print('PKG ' + series + ' ' + ' '.join(debug))
 
