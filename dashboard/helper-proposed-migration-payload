@@ -28,7 +28,14 @@ def emit(record):
     print(row)
 
 
-state_order = ('PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'NBS', 'REGRESSION')
+state_order = ('UNKNOWN', 'PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
+def accumulate_state(current, new):
+    if state_order.index(current) > state_order.index(new):
+        return current
+    else:
+        return new
+
+
 def result(arg):
     if arg[3] in ('linux', 'linux-meta', 'linux-signed') or \
        arg[3].startswith('linux-lts-') or arg[3].startswith('linux-meta-lts-') or arg[3].startswith('linux-signed-lts-') or \
@@ -54,34 +61,29 @@ def result(arg):
 
 
 def get_status(state, record):
+    overall = 'UNKNOWN'
     if record['is-candidate']:
-        return "PASS"
+        overall = accumulate_state(overall, 'PASS')
     if 'cruft-arch' in record['reason']:
-        return "NBS"
+        overall = accumulate_state(overall, 'NBS')
     if 'build-arch' in record['reason']:
-        return "BUILDING"
+        overall = accumulate_state(overall, 'BUILDING')
     if 'tests' in record and 'autopkgtest' in record['tests']:
         for pkg in record['tests']['autopkgtest']:
             for arch in record['tests']['autopkgtest'][pkg]:
-                if record['tests']['autopkgtest'][pkg][arch][0] == 'RUNNING':
-                    return "RUNNING"
-                elif record['tests']['autopkgtest'][pkg][arch][0] == 'REGRESSION':
-                    return "REGRESSION"
+                overall = accumulate_state(overall, record['tests']['autopkgtest'][pkg][arch][0])
     if 'depends' in record['reason']:
         for line in record['excuses']:
             if line.startswith('Depends:'):
                 bits = line.strip().split()
                 for record2 in state['sources']:
                     if record2['source'] == bits[2]:
-                        status = get_status(state, record2)
-                        if status != "PASS":
-                            return status
-        return 'BUILDING'
+                        overall = accumulate_state(overall, get_status(state, record2))
 
     if 'block' in record['reason']:
-        return "PASS"
+        overall = accumulate_state(overall, 'PASS')
 
-    return "UNKNOWN"
+    return overall
 
 
 def get_hierachy(state, record, seen={}):
