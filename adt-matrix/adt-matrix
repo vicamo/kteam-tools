@@ -653,8 +653,8 @@ table.matrix td {{
             )
 
         if series not in updated:
-            #adt.update()
-            #adt.save()
+            adt.update()
+            adt.save()
             updated[series] = True
 
         # Narrow matrix ...
