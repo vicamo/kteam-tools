@@ -25,21 +25,25 @@ while read series package parent
 do
 	[ "$series" = '#' ] && continue
 
+        version=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package"`
+	echo "$series $package $version" 1>&2
+
 	case "$package" in
 	linux-meta*)
 		migration=`awk '/^'"$series $package"' / { state=$NF} END {print state }' "$britney/overall.txt"`
 		[ "$migration" = '' ] && migration="MIGRATED"
+
+		package2=`echo "$package" | sed -e 's/^linux-meta/linux/'`
+		version2=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package"`
+		echo "$series $package2 $version2" 1>&2
+
+		"$here/adt-commands-payload" "$series" "$package/$version" "$package2/$version2" >"$series-$package.cmds.new"
+		mv -f "$series-$package.cmds.new" "$series-$package.cmds"
 		;;
 	*)
 		migration="-"
 		;;
 	esac
-	echo "$series $package $parent $migration"
+	echo "$series $package $parent $version $migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-matrix"
-
-while read series package parent
-do
-	"$here/adt-commands" "$series-proposed" "$package"
-done <"$here/adt-matrix.conf" >"rebuild.cmds.new"
-mv -f "rebuild.cmds.new" "rebuild.cmds"
