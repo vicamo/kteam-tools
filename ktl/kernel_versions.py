@@ -47,12 +47,17 @@ class PackagePockets:
         s.series = series
         s.sourcename = sourcename
 
-        distro_series = s.pv.releases[series]
+        s.pockets = None
+        s.published = {}
+        s.published_infer = {}
+
+    def _cache_load(s):
+        distro_series = s.pv.releases[s.series]
 
         logging.debug(
             'Fetching publishing history for %s/%s' %
-            (distro_series.name, sourcename))
-        pubs = s.pv.archive.getPublishedSources(source_name=sourcename,
+            (distro_series.name, s.sourcename))
+        pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename,
                                            exact_match=True,
                                            distro_series=distro_series)
 
@@ -82,6 +87,37 @@ class PackagePockets:
                     s.published_infer['Release'] = version
                     break
 
+    def _pockets(s):
+        if not s.pockets:
+            s._cache_load()
+
+        return s.pockets
+
+
+    def _pocket_lookup(s, pocket, infer_release):
+        if infer_release and pocket in s.published_infer:
+            return s.published_infer[pocket]
+        elif pocket in s.published:
+            return s.published[pocket]
+
+        if pocket == 'Release' and infer_release:
+            s._pockets()
+            return s.published_infer[pocket]
+
+        distro_series = s.pv.releases[s.series]
+
+        logging.debug(
+            'Fetching publishing record for %s/%s %s' %
+            (distro_series.name, s.sourcename, pocket))
+        pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename,
+                                                exact_match=True,
+                                                distro_series=distro_series,
+                                                status='Published')
+        for pub in pubs:
+            s.published[pocket] = pub.source_package_version
+
+        return s.published[pocket]
+
 
     def current_in_pocket(s, pocket, infer_release=False):
         '''Get the current version of this package published in the specified pocket'''
@@ -91,22 +127,20 @@ class PackagePockets:
 
         # If a package is introduced post release then there is no -release
         # version, the very first -updates version stands in for this version.
-        if infer_release:
-            result = s.published_infer.get(pocket)
-        else:
-            result = s.published.get(pocket)
+        return s._pocket_lookup(pocket, infer_release)
 
-        return result
 
     def all_viable(s):
+        pockets = s._pockets()
+
         result = []
         version = None
         for version in sorted(s.pockets.keys(), key=cmp_to_key(apt_pkg.version_compare)):
             #print(version, pockets[version])
-            if s.pockets[version] != ['Proposed']:
+            if pockets[version] != ['Proposed']:
                 result.append(version)
 
-        if version in s.pockets and s.pockets[version] == ['Proposed']:
+        if version in s.pockets and pockets[version] == ['Proposed']:
             result.append(version)
 
         return result
