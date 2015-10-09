@@ -102,7 +102,7 @@ class PackagePockets:
 
         if pocket == 'Release' and infer_release:
             s._pockets()
-            return s.published_infer[pocket]
+            return s.published_infer.get(pocket)
 
         distro_series = s.pv.releases[s.series]
 
@@ -118,11 +118,7 @@ class PackagePockets:
             s.published[pocket] = pub.source_package_version
             s.published_infer[pocket] = pub.source_package_version
 
-        if pocket not in s.published:
-            s.published[pocket] = None
-            s.published_infer[pocket] = None
-
-        return s.published[pocket]
+        return s.published.get(pocket)
 
 
     def current_in_pocket(s, pocket, infer_release=False):
