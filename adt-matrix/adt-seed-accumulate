@@ -55,7 +55,9 @@ class AdtMatrixSeed(object):
         os.rename(self.cache_file + '.new', self.cache_file)
 
 
-    def britney_hierachy(self, state, record, seen={}):    
+    def britney_hierachy(self, state, record, seen=None):    
+        if seen == None:
+            seen = {}
         if record['source'] in seen:
             return []
         seen[record['source']] = True
