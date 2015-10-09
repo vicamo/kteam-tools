@@ -80,7 +80,7 @@ class AutoPackageTest(object):
         self.latest = {}
         self.kernel_abi = {}
         self.first_good = {}
-        self.missing = {}
+        self.current = {}
 
         self.verbose = True
 
@@ -94,8 +94,12 @@ class AutoPackageTest(object):
                 self.latest = tmp['latest']
                 self.kernel_abi = tmp['kernel_abi']
                 self.first_good = tmp['first_good']
+                if 'current' in tmp:
+                    self.current = tmp['current']
                 if 'missing' in tmp:
-                    self.missing = tmp['missing']
+                    for key in tmp['missing']:
+                        self.current[key] = {'MISS': tmp['missing'][key]}
+                    self.dirty = True
 
             self.log_verbose('Read previous results from {}'.format(self.cache_file))
         else:
@@ -376,7 +380,7 @@ class AutoPackageTest(object):
                 'latest':       self.latest,
                 'kernel_abi':   self.kernel_abi,
                 'first_good':   self.first_good,
-                'missing':      self.missing,
+                'current':      self.current,
             }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
@@ -440,11 +444,11 @@ class AutoPackageTest(object):
                         tmp[arch] = (status, rurl, version)
 
                     # Accumulate missing results in the latest version when live.
-                    if self.live and ver == verlist[-1] and status == 'MISS':
-                        miss.setdefault(pkg, {})[arch] = True
+                    if self.live and ver == verlist[-1] and status:
+                        miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
 
         # Record the missing status for later use.
-        self.missing[self.series + '-' + self.source] = miss
+        self.current[self.series + '-' + self.source] = miss
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
