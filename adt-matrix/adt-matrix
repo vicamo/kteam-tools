@@ -621,12 +621,13 @@ table.matrix td {{
 #.row:nth-child(6n+3) {{ background-color: darkgrey }}
 .row:nth-child(even) {{ background-color: lightgrey }}
 .pointer {{ cursor: pointer; }}
+.nounder {{ text-decoration: none; }}
 </style>
 </head>
 <body>
 <h1>ADT Test Matrix ({0})</h1>
 <table class="matrix">
-<tr class="row"><th>Series<th>Package<th>Latest Kernel<th>Counts&nbsp;<th>Summary<th>Migration Status&nbsp;<th>Status</tr>
+<tr class="row"><th>Series<th>Package<th>Latest Kernel<th>Counts&nbsp;<th>Summary<th><th>Migration Status&nbsp;<th>Status</tr>
 """.format(stamp), file=indexf)
     
     updated = {}
@@ -699,7 +700,7 @@ table.matrix td {{
             state = "MISS"
 
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
-        print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a>&nbsp;<a href="{cmds_url}">&rArr;</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url, cmds_url=series + '-' + package + '.cmds'), file=indexf)
+        print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a class="nounder" href="{cmds_url}">&rArr;</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url, cmds_url=series + '-' + package + '.cmds'), file=indexf)
 
         print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state, summary=summary), file=overallf)
 
