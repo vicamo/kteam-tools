@@ -112,6 +112,7 @@ class PackagePockets:
         pubs = s.pv.archive.getPublishedSources(source_name=s.sourcename,
                                                 exact_match=True,
                                                 distro_series=distro_series,
+                                                pocket=pocket,
                                                 status='Published')
         for pub in pubs:
             s.published[pocket] = pub.source_package_version
