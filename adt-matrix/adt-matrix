@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None):
         self.cache = {}
         self.dirty = False
 
@@ -74,6 +74,7 @@ class AutoPackageTest(object):
         self.packages_latest = latest
         self.stamp = stamp
         self.live = live
+        self.trigger = trigger
 
         self.seen = {}
         self.results = {}
@@ -175,6 +176,8 @@ class AutoPackageTest(object):
         for version in sorted(self.results.keys(), key=cmp_to_key(apt_pkg.version_compare)):
             if self.version_valid(version):
                 verlist.append(version)
+        if self.trigger and self.trigger not in verlist and self.version_valid(self.trigger):
+            verlist.append(self.trigger)
 
         return verlist
 
@@ -412,7 +415,9 @@ class AutoPackageTest(object):
                 good_ever = {}
                 for ver in verlist:
                     (status, rurl) = (None, None)
-                    if pkg in self.results[ver] and arch in self.results[ver][pkg]:
+                    if ver in self.results and \
+                       pkg in self.results[ver] and \
+                       arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
                         key1 = ' '.join((self.series, self.source, arch, pkg))
                         key2 = ' '.join((self.series, self.parent, arch, pkg))
@@ -448,7 +453,9 @@ class AutoPackageTest(object):
                         miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
 
         # Record the missing status for later use.
-        self.current[self.series + '-' + self.source] = miss
+        if self.current[self.series + '-' + self.source] != miss:
+            self.current[self.series + '-' + self.source] = miss
+            self.dirty = True
 
         status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
@@ -642,6 +649,14 @@ table.matrix td {{
         (series, package, parent, migration) = bits[0:4]
         triggers = bits[4:]
 
+        # Pick the linux package version out of the results. (XXX)
+        trigger = None
+        for trig in triggers:
+            (tpkg, tver) = trig.split('/')
+            if '-' in tver:
+                trigger = tver + ' ' + package
+                break
+
         key = series + "-" + package
         if key in package_cache['seeds']:
             seed = package_cache['seeds'][key]
@@ -672,6 +687,7 @@ table.matrix td {{
                 packages = seed,
                 latest = latest,
                 live = live,
+                trigger = trigger,
             )
 
         if series not in updated:
