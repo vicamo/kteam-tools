@@ -38,7 +38,7 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regr
             key = '-'.join((series, package))
             #print(package, version, key)
             if mkey in package_cache['cache-latest']:
-                for package in package_cache['cache-latest'][mkey]:
+                if package in package_cache['cache-latest'][mkey]:
                     #print(package, mpkg)
                     for tpkg in package_cache['cache-latest'][mkey][package]:
                         #print(package, mpkg, tpkg)
