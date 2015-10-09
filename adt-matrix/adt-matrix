@@ -470,9 +470,12 @@ class AutoPackageTest(object):
         count = 0
         total = 0
         summary = []
+        primary_state = None
         for state in [ 'REGR', 'MISS', 'FAIL', 'GOOD', None ]:
             if state and status[state] > 0:
-                summary.append(state + ": " + str(status[state]))
+                if not primary_state:
+                    primary_state = state
+                summary.append('<span class="s' + state + '">' + state + ': ' + str(status[state]) + '</span>')
                 if state != 'MISS':
                     count += status[state]
                 total += status[state]
@@ -487,7 +490,7 @@ class AutoPackageTest(object):
             version = None
 
         ### counts are in <jobs>/<packages> which really do not make sense
-        return ((summary_str[0:4], summary_str, version, count, total), result)
+        return ((primary_state, summary_str, version, count, total), result)
 
 
     def matrix(self, limit=None, limit_url=None):
@@ -615,6 +618,10 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .FAIL {{ background-color: darkgreen; }}
 .ALWAYSFAIL {{ background-color: yellow; }}
 .REGR, .REGRESSION {{ background-color: red; }}
+#.sREGR {{ color: red; }}
+#.sMISS {{ color: darkyellow; }}
+#.sFAIL {{ color: darkgreen; }}
+#.sGOOD {{ color: green; }}
 table.matrix {{
     border-collapse: collapse;
 }}
