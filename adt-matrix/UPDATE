@@ -21,39 +21,47 @@ do
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate"
 
+while read series package parent
+do
+	case "$package" in
+	linux-meta*)
+		package2=`echo "$package" | sed -e 's/^linux-meta/linux/'`
+		;;
+	*)
+		package2=
+		;;
+	esac
+	echo "$series proposed $series $package $parent -- $package $package2"
+done <"$here/adt-matrix.conf" |\
+	"$here/adt-lp-version-map" >"versions.info"
+
 cmds="cmds.rebuild"
 : >"$cmds"
-while read series package parent
+while read series package parent triggers
 do
 	[ "$series" = '#' ] && continue
 
-        version=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package"`
-	echo "$series $package $version" 1>&2
+	echo "$series $package $parent $triggers" 1>&2
 
 	case "$package" in
 	linux-meta*)
 		migration=`awk '/^'"$series $package"' / { state=$NF} END {print state }' "$britney/overall.txt"`
 		[ "$migration" = '' ] && migration="MIGRATED"
-
-		package2=`echo "$package" | sed -e 's/^linux-meta/linux/'`
-		version2=`"$here/../cve-tools/cves-kernel-versions" "proposed" "$series" "$package2"`
-		echo "$series $package2 $version2" 1>&2
-
-		echo "$series" "$package/$version" "$package2/$version2" "$series-$package.cmds" >>"$cmds"
-		#"$here/adt-commands-payload" "$series" "$package/$version" "$package2/$version2" >"$series-$package.cmds.new"
-		#mv -f "$series-$package.cmds.new" "$series-$package.cmds"
 		;;
 	*)
 		migration="-"
 		;;
 	esac
-	echo "$series $package $parent $version $migration"
-done <"$here/adt-matrix.conf" | \
+	echo "$series $package $parent $migration $triggers"
+done <"versions.info" | \
 	"$here/adt-matrix"
 
-while read series trigger1 trigger2 output
+# Build the commands after the adt-matrix completes as we rely no its missing
+# test information to be up to date.
+while read series package parent triggers
 do
-	echo "commands: $series $trigger1 $trigger2 $output"
-	"$here/adt-commands-payload" "$series" "$trigger1" "$trigger2" >"$output.new"
-	mv -f "$output.new" "$output"
-done <"$cmds"
+	echo "commands: $series $package $triggers"
+	
+	"$here/adt-commands-payload" "$series" $triggers >"$series-$package.cmds.new"
+	mv -f "$series-$package.cmds.new" "$series-$package.cmds"
+done <"versions.info"

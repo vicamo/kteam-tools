@@ -634,7 +634,8 @@ table.matrix td {{
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
-        (series, package, parent, proposed_version, migration) = bits
+        (series, package, parent, migration) = bits[0:4]
+        triggers = bits[4:]
 
         key = series + "-" + package
         if key in package_cache['seeds']:
