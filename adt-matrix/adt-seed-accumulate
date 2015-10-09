@@ -107,7 +107,7 @@ class AdtMatrixSeed(object):
                             pcache.setdefault(package, {})[arch] = True
                             tcache.setdefault(package, {})[arch] = True
 
-            print('PKG ' + series + ' ' + ' '.join(debug))
+            print('hierachy ' + series + ' ' + ' '.join(debug))
 
 
 matrix_seed = AdtMatrixSeed('package-relation.json')
