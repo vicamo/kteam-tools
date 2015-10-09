@@ -81,8 +81,8 @@ for trigger in triggers:
                         if trigger not in tmp:
                             tmp.append(trigger)
 
-print(triggers)
-print(want)
+#print(triggers)
+#print(want)
 for archs in want:
     forms = {}
     for key in want[archs]:

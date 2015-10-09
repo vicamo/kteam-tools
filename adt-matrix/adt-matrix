@@ -439,8 +439,8 @@ class AutoPackageTest(object):
                         tmp = tmp.setdefault(pkg, {})
                         tmp[arch] = (status, rurl, version)
 
-                    # Accumulate missing results.
-                    if status == 'MISS':
+                    # Accumulate missing results in the latest version when live.
+                    if self.live and ver == verlist[-1] and status == 'MISS':
                         miss.setdefault(pkg, {})[arch] = True
 
         # Record the missing status for later use.
