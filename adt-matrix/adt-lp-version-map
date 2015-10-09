@@ -1,0 +1,69 @@
+#!/usr/bin/python
+
+# Copyright (C) 20153  Canonical Ltd.
+# Authors:
+#   Andy Whitcroft <apw@canonical.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 3 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+
+import logging
+import os
+import sys
+
+import apt_pkg
+
+from ktl.kernel_versions import KernelVersions
+
+
+pocket_data_cache = {}
+def pocket_data(kv, series, source):
+    if (kv, series, source) not in pocket_data_cache:
+        ##print("MISS", kv, series, source, file=sys.stderr)
+        pocket_data_cache[(kv, series, source)] = kv.pocket_data(series, source)
+    return pocket_data_cache[(kv, series, source)]
+
+if __name__ == "__main__":
+    if os.getenv('DEBUG'):
+        DEBUGLEVEL = logging.DEBUG
+    else:
+        DEBUGLEVEL = logging.WARNING
+
+    logging.basicConfig(level=DEBUGLEVEL,
+                        format="%(asctime)s - %(levelname)s - %(message)s")
+
+    kv = KernelVersions(active_only=False)
+
+    for line in sys.stdin:
+        a = line.split()
+        (series, pocket) = a[0:2]
+
+        noise = []
+        packages = []
+        store = noise
+        for arg in a[2:]:
+            if arg == '--':
+                store = packages
+                continue
+            store.append(arg)
+        
+        triggers = []
+        for source in packages:
+            pockets = pocket_data(kv, series, source)
+            version = pockets.current_in_pocket(pocket)
+
+            triggers.append(source + '/' + str(version))
+
+        print(' '.join(noise), ' '.join(triggers))
+        sys.stdout.flush()
