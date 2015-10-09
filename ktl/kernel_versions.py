@@ -116,6 +116,11 @@ class PackagePockets:
                                                 status='Published')
         for pub in pubs:
             s.published[pocket] = pub.source_package_version
+            s.published_infer[pocket] = pub.source_package_version
+
+        if pocket not in s.published:
+            s.published[pocket] = None
+            s.published_infer[pocket] = None
 
         return s.published[pocket]
 
