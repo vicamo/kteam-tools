@@ -19,8 +19,10 @@ class AdtMatrixSeed(object):
             with open(cache) as cachef:
                 tmp = json.load(cachef)
 
-            self.cache = tmp['cache']
-            self.latest = tmp['cache-latest']
+            if 'cache' in tmp:
+                self.cache = tmp['cache']
+            if 'cache-latest' in tmp:
+                self.latest = tmp['cache-latest']
 
     def save(self):
         with open(self.cache_file + '.new', 'w') as cfd:
