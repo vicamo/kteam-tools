@@ -1,3487 +1,7807 @@
 {
-  "trusty-linux-meta": [
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
+  "cache": {
+    "vivid-linux-meta": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blcr": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nat-rtsp": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "flashcache": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "asic0x": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "glibc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "acpi-call": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fwts": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "langford": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "sysdig": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "r8168": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "oss4": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }
+    }, 
+    "wily-linux-meta": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "acpi-call": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-352": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "flashcache": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "asic0x": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dm-writeboost": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "glibc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nat-rtsp": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fwts": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "langford": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "sysdig": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-352-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "r8168": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "oss4": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }
+    }, 
+    "trusty-linux-meta-lts-vivid": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blcr": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "speakup": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nat-rtsp": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "flashcache": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "west-chamber": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fwts": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "linux-lts-vivid": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "langford": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-346": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-173": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "r8168": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "oss4": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openswan": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }
+    }, 
+    "trusty-linux-meta-keystone": {
+      "blcr": {
+        "armhf": true
+      }, 
+      "speakup": {
+        "armhf": true
+      }, 
+      "nat-rtsp": {
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346-updates": {
+        "armhf": true
+      }, 
+      "flashcache": {
+        "armhf": true
+      }, 
+      "openafs": {
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "armhf": true
+      }, 
+      "blktap-dkms": {
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "armhf": true
+      }, 
+      "linux-keystone": {
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "armhf": true
+      }, 
+      "fwts": {
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "armhf": true
+      }, 
+      "langford": {
+        "armhf": true
+      }, 
+      "xtables-addons": {
+        "armhf": true
+      }, 
+      "lxc": {
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346": {
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "armhf": true
+      }, 
+      "r8168": {
+        "armhf": true
+      }, 
+      "oss4": {
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "armhf": true
+      }, 
+      "openswan": {
+        "armhf": true
+      }
+    }, 
+    "precise-linux-meta-lts-trusty": {
+      "linux-lts-trusty": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "blcr": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "speakup": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "v4l2loopback": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-96": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "virtualbox": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "ndiswrapper": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "pvcam-dkms": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openvswitch-lts-saucy": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-96-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openvswitch-lts-raring": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-173": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "oss4": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "rt-tests": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "crystalhd": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openswan": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }
+    }, 
+    "trusty-linux-meta": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blcr": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "speakup": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nat-rtsp": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "flashcache": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "west-chamber": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fwts": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "langford": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-346": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-173": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "r8168": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "oss4": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openswan": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }
+    }, 
+    "trusty-linux-meta-lts-utopic": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blcr": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "speakup": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "blktap-dkms": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-346-updates": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "flashcache": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nat-rtsp": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "west-chamber": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fwts": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "langford": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-346": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-173": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "r8168": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "linux-lts-utopic": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "oss4": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openswan": {
+        "ppc64el": true, 
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }
+    }, 
+    "wily-linux-meta-raspi2": {
+      "blktap-dkms": {
+        "armhf": true
+      }, 
+      "acpi-call": {
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-352": {
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "armhf": true
+      }, 
+      "flashcache": {
+        "armhf": true
+      }, 
+      "openafs": {
+        "armhf": true
+      }, 
+      "asic0x": {
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "armhf": true
+      }, 
+      "dm-writeboost": {
+        "armhf": true
+      }, 
+      "glibc": {
+        "armhf": true
+      }, 
+      "nat-rtsp": {
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "armhf": true
+      }, 
+      "fwts": {
+        "armhf": true
+      }, 
+      "langford": {
+        "armhf": true
+      }, 
+      "linux-raspi2": {
+        "armhf": true
+      }, 
+      "xtables-addons": {
+        "armhf": true
+      }, 
+      "lxc": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "armhf": true
+      }, 
+      "sysdig": {
+        "armhf": true
+      }, 
+      "lime-forensics": {
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-352-updates": {
+        "armhf": true
+      }, 
+      "r8168": {
+        "armhf": true
+      }, 
+      "oss4": {
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "armhf": true
+      }, 
+      "broadcom-sta": {
+        "armhf": true
+      }
+    }, 
+    "precise-linux-meta-ti-omap4": {
+      "blcr": {
+        "armhf": true
+      }, 
+      "speakup": {
+        "armhf": true
+      }, 
+      "v4l2loopback": {
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "armhf": true
+      }, 
+      "linux-ti-omap4": {
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "armhf": true
+      }, 
+      "virtualbox": {
+        "armhf": true
+      }, 
+      "openafs": {
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "armhf": true
+      }, 
+      "ndiswrapper": {
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "armhf": true
+      }, 
+      "pvcam-dkms": {
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "armhf": true
+      }, 
+      "openvswitch-lts-saucy": {
+        "armhf": true
+      }, 
+      "xtables-addons": {
+        "armhf": true
+      }, 
+      "lxc": {
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "armhf": true
+      }, 
+      "openvswitch-lts-raring": {
+        "armhf": true
+      }, 
+      "oss4": {
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "armhf": true
+      }, 
+      "openswan": {
+        "armhf": true
+      }
+    }, 
+    "precise-linux-meta": {
+      "fglrx-installer-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blcr": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "speakup": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "fglrx-installer": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "blktap-dkms": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "v4l2loopback": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bbswitch": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-340": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "linux": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-96": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "nvidia-graphics-drivers-340-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "virtualbox": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openafs": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "dahdi-linux": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "iscsitarget": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "ndiswrapper": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "tp-smapi": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "open-vm-tools": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "west-chamber": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "pvcam-dkms": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "openvswitch": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-304": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openvswitch-lts-saucy": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-96-updates": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "xtables-addons": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lxc": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "lttng-modules": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "bcmwl": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openvswitch-lts-raring": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "nvidia-graphics-drivers-173": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "oss4": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "rt-tests": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }, 
+      "crystalhd": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "sl-modem": {
+        "i386": true, 
+        "amd64": true
+      }, 
+      "openswan": {
+        "i386": true, 
+        "amd64": true, 
+        "armhf": true
+      }
+    }
+  }, 
+  "seeds-latest": {
+    "vivid-linux-meta": {
+      "fglrx-installer-updates": [
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
+        "amd64"
+      ], 
+      "blcr": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "open-vm-tools": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "nat-rtsp": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "eglibc", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
         "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "linux": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "langford", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "virtualbox": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346-updates": [
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-lts-utopic", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "flashcache": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-lts-vivid", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "openafs": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "asic0x": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "glibc": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-173", 
-      [
         "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
+        "amd64"
+      ], 
+      "blktap-dkms": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "amd64", 
-        "armhf", 
+        "amd64"
+      ], 
+      "acpi-call": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
         "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "west-chamber": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
         "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "amd64", 
-        "armhf", 
+        "armhf"
+      ], 
+      "fwts": [
+        "ppc64el", 
         "i386", 
-        "ppc64el"
+        "amd64", 
+        "armhf"
+      ], 
+      "langford": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "sysdig": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "r8168": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "oss4": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ]
+    }, 
+    "wily-linux-meta": {
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "open-vm-tools": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "blktap-dkms": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "acpi-call": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-352": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "virtualbox": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "flashcache": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "asic0x": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dm-writeboost": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "glibc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "nat-rtsp": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "v4l2loopback": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "west-chamber": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fwts": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "langford": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "sysdig": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-352-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "r8168": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "oss4": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ]
+    }, 
+    "trusty-linux-meta-lts-vivid": {
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blcr": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "speakup": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nat-rtsp": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "virtualbox": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "flashcache": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blktap-dkms": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "west-chamber": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fwts": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openvswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "linux-lts-vivid": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "langford": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "nvidia-graphics-drivers-346": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-173": [
+        "i386", 
+        "amd64"
+      ], 
+      "r8168": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "oss4": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ], 
+      "openswan": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ]
+    }, 
+    "precise-linux-meta": {
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blcr": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "speakup": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "blktap-dkms": [
+        "i386", 
+        "amd64"
+      ], 
+      "v4l2loopback": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "linux": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "virtualbox": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "ndiswrapper": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "open-vm-tools": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "west-chamber": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "pvcam-dkms": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openvswitch": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "openvswitch-lts-saucy": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-96-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "openvswitch-lts-raring": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-173": [
+        "i386", 
+        "amd64"
+      ], 
+      "nvidia-graphics-drivers-96": [
+        "i386", 
+        "amd64"
+      ], 
+      "oss4": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "crystalhd": [
+        "i386", 
+        "amd64"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ], 
+      "openswan": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ]
+    }, 
+    "trusty-linux-meta-keystone": {
+      "blcr": [
+        "armhf"
+      ], 
+      "speakup": [
+        "armhf"
+      ], 
+      "nat-rtsp": [
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "armhf"
+      ], 
+      "bbswitch": [
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "armhf"
+      ], 
+      "virtualbox": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346-updates": [
+        "armhf"
+      ], 
+      "flashcache": [
+        "armhf"
+      ], 
+      "openafs": [
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "armhf"
+      ], 
+      "blktap-dkms": [
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "armhf"
+      ], 
+      "linux-keystone": [
+        "armhf"
+      ], 
+      "west-chamber": [
+        "armhf"
+      ], 
+      "fwts": [
+        "armhf"
+      ], 
+      "openvswitch": [
+        "armhf"
+      ], 
+      "langford": [
+        "armhf"
+      ], 
+      "xtables-addons": [
+        "armhf"
+      ], 
+      "lxc": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346": [
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "armhf"
+      ], 
+      "r8168": [
+        "armhf"
+      ], 
+      "oss4": [
+        "armhf"
+      ], 
+      "rt-tests": [
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "armhf"
+      ], 
+      "openswan": [
+        "armhf"
+      ]
+    }, 
+    "precise-linux-meta-lts-trusty": {
+      "linux-lts-trusty": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "blcr": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "speakup": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "blktap-dkms": [
+        "i386", 
+        "amd64"
+      ], 
+      "v4l2loopback": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "virtualbox": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "ndiswrapper": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "open-vm-tools": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "west-chamber": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "pvcam-dkms": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openvswitch": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "openvswitch-lts-saucy": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-96-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "openvswitch-lts-raring": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-173": [
+        "i386", 
+        "amd64"
+      ], 
+      "nvidia-graphics-drivers-96": [
+        "i386", 
+        "amd64"
+      ], 
+      "oss4": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "rt-tests": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "crystalhd": [
+        "i386", 
+        "amd64"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ], 
+      "openswan": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ]
+    }, 
+    "trusty-linux-meta": {
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blcr": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "speakup": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nat-rtsp": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "virtualbox": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "flashcache": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blktap-dkms": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "west-chamber": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fwts": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openvswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "langford": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "nvidia-graphics-drivers-346": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-173": [
+        "i386", 
+        "amd64"
+      ], 
+      "r8168": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "oss4": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ], 
+      "openswan": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ]
+    }, 
+    "trusty-linux-meta-lts-utopic": {
+      "fglrx-installer-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "blcr": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "speakup": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "blktap-dkms": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bbswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "virtualbox": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-346-updates": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "flashcache": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openafs": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304-updates": [
+        "i386", 
+        "amd64"
+      ], 
+      "nat-rtsp": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fglrx-installer": [
+        "i386", 
+        "amd64"
+      ], 
+      "west-chamber": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "fwts": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "openvswitch": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "langford": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-304": [
+        "i386", 
+        "amd64"
+      ], 
+      "xtables-addons": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lxc": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "bcmwl": [
+        "i386", 
+        "amd64"
+      ], 
+      "nvidia-graphics-drivers-346": [
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-173": [
+        "i386", 
+        "amd64"
+      ], 
+      "r8168": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "linux-lts-utopic": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "oss4": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "rt-tests": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ], 
+      "sl-modem": [
+        "i386", 
+        "amd64"
+      ], 
+      "openswan": [
+        "ppc64el", 
+        "i386", 
+        "amd64", 
+        "armhf"
+      ]
+    }, 
+    "precise-linux-meta-ti-omap4": {
+      "blcr": [
+        "armhf"
+      ], 
+      "speakup": [
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "armhf"
+      ], 
+      "bbswitch": [
+        "armhf"
+      ], 
+      "linux-ti-omap4": [
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "armhf"
+      ], 
+      "virtualbox": [
+        "armhf"
+      ], 
+      "openafs": [
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "armhf"
+      ], 
+      "open-vm-tools": [
+        "armhf"
+      ], 
+      "west-chamber": [
+        "armhf"
+      ], 
+      "pvcam-dkms": [
+        "armhf"
+      ], 
+      "openvswitch": [
+        "armhf"
+      ], 
+      "openvswitch-lts-saucy": [
+        "armhf"
+      ], 
+      "xtables-addons": [
+        "armhf"
+      ], 
+      "lxc": [
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "armhf"
+      ], 
+      "openvswitch-lts-raring": [
+        "armhf"
+      ], 
+      "oss4": [
+        "armhf"
+      ], 
+      "rt-tests": [
+        "armhf"
+      ], 
+      "openswan": [
+        "armhf"
+      ]
+    }, 
+    "wily-linux-meta-raspi2": {
+      "blktap-dkms": [
+        "armhf"
+      ], 
+      "v4l2loopback": [
+        "armhf"
+      ], 
+      "bbswitch": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-352": [
+        "armhf"
+      ], 
+      "iscsitarget": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-340-updates": [
+        "armhf"
+      ], 
+      "virtualbox": [
+        "armhf"
+      ], 
+      "flashcache": [
+        "armhf"
+      ], 
+      "openafs": [
+        "armhf"
+      ], 
+      "asic0x": [
+        "armhf"
+      ], 
+      "dahdi-linux": [
+        "armhf"
+      ], 
+      "dm-writeboost": [
+        "armhf"
+      ], 
+      "glibc": [
+        "armhf"
+      ], 
+      "nat-rtsp": [
+        "armhf"
+      ], 
+      "ndiswrapper": [
+        "armhf"
+      ], 
+      "tp-smapi": [
+        "armhf"
+      ], 
+      "open-vm-tools": [
+        "armhf"
+      ], 
+      "acpi-call": [
+        "armhf"
+      ], 
+      "west-chamber": [
+        "armhf"
+      ], 
+      "fwts": [
+        "armhf"
+      ], 
+      "langford": [
+        "armhf"
+      ], 
+      "linux-raspi2": [
+        "armhf"
+      ], 
+      "xtables-addons": [
+        "armhf"
+      ], 
+      "lxc": [
+        "armhf"
+      ], 
+      "lttng-modules": [
+        "armhf"
+      ], 
+      "sysdig": [
+        "armhf"
+      ], 
+      "lime-forensics": [
+        "armhf"
+      ], 
+      "nvidia-graphics-drivers-352-updates": [
+        "armhf"
+      ], 
+      "r8168": [
+        "armhf"
+      ], 
+      "oss4": [
+        "armhf"
+      ], 
+      "rt-tests": [
+        "armhf"
+      ], 
+      "broadcom-sta": [
+        "armhf"
+      ]
+    }
+  }, 
+  "cache-latest": {
+    "vivid-linux-meta": {
+      "linux-meta": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blcr": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nat-rtsp": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "flashcache": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "asic0x": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "glibc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "acpi-call": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fwts": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "langford": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "sysdig": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "r8168": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "oss4": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }
+      }
+    }, 
+    "wily-linux-meta": {
+      "linux-meta": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "acpi-call": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-352": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "flashcache": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "asic0x": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dm-writeboost": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "glibc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nat-rtsp": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fwts": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "langford": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "sysdig": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-352-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "r8168": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "oss4": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }
+      }
+    }, 
+    "trusty-linux-meta-lts-vivid": {
+      "linux-meta-lts-vivid": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blcr": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "speakup": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nat-rtsp": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "flashcache": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "west-chamber": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fwts": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "linux-lts-vivid": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "langford": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-346": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-173": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "r8168": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "oss4": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openswan": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }
+      }
+    }, 
+    "trusty-linux-meta-keystone": {
+      "linux-meta-keystone": {
+        "blcr": {
+          "armhf": true
+        }, 
+        "speakup": {
+          "armhf": true
+        }, 
+        "nat-rtsp": {
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346-updates": {
+          "armhf": true
+        }, 
+        "flashcache": {
+          "armhf": true
+        }, 
+        "openafs": {
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "armhf": true
+        }, 
+        "blktap-dkms": {
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "armhf": true
+        }, 
+        "linux-keystone": {
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "armhf": true
+        }, 
+        "fwts": {
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "armhf": true
+        }, 
+        "langford": {
+          "armhf": true
+        }, 
+        "xtables-addons": {
+          "armhf": true
+        }, 
+        "lxc": {
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346": {
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "armhf": true
+        }, 
+        "r8168": {
+          "armhf": true
+        }, 
+        "oss4": {
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "armhf": true
+        }, 
+        "openswan": {
+          "armhf": true
+        }
+      }
+    }, 
+    "precise-linux-meta-lts-trusty": {
+      "linux-meta-lts-trusty": {
+        "linux-lts-trusty": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "blcr": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "speakup": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "v4l2loopback": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-96": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "virtualbox": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "ndiswrapper": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "pvcam-dkms": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openvswitch-lts-saucy": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-96-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openvswitch-lts-raring": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-173": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "oss4": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "rt-tests": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "crystalhd": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openswan": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }
+      }
+    }, 
+    "trusty-linux-meta": {
+      "linux-meta": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blcr": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "speakup": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nat-rtsp": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "flashcache": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "west-chamber": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fwts": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "langford": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-346": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-173": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "r8168": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "oss4": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openswan": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }
+      }
+    }, 
+    "trusty-linux-meta-lts-utopic": {
+      "linux-meta-lts-utopic": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blcr": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "speakup": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "blktap-dkms": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-346-updates": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "flashcache": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nat-rtsp": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "west-chamber": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fwts": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "langford": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-346": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-173": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "r8168": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "linux-lts-utopic": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "oss4": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openswan": {
+          "ppc64el": true, 
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }
+      }
+    }, 
+    "wily-linux-meta-raspi2": {
+      "linux-meta-raspi2": {
+        "blktap-dkms": {
+          "armhf": true
+        }, 
+        "acpi-call": {
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-352": {
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "armhf": true
+        }, 
+        "flashcache": {
+          "armhf": true
+        }, 
+        "openafs": {
+          "armhf": true
+        }, 
+        "asic0x": {
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "armhf": true
+        }, 
+        "dm-writeboost": {
+          "armhf": true
+        }, 
+        "glibc": {
+          "armhf": true
+        }, 
+        "nat-rtsp": {
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "armhf": true
+        }, 
+        "fwts": {
+          "armhf": true
+        }, 
+        "langford": {
+          "armhf": true
+        }, 
+        "linux-raspi2": {
+          "armhf": true
+        }, 
+        "xtables-addons": {
+          "armhf": true
+        }, 
+        "lxc": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "armhf": true
+        }, 
+        "sysdig": {
+          "armhf": true
+        }, 
+        "lime-forensics": {
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-352-updates": {
+          "armhf": true
+        }, 
+        "r8168": {
+          "armhf": true
+        }, 
+        "oss4": {
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "armhf": true
+        }, 
+        "broadcom-sta": {
+          "armhf": true
+        }
+      }
+    }, 
+    "precise-linux-meta-ti-omap4": {
+      "linux-meta-ti-omap4": {
+        "blcr": {
+          "armhf": true
+        }, 
+        "speakup": {
+          "armhf": true
+        }, 
+        "v4l2loopback": {
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "armhf": true
+        }, 
+        "linux-ti-omap4": {
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "armhf": true
+        }, 
+        "virtualbox": {
+          "armhf": true
+        }, 
+        "openafs": {
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "armhf": true
+        }, 
+        "ndiswrapper": {
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "armhf": true
+        }, 
+        "pvcam-dkms": {
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "armhf": true
+        }, 
+        "openvswitch-lts-saucy": {
+          "armhf": true
+        }, 
+        "xtables-addons": {
+          "armhf": true
+        }, 
+        "lxc": {
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "armhf": true
+        }, 
+        "openvswitch-lts-raring": {
+          "armhf": true
+        }, 
+        "oss4": {
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "armhf": true
+        }, 
+        "openswan": {
+          "armhf": true
+        }
+      }
+    }, 
+    "precise-linux-meta": {
+      "linux-meta": {
+        "fglrx-installer-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blcr": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "speakup": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "fglrx-installer": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "blktap-dkms": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "v4l2loopback": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bbswitch": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-340": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "linux": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-96": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "nvidia-graphics-drivers-340-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "virtualbox": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openafs": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "dahdi-linux": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "iscsitarget": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "ndiswrapper": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "tp-smapi": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "open-vm-tools": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "west-chamber": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "pvcam-dkms": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "openvswitch": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-304": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openvswitch-lts-saucy": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-96-updates": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "xtables-addons": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lxc": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "lttng-modules": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "bcmwl": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openvswitch-lts-raring": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "nvidia-graphics-drivers-173": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "oss4": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "rt-tests": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }, 
+        "crystalhd": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "sl-modem": {
+          "i386": true, 
+          "amd64": true
+        }, 
+        "openswan": {
+          "i386": true, 
+          "amd64": true, 
+          "armhf": true
+        }
+      }
+    }
+  }, 
+  "seeds": {
+    "vivid-linux-meta": [
+      [
+        "acpi-call", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "asic0x", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "glibc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "sysdig", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
       ]
     ], 
-    [
-      "tp-smapi", 
+    "wily-linux-meta": [
       [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
+        "acpi-call", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "asic0x", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dm-writeboost", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "glibc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-352", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-352-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "sysdig", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
       ]
     ], 
-    [
-      "v4l2loopback", 
+    "trusty-linux-meta-lts-vivid": [
       [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "linux-lts-vivid", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-173", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
       ]
     ], 
-    [
-      "virtualbox", 
+    "precise-linux-meta": [
       [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "crystalhd", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-173", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-96", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-96-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch-lts-raring", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch-lts-saucy", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "pvcam-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
       ]
     ], 
-    [
-      "west-chamber", 
+    "trusty-linux-meta-keystone": [
       [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
+        "bbswitch", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "linux-keystone", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346-updates", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "armhf"
+        ]
       ]
     ], 
-    [
-      "xtables-addons", 
+    "precise-linux-meta-lts-trusty": [
       [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "crystalhd", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "linux-lts-trusty", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-173", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-96", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-96-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch-lts-raring", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openvswitch-lts-saucy", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "pvcam-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ]
+    ], 
+    "trusty-linux-meta": [
+      [
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-173", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ]
+    ], 
+    "trusty-linux-meta-lts-utopic": [
+      [
+        "bbswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "bcmwl", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fglrx-installer", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "fglrx-installer-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "linux-lts-utopic", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-173", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-304-updates", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-346-updates", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "sl-modem", 
+        [
+          "amd64", 
+          "i386"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "amd64", 
+          "armhf", 
+          "i386", 
+          "ppc64el"
+        ]
+      ]
+    ], 
+    "precise-linux-meta-ti-omap4": [
+      [
+        "bbswitch", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "blcr", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "linux-ti-omap4", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openswan", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openvswitch", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openvswitch-lts-raring", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openvswitch-lts-saucy", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "pvcam-dkms", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "speakup", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "armhf"
+        ]
+      ]
+    ], 
+    "wily-linux-meta-raspi2": [
+      [
+        "acpi-call", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "asic0x", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "bbswitch", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "blktap-dkms", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "broadcom-sta", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "dahdi-linux", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "dm-writeboost", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "flashcache", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "fwts", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "glibc", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "iscsitarget", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "langford", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lime-forensics", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "linux-raspi2", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lttng-modules", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "lxc", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nat-rtsp", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "ndiswrapper", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-340-updates", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-352", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "nvidia-graphics-drivers-352-updates", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "open-vm-tools", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "openafs", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "oss4", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "r8168", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "rt-tests", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "sysdig", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "tp-smapi", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "v4l2loopback", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "virtualbox", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "west-chamber", 
+        [
+          "armhf"
+        ]
+      ], 
+      [
+        "xtables-addons", 
+        [
+          "armhf"
+        ]
       ]
     ]
-  ], 
-  "wily-linux-meta-mako": [
-    [
-      "acpi-call", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "precise-linux-meta-armadaxp": [
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch-lts-raring", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch-lts-saucy", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "pvcam-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "vivid-linux-meta-mako": [
-    [
-      "acpi-call", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "wily-linux-meta": [
-    [
-      "acpi-call", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "glibc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-goldfish", 
-      [
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ]
-  ], 
-  "wily-linux-meta-flo": [
-    [
-      "acpi-call", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "precise-linux-meta-lts-trusty": [
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "crystalhd", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-173", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-331", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-331-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-96", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-96-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch-lts-raring", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch-lts-saucy", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "pvcam-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ]
-  ], 
-  "vivid-linux-meta": [
-    [
-      "acpi-call", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "glibc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-goldfish", 
-      [
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ]
-  ], 
-  "precise-linux-meta": [
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "crystalhd", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-173", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-331", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-331-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-96", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-96-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch-lts-raring", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "openvswitch-lts-saucy", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "pvcam-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ]
-  ], 
-  "trusty-linux-meta-lts-utopic": [
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-lts-utopic", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-173", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ]
-  ], 
-  "trusty-linux-meta-lts-vivid": [
-    [
-      "bbswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "bcmwl", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fglrx-installer", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "fglrx-installer-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "linux-lts-vivid", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-173", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-304-updates", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "sl-modem", 
-      [
-        "amd64", 
-        "i386"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ]
-  ], 
-  "vivid-linux-meta-flo": [
-    [
-      "acpi-call", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "asic0x", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "sysdig", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "precise-linux-meta-ti-omap4": [
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lxc", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-vm-tools", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch-lts-raring", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch-lts-saucy", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "pvcam-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ], 
-  "trusty-linux-meta-keystone": [
-    [
-      "bbswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blcr", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "blktap-dkms", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "broadcom-sta", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "dahdi-linux", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "flashcache", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "fwts", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "iscsitarget", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "langford", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "lime-forensics", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "linux-keystone", 
-      [
-        "amd64", 
-        "armhf", 
-        "i386", 
-        "ppc64el"
-      ]
-    ], 
-    [
-      "lttng-modules", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nat-rtsp", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "ndiswrapper", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-340-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "nvidia-graphics-drivers-346-updates", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "open-iscsi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openafs", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openswan", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "openvswitch", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "oss4", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "r8168", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "rt-tests", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "speakup", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "tp-smapi", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "v4l2loopback", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "virtualbox", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "west-chamber", 
-      [
-        "armhf"
-      ]
-    ], 
-    [
-      "xtables-addons", 
-      [
-        "armhf"
-      ]
-    ]
-  ]
+  }
 }
