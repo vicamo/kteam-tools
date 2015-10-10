@@ -182,6 +182,7 @@ class AutoPackageTest(object):
         return verlist
 
 
+    # XXX: this should be using the binary packages listed for this source.
     def version2package(self, series, version, flavour):
         if flavour == 'omap4':
             return 'linux-meta-ti-omap4'
@@ -189,7 +190,7 @@ class AutoPackageTest(object):
         elif flavour in ('keystone', 'armadaxp'):
             return 'linux-meta-' + flavour
 
-        elif flavour in ('generic', 'generic-lpae', 'virtual'):
+        elif flavour in ('generic', 'generic-pae', 'generic-lpae', 'virtual'):
             if series == 'precise':
                 if apt_pkg.version_compare(version, "3.2.0-999") < 0:
                     return 'linux-meta'
@@ -295,7 +296,7 @@ class AutoPackageTest(object):
                     if 'kernel_version' in testinfo:
                         match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
                         if match:
-                            #kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
+                            kernel_pkg = self.version2package(self.series, match.group(1) + '.' + match.group(3), match.group(2))
                             kernel_ver = match.group(1) + '.' + match.group(3)
 
                 # Otherwise: find the newest kernel installed in the image.
@@ -453,7 +454,8 @@ class AutoPackageTest(object):
                         miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
 
         # Record the missing status for later use.
-        if self.current[self.series + '-' + self.source] != miss:
+        if self.series + '-' + self.source not in self.current or \
+           self.current[self.series + '-' + self.source] != miss:
             self.current[self.series + '-' + self.source] = miss
             self.dirty = True
 
