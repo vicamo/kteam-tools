@@ -413,6 +413,7 @@ class AutoPackageTest(object):
                     latest = self.latest[key]
                 
             for arch in archs:
+                prev_status = {}
                 good_ever = {}
                 for ver in verlist:
                     (status, rurl) = (None, None)
@@ -444,6 +445,15 @@ class AutoPackageTest(object):
                     if status == 'MISS' and pkg not in self.packages_latest:
                         status = None
 
+                    # Track previous state so we can detect and differentiate new
+                    # regressions.
+                    if ver != verlist[-1]:
+                        if status and status != 'MISS':
+                            prev_status[pkg] = status
+                    else:
+                        if status == 'REGR' and prev_status.get(pkg) != 'REGR':
+                            status = 'REGN'
+
                     if status:
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
@@ -459,7 +469,7 @@ class AutoPackageTest(object):
             self.current[self.series + '-' + self.source] = miss
             self.dirty = True
 
-        status = { 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
+        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
@@ -473,11 +483,12 @@ class AutoPackageTest(object):
         total = 0
         summary = []
         primary_state = None
-        for state in [ 'REGR', 'MISS', 'FAIL', 'GOOD', None ]:
+        for state in [ 'REGN', 'REGR', 'MISS', 'FAIL', 'GOOD' ]:
             if state and status[state] > 0:
                 if not primary_state:
                     primary_state = state
-                summary.append('<span class="s' + state + '">' + state + ': ' + str(status[state]) + '</span>')
+                #summary.append('<span class="s' + state + '">' + state + ': ' + str(status[state]) + '</span>')
+                summary.append(state + ': ' + str(status[state]))
                 if state != 'MISS':
                     count += status[state]
                 total += status[state]
@@ -507,7 +518,8 @@ class AutoPackageTest(object):
 .RUN {{ background-color: yellow; }}
 .MISS {{ background-color: yellow; }}
 .FAIL {{ background-color: orange; }}
-.REGR {{ background-color: red; }}
+.REGR {{ background-color: tomato; }}
+.REGN {{ background-color: red; }}
 table.matrix {{
     border-collapse: collapse;
 }}
@@ -619,7 +631,8 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .MISS, .MISSING {{ background-color: yellow; }}
 .FAIL {{ background-color: darkgreen; }}
 .ALWAYSFAIL {{ background-color: yellow; }}
-.REGR, .REGRESSION {{ background-color: red; }}
+.REGR, .REGRESSION {{ background-color: tomato; }}
+.REGN {{ background-color: red; }}
 #.sREGR {{ color: red; }}
 #.sMISS {{ color: darkyellow; }}
 #.sFAIL {{ color: darkgreen; }}
@@ -731,7 +744,7 @@ table.matrix td {{
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a class="nounder" href="{cmds_url}">&rArr;</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url, cmds_url=series + '-' + package + '.cmds'), file=indexf)
 
-        print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state, summary=summary), file=overallf)
+        print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state.replace('REGN', 'REGR'), summary=summary), file=overallf)
 
         # We are all done with adt so make sure it is saved if changed.
         #adt.dirty = True
