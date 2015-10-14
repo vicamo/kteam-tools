@@ -18,7 +18,7 @@ with open(series + ".cache") as cachef:
     series_cache = json.load(cachef)
 
 # Generate commands to retrigger all missing tests.
-for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regressing')):
+for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
     print("# " + series + " " + master_package + " retrigger " + message)
 
     mkey = '-'.join((series, master_package))
@@ -27,31 +27,34 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regr
 
     if not states:
         states = series_cache['current'][mkey].keys()
-        
-    want = {}
+
+    package_arch = {}
     for state in states:
         if state not in series_cache['current'][mkey]:
             continue
-        current = series_cache['current'][mkey][state]
-        for trigger in triggers:
-            (package, version) = trigger.split('/')
-            key = '-'.join((series, package))
-            #print(package, version, key)
-            if mkey in package_cache['cache-latest']:
-                if package in package_cache['cache-latest'][mkey]:
-                    #print(package, mpkg)
-                    for tpkg in package_cache['cache-latest'][mkey][package]:
-                        #print(package, mpkg, tpkg)
-                        if tpkg in current:
-                            archs = []
-                            for arch in ['amd64', 'i386', 'armhf', 'ppc64el']:
-                                if arch in current[tpkg]:
-                                    archs.append(arch)
-                            if len(archs) > 0:
-                                tmp = want.setdefault(' '.join(archs), {}).setdefault(tpkg, [])
-                                if trigger not in tmp:
-                                    tmp.append(trigger)
+        for tpkg in series_cache['current'][mkey][state]:
+            for arch in series_cache['current'][mkey][state][tpkg]:
+                package_arch.setdefault(tpkg, {})[arch] = True
 
+        
+    #print(package_arch)
+    want = {}
+    for trigger in triggers:
+        (package, version) = trigger.split('/')
+        key = '-'.join((series, package))
+        #print(package, version, key)
+
+        if mkey in package_cache['cache-latest'] and package in package_cache['cache-latest'][mkey]:
+            for tpkg in package_arch:
+                #print(package, mpkg, tpkg)
+                if tpkg in package_arch:
+                    archs = sorted(package_arch[tpkg])
+                    if len(archs) > 0:
+                        tmp = want.setdefault(' '.join(archs), {}).setdefault(tpkg, [])
+                        if trigger not in tmp:
+                            tmp.append(trigger)
+
+    #print(want)
     for archs in want:
         forms = {}
         for key in want[archs]:
