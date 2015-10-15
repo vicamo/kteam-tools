@@ -413,7 +413,7 @@ class AutoPackageTest(object):
                     latest = self.latest[key]
                 
             for arch in archs:
-                prev_status = {}
+                prev_status = None
                 good_ever = {}
                 for ver in verlist:
                     (status, rurl) = (None, None)
@@ -447,12 +447,10 @@ class AutoPackageTest(object):
 
                     # Track previous state so we can detect and differentiate new
                     # regressions.
-                    if ver != verlist[-1]:
-                        if status and status != 'MISS':
-                            prev_status[pkg] = status
-                    else:
-                        if status == 'REGR' and prev_status.get(pkg) != 'REGR':
-                            status = 'REGN'
+                    if status == 'REGR' and prev_status not in ('REGR', 'REGN'):
+                        status = 'REGN'
+                    if status and status != 'MISS':
+                        prev_status = status
 
                     if status:
                         tmp = result.setdefault(ver, {})
@@ -462,6 +460,7 @@ class AutoPackageTest(object):
                     # Accumulate missing results in the latest version when live.
                     if self.live and ver == verlist[-1] and status:
                         miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
+
 
         # Record the missing status for later use.
         if self.series + '-' + self.source not in self.current or \
