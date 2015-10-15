@@ -21,6 +21,19 @@ do
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate"
 
+# Update package-version.json
+while read series package parent
+do
+	case "$package" in
+	linux-meta*)
+		package=`echo "$package" | sed -e 's/^linux-meta/linux/'`
+		;;
+	esac
+	echo "$series $package"
+done <"$here/adt-matrix.conf" |\
+	"$here/adt-lp-binaries"
+
+# Generate versions.info
 while read series package parent
 do
 	case "$package" in

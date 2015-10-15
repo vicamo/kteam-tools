@@ -1,0 +1,119 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+
+import os
+import sys
+import logging
+import json
+
+from launchpadlib.launchpad import Launchpad as _Launchpad
+
+# Work around non-multiple-instance-safety of launchpadlib (bug #459418).
+class Launchpad(_Launchpad):
+    @classmethod
+    def _get_paths(cls, service_root, launchpadlib_dir=None):
+        service_root, launchpadlib_dir, cache_path, service_root_dir = (
+            _Launchpad._get_paths(
+                service_root, launchpadlib_dir=launchpadlib_dir))
+        cache_path += "-sru-report"
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path, 0o700)
+        return service_root, launchpadlib_dir, cache_path, service_root_dir
+
+
+class KernelPackages:
+    def __init__(s, launchpad=None, cache='package-binaries.json'):
+        s.lp = None
+        s.ubuntu = None
+        s.archive = None
+        s.series = {}
+
+        s.lpinit(launchpad=launchpad)
+
+        s.dirty = False
+        s.cache_file = cache
+        s.cache_version = {}
+        s.map_source = {}
+
+        if os.path.exists(s.cache_file):
+            with open(s.cache_file) as cachef:
+                tmp = json.load(cachef)
+
+                s.cache_version  = tmp['cache-version']
+                s.map_source     = tmp['map-source']
+
+
+    def save(s):
+        if s.dirty:
+            with open(s.cache_file + '.new', 'w') as cfd:
+                out = {
+                    'cache-version':    s.cache_version,
+                    'map-source':       s.map_source,
+                }
+                json.dump(out, cfd, indent=2)
+            os.rename(s.cache_file + '.new', s.cache_file)
+
+
+    def lpinit(s, launchpad=None):
+        logging.debug("Initializing LP Credentials")
+        if not launchpad:
+            s.lp = Launchpad.login_anonymously('adt-lp-binaries', 'production')
+        else:
+            s.lp = launchpad
+            
+        s.ubuntu = s.lp.distributions['ubuntu']
+        s.archive = s.ubuntu.getArchive(name='primary')
+
+
+    def _series(s, series_name):
+        if series_name not in s.series:
+            for series in s.ubuntu.series:
+                s.series[series.name] = series
+
+        return s.series[series_name]
+
+
+    def package_linux_image(s, seriesname, sourcename):
+        distro_series = s._series(seriesname)
+        pubs = s.archive.getPublishedSources(source_name=sourcename,
+                                                exact_match=True,
+                                                pocket = 'Proposed',
+                                                distro_series=distro_series)
+
+        if len(pubs) > 0:
+            pub = pubs[0]
+
+            sver = pub.source_package_version
+            key = seriesname + ' ' + sourcename
+            if s.cache_version.get(key) != sver:
+                s.cache_version[key] = sver
+
+                flavours = {}
+                for binary in pub.getPublishedBinaries():
+                    binary_package_name = binary.binary_package_name
+                    if binary_package_name.startswith('linux-image-') and \
+                       binary_package_name[12].isdigit() and \
+                       not binary_package_name.endswith('-dbgsym'):
+                        a = binary_package_name.split('-', 4)
+                        flavours[a[4]] = True
+
+                base_versions = {}
+                for pub in pubs:
+                    (base, abi) = pub.source_package_version.split('-', 1)
+                    base_versions[base] = True
+
+                #print(flavours)
+                #print(base_versions)
+
+                for base in base_versions:
+                    for flavour in flavours:
+                        s.map_source[seriesname + ' ' + base + ' ' + flavour] = sourcename.replace('linux', 'linux-meta')
+                s.dirty = True
+
+
+kp = KernelPackages()
+for line in sys.stdin:
+    (series, package) = line.split()
+    kp.package_linux_image(series, package)
+kp.save()
