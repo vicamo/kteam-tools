@@ -60,7 +60,13 @@ def result(arg):
         package_results[key] = cstate
 
 
-def get_status(state, record):
+def get_status(state, record, seen=None):
+    if seen == None:
+        seen = {}
+    if record['source'] in seen:
+        return 'UNKNOWN'
+    seen[record['source']] = True
+
     overall = 'UNKNOWN'
     if record['is-candidate']:
         overall = accumulate_state(overall, 'PASS')
@@ -79,7 +85,7 @@ def get_status(state, record):
             bits = line.strip().split()
             for record2 in state['sources']:
                 if record2['source'] == bits[2]:
-                    overall = accumulate_state(overall, get_status(state, record2))
+                    overall = accumulate_state(overall, get_status(state, record2, seen))
 
     if 'block' in record['reason']:
         overall = accumulate_state(overall, 'PASS')
