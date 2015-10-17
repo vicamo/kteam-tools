@@ -73,12 +73,13 @@ def get_status(state, record):
             for arch in record['tests']['autopkgtest'][pkg]:
                 overall = accumulate_state(overall, record['tests']['autopkgtest'][pkg][arch][0])
     if 'depends' in record['reason']:
-        for line in record['excuses']:
-            if line.startswith('Depends:'):
-                bits = line.strip().split()
-                for record2 in state['sources']:
-                    if record2['source'] == bits[2]:
-                        overall = accumulate_state(overall, get_status(state, record2))
+        overall = accumulate_state(overall, 'DEPENDS')
+    for line in record['excuses']:
+        if line.startswith('Depends:'):
+            bits = line.strip().split()
+            for record2 in state['sources']:
+                if record2['source'] == bits[2]:
+                    overall = accumulate_state(overall, get_status(state, record2))
 
     if 'block' in record['reason']:
         overall = accumulate_state(overall, 'PASS')
