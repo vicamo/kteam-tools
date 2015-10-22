@@ -291,6 +291,7 @@ class Ubuntu:
             {
                 'linux-lts-utopic' : [ 'linux', '14.10' ],
                 'linux-lts-vivid' : [ 'linux', '15.04' ],
+                'linux-lts-wily' : [ 'linux', '15.10' ],
             },
             'sha1' : '',
             'md5' : ''
