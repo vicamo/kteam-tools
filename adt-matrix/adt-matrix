@@ -172,6 +172,8 @@ class AutoPackageTest(object):
         if not version:
             return False
         (ver, package) = version.split()
+        if not ver or ver == 'None':
+            return False
 
         return package == self.source
 
@@ -700,7 +702,7 @@ table.matrix td {{
                 trigger = trigger,
             )
 
-        adt.update()
+        #adt.update()
 
         # Narrow matrix ...
         html_all = series + '-' + package + '-all.html'
