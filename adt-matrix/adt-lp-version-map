@@ -62,7 +62,7 @@ if __name__ == "__main__":
         for source in packages:
             pockets = pocket_data(kv, series, source)
             version = None
-            for pocket in ('proposed', 'updates'):
+            for pocket in ('proposed', 'updates', 'security', 'release'):
                 version = pockets.current_in_pocket(pocket)
                 if version:
                     break
