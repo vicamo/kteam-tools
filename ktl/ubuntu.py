@@ -131,6 +131,36 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
+        '16.04' :
+        {
+            'development' : True,        # This is the version that is currently under development
+            'series_version' : '16.04',
+            'kernel'    : '4.3.0',
+            'name'      : 'xenial',
+            'supported' : False,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+                'linux-raspi2',
+                'linux-meta-raspi2',
+            ],
+            'dependent-packages' :
+            {
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                },
+                'linux-raspi2' : { 'meta' : 'linux-meta-raspi2' },
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-raspi2' ]
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
         '15.10' :
         {
             'development' : True,        # This is the version that is currently under development
@@ -648,6 +678,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '4.3.0'    : db['16.04'],
         '4.2.0'    : db['15.10'],
         '4.0.0'    : db['15.10'],
         '3.19.0'   : db['15.04'],
@@ -671,6 +702,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'xenial'   : db['16.04'],
         'wily'     : db['15.10'],
         'vivid'    : db['15.04'],
         'utopic'   : db['14.10'],
