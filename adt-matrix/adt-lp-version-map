@@ -47,12 +47,12 @@ if __name__ == "__main__":
 
     for line in sys.stdin:
         a = line.split()
-        (series, pocket) = a[0:2]
+        (series) = a[0]
 
         noise = []
         packages = []
         store = noise
-        for arg in a[2:]:
+        for arg in a[1:]:
             if arg == '--':
                 store = packages
                 continue
@@ -61,7 +61,11 @@ if __name__ == "__main__":
         triggers = []
         for source in packages:
             pockets = pocket_data(kv, series, source)
-            version = pockets.current_in_pocket(pocket)
+            version = None
+            for pocket in ('proposed', 'updates'):
+                version = pockets.current_in_pocket(pocket)
+                if version:
+                    break
 
             triggers.append(source + '/' + str(version))
 

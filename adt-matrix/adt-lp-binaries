@@ -115,5 +115,6 @@ class KernelPackages:
 kp = KernelPackages()
 for line in sys.stdin:
     (series, package) = line.split()
+    print('binaries:', series, package)
     kp.package_linux_image(series, package)
 kp.save()

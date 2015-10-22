@@ -44,7 +44,7 @@ do
 		package2=
 		;;
 	esac
-	echo "$series proposed $series $package $parent -- $package $package2"
+	echo "$series $series $package $parent -- $package $package2"
 done <"$here/adt-matrix.conf" |\
 	"$here/adt-lp-version-map" >"versions.info"
 

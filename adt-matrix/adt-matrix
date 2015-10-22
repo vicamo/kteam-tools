@@ -192,7 +192,7 @@ class AutoPackageTest(object):
 
         key = series + ' ' + base_version + ' ' + flavour
         if key in self.map_source:
-            print("APW map:", series, version, flavour, key, self.map_source[key])
+            #print("map:", series, version, flavour, key, self.map_source[key])
             return self.map_source[key]
 
         return 'UNKNOWN'
