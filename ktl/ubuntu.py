@@ -163,11 +163,11 @@ class Ubuntu:
         },
         '15.10' :
         {
-            'development' : True,        # This is the version that is currently under development
+            'development' : False,        # This is the version that is currently under development
             'series_version' : '15.10',
             'kernel'    : '4.2.0',
             'name'      : 'wily',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
