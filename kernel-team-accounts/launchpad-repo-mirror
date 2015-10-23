@@ -29,7 +29,7 @@ while read repo url
 do
     echo "*** $repo ..."
     if [ ! -d "/srv/kernel.ubuntu.com/git/$repo" ]; then
-	(cd "/srv/kernel.ubuntu.com/git" && mkdir "$repo" && git init "$repo")
+	(cd "/srv/kernel.ubuntu.com/git" && mkdir "$repo" && git init --bare "$repo")
     fi
     (cd "/srv/kernel.ubuntu.com/git/$repo" && \
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
