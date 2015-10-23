@@ -47,6 +47,7 @@ precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise p
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty trusty trusty-updates trusty-proposed
 vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 wily http://people.canonical.com/~ubuntu-archive/proposed-migration/wily wily wily-updates wily-proposed
+xenial http://people.canonical.com/~ubuntu-archive/proposed-migration/xenial xenial xenial-updates xenial-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" "$out/overall.txt.new" | \
     "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
