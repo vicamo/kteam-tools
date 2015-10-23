@@ -34,6 +34,9 @@ done <<EOL
 kernel-ppa/mirror/ubuntu-wily.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
 kernel-ppa/mirror/ubuntu-wily-meta.git     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily
 kernel-ppa/mirror/ubuntu-wily-signed.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily
+kernel-ppa/mirror/ubuntu-xenial.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+kernel-ppa/mirror/ubuntu-xenial-meta.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+kernel-ppa/mirror/ubuntu-xenial-signed.git git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
 kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 EOL
 
