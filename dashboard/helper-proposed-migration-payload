@@ -30,7 +30,6 @@ def emit(record):
 
 state_order = ('UNKNOWN', 'PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
 def accumulate_state(current, new):
-    print("ACC", current, new)
     if state_order.index(current) > state_order.index(new):
         return current
     else:
