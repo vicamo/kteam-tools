@@ -565,6 +565,7 @@ table.matrix, table.matrix th, table.matrix td {{
             for arch in archs:
                 if arch in archs_seen:
                     archs_good.append(arch)
+            archs_good = archs
 
             for arch in archs_good:
                 arch_link = pkg_arch_link(pkg, self.series, arch)
