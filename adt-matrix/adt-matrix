@@ -243,16 +243,20 @@ class AutoPackageTest(object):
 
                 # Work out the trigger package so we put this in a reasonable bucket.
                 if testinfo and 'custom_environment' in testinfo:
+                    modern = False
                     for varval in testinfo['custom_environment']:
                         (var, val) = varval.split('=', 1)
                     
-                        modern = False
                         if var == 'ADT_TEST_TRIGGERS':
                             for tpkgtver in val.split():
                                 if '/' in tpkgtver:
                                     modern = True
                                     (tpkg, tver) = tpkgtver.split('/')
-                                    if tpkg.startswith('linux-meta'):
+
+                                    if tver == 'None':
+                                        pass # causes this to be ignored.
+
+                                    elif tpkg.startswith('linux-meta'):
                                         bits = tver.split('.')
                                         key = '.'.join(bits[0:4]) + ' ' + tpkg
                                         kernel_pkg = tpkg
@@ -268,9 +272,9 @@ class AutoPackageTest(object):
                                         kernel_ver_rough = tver
 
         
-                        # This is a triggered event not for linux, ignore.
-                        if modern and not kernel_pkg:
-                            continue
+                    # This is a triggered event not for linux, ignore.
+                    if modern and not kernel_pkg:
+                        return
 
                 # If this is testing a kernel package it should be for that package.
                 #if ressrc.startswith('linux'):
@@ -702,7 +706,7 @@ table.matrix td {{
                 trigger = trigger,
             )
 
-        #adt.update()
+        adt.update()
 
         # Narrow matrix ...
         html_all = series + '-' + package + '-all.html'
