@@ -67,8 +67,6 @@ def get_status(state, record, seen=None):
         return 'UNKNOWN'
     seen[record['source']] = True
 
-    print(record['source'])
-
     overall = 'UNKNOWN'
     if record['is-candidate']:
         overall = accumulate_state(overall, 'PASS')
