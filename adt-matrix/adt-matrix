@@ -694,8 +694,8 @@ table.matrix td {{
             latest = seed
 
         live = True
-        if migration == 'MIGRATED':
-            live = False
+        #if migration == 'MIGRATED':
+        #    live = False
         adt = AutoPackageTest(
                 stamp = stamp,
                 series = series,
