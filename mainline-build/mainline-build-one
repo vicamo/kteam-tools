@@ -338,8 +338,8 @@ for arch in $arches; do
 		# fakeroot is very slow, only use for packaging as per
 		# dpkg-buildpackage.
 	        cat - <<-EOM
-	        $cross_prefix debian/rules $cross_overrides do_extras_package=false do_tools=0 no_dumpfile=1 build-arch
-	        $cross_prefix fakeroot debian/rules $cross_overrides do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
+	        $cross_prefix debian/rules $cross_overrides do_mainline_build=true do_extras_package=false do_tools=0 no_dumpfile=1 build-arch
+	        $cross_prefix fakeroot debian/rules $cross_overrides do_mainline_build=true do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
 		EOM
 	} | do_chroot "$build_release-$carch" "/bin/bash"
 	echo "-+++- end $arch -+++-"
