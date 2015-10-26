@@ -109,7 +109,7 @@ def GetDateTime():
 #------------------------------------------------------------------------------
 # Try to make sure we've run fdr clean
 #------------------------------------------------------------------------------
-if not os.path.isfile(os.path.join(debian_dir, "control")):
+if not os.path.isfile("debian/control"):
 	print "EE: debian control file not found - do you need to run 'fakeroot debian/rules clean'?"
 	sys.exit(1)
 
