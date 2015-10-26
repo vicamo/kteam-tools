@@ -28,8 +28,14 @@ abinum="$3"
 # We cannot use the previous LTS as we are tied somewhat to compiler
 # versions and features in later releases.
 case "$series" in
-unstable)	build_release="wily" ;;
-*)		build_release="$series" ;;
+hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring|saucy)
+	build_release="precise" ;;
+trusty|utopic)
+	build_release="trusty" ;;
+unstable)
+	build_release="wily" ;;
+*)
+	build_release="$series" ;;
 esac
 
 # Arches to build
