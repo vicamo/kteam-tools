@@ -67,6 +67,11 @@ export CCACHE_DIR
 # Clean out the rubbish.
 rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES" "$master_main"/*.patch
 
+# If we have an indication of where this was built then sub that for master_release.
+if [ -f "$master_main/BUILT" ]; then
+	master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
+fi
+
 # We finally have the tree in a consitant state, finally ask for the build
 if [ "$abi" != "" ]; then
 	email=":"
