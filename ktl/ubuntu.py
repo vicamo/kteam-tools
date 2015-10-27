@@ -266,6 +266,9 @@ class Ubuntu:
                 'linux-lts-vivid',
                 'linux-meta-lts-vivid',
                 'linux-signed-lts-vivid',
+                'linux-lts-wily',
+                'linux-meta-lts-wily',
+                'linux-signed-lts-wily',
             ],
             'dependent-packages' :
             {
@@ -280,6 +283,10 @@ class Ubuntu:
                 'linux-lts-vivid' : {
                     'meta' : 'linux-meta-lts-vivid',
                     'signed' : 'linux-signed-lts-vivid'
+                },
+                'linux-lts-wily' : {
+                    'meta' : 'linux-meta-lts-wily',
+                    'signed' : 'linux-signed-lts-wily'
                 },
                 'linux-keystone' : { 'meta' : 'linux-meta-keystone' },
             },
