@@ -440,7 +440,7 @@ class AutoPackageTest(object):
                         status = 'MISS'
 
                     # This is only missing if the latest and greatest tests included it.
-                    if status == 'MISS' and pkg not in self.packages_latest:
+                    if status == 'MISS' and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
                         status = None
 
                     # Track previous state so we can detect and differentiate new
