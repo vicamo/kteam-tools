@@ -24,6 +24,7 @@ class AdtMatrixSeed(object):
             if 'cache-latest' in tmp:
                 self.latest = tmp['cache-latest']
 
+
     def save(self):
         with open(self.cache_file + '.new', 'w') as cfd:
 
@@ -87,11 +88,9 @@ class AdtMatrixSeed(object):
 
     def accumulate(self, series, package, britney):
         state = self.britney_load(series, britney)
-        seen = False
         for record in state['sources']:
             if record['source'] != package:
                 continue;
-            seen = True
 
             # The persistant list holds any package we ever tested against.
             pcache = self.cache.setdefault(series + '-' + package, {})
@@ -112,13 +111,6 @@ class AdtMatrixSeed(object):
                             tcache.setdefault(package, {})[arch] = True
 
             print('hierachy ' + series + ' ' + ' '.join(debug))
-
-        if not seen and series == 'xenial':
-            key = series + '-' + package
-            key2 = 'wily' + '-' + package
-
-            self.cache[key] = self.cache[key2]
-            self.latest[key] = self.latest[key2]
 
 
 matrix_seed = AdtMatrixSeed('package-relation.json')
