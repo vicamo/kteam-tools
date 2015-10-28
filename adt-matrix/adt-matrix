@@ -395,6 +395,10 @@ class AutoPackageTest(object):
             (pkg, archs) = pkgarchs
             some_ever = {}
 
+            # Add in the package_latest arches if this is the final version.
+            if pkg in self.packages_latest:
+                archs = sorted(set(archs + self.packages_latest[pkg]))
+
             # Find the nominal latest version (latest any arch reports) taking
             # into account only the latest from each arch to allow versions to 
             # be deleted.
@@ -410,7 +414,7 @@ class AutoPackageTest(object):
                 prev_status = None
                 good_ever = {}
                 for ver in verlist:
-                    (status, rurl) = (None, None)
+                    (status, rurl, version) = (None, None, "None")
                     if ver in self.results and \
                        pkg in self.results[ver] and \
                        arch in self.results[ver][pkg]:
@@ -432,7 +436,7 @@ class AutoPackageTest(object):
                             status = 'REGR'
                         else:
                             status = 'FAIL'
-                    elif arch in some_ever:
+                    elif arch in some_ever or (ver == verlist[-1] and pkg in self.packages_latest and arch in self.packages_latest[pkg]):
                         status = 'MISS'
 
                     # This is only missing if the latest and greatest tests included it.
@@ -471,7 +475,7 @@ class AutoPackageTest(object):
                 for arch in archs:
                     if ver in result and pkg in result[ver] and arch in result[ver][pkg]:
                         status[result[ver][pkg][arch][0]] += 1
-        
+
         count = 0
         total = 0
         summary = []
