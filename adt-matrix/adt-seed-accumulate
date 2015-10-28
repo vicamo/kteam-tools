@@ -12,6 +12,7 @@ class AdtMatrixSeed(object):
         self.cache_file = cache
         self.cache = {}
         self.latest = {}
+        self.nbs = {}
 
         self.britney_cache = {}
 
@@ -83,6 +84,21 @@ class AdtMatrixSeed(object):
             with open(britney) as britneyf:
                 self.britney_cache[series] = yaml.load(britneyf)
 
+            # NBS
+            print('#\n# ' + series + '\n#')
+            for record in self.britney_cache[series]['sources']:
+                if 'excuses' in record:
+                    pkgs = {}
+                    for excuse in record['excuses']:
+                        if excuse.startswith('old binaries left on'):
+                            (prefix, remainder) = excuse.split('>:', 1)
+                            (package_string, remainder) = remainder.split('(', 1)
+                            for package in package_string.split(', '):
+                                pkgs[package.strip()] = True
+
+                    if len(pkgs) > 0:
+                        print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {}'.format(series, " ".join(pkgs.keys()), record['source']))
+
         return self.britney_cache[series]
 
 
@@ -110,7 +126,7 @@ class AdtMatrixSeed(object):
                             pcache.setdefault(package, {})[arch] = True
                             tcache.setdefault(package, {})[arch] = True
 
-            print('hierachy ' + series + ' ' + ' '.join(debug))
+            print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
 
 
 matrix_seed = AdtMatrixSeed('package-relation.json')

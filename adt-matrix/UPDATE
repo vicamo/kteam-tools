@@ -19,7 +19,8 @@ while read series package parent
 do
 	echo "$series $package $parent $britney/$series.migration"
 done <"$here/adt-matrix.conf" | \
-	"$here/adt-seed-accumulate"
+	"$here/adt-seed-accumulate" >"nbs.cmds.new"
+mv -f "nbs.cmds.new" "nbs.cmds"
 
 # Update package-version.json
 while read series package parent
