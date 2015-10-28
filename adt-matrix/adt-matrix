@@ -445,7 +445,7 @@ class AutoPackageTest(object):
 
                     # Track previous state so we can detect and differentiate new
                     # regressions.
-                    if status == 'REGR' and prev_status not in ('REGR', 'REGN'):
+                    if status == 'REGR' and prev_status not in ('FAIL', 'REGR', 'REGN'):
                         status = 'REGN'
                     if status and status != 'MISS':
                         prev_status = status
