@@ -76,10 +76,13 @@ class KernelPackages:
 
     def package_linux_image(s, seriesname, sourcename):
         distro_series = s._series(seriesname)
-        pubs = s.archive.getPublishedSources(source_name=sourcename,
-                                                exact_match=True,
-                                                pocket = 'Proposed',
-                                                distro_series=distro_series)
+        for pocket in ('Proposed', 'Updates', 'Security', 'Release'):
+            pubs = s.archive.getPublishedSources(source_name=sourcename,
+                                                    exact_match=True,
+                                                    pocket = pocket,
+                                                    distro_series=distro_series)
+            if len(pubs) > 0:
+                break
 
         if len(pubs) > 0:
             pub = pubs[0]
