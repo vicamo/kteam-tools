@@ -15,15 +15,15 @@ britney="$1"
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
 	cp "$here/package-relation.json-initial" package-relation.json
-while read series package parent
+while read series package parent flags
 do
-	echo "$series $package $parent $britney/$series.migration"
+	echo "$series $package $parent $flags $britney/$series.migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate" >"nbs.cmds.new"
 mv -f "nbs.cmds.new" "nbs.cmds"
 
 # Update package-version.json
-while read series package parent
+while read series package parent flags
 do
 	case "$package" in
 	linux-meta*)
@@ -35,7 +35,7 @@ done <"$here/adt-matrix.conf" |\
 	"$here/adt-lp-binaries"
 
 # Generate versions.info
-while read series package parent
+while read series package parent flags
 do
 	case "$package" in
 	linux-meta*)

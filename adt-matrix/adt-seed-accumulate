@@ -84,26 +84,35 @@ class AdtMatrixSeed(object):
             with open(britney) as britneyf:
                 self.britney_cache[series] = yaml.load(britneyf)
 
-            # NBS
-            print('#\n# ' + series + '\n#')
-            for record in self.britney_cache[series]['sources']:
-                if 'excuses' in record:
-                    pkgs = {}
-                    for excuse in record['excuses']:
-                        if excuse.startswith('old binaries left on'):
-                            (prefix, remainder) = excuse.split('>:', 1)
-                            (package_string, remainder) = remainder.split('(', 1)
-                            for package in package_string.split(', '):
-                                pkgs[package.strip()] = True
-
-                    if len(pkgs) > 0:
-                        print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {}'.format(series, " ".join(pkgs.keys()), record['source']))
-
         return self.britney_cache[series]
 
 
-    def accumulate(self, series, package, britney):
+    def britney_nbs(self, series, flags):
+        if series in self.nbs:
+            return
+        self.nbs[series] = True
+
+        print('#\n# ' + series + '\n#')
+        for record in self.britney_cache[series]['sources']:
+            if 'excuses' in record:
+                pkgs = {}
+                for excuse in record['excuses']:
+                    if excuse.startswith('old binaries left on'):
+                        (prefix, remainder) = excuse.split('>:', 1)
+                        (package_string, remainder) = remainder.split('(', 1)
+                        for package in package_string.split(', '):
+                            pkgs[package.strip()] = True
+
+                if len(pkgs) > 0:
+                    print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {}'.format(series, " ".join(pkgs.keys()), record['source']))
+
+
+    def accumulate(self, series, package, flags, britney):
         state = self.britney_load(series, britney)
+
+        if 'devel' not in flags:
+            self.britney_nbs(series, flags)
+
         for record in state['sources']:
             if record['source'] != package:
                 continue;
@@ -131,6 +140,6 @@ class AdtMatrixSeed(object):
 
 matrix_seed = AdtMatrixSeed('package-relation.json')
 for line in sys.stdin:
-    (series, package, parent, britney) = line.strip().split()
-    matrix_seed.accumulate(series, package, britney)
+    (series, package, parent, flags, britney) = line.strip().split()
+    matrix_seed.accumulate(series, package, flags.split(','), britney)
 matrix_seed.save()
