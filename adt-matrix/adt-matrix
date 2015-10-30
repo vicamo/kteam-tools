@@ -533,9 +533,8 @@ table.matrix, table.matrix th, table.matrix td {{
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))    
 
         race_text = '~'
-        if limit and len(verlist) > limit + 1:
-            limit -= 1
-            verlist = [ verlist[0], 'race' ] + verlist[-limit:]
+        if limit and len(verlist) > limit:
+            verlist = [ 'race' ] + verlist[-limit:]
 
             if limit_url:
                 race_text='<a href="' + limit_url + '">' + race_text + '</a>'
