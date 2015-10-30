@@ -366,6 +366,11 @@ class AutoPackageTest(object):
     def update(self):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
+
+            ## Add in the package_latest arches.
+            #if pkg in self.packages_latest:
+            #    archs = sorted(set(archs + self.packages_latest[pkg]))
+
             for arch in archs:
                 adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
@@ -395,9 +400,9 @@ class AutoPackageTest(object):
             (pkg, archs) = pkgarchs
             some_ever = {}
 
-            # Add in the package_latest arches if this is the final version.
-            if pkg in self.packages_latest:
-                archs = sorted(set(archs + self.packages_latest[pkg]))
+            ## Add in the package_latest arches if this is the final version.
+            #if pkg in self.packages_latest:
+            #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             # Find the nominal latest version (latest any arch reports) taking
             # into account only the latest from each arch to allow versions to 
