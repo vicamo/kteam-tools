@@ -67,22 +67,25 @@ export CCACHE_DIR
 # Clean out the rubbish.
 rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES" "$master_main"/*.patch
 
-# If we have an indication of where this was built then sub that for master_release.
-if [ -f "$master_main/BUILT" ]; then
-	master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
-fi
-
 # We finally have the tree in a consitant state, finally ask for the build
 if [ "$abi" != "" ]; then
 	email=":"
 	"$here/mainline-build-one" "$commit" "$master_release" "$abi" 2>&1 | \
 		tee "$master_main/BUILD.LOG"
+	# If we have an indication of where this was built then sub that for master_release.
+	if [ -f "$master_main/BUILT" ]; then
+		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
+	fi
 	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	mkdir -p "$HOME/public_html/mainline/$base"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
 		tee "$master_main/BUILD.LOG"
+	# If we have an indication of where this was built then sub that for master_release.
+	if [ -f "$master_main/BUILT" ]; then
+		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
+	fi
 	html="$HOME/public_html/mainline/$commit-$master_release"
 fi
 
