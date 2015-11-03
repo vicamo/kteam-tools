@@ -384,6 +384,7 @@ class ApplyStablePatches(StdApp):
             cc = 1
             ccstable = compile(r'^\s*Cc:.*\b(stable)\b.*', IGNORECASE | MULTILINE)
             cchint = compile(r'((?P<for>\b(for)\b)|(?P<gr>\s*>\s*)|(?P<ge>\s*>=\s*)|(\s*))(?P<v>[v]*)(?P<kver>[0-9]\.[0-9][^\s+,\]]*)(?P<plus>[+]*)[,\]]*((?P<only>[\s]+only)|(?P<later>[\s]+and later)|(\s*))')
+            stable = compile(r'^\s*Stable:.*', IGNORECASE | MULTILINE)
             fixes = compile(r'^\s*Fixes:.*\s+([a-f0-9]{6,}).*', IGNORECASE | MULTILINE)
             forstable = []
             fixeslist = []
@@ -394,10 +395,21 @@ class ApplyStablePatches(StdApp):
                 if status != 0:
                     eout(body)
                     continue
-                s = ccstable.search(body)
+
+                # a "Stable:" line (e.g. which may have been added via git
+                # notes) overrides a "Cc: stable@" line
+                s = stable.search(body)
+                if not s:
+                    s = ccstable.search(body)
                 if s:
                     forvers = []
                     sline = s.group(0)
+                    # shunt "Stable: do-not-apply" patches to the Ignored bin
+                    if "do-not-apply" in sline:
+                        if 'verbose' in self.cfg:
+                            stdo("\ncommit %s is marked do-not-apply" % c)
+                        forstable.append([c, [KernelVersion("999999.9")]])
+                        continue
                     s2 = cchint.search(sline)
                     while s2:
                         if 'verbose' in self.cfg:
