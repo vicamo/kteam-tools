@@ -390,7 +390,7 @@ class ApplyStablePatches(StdApp):
             for c in result:
                 stdo("\rLooking for stable commits inside provided range (%d/%d)..."
                      % (cc, len(result)))
-                status, body = getstatusoutput('git log -n 1 --format=%%B %s' % (c))
+                status, body = getstatusoutput('git log -n 1 --format=%%B%%n%%N %s' % (c))
                 if status != 0:
                     eout(body)
                     continue
