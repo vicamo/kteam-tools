@@ -41,6 +41,7 @@ kernel-ppa/mirror/ubuntu-xenial.git        git://git.launchpad.net/~ubuntu-kerne
 kernel-ppa/mirror/ubuntu-xenial-meta.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
 kernel-ppa/mirror/ubuntu-xenial-signed.git git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
 kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
+kernel-ppa/mirror/linux-firmware.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
 EOL
 
 date
