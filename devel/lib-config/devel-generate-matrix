@@ -157,6 +157,8 @@ def emit_html(entries):
         (config, notes, vals) = (entry[0], entry[1], entry[2:])
 
         notes = lplink.sub('<a href="http://bugs.launchpad.net/bugs/\g<1>">LP:\g<1></a>', notes)
+        if 'REVIEW' in notes:
+            interesting = True
 
         rcls = "row_good" + str(count)
         cells = ''
@@ -172,7 +174,8 @@ def emit_html(entries):
                     cls = "cell_bad"
                     rcls = "row_bad"
                     have += "&nbsp;(&rarr;" + want + ")"
-                    interesting = True
+                    if row_interesting:
+                        interesting = True
             elif row_interesting:
                 rcls = "row_warn"
                 interesting = True
