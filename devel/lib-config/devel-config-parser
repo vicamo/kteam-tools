@@ -38,6 +38,8 @@ def emit(a):
         return
 
     D = None
+    if 'config' in a and a['config'] == 'NET_VENDOR_ADAPTEC':
+        D = a['config']
     #if 'config' in a and a['config'] == 'IWLWIFI_UAPSD':
     #    D = a['config']
 
@@ -68,7 +70,7 @@ def emit(a):
             match = re.search(r'\b' + parent['config'] + r'(=n)?\b', a['deps'])
             if match:
                 if D:
-                    print(D, "join: config dep", parent['config'])
+                    print(D, "join: config dep", parent['config'], a['deps'])
                 #print("PARENT: ", parent['config'])
                 join(a, parent)
                 break

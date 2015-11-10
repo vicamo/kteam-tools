@@ -274,20 +274,22 @@ marked = {
     'DANGEROUS':    [ 'DANGEROUS Options' ],
     'STAGING':      [ 'STAGING Options' ],
 }
-entries = []
+menus = []
+entries = {}
 with open(order) as orderf:
     for line in orderf:
+        data = line.strip()[2:]
         if line[0] == 'M':
-            if len(entries):
-                emit_record(entries)
-
-            title = line.strip()[8:]
-            if title == '':
-                title = 'ROOT'
-            entries = [ title ]
+            title = data
+            if title != 'ROOT':
+                title = title[6:]
+            entries[title] = [ title ]
+            menus.append(title)
 
         elif line[0] == 'E':
-            config = line.strip().split('>>>')[2]
+            (menu, count, config) = data.split('>>>')
+            if menu != 'ROOT':
+                menu = menu[6:]
             which = 'CONFIG_' + config
             rec = annot.get(which, {})
             columns = [ which, rec.get('note', '') ]
@@ -299,7 +301,7 @@ with open(order) as orderf:
                     want = '?'
                 columns.append((values.get((arch, flavour, which), '-'), want))
 
-            entries.append(columns)
+            entries[menu].append(columns)
 
             #print(annot.get(which, {}))
             flags = rec.get('flag', {})
@@ -307,9 +309,8 @@ with open(order) as orderf:
                 if mark in flags:
                     marked[mark].append(columns)
 
-
-if len(entries):
-    emit_record(entries)
+for menu in menus:
+    emit_record(entries[menu])
 
 for flag in sorted(marked.keys()):
     (interesting, data) = emit(marked[flag])
