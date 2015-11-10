@@ -63,7 +63,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None, tag = ''):
         self.cache = {}
         self.dirty = False
 
@@ -75,6 +75,7 @@ class AutoPackageTest(object):
         self.stamp = stamp
         self.live = live
         self.trigger = trigger
+        self.tag = tag
 
         self.seen = {}
         self.results = {}
@@ -85,7 +86,9 @@ class AutoPackageTest(object):
 
         self.verbose = True
 
-        self.cache_file = self.series + ".cache"
+        self.cache_file = self.series + self.tag + ".cache"
+
+        print(self.tag)
 
         if os.path.exists(self.cache_file):
             with open(self.cache_file) as cfd:
@@ -143,7 +146,7 @@ class AutoPackageTest(object):
             pass
 
         # request new results from swift
-        url = os.path.join(swift_url, 'autopkgtest-' + self.series)
+        url = os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag)
         url += '?' + urlencode(query)
         try:
             f = urlopen(url)
@@ -163,7 +166,7 @@ class AutoPackageTest(object):
 
         for p in result_paths:
             self.fetch_one_result(
-                os.path.join(swift_url, 'autopkgtest-' + self.series, p, 'result.tar'),
+                os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag, p, 'result.tar'),
                 os.path.basename(p), src, arch, trigger)
             self.dirty = True
 
@@ -667,6 +670,11 @@ table.matrix td {{
     
     updated = {}
 
+    if len(sys.argv) < 2 or sys.argv[1] == '-':
+        tag = ''
+    else:
+        tag = '-' + sys.argv[1].replace('/', '-')
+
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
@@ -713,13 +721,14 @@ table.matrix td {{
                 latest = latest,
                 live = live,
                 trigger = trigger,
+                tag = tag,
             )
 
         adt.update()
 
         # Narrow matrix ...
         html_all = series + '-' + package + '-all.html'
-        html = series + '-' + package + '.html'
+        html = series + tag + '-' + package + '.html'
 
         (info, matrix) = adt.matrix(limit=6, limit_url=html_all)
         (state, summary, version, count, total) = info

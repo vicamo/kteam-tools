@@ -23,13 +23,13 @@ class Launchpad(_Launchpad):
 
 
 class KernelPackages:
-    def __init__(s, launchpad=None, cache='package-binaries.json'):
+    def __init__(s, launchpad=None, cache='package-binaries.json', ppa=None):
         s.lp = None
         s.ubuntu = None
         s.archive = None
         s.series = {}
 
-        s.lpinit(launchpad=launchpad)
+        s.lpinit(launchpad=launchpad, ppa=ppa)
 
         s.dirty = False
         s.cache_file = cache
@@ -55,7 +55,7 @@ class KernelPackages:
             os.rename(s.cache_file + '.new', s.cache_file)
 
 
-    def lpinit(s, launchpad=None):
+    def lpinit(s, launchpad=None, ppa=None):
         logging.debug("Initializing LP Credentials")
         if not launchpad:
             s.lp = Launchpad.login_anonymously('adt-lp-binaries', 'production')
@@ -63,7 +63,11 @@ class KernelPackages:
             s.lp = launchpad
             
         s.ubuntu = s.lp.distributions['ubuntu']
-        s.archive = s.ubuntu.getArchive(name='primary')
+        if not ppa or ppa == '-':
+            s.archive = s.ubuntu.getArchive(name='primary')
+        else:
+            (ppa_owner, ppa_name) = ppa.split('/')
+            s.archive = s.lp.people[ppa_owner].getPPAByName(name=ppa_name)
 
 
     def _series(s, series_name):
@@ -103,6 +107,8 @@ class KernelPackages:
 
                 base_versions = {}
                 for pub in pubs:
+                    print(pub)
+                    print(pub.source_package_version)
                     (base, abi) = pub.source_package_version.split('-', 1)
                     base_versions[base] = True
 
@@ -114,8 +120,11 @@ class KernelPackages:
                         s.map_source[seriesname + ' ' + base + ' ' + flavour] = sourcename.replace('linux', 'linux-meta')
                 s.dirty = True
 
+ppa = None
+if len(sys.argv) > 1:
+    ppa = sys.argv[1]
 
-kp = KernelPackages()
+kp = KernelPackages(ppa=ppa)
 for line in sys.stdin:
     (series, package) = line.split()
     print('binaries:', series, package)

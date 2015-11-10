@@ -43,7 +43,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=DEBUGLEVEL,
                         format="%(asctime)s - %(levelname)s - %(message)s")
 
-    kv = KernelVersions(active_only=False)
+
+    if len(sys.argv) > 1 and sys.argv[1] != '-':
+        (ppa_owner, ppa_name) = sys.argv[1].split('/')
+        kv = KernelVersions(active_only=False, ppa_owner=ppa_owner, ppa_name=ppa_name)
+    else:
+        kv = KernelVersions(active_only=False)
 
     for line in sys.stdin:
         a = line.split()

@@ -6,18 +6,21 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $0 <britney state directory>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <config> <archive> <britney state directory>" 1>&2
 fi
 
-britney="$1"
+config="$1"
+archive="$2"
+britney="$3"
 
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
 	cp "$here/package-relation.json-initial" package-relation.json
 while read series package parent flags
 do
-	echo "$series $package $parent $flags $britney/$series.migration"
+	[ -f "$britney/$series.migration" ] && \
+		echo "$series $package $parent $flags $britney/$series.migration"
 done <"$here/adt-matrix.conf" | \
 	"$here/adt-seed-accumulate" >"nbs.cmds.new"
 mv -f "nbs.cmds.new" "nbs.cmds"
@@ -31,8 +34,8 @@ do
 		;;
 	esac
 	echo "$series $package"
-done <"$here/adt-matrix.conf" |\
-	"$here/adt-lp-binaries"
+done <"$config" |\
+	"$here/adt-lp-binaries" "$archive"
 
 # Generate versions.info
 while read series package parent flags
@@ -46,8 +49,8 @@ do
 		;;
 	esac
 	echo "$series $series $package $parent -- $package $package2"
-done <"$here/adt-matrix.conf" |\
-	"$here/adt-lp-version-map" >"versions.info"
+done <"$config" |\
+	"$here/adt-lp-version-map" "$archive" >"versions.info"
 
 cmds="cmds.rebuild"
 : >"$cmds"
