@@ -6,79 +6,23 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <config> <archive> <britney state directory>" 1>&2
+if [ "$#" != '2' ]; then
+	echo "Usage: $0 <html> <britney cache>" 1>&2
+	exit 1
 fi
+html="$1"
+britney="$2"
 
-config="$1"
-archive="$2"
-britney="$3"
+mkdir -p "$html"
+(
+	cd "$html" || exit 1
+	"$here/adt-update" "$here/adt-matrix.conf" - "$britney"
+)
+mkdir -p "$html/canonical-kernel-team--unstable"
 
-# Update package-relation.json
-[ ! -f package-relation.json ] && \
-	cp "$here/package-relation.json-initial" package-relation.json
-while read series package parent flags
-do
-	[ -f "$britney/$series.migration" ] && \
-		echo "$series $package $parent $flags $britney/$series.migration"
-done <"$here/adt-matrix.conf" | \
-	"$here/adt-seed-accumulate" >"nbs.cmds.new"
-mv -f "nbs.cmds.new" "nbs.cmds"
+(
+	cd "$html/canonical-kernel-team--unstable" || exit 1
+	ln -sf ../package-relation.json .
 
-# Update package-version.json
-while read series package parent flags
-do
-	case "$package" in
-	linux-meta*)
-		package=`echo "$package" | sed -e 's/^linux-meta/linux/'`
-		;;
-	esac
-	echo "$series $package"
-done <"$config" |\
-	"$here/adt-lp-binaries" "$archive"
-
-# Generate versions.info
-while read series package parent flags
-do
-	case "$package" in
-	linux-meta*)
-		package2=`echo "$package" | sed -e 's/^linux-meta/linux/'`
-		;;
-	*)
-		package2=
-		;;
-	esac
-	echo "$series $series $package $parent -- $package $package2"
-done <"$config" |\
-	"$here/adt-lp-version-map" "$archive" >"versions.info"
-
-cmds="cmds.rebuild"
-: >"$cmds"
-while read series package parent triggers
-do
-	[ "$series" = '#' ] && continue
-
-	echo "versions $series $package $parent $triggers" 1>&2
-
-	case "$package" in
-	linux-meta*)
-		migration=`awk '/^'"$series $package"' / { state=$NF} END {print state }' "$britney/overall.txt"`
-		[ "$migration" = '' ] && migration="MIGRATED"
-		;;
-	*)
-		migration="-"
-		;;
-	esac
-	echo "$series $package $parent $migration $triggers"
-done <"versions.info" | \
-	"$here/adt-matrix"
-
-# Build the commands after the adt-matrix completes as we rely no its missing
-# test information to be up to date.
-while read series package parent triggers
-do
-	echo "commands $series $package $triggers"
-	
-	"$here/adt-commands-payload" "$series" $triggers >"$series-$package.cmds.new"
-	mv -f "$series-$package.cmds.new" "$series-$package.cmds"
-done <"versions.info"
+	"$here/adt-update" "$here/adt-matrix.conf.d/canonical-kernel-team--unstable" canonical-kernel-team/unstable -
+)

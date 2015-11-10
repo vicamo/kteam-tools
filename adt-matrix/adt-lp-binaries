@@ -84,6 +84,7 @@ class KernelPackages:
             pubs = s.archive.getPublishedSources(source_name=sourcename,
                                                     exact_match=True,
                                                     pocket = pocket,
+                                                    status = 'Published',
                                                     distro_series=distro_series)
             if len(pubs) > 0:
                 break
@@ -107,8 +108,6 @@ class KernelPackages:
 
                 base_versions = {}
                 for pub in pubs:
-                    print(pub)
-                    print(pub.source_package_version)
                     (base, abi) = pub.source_package_version.split('-', 1)
                     base_versions[base] = True
 

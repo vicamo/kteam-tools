@@ -86,9 +86,7 @@ class AutoPackageTest(object):
 
         self.verbose = True
 
-        self.cache_file = self.series + self.tag + ".cache"
-
-        print(self.tag)
+        self.cache_file = self.series + ".cache"
 
         if os.path.exists(self.cache_file):
             with open(self.cache_file) as cfd:
@@ -689,6 +687,8 @@ table.matrix td {{
                 trigger = tver + ' ' + package
                 break
 
+        print("APW", line.strip(), trigger)
+
         # Pick an appropriate package list (XXX: should be in __init__)
         key = series + "-" + package
         if key in package_cache['seeds']:
@@ -728,7 +728,7 @@ table.matrix td {{
 
         # Narrow matrix ...
         html_all = series + '-' + package + '-all.html'
-        html = series + tag + '-' + package + '.html'
+        html = series + '-' + package + '.html'
 
         (info, matrix) = adt.matrix(limit=6, limit_url=html_all)
         (state, summary, version, count, total) = info
