@@ -62,7 +62,9 @@ do
 
 	case "$package" in
 	linux-meta*)
-		migration=`awk '/^'"$series $package"' / { state=$NF} END {print state }' "$britney/overall.txt"`
+		migration=''
+		[ "$britney" = '-' ] && migration="PUBLISHED"
+		[ "$migration" = '' ] && migration=`awk '/^'"$series $package"' / { state=$NF} END {print state }' "$britney/overall.txt"`
 		[ "$migration" = '' ] && migration="MIGRATED"
 		;;
 	*)
