@@ -1,0 +1,16 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import os
+import json
+
+with open('trusty.cache', 'r') as rfd, open('trusty.cache.new', 'w') as wfd:
+	tmp = json.load(rfd)
+
+        # This result is created by a badly triggered failed job on ppc64el.
+        if '3.19.0-33.38~14.04.1 linux-meta' in tmp['results']:
+            del tmp['results']['3.19.0-33.38~14.04.1 linux-meta']
+
+	json.dump(tmp, wfd, indent=2)
+
+os.rename('trusty.cache.new', 'trusty.cache')

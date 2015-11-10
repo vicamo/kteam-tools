@@ -687,7 +687,7 @@ table.matrix td {{
                 trigger = tver + ' ' + package
                 break
 
-        print("APW", line.strip(), trigger)
+        #print("APW", line.strip(), trigger)
 
         # Pick an appropriate package list (XXX: should be in __init__)
         key = series + "-" + package

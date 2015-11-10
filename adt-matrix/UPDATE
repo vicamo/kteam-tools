@@ -26,3 +26,5 @@ mkdir -p "$html/canonical-kernel-team--unstable"
 
 	"$here/adt-update" "$here/adt-matrix.conf.d/canonical-kernel-team--unstable" canonical-kernel-team/unstable -
 )
+
+"$here/adt-cleanup"
