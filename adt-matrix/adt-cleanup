@@ -11,7 +11,7 @@ with open('trusty.cache', 'r') as rfd:
     # This result is created by a badly triggered failed job on ppc64el.
     if '3.19.0-33.38~14.04.1 linux-meta' in tmp['results']:
         del tmp['results']['3.19.0-33.38~14.04.1 linux-meta']
-    chg = True
+        chg = True
 
     if chg:
         with open('trusty.cache.new', 'w') as wfd:

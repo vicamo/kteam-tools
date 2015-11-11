@@ -301,8 +301,7 @@ class AutoPackageTest(object):
                         if match:
                             if not kernel_ver or apt_pkg.version_compare(match.group(3), kernel_ver) >= 0:
                                 kernel_ver = match.group(3)
-                                if not kernel_pkg:
-                                    kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
+                                kernel_pkg = self.version2package(self.series, match.group(3), match.group(2))
 
                 # Otherwise: use the trigger version.
                 if not kernel_ver and kernel_ver_rough:
