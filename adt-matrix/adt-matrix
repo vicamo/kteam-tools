@@ -93,7 +93,10 @@ class AutoPackageTest(object):
             with open(hints) as hfd:
                 for line in hfd:
                     args = shlex.split(line.strip(), comments=True)
-                    if args[0] == 'result':
+                    if len(args) == 0:
+                        pass
+
+                    elif args[0] == 'result':
                         if len(args) != 8:
                             print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
                             print("         " + line.strip())
