@@ -37,6 +37,8 @@ from urllib import urlencode
 from urllib2 import urlopen
 from functools import cmp_to_key
 from datetime import datetime
+import shlex
+
 def srchash(src):
     '''archive hash prefix for source package'''
 
@@ -63,7 +65,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None, tag = ''):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None, tag = '', hints = None):
         self.cache = {}
         self.dirty = False
 
@@ -85,6 +87,23 @@ class AutoPackageTest(object):
         self.current = {}
 
         self.verbose = True
+
+        self.hint_status = {}
+        if hints and hints != '-':
+            with open(hints) as hfd:
+                for line in hfd:
+                    args = shlex.split(line.strip(), comments=True)
+                    if args[0] == 'result':
+                        if len(args) != 8:
+                            print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
+                            print("         " + line.strip())
+                            continue
+
+                        (series, kernel_pkg, kernel_ver, test_pkg, test_arch, test_status, reason) = args[1:]
+                        if series != self.series:
+                            continue
+
+                        self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
 
         self.cache_file = self.series + ".cache"
 
@@ -444,6 +463,12 @@ class AutoPackageTest(object):
                     elif arch in some_ever or (ver == verlist[-1] and pkg in self.packages_latest and arch in self.packages_latest[pkg]):
                         status = 'MISS'
 
+                    # Override results using hints.
+                    if (ver, pkg, arch) in self.hint_status:
+                        print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)])
+                        (status, reason) = self.hint_status[(ver, pkg, arch)]
+                        version += '\n(hinted ' + status + ': ' + reason + ')'
+
                     # This is only missing if the latest and greatest tests included it.
                     if status == 'MISS' and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
                         status = None
@@ -667,7 +692,9 @@ table.matrix td {{
     
     updated = {}
 
-    if len(sys.argv) < 2 or sys.argv[1] == '-':
+    (tag, hints) = sys.argv[1:]
+
+    if tag == '-':
         tag = ''
     else:
         tag = '-' + sys.argv[1].replace('/', '-')
@@ -721,6 +748,7 @@ table.matrix td {{
                 live = live,
                 trigger = trigger,
                 tag = tag,
+                hints = hints,
             )
 
         adt.update()

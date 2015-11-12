@@ -16,7 +16,7 @@ britney="$2"
 mkdir -p "$html"
 (
 	cd "$html" || exit 1
-	"$here/adt-update" "$here/adt-matrix.conf" - "$britney"
+	"$here/adt-update" "$here/adt-matrix.conf" "$here/adt-matrix.hints" - "$britney"
 )
 mkdir -p "$html/canonical-kernel-team--unstable"
 
@@ -24,7 +24,10 @@ mkdir -p "$html/canonical-kernel-team--unstable"
 	cd "$html/canonical-kernel-team--unstable" || exit 1
 	ln -sf ../package-relation.json .
 
-	"$here/adt-update" "$here/adt-matrix.conf.d/canonical-kernel-team--unstable" canonical-kernel-team/unstable -
+	"$here/adt-update" \
+		"$here/adt-matrix.conf.d/canonical-kernel-team--unstable.conf" \
+		"$here/adt-matrix.conf.d/canonical-kernel-team--unstable.hints" \
+		canonical-kernel-team/unstable -
 )
 
 "$here/adt-cleanup"

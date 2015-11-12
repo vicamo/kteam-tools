@@ -6,13 +6,14 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <config> <archive> <britney state directory>" 1>&2
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 <config> <hints> <archive> <britney state directory>" 1>&2
 fi
 
 config="$1"
-archive="$2"
-britney="$3"
+hints="$2"
+archive="$3"
+britney="$4"
 
 # Update package-relation.json
 [ ! -f package-relation.json ] && \
@@ -73,7 +74,7 @@ do
 	esac
 	echo "$series $package $parent $migration $triggers"
 done <"versions.info" | \
-	"$here/adt-matrix" "$archive"
+	"$here/adt-matrix" "$archive" "$hints"
 
 # Build the commands after the adt-matrix completes as we rely no its missing
 # test information to be up to date.
