@@ -496,7 +496,7 @@ class AutoPackageTest(object):
             self.current[self.series + '-' + self.source] = miss
             self.dirty = True
 
-        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0 }
+        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0, 'SKIP': 0 }
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
@@ -510,13 +510,13 @@ class AutoPackageTest(object):
         total = 0
         summary = []
         primary_state = None
-        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD' ]:
+        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD', 'SKIP' ]:
             if state and status[state] > 0:
                 if not primary_state:
                     primary_state = state
                 #summary.append('<span class="s' + state + '">' + state + ': ' + str(status[state]) + '</span>')
                 summary.append(state + ': ' + str(status[state]))
-                if state != 'MISS':
+                if state not in ('MISS', 'SKIP'):
                     count += status[state]
                 total += status[state]
 
@@ -543,7 +543,7 @@ class AutoPackageTest(object):
 <style>
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
-.MISS {{ background-color: yellow; }}
+.MISS, .SKIP {{ background-color: yellow; }}
 .FAIL {{ background-color: orange; }}
 .REGR {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
@@ -655,7 +655,7 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .GOOD, .PASS {{ background-color: green; }}
 .BUILDING {{ background-color: yellow; }}
 .RUNNING {{ background-color: yellow; }}
-.MISS, .MISSING {{ background-color: yellow; }}
+.MISS, .SKIP, .MISSING {{ background-color: yellow; }}
 .FAIL {{ background-color: darkgreen; }}
 .ALWAYSFAIL {{ background-color: yellow; }}
 .REGR, .REGRESSION {{ background-color: tomato; }}
