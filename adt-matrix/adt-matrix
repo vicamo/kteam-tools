@@ -453,7 +453,7 @@ class AutoPackageTest(object):
                         some_ever[arch] = True
                         if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
-                            status = 'MISS'
+                            status = 'MISS-REPL'
                         elif tstatus:
                             good_ever = True
                             status = 'GOOD'
@@ -473,20 +473,21 @@ class AutoPackageTest(object):
                         version += '\n(hinted ' + status + ': ' + reason + ')'
 
                     # This is only missing if the latest and greatest tests included it.
-                    if status == 'MISS' and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
+                    if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
                         status = None
 
                     # Track previous state so we can detect and differentiate new
                     # regressions.
                     if status == 'REGR' and prev_status not in ('FAIL', 'REGR', 'REGN'):
                         status = 'REGN'
-                    if status and status != 'MISS':
+                    if status and status not in ('MISS', 'MISS-REPL'):
                         prev_status = status
 
                     if status:
+                        vstatus = status.split('-')
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
-                        tmp[arch] = (status, rurl, version)
+                        tmp[arch] = (vstatus[0], rurl, version)
 
                     # Accumulate missing results in the latest version when live.
                     if self.live and ver == verlist[-1] and status:

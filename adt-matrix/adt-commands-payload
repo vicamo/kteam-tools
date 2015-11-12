@@ -18,7 +18,7 @@ with open(series + ".cache") as cachef:
     series_cache = json.load(cachef)
 
 # Generate commands to retrigger all missing tests.
-for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
+for (states, message) in ((None, 'all'), (['MISS', 'MISS-REPL'], 'missing'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
     print("# " + series + " " + master_package + " retrigger " + message)
 
     mkey = '-'.join((series, master_package))
@@ -28,6 +28,7 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regr
     if not states:
         states = series_cache['current'][mkey].keys()
 
+    package_proposed = {}
     package_arch = {}
     for state in states:
         if state not in series_cache['current'][mkey]:
@@ -35,9 +36,12 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regr
         for tpkg in series_cache['current'][mkey][state]:
             for arch in series_cache['current'][mkey][state][tpkg]:
                 package_arch.setdefault(tpkg, {})[arch] = True
+                if state == 'MISS-REPL':
+                    package_proposed[tpkg] = True
 
         
     #print(package_arch)
+    #print(package_proposed)
     want = {}
     for trigger in triggers:
         (package, version) = trigger.split('/')
@@ -53,6 +57,8 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['REGR'], 'regr
                         tmp = want.setdefault(' '.join(archs), {}).setdefault(tpkg, [])
                         if trigger not in tmp:
                             tmp.append(trigger)
+                            if tpkg in package_proposed:
+                                tmp.append(tpkg + '/' + series_cache['latest'][' '.join((tpkg, archs[0]))])
 
     #print(want)
     for archs in want:
