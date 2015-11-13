@@ -18,7 +18,7 @@ with open(series + ".cache") as cachef:
     series_cache = json.load(cachef)
 
 # Generate commands to retrigger all missing tests.
-for (states, message) in ((None, 'all'), (['MISS', 'MISS-REPL'], 'missing'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
+for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['MISS-REPL'], 'missing (package updated)'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
     print("# " + series + " " + master_package + " retrigger " + message)
 
     mkey = '-'.join((series, master_package))
