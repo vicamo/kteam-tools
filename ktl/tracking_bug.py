@@ -191,8 +191,10 @@ class TrackingBug:
         # Tags:
         #    add all tags for this package name
         taglist = self.wf.initial_tags(package, devel_series)
-        # Always add the 'block-proposed' tag, both for devel and for non-devel series
-        taglist.append('block-proposed')
+        # Add the 'block-proposed' tag both for development kernels and for the
+        # latest release series
+        if devel_series or self.ub.last_release == targeted_series_name:
+            taglist.append('block-proposed')
         if not devel_series:
             taglist.append('block-proposed-%s' % targeted_series_name)
         for itag in taglist:
