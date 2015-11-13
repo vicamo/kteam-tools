@@ -632,10 +632,10 @@ table.matrix, table.matrix th, table.matrix td {{
                         (status, status_link, version) = results[ver][pkg][arch]
                         if status_link:
                             status_link += 'log.gz'
-                            fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>'
+                            fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
                         else:
                             fmt = '<td class="{0}">{1}'
-                        page += fmt.format(status, status, status_link, pkg + " " + version)
+                        page += fmt.format(status, status, status_link, pkg + " " + version, ' *' if 'hinted' in version else '')
                     else:
                         page += '<td>&nbsp;'
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
