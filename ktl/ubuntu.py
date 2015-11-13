@@ -835,6 +835,26 @@ class Ubuntu:
 
         return retval
 
+    # last_release
+    #
+    @property
+    def last_release(self):
+        """
+        Return the series name for the last release, i.e. development_series - 1
+        """
+        devel_series = self.development_series
+        devel_version = self.lookup(devel_series)['series_version']
+        (y, m) = devel_version.split('.')
+        if m == '10':
+            m = '04'
+        else:
+            y = str(int(y) - 1)
+            m = '10'
+        release_version = "%s.%s" % (y, m)
+        release_series = self.lookup(release_version)['name']
+
+        return release_series
+
     # supported_series
     #
     @property
