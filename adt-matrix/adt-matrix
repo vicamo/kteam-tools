@@ -440,16 +440,20 @@ class AutoPackageTest(object):
             for arch in archs:
                 prev_status = None
                 good_ever = {}
+
+                # Look up a parental series/package result to track implied regressions.
+                key1 = ' '.join((self.series, self.source, arch, pkg))
+                key2 = ' '.join((self.series, self.parent, arch, pkg))
+                marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
+                mark = marks[0] if len(marks) else None
+
                 for ver in verlist:
                     (status, rurl, version) = (None, None, "None")
                     if ver in self.results and \
                        pkg in self.results[ver] and \
                        arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
-                        key1 = ' '.join((self.series, self.source, arch, pkg))
-                        key2 = ' '.join((self.series, self.parent, arch, pkg))
 
-                        marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
                         some_ever[arch] = True
                         if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
@@ -459,18 +463,26 @@ class AutoPackageTest(object):
                             status = 'GOOD'
                         elif good_ever:
                             status = 'REGR'
-                        elif len(marks) and ident > marks[0]:
+                        elif mark and ident > mark:
                             status = 'REGR'
+                            version += '\nparent tree GOOD'
                         else:
                             status = 'FAIL'
                     elif arch in some_ever or (ver == verlist[-1] and pkg in self.packages_latest and arch in self.packages_latest[pkg]):
                         status = 'MISS'
 
-                    # Override results using hints.
+                    # HINTS: override results using hint data.
                     if (ver, pkg, arch) in self.hint_status:
-                        print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)])
+                        #print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)])
                         (status, reason) = self.hint_status[(ver, pkg, arch)]
                         version += '\n(hinted ' + status + ': ' + reason + ')'
+
+                        # If we are hinting to FAIL then we are indicating that previous GOOD stati
+                        # are to be ignored, reset tracking.
+                        if status == 'FAIL':
+                            #print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)], 'triggering reset')
+                            good_ever = False
+                            mark = None
 
                     # This is only missing if the latest and greatest tests included it.
                     if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
@@ -480,7 +492,7 @@ class AutoPackageTest(object):
                     # regressions.
                     if status == 'REGR' and prev_status not in ('FAIL', 'REGR', 'REGN'):
                         status = 'REGN'
-                    if status and status not in ('MISS', 'MISS-REPL'):
+                    if status and status not in ('MISS', 'MISS-REPL', 'SKIP'):
                         prev_status = status
 
                     if status:
