@@ -7,6 +7,7 @@ result trusty linux-meta-lts-vivid 3.19.0-33.38~14.04.1 dahdi-linux ppc64el FAIL
 result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 dahdi-linux ppc64el FAIL "ppc64el migrated from lxc to scaling stack"
 #
 result trusty linux-meta 3.13.0-68.111 linux ppc64el SKIP "bad test dependency on ppc64el"
+result trusty linux-meta 3.13.0-69.112 linux ppc64el SKIP "bad test dependency on ppc64el"
 result trusty linux-meta-lts-vivid 3.19.0-33.38~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
 
 #
@@ -20,5 +21,6 @@ result vivid linux-meta 3.19.0-34.39 linux ppc64el SKIP "bad test dependency on 
 # wily
 #
 result wily linux-meta 4.2.0-18.22 linux ppc64el SKIP "bad test dependency on ppc64el"
+result wily linux-meta 4.2.0-19.23 linux ppc64el SKIP "bad test dependency on ppc64el"
 #
 result wily linux-meta 4.2.0-18.22 dahdi-linux ppc64el FAIL "ppc64el migrated from lxc to scaling stack"
