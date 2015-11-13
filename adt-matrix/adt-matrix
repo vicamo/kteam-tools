@@ -560,7 +560,7 @@ class AutoPackageTest(object):
         ### counts are in <jobs>/<packages> which really do not make sense
         return ((primary_state, summary_str, version, count, total), result)
 
-
+    # XXX: this is really a separate results object ...
     def matrix(self, results, limit=None, limit_url=None):
         title = self.source + " on " + self.series
 
@@ -658,6 +658,23 @@ table.matrix, table.matrix th, table.matrix td {{
 </body>
 </html>
 """
+        return page
+
+
+    def hints(self, results):
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
+        if not len(verlist):
+            return ''
+
+        page = ''
+        pkgver = verlist[-1]
+        (ver, pkg) = pkgver.split()
+        page = ' '.join(('version', self.series, pkg, ver, '"seed version"')) + '\n'
+        for tpkg in results[pkgver]:
+            for arch in results[pkgver][tpkg]:
+                (status, status_link, version) = results[pkgver][tpkg][arch]
+                page += ' '.join(('result', self.series, pkg, ver, tpkg, arch, status, '"seed version"')) + '\n'
+        
         return page
 
 
@@ -799,6 +816,14 @@ table.matrix td {{
             print(matrix, end=None, file=mfd)
 
             os.rename(html_all + '.new', html_all)
+
+        # Latest results (as hints)
+        page = adt.hints(results)
+        ohints = series + '-' + package + '.hints'
+        with open(ohints + '.new', 'w') as hfd:
+            print(page, end=None, file=hfd)
+
+            os.rename(ohints + '.new', ohints)
 
         # Summary index table.
         if not state:
