@@ -88,26 +88,6 @@ class AutoPackageTest(object):
 
         self.verbose = True
 
-        self.hint_status = {}
-        if hints and hints != '-':
-            with open(hints) as hfd:
-                for line in hfd:
-                    args = shlex.split(line.strip(), comments=True)
-                    if len(args) == 0:
-                        pass
-
-                    elif args[0] == 'result':
-                        if len(args) != 8:
-                            print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
-                            print("         " + line.strip())
-                            continue
-
-                        (series, kernel_pkg, kernel_ver, test_pkg, test_arch, test_status, reason) = args[1:]
-                        if series != self.series:
-                            continue
-
-                        self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
-
         self.cache_file = self.series + ".cache"
 
         if os.path.exists(self.cache_file):
@@ -133,6 +113,38 @@ class AutoPackageTest(object):
         with open("package-binaries.json") as verf:
             tmp = json.load(verf)
             self.map_source = tmp['map-source']
+
+        # Load up the hits file.
+        self.hint_status = {}
+        if hints and hints != '-':
+            with open(hints) as hfd:
+                for line in hfd:
+                    args = shlex.split(line.strip(), comments=True)
+                    if len(args) == 0:
+                        pass
+
+                    elif args[0] == 'version':
+                        if len(args) != 5:
+                            print("WARNING: hints syntax error: version <series> <kernel_pkg> <kernel_ver> <reason>")
+                            print("         " + line.strip())
+                            continue
+                        (series, kernel_pkg, kernel_ver, reason) = args[1:]
+                        if series != self.series:
+                            continue
+
+                        self.results[kernel_ver + ' ' + kernel_pkg] = {}
+
+                    elif args[0] == 'result':
+                        if len(args) != 8:
+                            print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
+                            print("         " + line.strip())
+                            continue
+
+                        (series, kernel_pkg, kernel_ver, test_pkg, test_arch, test_status, reason) = args[1:]
+                        if series != self.series:
+                            continue
+
+                        self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
 
 
     def log_error(self, msg):
@@ -496,10 +508,10 @@ class AutoPackageTest(object):
                         prev_status = status
 
                     if status:
-                        vstatus = status.split('-')
+                        vstatus = status.split('-')[0]
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
-                        tmp[arch] = (vstatus[0], rurl, version)
+                        tmp[arch] = (vstatus, rurl, version)
 
                     # Accumulate missing results in the latest version when live.
                     if self.live and ver == verlist[-1] and status:
@@ -549,9 +561,8 @@ class AutoPackageTest(object):
         return ((primary_state, summary_str, version, count, total), result)
 
 
-    def matrix(self, limit=None, limit_url=None):
+    def matrix(self, results, limit=None, limit_url=None):
         title = self.source + " on " + self.series
-        (info, results) = self.results_data()
 
         page = """<html>
 <head>
@@ -647,7 +658,7 @@ table.matrix, table.matrix th, table.matrix td {{
 </body>
 </html>
 """
-        return (info, page)
+        return page
 
 
 apt_pkg.init_system()
@@ -773,18 +784,17 @@ table.matrix td {{
         html_all = series + '-' + package + '-all.html'
         html = series + '-' + package + '.html'
 
-        (info, matrix) = adt.matrix(limit=6, limit_url=html_all)
+        (info, results) = adt.results_data()
         (state, summary, version, count, total) = info
 
+        matrix = adt.matrix(results, limit=6, limit_url=html_all)
         with open(html + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
 
             os.rename(html + '.new', html)
 
         # Detail matrix ...
-        (info, matrix) = adt.matrix()
-        (state, summary, version, count, total) = info
-
+        matrix = adt.matrix(results)
         with open(html_all + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
 
