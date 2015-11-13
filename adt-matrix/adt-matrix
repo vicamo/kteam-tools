@@ -825,11 +825,11 @@ table.matrix td {{
 
         # Latest results (as hints)
         page = adt.hints(results)
-        ohints = series + '-' + package + '.hints'
-        with open(ohints + '.new', 'w') as hfd:
+        seeds = series + '-' + package + '.seeds'
+        with open(seeds + '.new', 'w') as hfd:
             print(page, end=None, file=hfd)
 
-            os.rename(ohints + '.new', ohints)
+            os.rename(seeds + '.new', seeds)
 
         # Summary index table.
         if not state:
