@@ -470,6 +470,7 @@ class AutoPackageTest(object):
                         if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
                             status = 'MISS-REPL'
+                            version += '\ntest package updated'
                         elif tstatus:
                             good_ever = True
                             status = 'GOOD'
