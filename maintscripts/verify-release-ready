@@ -107,6 +107,15 @@ class VerifyReleaseReady():
             else:
                 s.status(msg, True)
 
+            # Check: Make sure the ABI is *always* incremented
+            #
+            msg = 'ABI bump (%d)' % (int(cl1_abi))
+            if int(cl1_abi) <= int(cl2_abi):
+                s.status(msg, False)
+                s.verbose("No ABI bump: %d <= %d" % (int(cl1_abi), int(cl2_abi)))
+            else:
+                s.status(msg, True)
+
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
             msg = 'build number (%d)' % (int(cl2_build) + 1)
