@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Flags
+first=false
+[ "$1" = "first" ] && first=true
 
 # MIRROR wani -> launchpad
 while read repo url
@@ -43,5 +46,71 @@ kernel-ppa/mirror/ubuntu-xenial-signed.git git://git.launchpad.net/~ubuntu-kerne
 kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
 kernel-ppa/mirror/linux-firmware.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
 EOL
+
+if [ "$first" = true ]; then
+	while read repo url
+	do
+	    echo "*** $repo ..."
+	    if [ ! -d "/srv/kernel.ubuntu.com/git/$repo" ]; then
+		(cd "/srv/kernel.ubuntu.com/git" && mkdir "$repo" && git init --bare "$repo")
+	    fi
+	    (cd "/srv/kernel.ubuntu.com/git/$repo" && \
+		git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
+	done <<EOL
+kernel-ppa/mirror/ubuntu-saucy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy
+kernel-ppa/mirror/ubuntu-saucy-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy
+kernel-ppa/mirror/ubuntu-saucy-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy
+kernel-ppa/mirror/ubuntu-raring.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring
+kernel-ppa/mirror/ubuntu-raring-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/raring
+kernel-ppa/mirror/ubuntu-raring-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/raring
+kernel-ppa/mirror/ubuntu-quantal.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal
+kernel-ppa/mirror/ubuntu-quantal-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/quantal
+kernel-ppa/mirror/ubuntu-quantal-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/quantal
+kernel-ppa/mirror/ubuntu-quantal-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.5.0/+git/quantal
+kernel-ppa/mirror/ubuntu-oneiric.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric
+kernel-ppa/mirror/ubuntu-oneiric-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric
+kernel-ppa/mirror/ubuntu-oneiric-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.0.0/+git/oneiric
+kernel-ppa/mirror/ubuntu-natty.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty
+kernel-ppa/mirror/ubuntu-natty-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty
+kernel-ppa/mirror/ubuntu-natty-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.38/+git/natty
+kernel-ppa/mirror/ubuntu-maverick.git            git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick
+kernel-ppa/mirror/ubuntu-maverick-meta.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick
+kernel-ppa/mirror/ubuntu-maverick-lbm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35/+git/maverick
+kernel-ppa/mirror/ubuntu-karmic.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic
+kernel-ppa/mirror/ubuntu-karmic-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic
+kernel-ppa/mirror/ubuntu-karmic-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31/+git/karmic
+kernel-ppa/mirror/ubuntu-jaunty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty
+kernel-ppa/mirror/ubuntu-jaunty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jaunty
+kernel-ppa/mirror/ubuntu-jaunty-ports-meta.git   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/jaunty
+kernel-ppa/mirror/ubuntu-jaunty-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.28/+git/karmic
+kernel-ppa/mirror/ubuntu-jaunty-lrm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jaunty
+kernel-ppa/mirror/ubuntu-jaunty-lpia.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/jaunty
+kernel-ppa/mirror/ubuntu-jaunty-lpia-lrm.git     git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/jaunty
+kernel-ppa/mirror/ubuntu-intrepid.git            git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-meta.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-ports.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-ports-meta.git git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-lbm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.27/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-lrm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-lpia.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-lpia-meta.git  git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia-meta/+git/intrepid
+kernel-ppa/mirror/ubuntu-intrepid-lpia-lrm.git   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/intrepid
+kernel-ppa/mirror/ubuntu-hardy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy
+kernel-ppa/mirror/ubuntu-hardy-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hardy
+kernel-ppa/mirror/ubuntu-hardy-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.24/+git/hardy
+kernel-ppa/mirror/ubuntu-hardy-lrm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-2.6.24/+git/hardy
+kernel-ppa/mirror/ubuntu-hardy-lum.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.24/+git/hardy
+kernel-ppa/mirror/ubuntu-gutsy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy
+kernel-ppa/mirror/ubuntu-gutsy-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.22/+git/gutsy
+kernel-ppa/mirror/ubuntu-gutsy-lum.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.22/+git/gutsy
+kernel-ppa/mirror/ubuntu-feisty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty
+kernel-ppa/mirror/ubuntu-feisty-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.20/+git/feisty
+kernel-ppa/mirror/ubuntu-edgy.git                git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/edgy
+kernel-ppa/mirror/ubuntu-edgy-updates.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.17/+git/edgy
+kernel-ppa/mirror/ubuntu-dapper.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dapper
+kernel-ppa/mirror/ubuntu-dapper-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.15/+git/dapper
+kernel-ppa/mirror/ubuntu-dapper-updates.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.15/+git/dapper
+EOL
+fi
 
 date
