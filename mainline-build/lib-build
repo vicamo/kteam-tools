@@ -182,3 +182,23 @@ repo_update_ubuntu()
 		repo_remote_update_as "$series" "$url"
 	)
 }
+
+
+#
+# series_to_build_release -- map from a series to a sane build series.
+#
+series_to_build_release()
+{
+	# We cannot use the previous LTS as we are tied somewhat to compiler
+	# versions and features in later releases.
+	case "$series" in
+	hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring|saucy)
+		RET="precise" ;;
+	trusty|utopic)
+		RET="trusty" ;;
+	unstable)
+		RET="wily" ;;
+	*)
+		RET="$series" ;;
+	esac
+}

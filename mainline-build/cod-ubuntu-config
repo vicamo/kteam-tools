@@ -1,0 +1,43 @@
+#!/bin/bash
+P='cod-ubuntu-config'
+
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <series> <package> <tag>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+. "$here/lib-build"
+. "$here/lib-chroot"
+
+series="$1"
+package="$2"
+tag="$3"
+
+master_tree_select
+
+# Ensure we have the commit identified.
+repo_remote_update_list $series
+
+# Clean out the rubbish.
+rm -rf "$master_main"/CONFIGS
+
+# Pick a sensible release to build the configs in.
+series_to_build_release "$series"
+build_release="$RET"
+
+# Generate the configs at this checkout.
+git checkout -f "$tag"
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean genconfigs
+
+# Output.
+html="$HOME/public_html/config/$series/$package/$tag"
+mkdir -p "$html"
+
+cp -p CONFIGS/* "$html"
