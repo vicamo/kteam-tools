@@ -88,7 +88,7 @@ done
 
 # Copy in incoming configuration dumps.
 mkdir -p "$HOME/public_html/config"
-cp -rp "$HOME/incoming/config/" "$HOME/public_html/"
+rsync -v -a --remove-source-files "$HOME/incoming/config/" "$HOME/public_html/config/"
 
 # Finally re-evaluate any 'current' links.
 (
