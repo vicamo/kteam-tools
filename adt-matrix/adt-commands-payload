@@ -20,6 +20,10 @@ with open(series + ".cache") as cachef:
 # Generate commands to retrigger all missing tests.
 for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['MISS-REPL'], 'missing (package updated)'), (['REGR'], 'regressing'), (['REGN'], 'newly regressing')):
     print("# " + series + " " + master_package + " retrigger " + message)
+    if states:
+        tag = '+'.join(states)
+    else:
+        tag = 'all'
 
     mkey = '-'.join((series, master_package))
     if mkey not in series_cache['current']:
@@ -84,6 +88,6 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['MISS-REPL'], 
                     cmd += ' --trigger ' + trigger
                 cmd += ' ' + ' '.join(sorted(packages_form[form]))
 
-                print(cmd)
+                print(cmd + ' # ' + tag)
 
     print("")

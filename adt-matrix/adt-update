@@ -78,10 +78,17 @@ done <"versions.info" | \
 
 # Build the commands after the adt-matrix completes as we rely no its missing
 # test information to be up to date.
+: >'miss-updated.cmds.new'
 while read series package parent triggers
 do
 	echo "commands $series $package $triggers"
 	
 	"$here/adt-commands-payload" "$series" "$archive" $triggers >"$series-$package.cmds.new"
 	mv -f "$series-$package.cmds.new" "$series-$package.cmds"
+
+	# Summaries.
+	grep '# MISS-REPL$' "$series-$package.cmds" >>'miss-updated.cmds.new'
 done <"versions.info"
+
+# Summaries.
+mv 'miss-updated.cmds.new' 'miss-updated.cmds'
