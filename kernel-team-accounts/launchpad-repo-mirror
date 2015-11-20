@@ -76,6 +76,9 @@ kernel-ppa/mirror/ubuntu-natty-lbm.git           git+ssh://kernel-ppa@git.launch
 kernel-ppa/mirror/ubuntu-maverick.git            git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick
 kernel-ppa/mirror/ubuntu-maverick-meta.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick
 kernel-ppa/mirror/ubuntu-maverick-lbm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35/+git/maverick
+kernel-ppa/mirror/ubuntu-lucid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid
+kernel-ppa/mirror/ubuntu-lucid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid
+kernel-ppa/mirror/ubuntu-lucid-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid
 kernel-ppa/mirror/ubuntu-karmic.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic
 kernel-ppa/mirror/ubuntu-karmic-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic
 kernel-ppa/mirror/ubuntu-karmic-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31/+git/karmic
