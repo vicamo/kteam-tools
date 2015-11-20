@@ -1,0 +1,45 @@
+#!/bin/bash
+P="cod-tags-trigger"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+url="http://people.canonical.com/~kernel/info/kernel-version-map.txt"
+
+. "$here/lib-build" 
+
+master_tags="$master_state/ubuntu"
+tags_list="$master_tags/release-tags"
+
+# Ensure our master state exists.
+mkdir -p "$master_tags"
+
+#
+# UBUNTU TAGS: Find all the new Ubuntu release tags.
+#
+wget -q -O "$tags_list.new" "$url"
+
+# First run is the base line.
+if [ ! -f "$tags_list" ]; then
+	mv "$tags_list.new" "$tags_list"
+	exit 0
+fi
+
+diff "$tags_list" "$tags_list.new" | \
+	awk '/>/' | tac >"$tags_list.added"
+
+# Commit the list.
+mv "$tags_list.new" "$tags_list"
+
+# Run the list.
+while read added series package packge_ver ubuntu_ver mainline_ver
+do
+	echo "$here/cod-enqueue" "cod-ubuntu-config" "$series" "$package" "$ubuntu_ver"
+done <"$tags_list.added"
+
+rm -f "$tags_list.added"

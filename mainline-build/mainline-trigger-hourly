@@ -15,6 +15,11 @@ esac
 "$here/cod-tags-trigger"
 
 #
+# UBUNTU TAGS: tagged versions in Ubuntu trees.
+#
+"$here/cod-ubuntu-configs-trigger"
+
+#
 # STABLE QUEUE: coversion of the stable queue quilt trees
 #
 "$here/cod-stable-queue" "/srv/kernel.ubuntu.com/git/kernel-ppa/stable-queue-branches.git"
