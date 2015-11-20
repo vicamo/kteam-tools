@@ -1,3 +1,62 @@
+git://kernel.ubuntu.com/ubuntu-archive/kexec-tools
+git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-jaunty.git
+git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-karmic.git
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dapper                                         either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.15/+git/dapper                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper-updates.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.15/+git/dapper                           either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-edgy.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/edgy                                           either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-edgy-updates.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.17/+git/edgy                             either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-feisty.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty                                         either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-feisty-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.20/+git/feisty                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy                                          either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.22/+git/gutsy                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy-lum.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.22/+git/gutsy                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy                                          either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.24/+git/hardy                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lrm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-2.6.24/+git/hardy                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lum.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.24/+git/hardy                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hardy                                     either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid.git                  git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid                                       either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lbm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.27/+git/intrepid              either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/intrepid                                  either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia-lrm.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/intrepid               either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia-meta.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia-meta/+git/intrepid                             either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lrm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/intrepid                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-meta.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/intrepid                                  either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-ports.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports/+git/intrepid                                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-ports-meta.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/intrepid                            either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty                                         either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.28/+git/karmic                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lpia.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/jaunty                                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lpia-lrm.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/jaunty                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lrm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jaunty                      either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jaunty                                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-ports-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/jaunty                              either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic                                         either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31/+git/karmic                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic                                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick.git                  git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick                                       either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick-lbm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35/+git/maverick              either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick-meta.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick                                  either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty                                          either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.38/+git/natty                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty                                     either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-nexus4.git
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-nexus7.git
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric                                        either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric-lbm.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.0.0/+git/oneiric                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric-meta.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric                                   either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal                                        either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-lbm.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.5.0/+git/quantal                either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-meta.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/quantal                                   either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-signed.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/quantal                                 either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring                                         either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/raring                                    either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-signed.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/raring                                  either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy                                          either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy                                     either
+git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-signed.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy                                   either
+git://kernel.ubuntu.com/ubuntu-archive/ume
 git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git
 git://kernel.ubuntu.com/ubuntu/autotest-client-virt-tests.git
 git://kernel.ubuntu.com/ubuntu/autotest-docker.git
@@ -6,14 +65,26 @@ git://kernel.ubuntu.com/ubuntu/instrument-lib.git
 git://kernel.ubuntu.com/ubuntu/iozone-results-comparator.git
 git://kernel.ubuntu.com/ubuntu/kernel-testing.git
 git://kernel.ubuntu.com/ubuntu/kteam-tools.git
+git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad
 git://kernel.ubuntu.com/ubuntu/linux.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-debian.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-ohw.git
-git://kernel.ubuntu.com/ubuntu/wireless-crda.git
-
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-meta.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise                                   wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-signed.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise                                 wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty                                         wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty                                    wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty                                  wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic                                         wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic                                    wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic                                  wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid                                          wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid                                     wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid                                   wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-wily.git                              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily                                           launchpad
 git://kernel.ubuntu.com/ubuntu/ubuntu-wily-meta.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily                                      launchpad
 git://kernel.ubuntu.com/ubuntu/ubuntu-wily-signed.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily                                    launchpad
@@ -21,81 +92,6 @@ git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git                            git:
 git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial                                    launchpad
 git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial                                  launchpad
 git://kernel.ubuntu.com/ubuntu/unstable.git                                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable                                       launchpad
-git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad
-
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid                                          wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid                                     wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid                                   wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic                                         wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic                                    wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic                                  wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty                                         wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty                                    wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty                                  wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-meta.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise                                   wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-signed.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise                                 wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                wani
+git://kernel.ubuntu.com/ubuntu/wireless-crda.git
 git://kernel.ubuntu.com/virgin/testing/crack.git                            git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack                            wani
 git://kernel.ubuntu.com/virgin/testing/drm-intel.git                        git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel                          wani
-
-git://kernel.ubuntu.com/ubuntu-archive/kexec-tools
-git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-jaunty.git
-git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-karmic.git
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-nexus4.git
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-nexus7.git
-git://kernel.ubuntu.com/ubuntu-archive/ume
-
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy                                          either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy                                     either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-signed.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy                                   either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring                                         either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/raring                                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-signed.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/raring                                  either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal                                        either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-meta.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/quantal                                   either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-signed.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/quantal                                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-lbm.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.5.0/+git/quantal                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric                                        either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric-meta.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric                                   either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric-lbm.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.0.0/+git/oneiric                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty                                          either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty                                     either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.38/+git/natty                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick.git                  git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick                                       either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick-meta.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick                                  either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick-lbm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35/+git/maverick              either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic                                         either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic                                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31/+git/karmic                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty                                         either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-meta.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jaunty                                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-ports-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/jaunty                              either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.28/+git/karmic                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lrm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jaunty                      either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lpia.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/jaunty                                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-lpia-lrm.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/jaunty                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid.git                  git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid                                       either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-meta.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/intrepid                                  either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-ports.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports/+git/intrepid                                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-ports-meta.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/intrepid                            either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lbm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.27/+git/intrepid              either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lrm.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/intrepid                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/intrepid                                  either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia-meta.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia-meta/+git/intrepid                             either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-lpia-lrm.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/intrepid               either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy                                          either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hardy                                     either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.24/+git/hardy                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lrm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-2.6.24/+git/hardy                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-lum.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.24/+git/hardy                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy                                          either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy-lbm.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.22/+git/gutsy                 either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-gutsy-lum.git                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.22/+git/gutsy                    either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-feisty.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty                                         either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-feisty-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.20/+git/feisty                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-edgy.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/edgy                                           either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-edgy-updates.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.17/+git/edgy                             either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dapper                                         either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper-lbm.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.15/+git/dapper                either
-git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper-updates.git            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.15/+git/dapper                           either
