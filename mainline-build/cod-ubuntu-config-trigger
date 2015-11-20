@@ -37,9 +37,9 @@ diff "$tags_list" "$tags_list.new" | \
 mv "$tags_list.new" "$tags_list"
 
 # Run the list.
-while read added series package packge_ver ubuntu_ver mainline_ver
+while read added series package package_ver ubuntu_ver mainline_ver
 do
-	"$here/cod-enqueue" "cod-ubuntu-config" "$series" "$package" "$ubuntu_ver"
+	"$here/cod-enqueue" "cod-ubuntu-config" "$series" "$package" "$package_ver" "$ubuntu_ver"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"

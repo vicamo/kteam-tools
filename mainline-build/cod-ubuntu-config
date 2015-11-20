@@ -1,8 +1,8 @@
 #!/bin/bash
 P='cod-ubuntu-config'
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <series> <package> <tag>" 1>&2
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 <series> <package> <version> <tag>" 1>&2
 	exit 1
 fi
 
@@ -17,7 +17,8 @@ esac
 
 series="$1"
 package="$2"
-tag="$3"
+version="$3"
+tag="$4"
 
 master_tree_select
 
@@ -37,7 +38,7 @@ do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean genconfigs
 
 # Output.
-html="$HOME/public_html/config/$series/$package/$tag"
+html="$HOME/public_html/config/$series/$package/$version"
 mkdir -p "$html"
 
 cp -p CONFIGS/* "$html"
