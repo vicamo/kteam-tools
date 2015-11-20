@@ -33,10 +33,11 @@ mv "$pockets_list.new" "$pockets_list"
 
 while read series package vesion pocket
 do
-	grep "^$series $package $version " "$tag_list"
+	grep "^$series $package $version " "$tags_list"
 done <"$pockets_list" | \
 	sort -u >"$ptags_list.new"
 
+[ ! -f "$ptags_list" ] && : >"$ptags_list"
 diff "$ptags_list" "$ptags_list.new" | \
 	awk '/>/' | tac >"$ptags_list.added"
 
