@@ -68,9 +68,9 @@ git://kernel.ubuntu.com/ubuntu/kteam-tools.git
 git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad
 git://kernel.ubuntu.com/ubuntu/linux.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-debian.git
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid                                     wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid                 wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-ohw.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                wani
