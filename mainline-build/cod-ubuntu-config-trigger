@@ -10,11 +10,14 @@ case "$here" in
 esac
 
 url="http://people.canonical.com/~kernel/info/kernel-version-map.txt"
+url2="http://people.canonical.com/~kernel/info/kernel-version-pockets.txt"
 
 . "$here/lib-build" 
 
 master_tags="$master_state/ubuntu"
 tags_list="$master_tags/release-tags"
+pockets_list="$master_tags/pocket-versions"
+ptags_list="$master_tags/pocket-tags"
 
 # Ensure our master state exists.
 mkdir -p "$master_tags"
@@ -23,23 +26,27 @@ mkdir -p "$master_tags"
 # UBUNTU TAGS: Find all the new Ubuntu release tags.
 #
 wget -q -O "$tags_list.new" "$url"
+wget -q -O "$pockets_list.new" "$url2"
 
-# First run is the base line.
-if [ ! -f "$tags_list" ]; then
-	mv "$tags_list.new" "$tags_list"
-	exit 0
-fi
+mv "$tags_list.new" "$tags_list"
+mv "$pockets_list.new" "$pockets_list"
 
-diff "$tags_list" "$tags_list.new" | \
-	awk '/>/' | tac >"$tags_list.added"
+while read series package vesion pocket
+do
+	grep "^$series $package $version " "$tag_list"
+done <"$pockets_list" | \
+	sort -u >"$ptags_list.new"
+
+diff "$ptags_list" "$ptags_list.new" | \
+	awk '/>/' | tac >"$ptags_list.added"
 
 # Commit the list.
-mv "$tags_list.new" "$tags_list"
+mv "$ptags_list.new" "$ptags_list"
 
 # Run the list.
 while read added series package package_ver ubuntu_ver mainline_ver
 do
 	"$here/cod-enqueue" "cod-ubuntu-config" "$series" "$package" "$package_ver" "$ubuntu_ver"
-done <"$tags_list.added"
+done <"$ptags_list.added"
 
-rm -f "$tags_list.added"
+rm -f "$ptags_list.added"
