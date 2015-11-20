@@ -25,7 +25,7 @@ master_tree_select
 repo_remote_update_list $series
 
 # Clean out the rubbish.
-rm -rf "$master_main"/CONFIGS
+rm -rf CONFIGS
 
 # Pick a sensible release to build the configs in.
 series_to_build_release "$series"
