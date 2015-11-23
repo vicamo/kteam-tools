@@ -13,7 +13,7 @@ awk -v prefix="$prefix" -v summary="$summary" '
 	BEGIN			{ what="" }
 	/^-\+\+\+-.*\//		{ print "DODGY marker ignored"; next }
 	/^-\+\+\+- begin /	{ print "BEGIN: " $3; what=prefix "." $3; next }
-	/^-\+\+\+- status /	{ print "STATUS: $3 " " $4; print "Status: " $3 " " $4 >>summary; next }
+	/^-\+\+\+- status /	{ print "STATUS: " $3 " " $4; print "Status: " $3 " " $4 >>summary; next }
 	/^-\+\+\+- end /	{ print "END: " $3; what=""; next }
 	(what != "")		{ print >>what }
 '
