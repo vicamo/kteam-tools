@@ -1,4 +1,26 @@
 #
+# precise
+#
+
+## initial acceptance of linux-lts-trusty flaws
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 blktap-dkms amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 crystalhd amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 dahdi-linux amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 ndiswrapper amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 nvidia-graphics-drivers-96 amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 openafs amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 pvcam-dkms amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 rt-tests amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 v4l2loopback amd64,i386 FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 xtables-addons amd64,i386 FAIL "initial linux-lts-trusty flaws"
+#
+result precise linux-meta-lts-trusty 3.13.0-67.110~precise1 cedarview-drm-drivers i386 FAIL "initial linux-lts-trusty flaws"
+#
+result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 openafs armhf FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 v4l2loopback armhf FAIL "initial linux-lts-trusty flaws"
+result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 xtables-addons armhf FAIL "initial linux-lts-trusty flaws"
+
+#
 # trusty
 #
 result trusty linux-meta 3.13.0-68.111 dahdi-linux ppc64el FAIL "ppc64el migrated from lxc to scaling stack"
@@ -11,6 +33,31 @@ result trusty linux-meta 3.13.0-69.112 linux ppc64el SKIP "bad test dependency o
 result trusty linux-meta 3.13.0-70.113 linux ppc64el SKIP "bad test dependency on ppc64el"
 result trusty linux-meta-lts-vivid 3.19.0-33.38~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
 result trusty linux-meta-lts-vivid 3.19.0-36.41~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
+
+## initial acceptance of linux-lts-utopic
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 flashcache amd64,i386 FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 nvidia-graphics-drivers-173 amd64,i386 FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 openafs amd64,i386 FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 r8168 amd64,i386 FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 sl-modem amd64,i386 FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 xtables-addons amd64,i386 FAIL "initial linux-lts-utopic flaws"
+#
+result trusty linux-meta-lts-utopic 3.16.0-52.70~14.04.1 openafs armhf FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-52.70~14.04.1 r8168 armhf,ppc64el FAIL "initial linux-lts-utopic flaws"
+result trusty linux-meta-lts-utopic 3.16.0-52.70~14.04.1 xtables-addons armhf,ppc64el FAIL "initial linux-lts-utopic flaws"
+
+## initial acceptance of linux-lts-vivid
+result trusty linux-meta-lts-vivid 3.19.0-30.34~14.04.1 lime-forensics amd64,armhf,i386,ppc64el FAIL "initial linux-lts-vivid flaws"
+result trusty linux-meta-lts-vivid 3.19.0-30.34~14.04.1 v4l2loopback amd64,armhf,i386,ppc64el FAIL "initial linux-lts-vivid flaws"
+result trusty linux-meta-lts-vivid 3.19.0-30.34~14.04.1 virtualbox amd64,i386 FAIL "initial linux-lts-vivid flaws"
+
+## initial acceptance of linux-lts-wily
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 bcmwl amd64,i386 FAIL "initial linux-lts-wily flaws"
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 fglrx-installer i386 FAIL "initial linux-lts-wily flaws"
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 fglrx-installer-updates i386 FAIL "initial linux-lts-wily flaws"
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 langford amd64,i386 FAIL "initial linux-lts-wily flaws"
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 ndiswrapper amd64,i386 FAIL "initial linux-lts-wily flaws"
+result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 openvswitch amd64,i386,ppc64el FAIL "initial linux-lts-wily flaws"
 
 #
 # vivid
