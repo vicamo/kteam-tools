@@ -140,11 +140,14 @@ class AutoPackageTest(object):
                             print("         " + line.strip())
                             continue
 
-                        (series, kernel_pkg, kernel_ver, test_pkg, test_arch, test_status, reason) = args[1:]
+                        (series, kernel_pkg, kernel_vers, test_pkgs, test_archs, test_status, reason) = args[1:]
                         if series != self.series:
                             continue
 
-                        self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
+                        for kernel_ver in kernel_vers.split(','):
+                            for test_pkg in test_pkgs.split(','):
+                                for test_arch in test_archs.split(','):
+                                    self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
 
 
     def log_error(self, msg):
