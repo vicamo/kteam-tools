@@ -23,7 +23,7 @@ mkdir -p "$master_tags"
 master_tree_select
 
 # Pull in all trees containing tags we wish to build.
-remotes="linus 2.6.32.y.33.z linux-stable extended-stable"
+remotes="linus 2.6.32.y.33.z linux-stable extended-stable crack-extra"
 repo_remote_update_list $remotes
 
 # Work out where we are going to push the tags et al to.
