@@ -17,7 +17,7 @@ esac
 #
 # UBUNTU TAGS: tagged versions in Ubuntu trees.
 #
-"$here/cod-ubuntu-configs-trigger"
+"$here/cod-ubuntu-config-trigger"
 
 #
 # STABLE QUEUE: coversion of the stable queue quilt trees
