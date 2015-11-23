@@ -328,6 +328,7 @@ do_chroot "$build_release-i386" \
 	fakeroot debian/rules clean
 do_chroot "$build_release-i386" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
+echo "-+++- status binary-headers $? -+++-"
 echo "-+++- end binary-headers -+++-"
 for arch in $arches; do
 	if [ "$arch" = 'amd64' -o "$arch" = 'i386' ]; then
@@ -353,6 +354,7 @@ for arch in $arches; do
 	        cat - <<-EOM
 	        $cross_prefix debian/rules $cross_overrides do_mainline_build=true do_extras_package=false do_tools=0 no_dumpfile=1 build-arch
 	        $cross_prefix fakeroot debian/rules $cross_overrides do_mainline_build=true do_extras_package=false do_tools=0 no_dumpfile=1 binary-debs
+		echo "-+++- status $arch $? -+++-"
 		EOM
 	} | do_chroot "$build_release-$carch" "/bin/bash"
 	echo "-+++- end $arch -+++-"

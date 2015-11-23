@@ -95,7 +95,7 @@ sha1=`git log -1 --pretty=%H "$commit" 2>/dev/null`
 	echo "$commit"
 	echo "$sha1"
 } >"$html/COMMIT"
-"$here/mainline-extract-logs" "$master_main/BUILD.LOG" "$html/BUILD.LOG"
+"$here/mainline-extract-logs" "$master_main/BUILD.LOG" "$html/BUILD.LOG" "$html/$master_main/BUILT"
 mv "$master_main/BUILD.LOG" "$html"
 mv "$master_main/"linux-{headers,image}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then

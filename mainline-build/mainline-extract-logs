@@ -1,17 +1,19 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $0 <log> <prefix>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <log> <prefix> <summary>" 1>&2
 	exit 1
 fi
 file="$1"
 prefix="$2"
+summary="$2"
 
 <"$file" \
-awk -v prefix="$prefix" '
+awk -v prefix="$prefix" -v summary="$summary" '
 	BEGIN			{ what="" }
 	/^-\+\+\+-.*\//		{ print "DODGY marker ignored"; next }
 	/^-\+\+\+- begin /	{ print "BEGIN: " $3; what=prefix "." $3; next }
+	/^-\+\+\+- status /	{ print "STATUS: $3 " " $4; print "Status: " $3 " " $4 >>summary; next }
 	/^-\+\+\+- end /	{ print "END: " $3; what=""; next }
 	(what != "")		{ print >>what }
 '
