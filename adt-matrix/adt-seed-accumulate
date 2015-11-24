@@ -5,7 +5,7 @@ import sys
 import os
 import yaml
 import json
-
+import re
 
 class AdtMatrixSeed(object):
     def __init__(self, cache):
@@ -101,11 +101,14 @@ class AdtMatrixSeed(object):
                         (prefix, remainder) = excuse.split('>:', 1)
                         for version_group in remainder.split(';'):
                             (package_string, version) = version_group.split('(', 1)
+                            version = re.sub('<[^<]+?>', '', version.strip())
                             for package in package_string.split(', '):
-                                pkgs[package.strip()] = True
-
+                                package = package.strip()
+                                tmp = pkgs.setdefault(version, {})
+                                tmp[package] = True
                 if len(pkgs) > 0:
-                    print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {}'.format(series, " ".join(pkgs.keys()), record['source']))
+                    for version in pkgs:
+                        print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {} ({}'.format(series, " ".join(sorted(pkgs[version].keys())), record['source'], version))
 
 
     def accumulate(self, series, package, flags, britney):
