@@ -715,14 +715,14 @@ class WorkflowEngine():
         cdebug('            WorkflowEngine::automated_testing_new leave')
         return False
 
-    # Possible testing states: REGR, FAIL, GOOD, MISS
+    # Possible testing states: REGR, REGN, FAIL, GOOD, MISS
     #
-    # - 'automated-testing' will transition to 'Incomplete' if state is 'REGR'
+    # - 'automated-testing' will transition to 'Incomplete' if state is 'REGR' or 'REGN'
     # - 'automated-testing' will transition to 'Fix Released' if state is 'GOOD' or 'FAIL'
     # - any other state (e.g. 'MISS') will be ignored and we'll continue to poll the URL
     #
     def test_is_regression(s, state):
-        if state != None and state.upper() == 'REGR':
+        if state != None and state.upper() in ['REGR', 'REGN']:
             return True
         return False
     def test_is_pass(s, state):
