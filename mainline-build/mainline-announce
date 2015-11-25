@@ -8,17 +8,39 @@ from ktl.shanky                         import send_to_shankbot
 commit = sys.argv[1]
 published = sys.argv[2]
 build = int(sys.argv[3])
+built = sys.argv[4]
 
 if build == 2:
     reason = 'build'
 else:
     reason = 'rebuild'
 
-params = {'commit': commit, 'published': published, 'user': os.environ['USER'], 'reason': reason}
+status = []
+overall_status = 'succeeded'
+with open(built) as bfd:
+    for line in bfd:
+        args = line.strip().split()
+        if args[0] == 'Status:':
+            if int(args[2]) != 0:
+                overall_status = 'failed'
+                state = 'failed'
+            else:
+                state = 'good'
+            status.append('    ' + args[1] + ': ' + state + ' (rc=' + str(args[2]) + ')')
+
+print(status)
+params = {
+    'commit': commit,
+    'published': published,
+    'user': os.environ['USER'],
+    'reason': reason,
+    'overall_status': overall_status,
+    'status': '\r\n'.join(status),
+}
 params['url'] = "http://kernel.ubuntu.com/~{user}/mainline/{published}".format(**params)
 
 # Send to shanky for publication in IRC.
-msg = "mainline build: {commit} {reason} complete at {url}/\n".format(**params)
+msg = "mainline build: {commit} {reason} complete {overall_status} at {url}/\n".format(**params)
 ##print(msg)
 send_to_shankbot(msg)
 
@@ -27,12 +49,15 @@ if build == 2:
     msg  = """From: Mainline Builds <kernel-team@lists.ubuntu.com>\r
 To: Kernel Team <kernel-team@lists.ubuntu.com>\r
 Reply-to: Kernel Team <kernel-team@lists.ubuntu.com>\r
-Subject: Mainline Build {commit}\r
+Subject: Mainline Build {commit} {overall_status}\r
 \r
-The mainline build for {commit} is now complete and available at the URL\r
-below:\r
+The mainline build for {commit} is now complete ({overall_status}) and available
+at the URL below:\r
 \r
     {url}/\r
+\r
+Build architecture status:\r
+{status}\r
 \r
 See the CHANGES file for the list of changes from the previous version:\r
 \r
@@ -50,4 +75,5 @@ Kernel Team\r
     server.set_debuglevel(0)
     server.sendmail('apw@canonical.com',
                     'kernel-team@lists.ubuntu.com', msg)
+    #server.sendmail('apw@canonical.com', 'apw@canonical.com', msg)
     server.quit()
