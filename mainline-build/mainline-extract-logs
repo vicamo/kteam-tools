@@ -6,7 +6,7 @@ if [ "$#" -ne 3 ]; then
 fi
 file="$1"
 prefix="$2"
-summary="$2"
+summary="$3"
 
 <"$file" \
 awk -v prefix="$prefix" -v summary="$summary" '
