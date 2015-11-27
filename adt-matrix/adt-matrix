@@ -311,8 +311,8 @@ class AutoPackageTest(object):
 
         
                     # This is a triggered event not for linux, ignore.
-                    if modern and not kernel_pkg:
-                        return
+                    #if modern and not kernel_pkg:
+                    #    return
 
                 # If this is testing a kernel package it should be for that package.
                 #if ressrc.startswith('linux'):
