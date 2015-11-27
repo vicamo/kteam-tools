@@ -40,14 +40,30 @@ do
     (cd "/srv/kernel.ubuntu.com/git/$repo" && \
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
-kernel-ppa/mirror/ubuntu-wily.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
-kernel-ppa/mirror/ubuntu-wily-meta.git     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily
-kernel-ppa/mirror/ubuntu-wily-signed.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily
-kernel-ppa/mirror/ubuntu-xenial.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
-kernel-ppa/mirror/ubuntu-xenial-meta.git   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
-kernel-ppa/mirror/ubuntu-xenial-signed.git git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
-kernel-ppa/mirror/unstable.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
-kernel-ppa/mirror/linux-firmware.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
+kernel-ppa/mirror/ubuntu-lucid.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid
+kernel-ppa/mirror/ubuntu-lucid-meta.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid
+kernel-ppa/mirror/ubuntu-lucid-lbm.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid
+kernel-ppa/mirror/ubuntu-precise.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
+kernel-ppa/mirror/ubuntu-precise-meta.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
+kernel-ppa/mirror/ubuntu-precise-signed.git      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
+kernel-ppa/mirror/ubuntu-precise-lbm.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
+kernel-ppa/mirror/ubuntu-trusty.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
+kernel-ppa/mirror/ubuntu-trusty-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
+kernel-ppa/mirror/ubuntu-trusty-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
+kernel-ppa/mirror/ubuntu-utopic.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
+kernel-ppa/mirror/ubuntu-utopic-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
+kernel-ppa/mirror/ubuntu-utopic-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
+kernel-ppa/mirror/ubuntu-vivid.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
+kernel-ppa/mirror/ubuntu-vivid-meta.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
+kernel-ppa/mirror/ubuntu-vivid-signed.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
+kernel-ppa/mirror/ubuntu-wily.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
+kernel-ppa/mirror/ubuntu-wily-meta.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily
+kernel-ppa/mirror/ubuntu-wily-signed.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily
+kernel-ppa/mirror/ubuntu-xenial.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+kernel-ppa/mirror/ubuntu-xenial-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+kernel-ppa/mirror/ubuntu-xenial-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
+kernel-ppa/mirror/unstable.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
+kernel-ppa/mirror/linux-firmware.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
 EOL
 
 if [ "$first" = true ]; then
