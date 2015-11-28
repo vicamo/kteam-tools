@@ -382,7 +382,7 @@ class WorkflowEngine():
             "series-name"    : series,
             "series-version" : s.ubuntu.index_by_series_name[series]['series_version'],
             "hwe"            : hwe,
-            "bug id"         : task.bug.id,
+            "bug-id"         : task.bug.id,
             "url"            : s.bug_url(task.bug.id),
             "version"        : s.wfb.pkg_version,
             "package"        : s.wfb.pkg_name,
