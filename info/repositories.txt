@@ -67,10 +67,9 @@ git://kernel.ubuntu.com/ubuntu/kernel-testing.git
 git://kernel.ubuntu.com/ubuntu/kteam-tools.git
 git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad
 git://kernel.ubuntu.com/ubuntu/linux.git
-git://kernel.ubuntu.com/ubuntu/ubuntu-debian.git
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid                                     wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid                 wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          either
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid                 either
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid                                     either
 git://kernel.ubuntu.com/ubuntu/ubuntu-ohw.git
 git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                wani
@@ -79,9 +78,9 @@ git://kernel.ubuntu.com/ubuntu/ubuntu-precise-signed.git                    git:
 git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty                                         wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty                                    wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty                                  wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic                                         wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic                                    wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic                                  wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic                                         either
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic                                    either
+git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic                                  either
 git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid                                          wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid                                     wani
 git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid                                   wani
