@@ -10,25 +10,20 @@ do
     echo "*** $repo ..."
     (cd "/srv/kernel.ubuntu.com/git/$repo" && git push --mirror "$url")
 done <<EOL
-ubuntu/ubuntu-vivid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
-ubuntu/ubuntu-vivid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
-ubuntu/ubuntu-vivid-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
-ubuntu/ubuntu-utopic.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
-ubuntu/ubuntu-utopic-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
-ubuntu/ubuntu-utopic-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
-ubuntu/ubuntu-trusty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
-ubuntu/ubuntu-trusty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
-ubuntu/ubuntu-trusty-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
-ubuntu/ubuntu-precise.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
-ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
-ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
-ubuntu/ubuntu-precise-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
-ubuntu/ubuntu-lucid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid
-ubuntu/ubuntu-lucid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid
-ubuntu/ubuntu-lucid-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid
 virgin/testing/crack.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack
 virgin/testing/drm-intel.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel
 EOL
+
+#ubuntu/ubuntu-vivid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
+#ubuntu/ubuntu-vivid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
+#ubuntu/ubuntu-vivid-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
+#ubuntu/ubuntu-trusty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
+#ubuntu/ubuntu-trusty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
+#ubuntu/ubuntu-trusty-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
+#ubuntu/ubuntu-precise.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
+#ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
+#ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
+#ubuntu/ubuntu-precise-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
 
 # MIRROR launchpad -> wani
 while read repo url
@@ -40,9 +35,6 @@ do
     (cd "/srv/kernel.ubuntu.com/git/$repo" && \
         git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <<EOL
-kernel-ppa/mirror/ubuntu-lucid.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid
-kernel-ppa/mirror/ubuntu-lucid-meta.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid
-kernel-ppa/mirror/ubuntu-lucid-lbm.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid
 kernel-ppa/mirror/ubuntu-precise.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
 kernel-ppa/mirror/ubuntu-precise-meta.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
 kernel-ppa/mirror/ubuntu-precise-signed.git      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
@@ -50,9 +42,6 @@ kernel-ppa/mirror/ubuntu-precise-lbm.git         git://git.launchpad.net/~ubuntu
 kernel-ppa/mirror/ubuntu-trusty.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
 kernel-ppa/mirror/ubuntu-trusty-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
 kernel-ppa/mirror/ubuntu-trusty-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
-kernel-ppa/mirror/ubuntu-utopic.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
-kernel-ppa/mirror/ubuntu-utopic-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
-kernel-ppa/mirror/ubuntu-utopic-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
 kernel-ppa/mirror/ubuntu-vivid.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
 kernel-ppa/mirror/ubuntu-vivid-meta.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
 kernel-ppa/mirror/ubuntu-vivid-signed.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
@@ -76,6 +65,9 @@ if [ "$first" = true ]; then
 	    (cd "/srv/kernel.ubuntu.com/git/$repo" && \
 		git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 	done <<EOL
+kernel-ppa/mirror/ubuntu-utopic.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
+kernel-ppa/mirror/ubuntu-utopic-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
+kernel-ppa/mirror/ubuntu-utopic-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
 kernel-ppa/mirror/ubuntu-saucy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy
 kernel-ppa/mirror/ubuntu-saucy-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy
 kernel-ppa/mirror/ubuntu-saucy-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy
