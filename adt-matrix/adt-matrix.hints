@@ -77,3 +77,5 @@ result wily linux-meta 4.2.0-18.22 linux ppc64el SKIP "bad test dependency on pp
 result wily linux-meta 4.2.0-19.23 linux ppc64el SKIP "bad test dependency on ppc64el"
 #
 result wily linux-meta 4.2.0-18.22 dahdi-linux ppc64el FAIL "ppc64el migrated from lxc to scaling stack"
+#
+result wily linux-meta 4.2.0-19.23 v4l2loopback ppc64el SKIP "bad dkms package in image, apport failure"
