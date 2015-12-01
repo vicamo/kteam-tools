@@ -68,6 +68,7 @@ result vivid linux-meta 3.19.0-33.38 linux ppc64el SKIP "bad test dependency on 
 result vivid linux-meta 3.19.0-34.39 linux ppc64el SKIP "bad test dependency on ppc64el"
 result vivid linux-meta 3.19.0-36.41 linux ppc64el SKIP "bad test dependency on ppc64el"
 result vivid linux-meta 3.19.0-37.42 linux ppc64el SKIP "bad test dependency on ppc64el"
+result vivid linux-meta 3.19.0-38.43 linux ppc64el SKIP "bad test dependency on ppc64el"
 
 #
 # wily
