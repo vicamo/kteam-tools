@@ -28,7 +28,7 @@ def emit(record):
     print(row)
 
 
-state_order = ('UNKNOWN', 'PASS', 'ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
+state_order = ('UNKNOWN', 'PASS', 'ALWAYSFAIL', 'RUNNING-ALWAYSFAIL', 'IGNORED', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
 def accumulate_state(current, new):
     if state_order.index(current) > state_order.index(new):
         return current
@@ -172,7 +172,7 @@ for line in sys.stdin:
                     for reason_arg in forced_reasons:
                         if reason_arg[0] == 'skiptest' or \
                            reason_arg[0] == 'badtest' and reason_arg[1] == test and reason_arg[2] == tversion:
-                            if tstate in ('ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
+                            if tstate in ('RUNNING-ALWAYSFAIL', 'ALWAYSFAIL', 'RUNNING', 'REGRESSION'):
                                 tstate = 'IGNORED'
                     result([test, tversion, tstate, source['source'], source['new-version'], series])
             else:
