@@ -7,6 +7,8 @@ import sys
 import logging
 import json
 
+import apt_pkg
+
 from launchpadlib.launchpad import Launchpad as _Launchpad
 
 # Work around non-multiple-instance-safety of launchpadlib (bug #459418).
@@ -94,7 +96,7 @@ class KernelPackages:
 
             sver = pub.source_package_version
             key = seriesname + ' ' + sourcename
-            if s.cache_version.get(key) != sver:
+            if key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
                 s.cache_version[key] = sver
 
                 flavours = {}
@@ -111,13 +113,15 @@ class KernelPackages:
                     (base, abi) = pub.source_package_version.split('-', 1)
                     base_versions[base] = True
 
-                #print(flavours)
-                #print(base_versions)
+                print(flavours)
+                print(base_versions)
 
                 for base in base_versions:
                     for flavour in flavours:
-                        s.map_source[seriesname + ' ' + base + ' ' + flavour] = sourcename.replace('linux', 'linux-meta')
-                s.dirty = True
+                        key = seriesname + ' ' + base + ' ' + flavour
+                        if key not in s.map_source:
+                            s.map_source[seriesname + ' ' + base + ' ' + flavour] = sourcename.replace('linux', 'linux-meta')
+                            s.dirty = True
 
 ppa = None
 if len(sys.argv) > 1:
