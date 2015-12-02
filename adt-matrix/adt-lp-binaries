@@ -11,6 +11,8 @@ import apt_pkg
 
 from launchpadlib.launchpad import Launchpad as _Launchpad
 
+apt_pkg.init_system()
+
 # Work around non-multiple-instance-safety of launchpadlib (bug #459418).
 class Launchpad(_Launchpad):
     @classmethod
