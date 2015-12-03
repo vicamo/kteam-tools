@@ -30,9 +30,11 @@ http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.2.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.13.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.16.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.19.0.orig.tar.gz
+http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_4.2.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-trusty/linux-lts-trusty_3.13.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-utopic/linux-lts-utopic_3.16.0.orig.tar.gz
 http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-vivid/linux-lts-vivid_3.19.0.orig.tar.gz
+http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-wily/linux-lts-wily_4.2.0.orig.tar.gz
 EOL
 
 # Clone and update all our current repos.
