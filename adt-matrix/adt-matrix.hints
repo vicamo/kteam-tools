@@ -35,6 +35,7 @@ result trusty linux-meta 3.13.0-71.114 linux ppc64el SKIP "bad test dependency o
 result trusty linux-meta-lts-vivid 3.19.0-33.38~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
 result trusty linux-meta-lts-vivid 3.19.0-36.41~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
 result trusty linux-meta-lts-vivid 3.19.0-37.42~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
+result trusty linux-meta-lts-vivid 3.19.0-39.44~14.04.1 linux-lts-vivid ppc64el SKIP "bad test dependency on ppc64el"
 
 ## initial acceptance of linux-lts-utopic
 result trusty linux-meta-lts-utopic 3.16.0-51.69~14.04.1 flashcache amd64,i386 FAIL "initial linux-lts-utopic flaws"
@@ -70,6 +71,7 @@ result vivid linux-meta 3.19.0-34.39 linux ppc64el SKIP "bad test dependency on 
 result vivid linux-meta 3.19.0-36.41 linux ppc64el SKIP "bad test dependency on ppc64el"
 result vivid linux-meta 3.19.0-37.42 linux ppc64el SKIP "bad test dependency on ppc64el"
 result vivid linux-meta 3.19.0-38.43 linux ppc64el SKIP "bad test dependency on ppc64el"
+result vivid linux-meta 3.19.0-39.44 linux ppc64el SKIP "bad test dependency on ppc64el"
 
 #
 # wily
