@@ -56,7 +56,7 @@ git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-signed.git             git:
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy                                          either	inactive
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy                                     either	inactive
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-signed.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy                                   either	inactive
-git://kernel.ubuntu.com/ubuntu-archive/ume                                  -                                                                                                               wani
+git://kernel.ubuntu.com/ubuntu-archive/ume                                  -                                                                                                               wani	inactive
 git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git                    -                                                                                                               wani
 git://kernel.ubuntu.com/ubuntu/autotest-client-virt-tests.git               -                                                                                                               wani
 git://kernel.ubuntu.com/ubuntu/autotest-docker.git                          -                                                                                                               wani
