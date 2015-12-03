@@ -1,4 +1,4 @@
-git://kernel.ubuntu.com/ubuntu-archive/kexec-tools                          -                                                                                                               wani
+git://kernel.ubuntu.com/ubuntu-archive/kexec-tools                          -                                                                                                               wani	inactive
 git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-jaunty.git            -                                                                                                               wani	inactive
 git://kernel.ubuntu.com/ubuntu-archive/linux-firmware-karmic.git            -                                                                                                               wani	inactive
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-dapper.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dapper                                         either	inactive
