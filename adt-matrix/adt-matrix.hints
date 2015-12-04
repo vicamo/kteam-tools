@@ -82,3 +82,10 @@ result wily linux-meta 4.2.0-19.23 linux ppc64el SKIP "bad test dependency on pp
 result wily linux-meta 4.2.0-18.22 dahdi-linux ppc64el FAIL "ppc64el migrated from lxc to scaling stack"
 #
 result wily linux-meta 4.2.0-19.23 v4l2loopback ppc64el SKIP "bad dkms package in image, apport failure"
+
+#
+# xenial
+#
+result xenial linux-meta 4.2.0-19.23 lxc ppc64el FAIL "ppc64l has never worked here"
+result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340 armhf FAIL "technically regressing but we do not care about armhf here""
+result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340-updates armhf FAIL "technically regressing but we do not care about armhf here""

@@ -457,10 +457,13 @@ class AutoPackageTest(object):
                 good_ever = {}
 
                 # Look up a parental series/package result to track implied regressions.
-                key1 = ' '.join((self.series, self.source, arch, pkg))
-                key2 = ' '.join((self.series, self.parent, arch, pkg))
-                marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
-                mark = marks[0] if len(marks) else None
+                if self.parent != '-':
+                    key1 = ' '.join((self.series, self.source, arch, pkg))
+                    key2 = ' '.join((self.series, self.parent, arch, pkg))
+                    marks = filter(None, [self.first_good.get(key1, None), self.first_good.get(key2, None)])
+                    mark = marks[0] if len(marks) else None
+                else:
+                    mark = None
 
                 for ver in verlist:
                     (status, rurl, version) = (None, None, "None")
