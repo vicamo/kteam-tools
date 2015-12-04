@@ -57,40 +57,40 @@ git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git                     git:
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-meta.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy                                     either	inactive
 git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-signed.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy                                   either	inactive
 git://kernel.ubuntu.com/ubuntu-archive/ume                                  -                                                                                                               wani	inactive
-git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git                    -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/autotest-client-virt-tests.git               -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/autotest-docker.git                          -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/autotest.git                                 -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/instrument-lib.git                           -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/iozone-results-comparator.git                -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/kernel-testing.git                           -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/kteam-tools.git                              -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad
-git://kernel.ubuntu.com/ubuntu/linux.git                                    -                                                                                                               wani
+git://kernel.ubuntu.com/ubuntu/autotest-client-tests.git                    -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/autotest-client-virt-tests.git               -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/autotest-docker.git                          -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/autotest.git                                 -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/instrument-lib.git                           -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/iozone-results-comparator.git                -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/kernel-testing.git                           -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/kteam-tools.git                              -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad	active
+git://kernel.ubuntu.com/ubuntu/linux.git                                    -                                                                                                               wani	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid                 either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid                                     either	inactive
-git://kernel.ubuntu.com/ubuntu/ubuntu-ohw.git                               -                                                                                                               wani
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-meta.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise                                   launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-precise-signed.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise                                 launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty                                         launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty                                    launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty                                  launchpad
+git://kernel.ubuntu.com/ubuntu/ubuntu-ohw.git                               -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise                                        launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-lbm.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise                launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-meta.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise                                   launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-precise-signed.git                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise                                 launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty                                         launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty                                    launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty                                  launchpad	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic                                         either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic                                    either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic                                  either	inactive
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid                                          launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid                                     launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid                                   launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-wily.git                              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily                                           launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-wily-meta.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily                                      launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-wily-signed.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily                                    launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial                                         launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial                                    launchpad
-git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial                                  launchpad
-git://kernel.ubuntu.com/ubuntu/unstable.git                                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable                                       launchpad
-git://kernel.ubuntu.com/ubuntu/wireless-crda.git                            -                                                                                                               wani
-git://kernel.ubuntu.com/virgin/testing/crack.git                            git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack                            wani
-git://kernel.ubuntu.com/virgin/testing/drm-intel.git                        git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel                          wani
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid                                          launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid                                     launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid                                   launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-wily.git                              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily                                           launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-wily-meta.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily                                      launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-wily-signed.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily                                    launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial                                         launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial                                    launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-xenial-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial                                  launchpad	active
+git://kernel.ubuntu.com/ubuntu/unstable.git                                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable                                       launchpad	active
+git://kernel.ubuntu.com/ubuntu/wireless-crda.git                            -                                                                                                               wani	active
+git://kernel.ubuntu.com/virgin/testing/crack.git                            git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack                            wani	active
+git://kernel.ubuntu.com/virgin/testing/drm-intel.git                        git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel                          wani	active
