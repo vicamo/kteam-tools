@@ -19,6 +19,8 @@ result precise linux-meta-lts-trusty 3.13.0-67.110~precise1 cedarview-drm-driver
 result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 openafs armhf FAIL "initial linux-lts-trusty flaws"
 result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 v4l2loopback armhf FAIL "initial linux-lts-trusty flaws"
 result precise linux-meta-lts-trusty 3.13.0-68.111~precise1 xtables-addons armhf FAIL "initial linux-lts-trusty flaws"
+#
+result precise linux-meta-lts-trusty 3.13.0-71.114~precise1 open-vm-tools amd64,i386 "now working in precise/linux-meta"
 
 #
 # trusty
@@ -61,6 +63,8 @@ result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 fglrx-installer-updates i3
 result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 langford amd64,i386 FAIL "initial linux-lts-wily flaws"
 result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 ndiswrapper amd64,i386 FAIL "initial linux-lts-wily flaws"
 result trusty linux-meta-lts-wily 4.2.0-18.22~14.04.1 openvswitch amd64,i386,ppc64el FAIL "initial linux-lts-wily flaws"
+#
+result trusty linux-meta-lts-wily 4.2.0-21.25~14.04.1 virtualbox amd64,i386 "now working in trusty/linux-meta"
 
 #
 # vivid
