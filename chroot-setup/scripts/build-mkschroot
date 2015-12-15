@@ -204,6 +204,15 @@ case $SUITE in
 esac
 
 case $SUITE in
+	xenial)
+		case $ARCH in
+			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu"
+			;;
+		esac
+		;;
+esac
+
+case $SUITE in
 	*) _SUITE=$SUITE
 		;;
 	esac
