@@ -16,8 +16,13 @@ Step by step instructions for setting up a new builder system.
   12. (cd /usr3/ubuntu; git clone --bare git://kernel.ubuntu.com/virgin/linux.git linux.git)
   13. git clone git://kernel.ubuntu.com/ubuntu/kteam-tools.git
   14. kteam-tools/kernel-team-accounts/update-repos2.sh
-  15. log in using an account with sudo (ubuntu)
+  15. exit # return to the account with sudo (ubuntu)
   16. (cd kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
   17. add "apw,bradf,rtg,ogasawara    ALL=NOPASSWD: /bin/su - kernel" to sudoers file
-  18. add "apw,bradf,rtg,ogasawara" to 'sudo' group in /etc/group
+  18. lock down kernel account; passwd -l kernel
+  19. adduser apw sudo; adduser rtg sudo; adduser bradf sudo; adduser ogasawara sudo
 
+  NN. add crontab for root
+  NN. add crontab for kernel
+
+  MM. check that the host key is up to date and file RT if not
