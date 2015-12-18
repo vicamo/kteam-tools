@@ -142,7 +142,7 @@ class CreateTrackingBug(StdApp):
                 raise AppError('This script can only be run from within a git repository.')
             branch = Git.current_branch()
 
-            changelog = Debian.changelog()
+            changelog = Debian.changelog(local=True)
 
             if 'master_bug' in self.cfg:
                 master_bug = self.cfg['master_bug']
@@ -163,7 +163,7 @@ class CreateTrackingBug(StdApp):
 
             # Pull the entire changelog file into a list
             #
-            changelog, changelog_path = Debian.raw_changelog()
+            changelog, changelog_path = Debian.raw_changelog(local=True)
             with open(changelog_path, 'r') as f:
                 thelog = f.readlines()
 

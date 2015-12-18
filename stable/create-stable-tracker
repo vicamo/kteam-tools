@@ -138,7 +138,7 @@ class CreateTrackingBug(StdApp):
             # B U G   W O R K
             print("version: %s" % self.cfg['version'])
             version = self.cfg['version']
-            changelog = Debian.changelog()
+            changelog = Debian.changelog(local=True)
             ub = Ubuntu()
             series = ub.series_name(changelog[0]['package'], changelog[0]['version'])
 
