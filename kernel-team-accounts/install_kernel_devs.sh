@@ -25,6 +25,7 @@ kdev_new()
 	local acct="$1"
 	local name="$2"
 	local lpid="$3"
+	local flags="$4"
 
 	kdev_current=${#kdev[*]}
 
@@ -34,6 +35,10 @@ kdev_new()
 	case "$lpid" in
 	*/*)		kdev_key[$kdev_current]="$lpid" ;;
 	*)		kdev_key[$kdev_current]="https://launchpad.net/$lpid/+sshkeys" ;;
+	esac
+
+	case ",$flags," in
+	*,admin,*)	kdev_passwd[$kdev_current]="true" ;;
 	esac
 }
 
@@ -80,7 +85,9 @@ do
 		#
 		# Allow sudo
 		#
-		(echo ${PASSWD};echo ${PASSWD}) | passwd -q $i
+		if [ ! -z "${kdev_passwd[${index}]}" ]; then
+			(echo ${PASSWD};echo ${PASSWD}) | passwd -q $i
+		fi
 	fi
 	if [ ! -z "$SUDO" ]
 	then
