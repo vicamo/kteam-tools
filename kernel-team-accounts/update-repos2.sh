@@ -63,7 +63,7 @@ do
 			[ -d .git ] && git checkout -qf)
 	fi
 done <<EOL
-linux.git			git://kernel.ubuntu.com/virgin/linux.git					-
+linux-linus.git			git://kernel.ubuntu.com/virgin/linux.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
@@ -90,7 +90,7 @@ do
 
 	# If this is +source/linux then we should reference linux.git.
 	case "$url" in
-	*/+source/linux/*)	ref="linux.git" ;;
+	*/+source/linux/*)	ref="linux-linus.git" ;;
 	*)			ref="-" ;;
 	esac
 
