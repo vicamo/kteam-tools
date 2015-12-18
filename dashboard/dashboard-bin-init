@@ -1,0 +1,25 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 kmsgq|... <bin dir>" 1>&2
+	exit 1
+fi
+
+which="$1"
+bin="$2"
+
+if [ ! -f "$here/dashboard-status-bulk-$which" ]; then
+	echo "$0: $which: unknown status transport" 1>&2
+	exit 1
+fi
+
+mkdir -p "$bin"
+
+ln -s `realpath --relative-to "$bin" "$here/dashboard-status"` "$bin/dashboard-status"
+ln -s `realpath --relative-to "$bin" "$here/dashboard-status-bulk-$which"` "$bin/dashboard-status-bulk"
