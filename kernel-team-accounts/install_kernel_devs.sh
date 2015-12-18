@@ -20,6 +20,23 @@ then
 fi
 PASSWD="$1"
 
+kdev_new()
+{
+	local acct="$1"
+	local name="$2"
+	local lpid="$3"
+
+	kdev_current=${#kdev[*]}
+
+	kdev[$kdev_current]="$acct"
+	kdev_name[$kdev_current]="$name"
+
+	case "$lpid" in
+	*/*)		kdev_key[$kdev_current]="$lpid" ;;
+	*)		kdev_key[$kdev_current]="https://launchpad.net/$lpid/+sshkeys" ;;
+	esac
+}
+
 . kernel_devs.conf
 
 HOME=/home
@@ -27,7 +44,7 @@ HOME=/home
 #
 # Make sure there is an sbuild group for schroot.
 #
-if ! grep sbuild /etc/group
+if ! grep sbuild /etc/group >/dev/null
 then
 	addgroup sbuild
 fi
@@ -35,6 +52,10 @@ fi
 let index=0
 for i in ${kdev[@]}
 do
+	#echo "${kdev_obsolete[${index}]:+# }kdev_new ${kdev[${index}]} '${kdev_name[${index}]}' ${kdev_key[${index}]}"
+	#let index=${index}+1
+	#continue
+
 	if [ ! -z "${kdev_obsolete[${index}]}" ]
 	then
 		echo "${kdev_name[${index}]} is obsolete"
