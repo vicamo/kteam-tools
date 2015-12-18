@@ -31,7 +31,7 @@ repo="git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/main
 
 {
     cat - <<EOL
-These binary packages represent builds of Linus' kernel tree at the commit below:
+These binary packages represent builds of the mainline or stable Linux kernel tree at the commit below:
 
     $commit ($sha1)
 
