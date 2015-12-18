@@ -67,32 +67,50 @@ linux.git			git://kernel.ubuntu.com/virgin/linux.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
-cat "$here/../info/repositories.txt" | while read k_u_c lp master status
+while read k_u_c lp master flags
 do
-	if [ "$status" = "inactive" ]
-	then
-		continue
-	fi
-
-	case $master in
-		either|launchpad)
-			URL=$lp
-			;;
-		wani)
-			URL=$k_u_c
-			;;
-		*)
-			echo "Unknown master location: $master"
-			exit 1
-			;;
+	case ",$flags," in
+	*,inactive,*)		continue ;;
 	esac
 
-	if [ ! -d `basename $URL` ]
-	then
-		git clone --bare --reference linux.git $URL `basename $URL`
-	fi
+	[ "$k_u_c" = '-' ] && continue
 
-	(cd `basename $URL`; git fetch --tags origin)
-done
+	# repository: the "normal form" is the name we use on wani.
+	repo=`basename "$k_u_c"`
+
+	# pick the master url.
+	case $master in
+	either|launchpad)	url=$lp ;;
+	wani)			url=$k_u_c ;;
+	*)
+		echo "Unknown master location: $master"
+		exit 1
+		;;
+	esac
+
+	# If this is +source/linux then we should reference linux.git.
+	case "$url" in
+	*/+source/linux/*)	ref="linux.git" ;;
+	*)			ref="-" ;;
+	esac
+
+	# If this ends .git we want it bare -- (currently always)
+	case "$repo" in
+	*.git)		bare='--bare' ;;
+	*)		bare='' ;;
+	esac
+
+	if [ ! -d "$repo" ]; then
+		if [ "$ref" != "-" ]; then
+			git clone $bare --reference "$ref" "$url" "$repo"
+		else
+			git clone $bare "$url" "$repo"
+		fi
+	else
+		(cd "$repo" && 
+			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+			[ -d .git ] && git checkout -qf)
+	fi
+done <"$here/../info/repositories.txt" 
 
 rm -f $LOCK
