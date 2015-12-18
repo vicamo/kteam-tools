@@ -3,7 +3,12 @@
 CWD=/usr3/ubuntu
 LOCK=/tmp/update-repos.lock
 
-SD=`pwd`
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 if [ ! "$1" = "" ]
 then
 	CWD="$1"
@@ -62,7 +67,7 @@ linux.git			git://kernel.ubuntu.com/virgin/linux.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
-cat `dirname $SD/$0`/../info/repositories.txt | while read k_u_c lp master status
+cat "$here/../info/repositories.txt" | while read k_u_c lp master status
 do
 	if [ "$status" = "inactive" ]
 	then
