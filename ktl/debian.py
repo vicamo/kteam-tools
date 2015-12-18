@@ -85,7 +85,7 @@ class Debian:
     # raw_changelog
     #
     @classmethod
-    def raw_changelog(cls):
+    def raw_changelog(cls, local=False):
         retval = []
 
         # Find the correct changelog for this branch of this repository.
@@ -98,9 +98,12 @@ class Debian:
             chglog = debdir + '/changelog'
             debug("Trying '%s': " % chglog, cls.debug)
             try:
-                retval = Git.show(chglog, branch=current_branch)
-                return retval, chglog
-            except GitError:
+                if local:
+                    changelog_contents = open(chglog, 'r').read().split('\n')
+                else:
+                    changelog_contents = Git.show(chglog, branch=current_branch)
+                return changelog_contents, chglog
+            except (GitError, OSError, IOError):
                 debug("FAILED\n", cls.debug, False)
 
         # Not there anywhere, barf
@@ -109,8 +112,8 @@ class Debian:
     # changelog
     #
     @classmethod
-    def changelog(cls):
-        changelog_contents, changelog_path = cls.raw_changelog()
+    def changelog(cls, local=False):
+        changelog_contents, changelog_path = cls.raw_changelog(local)
         return cls.changelog_as_list(changelog_contents)
 
     # changelog_as_list
