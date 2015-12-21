@@ -159,8 +159,8 @@ class CreateTrackingBug(StdApp):
        The upstream process for stable tree updates is quite similar
        in scope to the Ubuntu SRU process, e.g., each patch has to
        demonstrably fix a bug, and each patch is vetted by upstream
-       by originating either directly from Linus' tree or in a minimally
-       backported form of that patch. The %s upstream stable
+       by originating either directly from a mainline/stable Linux tree or
+       a minimally backported form of that patch. The %s upstream stable
        patch set is now available. It should be included in the Ubuntu
        kernel as well.
 
