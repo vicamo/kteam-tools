@@ -1,6 +1,7 @@
 #
 # precise
 #
+result precise linux-meta 3.2.0-97.137 open-vm-tools amd64,i386 SKIP "open-vm-tools packaging issue -- LP:1499352"
 
 ## initial acceptance of linux-lts-trusty flaws
 result precise linux-meta-lts-trusty 3.13.0-66.108~precise1 blktap-dkms amd64,i386 FAIL "initial linux-lts-trusty flaws"
