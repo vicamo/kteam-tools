@@ -168,7 +168,7 @@ class CreateTrackingBug(StdApp):
 
     TEST CASE: TBD
 
-       The following patches are in the %s stable release:
+       The following patches from the %s stable release shall be applied:
 
             """ % (version, repository, version)
 
