@@ -418,7 +418,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
             #else:
             #    kver[2] = str(int(kver[2])+1)
             # Get the base version
-            if kver[0] == "1" or kver[1] == "2":
+            if kver[0] == "1" or kver[0] == "2":
                 base_ver = "%s.%s.%s.y" % (kver[0], kver[1], kver[2])
                 main_ver = "%s.%s.%s" % (kver[0], kver[1], kver[2])
             else:
