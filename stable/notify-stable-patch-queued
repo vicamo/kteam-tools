@@ -130,7 +130,7 @@ def AssembleMailBody(version, subject, patchlines):
         "Thanks.",
         "-" + opts.sender.split()[0],
         "",
-        "------",
+        "---8<------------------------------------------------------------",
         ""
     ]
     for line in patchlines:

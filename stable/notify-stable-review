@@ -330,7 +330,7 @@ see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable .
                     if header_add:
                         dst.write('\n')
                         dst.write(header_line)
-                        dst.write('\n\n------------------\n\n')
+                        dst.write('\n\n---8<------------------------------------------------------------\n\n')
                         if from_line:
                             dst.write(from_line)
                             dst.write('\n')
