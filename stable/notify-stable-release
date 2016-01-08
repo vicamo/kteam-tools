@@ -133,7 +133,7 @@ for line in open("Makefile", "r").readlines():
     if line.startswith("EXTRAVERSION"):
         v4 = line.split()[-1]
         break
-if v1 == "1" or v2 == "2":
+if v1 == "1" or v1 == "2":
     basever = "%s.%s.%s" % (v1, v2, v3)
 else:
     basever = "%s.%s"  % (v1, v2)
