@@ -170,8 +170,8 @@ class CheckPackage(StdApp):
                             continue
 
 
-                #if checked < 2:
-                #    warning("%s doesn't have both checksums\n           (sha1 and md5). This could be due to not using the '-sa' command line\n           option when creating the package.\n" % cf)
+                if checked < 2:
+                    error("%s doesn't have both checksums\n           (sha1 and md5). This could be due to not using the '-sa' command line\n           option when creating the package.\n" % cf)
 
         # Handle the user presses <ctrl-C>.
         #
