@@ -271,10 +271,18 @@ configs="Ubuntu-$found"
 #
 changelog="$debian/changelog"
 rm -f "$changelog"
-EDITOR=":" dch -v "${version}-$abinum$upload" --distribution "$series" \
-	--package linux --create -c "$changelog" </dev/null
-sed -e "s/\* .*/* Mainline build at commit: $long/" \
-	<"$changelog" >"$changelog.new"
+
+{
+	cat - <<EOL
+linux (${version}-$abinum$upload) $series; urgency=low
+
+  Mainline build at commit: $long
+
+ -- Mainline Build <$(id -n -u)@$(hostname)>  $(date -R)
+
+EOL
+	cat "$changelog"
+} >"$changelog.new"
 mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"
 
