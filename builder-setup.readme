@@ -22,6 +22,7 @@ Step by step instructions for setting up a new builder system.
   17. add "apw,bradf,rtg,ogasawara    ALL=NOPASSWD: /bin/su - kernel" to sudoers file
   18. lock down kernel account; passwd -l kernel
   19. adduser apw sudo; adduser rtg sudo; adduser bradf sudo; adduser ogasawara sudo
+  20. adduser kernel sbuild
 
   NN. add crontab for root
   NN. add crontab for kernel
