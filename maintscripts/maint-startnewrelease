@@ -99,14 +99,6 @@ if pocket == "UNRELEASED":
 	sys.exit(0)
 
 #------------------------------------------------------------------------------
-# Stupid little helper to get the current date and time in RFC format. There
-# are functions in python, but I don't understand them.
-#------------------------------------------------------------------------------
-def GetDateTime():
-	return Popen("date -R", shell=True, stdout=PIPE).stdout.readline()
-
-
-#------------------------------------------------------------------------------
 # Try to make sure we've run fdr clean
 #------------------------------------------------------------------------------
 if not os.path.isfile("debian/control"):
