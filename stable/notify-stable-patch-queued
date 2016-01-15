@@ -106,7 +106,7 @@ def AssembleMailBody(version, subject, patchlines):
         tversion_para = ""
     mailbody = [
         "Subject: [" + version + " stable] Patch \"" + subject +
-        "\" has been added to staging queue",
+        "\" has been added to the " + version + " tree",
         "X-Extended-Stable: " + bversion[:-1],
         "",
         "This is a note to let you know that I have just added a patch titled",
