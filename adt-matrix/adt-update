@@ -80,6 +80,7 @@ done <"versions.info" | \
 # test information to be up to date.
 : >'all.cmds.new'
 : >'miss-updated.cmds.new'
+: >'miss.cmds.new'
 while read series package parent triggers
 do
 	echo "commands $series $package $triggers"
