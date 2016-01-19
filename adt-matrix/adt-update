@@ -95,3 +95,4 @@ done <"versions.info"
 # Summaries.
 mv 'all.cmds.new' 'all.cmds'
 mv 'miss-updated.cmds.new' 'miss-updated.cmds'
+mv 'miss.cmds.new' 'miss.cmds'
