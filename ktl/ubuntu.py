@@ -135,7 +135,7 @@ class Ubuntu:
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '16.04',
-            'kernel'    : '4.3.0',
+            'kernel'    : '4.4.0',
             'name'      : 'xenial',
             'supported' : False,
             # adjust packages when this goes live
