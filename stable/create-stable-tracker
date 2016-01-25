@@ -172,7 +172,7 @@ class CreateTrackingBug(StdApp):
 
             """ % (version, repository, version)
 
-            bug = self.lp.create_bug(project='ubuntu', package='linux', title=title, description=description)
+            bug = self.lp.create_bug(project='ubuntu', package=changelog[0]['package'], title=title, description=description)
 
             # Tags:
             #    kernel-stable-tracking-bug
