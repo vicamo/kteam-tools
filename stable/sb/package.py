@@ -18,6 +18,15 @@ class PackageError(ShankError):
     def __init__(s, emsg):
         super(ShankError, s).__init__(emsg)
 
+# SeriesLookupFailure
+#
+class SeriesLookupFailure(ShankError):
+    '''
+    Thrown when the series lookup throws a KeyError exception.
+    '''
+    def __init__(s, emsg):
+        super(ShankError, s).__init__(emsg)
+
 # Package
 #
 class Package():
@@ -301,7 +310,11 @@ class Package():
         Put together a list of all the packages that depend on this package.
         '''
         pkgs = {}
-        series = s.ubuntu.series_name(s.name, s.version)
+        try:
+            series = s.ubuntu.series_name(s.name, s.version)
+        except KeyError as e:
+            raise SeriesLookupFailure(['Unable to determine the series from the kernel version specified',
+                                       'in the bug title.'])
         entry = s.ubuntu.lookup(series)
         if entry:
             if 'dependent-packages' in entry:

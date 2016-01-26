@@ -17,7 +17,7 @@ import traceback
 from ktl.shanky                         import send_to_shankbot
 from ktl.msgq                           import MsgQueue
 
-from sb.package                         import Package, PackageError
+from sb.package                         import Package, PackageError, SeriesLookupFailure
 from sb.workflow_bug                    import WorkflowBug, WorkflowBugError
 from sb.log                             import cinfo, cdebug, cwarn, cnotice, cerror
 import logging
@@ -176,6 +176,10 @@ class WorkflowEngine():
             except WorkflowBugError:
                 # Bug doesn't exist?
                 modified = False
+                continue
+            except SeriesLookupFailure as e:
+                for l in e.message:
+                    print(l)
                 continue
             if bug.is_valid:
                 try:
