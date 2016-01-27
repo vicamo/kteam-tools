@@ -377,7 +377,7 @@ class ApplyStablePatches(StdApp):
             # backported or cherry-picked
             stdo("\r%s" % (' ' * 80))
             stdo("\rLooking for stable commits inside provided range...")
-            status, result = run_command('git log --reverse --format=%%H %s'
+            status, result = run_command('git log --no-merges --reverse --format=%%H %s'
                                          % (self.cfg['range']))
             if status != 0:
                 raise GitError("\n".join(result))
