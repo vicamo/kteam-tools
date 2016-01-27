@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+#
+
+import os
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+from time                               import sleep
+import yaml
+import pexpect
+import requests
+
+# ConfigFileMissing
+#
+class ConfigFileMissing(Exception):
+    '''
+    '''
+    # __init__
+    #
+    def __init__(s):
+        s.message = 'Unable to find the file (lab.yaml). This file is required for the SRU Workflow Manager to operate correctly.'
+
+    def __str__(s):
+        return s.message
+
+
+# Power
+#
+class Power():
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+        s.cfg = s.config()
+        s.systems = s.cfg['systems']
+        s.cdus    = s.cfg['cdus']
+
+    def config(s):
+        '''
+        Fetch the information about mapping from a system to the CDU outlets.
+        '''
+        r = requests.get('http://kernel-maas.kernel/lab-systems-power.yaml')
+        retval = yaml.load(r.text)
+        return retval
+
+    # cdu
+    #
+    def cdu(s, target, outlet):
+        retval = None
+        retval = pexpect.spawn('ssh -o MACs=hmac-md5 -oKexAlgorithms=+diffie-hellman-group1-sha1 -oHostKeyAlgorithms=+ssh-dss enablement@%s' % s.systems[target][outlet], timeout=600)
+        retval.expect('Password: ')
+        retval.sendline(s.cdus[s.systems[target][outlet]])
+        retval.expect('Switched CDU: ')
+        return retval
+
+    # power
+    #
+    def power(s, target, state):
+        for outlet in s.systems[target]:
+            ch = s.cdu(target, outlet)
+            ch.sendline('%s %s' % (state, outlet))
+            ch.expect('Switched CDU: ')
+
+    # status
+    #
+    def status(s, target):
+        state = 'unknown'
+
+        for outlet in s.systems[target]:
+            ch = s.cdu(target, outlet)
+            ch.sendline('status %s' % outlet)
+            ch.expect('Switched CDU: ')
+
+            output = ch.before.decode('utf-8').split('\r\n')
+            for l in output:
+                if outlet in l and not l.startswith('status'):
+                    state = l.split()[2]
+            ch.sendline('quit')
+
+            print('  %s: %s' % (outlet, state))
+
+    # main
+    #
+    def main(s):
+        retval = 1
+        try:
+            target = s.args.target[0] # One target
+            action = s.args.action[0] # One action
+
+            if target in s.systems:
+                if action == 'status':
+                    s.status(target)
+                elif action == 'off':
+                    s.power(target, 'off')
+                elif action == 'on':
+                    s.power(target, 'on')
+                elif action == 'cycle':
+                    s.power(target, "off")
+                    sleep(60)
+                    s.power(target, "on")
+                else:
+                    print('I don\'t know how to do that.')
+            else:
+                print('Unknown system')
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+This script is for working with the power of the test systems. This
+talks to the CDU or system administration interface. It does not go
+through MAAS.
+
+With this utility you can interogate the current status, change the
+state from on to off or off to on.
+    '''
+
+    app_epilog = '''
+Examples:
+    power rizzo status
+    power rizzo off
+    power rizzo on
+    power rizzo cycle
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out lots of stuff.')
+    parser.add_argument('target', metavar='TARGET', type=str, nargs=1, help='The name of the system to be provisioned.')
+    parser.add_argument('action', metavar='ACTION', type=str, nargs=1, help='on | off | cycle | status')
+
+    args = parser.parse_args()
+
+    if args.debug:
+        level = DEBUG
+    else:
+        level = WARNING
+    basicConfig(filename=None, level=level, format="%(levelname)s - %(message)s")
+
+    app = Power(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
