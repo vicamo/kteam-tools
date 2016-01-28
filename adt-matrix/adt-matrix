@@ -65,7 +65,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, trigger = None, tag = '', hints = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, triggers = None, tag = '', hints = None):
         self.cache = {}
         self.dirty = False
 
@@ -76,7 +76,7 @@ class AutoPackageTest(object):
         self.packages_latest = latest
         self.stamp = stamp
         self.live = live
-        self.trigger = trigger
+        self.triggers = triggers
         self.tag = tag
 
         self.seen = {}
@@ -89,6 +89,17 @@ class AutoPackageTest(object):
         self.verbose = True
 
         self.cache_file = self.series + ".cache"
+
+        # XXX: Pick the linux-meta package trigger out of the triggers.
+        # XXX: Pick the linux package version out of the triggers.
+        self.meta = None
+        self.trigger = None
+        for trig in triggers:
+            (tpkg, tver) = trig.split('/')
+            if '-' in tver:
+                self.trigger = tver + ' ' + package
+            if tpkg.startswith('linux-meta'):
+                self.meta = trig
 
         if os.path.exists(self.cache_file):
             with open(self.cache_file) as cfd:
@@ -660,8 +671,13 @@ table.matrix, table.matrix th, table.matrix td {{
                         else:
                             fmt = '<td class="{0}">{1}'
                         page += fmt.format(status, status, status_link, pkg + " " + version, ' *' if 'hinted' in version else '')
+
+                        # XXX: there is currently no way to specify the PPA for the retry.
+                        if self.tag == '' and status != 'GOOD' and ver == self.trigger:
+                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/retry.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, self.meta.replace('/', '%2F'), arch, pkg)
                     else:
                         page += '<td>&nbsp;'
+
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 if arch == archs_good[0]:
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
@@ -762,14 +778,6 @@ table.matrix td {{
         (series, package, parent, migration) = bits[0:4]
         triggers = bits[4:]
 
-        # Pick the linux package version out of the results. (XXX)
-        trigger = None
-        for trig in triggers:
-            (tpkg, tver) = trig.split('/')
-            if '-' in tver:
-                trigger = tver + ' ' + package
-                break
-
         #print("APW", line.strip(), trigger)
 
         # Pick an appropriate package list (XXX: should be in __init__)
@@ -803,7 +811,7 @@ table.matrix td {{
                 packages = seed,
                 latest = latest,
                 live = live,
-                trigger = trigger,
+                triggers = triggers,
                 tag = tag,
                 hints = hints,
             )
