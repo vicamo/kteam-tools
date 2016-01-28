@@ -94,3 +94,4 @@ result wily linux-meta 4.2.0-19.23 v4l2loopback ppc64el SKIP "bad dkms package i
 result xenial linux-meta 4.2.0-19.23 lxc ppc64el FAIL "ppc64l has never worked here"
 result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340 armhf FAIL "technically regressing but we do not care about armhf here"
 result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340-updates armhf FAIL "technically regressing but we do not care about armhf here"
+result xenial linux-meta 4.4.0-1.15 west-chamber amd64,armhf,i386,ppc64el,s390x GONE "package removed from archive"
