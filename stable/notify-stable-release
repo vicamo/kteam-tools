@@ -158,7 +158,7 @@ mailbody.extend([
     "I am announcing the release of the Linux %s kernel." % (vstable),
     "",
     "The updated %s.y-ckt tree can be found at: " % (basever),
-    "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y" % (basever),
+    "    git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y" % (basever),
     "and can be browsed at:",
     "    http://kernel.ubuntu.com/git/ubuntu/linux.git/log/?h=linux-%s.y" % (basever),
     "",
