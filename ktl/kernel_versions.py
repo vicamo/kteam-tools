@@ -132,7 +132,7 @@ class PackagePockets:
         return s._pocket_lookup(pocket, infer_release)
 
 
-    def all_viable(s):
+    def all_viable(s, include_proposed=True):
         pockets = s._pockets()
 
         result = []
@@ -142,7 +142,7 @@ class PackagePockets:
             if pockets[version] != ['Proposed']:
                 result.append(version)
 
-        if version in s.pockets and pockets[version] == ['Proposed']:
+        if include_proposed and version in s.pockets and pockets[version] == ['Proposed']:
             result.append(version)
 
         return result
