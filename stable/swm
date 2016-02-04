@@ -10,6 +10,7 @@ from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
 from ktl.termcolor                      import colored
 import json
+from lazr.restfulclient.errors          import HTTPError
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG, WARNING
@@ -111,7 +112,10 @@ class WorkflowManager():
                     cinfo('Project: %s' % project)
 
                     for bugid in s.get_buglist(project):
-                        engine.crank(bugid, s.args.sauron)
+                        try:
+                            engine.crank(bugid, s.args.sauron)
+                        except HTTPError.PreconditionFailed as e:
+                            pass
 
         # Handle the user presses <ctrl-C>.
         #
