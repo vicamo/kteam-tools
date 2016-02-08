@@ -95,3 +95,5 @@ result xenial linux-meta 4.2.0-19.23 lxc ppc64el FAIL "ppc64l has never worked h
 result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340 armhf FAIL "technically regressing but we do not care about armhf here"
 result xenial linux-meta 4.3.0-0.9 nvidia-graphics-drivers-340-updates armhf FAIL "technically regressing but we do not care about armhf here"
 result xenial linux-meta 4.4.0-1.15 west-chamber amd64,armhf,i386,ppc64el,s390x GONE "package removed from archive"
+result xenial linux-meta 4.4.0-3.17 spl-linux amd64,ppc64el GOOD "same version error is expected"
+result xenial linux-meta 4.4.0-4.19 spl-linux amd64,ppc64el GOOD "same version error is expected"
