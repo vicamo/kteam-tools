@@ -679,7 +679,7 @@ table.matrix, table.matrix th, table.matrix td {{
 
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if self.tag == '' and status != 'GOOD' and ver == self.trigger:
-                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/retry.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, self.meta.replace('/', '%2F'), arch, pkg)
+                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, self.meta.replace('/', '%2F'), arch, pkg)
                     else:
                         page += '<td>&nbsp;'
 
