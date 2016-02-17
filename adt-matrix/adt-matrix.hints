@@ -98,4 +98,6 @@ result xenial linux-meta 4.4.0-1.15 west-chamber amd64,armhf,i386,ppc64el,s390x 
 result xenial linux-meta 4.4.0-3.17 spl-linux amd64,ppc64el GOOD "same version error is expected"
 result xenial linux-meta 4.4.0-4.19 spl-linux amd64,ppc64el GOOD "same version error is expected"
 result xenial linux-meta 4.4.0-5.20 spl-linux amd64,ppc64el GOOD "same version error is expected"
+result xenial linux-meta 4.4.0-6.21 spl-linux amd64,ppc64el GOOD "same version error is expected"
 result xenial linux-meta 4.4.0-5.20 virtualbox amd64,i386 GOOD "same version error is expected"
+result xenial linux-meta 4.4.0-6.21 virtualbox amd64,i386 GOOD "same version error is expected"
