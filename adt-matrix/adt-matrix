@@ -477,17 +477,18 @@ class AutoPackageTest(object):
                     mark = None
 
                 for ver in verlist:
-                    (status, rurl, version) = (None, None, "None")
+                    (status, rurl, version, lversion) = (None, None, "None", None)
                     if ver in self.results and \
                        pkg in self.results[ver] and \
                        arch in self.results[ver][pkg]:
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
+                        lversion = version
 
                         some_ever[arch] = True
                         if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
                             status = 'MISS-REPL'
-                            version += '\ntest package updated'
+                            lversion = latest
                         elif tstatus:
                             good_ever = True
                             status = 'GOOD'
@@ -540,7 +541,7 @@ class AutoPackageTest(object):
                         vstatus = status.split('-')[0]
                         tmp = result.setdefault(ver, {})
                         tmp = tmp.setdefault(pkg, {})
-                        tmp[arch] = (vstatus, rurl, version)
+                        tmp[arch] = (vstatus, rurl, version, lversion)
 
                     # Accumulate missing results in the latest version when live.
                     if self.live and ver == verlist[-1] and status:
@@ -669,17 +670,24 @@ table.matrix, table.matrix th, table.matrix td {{
                         continue
 
                     if pkg in results[ver] and arch in results[ver][pkg]:
-                        (status, status_link, version) = results[ver][pkg][arch]
+                        (status, status_link, version, lversion) = results[ver][pkg][arch]
                         if status_link:
                             status_link += 'log.gz'
                             fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
                         else:
                             fmt = '<td class="{0}">{1}'
-                        page += fmt.format(status, status, status_link, pkg + " " + version, ' *' if 'hinted' in version else '')
+                        annot = ''
+                        if lversion:
+                            annot += '\npackage updated'
+                            version = lversion
+                        page += fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in version else '')
 
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if self.tag == '' and status != 'GOOD' and ver == self.trigger:
-                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, self.meta.replace('/', '%2F'), arch, pkg)
+                            triggers = [ self.meta.replace('/', '%2F') ]
+                            if lversion:
+                                triggers.append(pkg + '%2F' + lversion)
+                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg)
                     else:
                         page += '<td>&nbsp;'
 
@@ -706,7 +714,7 @@ table.matrix, table.matrix th, table.matrix td {{
         page = ' '.join(('version', self.series, pkg, ver, '"seed version"')) + '\n'
         for tpkg in results[pkgver]:
             for arch in results[pkgver][tpkg]:
-                (status, status_link, version) = results[pkgver][tpkg][arch]
+                (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
                 page += ' '.join(('result', self.series, pkg, ver, tpkg, arch, status, '"seed version"')) + '\n'
         
         return page
