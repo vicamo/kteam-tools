@@ -671,21 +671,21 @@ table.matrix, table.matrix th, table.matrix td {{
 
                     if pkg in results[ver] and arch in results[ver][pkg]:
                         (status, status_link, version, lversion) = results[ver][pkg][arch]
+                        bits = version.split('\n', 1) + [ '' ]
+                        (version, annot) = bits[0:2]
                         if status_link:
                             status_link += 'log.gz'
                             fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
                         else:
                             fmt = '<td class="{0}">{1}'
-                        annot = ''
-                        if lversion:
+                        if version != lversion:
                             annot += '\npackage updated'
-                            version = lversion
-                        page += fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in version else '')
+                        page += fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if self.tag == '' and status != 'GOOD' and ver == self.trigger:
                             triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
-                            if lversion:
+                            if lversion and version != lversion:
                                 triggers.append(pkg + '%2F' + lversion)
                             page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg)
                     else:
