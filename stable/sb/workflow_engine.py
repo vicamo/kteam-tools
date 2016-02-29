@@ -78,7 +78,7 @@ class WorkflowEngine():
             'prepare-package-meta'      : TaskActions({'New'          : s.prep_package_meta_new,               'In Progress'  : s.prep_package_meta_new,       }),
             'prepare-package-ports-meta': TaskActions({'New'          : s.prep_package_ports_meta_new,         'In Progress'  : s.prep_package_ports_meta_new, }),
             'prepare-package-signed'    : TaskActions({'New'          : s.prep_package_signed_new,             'In Progress'  : s.prep_package_signed_new,     }),
-            'automated-testing'         : TaskActions({'New'          : s.automated_testing_new,               'Confirmed'    : s.automated_testing_confirmed  }),
+            'automated-testing'         : TaskActions({'Confirmed'    : s.automated_testing_confirmed  }),
             'promote-to-proposed'       : TaskActions({'New'          : s.promote_to_proposed_new,             'Fix Released' : s.promote_to_proposed_fix_released}),
             'verification-testing'      : TaskActions({'New'          : s.verification_testing_new,            'Fix Released' : s.verification_testing_fix_released}),
             'certification-testing'     : TaskActions({'Invalid'      : s.certification_testing_invalid,       'Fix Released' : s.certification_testing_fix_released}),
@@ -708,17 +708,6 @@ class WorkflowEngine():
         cdebug('            __promote_to_proposed leave (%s)' % retval)
         return retval
 
-    def automated_testing_new(s, taskobj):
-        cdebug('            WorkflowEngine::automated_testing_new enter')
-        if s.wfb.ready_for_testing:
-            s.send_upload_announcement(taskobj, 'proposed')
-            if s.args.dryrun:
-                cinfo('            Dryrun - Would set automated-testing to Confirmed')
-            else:
-                s.wfb.tasks_by_name['automated-testing'].status = 'Confirmed'
-        cdebug('            WorkflowEngine::automated_testing_new leave')
-        return False
-
     # Possible testing states: REGR, REGN, FAIL, GOOD, MISS
     #
     # - 'automated-testing' will transition to 'Incomplete' if state is 'REGR' or 'REGN'
@@ -1130,6 +1119,9 @@ class WorkflowEngine():
             s.set_phase(taskobj, 'Verification & Testing')
             s.wfb.tasks_by_name['verification-testing'].status = 'In Progress'
             s.set_testing_to_confirmed(taskobj)
+
+        s.send_upload_announcement(taskobj, 'proposed')
+        s.wfb.tasks_by_name['automated-testing'].status = 'Confirmed'
         s.props.set({'proposed-announcement-sent':True})
 
         # Now tag all bugs verification-needed and spam with a comment
