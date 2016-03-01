@@ -1092,11 +1092,9 @@ class WorkflowEngine():
 
     def promote_to_proposed_new(s, taskobj):
         cdebug('            promote_to_proposed_new enter')
-        if s.projectname == 'kernel-development-workflow':
-            cdebug('                Development kernel')
-            if s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-proposed-end', 'proposed'):
-                cdebug('                Set this task to Fix Released')
-                s.wfb.tasks_by_name['promote-to-proposed'].status = 'Fix Released'
+        if s.check_component_in_pocket(taskobj, 'kernel-stable-Promote-to-proposed-end', 'proposed'):
+            cdebug('                Set this task to Fix Released')
+            s.wfb.tasks_by_name['promote-to-proposed'].status = 'Fix Released'
         cdebug('            promote_to_proposed_new leave')
         return True
 
