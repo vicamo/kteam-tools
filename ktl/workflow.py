@@ -11,6 +11,16 @@ class UbuntuError(Exception):
     def __init__(self, error):
         self.msg = error
 
+
+# DefaultAssigneeMissing
+#
+class DefaultAssigneeMissing(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+
 # Methods related to workflow in tracking bugs
 #
 
@@ -346,17 +356,21 @@ class Workflow:
         team or person who should be assigned that task. If the
         package name is not in the dictionary, return the default
         """
+        retval = None
         if devel:
             db = self.devel_workflow
         else:
             db = self.tdb
+
         if packagename in db:
             if taskname in db[packagename]['task_assignment']:
-                return db[packagename]['task_assignment'][taskname]
-            else:
-                return None
+                retval = db[packagename]['task_assignment'][taskname]
         else:
-                return db['default']['task_assignment'][taskname]
+            try:
+                retval = db['default']['task_assignment'][taskname]
+            except KeyError:
+                raise DefaultAssigneeMissing('There is no default assignee in the database for \'%s\'.' % (taskname))
+        return retval
 
     # initial_tags
     #
@@ -386,9 +400,9 @@ class Workflow:
         else:
             db = self.tdb
         if packagename in db:
-                return db[packagename]['subscribers']
+            return db[packagename]['subscribers']
         else:
-                return db['default']['subscribers']
+            return db['default']['subscribers']
 
     # is task invalid for that series version
     #
