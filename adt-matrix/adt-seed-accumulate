@@ -113,7 +113,7 @@ class AdtMatrixSeed(object):
                     for version in pkgs:
                         ##print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {} ({}'.format(series, " ".join(sorted(pkgs[version].keys())), record['source'], version))
                         # remove-package -m NBS -s xenial-proposed -e 4.4.0-1.15 linux
-                        print('#WIP remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, version, record['source']))
+                        print('remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, version, record['source']))
 
 
     def accumulate(self, series, package, flags, britney):
