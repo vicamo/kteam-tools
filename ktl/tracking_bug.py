@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 
-from ktl.workflow                       import Workflow
+from ktl.workflow                       import Workflow, DefaultAssigneeMissing
 from ktl.ubuntu                         import Ubuntu
 from ktl.utils                          import date_to_string
 from datetime                           import datetime
@@ -263,7 +263,12 @@ class TrackingBug:
                     continue
                 task.importance = "Medium"
                 task_name = parts[2].strip()
-                assignee = self.wf.assignee(package, task_name, devel_series)
+                try:
+                    assignee = self.wf.assignee(package, task_name, devel_series)
+                except DefaultAssigneeMissing as e:
+                    print('*** Warning:')
+                    print('    %s' % e.message)
+                    continue
                 if assignee is None:
                     if not self.quiet:
                         print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task_name
