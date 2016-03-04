@@ -87,6 +87,7 @@ class AdtMatrixSeed(object):
         return self.britney_cache[series]
 
 
+    # remove-package -m NBS -s xenial-proposed -e 4.4.0-1.15 linux
     def britney_nbs(self, series, flags):
         if series in self.nbs:
             return
@@ -102,13 +103,17 @@ class AdtMatrixSeed(object):
                         for version_group in remainder.split(';'):
                             (package_string, version) = version_group.split('(', 1)
                             version = re.sub('<[^<]+?>', '', version.strip())
-                            for package in package_string.split(', '):
-                                package = package.strip()
-                                tmp = pkgs.setdefault(version, {})
-                                tmp[package] = True
+                            version = version[5:-1]
+                            pkgs[version] = True
+                            #for package in package_string.split(', '):
+                            #   package = package.strip()
+                            #   tmp = pkgs.setdefault(version, {})
+                            #   tmp[package] = True
                 if len(pkgs) > 0:
                     for version in pkgs:
-                        print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {} ({}'.format(series, " ".join(sorted(pkgs[version].keys())), record['source'], version))
+                        ##print('remove-package -m NBS -d ubuntu -s {}-proposed -b -y {} # {} ({}'.format(series, " ".join(sorted(pkgs[version].keys())), record['source'], version))
+                        # remove-package -m NBS -s xenial-proposed -e 4.4.0-1.15 linux
+                        print('#WIP remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, version, record['source']))
 
 
     def accumulate(self, series, package, flags, britney):
