@@ -65,6 +65,7 @@ git://kernel.ubuntu.com/ubuntu/instrument-lib.git                           -   
 git://kernel.ubuntu.com/ubuntu/iozone-results-comparator.git                -                                                                                                               wani	active
 git://kernel.ubuntu.com/ubuntu/kernel-testing.git                           -                                                                                                               wani	active
 git://kernel.ubuntu.com/ubuntu/kteam-tools.git                              -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/adt-matrix-hints.git                         git://git.launchpad.net/~canonical-kernel/+git/adt-matrix-hints                                                 launchpad	active
 git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad	active
 git://kernel.ubuntu.com/ubuntu/linux.git                                    -                                                                                                               wani	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          either	inactive
