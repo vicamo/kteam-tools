@@ -22,7 +22,7 @@ while read series package parent flags
 do
 	[ -f "$britney/$series.migration" ] && \
 		echo "$series $package $parent $flags $britney/$series.migration"
-done <"$here/adt-matrix.conf" | \
+done <"$config" | \
 	"$here/adt-seed-accumulate" >"nbs.cmds.new"
 mv -f "nbs.cmds.new" "nbs.cmds"
 
