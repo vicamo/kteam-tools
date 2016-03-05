@@ -15,7 +15,7 @@ britney="$2"
 git="$3"
 
 hints="$here/hints"
-if [ -d "$hints" ]; then
+if [ ! -d "$hints" ]; then
 	git clone "$git" "$hints"
 else
 	(cd "$hints" && git checkout -f && git pull)
@@ -24,7 +24,7 @@ fi
 mkdir -p "$html"
 (
 	cd "$html" || exit 1
-	"$here/adt-update" "$here/adt-matrix.conf" "$here/adt-matrix.hints" - "$britney"
+	"$here/adt-update" "$hints/adt-matrix.conf" "$hints/adt-matrix.hints" - "$britney"
 )
 mkdir -p "$html/canonical-kernel-team--unstable"
 
@@ -33,8 +33,8 @@ mkdir -p "$html/canonical-kernel-team--unstable"
 	ln -sf ../package-relation.json .
 
 	"$here/adt-update" \
-		"$here/adt-matrix.conf.d/canonical-kernel-team--unstable.conf" \
-		"$here/adt-matrix.conf.d/canonical-kernel-team--unstable.hints" \
+		"$hints/adt-matrix.conf.d/canonical-kernel-team--unstable.conf" \
+		"$hints/adt-matrix.conf.d/canonical-kernel-team--unstable.hints" \
 		canonical-kernel-team/unstable -
 )
 
