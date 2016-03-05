@@ -6,12 +6,20 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" != '2' ]; then
-	echo "Usage: $0 <html> <britney cache>" 1>&2
+if [ "$#" != 3 ]; then
+	echo "Usage: $0 <html> <britney cache> <hints git repo>" 1>&2
 	exit 1
 fi
 html="$1"
 britney="$2"
+git="$3"
+
+hints="$here/hints"
+if [ -d "$hints" ]; then
+	git clone "$git" "$hints"
+else
+	(cd "$hints" && git checkout -f && git pull)
+fi
 
 mkdir -p "$html"
 (
