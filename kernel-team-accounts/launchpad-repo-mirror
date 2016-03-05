@@ -1,130 +1,58 @@
 #!/bin/bash
 
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 # Flags
 first=false
 [ "$1" = "first" ] && first=true
 
 # MIRROR wani -> launchpad
-while read repo url
+while read url alt_url master flags
 do
-    echo "*** $repo ..."
-    (cd "/srv/kernel.ubuntu.com/git/$repo" && git push --mirror "$url")
-done <<EOL
-virgin/testing/crack.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack
-virgin/testing/drm-intel.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel
-EOL
+    case ",$flags," in
+    *,inactive,*)	continue ;;
+    esac
+    case "$master" in
+    wani) 		;;
+    *)			continue ;;
+    esac
+    case "$alt_url" in
+    -)			continue ;;
+    esac
 
-#ubuntu/ubuntu-vivid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
-#ubuntu/ubuntu-vivid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
-#ubuntu/ubuntu-vivid-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
-#ubuntu/ubuntu-trusty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
-#ubuntu/ubuntu-trusty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
-#ubuntu/ubuntu-trusty-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
-#ubuntu/ubuntu-precise.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
-#ubuntu/ubuntu-precise-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
-#ubuntu/ubuntu-precise-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
-#ubuntu/ubuntu-precise-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
+    echo "*** $url -> $alt_url ..."
+    repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/@/srv/kernel.ubuntu.com/git/@' )
+    alt_url=$( echo "$alt_url" | sed -e 's_git://git.launchpad.net/_git+ssh://kernel-ppa@git.launchpad.net/_' )
+
+    (cd "$repo" && git push --mirror "$alt_url")
+done <"$here/../info/repositories.txt"
 
 # MIRROR launchpad -> wani
-while read repo url
+while read url alt_url master flags
 do
-    echo "*** $repo ..."
-    if [ ! -d "/srv/kernel.ubuntu.com/git/$repo" ]; then
-	(cd "/srv/kernel.ubuntu.com/git" && mkdir "$repo" && git init --bare "$repo")
-    fi
-    (cd "/srv/kernel.ubuntu.com/git/$repo" && \
-        git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
-done <<EOL
-kernel-ppa/mirror/ubuntu-precise.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise
-kernel-ppa/mirror/ubuntu-precise-meta.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise
-kernel-ppa/mirror/ubuntu-precise-signed.git      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise
-kernel-ppa/mirror/ubuntu-precise-lbm.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise
-kernel-ppa/mirror/ubuntu-trusty.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty
-kernel-ppa/mirror/ubuntu-trusty-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty
-kernel-ppa/mirror/ubuntu-trusty-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty
-kernel-ppa/mirror/ubuntu-vivid.git               git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid
-kernel-ppa/mirror/ubuntu-vivid-meta.git          git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid
-kernel-ppa/mirror/ubuntu-vivid-signed.git        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid
-kernel-ppa/mirror/ubuntu-wily.git                git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily
-kernel-ppa/mirror/ubuntu-wily-meta.git           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily
-kernel-ppa/mirror/ubuntu-wily-signed.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily
-kernel-ppa/mirror/ubuntu-xenial.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
-kernel-ppa/mirror/ubuntu-xenial-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
-kernel-ppa/mirror/ubuntu-xenial-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
-kernel-ppa/mirror/unstable.git                   git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
-kernel-ppa/mirror/linux-firmware.git             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware
-EOL
+    case ",$flags," in
+    *,inactive,*)	continue ;;
+    esac
+    case "$master" in
+    launchpad) 		;;
+    *)			continue ;;
+    esac
+    case "$alt_url" in
+    -)			continue ;;
+    esac
 
-if [ "$first" = true ]; then
-	while read repo url
-	do
-	    echo "*** $repo ..."
-	    if [ ! -d "/srv/kernel.ubuntu.com/git/$repo" ]; then
-		(cd "/srv/kernel.ubuntu.com/git" && mkdir "$repo" && git init --bare "$repo")
-	    fi
-	    (cd "/srv/kernel.ubuntu.com/git/$repo" && \
-		git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
-	done <<EOL
-kernel-ppa/mirror/ubuntu-utopic.git              git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic
-kernel-ppa/mirror/ubuntu-utopic-meta.git         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic
-kernel-ppa/mirror/ubuntu-utopic-signed.git       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic
-kernel-ppa/mirror/ubuntu-saucy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy
-kernel-ppa/mirror/ubuntu-saucy-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy
-kernel-ppa/mirror/ubuntu-saucy-signed.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy
-kernel-ppa/mirror/ubuntu-raring.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring
-kernel-ppa/mirror/ubuntu-raring-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/raring
-kernel-ppa/mirror/ubuntu-raring-signed.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/raring
-kernel-ppa/mirror/ubuntu-quantal.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal
-kernel-ppa/mirror/ubuntu-quantal-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/quantal
-kernel-ppa/mirror/ubuntu-quantal-signed.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/quantal
-kernel-ppa/mirror/ubuntu-quantal-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.5.0/+git/quantal
-kernel-ppa/mirror/ubuntu-oneiric.git             git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric
-kernel-ppa/mirror/ubuntu-oneiric-meta.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric
-kernel-ppa/mirror/ubuntu-oneiric-lbm.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.0.0/+git/oneiric
-kernel-ppa/mirror/ubuntu-natty.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty
-kernel-ppa/mirror/ubuntu-natty-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty
-kernel-ppa/mirror/ubuntu-natty-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.38/+git/natty
-kernel-ppa/mirror/ubuntu-maverick.git            git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick
-kernel-ppa/mirror/ubuntu-maverick-meta.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick
-kernel-ppa/mirror/ubuntu-maverick-lbm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35/+git/maverick
-kernel-ppa/mirror/ubuntu-lucid.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid
-kernel-ppa/mirror/ubuntu-lucid-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid
-kernel-ppa/mirror/ubuntu-lucid-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid
-kernel-ppa/mirror/ubuntu-karmic.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic
-kernel-ppa/mirror/ubuntu-karmic-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic
-kernel-ppa/mirror/ubuntu-karmic-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31/+git/karmic
-kernel-ppa/mirror/ubuntu-jaunty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty
-kernel-ppa/mirror/ubuntu-jaunty-meta.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jaunty
-kernel-ppa/mirror/ubuntu-jaunty-ports-meta.git   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/jaunty
-kernel-ppa/mirror/ubuntu-jaunty-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.28/+git/karmic
-kernel-ppa/mirror/ubuntu-jaunty-lrm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jaunty
-kernel-ppa/mirror/ubuntu-jaunty-lpia.git         git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/jaunty
-kernel-ppa/mirror/ubuntu-jaunty-lpia-lrm.git     git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/jaunty
-kernel-ppa/mirror/ubuntu-intrepid.git            git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-meta.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-ports.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-ports-meta.git git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ports-meta/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-lbm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.27/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-lrm.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-lpia.git       git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-lpia-meta.git  git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lpia-meta/+git/intrepid
-kernel-ppa/mirror/ubuntu-intrepid-lpia-lrm.git   git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/lpia-linux-restricted-modules/+git/intrepid
-kernel-ppa/mirror/ubuntu-hardy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy
-kernel-ppa/mirror/ubuntu-hardy-meta.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hardy
-kernel-ppa/mirror/ubuntu-hardy-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.24/+git/hardy
-kernel-ppa/mirror/ubuntu-hardy-lrm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-2.6.24/+git/hardy
-kernel-ppa/mirror/ubuntu-hardy-lum.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.24/+git/hardy
-kernel-ppa/mirror/ubuntu-gutsy.git               git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy
-kernel-ppa/mirror/ubuntu-gutsy-lbm.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.22/+git/gutsy
-kernel-ppa/mirror/ubuntu-gutsy-lum.git           git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-ubuntu-modules-2.6.22/+git/gutsy
-kernel-ppa/mirror/ubuntu-feisty.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty
-kernel-ppa/mirror/ubuntu-feisty-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.20/+git/feisty
-kernel-ppa/mirror/ubuntu-edgy.git                git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/edgy
-kernel-ppa/mirror/ubuntu-edgy-updates.git        git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.17/+git/edgy
-kernel-ppa/mirror/ubuntu-dapper.git              git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dapper
-kernel-ppa/mirror/ubuntu-dapper-lbm.git          git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.15/+git/dapper
-kernel-ppa/mirror/ubuntu-dapper-updates.git      git+ssh://kernel-ppa@git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-source-2.6.15/+git/dapper
-EOL
-fi
+    echo "*** $alt_url -> $url ..."
+    repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/ubuntu/@/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/@' )
+
+    if [ ! -d "$repo" ]; then
+	(mkdir "$repo" && git init --bare "$repo")
+    fi
+    (cd "$repo" && \
+        git fetch "$alt_url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
+done <"$here/../info/repositories.txt"
 
 date
