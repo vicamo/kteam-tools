@@ -95,6 +95,8 @@ class AdtMatrixSeed(object):
 
         print('#\n# ' + series + '\n#')
         for record in self.britney_cache[series]['sources']:
+            if not record['source'].startswith('linux'):
+                continue
             if 'excuses' in record:
                 pkgs = {}
                 for excuse in record['excuses']:
