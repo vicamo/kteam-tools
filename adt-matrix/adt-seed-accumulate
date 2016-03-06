@@ -121,6 +121,7 @@ class AdtMatrixSeed(object):
 
         #if 'devel' not in flags:
         #    self.britney_nbs(series, flags)
+        self.britney_nbs(series, flags)
 
         for record in state['sources']:
             if record['source'] != package:
