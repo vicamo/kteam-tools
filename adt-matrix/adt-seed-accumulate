@@ -119,8 +119,8 @@ class AdtMatrixSeed(object):
     def accumulate(self, series, package, flags, britney):
         state = self.britney_load(series, britney)
 
-        if 'devel' not in flags:
-            self.britney_nbs(series, flags)
+        #if 'devel' not in flags:
+        #    self.britney_nbs(series, flags)
 
         for record in state['sources']:
             if record['source'] != package:
