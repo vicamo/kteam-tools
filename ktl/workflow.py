@@ -33,7 +33,7 @@ class Properties:
         self.bug = bug
         self.oldprops = bug.properties
         self.newprops = {}
-    
+
     # setBugProperties
     #
     # Note - this should perhaps be in lpltk
@@ -68,7 +68,7 @@ class Properties:
             del self.newprops[keyname]
         if len(self.newprops) == 0:
             return
-    
+
         # Set a name:value pair in a bug description
         olddescr = self.bug.description
         newdscr = ''
@@ -87,7 +87,6 @@ class Properties:
                 # see if it matches the one we're adding
                 level = m.group(1)
                 item = m.group(2)
-                #value = m.group(3)
                 key = item
                 if len(level) > 0:
                     key = "%s.%s" % (last_key[''], item)
@@ -115,7 +114,7 @@ class Workflow:
     # * task_assignment: dictionary with launchpad series nominations
     #   for stable kernel tracking bugs and their assignee (that is, the
     #   tasks on stable SRU updates, nominated on the tracking bugs, and
-    #   the launchpad user name responsible for that task). 
+    #   the launchpad user name responsible for that task).
     # * initial_bug_tags: tags to be added on the tracking bug when it's
     #   created
     # * subscribers: launchpad persons or teams to subscribe
@@ -142,15 +141,15 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"],
             'invalidate_tasks' : {
-                'certification-testing' : [ '3.5.0' ] # Kernels that are supported but Cert. no longer tests
-                }
-            },
+                'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
+            }
+        },
         'linux-ec2' :  {
             'task_assignment' : {
                 'prepare-package'            : 'smb',
@@ -162,12 +161,12 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"]
-            },
+        },
         'linux-ti-omap4' :  {
             'task_assignment' : {
                 'prepare-package'            : 'ubuntu-armel-kernel',
@@ -179,12 +178,12 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
-            },
+        },
         'linux-armadaxp' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',
@@ -194,12 +193,12 @@ class Workflow:
                 'regression-testing'         : 'canonical-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
-            },
+        },
         'linux-keystone' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',
@@ -209,12 +208,12 @@ class Workflow:
                 'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
-            },
+        },
         'linux-exynos5' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',
@@ -224,12 +223,12 @@ class Workflow:
                 'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
-            },
+        },
         'linux-lts-quantal' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
@@ -242,12 +241,12 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
-            },
+        },
         'linux-lowlatency' :  {
             'task_assignment' : {
                 'prepare-package'            : 'ubuntustudio-kernel-team',
@@ -258,12 +257,12 @@ class Workflow:
                 'regression-testing'         : 'ubuntustudio-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
-            },
+        },
         'linux-ppc' :  {
             'task_assignment' : {
                 'prepare-package'            : 'ben-collins',
@@ -274,12 +273,12 @@ class Workflow:
                 'regression-testing'         : 'ben-collins',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
-            },
+        },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
@@ -298,13 +297,13 @@ class Workflow:
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"]
-            }
         }
+    }
 
     # Development tasks, tags, etc vary according to the package name.
     # This is a dictionary with information necessary for the scripts
@@ -325,12 +324,12 @@ class Workflow:
                 'prepare-package'            : 'ben-collins',
                 'prepare-package-meta'       : 'ben-collins',
                 'promote-to-release'         : 'ubuntu-archive',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 [],
-            },
+        },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
@@ -341,13 +340,13 @@ class Workflow:
                 'promote-to-release'         : 'ubuntu-archive',
                 'promote-to-proposed'        : 'canonical-kernel-team',
                 'regression-testing'         : 'canonical-kernel-team',
-                },
+            },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
                 [],
-            }
         }
+    }
 
     # assignee
     #
@@ -411,11 +410,11 @@ class Workflow:
         """
         Return if the task is invalid for that package version
         """
-        if not packagename in self.tdb:
+        if packagename not in self.tdb:
             return False
-        if not 'invalidate_tasks' in self.tdb[packagename]:
+        if 'invalidate_tasks' not in self.tdb[packagename]:
             return False
-        if not taskname in self.tdb[packagename]['invalidate_tasks']:
+        if taskname not in self.tdb[packagename]['invalidate_tasks']:
             return False
         version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
         return (version in version_list)
@@ -423,9 +422,6 @@ class Workflow:
 if __name__ == '__main__':
     workflow = Workflow()
     db = workflow.tdb
-
-    #for record in db:
-    #    print db[record]
 
     print(workflow.assignee('linux', 'prepare-package'))
     print(workflow.assignee('linux', 'nonexistent-task'))

@@ -7,7 +7,7 @@ from ktl.utils                          import date_to_string
 from datetime                           import datetime
 import re
 
-from logging                            import info, debug, warning
+from logging                            import info, debug
 from ktl.termcolor                      import colored
 
 def cinfo(msg, color='white'):
@@ -56,7 +56,7 @@ class Clog:
 
 class TrackingBug:
 
-    def __init__(self, lp, staging, quiet = False):
+    def __init__(self, lp, staging, quiet=False):
         self.lp = lp
         self.staging = staging
         self.quiet = quiet
@@ -112,7 +112,7 @@ class TrackingBug:
             break
         return retval
 
-    def open(self, package, version, new_abi, master_bug, series_specified = None):
+    def open(self, package, version, new_abi, master_bug, series_specified=None):
 
         cdebug('open enter')
         cdebug('    package: %s' % package)
