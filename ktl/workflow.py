@@ -150,23 +150,6 @@ class Workflow:
                 'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
             }
         },
-        'linux-ec2' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'smb',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'upload-to-ppa'              : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-kernel-team',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru", "hardware-certification"]
-        },
         'linux-ti-omap4' :  {
             'task_assignment' : {
                 'prepare-package'            : 'ubuntu-armel-kernel',
@@ -214,71 +197,6 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
         },
-        'linux-exynos5' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'canonical-hwe-arm-kernel',
-                'prepare-package-meta'       : 'canonical-hwe-arm-kernel',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-hwe-arm-kernel',
-                'regression-testing'         : 'canonical-hwe-arm-kernel',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armhf'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"]
-        },
-        'linux-lts-quantal' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'canonical-kernel-team',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'prepare-package-signed'     : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-kernel-team',
-                'certification-testing'      : 'canonical-hw-cert',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security'
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"],
-        },
-        'linux-lowlatency' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'ubuntustudio-kernel-team',
-                'prepare-package-meta'       : 'ubuntustudio-kernel-team',
-                'upload-to-ppa'              : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'ubuntustudio-kernel-team',
-                'regression-testing'         : 'ubuntustudio-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"],
-        },
-        'linux-ppc' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'ben-collins',
-                'prepare-package-meta'       : 'ben-collins',
-                'upload-to-ppa'              : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'ben-collins',
-                'regression-testing'         : 'ben-collins',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"],
-        },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
@@ -319,17 +237,6 @@ class Workflow:
     # * subscribers: launchpad persons or teams to subscribe
     #   automatically to the tracking bugs when they are created
     devel_workflow = {
-        'linux-ppc' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'ben-collins',
-                'prepare-package-meta'       : 'ben-collins',
-                'promote-to-release'         : 'ubuntu-archive',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
-            'subscribers' :
-                [],
-        },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
