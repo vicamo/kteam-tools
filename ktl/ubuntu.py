@@ -269,6 +269,9 @@ class Ubuntu:
                 'linux-lts-wily',
                 'linux-meta-lts-wily',
                 'linux-signed-lts-wily',
+                'linux-lts-xenial',
+                'linux-meta-lts-xenial',
+                'linux-signed-lts-xenial',
             ],
             'dependent-packages' :
             {
@@ -288,6 +291,10 @@ class Ubuntu:
                     'meta' : 'linux-meta-lts-wily',
                     'signed' : 'linux-signed-lts-wily'
                 },
+                'linux-lts-xenial' : {
+                    'meta' : 'linux-meta-lts-xenial',
+                    'signed' : 'linux-signed-lts-xenial'
+                },
                 'linux-keystone' : { 'meta' : 'linux-meta-keystone' },
             },
             'derivative-packages' :
@@ -299,6 +306,7 @@ class Ubuntu:
                 'linux-lts-utopic' : [ 'linux', '14.10' ],
                 'linux-lts-vivid' : [ 'linux', '15.04' ],
                 'linux-lts-wily' : [ 'linux', '15.10' ],
+                'linux-lts-xenial' : [ 'linux', '16.04' ],
             },
             'sha1' : '',
             'md5' : ''
