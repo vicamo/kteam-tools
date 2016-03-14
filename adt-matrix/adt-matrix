@@ -673,6 +673,8 @@ table.matrix, table.matrix th, table.matrix td {{
                         (status, status_link, version, lversion) = results[ver][pkg][arch]
                         bits = version.split('\n', 1) + [ '' ]
                         (version, annot) = bits[0:2]
+                        if annot != '':
+                            annot = '\n' + annot
                         if status_link:
                             status_link += 'log.gz'
                             fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
