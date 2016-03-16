@@ -145,6 +145,8 @@ class Ubuntu:
                 'linux-meta',
                 'linux-raspi2',
                 'linux-meta-raspi2',
+                'linux-snapdragon',
+                'linux-meta-snapdragon',
             ],
             'dependent-packages' :
             {
@@ -153,10 +155,12 @@ class Ubuntu:
                     'signed' : 'linux-signed'
                 },
                 'linux-raspi2' : { 'meta' : 'linux-meta-raspi2' },
+                'linux-snapdragon' : { 'meta' : 'linux-meta-snapdragon' },
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-raspi2' ]
+                'linux' : [ 'linux-raspi2' ],
+                'linux' : [ 'linux-snapdragon' ]
             },
             'sha1' : '',
             'md5' : ''
@@ -744,6 +748,8 @@ class Ubuntu:
         'linux',
         'linux-raspi2',
         'linux-meta-raspi2',
+        'linux-snapdragon',
+        'linux-meta-snapdragon',
         'linux-ti-omap4', # maverick, natty
         'linux-armadaxp', # precise, quantal
         'linux-exynos5',
