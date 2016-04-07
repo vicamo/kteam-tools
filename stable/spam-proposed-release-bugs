@@ -222,7 +222,20 @@ class SpamProposedReleaseBugs(StdApp):
 
             # Find the bugs in the specified release and package that need spamming.
             #
-            for bug_id in sru['releases'][self.cfg['series']][self.cfg['package']]['bugs']:
+            series = self.cfg['series']
+            package = self.cfg['package']
+            try:
+                pkgrec = sru['releases'][series][package]
+            except:
+                print("E: %s/%s: no such series/package" % (series,package))
+                return
+            try:
+                bugs = sru['releases'][series][package]['bugs']
+            except:
+                self.verbose("  . %s/%s has no SRU bugs\n" % (series,package))
+                return
+            self.verbose("%s/%s:\n" % (series,package))
+            for bug_id in bugs:
                 bug = self.service.get_bug(bug_id)
                 self.print_bug_info(bug_id, bug)
                 should_be_spammed = False
