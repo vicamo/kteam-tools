@@ -356,7 +356,7 @@ do
 	if [ ! -f $pkg_found ]
 	then
 		echo Installing $i
-		${SCHROOTCMD} -- apt-get -y --force-yes install $i
+		${SCHROOTCMD} -- apt-get -y --force-yes --no-install-recommends install $i
 	fi
 done
 rm -f $pkg_found
