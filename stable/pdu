@@ -49,7 +49,7 @@ class Power():
     #
     def cdu(s, target, outlet):
         retval = None
-        retval = pexpect.spawn('ssh -o MACs=hmac-md5 -oKexAlgorithms=+diffie-hellman-group1-sha1 -oHostKeyAlgorithms=+ssh-dss enablement@%s' % s.systems[target][outlet], timeout=600)
+        retval = pexpect.spawn('ssh -o MACs=hmac-sha1 -oKexAlgorithms=+diffie-hellman-group1-sha1 -oHostKeyAlgorithms=+ssh-dss enablement@%s' % s.systems[target][outlet], timeout=600)
         retval.expect('Password: ')
         retval.sendline(s.cdus[s.systems[target][outlet]])
         retval.expect('Switched CDU: ')
