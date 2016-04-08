@@ -206,7 +206,7 @@ esac
 case $SUITE in
 	xenial)
 		case $ARCH in
-			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu"
+			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu snapcraft"
 			;;
 		esac
 		;;
