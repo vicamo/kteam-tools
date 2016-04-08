@@ -41,7 +41,7 @@ do
 	then
 		echo Could not find $i
 		echo Installing $i
-		if ! apt-get -y --force-yes install $i
+		if ! apt-get -y --force-yes --no-install-recommends install $i
 		then
 			echo Could not install $i
 			exit 1
