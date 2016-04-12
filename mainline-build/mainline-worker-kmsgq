@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import traceback
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, WARNING, error
@@ -55,6 +56,7 @@ class TheApp():
         cdebug(payload)
         try:
             print("Starting", payload['cmd'])
+            sys.stdout.flush()
             child = Popen(payload['cmd'])
             while True:
                 res = child.poll()
@@ -64,6 +66,7 @@ class TheApp():
                 time.sleep(15)
                 s.mq.connection.process_data_events()
             print("Complete", payload['cmd'])
+            sys.stdout.flush()
 
 
         except OSError:
