@@ -191,7 +191,7 @@ git checkout "$series/master" -- debian.master || \
 	git checkout "$series/master-next" -- debian.master
 
 # Disable the ABI, module, and aliases checks.
-for i in debian/scripts/*-check debian.master/scripts/*-check
+for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
 do
 	if [ -f "$i" ]; then
 		cat - <<EOM >"$i"
