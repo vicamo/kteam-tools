@@ -1,4 +1,5 @@
 import os
+from sys                                import argv
 import yaml
 from email.mime.text                    import MIMEText
 from smtplib                            import SMTP
@@ -33,6 +34,9 @@ class BugMail:
     def load_config(c, cfg_file):
         if os.path.exists(cfg_file):
             with open(cfg_file, 'r') as f:
+                cfg = yaml.safe_load(f)
+        elif os.path.exists(os.path.join(os.path.dirname(argv[0]), cfg_file)):
+            with open(os.path.join(os.path.dirname(argv[0]), cfg_file), 'r') as f:
                 cfg = yaml.safe_load(f)
         else:
             msg = 'Unable to find the file (%s). This file is required for the SRU Workflow Manager to operate correctly.' % cfg_file
