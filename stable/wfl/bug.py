@@ -243,9 +243,6 @@ class WorkflowBug():
             newd += '-- swm properties --\n'
             newd += yaml.dump(s.bprops, default_flow_style=False)
 
-            print('----')
-            print(yaml.dump(s.bprops, default_flow_style=False))
-            print('----')
             s.lpbug.description = newd
 
         cleave(s.__class__.__name__ + '.save_bug_properties')
