@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, WARNING, INFO
 import yaml
+import traceback
 
 from wfl.log                            import Clog, center, cleave, cdebug
 from wfl.manager                        import WorkflowManager
@@ -81,9 +82,24 @@ examples:
         WorkflowBugTask.no_timestamps = WorkflowBug.no_timestamps
 
         retval = WorkflowManager(args).manage()
+
     except BugMailConfigFileMissing as e:
         print(e.message)
         retval = -1
+
+    except Exception:
+        trace = traceback.format_exc()
+        try:
+            sys.stderr.write(trace)
+        except:
+            pass
+        logfile = open('/tmp/exceptions.log', 'w')
+        logfile.write('Critical exception in core')
+        logfile.write(trace)
+        logfile.write('----------------------------------------\n\n')
+        logfile.close()
+        retval = -2
+
     cleave('__main__ (%s)' % (retval))
     exit(retval)
 
