@@ -567,8 +567,8 @@ class IrcShankbot(SingleServerIRCBot):
     def run(s):
         retval = 1
         try:
-            if not os.path.exists('./sru-workflow-manager'):
-                raise ErrorExit('Unable to find "./sru-workflow-manager". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
+            if not os.path.exists('./swm'):
+                raise ErrorExit('Unable to find "./swm". The bot must be run from the same directory that contains the swm script\nwithin the kteam-tools repository.')
 
             if not os.path.exists('../web/Makefile'):
                 raise ErrorExit('Unable to find "../web/Makefile". The bot must be run from the same directory that contains the sru-workflow-manager script\nwithin the kteam-tools repository.')
