@@ -96,7 +96,7 @@ def shank_all(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = '%s/stable/swm %s --logfile=/dev/null' % (bug, bot.config.wfm.kteam_root)
+            cmd = '%s/stable/swm %s --logfile=/dev/null' % (bot.config.wfm.kteam_root, bug)
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
