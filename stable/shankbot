@@ -229,36 +229,8 @@ class Shankster(threading.Thread):
                 cmd = data['cmd']
                 who = data['who']
                 target = data['target']
-                if 'shank' == cmd:
-                    # FIXME: bjf - We are switching from v2 to v3.
-                    #
-                    # try:
-                    #     (rc, output) = sh('./swm')
-                    #     s.output.reply(who + ', ' + 'I shanked them all', target)
-                    # except ShellError as e:
-                    #     for l in e.output:
-                    #         s.output.reply(who + ', ' + l)
-                    s.output.reply(who + ', I\'m sorry, Brain won\'t let me do that right now.', target)
 
-                elif cmd.startswith('shank '):
-                    # FIXME: bjf - We are switching from v2 to v3.
-                    #
-                    # if ' ' in cmd:
-                    #     # Another arg parser here would probably be the right thing.
-                    #     cmd = cmd.split()
-                    #     sh_cmd = './swm --debug --verbose --bugs=%s' % cmd[1]
-                    #     try:
-                    #         (rc, output) = sh(sh_cmd)
-                    #         s.output.reply(who + ', ' + 'bug %s has been shanked' % (cmd[1]), target)
-                    #         with open("/tmp/shanky.log", "w") as f:
-                    #             for l in output:
-                    #                 f.write(l)
-                    #     except ShellError as e:
-                    #         for l in e.output:
-                    #             s.output.reply(who + ', ' + l)
-                    s.output.reply(who + ', I\'m sorry, Brain won\'t let me do that right now.', target)
-
-                elif cmd.startswith('update '):
+                if cmd.startswith('update '):
                     c = cmd.split()
                     location = '/srv/kernel.ubuntu.com/www/sru'
                     if 'reports' in c[1]:
@@ -278,9 +250,6 @@ class Shankster(threading.Thread):
                         except ShellError as e:
                             for l in e.output:
                                 s.output.reply(who + ', ' + l)
-
-                elif cmd.startswith('bug:'):
-                    s.bug_lookup(cmd, who, target)
 
                 elif cmd.startswith('test '):
                     s.handle_test_request(cmd, who, target)
@@ -448,24 +417,6 @@ class IrcShankbot(SingleServerIRCBot):
         if irc_lower(a[0]) == irc_lower(s.nickname):
             if len(a) > 1:
                 s.do_command(e, string.strip(a[1]), from_nick)
-        else:
-            m = re.findall('(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))', e.arguments()[0])
-            if m:
-                debug('stage 1')
-                for g in m:
-                    for bug_id in g:
-                        if bug_id is not '':
-                            s.do_command(e, 'bug:%s' % bug_id, from_nick)
-
-            else:
-                m = re.findall('\\b[lL][pP]:?\s?#?([0-9]+)(,\s*#?[0-9]+)*\\b', e.arguments()[0])
-                if m:
-                    debug('stage 2')
-                    for g in m:
-                        for bug_id in g:
-                            if bug_id is not '':
-                                s.do_command(e, 'bug:%s' % bug_id, from_nick)
-
         return
 
     def say_public(s, text):
@@ -575,13 +526,6 @@ class IrcShankbot(SingleServerIRCBot):
         elif 'shank' == cmd:
             s.enqueue_cmd(who, cmd, target)
             s.reply(who + ', ' + 'gimme some love boss', target)
-
-        elif cmd.startswith('shank '):
-            s.enqueue_cmd(who, cmd, target)
-            s.reply(who + ', ' + 'roger, roger', target)
-
-        elif cmd.startswith('bug:'):
-            s.enqueue_cmd(who, cmd, target)
 
         elif cmd.startswith('thank'):
             s.reply(who + ', ' + s.say_your_welcome(), target)
