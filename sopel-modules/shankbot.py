@@ -2,6 +2,7 @@ from sys                                import stdout
 from subprocess                         import Popen, PIPE, STDOUT
 from threading                          import Thread
 from time                               import sleep
+from sopel.config.types                 import StaticSection, ValidatedAttribute
 
 try:
     from Queue import Queue, Empty
@@ -56,6 +57,17 @@ def sh(cmd, timeout=None, ignore_result=False, quiet=False):
 
     return p.returncode, out
 
+class WFMSection(StaticSection):
+    kteam_root = ValidatedAttribute('kteam_root', str, default=None)
+    """Root of the kteam-tools directory"""
+
+def configure(config):
+    config.define_section('wfm', WFMSection)
+    config.admin.configure_setting('kteam_root', 'Full path to the root of kteam-tools')
+
+def setup(bot):
+    bot.config.define_section('wfm', WFMSection)
+
 @sopel.module.nickname_commands('shank')
 def shank_all(bot, trigger):
     '''
@@ -67,7 +79,7 @@ def shank_all(bot, trigger):
         # No bugs were specified so shank them all.
         #
         bot.say(trigger.nick + ', gimme some love boss')
-        cmd = '/home/work/kteam-tools/stable/swm --logfile=/dev/null'
+        cmd = '%s/stable/swm --logfile=/dev/null' % bot.config.wfm.kteam_root
         (rc, output) = sh(cmd, quiet=True)
         if rc == 0:
             bot.say(trigger.nick + ', ' + 'I shanked them all')
@@ -84,7 +96,7 @@ def shank_all(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = '/home/work/kteam-tools/stable/swm %s --logfile=/dev/null' % bug
+            cmd = '%s/stable/swm %s --logfile=/dev/null' % (bug, bot.config.wfm.kteam_root)
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
