@@ -176,8 +176,8 @@ class Debian:
                 bugs = []
             else:
                 # find bug numbers and append them to the list
-                bug_line_matches = cls.bug_line_rc.match(line)
-                if bug_line_matches != 0:
+                bug_line_matches = cls.bug_line_rc.search(line)
+                if bug_line_matches:
                     bug_matches = findall(cls.bug_rc,line)
                     if bug_matches:
                         bugs.extend( bug_matches )
