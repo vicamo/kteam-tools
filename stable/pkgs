@@ -139,7 +139,7 @@ examples:
     parser.add_argument('--verbose',                    action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--debug',                      action='store_true', default=False, help='')
     parser.add_argument('--debug-assignee',                                  default=None,  help='')
-    parser.add_argument('--dryrun',                     action='store_true', default=True, help='Don\'t modify the bug(s). Should be used with --verbose.')
+    parser.add_argument('--dry-run', '--dryrun',        action='store_true', default=True, help='Don\'t modify the bug(s). Should be used with --verbose.', dest='dryrun')
     parser.add_argument('--dryrun-email',               action='store_true', default=True, help='')
     parser.add_argument('--dryrun-derivative-trackers', action='store_true', default=True, help='')
     parser.add_argument('--dryrun-ignore-promotions',   action='store_true', default=False, help='')

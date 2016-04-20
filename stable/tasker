@@ -93,7 +93,7 @@ examples:
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--logfile',                                       default=None, help='Where to log the output.')
     parser.add_argument('--debug',                      action='store_true', default=False, help='')
-    parser.add_argument('--dryrun',                      action='store_true', default=False, help='')
+    parser.add_argument('--dry-run', '--dryrun',        action='store_true', default=False, help='Make no permanent changes.', dest='dryrun')
     parser.add_argument('--no-status-changes',          action='store_true', default=False, help='Make no status changes.')
     parser.add_argument('--no-phase-changes',           action='store_true', default=False, help='Make no phase changes.')
     parser.add_argument('--no-assignments',             action='store_true', default=False, help='Make no assignee assignments.')

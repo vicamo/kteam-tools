@@ -79,7 +79,7 @@ class Cmdline:
         stdo("                      Text is read from the indicated file and added to each bug as a        \n")
         stdo("                      new comment.                                                           \n")
         stdo("                                                                                             \n")
-        stdo("     --dryrun                                                                                \n")
+        stdo("     --dry-run                                                                               \n")
         stdo("                      Don't commit the changes to the bug.                                   \n")
         stdo("                                                                                             \n")
         stdo(" Examples:                                                                                   \n")
@@ -100,7 +100,7 @@ class Cmdline:
         try:
             optsShort = ''
             #optsLong  = ['help', 'verbose', 'config=', 'debug=', 'series=', 'package=', 'comment=', 'status=']
-            optsLong  = ['help', 'verbose', 'series=', 'package=', 'comment=', 'status=', 'dryrun']
+            optsLong  = ['help', 'verbose', 'series=', 'package=', 'comment=', 'status=', 'dry-run', 'dryrun']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -110,7 +110,7 @@ class Cmdline:
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
 
-                elif (opt == '--dryrun'):
+                elif (opt == '--dry-run' or opt == '--dryrun'):
                     self.cfg['dryrun'] = True
 
                 #elif opt in ('--config'):
