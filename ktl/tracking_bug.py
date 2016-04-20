@@ -157,22 +157,6 @@ class TrackingBug:
         description += "For an explanation of the tasks and the associated workflow see:"
         description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
 
-        # Add new properties to the description
-        now = datetime.utcnow()
-        now.replace(tzinfo=None)
-        tstamp = date_to_string(now)
-        ourprops = {}
-        prop_pfx = 'kernel'
-        if not devel_series:
-            prop_pfx += '-stable'
-        ourprops['%s-Prepare-package-start' % (prop_pfx)] = tstamp
-        ourprops['%s-phase' % (prop_pfx)] = 'Prepare'
-        ourprops['%s-phase-changed' % (prop_pfx)] = tstamp
-        if master_bug:
-            ourprops['%s-master-bug' % (prop_pfx)] = master_bug
-        for k in ourprops:
-            description = description + '%s:%s\n' % (k, ourprops[k])
-
         try:
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
         except:
