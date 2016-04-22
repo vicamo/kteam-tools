@@ -131,14 +131,46 @@ class Ubuntu:
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
     db = {
+        '16.10' :
+        {
+            'development' : True,
+            'series_version' : '16.10',
+            'kernel'    : '4.6.0',
+            'name'      : 'yakkety',
+            'supported' : False,
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+                'linux-raspi2',
+                'linux-meta-raspi2',
+                'linux-snapdragon',
+                'linux-meta-snapdragon',
+            ],
+            'dependent-packages' :
+            {
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                },
+                'linux-raspi2' :     {'meta' : 'linux-meta-raspi2' },
+                'linux-snapdragon' : {'meta' : 'linux-meta-snapdragon' },
+            },
+            'derivative-packages' :
+            {
+                'linux' : ['linux-raspi2'],
+                'linux' : ['linux-snapdragon']
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
         '16.04' :
         {
-            'development' : True,        # This is the version that is currently under development
+            'development' : True,
             'series_version' : '16.04',
             'kernel'    : '4.4.0',
             'name'      : 'xenial',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -167,12 +199,11 @@ class Ubuntu:
         },
         '15.10' :
         {
-            'development' : False,        # This is the version that is currently under development
+            'development' : False,
             'series_version' : '15.10',
             'kernel'    : '4.2.0',
             'name'      : 'wily',
             'supported' : True,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -197,12 +228,11 @@ class Ubuntu:
         },
         '15.04' :
         {
-            'development' : False,        # This is the version that is currently under development
+            'development' : False,
             'series_version' : '15.04',
             'kernel'    : '3.19.0',
             'name'      : 'vivid',
             'supported' : True,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -224,12 +254,11 @@ class Ubuntu:
         },
         '14.10' :
         {
-            'development' : False,        # This is the version that is currently under development
+            'development' : False,
             'series_version' : '14.10',
             'kernel'    : '3.16.0',
             'name'      : 'utopic',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -251,12 +280,11 @@ class Ubuntu:
         },
         '14.04' :
         {
-            'development' : False,        # This is the version that is currently under development
+            'development' : False,
             'series_version' : '14.04',
             'kernel'    : '3.13.0',
             'name'      : 'trusty',
             'supported' : True,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -322,7 +350,6 @@ class Ubuntu:
             'kernel'    : '3.11.0',
             'name'      : 'saucy',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -352,7 +379,6 @@ class Ubuntu:
             'kernel'    : '3.8.0',
             'name'      : 'raring',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -381,7 +407,6 @@ class Ubuntu:
             'kernel'    : '3.5.0',
             'name'      : 'quantal',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -415,7 +440,6 @@ class Ubuntu:
             'kernel'    : '3.2.0',
             'name'      : 'precise',
             'supported' : True,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -483,7 +507,6 @@ class Ubuntu:
             'kernel'    : '3.0.0',
             'name'      : 'oneiric',
             'supported' : False,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
@@ -698,7 +721,8 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '4.3.0'    : db['16.04'],
+        '4.6.0'    : db['16.10'],
+        '4.4.0'    : db['16.04'],
         '4.2.0'    : db['15.10'],
         '4.0.0'    : db['15.10'],
         '3.19.0'   : db['15.04'],
@@ -722,6 +746,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'yakkety'  : db['16.10'],
         'xenial'   : db['16.04'],
         'wily'     : db['15.10'],
         'vivid'    : db['15.04'],
