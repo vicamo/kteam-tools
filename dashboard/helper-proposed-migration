@@ -48,6 +48,7 @@ trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty tru
 vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 wily http://people.canonical.com/~ubuntu-archive/proposed-migration/wily wily wily-updates wily-proposed
 xenial http://people.canonical.com/~ubuntu-archive/proposed-migration/xenial xenial xenial-updates xenial-proposed
+yakkety http://people.canonical.com/~ubuntu-archive/proposed-migration/yakkety yakkety yakkety-updates yakkety-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" "$out/overall.txt.new" | \
     "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
