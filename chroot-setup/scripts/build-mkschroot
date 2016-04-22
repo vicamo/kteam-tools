@@ -121,7 +121,7 @@ ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc lzop libssl-dev libusbi
 ADDPKG="$ADDPKG libpopt-dev libreadline6-dev"
 ADDPKGDEP=
 case $SUITE in
-	precise|trusty|utopic|vivid|wily|xenial)
+	precise|trusty|utopic|vivid|wily|xenial|yakkety)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -139,7 +139,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|trusty|utopic|vivid|wily|xenial)
+	precise|trusty|utopic|vivid|wily|xenial|yakkety)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -151,7 +151,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	trusty|utopic|vivid|wily|xenial)
+	trusty|utopic|vivid|wily|xenial|yakkety)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-powerpc-linux-gnu g++-powerpc-linux-gnu";
@@ -171,7 +171,7 @@ case $SUITE in
 			;;
 		esac
 	;;
-	trusty|utopic|vivid|wily|xenial)
+	trusty|utopic|vivid|wily|xenial|yakkety)
 		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
 	;;
 	*)
@@ -179,7 +179,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	trusty|utopic|vivid|wily|xenial)
+	trusty|utopic|vivid|wily|xenial|yakkety)
 		# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
 		ADDPKG="$ADDPKG gcc-4.6 gcc-4.7"
 		case $ARCH in
@@ -194,7 +194,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	trusty|utopic|vivid|wily|xenial)
+	trusty|utopic|vivid|wily|xenial|yakkety)
 		ADDPKG="$ADDPKG libiberty-dev pkg-config dh-systemd"
 		case $ARCH in
 			amd64) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu"
@@ -204,7 +204,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	xenial)
+	xenial|yakkety)
 		case $ARCH in
 			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu snapcraft"
 			;;
