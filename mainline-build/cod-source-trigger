@@ -140,7 +140,8 @@ do
 		"$here/cod-enqueue" "cod-source" "$ppa" "$repo2" "$series" "$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
-test-devel xenial linux master-next linux-meta master -
+test-devel yakkety linux master-next linux-meta master -
+pre-proosed xenial linux master-next linux-meta master -
 pre-proposed wily linux master-next linux-meta master -
 pre-proposed vivid linux master-next linux-meta master no-release
 pre-proposed utopic linux master-next linux-meta master no-release
