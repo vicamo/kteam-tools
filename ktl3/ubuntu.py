@@ -170,7 +170,7 @@ class Ubuntu:
             'series_version' : '16.04',
             'kernel'    : '4.4.0',
             'name'      : 'xenial',
-            'supported' : False,
+            'supported' : True,
             'packages'  :
             [
                 'linux',
