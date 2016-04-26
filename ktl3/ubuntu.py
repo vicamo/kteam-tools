@@ -166,7 +166,7 @@ class Ubuntu:
         },
         '16.04' :
         {
-            'development' : True,
+            'development' : False,
             'series_version' : '16.04',
             'kernel'    : '4.4.0',
             'name'      : 'xenial',
