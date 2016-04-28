@@ -67,7 +67,7 @@ git://kernel.ubuntu.com/ubuntu/kernel-testing.git                           -   
 git://kernel.ubuntu.com/ubuntu/kteam-tools.git                              git://git.launchpad.net/~canonical-kernel/+git/kteam-tools                                                      wani	active
 git://kernel.ubuntu.com/ubuntu/adt-matrix-hints.git                         git://git.launchpad.net/~canonical-kernel/+git/adt-matrix-hints                                                 launchpad	active
 git://kernel.ubuntu.com/ubuntu/linux-firmware.git                           git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-firmware                                            launchpad	active
-git://kernel.ubuntu.com/ubuntu/linux.git                                    -                                                                                                               wani	active
+git://kernel.ubuntu.com/ubuntu/linux.git                                    git://git.launchpad.net/~canonical-kernel/+git/linux-stable-ckt                                                 wani	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid                                          either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-lbm.git                         git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32/+git/lucid                 either	inactive
 git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid                                     either	inactive
