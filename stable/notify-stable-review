@@ -211,9 +211,9 @@ kernel.
 This version contains %s new patches, summarized below.  The new patches
 are posted as replies to this message and also available in this git branch:
 
-http://kernel.ubuntu.com/git/ubuntu/linux.git/log/?h=%s
+https://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt/log/?h=%s
 
-git://kernel.ubuntu.com/ubuntu/linux.git  %s
+git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt  %s
 
 The review period for version %s will be open for the next three
 days.  To report a problem, please reply to the relevant follow-up patch

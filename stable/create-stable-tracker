@@ -147,7 +147,7 @@ class CreateTrackingBug(StdApp):
 
             # Repository - see if it's a tree we maintain
             if "-ckt" in version:
-                repository = "git://kernel.ubuntu.com/ubuntu/linux.git"
+                repository = "git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt"
             else:
                 repository = "git://git.kernel.org/"
 
