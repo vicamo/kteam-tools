@@ -42,9 +42,9 @@ do
 		continue
 	fi
 
-	(cd ${repo} && git push ${url} ${refs})
+	(cd ${repo} && git push --follow-tags ${url} ${refs})
 done <<EOL
-linux.git	git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt	master:master-apw
+linux.git	git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt	master:master
 EOL
 
 rm -f $LOCK
