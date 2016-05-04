@@ -33,4 +33,18 @@ git://anongit.freedesktop.org/drm-intel					testing/drm-intel.git
 git://git.infradead.org/debloat-testing.git				testing/debloat-testing.git
 EOL
 
+while read repo url refs
+do
+	url=$( echo "$url" | sed -e 's_git://git.launchpad.net/_git+ssh://kernel-ppa@git.launchpad.net/_' )
+	if [ ! -d ${repo} ]
+	then
+		echo "${repo} not found" 1>&2
+		continue
+	fi
+
+	(cd ${repo} && git push ${url} ${refs})
+done <<EOL
+linux.git	git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt	master:master-apw
+EOL
+
 rm -f $LOCK
