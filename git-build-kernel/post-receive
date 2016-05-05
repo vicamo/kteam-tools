@@ -39,6 +39,7 @@ do
 	[ "${ref_p2%%-*}" = "ppc64el" ] && { arch=ppc64el; ref_p2="${ref_p2#*-}"; }
 	[ "${ref_p2%%-*}" = "arm64" ] && { arch=arm64; ref_p2="${ref_p2#*-}"; }
 	[ "${ref_p2%%-*}" = "powerpc" ] && { arch=powerpc; ref_p2="${ref_p2#*-}"; }
+	[ "${ref_p2%%-*}" = "s390x" ] && { arch=s390x; ref_p2="${ref_p2#*-}"; }
 
 	### handle predefined branch or refs targets
 	### e.g. refs/heads/binary  (an actual branch named "binary")
