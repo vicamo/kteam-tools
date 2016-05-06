@@ -206,7 +206,7 @@ esac
 case $SUITE in
 	xenial|yakkety)
 		case $ARCH in
-			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu snapcraft"
+			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu snapcraft liblzma-dev"
 			;;
 		esac
 		;;
