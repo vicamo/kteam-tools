@@ -130,7 +130,6 @@ class PromoteToUpdates(TaskHandler):
             s.bug.phase = 'Released'
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
             s.bug.add_comment('Package Released!', msgbody)
-            retval = True
             break
 
         cleave(s.__class__.__name__ + '._fix_released (%s)' % retval)
