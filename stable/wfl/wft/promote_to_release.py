@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave
+from wfl.log                                    import center, cleave, cinfo
 from .base                                      import TaskHandler
 
 class PromoteToRelease(TaskHandler):
@@ -26,23 +26,29 @@ class PromoteToRelease(TaskHandler):
         center(s.__class__.__name__ + '._ready_for_release')
         retval = False # For the stub
 
-        # If all testing tasks have been set to Fix Released we are ready
-        # to release.
-        #
-        testing_tasks = [
-            'automated-testing',
-            'regression-testing',
-        ]
-        if s.bug.workflow_project == 'kernel_sru_workflow':
-            testing_tasks.append('certification-testing')
-        tested = True
-        for task in testing_tasks:
-            if s.bug.tasks_by_name[task].status != 'Fix Released':
-                tested = False
+        while True:
+            if s.bug.tasks_by_name['security-signoff'].status not in ['Fix Released', 'Invalid']:
+                cinfo('            security-signoff is not "Fix Released" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
+                break
 
-        if tested or 'testing-override' in s.bug.tags:
-            s.task.status = 'Confirmed'
-            retval = True
+            # If all testing tasks have been set to Fix Released we are ready
+            # to release.
+            #
+            testing_tasks = [
+                'automated-testing',
+                'regression-testing',
+            ]
+            if s.bug.workflow_project == 'kernel_sru_workflow':
+                testing_tasks.append('certification-testing')
+            tested = True
+            for task in testing_tasks:
+                if s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
+                    tested = False
+
+            if tested or 'testing-override' in s.bug.tags:
+                s.task.status = 'Confirmed'
+                retval = True
+            break
 
         cleave(s.__class__.__name__ + '._ready_for_release (%s)' % retval)
         return retval

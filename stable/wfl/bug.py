@@ -331,6 +331,25 @@ class WorkflowBug():
 
         return retval
 
+    # packages_released_to_security
+    #
+    @property
+    def packages_released_to_security(s):
+        '''
+        '''
+        retval = True
+
+        pocket = 'Security'
+
+        bi = s.__package.build_info
+        for pkg in bi:
+            if bi[pkg][pocket]['built'] is not True:
+                cinfo('        %s has not been released.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
     # all_dependent_packages_fully_built
     #
     @property
@@ -842,57 +861,29 @@ class WorkflowBug():
                 mis_lst.extend(check_component.mismatches_list(s.series,
                                pkg, check_ver, pocket, ps))
 
-        if not missing_pkg:
-            cdebug('missing_pkg is set')
-            if mis_lst:
-                cdebug('mis_lst is set')
+        cdebug('missing_pkg is set')
+        if mis_lst:
+            cdebug('mis_lst is set')
 
-                s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
+            s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
 
-                body  = "The following packages ended up in the wrong"
-                body += " component in the -%s pocket:\n" % (pocket)
-                for item in mis_lst:
-                    cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
-                    body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
+            body  = "The following packages ended up in the wrong"
+            body += " component in the -%s pocket:\n" % (pocket)
+            for item in mis_lst:
+                cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
+                body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
 
-                subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.id)
-                BugMail.send(subject, body)
+            subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.id)
+            BugMail.send(subject, body)
 
-                body += "\n\nOnce this is fixed, set the "
-                body += "promote-to-%s to Fix Released again" % (pocket)
-                s.add_comment('Packages outside of proper component', body)
-                if not s._dryrun:
-                    s.props.set({tstamp_prop: None})
+            body += "\n\nOnce this is fixed, set the "
+            body += "promote-to-%s to Fix Released again" % (pocket)
+            s.add_comment('Packages outside of proper component', body)
+            if not s._dryrun:
+                s.props.set({tstamp_prop: None})
 
-                cinfo('        packages ended up in the wrong pocket')
-                cdebug('check_component_in_pocket leave (False)')
-                return False
-        else:
-            # Even if we already waited 1 hour, wait more (1 day) before complaining if we
-            # don't find the packages published to the pocket, in case the copy/publishing
-            # take more hours after promote-to-<pocket> is set to Fix Released the first
-            # time
-            #
-            date_str = s.lpbug.properties[tstamp_prop]
-            timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-            delta = DeltaTime(timestamp, datetime.utcnow())
-            if delta.days >= 1:
-                s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
-                body  = "Promote-to-%s is Fix Released, but " % (pocket)
-                body += "some packages for this update aren't published "
-                body += "in Launchpad, on -%s pocket:\n" % (pocket)
-                for item in missing_pkg:
-                    body += '\n%s %s' % (item[0], item[1])
-                s.add_comment('Can\'t find packages published in -%s' % (pocket), body)
-                if not s.args._dryrun:
-                    s.props.set({tstamp_prop: None})
-                cdebug('                check_component_in_pocket leave (False)')
-                return False
-
-            for item in missing_pkg:
-                cinfo('                    Didn\'t find <%s> <%s> on -%s yet' % (item[0], item[1], pocket))
-
-            cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
+            cinfo('        packages ended up in the wrong pocket')
+            cdebug('check_component_in_pocket leave (False)')
             return False
 
         cleave(s.__class__.__name__ + '.check_component_in_pocket (True)')

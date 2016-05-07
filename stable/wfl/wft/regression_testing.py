@@ -47,10 +47,12 @@ class RegressionTesting(TaskHandler):
                 s.bug.add_comment('Regression Testing FAILURE', msgbody)
                 s.task.status = 'Incomplete'
                 s.bug.phase = 'Testing Failed'
+                retval = True
 
         elif 'qa-testing-passed' in s.bug.tags or 'regression-testing-passed' in s.bug.tags:
             cdebug('Regression Testing tagged as PASSED', 'yellow')
             s.task.status = 'Fix Released'
+            retval = True
         else:
             cdebug('Regression Testing still running', 'yellow')
             pass
