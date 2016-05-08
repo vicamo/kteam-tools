@@ -30,6 +30,15 @@ class PromoteToSecurity(TaskHandler):
         retval = False # For the stub
 
         while True:
+
+            # If the security-signoff task is 'Invalid' then this task should also
+            # be 'Invalid'. This task will no longer be processed after that.
+            #
+            if s.bug.tasks_by_name['security-signoff'].status != 'Invalid':
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
             if s.bug.tasks_by_name['security-signoff'].status != 'Fix Released':
                 cinfo('            security-signoff is not "Fix Released" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
                 break
