@@ -1,9 +1,10 @@
 
-from wfl.log                                    import center, cleave, cinfo, cdebug
-from .base                                      import TaskHandler
-from ktl.tracking_bug                           import TrackingBug
+from wfl.log                            import center, cleave, cinfo, cdebug
+from ktl.tracking_bug                   import TrackingBug
+from ktl3.ubuntu                        import Ubuntu
+from .promoter                          import Promoter
 
-class PromoteToProposed(TaskHandler):
+class PromoteToProposed(Promoter):
     '''
     A Task Handler for the promote-to-proposed task.
 
@@ -33,6 +34,8 @@ class PromoteToProposed(TaskHandler):
         s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
+
+        s.ubuntu = Ubuntu()
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -88,7 +91,6 @@ class PromoteToProposed(TaskHandler):
 
     def _handle_derivatives(s):
         center(s.__class__.__name__ + '._handle_derivatives')
-        return False
 
         derivative_packages = []
         record = s.ubuntu.lookup(s.bug.series)

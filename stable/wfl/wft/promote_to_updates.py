@@ -1,8 +1,8 @@
 
-from wfl.log                                    import center, cleave, cinfo
-from .base                                      import TaskHandler
+from wfl.log                            import center, cleave, cinfo
+from .promoter                          import Promoter
 
-class PromoteToUpdates(TaskHandler):
+class PromoteToUpdates(Promoter):
     '''
     A Task Handler for the propose-to-proposed task.
     '''
@@ -18,41 +18,9 @@ class PromoteToUpdates(TaskHandler):
         s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
+        s.jumper['Fix Released']  = s._fix_released
 
         cleave(s.__class__.__name__ + '.__init__')
-
-    # _testing_completed
-    #
-    def _testing_completed(s):
-        """
-        """
-        center(s.__class__.__name__ + '._testing_completed')
-        retval = False # For the stub
-
-        while True:
-            # If all testing tasks have been set to Fix Released we are ready
-            # to release.
-            #
-            testing_tasks = [
-                'automated-testing',
-                'regression-testing',
-            ]
-            if s.bug.workflow_project == 'kernel_sru_workflow':
-                testing_tasks.append('certification-testing')
-            tested = True
-            for task in testing_tasks:
-                if s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
-                    cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (task, s.bug.tasks_by_name['security-signoff'].status), 'yellow')
-                    tested = False
-
-            if not tested and 'testing-override' not in s.bug.tags:
-                break
-
-            retval = True
-            break
-
-        cleave(s.__class__.__name__ + '._testing_completed (%s)' % retval)
-        return retval
 
     # _ready_for_updates
     #
@@ -63,8 +31,8 @@ class PromoteToUpdates(TaskHandler):
         retval = False # For the stub
 
         while True:
-            if s.bug.tasks_by_name['security-signoff'].status not in ['Fix Released', 'Invalid']:
-                cinfo('            security-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
+
+            if not s._security_signoff_verified:
                 break
 
             if not s._testing_completed():
@@ -114,14 +82,11 @@ class PromoteToUpdates(TaskHandler):
                 cinfo('            packages have not been released, but the task is set to "Fix Released"', 'yellow')
                 break
 
-            if s.bug.tasks_by_name['security-signoff'] in ["Fix Released", "Invalid"]:
-                cinfo('            security-signoff is neither "Fix Released" nor "Invalid"', 'yellow')
-                break
-
-            if s.bug.tasks_by_name['security-signoff'] == "Fix Released":
-                if not s.bug.packages_released_to_security:
-                    cinfo('            the packages have not been released to the security pocket', 'yellow')
-                    break
+            if s.bug.sru_workflow_project:
+                if s.bug.tasks_by_name['security-signoff'] == "Fix Released":
+                    if not s.bug.packages_released_to_security:
+                        cinfo('            the packages have not been released to the security pocket', 'yellow')
+                        break
 
             if not s._testing_completed():
                 break

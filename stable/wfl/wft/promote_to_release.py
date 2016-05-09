@@ -1,8 +1,8 @@
 
-from wfl.log                                    import center, cleave, cinfo
-from .base                                      import TaskHandler
+from wfl.log                            import center, cleave, cinfo
+from .promoter                          import Promoter
 
-class PromoteToRelease(TaskHandler):
+class PromoteToRelease(Promoter):
     '''
     A Task Handler for the promote-to-release task.
     '''
@@ -27,27 +27,15 @@ class PromoteToRelease(TaskHandler):
         retval = False # For the stub
 
         while True:
-            if s.bug.tasks_by_name['security-signoff'].status not in ['Fix Released', 'Invalid']:
-                cinfo('            security-signoff is not "Fix Released" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
+
+            if not s._security_signoff_verified:
                 break
 
-            # If all testing tasks have been set to Fix Released we are ready
-            # to release.
-            #
-            testing_tasks = [
-                'automated-testing',
-                'regression-testing',
-            ]
-            if s.bug.workflow_project == 'kernel_sru_workflow':
-                testing_tasks.append('certification-testing')
-            tested = True
-            for task in testing_tasks:
-                if s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
-                    tested = False
+            if not s._testing_completed():
+                break
 
-            if tested or 'testing-override' in s.bug.tags:
-                s.task.status = 'Confirmed'
-                retval = True
+            s.task.status = 'Confirmed'
+            retval = True
             break
 
         cleave(s.__class__.__name__ + '._ready_for_release (%s)' % retval)
