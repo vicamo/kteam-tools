@@ -936,7 +936,7 @@ class Ubuntu:
 
         if package.startswith('linux-lts-'):
             Dbg.verbose('package condition 2\n')
-            for entry in self.db.itervalues():
+            for entry in self.db.values():
                 # starting with trusty, the lts packages now include the series
                 # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
                 # instead of 3.16.0-23.31~trusty1
@@ -945,7 +945,7 @@ class Ubuntu:
                     retval = entry['name']
         else:
             Dbg.verbose('package condition 1\n')
-            for entry in self.db.itervalues():
+            for entry in self.db.values():
                 if version.startswith(entry['kernel']):
                     retval = entry['name']
 
