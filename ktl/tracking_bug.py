@@ -155,6 +155,14 @@ class TrackingBug:
         description += "For an explanation of the tasks and the associated workflow see:"
         description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
 
+        prop_pfx = 'kernel'
+        if not devel_series:
+            prop_pfx += '-stable'
+
+        if master_bug:
+            description += '-- swm properties --'
+            description += '%s-master-bug: %s' % (prop_pfx, master_bug)
+
         try:
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
         except:
