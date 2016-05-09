@@ -325,7 +325,7 @@ class WorkflowBug():
         bi = s.__package.build_info
         for pkg in bi:
             if bi[pkg][pocket]['built'] is not True:
-                cinfo('        %s has not been released.' % (pkg), 'yellow')
+                cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
                 break
 
@@ -344,7 +344,7 @@ class WorkflowBug():
         bi = s.__package.build_info
         for pkg in bi:
             if bi[pkg][pocket]['built'] is not True:
-                cinfo('        %s has not been released.' % (pkg), 'yellow')
+                cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
                 break
 
