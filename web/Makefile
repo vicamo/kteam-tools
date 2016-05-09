@@ -5,7 +5,8 @@ every-hour: 1-day-new.html
 
 every-day: versions.html 30-day-new.html
 
-fetch-data:
+.PHONY : sru-data.json
+sru-data.json:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
 	@if [ -s sru-data-tmp.json ]; then \
 	    mv sru-data-tmp.json sru-data.json; \
