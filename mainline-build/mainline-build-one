@@ -33,7 +33,7 @@ hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring
 trusty|utopic)
 	build_release="trusty" ;;
 unstable)
-	build_release="wily" ;;
+	build_release="yakkety" ;;
 *)
 	build_release="$series" ;;
 esac
