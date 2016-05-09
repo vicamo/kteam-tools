@@ -1,4 +1,4 @@
-from ktl3.ubuntu                        import Ubuntu
+from ktl.ubuntu                         import Ubuntu
 from datetime                           import date
 
 import yaml

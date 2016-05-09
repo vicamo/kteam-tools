@@ -4,10 +4,10 @@
 from lpltk.LaunchpadService             import LaunchpadService
 from lpltk.bug                          import Bug
 from ktl3.bugs                          import DeltaTime
-from ktl3.ubuntu                        import Ubuntu
 from ktl3.utils                         import debug as dout
 from ktl3.dbg                           import Dbg
 from ktl3.termcolor                     import colored
+from ktl.ubuntu                         import Ubuntu
 from datetime                           import datetime
 import re
 

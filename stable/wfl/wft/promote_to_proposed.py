@@ -1,7 +1,7 @@
 
 from wfl.log                            import center, cleave, cinfo, cdebug
 from ktl.tracking_bug                   import TrackingBug
-from ktl3.ubuntu                        import Ubuntu
+from ktl.ubuntu                         import Ubuntu
 from .promoter                          import Promoter
 
 class PromoteToProposed(Promoter):

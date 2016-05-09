@@ -4,7 +4,7 @@
 import re
 from datetime                           import datetime
 
-from ktl3.ubuntu                        import Ubuntu
+from ktl.ubuntu                         import Ubuntu
 from ktl3.utils                         import date_to_string, dump
 
 from .errors                            import ShankError, ErrorExit
