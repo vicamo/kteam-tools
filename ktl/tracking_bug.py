@@ -239,7 +239,7 @@ class TrackingBug:
             task_name       = task.bug_target_display_name
             cdebug('    task: %s' % task_name)
             parts = task_name.partition(lp_project.display_name)
-            if 'linux' in parts[0] and targeted_series_name.capitalize() not in parts[0]:
+            if not devel_series and 'linux' in parts[0] and targeted_series_name.capitalize() not in parts[0]:
                 task.status = "Invalid"
                 cdebug('        status: %s; importance: %s' % (task.status, task.importance), 'green')
             elif parts[0] == '' and parts[1] == lp_project.display_name and parts[2] == '':
