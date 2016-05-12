@@ -218,7 +218,7 @@ fi
 
 # Look for file specific patches.
 adhoc="$here/adhoc"
-grep TRIGGER "$adhoc"/* | \
+grep TRIGGER "$adhoc"/*.patch | \
 while read patch sum file
 do
 	patch=${patch%:TRIGGER}
@@ -229,6 +229,11 @@ do
 		echo "*** applying $patch ..."
 		git am -C1 "$patch"
 	fi
+done
+# Arbitrary trigger support.
+for trigger in "$adhoc"/*.trigger
+do
+	[ -x "$trigger" ] && "$trigger" "$series" "$build_release"
 done
 
 # Find our debian directory.
