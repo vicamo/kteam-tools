@@ -160,7 +160,7 @@ class TrackingBug:
             prop_pfx += '-stable'
 
         if master_bug:
-            description += '-- swm properties --'
+            description += '-- swm properties --\n'
             description += '%s-master-bug: %s' % (prop_pfx, master_bug)
 
         try:
