@@ -143,9 +143,11 @@ class AdtMatrixSeed(object):
                     tcache = lcache[record2['source']] = {}
                     for pkg in record2['tests']['autopkgtest']:
                         for arch in record2['tests']['autopkgtest'][pkg]:
-                            (package, version) = pkg.split()
-                            pcache.setdefault(package, {})[arch] = True
-                            tcache.setdefault(package, {})[arch] = True
+                            bits = pkg.split()
+                            if len(bits) == 2:
+                                (package, version) = bits
+                                pcache.setdefault(package, {})[arch] = True
+                                tcache.setdefault(package, {})[arch] = True
 
             print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
 
