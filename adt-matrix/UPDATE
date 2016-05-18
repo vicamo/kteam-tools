@@ -24,18 +24,26 @@ fi
 mkdir -p "$html"
 (
 	cd "$html" || exit 1
+	echo
 	"$here/adt-update" "$hints/adt-matrix.conf" "$hints/adt-matrix.hints" - "$britney"
 )
 mkdir -p "$html/canonical-kernel-team--unstable"
 
-(
-	cd "$html/canonical-kernel-team--unstable" || exit 1
-	ln -sf ../package-relation.json .
+for conf in "$hints/adt-matrix.conf.d"/*
+do
+	(
+		handle=$( basename "$conf" .conf )
+		archive=$( echo "$handle" | sed -e 's@--@/@g' )
+		mkdir -p "$html/$handle"
+		cd "$html/$handle" || exit 1
 
-	"$here/adt-update" \
-		"$hints/adt-matrix.conf.d/canonical-kernel-team--unstable.conf" \
-		"$hints/adt-matrix.conf.d/canonical-kernel-team--unstable.hints" \
-		canonical-kernel-team/unstable -
-)
+		ln -sf ../package-relation.json .
+
+		"$here/adt-update" \
+			"$hints/adt-matrix.conf.d/$handle.conf" \
+			"$hints/adt-matrix.conf.d/$handle.hints" \
+			"$archive" -
+	)
+done
 
 "$here/adt-cleanup"
