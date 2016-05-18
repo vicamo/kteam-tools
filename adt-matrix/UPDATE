@@ -29,7 +29,7 @@ mkdir -p "$html"
 )
 mkdir -p "$html/canonical-kernel-team--unstable"
 
-for conf in "$hints/adt-matrix.conf.d"/*
+for conf in "$hints/adt-matrix.conf.d"/*.conf
 do
 	(
 		handle=$( basename "$conf" .conf )
