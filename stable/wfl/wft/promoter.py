@@ -42,6 +42,7 @@ class Promoter(TaskHandler):
             testing_tasks = [
                 'automated-testing',
                 'regression-testing',
+                'verification-testing',
             ]
             if s.bug.workflow_project == 'kernel_sru_workflow':
                 testing_tasks.append('certification-testing')
