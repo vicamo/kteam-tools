@@ -157,7 +157,7 @@ for line in sys.stdin:
             if 'autopkgtest' in source['tests']:
                 for test_ver in source['tests']['autopkgtest']:
                     test_result = source['tests']['autopkgtest'][test_ver]
-                    (test, tversion) = test_ver.split()
+                    (test, tversion) = (test_ver.split() + [ '?' ])[0:2]
 
                     tstate = 'PASS'
 
