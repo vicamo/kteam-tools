@@ -42,10 +42,12 @@ class Promoter(TaskHandler):
             testing_tasks = [
                 'automated-testing',
                 'regression-testing',
-                'verification-testing',
             ]
             if s.bug.workflow_project == 'kernel_sru_workflow':
-                testing_tasks.append('certification-testing')
+                testing_tasks.append(
+                    'certification-testing',
+                    'verification-testing',
+                )
             tested = True
             for task in testing_tasks:
                 if s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
