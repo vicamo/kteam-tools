@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+import json
+import requests
+import re
+from ktl.ubuntu                         import Ubuntu
+
+# TheApp
+#
+class TheApp(object):
+    '''
+    '''
+
+    # main
+    #
+    def main(s, args):
+        retval = 0
+        ubuntu = Ubuntu()
+
+        #                              .- package name (group(1))
+        #                             /           .- kernel version (group(2))
+        #                            /           /          .- version/abi separator (group(3))
+        #                           /           /          /
+        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
+        #                                                       /      /       /
+        #                                                      /      /       .- backport extra (m.group(6))
+        #                                                     /      .- upload number (m.group(5))
+        #                                                    .- abi (group(4))
+
+        y = {}
+        versions = {}
+        r = requests.get('http://kernel.ubuntu.com/sru/kernel-sru-workflow.json')
+        trackers = json.loads(r.text)
+
+        for project in ['kernel-sru-workflow']:
+            if project not in trackers['bug-collections']:
+                continue
+            for x in trackers['bug-collections'][project]['bugs']:
+                bug = trackers['bug-collections'][project]['bugs'][x]
+                title = bug['title']
+
+                m = ver_rc.search(title)
+                if m is not None:
+                    if m.group(1) != 'linux' and '-lts-' not in m.group(1):
+                        continue
+
+                    version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
+                    rec = ubuntu.lookup(m.group(2))
+                    versions[version] = {
+                        'series': rec['name'],
+                        'pkg' : m.group(1),
+                    }
+
+                    if m.group(1) not in y:
+                        y[m.group(1)] = []
+                    y[m.group(1)].append(version)
+
+        print('Kernel Versions')
+        print('====================================================================')
+        for p in sorted(y):
+            if p == 'linux':
+                for v in sorted(y[p]):
+                    print('%16s  %s' % (versions[v]['series'], v))
+                print('')
+            else:
+                print('%16s  %s' % (p, y[p][0]))
+
+        return retval
+
+if __name__ == '__main__':
+    retval = -1
+
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    Calculate the dates for the next 10 SRU cycles specifying the Friday that is to be the cuttoff date
+    for the very first cycle.
+    '''
+    app_epilog = '''
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    args = parser.parse_args()
+
+    app = TheApp()
+    retval = app.main(args)
+
+    exit(retval)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
