@@ -49,7 +49,11 @@ do
     repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/ubuntu/@/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/@' )
 
     if [ ! -d "$repo" ]; then
-	(mkdir "$repo" && git init --bare "$repo")
+	(
+		mkdir "$repo" || exit 1
+		git init --bare "$repo"
+		cp "$repo/hooks/post-update.sample" "$repo/hooks/post-update"
+	)
     fi
     (cd "$repo" && \
         git fetch "$alt_url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
