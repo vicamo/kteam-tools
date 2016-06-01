@@ -90,7 +90,7 @@ do
 
 	# Summaries.
 	cat "$series-$package.cmds" >>'all.cmds.new'
-	grep '# MISS$' "$series-$package.cmds" >>'miss.cmds.new'
+	egrep '# (MISS|MISS-REPL)$' "$series-$package.cmds" >>'miss.cmds.new'
 done <"versions.info"
 
 # Summaries.
