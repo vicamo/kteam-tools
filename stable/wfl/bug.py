@@ -200,6 +200,30 @@ class WorkflowBug():
     def _sauron(s):
         return WorkflowBug.sauron
 
+    # master_bug_property_name
+    #
+    @property
+    def master_bug_property_name(s):
+        retval = 'kernel'
+        if s.projectname == 'kernel-sru-workflow':
+            retval += '-stable'
+        retval += '-master-bug'
+        return retval
+
+    # is_derivative_package
+    #
+    def is_derivative_package(s, bug):
+        return s.master_bug_property_name in bug.properties
+
+    # master_bug
+    #
+    def master_bug(s, bug):
+        '''
+        Find the 'master' bug of which this is a derivative and return that bug.
+        '''
+        bugid = s.properties[s.master_bug_property_name]
+        return s.lp.get_bug(bugid)
+
     # load_bug_properties
     #
     def load_bug_properties(s):
