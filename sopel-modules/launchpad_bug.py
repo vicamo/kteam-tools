@@ -19,13 +19,12 @@ def process_matches(bot, matches):
                     text = "LP: #%s may be private (I can't find it in LP)." % bug_id
                     bot.say(text)
 
-@sopel.module.rule('(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))')
+@sopel.module.rule('.*(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,})).*')
 def rule1(bot, trigger):
     m = re.findall('(?i)(?:bugs?[ /]#?([0-9]+)|(?:^|\W)#([0-9]{5,}))', trigger)
     process_matches(bot, m)
 
-@sopel.module.rule('\\b[lL][pP]:?\s?#?([0-9]+)(,\s*#?[0-9]+)*\\b')
+@sopel.module.rule('.*\\b[lL][pP]:?\s?#?([0-9]+)(,\s*#?[0-9]+)*\\b.*')
 def rule2(bot, trigger):
     m = re.findall('\\b[lL][pP]:?\s?#?([0-9]+)(,\s*#?[0-9]+)*\\b', trigger)
     process_matches(bot, m)
-
