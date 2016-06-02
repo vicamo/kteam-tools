@@ -1,5 +1,5 @@
 
-from wfl.log                            import center, cleave, cinfo
+from wfl.log                            import center, cleave, cinfo, cdebug
 from .promoter                          import Promoter
 
 class PromoteToUpdates(Promoter):
@@ -28,9 +28,13 @@ class PromoteToUpdates(Promoter):
         """
         """
         center(s.__class__.__name__ + '._ready_for_updates')
-        retval = False # For the stub
+        retval = False
 
         while True:
+
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    break
 
             if not s._security_signoff_verified:
                 break
@@ -66,7 +70,7 @@ class PromoteToUpdates(Promoter):
             retval = True
             break
 
-        cleave(s.__class__.__name__ + '._verify_promotion')
+        cleave(s.__class__.__name__ + '._verify_promotion (%s)' % retval)
         return retval
 
     # _fix_released
@@ -75,7 +79,7 @@ class PromoteToUpdates(Promoter):
         """
         """
         center(s.__class__.__name__ + '._fix_released')
-        retval = False # For the stub
+        retval = False
 
         while True:
             if not s.bug.packages_released:

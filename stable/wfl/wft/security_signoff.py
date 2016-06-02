@@ -25,6 +25,7 @@ class SecuritySignoff(TaskHandler):
         super(SecuritySignoff, s).__init__(lp, task, bug)
 
         s.jumper['New']          = s._new
+        s.jumper['Confirmed']    = s._confirmed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -39,6 +40,20 @@ class SecuritySignoff(TaskHandler):
             retval = True
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
+        return retval
+
+    # _confirmed
+    #
+    def _confirmed(s):
+        center(s.__class__.__name__ + '._confirmed')
+        retval = False
+
+        if s.bug.is_derivative_package:
+            master = s.bug.master_bug
+            s.task.status = master.tasks_by_name['security-signoff'].status
+            retval = True
+
+        cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python

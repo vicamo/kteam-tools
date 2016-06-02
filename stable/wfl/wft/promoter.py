@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave, cinfo
+from wfl.log                                    import center, cleave, cinfo, cdebug
 from .base                                      import TaskHandler
 
 class Promoter(TaskHandler):
@@ -62,5 +62,45 @@ class Promoter(TaskHandler):
 
         cleave(s.__class__.__name__ + '._testing_completed (%s)' % retval)
         return retval
+
+    # master_bug_ready
+    #
+    def master_bug_ready(s):
+        center(s.__class__.__name__ + '.master_bug_ready')
+        retval = False
+
+        required_sru_tasks = {
+            'prepare-package'            : ['Fix Released'],
+            'prepare-package-lbm'        : ['Fix Released', 'Invalid'],
+            'prepare-package-meta'       : ['Fix Released', 'Invalid'],
+            'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
+            'prepare-package-signed'     : ['Fix Released'],
+            'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
+            'automated-testing'          : ['Fix Released', 'Invalid'],
+            'regression-testing'         : ['Fix Released', 'Invalid'],
+            'promote-to-updates'         : ['Confirmed', 'Fix Released'],
+            'promote-to-security'        : ['Confirmed', 'Fix Released', 'Invalid']
+        }
+
+        master = s.bug.master_bug
+
+        if master.sru_workflow_project:
+            required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
+            required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+
+        if s.bug.sru_workflow_project:
+            tasks = required_sru_tasks
+
+        retval = True
+        for t in tasks:
+            try:
+                if master.tasks_by_name[t].status not in tasks[t]:
+                    cdebug('master bug task %s is not one of: %s' % (t, str(tasks[t])))
+                    retval = False
+                    break
+            except KeyError:
+                cdebug('master bug does not contian the %s task' % t)
+
+        cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
 
 # vi: set ts=4 sw=4 expandtab syntax=python
