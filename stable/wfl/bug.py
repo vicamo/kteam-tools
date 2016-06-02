@@ -168,17 +168,21 @@ class WorkflowBug():
             for d in s.__package.pkgs:
                 cinfo('                        dep: "%s"' % d, 'blue')
 
-            if s.is_valid or s._sauron:
-                cinfo('    Targeted Project:', 'cyan')
-                cinfo('        %s' % s.workflow_project, 'magenta')
-                cinfo('')
-                s.properties = s.lpbug.properties
-                if len(s.properties) > 0:
-                    cinfo('    Properties:', 'cyan')
-                    for prop in s.properties:
-                        cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
+            s.properties = s.lpbug.properties
+            if s.is_derivative_package:
+                cinfo('                 derivative: yes (%s)' % s.master_bug_id, 'blue')
+            else:
+                cinfo('                 derivative: no', 'blue')
 
-                s.tasks_by_name = s._create_tasks_by_name_mapping()
+            cinfo('    Targeted Project:', 'cyan')
+            cinfo('        %s' % s.workflow_project, 'magenta')
+            cinfo('')
+            if len(s.properties) > 0:
+                cinfo('    Properties:', 'cyan')
+                for prop in s.properties:
+                    cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
+
+            s.tasks_by_name = s._create_tasks_by_name_mapping()
         except PackageError:
             s.is_valid = False
 
@@ -205,24 +209,33 @@ class WorkflowBug():
     @property
     def master_bug_property_name(s):
         retval = 'kernel'
-        if s.projectname == 'kernel-sru-workflow':
+        if s.sru_workflow_project:
             retval += '-stable'
         retval += '-master-bug'
         return retval
 
     # is_derivative_package
     #
-    def is_derivative_package(s, bug):
-        return s.master_bug_property_name in bug.properties
+    @property
+    def is_derivative_package(s):
+        return s.master_bug_property_name in s.properties
 
     # master_bug
     #
-    def master_bug(s, bug):
+    @property
+    def master_bug_id(s):
+        '''
+        '''
+        return s.properties[s.master_bug_property_name]
+
+    # master_bug
+    #
+    @property
+    def master_bug(s):
         '''
         Find the 'master' bug of which this is a derivative and return that bug.
         '''
-        bugid = s.properties[s.master_bug_property_name]
-        return s.lp.get_bug(bugid)
+        return WorkflowBug(s.lp, s.master_bug_id)
 
     # load_bug_properties
     #
@@ -276,7 +289,7 @@ class WorkflowBug():
     #
     def check_is_valid(s, bug):
         '''
-        Determine if this bug is one that we wan't to be processing. Bugs that we
+        Determine if this bug is one that we want to be processing. Bugs that we
         should not be processing are ones that are not currently "In Progress".
         '''
         retval = True
