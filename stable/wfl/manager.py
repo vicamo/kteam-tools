@@ -133,7 +133,7 @@ class WorkflowManager():
             if bug.is_valid:
                 while modified:
                     try:
-                        cinfo('Crank:', 'green')
+                        cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
                         modified = s.process_bug_tasks(bug)
 
                     except PackageError:
