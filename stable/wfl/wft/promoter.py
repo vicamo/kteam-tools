@@ -95,12 +95,13 @@ class Promoter(TaskHandler):
         for t in tasks:
             try:
                 if master.tasks_by_name[t].status not in tasks[t]:
-                    cdebug('master bug task %s is not one of: %s' % (t, str(tasks[t])))
+                    cinfo('master bug task %s is not one of: %s' % (t, str(tasks[t])), 'yellow')
                     retval = False
                     break
             except KeyError:
                 cdebug('master bug does not contian the %s task' % t)
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
+        return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
