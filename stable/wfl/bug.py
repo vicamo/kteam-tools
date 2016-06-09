@@ -658,6 +658,41 @@ class WorkflowBug():
                     return False
         return True
 
+    # send_testing_request
+    #
+    def send_testing_request(s, pocket):
+        # Send a message to the message queue. This will kick off testing.
+        #
+        hwe = False
+        if '-lts-' in s.series:
+            hwe = True
+        msg = {
+            "key"            : "kernel.publish.proposed.%s" % s.series,
+            "op"             : "sru",
+            "who"            : ["kernel"],
+            "pocket"         : "proposed",
+            "date"           : str(datetime.utcnow()),
+            "series-name"    : s.series,
+            "series-version" : s.ubuntu.index_by_series_name[s.series]['series_version'],
+            "hwe"            : hwe,
+            "bug-id"         : s.lpbug.id,
+            "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
+            "version"        : s.pkg_version,
+            "package"        : s.pkg_name,
+        }
+
+        if s._dryrun or s._no_announcements:
+            cinfo('    dryrun - Sending msgq announcement', 'red')
+        else:
+            if WorkflowBug.local_msgqueue_port:
+                mq = MsgQueue(address='localhost', port=WorkflowBug.local_msgqueue_port)
+            else:
+                mq = MsgQueue()
+
+            mq.publish(msg['key'], msg)
+
+        return msg
+
     # send_upload_announcement
     #
     def send_upload_announcement(s, pocket):
@@ -705,36 +740,7 @@ class WorkflowBug():
         # -------------------------------------------------------------------------------------------------------------
         # Rabbit MQ Notice
         # -------------------------------------------------------------------------------------------------------------
-
-        # Send a message to the message queue. This will kick off testing.
-        #
-        hwe = False
-        if '-lts-' in s.series:
-            hwe = True
-        msg = {
-            "key"            : "kernel.publish.proposed.%s" % s.series,
-            "op"             : "sru",
-            "who"            : ["kernel"],
-            "pocket"         : "proposed",
-            "date"           : str(datetime.utcnow()),
-            "series-name"    : s.series,
-            "series-version" : s.ubuntu.index_by_series_name[s.series]['series_version'],
-            "hwe"            : hwe,
-            "bug-id"         : s.lpbug.id,
-            "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
-            "version"        : s.pkg_version,
-            "package"        : s.pkg_name,
-        }
-
-        if s._dryrun or s._no_announcements:
-            cinfo('    dryrun - Sending msgq announcement', 'red')
-        else:
-            if WorkflowBug.local_msgqueue_port:
-                mq = MsgQueue(address='localhost', port=WorkflowBug.local_msgqueue_port)
-            else:
-                mq = MsgQueue()
-
-            mq.publish(msg['key'], msg)
+        msg = s.send_testing_request(pocket)
 
         # I have an email of the msgq message sent to myself. This allows me to easily
         # post that message again to kick off testing whenever I want.
