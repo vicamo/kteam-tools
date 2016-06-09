@@ -105,4 +105,26 @@ def shank_all(bot, trigger):
                 (rc, output) = sh(cmd, quiet=True)
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
 
+@sopel.module.nickname_commands('retest')
+def retest(bot, trigger):
+    '''
+    When someone asks the bot to kick off testing again for an existing tracking bug.
+    '''
+    what = trigger.match.groups()[1]
+    if what is None:
+        bot.say(trigger.nick + ', ' + 'You must give me the bugid of a tracking bug.')
+    else:
+        for bug in what.split():
+            if not bug.isdigit():
+                bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
+                continue
+            cmd = '%s/stable/tbt retest %s' % (bot.config.wfm.kteam_root, bug)
+            (rc, output) = sh(cmd, quiet=True)
+            if rc == 0:
+                bot.say(trigger.nick + ', ' + 'tests for bug %s kicked off' % bug)
+            elif rc == 254:
+                cmd = 'pastebinit -f python /tmp/exceptions.log'
+                (rc, output) = sh(cmd, quiet=True)
+                bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
+
 # vi:set ts=4 sw=4 expandtab syntax=python:
