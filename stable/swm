@@ -4,13 +4,8 @@
 #
 
 import sys
-import os
-sys.path.append(os.path.join('..'))
-sys.path.append(os.path.join(os.path.expanduser('~'), '.python3'))
-
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, WARNING, INFO
-import yaml
 import traceback
 
 from wfl.log                            import Clog, center, cleave, cdebug
