@@ -68,6 +68,17 @@ def configure(config):
 def setup(bot):
     bot.config.define_section('wfm', WFMSection)
 
+@sopel.module.nickname_commands('help')
+def help(bot, trigger):
+    '''
+    Dump out some info about the commands the bot recognizes.
+    '''
+    bot.say('Recognized commands:')
+    bot.say('    shank [<bugid> <bugid> .. <bugid>]')
+    bot.say('        Update one or more tracking bugs.')
+    bot.say('    retest <bugid> [<bugid> .. <bugid>]')
+    bot.say('        Restart testing for one or more tracking bugs.')
+
 @sopel.module.nickname_commands('shank')
 def shank_all(bot, trigger):
     '''
