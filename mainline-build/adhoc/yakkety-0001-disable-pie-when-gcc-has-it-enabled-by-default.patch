@@ -1,7 +1,8 @@
-From c1613c321d28bf3f180e3b34ed1c82b4f7d90503 Mon Sep 17 00:00:00 2001
+From 3d26b8d8361a9cfa098fe8548f1836573925cc7d Mon Sep 17 00:00:00 2001
 From: Steve Beattie <steve.beattie@canonical.com>
-Date: Thu, 28 Apr 2016 23:33:25 -0700
-Subject: [PATCH] disable -pie when gcc has it enabled by default
+Date: Tue, 10 May 2016 12:44:04 +0100
+Subject: [PATCH] UBUNTU: SAUCE: (no-up) disable -pie when gcc has it enabled
+ by default
 
 In Ubuntu 16.10, gcc's defaults have been set to build Position
 Independent Executables (PIE) on amd64 and ppc64le (gcc was configured
@@ -19,78 +20,33 @@ Patch is against yakkety.git, but also applies with minor movement
 (no fuzz) against current linus.git.
 
 Signed-off-by: Steve Beattie <steve.beattie@canonical.com>
+[apw@canonical.com: shifted up so works in arch/<arch/Makefile.]
+BugLink: http://bugs.launchpad.net/bugs/1574982
 Signed-off-by: Andy Whitcroft <apw@canonical.com>
+Acked-by: Tim Gardner <tim.gardner@canonical.com>
+Acked-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Kamal Mostafa <kamal@canonical.com>
 ---
- Makefile                     | 5 +++++
- arch/x86/Makefile            | 3 ++-
- arch/x86/entry/vdso/Makefile | 3 +++
- 3 files changed, 10 insertions(+), 1 deletion(-)
+ Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index ac9d867..7cd28ac 100644
+index dda982c..f96b174 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -647,6 +647,11 @@ ifneq ($(CONFIG_FRAME_WARN),0)
- KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
- endif
+@@ -608,6 +608,12 @@ endif # $(dot-config)
+ # Defaults to vmlinux, but the arch makefile usually adds further targets
+ all: vmlinux
  
 +# force no-pie for distro compilers that enable pie by default
 +KBUILD_CFLAGS += $(call cc-option, -fno-pie)
 +KBUILD_CFLAGS += $(call cc-option, -no-pie)
 +KBUILD_AFLAGS += $(call cc-option, -fno-pie)
++KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
 +
- # Handle stack protector mode.
- #
- # Since kbuild can potentially perform two passes (first with the old
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 4086abc..84d1cc8 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -27,6 +27,7 @@ REALMODE_CFLAGS	:= $(M16_CFLAGS) -g -Os -D__KERNEL__ \
- 		   -mno-mmx -mno-sse \
- 		   $(call cc-option, -ffreestanding) \
- 		   $(call cc-option, -fno-stack-protector) \
-+		   $(call cc-option, -fno-pie) \
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- export REALMODE_CFLAGS
- 
-@@ -129,7 +130,7 @@ endif
- # Make sure compiler does not have buggy stack-protector support.
- ifdef CONFIG_CC_STACKPROTECTOR
- 	cc_has_sp := $(srctree)/scripts/gcc-x86_$(BITS)-has-stack-protector.sh
--        ifneq ($(shell $(CONFIG_SHELL) $(cc_has_sp) $(CC) $(KBUILD_CPPFLAGS) $(biarch)),y)
-+        ifneq ($(shell $(CONFIG_SHELL) $(cc_has_sp) $(CC) -fno-pie $(KBUILD_CPPFLAGS) $(biarch)),y)
-                 $(warning stack-protector enabled but compiler support broken)
-         endif
- endif
-diff --git a/arch/x86/entry/vdso/Makefile b/arch/x86/entry/vdso/Makefile
-index 6874da5..341f224 100644
---- a/arch/x86/entry/vdso/Makefile
-+++ b/arch/x86/entry/vdso/Makefile
-@@ -50,6 +50,7 @@ export CPPFLAGS_vdso.lds += -P -C
- VDSO_LDFLAGS_vdso.lds = -m64 -Wl,-soname=linux-vdso.so.1 \
- 			-Wl,--no-undefined \
- 			-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096 \
-+			$(call ld-option, -no-pie) \
- 			$(DISABLE_LTO)
- 
- $(obj)/vdso64.so.dbg: $(src)/vdso.lds $(vobjs) FORCE
-@@ -73,6 +74,7 @@ $(obj)/vdso-image-%.c: $(obj)/vdso%.so.dbg $(obj)/vdso%.so $(obj)/vdso2c FORCE
- CFL := $(PROFILING) -mcmodel=small -fPIC -O2 -fasynchronous-unwind-tables -m64 \
-        $(filter -g%,$(KBUILD_CFLAGS)) $(call cc-option, -fno-stack-protector) \
-        -fno-omit-frame-pointer -foptimize-sibling-calls \
-+       $(call cc-option, -fno-pie) \
-        -DDISABLE_BRANCH_PROFILING -DBUILD_VDSO
- 
- $(vobjs): KBUILD_CFLAGS += $(CFL)
-@@ -146,6 +148,7 @@ KBUILD_CFLAGS_32 := $(filter-out -mcmodel=kernel,$(KBUILD_CFLAGS_32))
- KBUILD_CFLAGS_32 := $(filter-out -fno-pic,$(KBUILD_CFLAGS_32))
- KBUILD_CFLAGS_32 := $(filter-out -mfentry,$(KBUILD_CFLAGS_32))
- KBUILD_CFLAGS_32 += -m32 -msoft-float -mregparm=0 -fpic
-+KBUILD_CFLAGS_32 += $(call cc-option, -no-pie)
- KBUILD_CFLAGS_32 += $(call cc-option, -fno-stack-protector)
- KBUILD_CFLAGS_32 += $(call cc-option, -foptimize-sibling-calls)
- KBUILD_CFLAGS_32 += -fno-omit-frame-pointer
+ # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
+ # values of the respective KBUILD_* variables
+ ARCH_CPPFLAGS :=
 -- 
 2.8.1
 
