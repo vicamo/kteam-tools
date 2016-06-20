@@ -50,6 +50,13 @@ class PromoteToProposed(Promoter):
             s.task.timestamp('started')
             retval = True
 
+        # If there are derivative kernel packages based on this kernel package, create
+        # the tracking bugs for them.
+        #
+        if 'derivative-trackers-created' not in s.bug.bprops:
+            s._handle_derivatives()
+            s.bug.bprops['derivative-trackers-created'] = True
+
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
@@ -60,13 +67,6 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while True:
-
-            # If there are derivative kernel packages based on this kernel package, create
-            # the tracking bugs for them.
-            #
-            if 'derivative-trackers-created' not in s.bug.bprops:
-                s._handle_derivatives()
-                s.bug.bprops['derivative-trackers-created'] = True
 
             # Check if packages were copied to the right pocket->component
             #
