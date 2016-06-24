@@ -8,7 +8,6 @@ from ktl.ubuntu                         import Ubuntu
 from .log                               import cdebug, cwarn, center, cleave, cinfo
 from .package                           import Package, PackageError
 from .check_component                   import CheckComponent
-from .bugmail                           import BugMail
 import json
 from ktl.msgq                           import MsgQueue
 from ktl.shanky                         import send_to_shankbot
@@ -151,8 +150,6 @@ class WorkflowBug():
         s.props = WorkflowBugProperties(s.lpbug)
         s.bprops = {}
         s.bprops = s.load_bug_properties()
-
-        BugMail.load_config('email.yaml')
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -700,6 +697,9 @@ class WorkflowBug():
         Send email with upload announcement
         """
         center(s.__class__.__name__ + '.send_upload_announcement')
+        from .bugmail import BugMail
+
+        BugMail.load_config('email.yaml')
 
         # -------------------------------------------------------------------------------------------------------------
         # Email Notice
