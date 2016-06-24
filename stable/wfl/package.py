@@ -5,7 +5,7 @@ import re
 from datetime                           import datetime
 
 from ktl.ubuntu                         import Ubuntu
-from ktl3.utils                         import date_to_string, dump
+from ktl3.utils                         import date_to_string
 
 from .errors                            import ShankError, ErrorExit
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
@@ -105,11 +105,12 @@ class Package():
         s._cache = {}
 
         cinfo('')
-        cinfo('    Build Status:', 'cyan')
+        cinfo('Build Status:', 'cyan')
 
         for dep in iter(s.pkgs):
             cdebug('')
-            cinfo('        %s: ' % dep, 'blue')
+            cinfo('%s: ' % dep, 'blue')
+            cinfo('--------------------------------------------------------------------------------', 'blue')
             if dep in s._cache:
                 break
             Clog.indent += 4
@@ -147,7 +148,7 @@ class Package():
                     s._cache[dep][pocket]['published'] = info[3]
                     s._cache[dep][pocket]['most_recent_build'] = info[4]
                     s._cache[dep][pocket]['status'] = info[5]
-                    cinfo('        %-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
+                    cinfo('%-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
             else:
                 for pocket in ['Release', 'Proposed']:
                     s._cache[dep][pocket] = {}
@@ -158,7 +159,7 @@ class Package():
                     s._cache[dep][pocket]['published'] = info[3]
                     s._cache[dep][pocket]['most_recent_build'] = info[4]
                     s._cache[dep][pocket]['status'] = info[5]
-                    cinfo('        %-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
+                    cinfo('%-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
             Clog.indent -= 4
 
         cdebug('')
@@ -170,6 +171,44 @@ class Package():
 
         cleave('Sources::__determine_build_status')
         return None
+
+    def __all_arches_built(s, matches):
+        '''
+        Determine if all the builds that have been done for all of the arches. This helps
+        us detect when a build has been canceled.
+        '''
+        center(s.__class__.__name__ + '__all_arches_built')
+        retval = False
+        if len(matches) > 0:
+            for match in matches:
+                binary_list = match.getPublishedBinaries()
+
+                # Determine how many arches we have builds for.
+                #
+                sa = {} # series arches
+                for binary in binary_list:
+                    try:
+                        sa[binary.distro_arch_series_link] += 1
+                    except KeyError:
+                        sa[binary.distro_arch_series_link] = 1
+                for arch in sa:
+                    cdebug('series/arch : %s' % arch)
+
+                arches_built = len(sa)
+
+                # Determine how many builds there actually are. This includes
+                # canceled builds which are important to us.
+                #
+                builds = match.getBuilds()
+
+                if arches_built == len(builds):
+                    retval = True
+                else:
+                    cdebug('Only %s of %s arches were built' % (arches_built, len(builds)))
+        else:
+            cdebug('No matches found')
+        cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
+        return retval
 
     # __is_fully_built
     #
@@ -186,7 +225,7 @@ class Package():
 
         ps = s.__get_published_sources(package, abi, archive, release, pocket)
         matches = s.__find_matches(ps, abi, release)
-        if len(matches) > 0:
+        if len(matches) > 0 and s.__all_arches_built(matches):
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
         else:
@@ -310,12 +349,11 @@ class Package():
                 pass
 
             if build_summaries['status'] == 'FULLYBUILT':
-                cdebug('"%s" %s built (pocket:%s)' % (package, release, pocket), 'green')
+                cdebug('"%s" %s built (pocket:%s)' % (package, release, pocket), 'magenta')
                 retval = True
                 fullybuilt = True
                 published = pkg.date_published.replace(tzinfo=None)
 
-                # dump(build_summaries)
                 for b in build_summaries['builds']:
                     built = datetime.strptime(b['datebuilt'], '%Y-%m-%dT%X.%f+00:00')
                     if most_recent_build is None:
