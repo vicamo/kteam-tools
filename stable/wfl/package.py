@@ -5,7 +5,7 @@ import re
 from datetime                           import datetime
 
 from ktl.ubuntu                         import Ubuntu
-from ktl3.utils                         import date_to_string
+from ktl3.utils                         import date_to_string, dump
 
 from .errors                            import ShankError, ErrorExit
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
@@ -187,24 +187,25 @@ class Package():
                 #
                 sa = {} # series arches
                 for binary in binary_list:
-                    try:
-                        sa[binary.distro_arch_series_link] += 1
-                    except KeyError:
-                        sa[binary.distro_arch_series_link] = 1
+                    if binary.architecture_specific:
+                        try:
+                            sa[binary.distro_arch_series_link] += 1
+                        except KeyError:
+                            sa[binary.distro_arch_series_link] = 1
                 for arch in sa:
                     cdebug('series/arch : %s' % arch)
 
-                arches_built = len(sa)
+                arches_to_build = len(sa)
 
                 # Determine how many builds there actually are. This includes
                 # canceled builds which are important to us.
                 #
                 builds = match.getBuilds()
 
-                if arches_built == len(builds):
+                if arches_to_build == len(builds):
                     retval = True
                 else:
-                    cdebug('Only %s of %s arches were built' % (arches_built, len(builds)))
+                    cdebug('Only %s of %s arches were built' % (len(builds), arches_to_build))
         else:
             cdebug('No matches found')
         cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
