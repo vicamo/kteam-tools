@@ -76,17 +76,19 @@ class Promoter(TaskHandler):
             'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
             'prepare-package-signed'     : ['Fix Released'],
             'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
-            'automated-testing'          : ['Fix Released', 'Invalid'],
-            'regression-testing'         : ['Fix Released', 'Invalid'],
             'promote-to-updates'         : ['Confirmed', 'Fix Released'],
             'promote-to-security'        : ['Confirmed', 'Fix Released', 'Invalid']
         }
 
         master = s.bug.master_bug
 
-        if master.sru_workflow_project:
-            required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
-            required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+        if 'testing-override' not in master.tags:
+            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid'],
+            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid'],
+
+            if master.sru_workflow_project:
+                required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
+                required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
 
         if s.bug.sru_workflow_project:
             tasks = required_sru_tasks
