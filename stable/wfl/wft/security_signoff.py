@@ -39,6 +39,11 @@ class SecuritySignoff(TaskHandler):
             if s.bug.ready_for_testing:
                 s.task.status = 'Confirmed'
                 retval = True
+        else:
+            master = s.bug.master_bug
+            if s.task.status != master.tasks_by_name['security-signoff'].status:
+                s.task.status = master.tasks_by_name['security-signoff'].status
+                retval = True
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
