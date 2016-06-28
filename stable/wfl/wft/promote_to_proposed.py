@@ -80,6 +80,8 @@ class PromoteToProposed(Promoter):
             if 'proposed-announcement-sent' not in s.bug.bprops:
                 s.bug.send_upload_announcement('proposed')
                 s.bug.bprops['proposed-announcement-sent'] = True
+                s.bug.send_proposed_testing_requests()
+                s.bug.bprops['proposed-testing-requested'] = True
 
             cinfo('    All components are now in -proposed', 'magenta')
             s.task.status = 'Fix Released'

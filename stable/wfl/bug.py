@@ -486,6 +486,12 @@ class WorkflowBug():
         return retval
 
     @property
+    def ckt_ppa(s):
+        '''
+        '''
+        return s.__package.ckt_ppa
+
+    @property
     def pkg_name(s):
         '''
         Property: The name of the package associated with this bug.
@@ -655,17 +661,58 @@ class WorkflowBug():
                     return False
         return True
 
-    # send_testing_request
+    # send_boot_testing_requests
     #
-    def send_testing_request(s, pocket):
-        # Send a message to the message queue. This will kick off testing.
+    def send_boot_testing_requests(s):
+        msg = s.send_testing_message(op="boot", ppa=True)
+
+        # I have an email of the msgq message sent to myself. This allows me to easily
+        # post that message again to kick off testing whenever I want.
+        #
+        subject = "[" + s.series + "] " + s.pkg_name + " " + s.pkg_version + " available in ppa"
+        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+
+        if s.series == 'xenial':
+            msg = s.send_testing_message(flavour='lowlatency')
+
+            # I have an email of the msgq message sent to myself. This allows me to easily
+            # post that message again to kick off testing whenever I want.
+            #
+            subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " available in ppa"
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+
+    # send_proposed_testing_requests
+    #
+    def send_proposed_testing_requests(s):
+        msg = s.send_testing_message()
+
+        # I have an email of the msgq message sent to myself. This allows me to easily
+        # post that message again to kick off testing whenever I want.
+        #
+        subject = "[" + s.series + "] " + s.pkg_name + " " + s.pkg_version + " uploaded"
+        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+
+        if s.series == 'xenial':
+            msg = s.send_testing_message(flavour='lowlatency')
+
+            # I have an email of the msgq message sent to myself. This allows me to easily
+            # post that message again to kick off testing whenever I want.
+            #
+            subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " uploaded"
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+
+    # send_testing_message
+    #
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic"):
+        # Send a message to the message queue. This will kick off testing of
+        # the kernel packages in the -proposed pocket.
         #
         hwe = False
         if '-lts-' in s.series:
             hwe = True
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
-            "op"             : "sru",
+            "op"             : op,
             "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
@@ -676,7 +723,13 @@ class WorkflowBug():
             "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
             "version"        : s.pkg_version,
             "package"        : s.pkg_name,
+            "flavour"        : flavour,
         }
+
+        if ppa:
+            msg['pocket'] = 'ppa'
+            msg['ppa']    = s.ckt_ppa
+            msg['key']    = 'kernel.published.ppa.%s' % s.series
 
         if s._dryrun or s._no_announcements:
             cinfo('    dryrun - Sending msgq announcement', 'red')
@@ -690,6 +743,12 @@ class WorkflowBug():
 
         return msg
 
+    def send_email(s, subject, body, to):
+        from .bugmail import BugMail
+        BugMail.load_config('email.yaml')
+        BugMail.to_address = to
+        BugMail.send(subject, body)
+
     # send_upload_announcement
     #
     def send_upload_announcement(s, pocket):
@@ -697,9 +756,6 @@ class WorkflowBug():
         Send email with upload announcement
         """
         center(s.__class__.__name__ + '.send_upload_announcement')
-        from .bugmail import BugMail
-
-        BugMail.load_config('email.yaml')
 
         # -------------------------------------------------------------------------------------------------------------
         # Email Notice
@@ -707,8 +763,8 @@ class WorkflowBug():
 
         cdebug('Sending upload announcement')
 
-        BugMail.to_address  = "kernel-team@lists.ubuntu.com"
-        BugMail.to_address += ", ubuntu-installer@lists.ubuntu.com"
+        to_address  = "kernel-team@lists.ubuntu.com"
+        to_address += ", ubuntu-installer@lists.ubuntu.com"
 
         abi_bump = s.has_new_abi()
 
@@ -735,18 +791,7 @@ class WorkflowBug():
         if s._dryrun or s._no_announcements:
             cinfo('    dryrun - Sending email announcement', 'red')
         else:
-            BugMail.send(subject, body)
-
-        # -------------------------------------------------------------------------------------------------------------
-        # Rabbit MQ Notice
-        # -------------------------------------------------------------------------------------------------------------
-        msg = s.send_testing_request(pocket)
-
-        # I have an email of the msgq message sent to myself. This allows me to easily
-        # post that message again to kick off testing whenever I want.
-        #
-        BugMail.to_address = 'brad.figg@canonical.com'
-        BugMail.send(subject, json.dumps(msg, sort_keys=True, indent=4))
+            s.send(subject, body, to_address)
 
         cleave(s.__class__.__name__ + '.send_upload_announcement')
         return
