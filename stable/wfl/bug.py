@@ -655,11 +655,12 @@ class WorkflowBug():
     #
     def has_new_abi(s):
         tasks_abi = ['prepare-package-lbm', 'prepare-package-meta', 'prepare-package-ports-meta']
+        retval = False
         for taskname in tasks_abi:
             if taskname in s.tasks_by_name:
-                if s.tasks_by_name[taskname].status != "Fix Released":
-                    return False
-        return True
+                if s.tasks_by_name[taskname].status != "Invalid":
+                    return True
+        return retval
 
     # send_boot_testing_requests
     #
