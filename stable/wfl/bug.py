@@ -674,7 +674,7 @@ class WorkflowBug():
         s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
 
         if s.series == 'xenial':
-            msg = s.send_testing_message(flavour='lowlatency')
+            msg = s.send_testing_message(op="boot", ppa=True, flavour='lowlatency')
 
             # I have an email of the msgq message sent to myself. This allows me to easily
             # post that message again to kick off testing whenever I want.
@@ -729,7 +729,7 @@ class WorkflowBug():
 
         if ppa:
             msg['pocket'] = 'ppa'
-            msg['ppa']    = s.ckt_ppa
+            msg['ppa']    = str(s.ckt_ppa)
             msg['key']    = 'kernel.published.ppa.%s' % s.series
 
         if s._dryrun or s._no_announcements:
