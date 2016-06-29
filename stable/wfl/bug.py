@@ -792,7 +792,7 @@ class WorkflowBug():
         if s._dryrun or s._no_announcements:
             cinfo('    dryrun - Sending email announcement', 'red')
         else:
-            s.send(subject, body, to_address)
+            s.send_email(subject, body, to_address)
 
         cleave(s.__class__.__name__ + '.send_upload_announcement')
         return
@@ -963,7 +963,9 @@ class WorkflowBug():
                 body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
 
             subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.id)
-            BugMail.send(subject, body)
+            to_address  = "kernel-team@lists.ubuntu.com"
+            to_address += ", ubuntu-installer@lists.ubuntu.com"
+            s.send_email(subject, body, to_address)
 
             body += "\n\nOnce this is fixed, set the "
             body += "promote-to-%s to Fix Released again" % (pocket)
