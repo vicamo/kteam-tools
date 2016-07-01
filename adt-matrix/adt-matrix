@@ -705,6 +705,13 @@ table.matrix, table.matrix th, table.matrix td {{
 """
         return page
 
+    def hints_raw(self, results):
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
+        if not len(verlist):
+            return None
+
+        pkgver = verlist[-1]
+        return results[pkgver]:
 
     def hints(self, results):
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
@@ -861,6 +868,13 @@ table.matrix td {{
             print(page, end=None, file=hfd)
 
             os.rename(seeds + '.new', seeds)
+
+        # Latest results as json.
+        latest = adt.hints_raw(results)
+        latest_json = series + '-' + package + '-latest.json'
+        with open(latest_json + '.new', 'w') as cfd:
+            json.dump(latest, cfd, indent=2)
+        os.rename(latest_json + '.new', latest_json)
 
         # Summary index table.
         if not state:
