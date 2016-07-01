@@ -711,7 +711,7 @@ table.matrix, table.matrix th, table.matrix td {{
             return None
 
         pkgver = verlist[-1]
-        return results[pkgver]:
+        return results[pkgver]
 
     def hints(self, results):
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
