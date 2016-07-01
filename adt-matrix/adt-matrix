@@ -711,7 +711,20 @@ table.matrix, table.matrix th, table.matrix td {{
             return None
 
         pkgver = verlist[-1]
-        return results[pkgver]
+        # Convert to a tagged form for future expansion.
+        tagged = {}
+        for tpkg in results[pkgver]:
+            (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
+            entry = {
+                'status': status,
+                'result_link': status_link,
+                'version': version,
+            }
+            if version != lversion:
+                entry['version_latest'] = lversion
+            tagged[tpkg] = entry
+
+        return tagged
 
     def hints(self, results):
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
