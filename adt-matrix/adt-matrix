@@ -719,11 +719,13 @@ table.matrix, table.matrix th, table.matrix td {{
                 (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
                 entry = {
                     'status': status,
-                    'result_link': status_link,
-                    'version': version,
                 }
-                if version != lversion:
+                if version and version != 'None':
+                    entry['version'] = version
+                if lversion and version != lversion:
                     entry['version_latest'] = lversion
+                if status_link:
+                    entry['result_link'] = status_link
                 tagged[tpkg][arch] = entry
 
         return tagged
