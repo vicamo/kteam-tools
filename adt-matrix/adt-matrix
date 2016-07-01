@@ -720,12 +720,17 @@ table.matrix, table.matrix th, table.matrix td {{
                 entry = {
                     'status': status,
                 }
+                notes = None
+                if version and '\n' in version:
+                    (version, notes) = version.split('\n', 1)
                 if version and version != 'None':
                     entry['version'] = version
                 if lversion and version != lversion:
                     entry['version_latest'] = lversion
                 if status_link:
                     entry['result_link'] = status_link
+                if notes:
+                    entry['notes'] = notes
                 tagged[tpkg][arch] = entry
 
         return tagged
