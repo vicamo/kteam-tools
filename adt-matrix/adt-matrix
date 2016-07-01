@@ -886,7 +886,7 @@ table.matrix td {{
 
         # Latest results as json.
         latest = adt.hints_raw(results)
-        latest_json = series + '-' + package + '-latest.json'
+        latest_json = series + '-' + package + '.latest.json'
         with open(latest_json + '.new', 'w') as cfd:
             json.dump(latest, cfd, indent=2)
         os.rename(latest_json + '.new', latest_json)
