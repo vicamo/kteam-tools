@@ -164,11 +164,13 @@ class AutoPackageTest(object):
     def log_error(self, msg):
         if self.verbose:
             print('E: [%s] - %s' % (time.asctime(), msg))
+        sys.stdout.flush()
 
 
     def log_verbose(self, msg):
         if self.verbose:
             print('I: [%s] - %s' % (time.asctime(), msg))
+        sys.stdout.flush()
 
 
     #
