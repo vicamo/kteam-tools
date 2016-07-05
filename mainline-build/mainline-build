@@ -78,7 +78,7 @@ if [ "$abi" != "" ]; then
 		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
 	fi
 	#date="`date +%F`"
-	html="$HOME/public_html/mainline/$base/$date-$master_release"
+	html="$HOME/public_html/mainline/$base/$date"
 	mkdir -p "$HOME/public_html/mainline/$base"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
@@ -87,7 +87,7 @@ else
 	if [ -f "$master_main/BUILT" ]; then
 		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
 	fi
-	html="$HOME/public_html/mainline/$commit-$master_release"
+	html="$HOME/public_html/mainline/$commit"
 fi
 
 mkdir -p "$html"
