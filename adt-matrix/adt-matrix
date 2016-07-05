@@ -735,7 +735,7 @@ table.matrix, table.matrix th, table.matrix td {{
                     entry['notes'] = notes
                 tagged[tpkg][arch] = entry
 
-        (package, version) = pkgver.split(' ')
+        (version, package) = pkgver.split(' ')
         result = {
             'package': package,
             'version': version,
