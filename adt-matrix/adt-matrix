@@ -735,7 +735,14 @@ table.matrix, table.matrix th, table.matrix td {{
                     entry['notes'] = notes
                 tagged[tpkg][arch] = entry
 
-        return tagged
+        (package, version) = pkgver.split(' ')
+        result = {
+            'package': package,
+            'version': version,
+            'series': self.series,
+            'tests': tagged,
+        }
+        return result
 
     def hints(self, results):
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
