@@ -29,6 +29,7 @@ repo="git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/main
 	done
 } >"SOURCES"
 
+generate_readme()
 {
     cat - <<EOL
 These binary packages represent builds of the mainline or stable Linux kernel tree at the commit below:
@@ -48,8 +49,47 @@ EOL
     done
     cat - <<EOL
 
-This is summarised in the SOURCES file with these binaries.
+This is summarised in the SOURCES file included with these binaries.
 
+EOL
+    gstatus=0
+    grep Status: BUILT | \
+    while read x arch status x
+    do
+	case "$arch" in
+	binary-headers)		gstatus="$status"; continue ;;
+	esac
+
+	if [ "$gstatus" = 0 -a "$status" = 0 ]; then
+		was="succeeded"
+	else
+		was="failed"
+	fi
+	echo "Build for $arch $was (see BUILD.log.$arch):"
+	for deb in *_all.deb *_$arch.deb
+	do
+		case "$deb" in
+		"*_all.deb|*_$arch.deb")	continue ;;
+		esac
+		echo "    $deb"
+	done
+	echo ""
+    done
+    cat - <<EOL
 For further information see: http://wiki.ubuntu.com/Kernel/MainlineBuilds
 EOL
-} >"README"
+}
+
+generate_readme >"README"
+{
+    echo "<h1>$commit mainline build</h1>"
+    echo "<code>"
+    generate_readme | sed \
+	-e 's@\(http:[^ ]*\)@<a href="\1">\1</a>@' \
+	-e 's@\([^ ]*\.deb\>\)@<a href="\1">\1</a>@' \
+	-e 's@\([^ ]*\.patch\>\)@<a href="\1">\1</a>@' \
+	-e 's@\(\<SOURCES\|BUILD.log.[^ ]*\>\)@<a href="\1">\1</a>@' \
+	-e 's@$@<br>@' \
+	-e 's@^ @\&nbsp;@g'
+    echo "</code>"
+} >"HEADER.html"
