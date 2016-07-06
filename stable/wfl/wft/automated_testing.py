@@ -16,6 +16,7 @@ class AutomatedTesting(TaskHandler):
 
         s.jumper['New']          = s._new
         s.jumper['Confirmed']    = s._confirmed
+        s.jumper['Incomplete']   = s._confirmed
 
         s.regressions_url = "http://people.canonical.com/~kernel/status/adt-matrix/overall.txt"
 
