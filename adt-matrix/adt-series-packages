@@ -18,7 +18,11 @@ for source in tmp['sources']:
         continue
 
     for key in source['tests']['autopkgtest'].keys():
-        (src, ver) = key.split()
+        if '/' in key:
+            bits = key.split('/')
+        else:
+            bits = key.split()
+        src = bits[0]
         tests[src] = True
 
 for key in sorted(tests.keys()):

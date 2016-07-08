@@ -143,7 +143,10 @@ class AdtMatrixSeed(object):
                     tcache = lcache[record2['source']] = {}
                     for pkg in record2['tests']['autopkgtest']:
                         for arch in record2['tests']['autopkgtest'][pkg]:
-                            bits = pkg.split()
+                            if '/' in pkg:
+                                bits = pkg.split('/')
+                            else:
+                                bits = pkg.split()
                             package = bits[0]
                             pcache.setdefault(package, {})[arch] = True
                             tcache.setdefault(package, {})[arch] = True
