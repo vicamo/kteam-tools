@@ -68,7 +68,14 @@ class AdtMatrixSeed(object):
 
         hier = [ record ]
 
-        if 'excuses' in record:
+        if 'dependencies' in record:
+            if 'blocked-by' in record['dependencies']:
+                for depends_package in record['dependencies']['blocked-by']:
+                    for record2 in state['sources']:
+                        if record2['source'] == depends_package:
+                            hier += self.britney_hierachy(state, record2, seen)
+        # XXX: old-format -- remove when gone.
+        elif 'excuses' in record:
             for line in record['excuses']:
                 if line.startswith('Depends:'):
                     bits = line.strip().split()
@@ -97,7 +104,11 @@ class AdtMatrixSeed(object):
         for record in self.britney_cache[series]['sources']:
             if not record['source'].startswith('linux'):
                 continue
-            if 'excuses' in record:
+            if 'old-binaries' in record:
+                for old_version in record['old-binaries']:
+                    print('remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, old_version, record['source']))
+            # XXX: old-format -- remove when gone.
+            elif 'excuses' in record:
                 pkgs = {}
                 for excuse in record['excuses']:
                     if excuse.startswith('old binaries left on'):
