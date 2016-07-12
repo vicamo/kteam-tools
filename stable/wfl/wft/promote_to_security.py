@@ -66,6 +66,10 @@ class PromoteToSecurity(Promoter):
                     retval = True
                     break
 
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    break
+
             if not s._security_signoff_verified:
                 break
 
