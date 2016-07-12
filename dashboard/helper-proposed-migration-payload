@@ -80,12 +80,20 @@ def get_status(state, record, seen=None):
                 overall = accumulate_state(overall, record['tests']['autopkgtest'][pkg][arch][0])
     if 'depends' in record['reason']:
         overall = accumulate_state(overall, 'DEPENDS')
-    for line in record['excuses']:
-        if line.startswith('Depends:'):
-            bits = line.strip().split()
-            for record2 in state['sources']:
-                if record2['source'] == bits[2]:
-                    overall = accumulate_state(overall, get_status(state, record2, seen))
+    if 'dependencies' in record:
+        if 'blocked-by' in record['dependencies']:
+            for depends_package in record['dependencies']['blocked-by']:
+                for record2 in state['sources']:
+                    if record2['source'] == depends_package:
+                        overall = accumulate_state(overall, get_status(state, record2, seen))
+    # XXX: old-format -- remove when gone.
+    elif 'excuses' in record:
+        for line in record['excuses']:
+            if line.startswith('Depends:'):
+                bits = line.strip().split()
+                for record2 in state['sources']:
+                    if record2['source'] == bits[2]:
+                        overall = accumulate_state(overall, get_status(state, record2, seen))
 
     if 'block' in record['reason']:
         overall = accumulate_state(overall, 'PASS')
@@ -100,7 +108,14 @@ def get_hierachy(state, record, seen={}):
 
     hier = [ record['source'] ]
 
-    if 'excuses' in record:
+    if 'dependencies' in record:
+        if 'blocked-by' in record['dependencies']:
+            for depends_package in record['dependencies']['blocked-by']:
+                for record2 in state['sources']:
+                    if record2['source'] == depends_package:
+                        hier += self.britney_hierachy(state, record2, seen)
+    # XXX: old-format -- remove when gone.
+    elif 'excuses' in record:
         for line in record['excuses']:
             if line.startswith('Depends:'):
                 bits = line.strip().split()
