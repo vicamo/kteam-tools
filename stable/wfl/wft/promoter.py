@@ -81,8 +81,8 @@ class Promoter(TaskHandler):
         master = s.bug.master_bug
 
         if 'testing-override' not in master.tags:
-            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid'],
-            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid'],
+            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
+            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
 
             if master.sru_workflow_project:
                 required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
@@ -95,7 +95,7 @@ class Promoter(TaskHandler):
         for t in tasks:
             try:
                 if master.tasks_by_name[t].status not in tasks[t]:
-                    cinfo('master bug task %s is not one of: %s' % (t, str(tasks[t])), 'yellow')
+                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
                     retval = False
                     break
             except KeyError:
