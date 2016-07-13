@@ -158,7 +158,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-raspi2', 'linux-snapdragon' ],
+                'linux' : [], # 'linux' : [ 'linux-raspi2', 'linux-snapdragon' ],
             },
             'sha1' : '',
             'md5' : ''
