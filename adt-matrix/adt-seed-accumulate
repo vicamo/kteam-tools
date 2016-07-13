@@ -105,8 +105,10 @@ class AdtMatrixSeed(object):
             if not record['source'].startswith('linux'):
                 continue
             if 'old-binaries' in record:
-                for old_version in record['old-binaries']:
-                    print('remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, old_version, record['source']))
+                # Do not remove the current version if the new version is not yet published.
+                if 'missing-builds' not in record or 'on-architectures' not in record['missing-builds']:
+                    for old_version in record['old-binaries']:
+                        print('remove-package -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, old_version, record['source']))
             # XXX: old-format -- remove when gone.
             elif 'excuses' in record:
                 pkgs = {}
