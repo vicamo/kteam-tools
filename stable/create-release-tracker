@@ -9,6 +9,8 @@ from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
+from ktl.log                            import Clog
+from logging                            import basicConfig, DEBUG, WARNING, INFO
 
 # CmdlineError
 #
@@ -34,7 +36,8 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '':
+            print(e)
         self.usage(defaults)
 
     # usage
@@ -81,10 +84,13 @@ class Cmdline:
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
 
+                elif (opt == '--debug'):
+                    self.cfg['debug'] = True
+
                 elif opt in ('--master_bug'):
                     self.cfg['master_bug'] = val
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -123,7 +129,7 @@ class CreateTrackingBug(StdApp):
             self.defaults['launchpad_services_root'] = 'qastaging'
         try:
             self.lp = LaunchpadService(self.defaults)
-        except LaunchpadServiceError, e:
+        except LaunchpadServiceError as e:
             print(e.msg)
             raise
 
@@ -132,7 +138,8 @@ class CreateTrackingBug(StdApp):
     def main(self):
         cmdline = Cmdline()
         try:
-            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cfg = cmdline.process(argv, self.defaults)
+            self.merge_config_options(self.defaults, cfg)
             cmdline.verify_options(self.cfg)
             self.initialize()
 
@@ -149,7 +156,7 @@ class CreateTrackingBug(StdApp):
             else:
                 master_bug = None
 
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
             # B U G   W O R K
 
             tb = TrackingBug(self.lp, 'staging' in self.cfg)
@@ -158,7 +165,7 @@ class CreateTrackingBug(StdApp):
                           changelog[0]['ABI'] != changelog[1]['ABI'],
                           master_bug)
 
-            #-------------------------------------------------------------------------------------
+            # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
             # Pull the entire changelog file into a list
@@ -197,6 +204,10 @@ class CreateTrackingBug(StdApp):
         return
 
 if __name__ == '__main__':
+    Clog.dbg = True
+    Clog.color = True
+    log_format = "%(levelname)s - %(message)s"
+    basicConfig(level=DEBUG, format=log_format)
     app = CreateTrackingBug()
     app.main()
 
