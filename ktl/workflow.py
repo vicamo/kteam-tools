@@ -176,6 +176,7 @@ class Workflow:
                 'regression-testing'         : 'canonical-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
@@ -191,6 +192,7 @@ class Workflow:
                 'regression-testing'         : 'canonical-hwe-arm-kernel',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
