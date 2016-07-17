@@ -113,7 +113,7 @@ def get_hierachy(state, record, seen={}):
             for depends_package in record['dependencies']['blocked-by']:
                 for record2 in state['sources']:
                     if record2['source'] == depends_package:
-                        hier += self.britney_hierachy(state, record2, seen)
+                        hier += get_hierachy(state, record2, seen)
     # XXX: old-format -- remove when gone.
     elif 'excuses' in record:
         for line in record['excuses']:
