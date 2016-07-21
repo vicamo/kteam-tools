@@ -35,15 +35,24 @@ class SecuritySignoff(TaskHandler):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        if not s.bug.is_derivative_package:
-            if s.bug.ready_for_testing:
-                s.task.status = 'Confirmed'
-                retval = True
-        else:
-            master = s.bug.master_bug
-            if s.task.status != master.tasks_by_name['security-signoff'].status:
-                s.task.status = master.tasks_by_name['security-signoff'].status
-                retval = True
+        while True:
+            if not s.bug.ready_for_testing:
+                # It doesn't matter if this is a derivative package or not, if the
+                # package isn't ready for testing (promoted to -proposed) then it
+                # can't be set to 'Confirmed'.
+                #
+                break
+
+            if s.bug.is_derivative_package:
+                master = s.bug.master_bug
+                if s.task.status != master.tasks_by_name['security-signoff'].status:
+                    s.task.status = master.tasks_by_name['security-signoff'].status
+                    retval = True
+                    break
+
+            s.task.status = 'Confirmed'
+            retval = True
+            break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
