@@ -671,7 +671,7 @@ class WorkflowBug():
         # post that message again to kick off testing whenever I want.
         #
         subject = "[" + s.series + "] " + s.pkg_name + " " + s.pkg_version + " available in ppa"
-        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
         if s.series == 'xenial':
             msg = s.send_testing_message(op="boot", ppa=True, flavour='lowlatency')
@@ -680,7 +680,7 @@ class WorkflowBug():
             # post that message again to kick off testing whenever I want.
             #
             subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " available in ppa"
-            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
     # send_proposed_testing_requests
     #
@@ -691,7 +691,7 @@ class WorkflowBug():
         # post that message again to kick off testing whenever I want.
         #
         subject = "[" + s.series + "] " + s.pkg_name + " " + s.pkg_version + " uploaded"
-        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
         if s.series == 'xenial':
             msg = s.send_testing_message(flavour='lowlatency')
@@ -700,7 +700,7 @@ class WorkflowBug():
             # post that message again to kick off testing whenever I want.
             #
             subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " uploaded"
-            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com')
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
     # send_testing_message
     #
