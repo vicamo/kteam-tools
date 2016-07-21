@@ -134,7 +134,7 @@ class Package():
             s._cache[dep]['ppa']['published'] = info[3]
             s._cache[dep]['ppa']['most_recent_build'] = info[4]
             s._cache[dep]['ppa']['status'] = info[5]
-            cinfo('        %-8s : %-5s / %-10s    (%s : %s)' % ('ppa', info[0], info[5], info[3], info[4]), 'cyan')
+            cinfo('%-8s : %-5s / %-10s    (%s : %s)' % ('ppa', info[0], info[5], info[3], info[4]), 'cyan')
             if s.bug.sru_workflow_project:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
