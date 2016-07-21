@@ -79,7 +79,7 @@ class AutomatedTesting(TaskHandler):
                         msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (version, package, s.bug.series)
                         msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
                         msgbody += "Please verify test results in %s\n" % s.regressions_url
-                        s.bug.add_comment('Automated-Testing regression', msgbody)
+                        # s.bug.add_comment('Automated-Testing regression', msgbody)
                     return state
         print('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
         return None
