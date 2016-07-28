@@ -49,6 +49,7 @@ class SecuritySignoff(TaskHandler):
                     s.task.status = master.tasks_by_name['security-signoff'].status
                     retval = True
                     break
+                break
 
             s.task.status = 'Confirmed'
             retval = True
