@@ -201,7 +201,7 @@ class Ubuntu:
             'series_version' : '15.10',
             'kernel'    : '4.2.0',
             'name'      : 'wily',
-            'supported' : True,
+            'supported' : False,
             'packages'  :
             [
                 'linux',
