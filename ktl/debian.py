@@ -8,7 +8,7 @@
 from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, dump
 from ktl.kernel                         import Kernel
-from re                                 import compile, findall
+from re                                 import compile, findall, finditer
 from os                                 import path, listdir, walk
 
 # DebianError
@@ -30,8 +30,8 @@ class Debian:
 
     package_rc = compile("^(linux[-\S])*.*$")
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
-    bug_line_rc = compile("LP:\s#[0-9]+")
-    bug_rc = compile("#([0-9]+)")
+    bug_rc = compile("LP:\s#[0-9]+(?:,\s#[0-9]+)*")
+    bug_nr_rc = compile("#([0-9]+)")
 
     # debian_directories
     #
@@ -176,11 +176,9 @@ class Debian:
                 bugs = []
             else:
                 # find bug numbers and append them to the list
-                bug_line_matches = cls.bug_line_rc.search(line)
-                if bug_line_matches:
-                    bug_matches = findall(cls.bug_rc,line)
-                    if bug_matches:
-                        bugs.extend( bug_matches )
+                for bug_line_match in finditer(cls.bug_rc, line):
+                    bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
+                    bugs.extend(bug_matches)
 
                 content.append(line)
 
