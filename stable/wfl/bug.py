@@ -722,8 +722,10 @@ class WorkflowBug():
             "hwe"            : hwe,
             "bug-id"         : s.lpbug.id,
             "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
+            "kernel-version" : s.pkg_version,
             "version"        : s.pkg_version,
             "package"        : s.pkg_name,
+            "package-version": s.pkg_version,
             "flavour"        : flavour,
         }
 
