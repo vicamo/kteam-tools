@@ -325,17 +325,17 @@ class GenWorkflowReport():
         retval += '                                <td width="20">&nbsp;</td>\n'
         retval += '                                <td colspan="4" >\n'
         retval += '                                    <table width="100%" border="0" cellpadding="0" cellspacing="0">\n'
-        retval += '                                        <tr style="font-weight: bold;">\n'
-        retval += '                                            <td width="30" align="right"> Phase: </td>\n'
-        retval += '                                            <td width="2">&nbsp;</td>\n'
-        try:
-            retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-stable-phase']
-        except KeyError:
-            try:
-                retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-phase']
-            except KeyError:
-                retval += '                                            <td> %s </td>\n' % '*broken* (missing kernel-phase)'
-        retval += '                                        </tr>\n'
+        # retval += '                                        <tr style="font-weight: bold;">\n'
+        # retval += '                                            <td width="30" align="right"> Phase: </td>\n'
+        # retval += '                                            <td width="2">&nbsp;</td>\n'
+        # try:
+        #     retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-stable-phase']
+        # except KeyError:
+        #     try:
+        #         retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-phase']
+        #     except KeyError:
+        #         retval += '                                            <td> %s </td>\n' % '*broken* (missing kernel-phase)'
+        # retval += '                                        </tr>\n'
         retval += '                                        <tr style="font-weight: bold;">\n'
         retval += '                                            <td width="30" align="right"> Tags: </td>\n'
         retval += '                                            <td width="2">&nbsp;</td>\n'
