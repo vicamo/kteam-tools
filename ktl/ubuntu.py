@@ -2,7 +2,6 @@
 #
 
 import re
-from ktl.dbg                    import Dbg
 
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
@@ -929,11 +928,9 @@ class Ubuntu:
         """
         Return the series name where that package-version is found
         """
-        Dbg.enter('series_name')
         retval = None
 
         if package.startswith('linux-lts-'):
-            Dbg.verbose('package condition 2\n')
             for entry in self.db.values():
                 # starting with trusty, the lts packages now include the series
                 # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
@@ -942,12 +939,10 @@ class Ubuntu:
                 if re.match(expected, version):
                     retval = entry['name']
         else:
-            Dbg.verbose('package condition 1\n')
             for entry in self.db.values():
                 if version.startswith(entry['kernel']):
                     retval = entry['name']
 
-        Dbg.leave('series_name (%s)' % retval)
         return retval
 
 if __name__ == '__main__':
