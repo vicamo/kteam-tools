@@ -413,6 +413,7 @@
         - linux-meta-lts-trusty
         - linux-signed-lts-trusty
         - linux-meta-armadaxp
+        - linux-backports-modules-3.2.0
         series_version: '12.04'
         sha1: ''
         supported: true
@@ -435,6 +436,7 @@
         - linux-meta
         - linux-ti-omap4
         - linux-meta-ti-omap4
+        - linux-backports-modules-3.0.0
         series_version: '11.10'
         sha1: ''
         supported: false
