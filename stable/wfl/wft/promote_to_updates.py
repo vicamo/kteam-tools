@@ -95,6 +95,13 @@ class PromoteToUpdates(Promoter):
             if not s._testing_completed():
                 break
 
+            # Since this is the one place where the master, project task is set Fix Released it needs to
+            # do more than just look at the promote-to-updates. It needs to also look at promote-to-security.
+            #
+            promote_to_security = s.bug.tasks_by_name['promote-to-security']
+            if promote_to_security.status not in ['Invalid', 'Fix Released']:
+                break
+
             s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
             s.bug.phase = 'Released'
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
