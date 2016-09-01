@@ -33,7 +33,7 @@ class Sru(StdApp):
             p_bugs = subs.add_parser('bugs', help='the start command')
             p_bugs.set_defaults(func=self.sub_command_bugs)
             p_bugs.add_argument('--release',      dest='release',      type=str,
-                                help='Specifies which releases are to be included.')
+                                help='Specifies which releases are to be included, comma separated.')
             p_bugs.add_argument('--verified',     dest='verified',     action='store_true',
                                 help='Interested in bugs that are marked verification-done.')
             p_bugs.add_argument('--not-verified', dest='not_verified', action='store_true',
@@ -78,16 +78,20 @@ class Sru(StdApp):
         # we care about.
         #
         for rls in args.release.split(','):
-            print("release: %s" % (rls))
-            bugs = {}
-            for pkg in proposed['releases'][rls].keys():
-                if (args.package != None) and (pkg not in args.package): continue
+            if rls in proposed['releases'].keys():
+                print("release: %s" % (rls))
+                bugs = {}
 
-                for bugid in proposed['releases'][rls][pkg]['bugs'].keys():
-                    bugs[bugid] = proposed['releases'][rls][pkg]['bugs'][bugid]
+                for pkg in proposed['releases'][rls].keys():
+                    if (args.package != None) and (pkg not in args.package): continue
 
-            for bug in bugs:
-                print bug
+                    for bugid in proposed['releases'][rls][pkg]['bugs'].keys():
+                        bugs[bugid] = proposed['releases'][rls][pkg]['bugs'][bugid]
+
+                for bug in bugs:
+                    print bug
+            else:
+                print("Release: %s, not in: %s. SKIPPED" % (rls, ', '.join(proposed['releases'].keys())))
 
         if proposed != None:
             if args.verified:
