@@ -104,4 +104,32 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval
 
+    # master_bug_ready
+    #
+    def master_bug_ready_for_proposed(s):
+        center(s.__class__.__name__ + '.master_bug_ready')
+        retval = False
+
+        required_sru_tasks = {
+            'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
+        }
+
+        master = s.bug.master_bug
+
+        if s.bug.sru_workflow_project:
+            tasks = required_sru_tasks
+
+        retval = True
+        for t in tasks:
+            try:
+                if master.tasks_by_name[t].status not in tasks[t]:
+                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                    retval = False
+                    break
+            except KeyError:
+                cdebug('master bug does not contian the %s task' % t)
+
+        cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
+        return retval
+
 # vi: set ts=4 sw=4 expandtab syntax=python
