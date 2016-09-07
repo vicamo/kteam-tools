@@ -45,17 +45,24 @@ class PromoteToProposed(Promoter):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        if s.bug.all_dependent_packages_fully_built:
-            s.task.status = 'Confirmed'
-            s.task.timestamp('started')
-            retval = True
-
         # If there are derivative kernel packages based on this kernel package, create
         # the tracking bugs for them.
         #
         if 'derivative-trackers-created' not in s.bug.bprops:
             s._handle_derivatives()
             s.bug.bprops['derivative-trackers-created'] = True
+
+        while True:
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready_for_proposed():
+                    break
+
+            if s.bug.all_dependent_packages_fully_built:
+                s.task.status = 'Confirmed'
+                s.task.timestamp('started')
+                retval = True
+
+            break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
