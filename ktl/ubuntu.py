@@ -2,7 +2,11 @@
 #
 
 import re
-import requests
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
 import yaml
 
 #
@@ -28,8 +32,12 @@ class Ubuntu:
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    request = requests.get('http://kernel.ubuntu.com/data/kernel-series-info.yaml')
-    data = yaml.load(request.text)
+    url = 'http://kernel.ubuntu.com/data/kernel-series-info.yaml'
+    response = urlopen(url)
+    content = response.read()
+    if type(content) != str:
+        content = content.decode('utf-8')
+    data = yaml.load(content)
     db = data
 
     index_by_kernel_version = {}
