@@ -59,6 +59,21 @@ v4.3|v4.3.*|v4.4|v4.4.*)			master_release="xenial" ;;
 *)						master_release="unstable" ;;
 esac
 
+# We cannot use the previous LTS as we are tied somewhat to compiler
+# versions and features in later releases.
+case "$series" in
+hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring|saucy)
+	build_release="precise" ;;
+trusty|utopic)
+	build_release="trusty" ;;
+utopic|vivid|wily|xenial)
+	build_release="xenial" ;;
+yakkety|unstable)
+	build_release="yakkety" ;;
+*)
+	build_release="$series" ;;
+esac
+
 # Ensure we have the latest and greatest code in the master release.
 repo_remote_update "$master_release"
 
@@ -283,7 +298,7 @@ rm -f "$changelog"
 
 {
 	cat - <<EOL
-linux (${version}-$abinum$upload) $series; urgency=low
+linux (${version}-$abinum$upload) $build_release; urgency=low
 
   Mainline build at commit: $long
 
