@@ -345,7 +345,6 @@ git clean -x -f -d
 	time=`date +%s`
 	echo "End: $time"
 } >>../MAINLINE-NATIVE/BUILT
-mv ../MAINLINE-NATIVE .
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$master_main"/*.upload
@@ -353,7 +352,6 @@ rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$ma
 #
 # Build the source package.
 #
-git clean -x -f -d
 if [ -d debian ]; then
 	do_chroot "$build_release-amd64" \
 		fakeroot debian/rules clean
