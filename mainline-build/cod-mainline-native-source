@@ -221,10 +221,8 @@ rm -f localversion-*
 # Commit the packaging.
 git mv -f debian/rules debian/rules.real
 cat - <<'EOL' >debian/rules
-#!/usr/bin/make -f
-
-%:
-	$(MAKE) -f debian/rules.real do_mainline_native=true do_tools=0 $@
+#!/bin/bash
+exec /usr/bin/make -f debian/rules.real do_mainline_native=true do_tools=0 "$@"
 EOL
 chmod 755 debian/rules
 git add -f debian/rules
