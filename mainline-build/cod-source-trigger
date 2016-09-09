@@ -141,7 +141,7 @@ do
 	fi
 done <<EOL
 test-devel yakkety linux master-next linux-meta master -
-pre-proosed xenial linux master-next linux-meta master -
+pre-proposed xenial linux master-next linux-meta master -
 pre-proposed wily linux master-next linux-meta master -
 pre-proposed vivid linux master-next linux-meta master no-release
 pre-proposed utopic linux master-next linux-meta master no-release
