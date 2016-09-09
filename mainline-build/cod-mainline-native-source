@@ -281,7 +281,7 @@ do
 			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
 			BEGIN				{ v="END"; }
 			/^Version:/			{ v=$2; last }
-			/^Distribution:/		{ v="IGNORE"; last }
+			/^Distribution: UNRELEASED/	{ v="IGNORE"; last }
 			END				{ print v }
 		'`
 		[ "$fversion" = 'IGNORE' ] && continue
