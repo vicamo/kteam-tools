@@ -1,0 +1,308 @@
+#! /bin/bash
+
+P="crack-build-source"
+
+if [ "$#" -ne 2 -a "$#" -ne 3 ]; then
+	echo "Usage: $P <tag> <series> [<abinum>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+series="$2"
+abinum="$3"
+
+mkdir MAINLINE-NATIVE
+{
+	time=`date +%s`
+	echo "Release: $build_release"
+	echo "Host: `hostname`"
+	echo "Start: $time"
+} >MAINLINE-NATIVE/BUILT
+
+echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
+
+log_enabled=1
+
+long=`git describe "$commit"`
+if [ "$?" -ne 0 ]; then
+	echo "$P: $commit: invalid commit" 1>&2
+	exit 1
+fi
+#case "$long" in
+#v*-*[0-9]-g*)
+#	full_version="${long#v}"
+#	full_version="${full_version%-*}"
+#	full_version="${full_version%-*}"
+#	long_abinum="$full_version${long##*-}"
+#	log_enabled=1
+#	;;
+#v*)
+#	full_version="${long#v}"
+#	long_abinum="$full_version"
+#	log_enabled=1
+#	;;
+#*)
+#	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
+#	exit 1
+#esac
+full_version=`git cat-file -p "$commit:Makefile" | awk '
+	/^VERSION/	{ version=$3 }
+	/^PATCHLEVEL/	{ patchlevel=$3 }
+	/^SUBLEVEL/	{ sublevel=$3 }
+	/^EXTRAVERSION/	{ extraversion=$3 }
+	END		{ print version "." patchlevel "." sublevel extraversion }
+'`
+
+if [ "$abinum" = "" ]; then
+	abinum="$full_version"
+fi
+
+# use the date as an upload number so we can tell different builds apart.
+upload=".`date +%Y%m%d%H%M`"
+
+# Produce CHANGES fragment.
+if [ "$log_enabled" -eq 1 ]; then
+	log_from=`git describe "$commit^"`
+	if [ "$?" -eq 0 ]; then
+		log_from="${log_from%-*}"
+		log_from="${log_from%-*}"
+
+		git shortlog "$log_from..$commit" >"MAINLINE-NATIVE/CHANGES"
+	fi
+fi
+
+# The base version is always the first X.Y.Z part of the version number.  If we
+# do not maintain this then the modules directory will not match uname -r.
+version=`echo "$full_version" | cut -d. -f1-3 | cut -d- -f1`
+if [ "$(echo $version|cut -d. -f3)" = "" ]; then
+	version="${version}.0"
+fi
+
+# Encode the real version number as the ABI.  We encode the version
+# number by expanding the numbers to be at least 2 digits and removing the
+# '.' and '-' characters, for example:
+#
+#  2.6.27.12	02062712
+#  2.6.29-rc3   020629rc3
+#
+abinum=`echo "$abinum" | awk -F'[.-]' '{
+	for (i = 1; i <= NF; i++) {
+		if ($i ~ /^[0-9][0-9]*$/) {
+			printf("%02d", $i);
+		} else {
+			printf("%s", $i);
+		}
+	}
+}'`
+
+echo "full_version<$full_version>"
+echo "version<$version>"
+echo "long<$long>"
+echo "abinum<$abinum>"
+
+# NOTE: a - in the branch name seems to be causing issues.
+branch="BUILD.$abinum"
+branch=`echo "$branch" | sed -e 's/-/./g'`
+
+# Ensure we get the uptodate machinary.
+git fetch "$series"
+git checkout -f "$series/master"
+git branch -D "$branch"
+
+rm -rf .dotest
+
+#
+# Checkout the source at the specified version.
+#
+git checkout -b "$branch" "$commit" -- || exit 1
+
+# Report the head for posterity.
+echo "vvv - build head"
+git log -1 HEAD
+echo "^^^ - build head"
+
+#
+# Pull in the packaging from the head of our tree.
+#
+git checkout "$series/master" -- debian || \
+	git checkout "$series/master-next" -- debian
+git checkout "$series/master" -- debian.master || \
+	git checkout "$series/master-next" -- debian.master
+
+# Disable the ABI, module, and aliases checks.
+for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
+do
+	if [ -f "$i" ]; then
+		cat - <<EOM >"$i"
+#!/bin/sh
+exit 0
+EOM
+		chmod 755 "$i"
+	fi
+done
+
+# Ensure we do not have any unexpected version tags.
+rm -f localversion-*
+
+# Commit the packaging.
+git mv debian/rules debian/rules.real
+cat - <<'EOL' >debian/rules
+#!/usr/bin/make -f
+
+%:
+	$(MAKE) -f debian/rules.real do_mainline_native=true do_tools=0 $@
+EOL
+chmod 755 debian/rules
+git add debian/rules
+
+git commit -a -m "base packaging"
+
+#
+# ALL: allow us to default new config options.
+#
+if [ -d "$here/patches.$series" ]; then
+	echo "*** applying patches for series:$series ..."
+	git am -C1 "$here/patches.$series"/*
+fi
+
+# Look for file specific patches.
+adhoc="$here/adhoc"
+grep TRIGGER "$adhoc"/*.patch | \
+while read patch sum file
+do
+	patch=${patch%:TRIGGER}
+	csum=`md5sum "$file" | awk '{print $1}'`
+
+	echo "*** checking $patch ($file $sum $csum) ..."
+	if [ "$sum" = "$csum" ]; then
+		echo "*** applying $patch ..."
+		git am -C1 "$patch"
+	fi
+done
+# Arbitrary trigger support.
+for trigger in "$adhoc"/*.trigger
+do
+	[ -x "$trigger" ] && "$trigger" "$series" "$build_release"
+done
+
+# Find our debian directory.
+for debian in "debian.master" "debian"
+do
+	[ -d "$debian" ] && break
+done 
+
+# Identify the last Ubuntu version which used the same main version
+# to use for the configs.
+find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
+
+found="0"
+fbranch=""
+for branch in master-next master
+do
+	let off=-1
+	while :
+	do
+		let "off=$off+1"
+		fversion=`git cat-file -p "$series/$branch:debian.master/changelog" | \
+			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
+			BEGIN				{ v="END"; }
+			/^Version:/			{ v=$2; last }
+			END				{ print v }
+		'`
+		[ "$fversion" = 'END' ] && break
+		dpkg --compare-versions "$fversion" lt "$find" && break
+	done
+
+	[ "$fversion" = 'END' ] && continue
+	dpkg --compare-versions "$fversion" lt "$found" && break
+	found="$fversion"
+	fbranch="$branch"
+done
+configs="Ubuntu-$found"
+
+#
+# Rebuild the changelog.
+#
+changelog="$debian/changelog"
+rm -f "$changelog"
+
+{
+	cat - <<EOL
+linux (${version}-$abinum$upload) $series; urgency=low
+
+  Mainline build at commit: $long
+
+ -- Mainline Build <$(id -n -u)@$(hostname)>  $(date -R)
+
+EOL
+	cat "$changelog"
+} >"$changelog.new"
+mv -f "$changelog.new" "$changelog"
+git commit -a -m "debian changelog"
+
+#
+# Pull the specified version of the configs and default any new
+# configuration options.
+#
+echo "*** using configs from $configs ($fbranch) ..."
+git checkout "$configs" -- debian.master/config || git checkout "$series/$fbranch" -- debian.master/config
+
+if [ -f "$here/config.$series" ]; then
+	cp "$here/config.$series" "$debian/config/OVERRIDES"
+fi
+#BUILD_CONFIG_OVERRIDE="$here/config.$series"
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean defaultconfigs
+git commit -a -m "configs (based on $configs)"
+
+#
+# Record the patches.
+#
+git format-patch -o "MAINLINE-NATIVE" "$commit..HEAD"
+
+# Ensure the build directories are pristine.
+git clean -x -f -d
+
+{
+	echo "Debian: $series"
+	echo "Configs: $configs"
+	time=`date +%s`
+	echo "End: $time"
+} >>MAINLINE-NATIVE/BUILT
+
+# Clean out the rubbish.
+rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$master_main"/*.upload
+
+#
+# Build the source package.
+#
+git clean -x -f -d
+if [ -d debian ]; then
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean
+	do_chroot "$build_release-amd64" \
+		dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
+
+elif [ -d meta-source ]; then
+	(
+		cd meta-source
+		do_chroot "$build_release-amd64" \
+			fakeroot debian/rules clean
+		do_chroot "$build_release-amd64" \
+			dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
+	)
+	mv *.tar.gz *.dsc *.changes ..
+fi
+
+ppa='mainline-queue'
+
+# Move the upload to the incoming directory.
+mkdir -p "$HOME/public_html/upload/$ppa"
+mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
+	"$HOME/public_html/upload/$ppa"

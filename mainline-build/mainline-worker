@@ -14,5 +14,6 @@ exec ./mainline-worker-kmsgq \
 	--command cod-ubuntu-config \
 	--command mainline-build \
 	--command mainline-flush \
+	--command cod-mainline-native-source \
 	`hostname` mainline-todo \
 	"$@"
