@@ -71,7 +71,7 @@ utopic|vivid|wily|xenial)
 yakkety|unstable)
 	build_release="yakkety" ;;
 *)
-	build_release="$series" ;;
+	build_release="$master_release" ;;
 esac
 
 # Ensure we have the latest and greatest code in the master release.
@@ -81,13 +81,13 @@ repo_remote_update "$master_release"
 series="$master_release"
 abinum="$abi"
 
-mkdir MAINLINE-NATIVE
+mkdir ../MAINLINE-NATIVE
 {
 	time=`date +%s`
 	echo "Release: $build_release"
 	echo "Host: `hostname`"
 	echo "Start: $time"
-} >MAINLINE-NATIVE/BUILT
+} >../MAINLINE-NATIVE/BUILT
 
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
@@ -137,7 +137,7 @@ if [ "$log_enabled" -eq 1 ]; then
 		log_from="${log_from%-*}"
 		log_from="${log_from%-*}"
 
-		git shortlog "$log_from..$commit" >"MAINLINE-NATIVE/CHANGES"
+		git shortlog "$log_from..$commit" >"../MAINLINE-NATIVE/CHANGES"
 	fi
 fi
 
@@ -198,6 +198,10 @@ git checkout "$series/master" -- debian || \
 	git checkout "$series/master-next" -- debian
 git checkout "$series/master" -- debian.master || \
 	git checkout "$series/master-next" -- debian.master
+git checkout "$series/master" -- .gitignore || \
+	git checkout "$series/master-next" -- .gitignore
+
+git add -f debian debian.master .gitignore
 
 # Disable the ABI, module, and aliases checks.
 for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
@@ -215,7 +219,7 @@ done
 rm -f localversion-*
 
 # Commit the packaging.
-git mv debian/rules debian/rules.real
+git mv -f debian/rules debian/rules.real
 cat - <<'EOL' >debian/rules
 #!/usr/bin/make -f
 
@@ -223,7 +227,7 @@ cat - <<'EOL' >debian/rules
 	$(MAKE) -f debian/rules.real do_mainline_native=true do_tools=0 $@
 EOL
 chmod 755 debian/rules
-git add debian/rules
+git add -f debian/rules
 
 git commit -a -m "base packaging"
 
@@ -277,8 +281,10 @@ do
 			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
 			BEGIN				{ v="END"; }
 			/^Version:/			{ v=$2; last }
+			/^Distribution:/		{ v="IGNORE"; last }
 			END				{ print v }
 		'`
+		[ "$fversion" = 'IGNORE' ] && continue
 		[ "$fversion" = 'END' ] && break
 		dpkg --compare-versions "$fversion" lt "$find" && break
 	done
@@ -328,7 +334,7 @@ git commit -a -m "configs (based on $configs)"
 #
 # Record the patches.
 #
-git format-patch -o "MAINLINE-NATIVE" "$commit..HEAD"
+git format-patch -o "../MAINLINE-NATIVE" "$commit..HEAD"
 
 # Ensure the build directories are pristine.
 git clean -x -f -d
@@ -338,7 +344,8 @@ git clean -x -f -d
 	echo "Configs: $configs"
 	time=`date +%s`
 	echo "End: $time"
-} >>MAINLINE-NATIVE/BUILT
+} >>../MAINLINE-NATIVE/BUILT
+mv ../MAINLINE-NATIVE .
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$master_main"/*.upload
