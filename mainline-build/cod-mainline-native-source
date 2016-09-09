@@ -227,6 +227,7 @@ exec /usr/bin/make -f debian/rules.real \
 	do_tools=false \
 	no_dumpfile=1 \
 	do_zfs=false \
+	skipdbg=true \
 	do_mainline_build=true do_mainline_native=true "$@"
 EOL
 chmod 755 debian/rules
