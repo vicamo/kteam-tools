@@ -14,6 +14,7 @@ case "$here" in
 esac
 
 . "$here/lib-build"
+. "$here/lib-chroot"
 
 remotes="$1"
 commit="$2"
