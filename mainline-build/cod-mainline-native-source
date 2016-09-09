@@ -1,9 +1,9 @@
 #! /bin/bash
-
 P="crack-build-source"
 
-if [ "$#" -ne 2 -a "$#" -ne 3 ]; then
-	echo "Usage: $P <tag> <series> [<abinum>" 1>&2
+if [ "$#" -ne 2 -a "$#" -ne 5 ]; then
+	echo "Usage: $0 <remotes> <tag>" 1>&2
+	echo "Usage: $0 <remotes> <commit> <abi> <out> <date>" 1>&2 # XXX
 	exit 1
 fi
 
@@ -13,9 +13,57 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-commit="$1"
-series="$2"
-abinum="$3"
+. "$here/lib-build"
+
+remotes="$1"
+commit="$2"
+abi="$3"
+base="$4"
+date="$5"
+
+remotes="${remotes//,/ }"
+
+master_tree_select
+
+# Ensure we have the commit identified.
+repo_remote_update_list $remotes
+
+full_version=`git cat-file -p "$commit:Makefile" | awk '
+	/^VERSION/	{ version=$3 }
+	/^PATCHLEVEL/	{ patchlevel=$3 }
+	/^SUBLEVEL/	{ sublevel=$3 }
+	/^EXTRAVERSION/	{ extraversion=$3 }
+	END		{ print "v" version "." patchlevel "." sublevel extraversion }
+'`
+
+case "$full_version" in
+v2.6.24*)				master_release="hardy" ;;
+v2.6.27*)				master_release="intrepid" ;;
+v2.6.28*|v2.6.29*|v2.6.30*)		master_release="jaunty" ;;
+v2.6.31*)				master_release="karmic" ;;
+v2.6.32*)				master_release="lucid" ;;
+v2.6.33*|v2.6.34*|v2.6.35*)		master_release="maverick" ;;
+v2.6.36*|v2.6.37*|v2.6.38*)		master_release="natty" ;;
+v2.6.39*|v3.0|v3.0.*)			master_release="oneiric" ;;
+v2*)					master_release="hardy" ;; # Catch old stuff.
+v3.1|v3.1.*|v3.2|v3.2.*)		master_release="precise" ;;
+v3.3|v3.3.*|v3.4|v3.4.*|v3.5|v3.5.*)	master_release="quantal" ;;
+v3.6|v3.6.*|v3.7|v3.7.*|v3.8|v3.8.*)	master_release="raring" ;;
+v3.9|v3.9.*|v3.10|v3.10.*|v3.11|v3.11.*)	master_release="saucy" ;;
+v3.12|v3.12.*|v3.13|v3.13.*)			master_release="trusty" ;;
+v3.14|v3.14.*|v3.15|v3.15.*|v3.16|v3.16.*)	master_release="utopic" ;;
+v3.17|v3.17.*|v3.18|v3.18.*|v3.19|v3.19.*)	master_release="vivid" ;;
+v4.0|v4.0.*|v4.1|v4.1.*|v4.2|v4.2.*)		master_release="wily" ;;
+v4.3|v4.3.*|v4.4|v4.4.*)			master_release="xenial" ;;
+*)						master_release="unstable" ;;
+esac
+
+# Ensure we have the latest and greatest code in the master release.
+repo_remote_update "$master_release"
+
+#commit="$1"
+series="$master_release"
+abinum="$abi"
 
 mkdir MAINLINE-NATIVE
 {
