@@ -61,7 +61,7 @@ esac
 
 # We cannot use the previous LTS as we are tied somewhat to compiler
 # versions and features in later releases.
-case "$series" in
+case "$master_release" in
 hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring|saucy)
 	build_release="precise" ;;
 trusty|utopic)
