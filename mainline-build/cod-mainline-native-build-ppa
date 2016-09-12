@@ -137,13 +137,12 @@ for url in urls:
         filename = os.path.basename(url)
     if os.path.exists(filename):
         continue
-    print(ppa_name, "DOWLOAD:  " + url)
+    print(ppa_name, "DOWNLOAD:  " + url)
     sys.stdout.flush()
     rfd = urlopen(url)
     with open(filename, "wb" ) as lfd:
         lfd.write(rfd.read())
 
-# LOGS: ... XXX XXX XXX
 # CLEAN: clean out the PPA for reuse.
 print(ppa_name, "CLEAN: deleting clean builds")
 sys.stdout.flush()
