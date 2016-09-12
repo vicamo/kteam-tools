@@ -43,6 +43,7 @@ while not source_seen:
         time.sleep(300)
 
 print(ppa_name, "BUILDS: waiting for builds to complete")
+sys.stdout.flush()
 all_ready = False
 while not all_ready:
     all_ready = True
@@ -89,11 +90,13 @@ while not all_ready:
             all_ready = False
         else:
             print(ppa_name, "BUILDS: ready")
+    sys.stdout.flush()
     if not all_ready:
         time.sleep(300)
 
 # DOWNLOAD: download the completed builds.
 print(ppa_name, "DOWNLOAD: identifying binaries")
+sys.stdout.flush()
 urls = {}
 for source in ppa.getPublishedSources():
     if source.status in ('Superseded', 'Deleted', 'Obsolete'):
@@ -126,6 +129,7 @@ for source in ppa.getPublishedSources():
 
 # DOWNLOAD: download the completed builds.
 print(ppa_name, "DOWNLOAD: downloading artifacts")
+sys.stdout.flush()
 for url in urls:
     if urls[url] != True:
         filename = urls[url]
@@ -134,6 +138,7 @@ for url in urls:
     if os.path.exists(filename):
         continue
     print(ppa_name, "DOWLOAD:  " + url)
+    sys.stdout.flush()
     rfd = urlopen(url)
     with open(filename, "wb" ) as lfd:
         lfd.write(rfd.read())
@@ -141,9 +146,11 @@ for url in urls:
 # LOGS: ... XXX XXX XXX
 # CLEAN: clean out the PPA for reuse.
 print(ppa_name, "CLEAN: deleting clean builds")
+sys.stdout.flush()
 for source in ppa.getPublishedSources():
     if source.status in ('Superseded', 'Deleted', 'Obsolete'):
         continue
     source.requestDeletion()
 
 print(ppa_name, "DONE: all complete")
+sys.stdout.flush()
