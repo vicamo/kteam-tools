@@ -51,7 +51,8 @@ class TheApp():
 
         # Ensure we look in the current directory for these commands.
         payload['cmd'][0] = './' + payload['cmd'][0]
-        payload['cmd'].insert(0, "./mainline-worker-kmsgq-runner")
+        if s.args.prefix_arg:
+            payload['cmd'] = s.args.prefix_arg + payload['cmd']
 
         cdebug(payload)
         try:
@@ -125,6 +126,7 @@ examples:
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('--command', action='append', default=[], help='Add a valid command to the validator.')
+    parser.add_argument('--prefix-arg', action='append', default=[], help='Add a valid command to the validator.')
     parser.add_argument('name', help='Name of this instance in the admin domain')
     parser.add_argument('queue', help='Name of the queue to use')
     args = parser.parse_args()

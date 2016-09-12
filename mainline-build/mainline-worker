@@ -10,6 +10,7 @@ cd "$here" || exit 1
 
 echo "Starting `date`"
 exec ./mainline-worker-kmsgq \
+	--prefix-arg ./mainline-worker-kmsgq-runner \
 	--command cod-source \
 	--command cod-ubuntu-config \
 	--command mainline-build \
