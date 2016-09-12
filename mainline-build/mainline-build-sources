@@ -65,7 +65,7 @@ EOL
 	else
 		was="failed"
 	fi
-	echo "Build for $arch $was (see BUILD.log.$arch):"
+	echo "Build for $arch $was (see BUILD.LOG.$arch):"
 	for deb in *_all.deb *_$arch.deb
 	do
 		case "$deb" in
@@ -88,7 +88,7 @@ generate_readme >"README"
 	-e 's@\(http:[^ ]*\)@<a href="\1">\1</a>@' \
 	-e 's@\([^ ]*\.deb\>\)@<a href="\1">\1</a>@' \
 	-e 's@\([^ ]*\.patch\>\)@<a href="\1">\1</a>@' \
-	-e 's@\(\<SOURCES\|BUILD.log.[^ ]*\>\)@<a href="\1">\1</a>@' \
+	-e 's@\(\<SOURCES\|BUILD.LOG.[^ ]*\>\)@<a href="\1">\1</a>@' \
 	-e 's@$@<br>@' \
 	-e 's@^ @\&nbsp;@g'
     echo "</code>"
