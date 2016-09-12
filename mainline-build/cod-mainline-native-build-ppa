@@ -10,7 +10,7 @@ from collections import defaultdict
 from launchpadlib.launchpad import Launchpad
 import lazr
 
-lp = Launchpad.login_with('crack-build-ppa', 'production', version='devel')
+lp = Launchpad.login_anonymously('crack-build-ppa', 'production', version='devel')
 
 owner_name = "ubuntu-kernel-test"
 #owner_name = "apw"
