@@ -97,7 +97,7 @@ class TheApp():
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
 
-            s.mq.listen_worker(s.args.queue, 'mainline-todo', s._handler)
+            s.mq.listen_worker(s.args.queue, s.args.queue, s._handler)
             s.mq.listen_worker('admin-' + s.args.name, 'admin-' + s.args.name, s._handler, auto_delete=True)
 
             s.mq.listen_start()
