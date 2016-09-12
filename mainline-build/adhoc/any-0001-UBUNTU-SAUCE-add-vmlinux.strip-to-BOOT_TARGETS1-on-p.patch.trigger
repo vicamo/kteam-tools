@@ -5,5 +5,6 @@ series="$1"
 build="$2"
 
 if ! egrep -q -s 'BOOT_TARGETS1 :=.* vmlinux\.strip' arch/powerpc/Makefile; then
+	echo "*** applying $patch ..."
 	git am -C0 "$patch"
 fi
