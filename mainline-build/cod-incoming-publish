@@ -89,7 +89,6 @@ done
 # Look for any uploads the native builders.
 (
 	cd "$incoming/upload/mainline-native" || exit 1
-	mkdir -p failed
 
 	for package in *_source.changes
 	do

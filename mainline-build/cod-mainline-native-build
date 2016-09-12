@@ -12,7 +12,30 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-ppa="$1"
-changes="$2"
+cd "$HOME/incoming/upload/mainline-native-queue" || exit 1
 
-echo "HELLO: ppa<$ppa> changes<$changes>"
+ppa="$1"
+prefix="$2"
+
+P="$P ($ppa)"
+
+changes="${prefix}_source.changes"
+
+if [ -f "$changes" ]; then
+	echo "$P: $changes: changes file missing?" 1>&2
+	exit 1
+fi
+
+echo "$P: Uploading source ..."
+dput "ppa:ubuntu-kernel-test/ubuntu/$ppa"
+
+# Make a nice clean results directory ...
+mkdir -p "$prefix"
+cd "$prefix" || exit 1
+
+# Monitor the PPA and download the results.
+echo "$P: Monitoring build in $ppa ..."
+"$here/cod-mainline-native-build-ppa" "$ppa"
+
+# Copy the results out ...
+echo "$P: Copying out results ..."

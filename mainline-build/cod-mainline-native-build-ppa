@@ -1,0 +1,149 @@
+#!/usr/bin/python2
+from __future__ import print_function
+
+import os
+import sys
+import time
+from urllib2 import Request, urlopen
+
+from collections import defaultdict
+from launchpadlib.launchpad import Launchpad
+import lazr
+
+lp = Launchpad.login_with('crack-build-ppa', 'production', version='devel')
+
+owner_name = "ubuntu-kernel-test"
+#owner_name = "apw"
+try:
+    owner = lp.people(owner_name)
+    owner.name # trigger actual fetch of this owner
+except lazr.restfulclient.errors.NotFound:
+    print("{0}: {1}: unknown launchpad owner".format(sys.argv[0], owner_name))
+    sys.exit(1)
+
+ppa_name = sys.argv[1]
+#ppa_name = "crack-000"
+try:
+    ppa = owner.getPPAByName(name=ppa_name)
+except lazr.restfulclient.errors.NotFound:
+    print("{0}: {1}: unknown launchpad ppa".format(sys.argv[0], ppa_name))
+    sys.exit(1)
+
+# The PPA will start out empty, so wait for a source to appear in the PPA.
+print(ppa_name, "SOURCE: waiting for source to appear")
+source_seen = False
+while not source_seen:
+    for source in ppa.getPublishedSources():
+        if source.status in ('Superseded', 'Deleted', 'Obsolete'):
+            continue
+        source_seen = True
+        break
+    if not source_seen:
+        print(ppa_name, "SOURCE: waiting ...")
+        time.sleep(300)
+
+print(ppa_name, "BUILDS: waiting for builds to complete")
+all_ready = False
+while not all_ready:
+    all_ready = True
+    for source in ppa.getPublishedSources():
+        if source.status in ('Superseded', 'Deleted', 'Obsolete'):
+            continue
+        print(ppa_name, "BUILDS: ", source.source_package_name, source.source_package_version, source.status)
+
+        # Architecture states
+        arch_state = {}
+
+        # Examine the builds and accumulate their stati
+        builds = source.getBuilds()
+        builds_count = len(builds)
+        build_state = defaultdict(lambda: 0)
+        for build in builds:
+            arch_state[build.arch_tag] = build.buildstate
+
+        # Example the binary publications
+        binary_list = source.getPublishedBinaries()
+        binary_counts = defaultdict(lambda: 0)
+        for binary in binary_list:
+            #print(binary.distro_arch_series_link,binary.status,binary.binary_package_name,binary.binary_package_version)
+            #print(binary.binaryFileUrls())
+            if not binary.architecture_specific:
+                ##print(binary.distro_arch_series_link,binary.status,binary.binary_package_name,binary.binary_package_version)
+                continue
+            binary_counts[binary.distro_arch_series_link] = binary.status
+
+        binary_count = len(binary_counts)
+
+        for dasl in binary_counts:
+            arch = dasl.split('/')[-1]
+            arch_state[arch] = binary_counts[dasl]
+
+        #print("Published {0}/{1}:".format(binary_count, builds_count))
+        ready = True
+        for arch in sorted(arch_state):
+            print(ppa_name, "BUILDS:   {0:10} {1}".format(arch, arch_state[arch]))
+            if arch_state[arch] not in ("Published", "Failed to build", "Cancelled build"):
+                ready = False
+
+        if not ready:
+            all_ready = False
+        else:
+            print(ppa_name, "BUILDS: ready")
+    if not all_ready:
+        time.sleep(300)
+
+# DOWNLOAD: download the completed builds.
+print(ppa_name, "DOWNLOAD: identifying binaries")
+urls = {}
+for source in ppa.getPublishedSources():
+    if source.status in ('Superseded', 'Deleted', 'Obsolete'):
+        continue
+
+    # Architecture states
+    arch_state = {}
+
+    # Examine the builds and accumulate their stati
+    builds = source.getBuilds()
+    builds_count = len(builds)
+    build_state = defaultdict(lambda: 0)
+    for build in builds:
+        log = build.build_log_url
+        if log:
+            urls[log] = build.arch_tag + ".log.gz"
+        arch_state[build.arch_tag] = build.buildstate
+        with open(build.arch_tag + ".status", "w") as sfd:
+            print(build.buildstate, file=sfd)
+
+    # Example the binary publications
+    binary_list = source.getPublishedBinaries()
+    binary_counts = defaultdict(lambda: 0)
+    for binary in binary_list:
+        if not binary.architecture_specific:
+            continue
+        binary_counts[binary.distro_arch_series_link] = binary.status
+        for url in binary.binaryFileUrls():
+            urls[url] = True
+
+# DOWNLOAD: download the completed builds.
+print(ppa_name, "DOWNLOAD: downloading artifacts")
+for url in urls:
+    if urls[url] != True:
+        filename = urls[url]
+    else:
+        filename = os.path.basename(url)
+    if os.path.exists(filename):
+        continue
+    print(ppa_name, "DOWLOAD:  " + url)
+    rfd = urlopen(url)
+    with open(filename, "wb" ) as lfd:
+        lfd.write(rfd.read())
+
+# LOGS: ... XXX XXX XXX
+# CLEAN: clean out the PPA for reuse.
+print(ppa_name, "CLEAN: deleting clean builds")
+for source in ppa.getPublishedSources():
+    if source.status in ('Superseded', 'Deleted', 'Obsolete'):
+        continue
+    source.requestDeletion()
+
+print(ppa_name, "DONE: all complete")
