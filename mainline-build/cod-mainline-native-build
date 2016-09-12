@@ -1,0 +1,18 @@
+#! /bin/bash
+P="cod-mainline-native-build"
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <ppa> <changes>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+ppa="$1"
+changes="$2"
+
+echo "HELLO: ppa<$ppa> changes<$changes>"

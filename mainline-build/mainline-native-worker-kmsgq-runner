@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# mainline-native-worker-kmsgq-runner -- run the job and sync the results up.
+#
+P="mainline-native-worker-kmsgq-runner"
+
+echo "$P: starting job ($@) ..."
+ppa="$1"
+cmd="$2"
+shift 2
+
+echo "$P: running job ($cmd $ppa $@) ..."
+"$cmd" "$ppa" "$@"
+
+echo "$P: job complete"

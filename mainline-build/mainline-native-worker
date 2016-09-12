@@ -1,0 +1,22 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+cd "$here" || exit 1
+
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <ppa>" 1>&2
+	exit 1
+fi
+
+echo "Starting `date`"
+exec ./mainline-worker-kmsgq \
+	--prefix-arg ./mainline-native-worker-kmsgq-runner \
+	--prefix-arg "$ppa" \
+	--command cod-mainline-native-build \
+	`hostname` mainline-native \
+	"$@"
