@@ -27,7 +27,7 @@ if [ ! -f "$changes" ]; then
 fi
 
 echo "$P: Uploading source ..."
-dput "ppa:ubuntu-kernel-test/ubuntu/$ppa"
+dput "ppa:ubuntu-kernel-test/ubuntu/$ppa" "$changes"
 
 # Make a nice clean results directory ...
 mkdir -p "$prefix"
