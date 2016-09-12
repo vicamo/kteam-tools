@@ -45,6 +45,10 @@ class TheApp():
             s.mq.listen_stop()
             return
 
+        if payload['key'] != s.args.queue:
+            error("work for another player '" + payload['key'] + "', ignored")
+            return
+
         if payload['cmd'][0] not in s.args.command:
             error("invalid work request cmd, ignored")
             return
