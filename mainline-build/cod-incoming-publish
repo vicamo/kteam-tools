@@ -86,6 +86,32 @@ do
 	)
 done
 
+# Look for any uploads the native builders.
+(
+	cd "$incoming/upload/mainline-native" || exit 1
+	mkdir -p failed
+
+	for package in *_source.changes
+	do
+		package=${package%_source.changes}
+		if [ "$package" = "*" ]; then
+			continue
+		fi
+
+		echo "$P: $package: mainline-native job queueing ..."
+
+		# Sign the package we are meant to be uploading.
+		echo "n" | debsign -kkernel-ppa "${package}_source.changes"
+
+		# Move it to the queue directory so we only queue it once.
+		mkdir -p "$incoming/upload/mainline-native-queue"
+		mv -f "${package}"* "$incoming/upload/mainline-native-queue"
+
+		# Queue it up.
+		"$here/cod-enqueue" --to mainline-native "cod-mainline-native-build" "${package}"
+	done
+)
+
 # Copy in incoming configuration dumps.
 mkdir -p "$HOME/public_html/config"
 rsync -v -a --remove-source-files "$HOME/incoming/config/" "$HOME/public_html/config/"

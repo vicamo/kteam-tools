@@ -374,9 +374,7 @@ elif [ -d meta-source ]; then
 	mv *.tar.gz *.dsc *.changes ..
 fi
 
-ppa='mainline-queue'
-
 # Move the upload to the incoming directory.
-mkdir -p "$HOME/public_html/upload/$ppa"
+mkdir -p "$HOME/public_html/upload/mainline-native"
 mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
-	"$HOME/public_html/upload/$ppa"
+	"$HOME/public_html/upload/mainline-native"
