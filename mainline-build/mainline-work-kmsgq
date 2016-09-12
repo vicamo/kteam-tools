@@ -57,9 +57,9 @@ class TheApp():
             else:
                 mq = MsgQueue(exchange='kernel-mainline-todo')
 
-            if s.args.command == ['queue-status']:
+            if s.args.command[0] == 'queue-status':
                 if len(s.args.command) == 2:
-                    queue = a.args.command[1]
+                    queue = s.args.command[1]
                 else:
                     queue = 'mainline-todo'
 
