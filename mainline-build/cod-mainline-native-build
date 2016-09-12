@@ -21,7 +21,7 @@ P="$P ($ppa)"
 
 changes="${prefix}_source.changes"
 
-if [ -f "$changes" ]; then
+if [ ! -f "$changes" ]; then
 	echo "$P: $changes: changes file missing?" 1>&2
 	exit 1
 fi
