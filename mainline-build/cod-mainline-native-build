@@ -39,3 +39,29 @@ echo "$P: Monitoring build in $ppa ..."
 
 # Copy the results out ...
 echo "$P: Copying out results ..."
+
+# Drop in the overlay.
+tar zxvf "../${prefix}_native.tar.gz"
+
+# Mark the end of the build.
+{
+	echo "PPA: $ppa"
+	for status in *.status
+	do
+		arch=${status%.status}  
+		status=$( cat "$status" )
+		case "$status" in
+		'Successfully built'|'Published')
+			status=0 ;;
+		*)
+			status=1 ;;
+		esac
+		echo "Status: $arch $status"
+	done
+        time=`date +%s`
+        echo "End: $time"
+} >>BUILT
+
+# Drop in the boiler-plate, checksums etc.
+"$here/mainline-build-sources"
+"$here/mainline-build-checksum"
