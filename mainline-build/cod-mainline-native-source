@@ -81,13 +81,13 @@ repo_remote_update "$master_release"
 series="$master_release"
 abinum="$abi"
 
-mkdir ../MAINLINE-NATIVE
+mkdir ../NATIVE
 {
 	time=`date +%s`
 	echo "Release: $build_release"
 	echo "Host: `hostname`"
 	echo "Start: $time"
-} >../MAINLINE-NATIVE/BUILT
+} >../NATIVE/BUILT
 
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
@@ -130,6 +130,12 @@ fi
 # use the date as an upload number so we can tell different builds apart.
 upload=".`date +%Y%m%d%H%M`"
 
+sha1=`git log -1 --pretty=%H "$commit" 2>/dev/null`
+{
+	echo "$commit"
+	echo "$sha1"
+} >"../NATIVE/COMMIT"
+
 # Produce CHANGES fragment.
 if [ "$log_enabled" -eq 1 ]; then
 	log_from=`git describe "$commit^"`
@@ -137,7 +143,7 @@ if [ "$log_enabled" -eq 1 ]; then
 		log_from="${log_from%-*}"
 		log_from="${log_from%-*}"
 
-		git shortlog "$log_from..$commit" >"../MAINLINE-NATIVE/CHANGES"
+		git shortlog "$log_from..$commit" >"../NATIVE/CHANGES"
 	fi
 fi
 
@@ -339,7 +345,7 @@ git commit -a -m "configs (based on $configs)"
 #
 # Record the patches.
 #
-git format-patch -o "../MAINLINE-NATIVE" "$commit..HEAD"
+git format-patch -o "../NATIVE" "$commit..HEAD"
 
 # Ensure the build directories are pristine.
 git clean -x -f -d
@@ -347,9 +353,7 @@ git clean -x -f -d
 {
 	echo "Debian: $series"
 	echo "Configs: $configs"
-	time=`date +%s`
-	echo "End: $time"
-} >>../MAINLINE-NATIVE/BUILT
+} >>../NATIVE/BUILT
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$master_main"/*.upload
@@ -373,6 +377,11 @@ elif [ -d meta-source ]; then
 	)
 	mv *.tar.gz *.dsc *.changes ..
 fi
+
+# Build the informational overlay.
+prefix="$master_main"/*.changes
+prefix=${prefix%_source.changes}
+tar -C "../NATIVE" -zcvf "${prefix}_overlay.tar.gz" .
 
 # Move the upload to the incoming directory.
 mkdir -p "$HOME/public_html/upload/mainline-native"
