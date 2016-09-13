@@ -81,7 +81,8 @@ repo_remote_update "$master_release"
 series="$master_release"
 abinum="$abi"
 
-mkdir ../NATIVE
+rm -rf ../NATIVE
+mkdir -p../NATIVE
 {
 	time=`date +%s`
 	echo "Release: $build_release"
@@ -191,6 +192,7 @@ rm -rf .dotest
 # Checkout the source at the specified version.
 #
 git checkout -b "$branch" "$commit" -- || exit 1
+git clean -x -f -d
 
 # Report the head for posterity.
 echo "vvv - build head"
@@ -379,9 +381,12 @@ elif [ -d meta-source ]; then
 fi
 
 # Build the informational overlay.
-prefix="$master_main"/*.changes
+for prefix in "$master_main"/*.changes
+do
+        break
+done
 prefix=${prefix%_source.changes}
-tar -C "../NATIVE" -zcvf "${prefix}_overlay.tar.gz" .
+tar -C "../NATIVE" -zcvf "${prefix}_native.tar.gz" .
 
 # Move the upload to the incoming directory.
 mkdir -p "$HOME/public_html/upload/mainline-native"
