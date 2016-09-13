@@ -10,7 +10,8 @@ from collections import defaultdict
 from launchpadlib.launchpad import Launchpad
 import lazr
 
-lp = Launchpad.login_with('crack-build-ppa', 'production', version='devel')
+lp = Launchpad.login_with('crack-build-ppa', 'production', version='devel', 
+    credentials_file=os.environ['HOME'] + "/.launchpad.kernel-ppa")
 
 owner_name = "ubuntu-kernel-test"
 #owner_name = "apw"
