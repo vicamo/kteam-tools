@@ -82,7 +82,7 @@ series="$master_release"
 abinum="$abi"
 
 rm -rf ../NATIVE
-mkdir -p../NATIVE
+mkdir -p ../NATIVE
 {
 	time=`date +%s`
 	echo "Release: $build_release"
