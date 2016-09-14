@@ -64,6 +64,7 @@ done
 for ppa in 'test-devel' 'pre-proposed'
 do
 	(
+		[ ! -d "$incoming/upload/$ppa" ] && exit 0
 		cd "$incoming/upload/$ppa" || exit 1
 		mkdir -p failed
 
@@ -114,6 +115,8 @@ done
 (
 	outgoing="$outgoing/native"
 
+	[ ! -d "$incoming/native/publish" ] && exit 0
+	mkdir -p "$incoming/native/publish"
 	cd "$incoming/native/publish" || exit 1
 	for prefix in *
 	do
