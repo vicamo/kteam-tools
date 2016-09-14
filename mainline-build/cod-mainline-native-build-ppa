@@ -84,7 +84,7 @@ while not all_ready:
         ready = True
         for arch in sorted(arch_state):
             print(ppa_name, "BUILDS:   {0:10} {1}".format(arch, arch_state[arch]))
-            if arch_state[arch] not in ("Successfully built", "Pending", "Published", "Failed to build", "Cancelled build"):
+            if arch_state[arch] not in ("Pending", "Published", "Failed to build", "Cancelled build"):
                 ready = False
 
         if not ready:
