@@ -122,8 +122,6 @@ for source in ppa.getPublishedSources():
     binary_list = source.getPublishedBinaries()
     binary_counts = defaultdict(lambda: 0)
     for binary in binary_list:
-        if not binary.architecture_specific:
-            continue
         binary_counts[binary.distro_arch_series_link] = binary.status
         for url in binary.binaryFileUrls():
             urls[url] = True
