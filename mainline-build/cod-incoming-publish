@@ -86,9 +86,9 @@ do
 	)
 done
 
-# Look for any uploads the native builders.
+# Look for any source packages for the native PPA builders.
 (
-	cd "$incoming/upload/mainline-native" || exit 1
+	cd "$incoming/native/source" || exit 1
 
 	for package in *_source.changes
 	do
@@ -103,11 +103,43 @@ done
 		echo "n" | debsign -kkernel-ppa "${package}_source.changes"
 
 		# Move it to the queue directory so we only queue it once.
-		mkdir -p "$incoming/upload/mainline-native-queue"
-		mv -f "${package}"* "$incoming/upload/mainline-native-queue"
+		mkdir -p "$incoming/native/queue"
+		mv -f "${package}"* "$incoming/native/queue"
 
 		# Queue it up.
 		"$here/cod-enqueue" --to mainline-native "cod-mainline-native-build" "${package}"
+	done
+)
+# Look for any completed native builds.
+(
+	outgoing="$outgoing/native"
+
+	cd "$incoming/native/publish" || exit 1
+	for prefix in *
+	do
+		if [ "$prefix" = "*" ]; then
+			continue
+		fi
+		# Identify the build.
+		{
+			read commit
+			read sha1
+		} <"$prefix/COMMIT"
+		build="$commit"
+		
+		echo "$P: $build: native build publishing ..."
+
+		mkdir -p "$outgoing"
+		if [ -d "$outgoing/$build" ]; then
+			echo "$P: $build: result already published, removing previous ..."
+			rm -rf "$outgoing/$build"
+		fi
+		mv "$prefix" "$outgoing/$build" && \
+		{
+			# Sign the publication.
+			rm -f "$outgoing/$build/CHECKSUMS.gpg"
+			gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/native/$build/CHECKSUMS"
+		}
 	done
 )
 

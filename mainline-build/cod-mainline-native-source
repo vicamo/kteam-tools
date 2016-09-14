@@ -389,6 +389,6 @@ prefix=${prefix%_source.changes}
 tar -C "../NATIVE" -zcvf "${prefix}_native.tar.gz" .
 
 # Move the upload to the incoming directory.
-mkdir -p "$HOME/public_html/upload/mainline-native"
+mkdir -p "$HOME/public_html/native/source"
 mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
-	"$HOME/public_html/upload/mainline-native"
+	"$HOME/public_html/native/source"

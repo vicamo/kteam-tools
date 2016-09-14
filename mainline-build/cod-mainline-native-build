@@ -1,5 +1,4 @@
-#! /bin/bash
-P="cod-mainline-native-build"
+#! /bin/bash P="cod-mainline-native-build"
 
 if [ "$#" -ne 2 ]; then
 	echo "Usage: $0 <ppa> <changes>" 1>&2
@@ -12,7 +11,7 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-cd "$HOME/incoming/upload/mainline-native-queue" || exit 1
+cd "$HOME/incoming/native/queue" || exit 1
 
 ppa="$1"
 prefix="$2"
@@ -65,3 +64,9 @@ tar zxvf "../${prefix}_native.tar.gz"
 # Drop in the boiler-plate, checksums etc.
 "$here/mainline-build-sources"
 "$here/mainline-build-checksum"
+
+# Finally drop this directory into the results for publishing.
+cd "$HOME/incoming/native/queue" || exit 1
+mkdir -p "$HOME/incoming/native/publish" || exit 1
+mv "./$prefix" "$HOME/incoming/native/publish"
+rm -f "./$prefix"*
