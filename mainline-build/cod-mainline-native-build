@@ -1,4 +1,5 @@
-#! /bin/bash P="cod-mainline-native-build"
+#! /bin/bash
+P="cod-mainline-native-build"
 
 if [ "$#" -ne 2 ]; then
 	echo "Usage: $0 <ppa> <changes>" 1>&2
