@@ -75,7 +75,7 @@ if __name__ == '__main__':
     app_epilog = '''
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('start', nargs=1, type=str)
+    parser.add_argument('start', nargs=1, type=str, help='Start format: D.M.Y  (18.11.2016 for Nov. 18, 2016)')
 
     args = parser.parse_args()
     args.start = args.start[0]
