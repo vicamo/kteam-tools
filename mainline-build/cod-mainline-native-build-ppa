@@ -146,7 +146,7 @@ for url in urls:
 print(ppa_name, "CLEAN: deleting clean builds")
 sys.stdout.flush()
 for source in ppa.getPublishedSources():
-    if source.status in ('Superseded', 'Deleted', 'Obsolete'):
+    if source.status in ('Deleted'):
         continue
     source.requestDeletion()
 
