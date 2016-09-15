@@ -20,6 +20,8 @@ package="$2"
 version="$3"
 tag="$4"
 
+exit 0
+
 master_tree_select
 
 # Ensure we have the commit identified.
