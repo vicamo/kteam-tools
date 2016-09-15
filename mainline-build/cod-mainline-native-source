@@ -186,6 +186,9 @@ git fetch "$series"
 git checkout -f "$series/master"
 git branch -D "$branch"
 
+# Clean up in case git is in horrors.
+rm -rf .git/rebase-apply
+
 rm -rf .dotest
 
 #
