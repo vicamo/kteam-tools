@@ -22,7 +22,7 @@ mkdir -p "$master_tags"
 #
 # UBUNTU TAGS: Find all the new Ubuntu release tags.
 #
-wget -q -O "$tags_list.new" "$url"
+wget -q -O "$tags_list.new" "$url" || exit 1
 
 # First run is the base line.
 if [ ! -f "$tags_list" ]; then
