@@ -31,7 +31,7 @@ if [ ! -f "$tags_list" ]; then
 fi
 
 diff "$tags_list" "$tags_list.new" | \
-	awk '/>/' | tac >"$tags_list.added"
+	egrep '^>' | tac >"$tags_list.added"
 
 # Commit the list.
 mv "$tags_list.new" "$tags_list"
