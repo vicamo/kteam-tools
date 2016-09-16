@@ -128,7 +128,8 @@ class TrackingBug:
         # specific one we just added. Set them both to "Confirmed".
         #
         for task in bug.tasks:
-            task.status = "Confirmed"
+            if self.targeted_series_name.title() in task.bug_target_name:
+                task.status = "Confirmed"
 
     def reset_tasks(self, bug):
         center(self.__class__.__name__ + '.reset_tasks')
