@@ -204,10 +204,10 @@ class CreateTrackingBug(StdApp):
         return
 
 if __name__ == '__main__':
-    Clog.dbg = True
-    Clog.color = True
-    log_format = "%(levelname)s - %(message)s"
-    basicConfig(level=DEBUG, format=log_format)
+    # Clog.dbg = True
+    # Clog.color = True
+    # log_format = "%(levelname)s - %(message)s"
+    # basicConfig(level=DEBUG, format=log_format)
     app = CreateTrackingBug()
     app.main()
 
