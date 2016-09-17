@@ -14,6 +14,7 @@ class VerificationTesting(TaskHandler):
         super(VerificationTesting, s).__init__(lp, task, bug)
 
         s.jumper['New']          = s._new
+        s.jumper['Confirmed']    = s._confirmed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -25,6 +26,19 @@ class VerificationTesting(TaskHandler):
         if s.bug.ready_for_testing:
             s.task.status = 'Confirmed'
             retval = True
+        cleave(s.__class__.__name__ + '._new (%s)' % retval)
+        return retval
+
+    # _confirmed
+    #
+    def _confirmed(s):
+        center(s.__class__.__name__ + '._new')
+        retval = False
+        if s.bug.is_derivative_package:
+            master = s.bug.master_bug
+            if s.task.status != master.tasks_by_name['verification-testing'].status:
+                s.task.status = master.tasks_by_name['verification-testing'].status
+                retval = True
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
