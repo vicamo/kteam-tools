@@ -2,32 +2,6 @@
 from wfl.log                            import center, cleave, cinfo
 from .promoter                          import Promoter
 
-class Promoter(Promoter):
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(Promoter, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
-    def _security_signoff_verified(s):
-        '''
-        Check if the security-signoff task has been set to 'Fix Released'. Development
-        series tracking bugs do not have this task and should always return True.
-        '''
-        center(s.__class__.__name__ + '.security_signoff_verified')
-        retval = False
-        if s.bug.sru_workflow_project:
-            if s.bug.tasks_by_name['security-signoff'].status not in ['Fix Released', 'Invalid']:
-                retval = True
-            else:
-                cinfo('            security-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
-        else:
-            retval = True
-        cleave(s.__class__.__name__ + '.security_signoff_verified (%s)' % retval)
-        return retval
-
-
 class PromoteToSecurity(Promoter):
     '''
     A Task Handler for the promote-to-security task.
