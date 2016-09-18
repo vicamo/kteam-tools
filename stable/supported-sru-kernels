@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+#
+
+from sys                                import stderr
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO
+import traceback
+from ktl.log                            import center, cleave, Clog
+from ktl.ubuntu                         import Ubuntu
+
+# TheApp
+#
+class TheApp(object):
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s):
+        '''
+        '''
+        center(s.__class__.__name__ + '.__init__')
+        cleave(s.__class__.__name__ + '.__init__')
+
+    # main
+    #
+    def main(s, args):
+        center(s.__class__.__name__ + '.main')
+        retval = 0
+
+        db = Ubuntu().db
+        for svn in sorted(db):
+            if not db[svn]['supported']:
+                continue
+
+            print(svn)
+
+            if 'dependent-packages' in db[svn]:
+                for pkg in sorted(db[svn]['dependent-packages']):
+                    try:
+                        if db[svn]['dependent-packages'][pkg]['supported']:
+                            print('    ' + pkg)
+                    except KeyError:
+                        print('KeyError for:')
+                        print('    series version: ' + svn)
+                        print('               pkg: ' + pkg)
+                        print(db[svn]['dependent-packages'][pkg])
+
+        cleave(s.__class__.__name__ + '.main (%s)' % retval)
+        return retval
+
+if __name__ == '__main__':
+    retval = -1
+
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+
+    center('__main__')
+    try:
+        app = TheApp()
+        retval = app.main(args)
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        trace = traceback.format_exc()
+        try:
+            stderr.write(trace)
+        except:
+            pass
+        # logfile = open(path.join('.', 'exceptions.log'), 'a')
+        # logfile.write('Critical exception in core')
+        # logfile.write(trace)
+        # logfile.write('----------------------------------------\n\n')
+        # logfile.close()
+
+    cleave('__main__ (%s)' % (retval))
+    exit(retval)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
