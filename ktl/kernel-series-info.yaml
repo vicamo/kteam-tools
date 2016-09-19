@@ -138,13 +138,10 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: true
             linux-raspi2:
                 meta: linux-meta-raspi2
-                supported: true
             linux-snapdragon:
                 meta: linux-meta-snapdragon
-                supported: true
         derivative-packages:
             linux:
             - linux-raspi2
@@ -169,10 +166,8 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
             linux-raspi2:
                 meta: linux-meta-raspi2
-                supported: false
         derivative-packages:
             linux:
             - linux-raspi2
@@ -194,7 +189,6 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: true
         derivative-packages:
             linux: []
         development: false
@@ -213,7 +207,6 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
         derivative-packages:
             linux: []
         development: false
@@ -245,26 +238,20 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
             linux-keystone:
                 meta: linux-meta-keystone
-                supported: true
             linux-lts-utopic:
                 meta: linux-meta-lts-utopic
                 signed: linux-signed-lts-utopic
-                supported: true
             linux-lts-vivid:
                 meta: linux-meta-lts-vivid
                 signed: linux-signed-lts-vivid
-                supported: true
             linux-lts-wily:
                 meta: linux-meta-lts-wily
                 signed: linux-signed-lts-wily
-                supported: false
             linux-lts-xenial:
                 meta: linux-meta-lts-xenial
                 signed: linux-signed-lts-xenial
-                supported: true
         derivative-packages:
             linux:
             - linux-keystone
@@ -299,13 +286,10 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
             linux-lowlatency:
                 meta: linux-meta-lowlatency
-                supported: false
             linux-ppc:
                 meta: linux-meta-ppc
-                supported: false
         derivative-packages:
             linux:
             - linux-lowlatency
@@ -327,13 +311,10 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
             linux-lowlatency:
                 meta: linux-meta-lowlatency
-                supported: false
             linux-ppc:
                 meta: linux-meta-ppc
-                supported: false
         derivative-packages:
             linux:
             - linux-lowlatency
@@ -356,16 +337,12 @@
                 lbm: linux-backports-modules-3.5.0
                 meta: linux-meta
                 signed: linux-signed
-                supported: false
             linux-armadaxp:
                 meta: linux-meta-armadaxp
-                supported: false
             linux-lowlatency:
                 meta: linux-meta-lowlatency
-                supported: false
             linux-ti-omap4:
                 meta: linux-meta-ti-omap4
-                supported: false
         derivative-packages:
             linux:
             - linux-ti-omap4
@@ -394,29 +371,22 @@
             linux:
                 lbm: linux-backports-modules-3.2.0
                 meta: linux-meta
-                supported: true
             linux-armadaxp:
                 meta: linux-meta-armadaxp
-                supported: true
             linux-lts-quantal:
                 meta: linux-meta-lts-quantal
                 signed: linux-signed-lts-quantal
-                supported: false
             linux-lts-raring:
                 meta: linux-meta-lts-raring
                 signed: linux-signed-lts-raring
-                supported: false
             linux-lts-saucy:
                 meta: linux-meta-lts-saucy
                 signed: linux-signed-lts-saucy
-                supported: false
             linux-lts-trusty:
                 meta: linux-meta-lts-trusty
                 signed: linux-signed-lts-trusty
-                supported: true
             linux-ti-omap4:
                 meta: linux-meta-ti-omap4
-                supported: true
         derivative-packages:
             linux:
             - linux-ti-omap4
@@ -453,10 +423,8 @@
             linux:
                 lbm: linux-backports-modules-3.0.0
                 meta: linux-meta
-                supported: false
             linux-ti-omap4:
                 meta: linux-meta-ti-omap4
-                supported: false
         derivative-packages:
             linux:
             - linux-ti-omap4
