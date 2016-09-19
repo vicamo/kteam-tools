@@ -36,15 +36,8 @@ class TheApp(object):
             print(svn)
 
             if 'dependent-packages' in db[svn]:
-                for pkg in sorted(db[svn]['dependent-packages']):
-                    try:
-                        if db[svn]['dependent-packages'][pkg]['supported']:
-                            print('    ' + pkg)
-                    except KeyError:
-                        print('KeyError for:')
-                        print('    series version: ' + svn)
-                        print('               pkg: ' + pkg)
-                        print(db[svn]['dependent-packages'][pkg])
+                for pkg in sorted(db[svn]['packages']):
+                    print('    ' + pkg)
 
         cleave(s.__class__.__name__ + '.main (%s)' % retval)
         return retval
