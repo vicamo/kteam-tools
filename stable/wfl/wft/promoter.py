@@ -74,8 +74,8 @@ class Promoter(TaskHandler):
             'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
             'prepare-package-signed'     : ['Fix Released'],
             'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
-            'promote-to-updates'         : ['Confirmed', 'Fix Released'],
-            'promote-to-security'        : ['Confirmed', 'Fix Released', 'Invalid']
+            'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
+            'promote-to-security'        : ['Confirmed', 'In Progress', 'Fix Released', 'Invalid']
         }
 
         master = s.bug.master_bug
