@@ -163,7 +163,8 @@ class CreateTrackingBug(StdApp):
             bug = tb.open(changelog[0]['package'],
                           changelog[0]['version'],
                           changelog[0]['ABI'] != changelog[1]['ABI'],
-                          master_bug)
+                          master_bug,
+                          changelog[0]['series'])
 
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
