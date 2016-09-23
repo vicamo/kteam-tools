@@ -28,7 +28,9 @@ from ktl.kernel_versions import Launchpad
 
 def ppa_clean(owner, ppa):
     # Login to launchpad.
-    lp = Launchpad.login_with('ppa-package-cleaner', 'production', version='devel')
+    lp = Launchpad.login_with('ppa-package-cleaner', 'production', version='devel',
+        credentials_file=os.environ['HOME'] + "/.launchpad.kernel-ppa")
+
 
     ubuntu = lp.distributions['ubuntu']
     #if not ppa_owner:
