@@ -60,6 +60,11 @@ class PromoteToProposed(Promoter):
             if s.bug.all_dependent_packages_fully_built:
                 s.task.status = 'Confirmed'
                 s.task.timestamp('started')
+
+                if 'boot-testing-requested' not in s.bug.bprops:
+                    s.bug.send_boot_testing_requests()
+                    s.bug.bprops['boot-testing-requested'] = True
+
                 retval = True
 
             break
