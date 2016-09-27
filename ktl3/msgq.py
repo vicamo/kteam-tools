@@ -15,7 +15,6 @@ class MsgQueue():
         s.channel = s.connection.channel()
         s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
 
-
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True):
         def wrapped_handler(channel, method, properties, body):
             payload = json.loads(body.decode('utf-8'))
@@ -25,7 +24,6 @@ class MsgQueue():
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
         s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=True)
         s.channel.start_consuming()
-
 
     def listen_worker(s, queue_name, routing_key, handler_function, queue_durable=True, auto_delete=False):
         def wrapped_handler(channel, method, properties, body):
@@ -38,14 +36,11 @@ class MsgQueue():
         s.channel.basic_qos(prefetch_count=1)
         s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=False)
 
-
     def listen_start(s):
         s.channel.start_consuming()
 
-
     def listen_stop(s):
         s.channel.stop_consuming()
-
 
     def queue_info(s, queue_name):
         res = s.channel.queue_declare(queue=queue_name, passive=True)
@@ -59,10 +54,8 @@ class MsgQueue():
             'message_count':    res.method.message_count,
         }
 
-
     def queue_delete(s, queue_name):
         s.channel.queue_delete(queue_name)
-
 
     def publish(s, routing_key, payload):
         message_body = json.dumps(payload)
