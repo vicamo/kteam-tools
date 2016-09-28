@@ -267,6 +267,9 @@ class VerifyReleaseReady():
 
                 s.status('unique release tracking bug', unique_tracker)
 
+        # Verify that the changelog entry contains no "Miscellaneous" entries
+        s.verify_changelog_nomisc()
+
         # Verify the bugs in the changelog are public, targeted against linux and the
         # proper series, and marked Fix Committed.
         s.verify_changelog_bugs()
@@ -323,6 +326,20 @@ class VerifyReleaseReady():
                 s.status(msg, True)
             else:
                 s.status(msg, 'warning')
+
+    def verify_changelog_nomisc(s):
+        # Verify that no "Miscellaneous {upstream,Ubuntu,whatever} changes"
+        # entries were inserted by debian/scripts/misc/git-ubuntu-log
+        msg = 'no "Miscellaneous" entries'
+        changelog = Debian.changelog()
+        content = changelog[1]['content']
+        for line in content:
+            m = re.match("\* Miscellaneous .* changes$", line.strip())
+            if m:
+                s.status(msg, False)
+                stdo(colored('\t\t' + line + '\n', 'red'))
+                return
+        s.status(msg, True)
 
     def verify_changelog_bugs(s):
         master_changelog = Debian.master_changelog()[1]
