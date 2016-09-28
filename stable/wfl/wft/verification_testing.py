@@ -37,8 +37,9 @@ class VerificationTesting(TaskHandler):
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
             if s.task.status != master.tasks_by_name['verification-testing'].status:
-                s.task.status = master.tasks_by_name['verification-testing'].status
-                retval = True
+                if 'New' != master.tasks_by_name['verification-testing'].status:
+                    s.task.status = master.tasks_by_name['verification-testing'].status
+                    retval = True
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
