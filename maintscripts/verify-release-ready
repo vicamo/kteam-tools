@@ -386,6 +386,7 @@ class VerifyReleaseReady():
 
     def verify_content(s):
         changelog = Debian.changelog()
+        content = changelog[1]['content']
 
         # It's important that there be a single blank line at the beginning of
         # the content. (after the package/version/pocket line)
@@ -393,56 +394,49 @@ class VerifyReleaseReady():
         ei = 1
         et = []
         error_text = 'There should be one and only one blank line following the package/version/pocket line.'
-        content_error = False
-        test = changelog[1]['content'][0].strip()
+
+        test = content[0].strip()
         if test != '':                              # Should be a blank line
             s.status('content [%d]' % ei, False)
             ei += 1
             et.append(error_text)
-            content_error = True
 
-        test = changelog[1]['content'][1].strip()
-        if not content_error and test == '':       # Should not be a blank line
+        test = content[1].strip()
+        if test == '':       # Should not be a blank line
             s.status('content [%d]' % ei, False)
             ei += 1
             et.append(error_text)
-            content_error = True
 
         # The "Final" line in the version content should be a line that starts
         # with two dashes, has an email address and a date/time stamp.
         #
-        cl = len(changelog[1]['content'])
+        cl = len(content)
         error_text = 'The final three lines of a new changelog block should be a blank line, a "signature" line, and a final blank line.'
 
-        if changelog[1]['content'][cl - 3].strip() != '': # Should be a blank line
+        if content[cl - 3] != '': # Should be a blank line
+            s.status('final commit content [%d]' % ei, False)
+            ei += 1
+            et.append(error_text)
+
+        # Should be the "signature" line
+        m = re.match('^ -- (.*) <(.*)@(.*)> .*$', content[cl - 2])
+        if m:
+            if 'canonical.com' not in m.group(3):
+                error_text = "The email address on the signature line does not contail 'canonical.com'."
+                s.status('final commit content [%d]' % ei, False)
+                ei += 1
+                et.append(error_text)
+        else:
+            error_text = "Failed to parse the signature line."
+            et.append(error_text)
+            s.status('final commit content [%d]' % ei, False)
+            ei += 1
+
+        if content[cl - 1] != '': # Should be a blank line
             s.status('final commit content [%d]' % ei, False)
             et.append(error_text)
-            content_error = True
-        else:
-            if changelog[1]['content'][cl - 1].strip() != '': # Should be a blank line
-                s.status('final commit content [%d]' % ei, False)
-                et.append(error_text)
-                content_error = True
-            else:
-                if changelog[1]['content'][cl - 2].strip() == '': # Should be the "signature" line
-                    s.status('final commit content [%d]' % ei, False)
-                    et.append(error_text)
-                    content_error = True
-                else:
-                    m = re.match('^ -- (.*) <(.*)@(.*)> .*$', changelog[1]['content'][cl - 2])
-                    if m != None:
-                        if 'canonical.com' not in m.group(3):
-                            error_text = "The email address on the signature line does not contail 'canonical.com'."
-                            et.append(error_text)
-                            s.status('final commit content [%d]' % ei, False)
-                            content_error = True
-                    else:
-                        error_text = "Failed to parse the signature line."
-                        et.append(error_text)
-                        s.status('final commit content [%d]' % ei, False)
-                        content_error = True
 
-        if content_error:
+        if et != []:
             print(' ')
             ei = 1
             for e in et:
