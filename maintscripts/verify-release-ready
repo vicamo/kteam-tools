@@ -411,7 +411,12 @@ class VerifyReleaseReady():
         # with two dashes, has an email address and a date/time stamp.
         #
         cl = len(content)
-        error_text = 'The final three lines of a new changelog block should be a blank line, a "signature" line, and a final blank line.'
+        error_text = 'The final lines of a new changelog block should be\n a single blank line, a "signature" line, and a final blank line.'
+
+        if content[cl - 4] == '': # Should NOT be a blank line
+            s.status('final commit content [%d]' % ei, False)
+            ei += 1
+            et.append(error_text)
 
         if content[cl - 3] != '': # Should be a blank line
             s.status('final commit content [%d]' % ei, False)
