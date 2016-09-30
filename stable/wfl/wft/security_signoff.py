@@ -46,9 +46,10 @@ class SecuritySignoff(TaskHandler):
             if s.bug.is_derivative_package:
                 master = s.bug.master_bug
                 if s.task.status != master.tasks_by_name['security-signoff'].status:
-                    s.task.status = master.tasks_by_name['security-signoff'].status
-                    retval = True
-                    break
+                    if 'New' != master.tasks_by_name['verification-testing'].status:
+                        s.task.status = master.tasks_by_name['security-signoff'].status
+                        retval = True
+                        break
                 break
 
             s.task.status = 'Confirmed'
@@ -67,8 +68,9 @@ class SecuritySignoff(TaskHandler):
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
             if s.task.status != master.tasks_by_name['security-signoff'].status:
-                s.task.status = master.tasks_by_name['security-signoff'].status
-                retval = True
+                if 'New' != master.tasks_by_name['verification-testing'].status:
+                    s.task.status = master.tasks_by_name['security-signoff'].status
+                    retval = True
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
