@@ -729,6 +729,11 @@ class WorkflowBug():
             "flavour"        : flavour,
         }
 
+        # At this time only 2 arches have the lowlatency flavour
+        #
+        if flavour == 'lowlatency':
+            msg['arches'] = ['amd64', 'i386']
+
         if ppa:
             msg['pocket'] = 'ppa'
             msg['ppa']    = str(s.ckt_ppa)
