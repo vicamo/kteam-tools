@@ -114,8 +114,6 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
         derivative-packages:
             linux: []
         development: true
@@ -127,8 +125,6 @@
         - linux-meta
         - linux-raspi2
         - linux-meta-raspi2
-        - linux-snapdragon
-        - linux-meta-snapdragon
         series_version: '17.04'
         sha1: ''
         supported: false
@@ -140,8 +136,6 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
         derivative-packages:
             linux: []
         development: true
@@ -153,8 +147,6 @@
         - linux-meta
         - linux-raspi2
         - linux-meta-raspi2
-        - linux-snapdragon
-        - linux-meta-snapdragon
         series_version: '16.10'
         sha1: ''
         supported: true
