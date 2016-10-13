@@ -138,7 +138,7 @@
                 meta: linux-meta-raspi2
         derivative-packages:
             linux: []
-        development: true
+        development: false
         kernel: 4.8.0
         md5: ''
         name: yakkety
