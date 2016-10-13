@@ -107,6 +107,32 @@
     #   'linux' package present on '11.10'.
     # * sha1 XXX: doesn't seem to be used anymore
     # * md5 XXX: doesn't seem to be used anymore
+    '17.04':
+        dependent-packages:
+            linux:
+                meta: linux-meta
+                signed: linux-signed
+            linux-raspi2:
+                meta: linux-meta-raspi2
+            linux-snapdragon:
+                meta: linux-meta-snapdragon
+        derivative-packages:
+            linux: []
+        development: true
+        kernel: 4.8.0
+        md5: ''
+        name: zesty
+        packages:
+        - linux
+        - linux-meta
+        - linux-raspi2
+        - linux-meta-raspi2
+        - linux-snapdragon
+        - linux-meta-snapdragon
+        series_version: '17.04'
+        sha1: ''
+        supported: false
+
     '16.10':
         dependent-packages:
             linux:
@@ -131,7 +157,7 @@
         - linux-meta-snapdragon
         series_version: '16.10'
         sha1: ''
-        supported: false
+        supported: true
 
     '16.04':
         dependent-packages:
