@@ -736,7 +736,7 @@ class WorkflowBug():
 
         if ppa:
             msg['pocket'] = 'ppa'
-            msg['ppa']    = str(s.ckt_ppa)
+            msg['ppa']    = 'ppa:canonical-kernel-team/ppa'
             msg['key']    = 'kernel.published.ppa.%s' % s.series
 
         if s._dryrun or s._no_announcements:
