@@ -238,12 +238,16 @@ class SruReport(StdApp):
     # decompress_open
     #
     def decompress_open(self, tagfile):
+        resp = {'content-type': ''}
         if tagfile.startswith('http:') or tagfile.startswith('ftp:'):
             url = tagfile
-            tagfile = urllib.urlretrieve(url)[0]
+            tagfile, resp = urllib.urlretrieve(url)
             atexit.register(unlink, tagfile)
 
         if tagfile.endswith('.gz'):
+            if resp['content-type'].startswith('text'):
+                self.dbg('core', "        tagfile not found\n")
+                return
             import gzip
             import tempfile
             if not self.tempdir:
@@ -369,10 +373,13 @@ class SruReport(StdApp):
                 for component in self.components:
                     self.dbg('core', "    Component: '%s'\n" % (component))
 
-                    release  = self.tagfile_to_dict('%s/dists/%s/%s/source/Sources.gz'          % (self.archive_root, rls, component))
-                    proposed = self.tagfile_to_dict('%s/dists/%s-proposed/%s/source/Sources.gz' % (self.archive_root, rls, component))
-                    updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, rls, component))
-                    security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, rls, component))
+                    try:
+                        release  = self.tagfile_to_dict('%s/dists/%s/%s/source/Sources.gz'          % (self.archive_root, rls, component))
+                        proposed = self.tagfile_to_dict('%s/dists/%s-proposed/%s/source/Sources.gz' % (self.archive_root, rls, component))
+                        updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, rls, component))
+                        security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, rls, component))
+                    except:
+                        self.dbg('core', "    Failed to run tagfile_to_dict, skipped\n")
 
                     for package in sorted(proposed.keys()):
                         if 'linux' != package[:5]: continue
