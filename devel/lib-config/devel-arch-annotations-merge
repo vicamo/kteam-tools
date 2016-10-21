@@ -13,23 +13,21 @@ for line in sys.stdin:
         continue
 
     line = line.rstrip()
-    a = line.split(None, 2)
-    if len(a) != 3:
+    a = line.split(None, 1)
+    if len(a) != 2:
         a.append('')
-    if len(a) != 3:
+    if len(a) != 2:
         sys.stderr.write(line + '\n')
-    (config, value, info) = a
+    (config, info) = a
 
-    if value == 'C':
+    if info == 'C':
         negatives[config] = True
         continue
 
     if config not in annotations:
-        annotations[config] = (value, info)
+        annotations[config] = info
     else:
-        (ovalue, oinfo) = annotations[config]
-        if value == '-':
-            value = ovalue
+        oinfo = annotations[config]
         info = oinfo + ' ' + info
 
         # Elide duplicate flags and marks.
@@ -47,21 +45,21 @@ for line in sys.stdin:
             
             ninfo += match.group(0).strip() + ' '
 
-        annotations[config] = (value, ninfo.strip())
+        annotations[config] = ninfo.strip()
 
 # Handle any pending negatives from 'choices'.
-for config in negatives.keys():
-    if config in annotations:
-        nvalue = annotations[config][0]
-        if nvalue == '-':
-            annotations[config] = ('n', annotations[config][1])
-    else:
-        annotations[config] = ('n', '')
+#for config in negatives.keys():
+#    if config in annotations:
+#        nvalue = annotations[config]
+#        if nvalue == '-':
+#            annotations[config] = ('n', annotations[config])
+#    else:
+#        annotations[config] = 'value n'
 
 # Load in the various architecture lists, take the first one for each option.
 # Apply annotations as above as we go.
 seen = {}
 for config in annotations:
-    (value, info) = annotations[config]
+    info = annotations[config]
 
-    print(config + ' ' + value + ' ' + info.strip())
+    print(config + ' ' + info.strip())

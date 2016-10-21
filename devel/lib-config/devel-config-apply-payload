@@ -46,11 +46,11 @@ close(CONFIG);
 my ($config, $expected, $options, $option, $value, $policy, $only);
 while (<STDIN>) {
 	chomp;
-	($config, $expected, $options) = split(' ', $_, 3);
+	($config, $options) = split(' ', $_, 2);
 	$policy = '';
 	$only = '';
 
-	next if ($expected eq '?');
+	#next if ($expected eq '?');
 
 	while ($options =~ /\s*(\S+)<(.*?)?>/g) {
 		($option, $value) = ($1, $2);
@@ -69,18 +69,20 @@ while (<STDIN>) {
 			next;
 		}
 	}
-	#print "OPTION<$config> EXPECTED<$expected> ONLY<$only> POLICY<$policy>\n";
+	if ($policy eq '') {
+		next
+	}
 
 	# Check the policy.
-	if ($policy eq '') {
-		next if ($expected eq '-');
-		$policy = 'value ' . $expected;
-	}
+	#if ($policy eq '') {
+	#	next if ($expected eq '-');
+	#	$policy = 'value ' . $expected;
+	#}
 	if (not exists $values{$column, $config}) {
 		#print "$config MISSING\n";
 		next;
 	} elsif (policy_check($arch, $flavour, $column, $config, $policy)) {
-		#print "$config OK\n";
+		#print "$config $policy OK\n";
 		next;
 	} else {
 		#print "$config BAD ($values{$column, $config} ~~ $policy)\n";
@@ -120,7 +122,8 @@ while (<STDIN>) {
 		} elsif ($ok ne '') {
 			print "$config=$ok\n";
 		} else {
-			print "## $config UNABLE TO FIX <$policy>\n";
+			print "## $config [$arch:$flavour] UNABLE TO FIX <$policy>\n";
+			print "# $config is not set\n";
 		}
 	}
 }
