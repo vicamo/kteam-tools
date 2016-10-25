@@ -74,10 +74,10 @@ def get_status(state, record, seen=None):
         overall = accumulate_state(overall, 'NBS')
     if 'build-arch' in record['reason']:
         overall = accumulate_state(overall, 'BUILDING')
-    if 'tests' in record and 'autopkgtest' in record['tests']:
-        for pkg in record['tests']['autopkgtest']:
-            for arch in record['tests']['autopkgtest'][pkg]:
-                overall = accumulate_state(overall, record['tests']['autopkgtest'][pkg][arch][0])
+    if 'policy_info' in record and 'autopkgtest' in record['policy_info']:
+        for pkg in record['policy_info']['autopkgtest']:
+            for arch in record['policy_info']['autopkgtest'][pkg]:
+                overall = accumulate_state(overall, record['policy_info']['autopkgtest'][pkg][arch][0])
     if 'depends' in record['reason']:
         overall = accumulate_state(overall, 'DEPENDS')
     if 'dependencies' in record:
@@ -163,15 +163,15 @@ for line in sys.stdin:
                 forced_reasons.append(reason_str.split())
 
         # If we ran tests then we are installable.
-        if 'tests' in source:
+        if 'policy_info' in source:
             result([source['source'], source['new-version'], 'PASS', source['source'], source['new-version'], series])
         elif 'reason' in source and 'depends' in source['reason']:
             result([source['source'], source['new-version'], 'DEPENDS', source['source'], source['new-version'], series])
 
-        if 'tests' in source:
-            if 'autopkgtest' in source['tests']:
-                for test_ver in source['tests']['autopkgtest']:
-                    test_result = source['tests']['autopkgtest'][test_ver]
+        if 'policy_info' in source:
+            if 'autopkgtest' in source['policy_info']:
+                for test_ver in source['policy_info']['autopkgtest']:
+                    test_result = source['policy_info']['autopkgtest'][test_ver]
                     if '/' in test_ver:
                         (test, tversion) = (test_ver.split('/') + [ '?' ])[0:2]
                     else:
