@@ -152,6 +152,13 @@
         supported: true
 
     '16.04':
+        backport-packages:
+            linux-lts-yakkety:
+            - linux
+            - '16.10'
+            linux-lts-zesty:
+            - linux
+            - '17.04'
         dependent-packages:
             linux:
                 meta: linux-meta
