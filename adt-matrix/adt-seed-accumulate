@@ -151,11 +151,11 @@ class AdtMatrixSeed(object):
             for record2 in self.britney_hierachy(state, record):
                 if record2['source'] not in debug:
                     debug.append(record2['source'])
-                if 'tests' in record2 and 'autopkgtest' in record2['tests']:
+                if 'policy_info' in record2 and 'autopkgtest' in record2['policy_info']:
                     # If we have a list, this becomes the new list.
                     tcache = lcache[record2['source']] = {}
-                    for pkg in record2['tests']['autopkgtest']:
-                        for arch in record2['tests']['autopkgtest'][pkg]:
+                    for pkg in record2['policy_info']['autopkgtest']:
+                        for arch in record2['policy_info']['autopkgtest'][pkg]:
                             if '/' in pkg:
                                 bits = pkg.split('/')
                             else:

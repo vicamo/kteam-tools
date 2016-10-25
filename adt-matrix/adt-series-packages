@@ -12,12 +12,12 @@ tests = {}
 for source in tmp['sources']:
     if source['source'] not in ('linux', 'linux-meta'):
         continue
-    if 'tests' not in source:
+    if 'policy_info' not in source:
         continue
-    if 'autopkgtest' not in source['tests']:
+    if 'autopkgtest' not in source['policy_info']:
         continue
 
-    for key in source['tests']['autopkgtest'].keys():
+    for key in source['policy_info']['autopkgtest'].keys():
         if '/' in key:
             bits = key.split('/')
         else:
