@@ -156,6 +156,9 @@ class CreateTrackingBug(StdApp):
             else:
                 master_bug = None
 
+            if changelog[0]['series'] == 'UNRELEASED':
+                raise AppError('You must set the changelog series to something other than UNRELEASED.')
+
             # -------------------------------------------------------------------------------------
             # B U G   W O R K
 
