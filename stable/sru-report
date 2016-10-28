@@ -206,7 +206,7 @@ class SruReport(StdApp):
         self.defaults['read_only'] = True
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
-        self.ports_root   = 'http://ports.ubuntu.com/ubuntu'
+        self.ports_root   = 'http://ports.ubuntu.com/ubuntu-ports'
         self.ubuntu = Ubuntu()
 
         self.components   = ['main', 'universe']
