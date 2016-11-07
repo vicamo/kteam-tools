@@ -131,10 +131,10 @@ state from on to off or off to on.
 
     app_epilog = '''
 Examples:
-    power rizzo status
-    power rizzo off
-    power rizzo on
-    power rizzo cycle
+    pdu rizzo status
+    pdu rizzo off
+    pdu rizzo on
+    pdu rizzo cycle
     '''
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
