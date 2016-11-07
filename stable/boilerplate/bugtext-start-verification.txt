@@ -1,4 +1,4 @@
-This bug is awaiting verification that the kernel in -proposed solves the problem. Please test the kernel and update this bug with the results. If the problem is solved, change the tag 'verification-needed-_SERIES_' to 'verification-done-_SERIES_'.
+This bug is awaiting verification that the kernel in -proposed solves the problem. Please test the kernel and update this bug with the results. If the problem is solved, change the tag 'verification-needed-_SERIES_' to 'verification-done-_SERIES_'. If the problem still exists, change the tag 'verification-needed-_SERIES_' to 'verification-failed-_SERIES_'.
 
 If verification is not done by 5 working days from today, this fix will be dropped from the source code, and this bug will be closed.
 
