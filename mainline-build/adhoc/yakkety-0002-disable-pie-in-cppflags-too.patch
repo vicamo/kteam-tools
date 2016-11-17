@@ -1,0 +1,38 @@
+From dafc66f419036c63606a9076dee18cdeb3a8a89a Mon Sep 17 00:00:00 2001
+From: Stefan Bader <stefan.bader@canonical.com>
+Date: Thu, 17 Nov 2016 12:07:55 +0000
+Subject: [PATCH] disable pie in cppflags too
+
+Found that the intel-drm-nightly tree has a partial version of
+the "disable pie when gcc has it enabled by default" patch which
+misses to set KBUILD_CPPFLAGS, too. And that is passed to the
+stackprotector strong test, which promptly fails.
+
+Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+---
+ Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 4971a77..5b1ac94 100644
+--- a/Makefile
++++ b/Makefile
+@@ -645,6 +645,7 @@ KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
+ KBUILD_CFLAGS += $(call cc-option, -fno-pie)
+ KBUILD_CFLAGS += $(call cc-option, -no-pie)
+ KBUILD_AFLAGS += $(call cc-option, -fno-pie)
++KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
+ 
+ include scripts/Makefile.gcc-plugins
+ 
+@@ -1066,6 +1067,7 @@ ifdef stackp-name
+ endif
+ # Make sure compiler does not have buggy stack-protector support.
+ ifdef stackp-check
++	@echo "shell $(CONFIG_SHELL) $(stackp-check) $(CC) $(KBUILD_CPPFLAGS) $(biarch)"
+   ifneq ($(shell $(CONFIG_SHELL) $(stackp-check) $(CC) $(KBUILD_CPPFLAGS) $(biarch)),y)
+ 	@echo Cannot use CONFIG_CC_STACKPROTECTOR_$(stackp-name): \
+                   $(stackp-flag) available but compiler is broken >&2 && exit 1
+-- 
+2.9.3
+
