@@ -153,7 +153,7 @@
 
     '16.04':
         backport-packages:
-            linux-lts-yakkety:
+            linux-hwe-edge:
             - linux
             - '16.10'
             linux-lts-zesty:
@@ -167,6 +167,9 @@
                 meta: linux-meta-raspi2
             linux-snapdragon:
                 meta: linux-meta-snapdragon
+            linux-hwe-edge:
+                meta: linux-meta-hwe-edge
+                signed: linux-signed-hwe-edge
         derivative-packages:
             linux:
             - linux-raspi2
@@ -182,6 +185,9 @@
         - linux-meta-raspi2
         - linux-snapdragon
         - linux-meta-snapdragon
+        - linux-hwe-edge
+        - linux-meta-hwe-edge
+        - linux-signed-hwe-edge
         series_version: '16.04'
         sha1: ''
         supported: true
