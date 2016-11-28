@@ -176,7 +176,7 @@ class Ubuntu:
         """
         retval = None
 
-        if package.startswith('linux-lts-'):
+        if package.startswith('linux-lts-') or package == 'linux-hwe-edge':
             for entry in self.db.values():
                 # starting with trusty, the lts packages now include the series
                 # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
