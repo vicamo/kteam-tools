@@ -709,9 +709,9 @@ class WorkflowBug():
         # the kernel packages in the -proposed pocket.
         #
         hwe = False
-        if '-lts-' in s.series:
+        if '-lts-' in s.pkg_name:
             hwe = True
-        elif s.pkg_name.startswith('linux-hwe-'):
+        elif '-hwe-' in s.pkg_name:
             hwe = True
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
@@ -971,7 +971,7 @@ class WorkflowBug():
                 cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
                 body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
 
-            subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.id)
+            subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
             to_address  = "kernel-team@lists.ubuntu.com"
             to_address += ", ubuntu-installer@lists.ubuntu.com"
             s.send_email(subject, body, to_address)
