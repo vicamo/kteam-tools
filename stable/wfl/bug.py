@@ -711,6 +711,8 @@ class WorkflowBug():
         hwe = False
         if '-lts-' in s.series:
             hwe = True
+        elif s.pkg_name.startswith('linux-hwe-'):
+            hwe = True
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
             "op"             : op,
