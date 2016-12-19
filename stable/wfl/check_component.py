@@ -23,7 +23,10 @@ class CheckComponent():
             'linux-ti-omap4',
             'linux-armadaxp',
             'linux-keystone',
-            'linux-meta-keystone'
+            'linux-meta-keystone',
+            'linux-hwe-edge',
+            'linux-meta-hwe-edge',
+            'linux-signed-hwe-edge'
         ]
 
         self.release_db = {}
