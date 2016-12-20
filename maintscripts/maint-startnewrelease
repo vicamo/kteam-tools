@@ -130,6 +130,12 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --ckt-ppa"
         if "-lts-" in srcpkg:
             v = "Ubuntu-lts-" + version + '_' + lts_version
+        elif "-raspi2" in srcpkg:
+            v = "Ubuntu-raspi2-" + version
+        elif "-snapdragon" in srcpkg:
+            v = "Ubuntu-snapdragon-" + version
+        elif "-ti-omap4" in srcpkg:
+            v = "Ubuntu-ti-omap4-" + version
         else:
             v = "Ubuntu-" + version
 	print(cmd + " " + v)
