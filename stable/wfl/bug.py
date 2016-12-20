@@ -171,6 +171,21 @@ class WorkflowBug():
             else:
                 cinfo('                 derivative: no', 'blue')
 
+            hwe = False
+            if '-lts-' in s.pkg_name:
+                hwe = True
+            elif '-hwe-' in s.pkg_name:
+                hwe = True
+
+            if hwe:
+                cinfo('                        hwe: yes', 'blue')
+                kv = s.pkg_version.split('~')[0].split('-')[0]
+                hwe_series = s.ubuntu.lookup(kv)['name']
+                cinfo('                 hwe series: %s' % (hwe_series), 'blue')
+            else:
+                cinfo('                        hwe: no', 'blue')
+            cinfo('')
+
             cinfo('    Targeted Project:', 'cyan')
             cinfo('        %s' % s.workflow_project, 'magenta')
             cinfo('')
@@ -713,14 +728,20 @@ class WorkflowBug():
             hwe = True
         elif '-hwe-' in s.pkg_name:
             hwe = True
+
+        test_series = s.series
+        if hwe:
+            kv = s.pkg_version.split('~')[0].split('-')[0]
+            test_series = s.ubuntu.lookup(kv)['name']
+
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
             "op"             : op,
             "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
-            "series-name"    : s.series,
-            "series-version" : s.ubuntu.index_by_series_name[s.series]['series_version'],
+            "series-name"    : test_series,
+            "series-version" : s.ubuntu.index_by_series_name[test_series]['series_version'],
             "hwe"            : hwe,
             "bug-id"         : s.lpbug.id,
             "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
