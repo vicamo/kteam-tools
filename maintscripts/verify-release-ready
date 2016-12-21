@@ -504,7 +504,9 @@ class VerifyReleaseReady():
             'linux-lts-utopic',
             'linux-lts-vivid',
             'linux-lts-wily',
-            'linux-raspi2'
+            'linux-lts-xenial',
+            'linux-raspi2',
+            'linux-snapdragon'
         ]
 
         non_kernel_packages = [
@@ -519,7 +521,9 @@ class VerifyReleaseReady():
             'linux-meta-lts-utopic',
             'linux-meta-lts-vivid',
             'linux-meta-lts-wily',
+            'linux-meta-lts-xenial',
             'linux-meta-raspi2',
+            'linux-meta-snapdragon',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
             'linux-signed-lts-saucy',
@@ -527,6 +531,7 @@ class VerifyReleaseReady():
             'linux-signed-lts-utopic',
             'linux-signed-lts-vivid',
             'linux-signed-lts-wily',
+            'linux-signed-lts-xenial',
             'linux-backports-modules-3.5.0',
             'linux-backports-modules-3.2.0',
             'linux-backports-modules-2.6.32',
