@@ -62,7 +62,9 @@ for (states, message) in ((None, 'all'), (['MISS'], 'missing'), (['MISS-REPL'], 
                         if trigger not in tmp:
                             tmp.append(trigger)
                             if tpkg in package_proposed:
-                                tmp.append(tpkg + '/' + series_cache['latest'][' '.join((tpkg, archs[0]))])
+                                tpkg_trigger = tpkg + '/' + series_cache['latest'][' '.join((tpkg, archs[0]))]
+                                if tpkg_trigger not in tmp:
+                                    tmp.append(tpkg_trigger)
 
     #print(want)
     for archs in want:
