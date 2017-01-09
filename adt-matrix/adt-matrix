@@ -783,7 +783,7 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .BUILDING {{ background-color: yellow; }}
 .RUNNING {{ background-color: yellow; }}
 .MISS, .SKIP, .MISSING {{ background-color: yellow; }}
-.FAIL {{ background-color: darkgreen; }}
+.FAIL {{ background-color: orange; }}
 .ALWAYSFAIL {{ background-color: yellow; }}
 .REGR, .REGRESSION {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
