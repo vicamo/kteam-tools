@@ -31,7 +31,6 @@ linux.git 								testing/crack.git
 git://people.freedesktop.org/~airlied/linux				testing/airlied--linux.git
 git://anongit.freedesktop.org/drm-intel					testing/drm-intel.git
 git://git.infradead.org/debloat-testing.git				testing/debloat-testing.git
-git://anongit.freedesktop.org/drm-tip					testing/freedesktop--drm-tip
 EOL
 
 while read repo url refs
