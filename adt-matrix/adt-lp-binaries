@@ -115,8 +115,8 @@ class KernelPackages:
                     (base, abi) = pub.source_package_version.split('-', 1)
                     base_versions[base] = True
 
-                #print(flavours)
-                #print(base_versions)
+                print(flavours)
+                print(base_versions)
 
                 for base in base_versions:
                     for flavour in flavours:
