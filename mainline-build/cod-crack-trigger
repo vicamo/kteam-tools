@@ -77,6 +77,7 @@ linus/master					999	daily
 airlied--linux/drm-next				996	drm-next
 drm-intel/drm-intel-next			997	drm-intel-next
 drm-intel/drm-intel-nightly			994	drm-intel-nightly
+freedesktop--drm-tip/drm-tip			994	drm-tip
 extended-stable/linux-3.13.y-review		992     linux-3.13.y.z-review
 extended-stable/linux-3.13.y-queue		991     linux-3.13.y.z-queue	linux-3.13.y.z-review
 extended-stable/linux-3.16.y-review		992     linux-3.16.y.z-review

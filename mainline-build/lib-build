@@ -67,6 +67,7 @@ repo_remote_url_set	'drm-intel'		'git://kernel.ubuntu.com/virgin/testing/drm-int
 #repo_remote_url_set	'debloat-testing'	'git://git.infradead.org/debloat-testing.git'
 #repo_remote_url_set	'debloat-testing'	'git://kernel.ubuntu.com/herton/debloat-testing.git'
 repo_remote_url_set	'extended-stable'	'git://git.launchpad.net/~canonical-kernel/linux/+git/linux-stable-ckt'
+repo_remote_url_set	'freedesktop--drm-tip'	'git://kernel.ubuntu.com/virgin/testing/freedesktop--drm-tip'
 
 repo_remote_url_set	'crack'			'git://kernel.ubuntu.com/virgin/testing/crack.git'
 repo_remote_url_set	'crack-push'		'/srv/kernel.ubuntu.com/git/virgin/testing/crack.git'
