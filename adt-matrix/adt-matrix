@@ -130,7 +130,7 @@ class AutoPackageTest(object):
 
         # If we loaded an archs list find our entry if it is there.
         self.archs = None
-        key = series + ' ' + source
+        key = self.series + ' ' + self.source
         if self.map_archs and key in self.map_archs:
             self.archs = self.map_archs[key]
 

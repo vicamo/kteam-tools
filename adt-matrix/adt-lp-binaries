@@ -102,7 +102,8 @@ class KernelPackages:
 
             sver = pub.source_package_version
             key = seriesname + ' ' + sourcename
-            if key not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
+            key2 = seriesname + ' ' + sourcename.replace('linux', 'linux-meta')
+            if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
                 s.cache_version[key] = sver
 
                 flavours = {}
@@ -115,7 +116,7 @@ class KernelPackages:
                         flavours[a[4]] = True
 
                         arch = binary.distro_arch_series_link.split('/')[-1]
-                        acache = s.map_archs.setdefault(key, [])
+                        acache = s.map_archs.setdefault(key2, [])
                         if arch not in acache:
                             acache.append(arch)
                             s.dirty = True
