@@ -102,7 +102,7 @@ class KernelPackages:
 
             sver = pub.source_package_version
             key = seriesname + ' ' + sourcename
-            if key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
+            if key not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
                 s.cache_version[key] = sver
 
                 flavours = {}
