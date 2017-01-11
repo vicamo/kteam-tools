@@ -132,7 +132,7 @@ class AutoPackageTest(object):
         self.archs = None
         key = series + ' ' + source
         if self.map_archs and key in self.map_archs:
-            self.arch = self.map_archs[key]
+            self.archs = self.map_archs[key]
 
         # Load up the hits file.
         self.hint_status = {}
