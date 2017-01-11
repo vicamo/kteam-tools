@@ -122,8 +122,11 @@ class AutoPackageTest(object):
 
         # Read in the package series maps.
         with open("package-binaries.json") as verf:
+            self.map_archs = None
             tmp = json.load(verf)
             self.map_source = tmp['map-source']
+            if 'map-archs' in tmp:
+                self.map_archs = tmp['map-archs']
 
         # Load up the hits file.
         self.hint_status = {}
@@ -422,7 +425,8 @@ class AutoPackageTest(object):
             #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             for arch in archs:
-                adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
+                if self.map_archs and arch in self.map_archs:
+                    adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
     def save(self):
@@ -648,6 +652,8 @@ table.matrix, table.matrix th, table.matrix td {{
 
             archs_seen = {}
             for arch in archs:
+                if self.map_archs and arch not in self.map_arch:
+                    continue
                 for ver in verlist:
                     if ver == 'race':
                         continue

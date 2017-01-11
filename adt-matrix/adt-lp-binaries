@@ -39,6 +39,7 @@ class KernelPackages:
         s.cache_file = cache
         s.cache_version = {}
         s.map_source = {}
+        s.map_archs = {}
 
         if os.path.exists(s.cache_file):
             with open(s.cache_file) as cachef:
@@ -46,6 +47,8 @@ class KernelPackages:
 
                 s.cache_version  = tmp['cache-version']
                 s.map_source     = tmp['map-source']
+                if 'map_archs' in tmp:
+                    s.map_archs     = tmp['map-archs']
 
 
     def save(s):
@@ -54,6 +57,7 @@ class KernelPackages:
                 out = {
                     'cache-version':    s.cache_version,
                     'map-source':       s.map_source,
+                    'map-archs':        s.map_archs,
                 }
                 json.dump(out, cfd, indent=2)
             os.rename(s.cache_file + '.new', s.cache_file)
@@ -109,6 +113,11 @@ class KernelPackages:
                        not binary_package_name.endswith('-dbgsym'):
                         a = binary_package_name.split('-', 4)
                         flavours[a[4]] = True
+
+                        arch = binary.distro_arch_series_link.split('/')[-1]
+                        acache = s.map_archs.setdefault(key, [])
+                        if arch not in acache:
+                            acache.append(arch)
 
                 base_versions = {}
                 for pub in pubs:
