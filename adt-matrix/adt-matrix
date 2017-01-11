@@ -652,7 +652,7 @@ table.matrix, table.matrix th, table.matrix td {{
 
             archs_seen = {}
             for arch in archs:
-                if self.map_archs and arch not in self.map_arch:
+                if self.map_archs and arch not in self.map_archs:
                     continue
                 for ver in verlist:
                     if ver == 'race':
