@@ -118,6 +118,7 @@ class KernelPackages:
                         acache = s.map_archs.setdefault(key, [])
                         if arch not in acache:
                             acache.append(arch)
+                            s.dirty = True
 
                 base_versions = {}
                 for pub in pubs:
