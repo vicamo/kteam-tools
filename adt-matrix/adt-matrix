@@ -861,8 +861,6 @@ table.matrix td {{
         seen = False
         for pkgarchs in seed:
             (pkg, archs) = pkgarchs
-            if self.archs:
-                archs = list(set(archs) & set(self.archs))
             if package == pkg:
                 seen = True
         if not seen:
