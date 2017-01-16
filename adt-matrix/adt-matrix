@@ -425,14 +425,15 @@ class AutoPackageTest(object):
     def update(self):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
+            if self.archs:
+                archs = list(set(archs) & set(self.archs))
 
             ## Add in the package_latest arches.
             #if pkg in self.packages_latest:
             #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             for arch in archs:
-                if self.archs and arch in self.archs:
-                    adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
+                adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
 
 
     def save(self):
@@ -458,6 +459,8 @@ class AutoPackageTest(object):
         miss = {}
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
+            if self.archs:
+                archs = list(set(archs) & set(self.archs))
             some_ever = {}
 
             ## Add in the package_latest arches if this is the final version.
@@ -572,6 +575,8 @@ class AutoPackageTest(object):
             ver = verlist[-1]
             for pkgarchs in self.packages:
                 (pkg, archs) = pkgarchs
+                if self.archs:
+                    archs = list(set(archs) & set(self.archs))
                 for arch in archs:
                     if ver in result and pkg in result[ver] and arch in result[ver][pkg]:
                         status[result[ver][pkg][arch][0]] += 1
@@ -655,11 +660,11 @@ table.matrix, table.matrix th, table.matrix td {{
         # Data ...
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
+            if self.archs:
+                archs = list(set(archs) & set(self.archs))
 
             archs_seen = {}
             for arch in archs:
-                if self.archs and arch not in self.archs:
-                    continue
                 for ver in verlist:
                     if ver == 'race':
                         continue
@@ -856,6 +861,8 @@ table.matrix td {{
         seen = False
         for pkgarchs in seed:
             (pkg, archs) = pkgarchs
+            if self.archs:
+                archs = list(set(archs) & set(self.archs))
             if package == pkg:
                 seen = True
         if not seen:
