@@ -856,7 +856,11 @@ table.matrix td {{
         if key in package_cache['seeds']:
             seed = package_cache['seeds'][key]
         else:
-            seed = []
+            key2 = series + '-linux-meta'
+            if key2 in package_cache['seeds']:
+                seed = package_cache['seeds'][key2]
+            else:
+                seed = []
 
         seen = False
         for pkgarchs in seed:
