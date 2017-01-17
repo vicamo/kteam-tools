@@ -136,6 +136,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-snapdragon-" + version
         elif "-ti-omap4" in srcpkg:
             v = "Ubuntu-ti-omap4-" + version
+        elif "-aws" in srcpkg:
+            v = "Ubuntu-aws-" + version
         else:
             v = "Ubuntu-" + version
 	print(cmd + " " + v)
