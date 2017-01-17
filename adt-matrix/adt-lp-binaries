@@ -47,7 +47,7 @@ class KernelPackages:
 
                 s.cache_version  = tmp['cache-version']
                 s.map_source     = tmp['map-source']
-                if 'map_archs' in tmp:
+                if 'map-archs' in tmp:
                     s.map_archs     = tmp['map-archs']
 
 
@@ -145,4 +145,5 @@ for line in sys.stdin:
     (series, package) = line.split()
     print('binaries:', series, package)
     kp.package_linux_image(series, package)
+    sys.stdout.flush()
 kp.save()
