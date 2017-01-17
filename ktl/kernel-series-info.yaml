@@ -188,6 +188,10 @@
         - linux-hwe-edge
         - linux-meta-hwe-edge
         - linux-signed-hwe-edge
+        snaps:
+        - pc-kernel
+        - raspi2-kernel
+        - snapdragon-kernel
         series_version: '16.04'
         sha1: ''
         supported: true
@@ -293,18 +297,11 @@
         packages:
         - linux
         - linux-meta
-        - linux-exynos5
         - linux-keystone
         - linux-meta-keystone
-        - linux-lts-utopic
-        - linux-meta-lts-utopic
-        - linux-signed-lts-utopic
         - linux-lts-vivid
         - linux-meta-lts-vivid
         - linux-signed-lts-vivid
-        - linux-lts-wily
-        - linux-meta-lts-wily
-        - linux-signed-lts-wily
         - linux-lts-xenial
         - linux-meta-lts-xenial
         - linux-signed-lts-xenial
@@ -428,22 +425,13 @@
         packages:
         - linux
         - linux-meta
-        - linux-lts-quantal
-        - linux-meta-lts-quantal
-        - linux-signed-lts-quantal
-        - linux-lts-raring
-        - linux-meta-lts-raring
-        - linux-signed-lts-raring
-        - linux-lts-saucy
-        - linux-meta-lts-saucy
-        - linux-signed-lts-saucy
         - linux-ti-omap4
         - linux-meta-ti-omap4
         - linux-armadaxp
+        - linux-meta-armadaxp
         - linux-lts-trusty
         - linux-meta-lts-trusty
         - linux-signed-lts-trusty
-        - linux-meta-armadaxp
         - linux-backports-modules-3.2.0
         series_version: '12.04'
         sha1: ''
