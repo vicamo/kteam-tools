@@ -2,8 +2,9 @@
 #
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, WARNING
 from ktl.ubuntu                         import Ubuntu
+import json
+import yaml
 
 # Crankers
 #
@@ -21,20 +22,38 @@ class Crankers():
     def main(s):
         retval = 1
         try:
+            data = {}
             ubuntu = Ubuntu()
             for series in sorted(ubuntu.index_by_series_name, reverse=True):
                 record = ubuntu.index_by_series_name[series]
                 if record['supported']:
-                    print(series)
-
-                    print('    debs:')
+                    data[series] = {}
+                    data[series]['debs'] = []
                     for package in record['packages']:
-                        print('        %s' % package)
+                        data[series]['debs'].append(package)
 
                     if 'snaps' in record:
-                        print('    snaps:')
+                        data[series]['snaps'] = []
                         for snap in record['snaps']:
-                            print('        %s' % snap)
+                            data[series]['snaps'].append(snap)
+
+            if s.args.yaml:
+                print(yaml.dump(data, default_flow_style=False, indent=4, explicit_start=True))
+
+            elif s.args.json:
+                print(json.dumps(data, sort_keys=True, indent=4))
+
+            else:
+                for series in sorted(data):
+                    print(series)
+                    print('    debs:')
+                    for deb in sorted(data[series]['debs']):
+                        print('        ' + deb)
+
+                    if 'snaps' in data[series]:
+                        print('    snaps:')
+                        for snap in sorted(data[series]['snaps']):
+                            print('        ' + snap)
 
             retval = 0
 
@@ -58,15 +77,10 @@ if __name__ == '__main__':
     '''
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='Print out lots of stuff.')
+    parser.add_argument('--yaml', action='store_true', default=False, help='Dump it out in yaml format')
+    parser.add_argument('--json', action='store_true', default=False, help='Dump it out in json format')
 
     args = parser.parse_args()
-
-    if args.debug:
-        level = DEBUG
-    else:
-        level = WARNING
-    basicConfig(filename=None, level=level, format="%(levelname)s - %(message)s")
 
     exit(Crankers(args).main())
 
