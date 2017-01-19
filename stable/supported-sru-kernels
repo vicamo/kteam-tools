@@ -1,91 +1,87 @@
 #!/usr/bin/env python3
 #
 
-from sys                                import stderr
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, INFO
-import traceback
-from ktl.log                            import center, cleave, Clog
 from ktl.ubuntu                         import Ubuntu
+import json
+import yaml
 
-# TheApp
+# Crankers
 #
-class TheApp(object):
+class Crankers():
     '''
     '''
 
     # __init__
     #
-    def __init__(s):
-        '''
-        '''
-        center(s.__class__.__name__ + '.__init__')
-        cleave(s.__class__.__name__ + '.__init__')
+    def __init__(s, args):
+        s.args = args
 
     # main
     #
-    def main(s, args):
-        center(s.__class__.__name__ + '.main')
-        retval = 0
+    def main(s):
+        retval = 1
+        try:
+            data = {}
+            ubuntu = Ubuntu()
+            for series in sorted(ubuntu.index_by_series_name, reverse=True):
+                record = ubuntu.index_by_series_name[series]
+                if record['supported']:
+                    data[series] = {}
+                    data[series]['debs'] = []
+                    for package in record['packages']:
+                        data[series]['debs'].append(package)
 
-        db = Ubuntu().db
-        for svn in sorted(db):
-            if not db[svn]['supported']:
-                continue
+                    if 'snaps' in record:
+                        data[series]['snaps'] = []
+                        for snap in record['snaps']:
+                            data[series]['snaps'].append(snap)
 
-            print(svn)
+            if s.args.yaml:
+                print(yaml.dump(data, default_flow_style=False, indent=4, explicit_start=True))
 
-            if 'dependent-packages' in db[svn]:
-                for pkg in sorted(db[svn]['packages']):
-                    print('    ' + pkg)
+            elif s.args.json:
+                print(json.dumps(data, sort_keys=True, indent=4))
 
-        cleave(s.__class__.__name__ + '.main (%s)' % retval)
+            else:
+                for series in sorted(data):
+                    print(series)
+                    print('    debs:')
+                    for deb in sorted(data[series]['debs']):
+                        print('        ' + deb)
+
+                    if 'snaps' in data[series]:
+                        print('    snaps:')
+                        for snap in sorted(data[series]['snaps']):
+                            print('        ' + snap)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
         return retval
 
 if __name__ == '__main__':
-    retval = -1
-
-    # Command line argument setup and initial processing
-    #
     app_description = '''
     '''
+
     app_epilog = '''
     '''
+
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='')
+    parser.add_argument('--yaml', action='store_true', default=False, help='Dump it out in yaml format')
+    parser.add_argument('--json', action='store_true', default=False, help='Dump it out in json format')
 
     args = parser.parse_args()
 
-    # If logging parameters were set on the command line, handle them
-    # here.
-    #
-    if args.debug:
-        log_format = "%(levelname)s - %(message)s"
-        basicConfig(level=DEBUG, format=log_format)
-        Clog.dbg = True
-    else:
-        log_format = "%(message)s"
-        basicConfig(level=INFO, format=log_format)
-
-    center('__main__')
-    try:
-        app = TheApp()
-        retval = app.main(args)
-    except KeyboardInterrupt:
-        pass
-    except Exception:
-        trace = traceback.format_exc()
-        try:
-            stderr.write(trace)
-        except:
-            pass
-        # logfile = open(path.join('.', 'exceptions.log'), 'a')
-        # logfile.write('Critical exception in core')
-        # logfile.write(trace)
-        # logfile.write('----------------------------------------\n\n')
-        # logfile.close()
-
-    cleave('__main__ (%s)' % (retval))
-    exit(retval)
+    exit(Crankers(args).main())
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
