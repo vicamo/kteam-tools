@@ -125,6 +125,7 @@
         - linux-meta
         - linux-raspi2
         - linux-meta-raspi2
+        - linux-signed
         series_version: '17.04'
         sha1: ''
         supported: false
@@ -147,6 +148,7 @@
         - linux-meta
         - linux-raspi2
         - linux-meta-raspi2
+        - linux-signed
         series_version: '16.10'
         sha1: ''
         supported: true
@@ -181,6 +183,7 @@
         packages:
         - linux
         - linux-meta
+        - linux-signed
         - linux-raspi2
         - linux-meta-raspi2
         - linux-snapdragon
@@ -233,6 +236,7 @@
         packages:
         - linux
         - linux-meta
+        - linux-signed
         series_version: '15.04'
         sha1: ''
         supported: true
@@ -297,6 +301,7 @@
         packages:
         - linux
         - linux-meta
+        - linux-signed
         - linux-keystone
         - linux-meta-keystone
         - linux-lts-vivid
