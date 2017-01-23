@@ -293,7 +293,8 @@ class AutoPackageTest(object):
                 (ressrc, ver) = srcver.split()
                 # Accumulate the latest versions of packages seen so we can detect missing results.
                 key = ' '.join((ressrc, arch))
-                self.latest[key] = ver
+                if ver != 'blacklisted':
+                    self.latest[key] = ver
 
                 # If we have testinfo then we may have a real kernel version.
                 try:
@@ -500,6 +501,9 @@ class AutoPackageTest(object):
                         lversion = version
 
                         some_ever[arch] = True
+                        if self.live and ver == verlist[-1] and version = 'blacklist':
+                            #print("APW", pkg, version, latest, DBG)
+                            status = 'SKIP-BLKL'
                         if self.live and ver == verlist[-1] and version != latest:
                             #print("APW", pkg, version, latest, DBG)
                             status = 'MISS-REPL'
@@ -549,7 +553,7 @@ class AutoPackageTest(object):
                     # regressions.
                     if status == 'REGR' and prev_status not in ('FAIL', 'REGR', 'REGN'):
                         status = 'REGN'
-                    if status and status not in ('MISS', 'MISS-REPL', 'SKIP'):
+                    if status and status not in ('MISS', 'MISS-REPL', 'SKIP', 'SKIP-BLKL'):
                         prev_status = status
 
                     if status:
