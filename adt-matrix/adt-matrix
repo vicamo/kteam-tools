@@ -948,15 +948,13 @@ table.matrix td {{
         os.rename(latest_json + '.new', latest_json)
 
         # Summary index table.
+        if migration == 'DEPENDS':
+            state = "MISS"
         if not state:
-            if migration == 'DEPENDS':
-                state = "MISS"
-            else:
+            if total == 0:
                 state = "GOOD"
-#            if total == 0:
-#                state = "GOOD"
-#            else:
-#                state = "MISS"
+            else:
+                state = "MISS"
 
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a class="nounder" href="{cmds_url}">&rArr;</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url, cmds_url=series + '-' + package + '.cmds'), file=indexf)
