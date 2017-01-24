@@ -948,7 +948,7 @@ table.matrix td {{
         os.rename(latest_json + '.new', latest_json)
 
         # Summary index table.
-        if migration == 'DEPENDS':
+        if migration in ('DEPENDS', 'BUILDING'):
             state = "MISS"
         if not state:
             if total == 0:
