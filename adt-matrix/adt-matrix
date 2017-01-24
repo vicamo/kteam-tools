@@ -501,7 +501,7 @@ class AutoPackageTest(object):
                         lversion = version
 
                         some_ever[arch] = True
-                        if self.live and ver == verlist[-1] and version == 'blacklist':
+                        if version == 'blacklist':
                             #print("APW", pkg, version, latest, DBG)
                             status = 'SKIP-BLKL'
                         elif self.live and ver == verlist[-1] and version != latest:
