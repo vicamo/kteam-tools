@@ -65,7 +65,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, triggers = None, tag = '', hints = None):
+    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, triggers = None, tag = '', hints = None, migration = None):
         self.cache = {}
         self.dirty = False
 
@@ -78,6 +78,7 @@ class AutoPackageTest(object):
         self.live = live
         self.triggers = triggers
         self.tag = tag
+        self.migration = migration
 
         self.seen = {}
         self.results = {}
@@ -893,6 +894,7 @@ table.matrix td {{
                 triggers = triggers,
                 tag = tag,
                 hints = hints,
+                migration = migration,
             )
 
         adt.update()
@@ -934,7 +936,10 @@ table.matrix td {{
 
         # Summary index table.
         if not state:
-            state = "MISS"
+            if migration == 'DEPENDS':
+                state = "MISS"
+            else:
+                state = "GOOD"
 #            if total == 0:
 #                state = "GOOD"
 #            else:
