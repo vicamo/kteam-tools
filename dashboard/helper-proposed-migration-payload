@@ -72,14 +72,16 @@ def get_status(state, record, seen=None):
         overall = accumulate_state(overall, 'PASS')
     if 'cruft-arch' in record['reason']:
         overall = accumulate_state(overall, 'NBS')
-    if 'build-arch' in record['reason']:
-        overall = accumulate_state(overall, 'BUILDING')
+    #if 'build-arch' in record['reason']:
+    #    overall = accumulate_state(overall, 'BUILDING')
     if 'policy_info' in record and 'autopkgtest' in record['policy_info']:
         for pkg in record['policy_info']['autopkgtest']:
             for arch in record['policy_info']['autopkgtest'][pkg]:
                 overall = accumulate_state(overall, record['policy_info']['autopkgtest'][pkg][arch][0])
-    if 'depends' in record['reason']:
-        overall = accumulate_state(overall, 'DEPENDS')
+    #if 'depends' in record['reason']:
+    #    overall = accumulate_state(overall, 'DEPENDS')
+    if 'missing-builds' in record:
+        overall = accumulate_state(overall, 'BUILDING')
     if 'dependencies' in record:
         if 'blocked-by' in record['dependencies']:
             for depends_package in record['dependencies']['blocked-by']:
