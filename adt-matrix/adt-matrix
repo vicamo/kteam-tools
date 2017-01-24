@@ -428,7 +428,7 @@ class AutoPackageTest(object):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             if self.archs:
-                archs = list(set(archs) & set(self.archs))
+                archs = sorted(list(set(archs) & set(self.archs)))
 
             ## Add in the package_latest arches.
             #if pkg in self.packages_latest:
@@ -462,7 +462,7 @@ class AutoPackageTest(object):
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             if self.archs:
-                archs = list(set(archs) & set(self.archs))
+                archs = sorted(list(set(archs) & set(self.archs)))
             some_ever = {}
 
             ## Add in the package_latest arches if this is the final version.
@@ -581,7 +581,7 @@ class AutoPackageTest(object):
             for pkgarchs in self.packages:
                 (pkg, archs) = pkgarchs
                 if self.archs:
-                    archs = list(set(archs) & set(self.archs))
+                    archs = sorted(list(set(archs) & set(self.archs)))
                 for arch in archs:
                     if ver in result and pkg in result[ver] and arch in result[ver][pkg]:
                         status[result[ver][pkg][arch][0]] += 1
@@ -666,7 +666,7 @@ table.matrix, table.matrix th, table.matrix td {{
         for pkgarchs in self.packages:
             (pkg, archs) = pkgarchs
             if self.archs:
-                archs = list(set(archs) & set(self.archs))
+                archs = sorted(list(set(archs) & set(self.archs)))
 
             archs_seen = {}
             for arch in archs:
