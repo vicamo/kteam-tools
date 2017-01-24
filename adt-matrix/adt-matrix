@@ -455,6 +455,18 @@ class AutoPackageTest(object):
             dirty = False
 
 
+    def hint_match(self, version, pkg, arch):
+        if (version, pkg, arch) in self.hint_status:
+            return self.hint_status[(version, pkg, arch)]
+
+        # Allow hinting of all primary package versions.
+        vall = 'all ' + self.source
+        if (vall, pkg, arch) in self.hint_status:
+            return self.hint_status[(vall, pkg, arch)]
+
+        return None
+
+
     def results_data(self):
         result = {}
         verlist = self.version_list()
@@ -523,9 +535,10 @@ class AutoPackageTest(object):
                         status = 'MISS'
 
                     # HINTS: override results using hint data.
-                    if (ver, pkg, arch) in self.hint_status:
-                        #print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)])
-                        (status, reason) = self.hint_status[(ver, pkg, arch)]
+                    hints = self.hint_match(ver, pkg, arch)
+                    if hints:
+                        #print("APW:", ver, pkg, arch, "override", hints)
+                        (status, reason) = hints
                         version += '\n(hinted ' + status + ': ' + reason + ')'
 
                         some_ever[arch] = True
