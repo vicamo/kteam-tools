@@ -296,12 +296,6 @@ class AutoPackageTest(object):
                 key = ' '.join((ressrc, arch))
                 if ver != 'blacklisted':
                     self.latest[key] = ver
-                elif key in self.latest:
-                    ver = self.latest[key]
-                    verlist = self.version_list()
-                    (kernel_ver, kernel_pkg) = verlist[-1].split()
-                    
-                    print("APW: mapping ", key, "blacklist to", ver, "for", kernel_pkg, kernel_ver)
 
                 # If we have testinfo then we may have a real kernel version.
                 try:
