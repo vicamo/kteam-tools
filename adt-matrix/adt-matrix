@@ -296,12 +296,24 @@ class AutoPackageTest(object):
                 key = ' '.join((ressrc, arch))
                 if ver != 'blacklisted':
                     self.latest[key] = ver
-                elif key in self.latest:
-                    ver = self.latest[key]
-                    verlist = self.version_list()
-                    (kernel_ver, kernel_pkg) = verlist[-1].split()
 
-                    print("BLACKLIST: mapping", key, "blacklist to version", ver, "for", kernel_pkg, kernel_ver)
+                # Blacklisted.
+                else:
+                    latest = None
+                    for larch in self.archs:
+                        lkey = ' '.join((ressrc, larch))
+                        if lkey in self.latest and (not latest or apt_pkg.version_compare(self.latest[lkey], latest) > 0):
+                            latest = self.latest[lkey]
+
+                    if latest:
+                        ver = latest
+                        verlist = self.version_list()
+                        (kernel_ver, kernel_pkg) = verlist[-1].split()
+                        self.latest[key] = latest
+
+                        print("BLACKLIST: mapping", key, "blacklist to version", ver, "for", kernel_pkg, kernel_ver)
+                    else:
+                        print("BLACKLIST: no-mapping", key)
 
                 # If we have testinfo then we may have a real kernel version.
                 try:
