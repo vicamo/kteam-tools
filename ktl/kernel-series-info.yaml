@@ -138,7 +138,8 @@
             linux-raspi2:
                 meta: linux-meta-raspi2
         derivative-packages:
-            linux: []
+            linux:
+            - linux-raspi2
         development: false
         kernel: 4.8.0
         md5: ''
