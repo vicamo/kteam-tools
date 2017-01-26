@@ -326,6 +326,13 @@ class VerifyReleaseReady():
                 s.status(msg, True)
             else:
                 s.status(msg, 'warning')
+            # Verify tag signature
+            msg = 'tag signed'
+            status, result = run_command("git tag -v %s" % expected)
+            if status == 0:
+                s.status(msg, True)
+            else:
+                s.status(msg, 'warning')
 
     def verify_changelog_nomisc(s):
         # Verify that no "Miscellaneous {upstream,Ubuntu,whatever} changes"
