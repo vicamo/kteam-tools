@@ -27,7 +27,6 @@ mkdir -p "$html"
 	echo
 	"$here/adt-update" "$hints/adt-matrix.conf" "$hints/adt-matrix.hints" - "$britney"
 )
-mkdir -p "$html/canonical-kernel-team--unstable"
 
 for conf in "$hints/adt-matrix.conf.d"/*.conf
 do
