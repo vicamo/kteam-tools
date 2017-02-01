@@ -554,10 +554,9 @@ class AutoPackageTest(object):
 
                     # HINTS: override results using hint data.
                     hints = self.hint_match(ver, pkg, arch)
-                    if hints:
+                    if hints and hints[0] != '-':
                         #print("APW:", ver, pkg, arch, "override", hints)
                         (status, reason) = hints
-                        version += '\n(hinted ' + status + ': ' + reason + ')'
 
                         some_ever[arch] = True
 
@@ -576,6 +575,17 @@ class AutoPackageTest(object):
                         elif status == 'GONE':
                             status = None
                             good_ever = False
+
+                    if hints:
+                        (lstatus, reason) = hints
+                        version += '\n('
+                        if lstatus != '-':
+                            version += 'hinted ' + lstatus
+                        if lstatus != '-' and reason:
+                            version += ': '
+                        if reason:
+                            version += reason
+                        version += ')'
 
                     # This is only missing if the latest and greatest tests included it.
                     if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
