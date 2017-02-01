@@ -138,37 +138,48 @@ class AutoPackageTest(object):
         # Load up the hits file.
         self.hint_status = {}
         if hints and hints != '-':
-            with open(hints) as hfd:
-                for line in hfd:
-                    args = shlex.split(line.strip(), comments=True)
-                    if len(args) == 0:
-                        pass
+            hints_list = []
+            if os.path.isfile(hints):
+                hints_list.append(hints)
 
-                    elif args[0] == 'version':
-                        if len(args) != 5:
-                            print("WARNING: hints syntax error: version <series> <kernel_pkg> <kernel_ver> <reason>")
-                            print("         " + line.strip())
-                            continue
-                        (series, kernel_pkg, kernel_ver, reason) = args[1:]
-                        if series != self.series:
-                            continue
+            # If we have a hints.d load up all the files therein.
+            hints_dir = hints + '.d'
+            if os.path.isdir(hints_dir):
+                hints_list += [ os.path.join(hints_dir, x) for x in sorted(os.listdir(hints_dir)) ]
 
-                        self.results[kernel_ver + ' ' + kernel_pkg] = {}
+            # Hints files ...
+            for hints_file in hints_list:
+                with open(hints_file) as hfd:
+                    for line in hfd:
+                        args = shlex.split(line.strip(), comments=True)
+                        if len(args) == 0:
+                            pass
 
-                    elif args[0] == 'result':
-                        if len(args) != 8:
-                            print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
-                            print("         " + line.strip())
-                            continue
+                        elif args[0] == 'version':
+                            if len(args) != 5:
+                                print("WARNING: hints syntax error: version <series> <kernel_pkg> <kernel_ver> <reason>")
+                                print("         " + line.strip())
+                                continue
+                            (series, kernel_pkg, kernel_ver, reason) = args[1:]
+                            if series != self.series:
+                                continue
 
-                        (series, kernel_pkg, kernel_vers, test_pkgs, test_archs, test_status, reason) = args[1:]
-                        if series != self.series:
-                            continue
+                            self.results[kernel_ver + ' ' + kernel_pkg] = {}
 
-                        for kernel_ver in kernel_vers.split(','):
-                            for test_pkg in test_pkgs.split(','):
-                                for test_arch in test_archs.split(','):
-                                    self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
+                        elif args[0] == 'result':
+                            if len(args) != 8:
+                                print("WARNING: hints syntax error: result <series> <kernel_pkg> <kernel_ver> <test_pkg> <test_arch> <test_status> <reason>")
+                                print("         " + line.strip())
+                                continue
+
+                            (series, kernel_pkg, kernel_vers, test_pkgs, test_archs, test_status, reason) = args[1:]
+                            if series != self.series:
+                                continue
+
+                            for kernel_ver in kernel_vers.split(','):
+                                for test_pkg in test_pkgs.split(','):
+                                    for test_arch in test_archs.split(','):
+                                        self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
 
 
     def log_error(self, msg):
