@@ -117,7 +117,7 @@
         derivative-packages:
             linux: []
         development: true
-        kernel: 4.9.0
+        kernel: 4.10.0
         md5: ''
         name: zesty
         packages:
