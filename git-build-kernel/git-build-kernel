@@ -61,6 +61,11 @@ GITREPO="${GITREPO%/.git}"
     exit 1
 }
 
+GITSHASHORT="`git log -1 --pretty=%h ${GITBRANCH%%refs/heads/} --`"
+[ -z "$GITSHASHORT" ] && {	# (this can probably never happen)
+    echo "warning: Can't determine GITSHASHORT from GITBRANCH=$GITBRANCH" 1>&2
+    GITSHASHORT="UNKNOWN-XXXX"
+}
 
 ### Get the var "DEBIAN=debian.master" from debian/debian.env
 eval `git show $GITBRANCH:debian/debian.env | grep DEBIAN=`
@@ -97,7 +102,8 @@ VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
 
 ### Set up the /tmp work directory
 
-WORKDIR="`mktemp -u -d -t kernel-$LOGNAME-XXXXXXXX`"
+WORKDIR="kernel-$LOGNAME-$GITSHASHORT-XXXX"
+WORKDIR="`mktemp -u -d -t $WORKDIR`"
 mkdir "$WORKDIR" || exit
 
 BUILDDIR="$WORKDIR/build"
