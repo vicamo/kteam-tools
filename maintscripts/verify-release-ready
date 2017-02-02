@@ -349,10 +349,10 @@ class VerifyReleaseReady():
         s.status(msg, True)
 
     def verify_changelog_bugs(s):
-        master_changelog = Debian.master_changelog()[1]
-        changelog_bugs = master_changelog['bugs']
-        changelog_series = master_changelog['series']
-        changelog_source_package = master_changelog['package']
+        changelog = Debian.changelog()
+        changelog_bugs = changelog[1]['bugs']
+        changelog_series = changelog[1]['series']
+        changelog_source_package = changelog[1]['package']
 
         for bug in changelog_bugs:
             # Error on private or invalid bugs
