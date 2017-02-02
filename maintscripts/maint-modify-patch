@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 
-from sys                                import argv
-from os                                 import path, rename
+from sys                                import argv, stdin
+from os                                 import path, rename, unlink
 from getopt                             import getopt, GetoptError
 from tempfile                           import NamedTemporaryFile
 from ktl.utils                          import stdo, error
@@ -108,7 +108,7 @@ class Cmdline:
         result = True
         try:
             optsShort = 'va:b:c:s:d:'
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'ack=', 'bugid=', 'cve=', 'sob=', 'list-aliases', 'cp=', 'bp=', 'dry-run']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'ack=', 'bugid=', 'cve=', 'sob=', 'list-aliases', 'cp=', 'bp=', 'dry-run', 'filter']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -164,6 +164,9 @@ class Cmdline:
                 elif opt in ('--dry-run'):                    # dry-run
                     self.cfg['dry-run'] = True
 
+                elif opt in ('--filter'):                    # called with git filter-branch
+                    self.cfg['filter'] = True
+
             if result: # No errors yet
                 if len(args) > 0:
                     self.cfg['modify-operation'] = True
@@ -184,7 +187,7 @@ class Cmdline:
 
         # At lease one patch file must be specified.
         #
-        if 'patch-files' not in cfg:
+        if 'patch-files' not in cfg and not cfg['filter']:
             raise CmdlineError('No patch files were specified on the command line.\n')
 
         # If we have sob or ack we need to have the irc-aliases
@@ -207,6 +210,7 @@ class ModifyPatch(StdApp):
         self.defaults['list-aliases']     = False
         self.defaults['modify-operation'] = False
         self.defaults['dry-run']          = False
+        self.defaults['filter']           = False
         self.defaults['buglink_base_url'] = "https://bugs.launchpad.net/bugs/"
 
         self.cp_rc = compile('\(cherry picked from commit ([0-9a-zA-Z]+)\)')
@@ -304,8 +308,11 @@ class ModifyPatch(StdApp):
 
             self.initialize()
 
-            for patch_file in self.cfg['patch-files']:
-                self.modify(patch_file)
+            if 'patch-files' not in self.cfg and self.cfg['filter']:
+                self.modify(stdin, self.cfg['filter'])
+            else:
+                for patch_file in self.cfg['patch-files']:
+                    self.modify(open(patch_file, 'r'), self.cfg['filter'])
 
         # Handle the user presses <ctrl-C>.
         #
@@ -321,7 +328,7 @@ class ModifyPatch(StdApp):
 
     # modify
     #
-    def modify(self, patch):
+    def modify(self, patch, filter=False):
         """
         Open a file and write it's modified contents out to a temp file.
         The temp file will be renamed to the original file as the last step.
@@ -343,7 +350,7 @@ class ModifyPatch(StdApp):
         sob_insertion_point               = False
         just_copy                         = False
 
-        with open(patch, 'r') as src:
+        with patch as src:
             with NamedTemporaryFile(dir='./', delete=False) as dst:
 
                 for line in src:
@@ -439,15 +446,31 @@ class ModifyPatch(StdApp):
                     # line, so that's the first things we look for.
                     #
                     if looking_4_subject_line:
-                        if 'Subject:' in line:
+                        if 'Subject:' in line or filter == True:
                             subject_line = True
                             looking_4_subject_line = False
 
                     dst.write(line) # Print out the current line of text.
 
+                if filter == True:
+                    if subject_line:
+                        dst.write("\n")
+                        cve_insertion_point = True
+                    if cve_insertion_point:
+                        dst.write(self.cve_block(existing_cves))
+                        buglink_insertion_point = True
+                    if looking_4_buglink_insertion_point or buglink_insertion_point:
+                        dst.write(self.bug_block(existing_buglinks))
+                        sob_insertion_point = True
+                    if looking_4_sob_insertion_point or sob_insertion_point:
+                        dst.write(self.sob_block(existing_acks, existing_sobs, existing_cps, existing_bps))
+
                 temp = dst.name
-        if not self.cfg['dry-run']:
-            rename(temp, patch)
+        if not self.cfg['dry-run'] and not self.cfg['filter'] and patch != stdin:
+            rename(temp, patch.name)
+        if self.cfg['filter']:
+            print(open(temp, 'r').read())
+            unlink(temp)
         return
 
 if __name__ == '__main__':
