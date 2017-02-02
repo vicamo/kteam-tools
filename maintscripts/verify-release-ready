@@ -505,6 +505,7 @@ class VerifyReleaseReady():
             'linux-lts-vivid',
             'linux-lts-wily',
             'linux-lts-xenial',
+            'linux-aws',
             'linux-raspi2',
             'linux-snapdragon'
         ]
