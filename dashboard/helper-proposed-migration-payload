@@ -228,6 +228,17 @@ for line in sys.stdin:
             emitted += get_hierachy(state, record) + [record['source']]
 
     # Rescan for non abi bumpers.
+    # for record in state['sources']:
+    #     if record['source'].startswith('linux') and \
+    #        not record['source'].startswith('linux-meta') and \
+    #        not record['source'].startswith('linux-signed') and \
+    #        record['source'] not in emitted:
+    #         source = record['source'].replace('linux', 'linux-meta')
+    #         if source not in emitted:
+    #             britney.append((series, source, record['new-version'], get_status(state, record)))
+
+    # We always bump ABI so there should be no orphaned linux packages; if we find one
+    # assume the meta is coming and mark it building.
     for record in state['sources']:
         if record['source'].startswith('linux') and \
            not record['source'].startswith('linux-meta') and \
@@ -235,7 +246,7 @@ for line in sys.stdin:
            record['source'] not in emitted:
             source = record['source'].replace('linux', 'linux-meta')
             if source not in emitted:
-                britney.append((series, source, record['new-version'], get_status(state, record)))
+                britney.append((series, source, record['new-version'], 'BUILDING'))
 
     # If the run completed since it was triggered, all is good, else give it an 
     # hour to get there, after that warn for a further hour, then alert.
