@@ -103,9 +103,16 @@ class KernelPackages:
             sver = pub.source_package_version
             key = seriesname + ' ' + sourcename
             key2 = seriesname + ' ' + sourcename.replace('linux', 'linux-meta')
-            if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) >= 0:
-                s.cache_version[key] = sver
+            if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) > 0:
+                # If this build is complete we no longer need to scan it.
+                complete = True
+                for build in pub.getBuilds():
+                    if build.buildstate not in ('Successfully built', 'Failed to build', 'Failed to upload', 'Cancelled build'):
+                        complete = False
+                if complete:
+                    s.cache_version[key] = sver
 
+                # Scan all the binaries and accumulate the flavour version combinations.
                 flavours = {}
                 for binary in pub.getPublishedBinaries():
                     binary_package_name = binary.binary_package_name
