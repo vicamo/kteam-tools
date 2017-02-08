@@ -21,7 +21,7 @@ class UploadToPPA(TaskHandler):
     #
     def _confirmed(s):
         center(s.__class__.__name__ + '._confirmed')
-        retval = True
+        retval = False
         s.bug.phase = 'ReadyToBePackaged'
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
