@@ -319,9 +319,6 @@
         - linux-signed
         - linux-keystone
         - linux-meta-keystone
-        - linux-lts-vivid
-        - linux-meta-lts-vivid
-        - linux-signed-lts-vivid
         - linux-lts-xenial
         - linux-meta-lts-xenial
         - linux-signed-lts-xenial
