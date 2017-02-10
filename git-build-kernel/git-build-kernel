@@ -148,14 +148,33 @@ show_elapsed &
 	mkdir "$BUILDDIR"
 	git archive --format=tar "$GITBRANCH" | tar -x -C "$BUILDDIR"
 
-	echo "+++gbk++++ dchroot -c $CHROOT"
 	set +e
-	dchroot -c "$CHROOT"   2>&1 <<-XXEOFXX
+	dchroot -l > /dev/null 2>&1
+	STATUS=$?
+	echo "+++gbk++++ dchroot -l exit status was $STATUS"
+	if [ $STATUS = 0 ]
+	then
+		echo "+++gbk++++ dchroot -c $CHROOT"
+		dchroot -c "$CHROOT"   2>&1 <<-XXEOFXX
+			set -e
+			set -x
+			cd "$BUILDDIR"
+			export \$(dpkg-architecture -a$ARCH)
+			[ \$DEB_BUILD_ARCH != \$DEB_HOST_ARCH ] && export CROSS_COMPILE="\${DEB_HOST_GNU_TYPE}-"
+			fakeroot debian/rules clean
+			if [ $do_source_pkg = 1 ]
+			then
+			    debuild -S -I -i -uc -us
+			else
+			    debian/rules build
+			    fakeroot debian/rules $TARGETS
+			fi
+XXEOFXX
+	STATUS=$?
+	else
 		set -e
 		set -x
 		cd "$BUILDDIR"
-		export \$(dpkg-architecture -a$ARCH)
-		[ \$DEB_BUILD_ARCH != \$DEB_HOST_ARCH ] && export CROSS_COMPILE="\${DEB_HOST_GNU_TYPE}-"
 		fakeroot debian/rules clean
 		if [ $do_source_pkg = 1 ]
 		then
@@ -164,8 +183,8 @@ show_elapsed &
 		    debian/rules build
 		    fakeroot debian/rules $TARGETS
 		fi
-XXEOFXX
-	STATUS=$?
+		STATUS=$?
+	fi
 	echo "+++gbk++++ build exit status was $STATUS"
 	exit $STATUS
 ) > $LOG 2>&1
