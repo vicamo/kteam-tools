@@ -109,8 +109,9 @@ class KernelPackages:
                 for build in pub.getBuilds():
                     if build.buildstate not in ('Successfully built', 'Failed to build', 'Failed to upload', 'Cancelled build'):
                         complete = False
-                if complete:
+                if complete and key not in s.cache_version or s.cache_version[key] != sver:
                     s.cache_version[key] = sver
+                    s.dirty = True
 
                 # Scan all the binaries and accumulate the flavour version combinations.
                 flavours = {}
