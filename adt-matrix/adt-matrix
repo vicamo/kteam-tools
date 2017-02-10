@@ -822,16 +822,22 @@ table.matrix, table.matrix th, table.matrix td {{
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
         if not len(verlist):
             return ''
+        verlist.reverse()
 
         page = ''
-        pkgver = verlist[-1]
-        (ver, pkg) = pkgver.split()
-        page = ' '.join(('version', self.series, pkg, ver, '"seed version"')) + '\n'
-        for tpkg in results[pkgver]:
-            for arch in results[pkgver][tpkg]:
-                (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
-                page += ' '.join(('result', self.series, pkg, ver, tpkg, arch, status, '"seed version"')) + '\n'
-        
+        for pkgver in verlist:
+            (ver, pkg) = pkgver.split()
+            page = ' '.join(('version', self.series, pkg, ver, '"seed version"')) + '\n'
+            miss = False
+            for tpkg in results[pkgver]:
+                for arch in results[pkgver][tpkg]:
+                    (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
+                    page += ' '.join(('result', self.series, pkg, ver, tpkg, arch, status, '"seed version"')) + '\n'
+                    if status == 'MISS':
+                        miss = True
+            if not miss:
+                break
+
         return page
 
 
