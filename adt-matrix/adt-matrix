@@ -262,6 +262,12 @@ class AutoPackageTest(object):
 
 
     def version2package(self, series, version, flavour):
+        key = series + ' ' + version + ' ' + flavour
+        if key in self.map_source:
+            #print("map:", series, version, flavour, key, self.map_source[key])
+            return self.map_source[key]
+
+        # Legacy ...
         (base_version, abi) = version.split('-', 1)
 
         key = series + ' ' + base_version + ' ' + flavour

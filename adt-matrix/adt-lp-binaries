@@ -131,7 +131,11 @@ class KernelPackages:
 
                 base_versions = {}
                 for pub in pubs:
-                    (base, abi) = pub.source_package_version.split('-', 1)
+                    # Record the exact source versions.
+                    src_version = pub.source_package_version
+                    base_versions[src_version] = True
+                    # Legacy...
+                    (base, abi) = src_version.split('-', 1)
                     base_versions[base] = True
 
                 #print(flavours)
