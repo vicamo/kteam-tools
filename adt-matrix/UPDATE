@@ -14,7 +14,7 @@ html="$1"
 britney="$2"
 git="$3"
 
-hints="$here/hints"
+hints="$here/hints/adt-matrix.conf.d"
 if [ ! -d "$hints" ]; then
 	git clone "$git" "$hints"
 else
@@ -25,22 +25,23 @@ mkdir -p "$html"
 (
 	cd "$html" || exit 1
 	echo
-	"$here/adt-update" "$hints/adt-matrix.conf" "$hints/adt-matrix.hints" - "$britney"
+	"$here/adt-update" "$hints/primary.conf" "$hints/primary.hints" - "$britney"
 )
 
-for conf in "$hints/adt-matrix.conf.d"/*.conf
+for conf in "$hints/"/*.conf
 do
+	handle=$( basename "$conf" .conf )
+	[ "$handle" = "primary" ] && continue
+	archive=$( echo "$handle" | sed -e 's@--@/@g' )
 	(
-		handle=$( basename "$conf" .conf )
-		archive=$( echo "$handle" | sed -e 's@--@/@g' )
 		mkdir -p "$html/$handle"
 		cd "$html/$handle" || exit 1
 
 		ln -sf ../package-relation.json .
 
 		"$here/adt-update" \
-			"$hints/adt-matrix.conf.d/$handle.conf" \
-			"$hints/adt-matrix.conf.d/$handle.hints" \
+			"$hints/$handle.conf" \
+			"$hints/$handle.hints" \
 			"$archive" -
 	)
 done
