@@ -14,7 +14,7 @@ html="$1"
 britney="$2"
 git="$3"
 
-hints="$here/hints/adt-matrix.conf.d"
+hints="$here/hints"
 if [ ! -d "$hints" ]; then
 	git clone "$git" "$hints"
 else
