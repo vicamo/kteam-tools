@@ -97,15 +97,11 @@ def get_status(state, record, seen=None):
                     if record2['source'] == bits[2]:
                         overall = accumulate_state(overall, get_status(state, record2, seen))
 
-    # A reason of depends means this package has unsatisfied dependencies.
-    if 'depends' in record['reason']:
-        overall = accumulate_state(overall, 'DEPENDS')
-
     # A reason of block essentially means that we are marked for blocking
     # this could be relevant (but we will have identified it above for a more
     # specific reason) or indicates we are held for freeze of by our
     # blocking bugs, either of these are really a pass.
-    elif 'block' in record['reason']:
+    if 'block' in record['reason']:
         overall = accumulate_state(overall, 'PASS')
 
     return overall
