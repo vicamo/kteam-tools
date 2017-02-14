@@ -435,7 +435,6 @@
         kernel: 3.2.0
         name: precise
         packages:
-        - linux:
         - linux-meta
         - linux-ti-omap4
         - linux-meta-ti-omap4
