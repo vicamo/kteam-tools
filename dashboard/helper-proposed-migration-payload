@@ -83,8 +83,8 @@ def get_status(state, record, seen=None):
     if 'missing-builds' in record:
         overall = accumulate_state(overall, 'BUILDING')
     if 'dependencies' in record:
-        if 'blocked-by' in record['dependencies']:
-            for depends_package in record['dependencies']['blocked-by']:
+        for how in record['dependencies']:
+            for depends_package in record['dependencies'][how]:
                 for record2 in state['sources']:
                     if record2['source'] == depends_package:
                         overall = accumulate_state(overall, get_status(state, record2, seen))
