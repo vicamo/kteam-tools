@@ -174,9 +174,6 @@
             linux-hwe-edge:
             - linux
             - '16.10'
-            linux-lts-zesty:
-            - linux
-            - '17.04'
         dependent-packages:
             linux:
                 meta: linux-meta
