@@ -16,97 +16,113 @@
     # For each release, we have a dictionary assigned to it which consists of a
     # set of fields with values assigned, relevant to that release. The possible
     # fields are:
-    # * development (bool) - indicates if this release
-    #   represents the current Ubuntu development release
-    # * series_verson (string) - same as release number string. XXX: remove this?
-    # * kernel (string) - the main kernel version used in this release (from
-    #   linux package), eg. '3.2.0'
-    # * name (string) - first name of this release, eg. 'precise'
-    # * supported (bool) - indicates if this is an stable supported
-    #   release (not a development release, and not EOL - end of life)
-    # * packages (list) - list of source package names supported in this
-    #   release.
-    # * dependent-packages (dictionary) - dictionary mapping a package
-    #   to its dependent packages. Format:
-    #   'dependent-packages' : {
-    #     <source package name> : {
-    #       'task name 1' : <source package name 1 linked to this task>,
-    #       'task name 2' : <source package name 2 linked to this task>,
-    #       ...
-    #       'task name n' : <source package name n linked to this task>
-    #     }
-    #   }
-    #   - source package name is the name of the source package uploaded.
-    #   - task name can be one of the following: 'meta', 'lbm', 'lrm',
-    #     'lum', 'ports-meta', 'signed'
-    #   The information on this dictionary is solely used as an way to
-    #   process and create tracking bugs. Using this information the
-    #   scripts can know which packages needs extra 'prepare-package-*'
-    #   tasks in tracking bugs, and which package name relates to its
-    #   respective 'prepare-package-*' task:
-    #   - For 'meta', 'lbm', 'lrm', 'lum', 'ports-meta' and 'signed',
-    #     they are used when opening a tracking bug to know if that
-    #     tracking bug needs respectively the tasks
-    #     'prepare-package-meta', 'prepare-package-lbm', etc.
-    #   - For 'meta', 'lbm', 'lrm', 'lum' and 'ports-meta', shank bot
-    #     (stable/sru-workflow-manager) uses the dictionary to know
-    #     what's the package name for that task, to check if the package
-    #     is built on the ppa with the needed ABI. For 'signed', it uses
-    #     the dictionary to know what's the package name for the
-    #     prepare-package-signed task, and to check if the package with
-    #     same ABI-VERSION is built on the ppa.
-    # * derivative-packages (dictionary) - dictionary solely used by
-    #   shank bot to know which tracking bugs it needs to open for
-    #   rebasable branches, when the master linux packages are built on
-    #   the ppa. Format:
-    #   'derivative-packages' : {
-    #     <source package name A> : [
-    #          <source package name 1>,
-    #          <source package name 2>,
-    #          ...
-    #          <source package name n>
-    #       ],
-    #     <source package name B> : [ ... ],
-    #     ...
-    #     <source package name n> : [ ... ]
-    #   }
-    #   Example:
-    #   'derivative-packages' : {
-    #     'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
-    #   }
-    #   This example means for shank bot that when 'linux' package is
-    #   built on the c-k-t PPA, open automatically tracking bugs for
-    #   'linux-ti-omap4' and 'linux-armadaxp' packages so they can be
-    #   rebased on top of linux master branch and worked on.
-    # * backport-packages (dictionary) - if the release is an LTS
-    #   (Long Term Support), this will provide a mapping of available
-    #   backport packages on it, so shank bot can properly open new
-    #   tracking bugs for them. It's different from derivative-packages
-    #   field, because the tracking bug is opened when a linux master
-    #   branch is built on another release, so this field serves as a
-    #   reverse map. But the purpose is the same, and also is solely
-    #   used to open new tracking bugs for backport packages.
-    #   Format:
-    #   'backport-packages' : {
-    #     <backport source package name 1> : [
-    #       <original source package name of backported package>,
-    #       <release number from where it's being backported>
-    #     ],
-    #     ...
-    #     <backport source package name N> : [ ... ]
-    #   }
-    #   Consider this backports-package entry for '10.04' (Lucid) for
-    #   example:
-    #   'backport-packages' : {
-    #     'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
-    #     'linux-lts-backport-natty' : [ 'linux', '11.04' ],
-    #     'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
-    #    }
-    #   Above we have listed the three backports it can have. Taking
-    #   oneiric backport, the list means, we are backporting from
-    #   'linux' package present on '11.10'.
-    # * sha1 XXX: doesn't seem to be used anymore
-    # * md5 XXX: doesn't seem to be used anymore
+    #
+    # * development (bool)
+    #       indicates if this release represents the current Ubuntu development
+    #       release
+    #
+    # * series_verson (string)
+    #       same as release number string
+    #
+    # * kernel (string)
+    #       the main kernel version used in this release (from linux package),
+    #       eg. '3.2.0'
+    #
+    # * name (string)
+    #       first name of this release, eg. 'precise'
+    #
+    # * supported (bool)
+    #       indicates if this is an stable supported  release (not a development
+    #       release, and not EOL - end of life)
+    #
+    # * packages (list)
+    #       list of source package names supported in this release.
+    #
+    # * dependent-packages (dictionary)
+    #       dictionary mapping a package to its dependent packages
+    #       Format:
+    #           'dependent-packages' : {
+    #             <source package name> : {
+    #               'task name 1' : <source package name 1 linked to this task>,
+    #               'task name 2' : <source package name 2 linked to this task>,
+    #               ...
+    #               'task name n' : <source package name n linked to this task>
+    #             }
+    #           }
+    #       - source package name is the name of the source package uploaded.
+    #       - task name can be one of the following: 'meta', 'lbm', 'lrm',
+    #         'lum', 'ports-meta', 'signed'
+    #
+    #       The information on this dictionary is solely used as an way to
+    #       process and create tracking bugs. Using this information the
+    #       scripts can know which packages needs extra 'prepare-package-*'
+    #       tasks in tracking bugs, and which package name relates to its
+    #       respective 'prepare-package-*' task:
+    #       - For 'meta', 'lbm', 'lrm', 'lum', 'ports-meta' and 'signed',
+    #         they are used when opening a tracking bug to know if that
+    #         tracking bug needs respectively the tasks
+    #         'prepare-package-meta', 'prepare-package-lbm', etc.
+    #       - For 'meta', 'lbm', 'lrm', 'lum' and 'ports-meta', shank bot
+    #         (stable/sru-workflow-manager) uses the dictionary to know
+    #         what's the package name for that task, to check if the package
+    #         is built on the ppa with the needed ABI. For 'signed', it uses
+    #         the dictionary to know what's the package name for the
+    #         prepare-package-signed task, and to check if the package with
+    #         same ABI-VERSION is built on the ppa.
+    #
+    # * derivative-packages (dictionary)
+    #       dictionary solely used by shank bot to know which tracking bugs
+    #       it needs to open for rebasable branches, when the master linux
+    #       packages are built on the ppa.
+    #       Format:
+    #           'derivative-packages' : {
+    #             <source package name A> : [
+    #                  <source package name 1>,
+    #                  <source package name 2>,
+    #                  ...
+    #                  <source package name n>
+    #               ],
+    #             <source package name B> : [ ... ],
+    #             ...
+    #             <source package name n> : [ ... ]
+    #           }
+    #           Example:
+    #           'derivative-packages' : {
+    #             'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
+    #           }
+    #           This example means for shank bot that when 'linux' package is
+    #           built on the c-k-t PPA, open automatically tracking bugs for
+    #           'linux-ti-omap4' and 'linux-armadaxp' packages so they can be
+    #           rebased on top of linux master branch and worked on.
+    #
+    # * backport-packages (dictionary)
+    #       if the release is an LTS (Long Term Support), this will provide a
+    #       mapping of available backport packages on it, so shank bot can properly
+    #       open new tracking bugs for them. It's different from derivative-packages
+    #       field, because the tracking bug is opened when a linux master branch is
+    #       built on another release, so this field serves as a reverse map. But the
+    #       purpose is the same, and also is solely used to open new tracking bugs
+    #       for backport packages.
+    #       Format:
+    #           'backport-packages' : {
+    #             <backport source package name 1> : [
+    #               <original source package name of backported package>,
+    #               <release number from where it's being backported>
+    #             ],
+    #             ...
+    #             <backport source package name N> : [ ... ]
+    #           }
+    #           Consider this backports-package entry for '10.04' (Lucid) for
+    #           example:
+    #           'backport-packages' : {
+    #             'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
+    #             'linux-lts-backport-natty' : [ 'linux', '11.04' ],
+    #             'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
+    #            }
+    #           Above we have listed the three backports it can have. Taking
+    #           oneiric backport, the list means, we are backporting from
+    #           'linux' package present on '11.10'.
+    #
     '17.04':
         dependent-packages:
             linux:
@@ -118,7 +134,6 @@
             linux: []
         development: true
         kernel: 4.10.0
-        md5: ''
         name: zesty
         packages:
         - linux
@@ -127,7 +142,6 @@
         - linux-meta-raspi2
         - linux-signed
         series_version: '17.04'
-        sha1: ''
         supported: false
 
     '16.10':
@@ -142,7 +156,6 @@
             - linux-raspi2
         development: false
         kernel: 4.8.0
-        md5: ''
         name: yakkety
         packages:
         - linux
@@ -151,7 +164,6 @@
         - linux-meta-raspi2
         - linux-signed
         series_version: '16.10'
-        sha1: ''
         supported: true
 
     '16.04':
@@ -188,7 +200,6 @@
             - linux-aws
         development: false
         kernel: 4.4.0
-        md5: ''
         name: xenial
         packages:
         - linux
@@ -211,7 +222,6 @@
         - raspi2-kernel
         - snapdragon-kernel
         series_version: '16.04'
-        sha1: ''
         supported: true
 
     '15.10':
@@ -226,7 +236,6 @@
             - linux-raspi2
         development: false
         kernel: 4.2.0
-        md5: ''
         name: wily
         packages:
         - linux
@@ -234,7 +243,6 @@
         - linux-raspi2
         - linux-meta-raspi2
         series_version: '15.10'
-        sha1: ''
         supported: false
 
     '15.04':
@@ -246,14 +254,12 @@
             linux: []
         development: false
         kernel: 3.19.0
-        md5: ''
         name: vivid
         packages:
         - linux
         - linux-meta
         - linux-signed
         series_version: '15.04'
-        sha1: ''
         supported: true
 
     '14.10':
@@ -265,13 +271,11 @@
             linux: []
         development: false
         kernel: 3.16.0
-        md5: ''
         name: utopic
         packages:
         - linux
         - linux-meta
         series_version: '14.10'
-        sha1: ''
         supported: false
 
     '14.04':
@@ -311,7 +315,6 @@
             - linux-keystone
         development: false
         kernel: 3.13.0
-        md5: ''
         name: trusty
         packages:
         - linux
@@ -323,7 +326,6 @@
         - linux-meta-lts-xenial
         - linux-signed-lts-xenial
         series_version: '14.04'
-        sha1: ''
         supported: true
 
     '13.10':
@@ -341,14 +343,12 @@
             - linux-ppc
         development: false
         kernel: 3.11.0
-        md5: ''
         name: saucy
         packages:
         - linux
         - linux-meta
         - linux-exynos5
         series_version: '13.10'
-        sha1: ''
         supported: false
 
     '13.04':
@@ -366,14 +366,12 @@
             - linux-ppc
         development: false
         kernel: 3.8.0
-        md5: ''
         name: raring
         packages:
         - linux
         - linux-meta
         - linux-meta-ti-omap4
         series_version: '13.04'
-        sha1: ''
         supported: false
 
     '12.10':
@@ -394,7 +392,6 @@
             - linux-armadaxp
             - linux-lowlatency
         kernel: 3.5.0
-        md5: ''
         name: quantal
         packages:
         - linux
@@ -404,7 +401,6 @@
         - linux-armadaxp
         - linux-meta-armadaxp
         series_version: '12.10'
-        sha1: ''
         supported: false
 
     '12.04':
@@ -437,10 +433,10 @@
             - linux-ti-omap4
             - linux-armadaxp
         kernel: 3.2.0
-        md5: ''
         name: precise
         packages:
-        - linux
+        - linux:
+          - amd64
         - linux-meta
         - linux-ti-omap4
         - linux-meta-ti-omap4
@@ -451,7 +447,6 @@
         - linux-signed-lts-trusty
         - linux-backports-modules-3.2.0
         series_version: '12.04'
-        sha1: ''
         supported: true
 
     '11.10':
@@ -465,7 +460,6 @@
             linux:
             - linux-ti-omap4
         kernel: 3.0.0
-        md5: ''
         name: oneiric
         packages:
         - linux
@@ -474,7 +468,6 @@
         - linux-meta-ti-omap4
         - linux-backports-modules-3.0.0
         series_version: '11.10'
-        sha1: ''
         supported: false
 
     '11.04':
@@ -488,7 +481,6 @@
             linux:
             - linux-ti-omap4
         kernel: 2.6.38
-        md5: cf0b587742611328f095da4b329e9fc7
         name: natty
         packages:
         - linux
@@ -497,7 +489,6 @@
         - linux-meta-ti-omap4
         - linux-backports-modules-2.6.38
         series_version: '11.04'
-        sha1: 0770b9d2483eaeee4b80aec1fd448586b882003e
         supported: false
 
     '10.10':
@@ -515,7 +506,6 @@
             - linux-ti-omap4
             - linux-mvl-dove
         kernel: 2.6.35
-        md5: 62001687bd94d1c0dd9a3654c64257d6
         name: maverick
         packages:
         - linux
@@ -527,7 +517,6 @@
         - linux-meta-ti-omap4
         - linux-backports-modules-2.6.35
         series_version: '10.10'
-        sha1: a2422f9281766ffe2f615903712819b9b0d9dd52
         supported: false
 
     '10.04':
@@ -542,7 +531,6 @@
             linux:
             - linux-ec2
         kernel: 2.6.32
-        md5: 4b1f6f6fac43a23e783079db589fc7e2
         name: lucid
         packages:
         - linux
@@ -552,12 +540,10 @@
         - linux-meta-ec2
         - linux-backports-modules-2.6.32
         series_version: '10.04'
-        sha1: 298cbfdb55fc64d1135f06b3bed3c8748123c183
         supported: false
 
     '9.10':
         kernel: 2.6.31
-        md5: 16c0355d3612806ef87addf7c9f8c9f9
         name: karmic
         packages:
         - linux
@@ -571,16 +557,13 @@
         - linux-meta-fsl-imx51
         - linux-backports-modules-2.6.31
         series_version: '9.10'
-        sha1: 6b19c2987b0e2d74dcdca2aadebd5081bc143b72
         supported: false
 
     '9.04':
         kernel: 2.6.28
-        md5: 062c29b626a55f09a65532538a6184d4
         name: jaunty
         packages: []
         series_version: '9.04'
-        sha1: 92d6a293200566646fbb9215e0633b4b9312ad38
         supported: false
 
     '8.10':
@@ -598,7 +581,6 @@
                 lum: linux-ubuntu-modules-2.6.24
                 meta: linux-meta
         kernel: 2.6.24
-        md5: e4aad2f8c445505cbbfa92864f5941ab
         name: hardy
         packages:
         - linux
@@ -607,7 +589,6 @@
         - linux-ubuntu-modules-2.6.24
         - linux-restricted-modules-2.6.24
         series_version: '8.04'
-        sha1: ccccdc4759fd780a028000a1b7b15dbd9c60363b
         supported: false
 
     '7.10':
