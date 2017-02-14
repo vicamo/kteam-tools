@@ -70,7 +70,7 @@ def get_status(state, record, seen=None):
     overall = 'UNKNOWN'
     if record['is-candidate']:
         overall = accumulate_state(overall, 'PASS')
-    if 'cruft-arch' in record['reason']:
+    if 'old-binaries' in record:
         overall = accumulate_state(overall, 'NBS')
     #if 'build-arch' in record['reason']:
     #    overall = accumulate_state(overall, 'BUILDING')
