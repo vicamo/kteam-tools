@@ -436,7 +436,6 @@
         name: precise
         packages:
         - linux:
-          - amd64
         - linux-meta
         - linux-ti-omap4
         - linux-meta-ti-omap4
