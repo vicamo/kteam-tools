@@ -9,3 +9,4 @@ from .promote_to_updates                import PromoteToUpdates
 from .promote_to_security               import PromoteToSecurity
 from .promote_to_release                import PromoteToRelease
 from .security_signoff                  import SecuritySignoff
+from .kernel_snap                       import KernelSnapEdge, KernelSnapBeta, KernelSnapCandidate, KernelSnapStable
