@@ -6,10 +6,9 @@
 #       now, we need to be practical for now.
 
 from ktl.git                            import Git, GitError
-from ktl.utils                          import debug, dump
-from ktl.kernel                         import Kernel
+from ktl.utils                          import debug
 from re                                 import compile, findall, finditer
-from os                                 import path, listdir, walk
+from os                                 import path, listdir
 
 # DebianError
 #
@@ -37,8 +36,6 @@ class Debian:
     #
     @classmethod
     def debian_directories(cls):
-        retval = []
-
         # Find the correct debian directory for this branch of this repository.
         #
         current_branch = Git.current_branch()
@@ -60,7 +57,7 @@ class Debian:
             debug("SUCCEEDED\n", cls.debug, False)
         except GitError:
             debug("FAILED\n", cls.debug, False)
-            debdirs += [ 'debian', 'meta-source/debian' ]
+            debdirs += ['debian', 'meta-source/debian']
 
         return debdirs
 
@@ -86,7 +83,6 @@ class Debian:
     #
     @classmethod
     def raw_changelog(cls, local=False):
-        retval = []
 
         # Find the correct changelog for this branch of this repository.
         #
@@ -125,14 +121,14 @@ class Debian:
         # The first line of the changelog should always be a version line.
         #
         m = cls.version_line_rc.match(changelog_contents[0])
-        if m == None:
+        if m is None:
             if cls.debug:
                 m = cls.package_rc.match(changelog_contents[0])
-                if m == None:
+                if m is None:
                     debug('The package does not appear to be in a recognized format.\n', cls.debug)
 
                 m = cls.ver_rc.match(changelog_contents[0])
-                if m == None:
+                if m is None:
                     debug('The version does not appear to be in a recognized format.\n', cls.debug)
 
             raise DebianError("The first line in the changelog is not a version line.")
@@ -142,7 +138,7 @@ class Debian:
 
         for line in changelog_contents:
             m = cls.version_line_rc.match(line)
-            if m != None:
+            if m is not None:
                 version = ""
                 release = ""
                 pocket  = ""
@@ -164,7 +160,7 @@ class Debian:
                 section['bugs'] = set(bugs)
 
                 m = cls.version_rc.match(version)
-                if m != None:
+                if m is not None:
                     section['linux-version'] = m.group(1)
                     section['ABI']           = m.group(2)
                     section['upload-number'] = m.group(3)
@@ -244,7 +240,7 @@ class Debian:
                             fsize = path.getsize(fpath)
                             if fsize == 0:
                                 debug("  Found empty ABI file: '%s'\n" % fpath, cls.debug)
-                                empty.append(fpath);
+                                empty.append(fpath)
                 return retvals, empty
 
         # Not there anywhere, barf
