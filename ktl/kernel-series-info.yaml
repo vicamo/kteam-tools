@@ -214,10 +214,13 @@
         - linux-hwe
         - linux-meta-hwe
         - linux-signed-hwe
+        - linux-joule
+        - linux-meta-joule
         snaps:
         - pc-kernel
         - raspi2-kernel
         - snapdragon-kernel
+        - joule-kernel
         series_version: '16.04'
         supported: true
 
