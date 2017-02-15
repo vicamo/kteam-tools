@@ -61,6 +61,18 @@ class TrackingBug:
             if lp_series.name == 'prepare-package-signed' and not s.has_dependent_package(targeted_series_name, package, 'signed'):
                 cdebug('    no prepare-package-signed', 'yellow')
                 break
+            if lp_series.name == 'kernel-snap-edge' and not s.has_dependent_package(targeted_series_name, package, 'snap-edge'):
+                cdebug('    no kernel-snap-edge', 'yellow')
+                break
+            if lp_series.name == 'kernel-snap-beta' and not s.has_dependent_package(targeted_series_name, package, 'snap-beta'):
+                cdebug('    no kernel-snap-beta', 'yellow')
+                break
+            if lp_series.name == 'kernel-snap-candidate' and not s.has_dependent_package(targeted_series_name, package, 'snap-candidate'):
+                cdebug('    no kernel-snap-candidate', 'yellow')
+                break
+            if lp_series.name == 'kernel-snap-stable' and not s.has_dependent_package(targeted_series_name, package, 'snap-stable'):
+                cdebug('    no kernel-snap-stable', 'yellow')
+                break
             retval = True
             break
         return retval
