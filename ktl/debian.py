@@ -5,10 +5,30 @@
 #       be able to handle projects that are under bzr as well. But for
 #       now, we need to be practical for now.
 
+from sys                                import stdout
 from ktl.git                            import Git, GitError
-from ktl.utils                          import debug
 from re                                 import compile, findall, finditer
 from os                                 import path, listdir
+
+# stdo
+#
+# My own version of print but won't automatically add a linefeed to the end. And
+# does a flush after every write.
+#
+def stdo(ostr):
+    stdout.write(ostr)
+    stdout.flush()
+    return
+
+# debug
+#
+# Print strings to standard out preceeded by "debug:".
+#
+def debug(out, dbg=False, prefix=True):
+    if dbg:
+        if prefix:
+            stdo("debug: ")
+        stdo(out)
 
 # DebianError
 #
