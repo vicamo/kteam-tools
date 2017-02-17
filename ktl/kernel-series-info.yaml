@@ -311,8 +311,7 @@
                 meta: linux-meta-lts-xenial
                 signed: linux-signed-lts-xenial
         derivative-packages:
-            linux:
-            - linux-keystone
+            linux: []
         development: false
         kernel: 3.13.0
         name: trusty
@@ -320,8 +319,6 @@
         - linux
         - linux-meta
         - linux-signed
-        - linux-keystone
-        - linux-meta-keystone
         - linux-lts-xenial
         - linux-meta-lts-xenial
         - linux-signed-lts-xenial
