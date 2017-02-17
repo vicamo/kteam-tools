@@ -101,3 +101,4 @@ git://kernel.ubuntu.com/ubuntu/unstable.git                                 git:
 git://kernel.ubuntu.com/ubuntu/wireless-crda.git                            -                                                                                                               wani	active
 git://kernel.ubuntu.com/virgin/testing/crack.git                            git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack                            wani	active
 git://kernel.ubuntu.com/virgin/testing/drm-intel.git                        git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mirror-drm-intel                          wani	active
+git://kernel.ubuntu.com/ubuntu/azure.git                                    git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/azure                                          launchpad	active
