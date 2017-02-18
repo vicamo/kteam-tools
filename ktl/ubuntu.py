@@ -32,7 +32,8 @@ class Ubuntu:
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
+    # url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
     # url = 'http://kernel.ubuntu.com/data/kernel-series-info.yaml'
     response = urlopen(url)
     content = response.read()
@@ -176,7 +177,7 @@ class Ubuntu:
         """
         retval = None
 
-        if package.startswith('linux-lts-') or package == 'linux-hwe-edge':
+        if package.startswith('linux-lts-') or package.startswith('linux-hwe'):
             for entry in self.db.values():
                 # starting with trusty, the lts packages now include the series
                 # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
