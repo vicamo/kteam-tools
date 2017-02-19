@@ -32,8 +32,7 @@ class Ubuntu:
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
-    # url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
     # url = 'http://kernel.ubuntu.com/data/kernel-series-info.yaml'
     response = urlopen(url)
     content = response.read()
