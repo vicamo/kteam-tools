@@ -174,7 +174,7 @@ class WorkflowBug():
             hwe = False
             if '-lts-' in s.pkg_name:
                 hwe = True
-            elif '-hwe-' in s.pkg_name:
+            elif s.pkg_name.startswith('linux-hwe'):
                 hwe = True
 
             if hwe:
