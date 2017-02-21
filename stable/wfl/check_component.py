@@ -25,6 +25,8 @@ class CheckComponent():
             'linux-keystone',
             'linux-meta-keystone',
             'linux-hwe',
+            'linux-meta-hwe',
+            'linux-signed-hwe',
             'linux-hwe-edge',
             'linux-meta-hwe-edge',
             'linux-signed-hwe-edge'
