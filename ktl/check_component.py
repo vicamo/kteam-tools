@@ -25,6 +25,7 @@ class CheckComponent():
                 'linux-armadaxp',
                 'linux-keystone',
                 'linux-meta-keystone',
+                'linux-hwe',
                 'linux-hwe-edge',
                 'linux-meta-hwe-edge',
                 'linux-signed-hwe-edge'
