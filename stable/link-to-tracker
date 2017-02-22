@@ -161,16 +161,16 @@ class Tracking():
 
             # Pull the entire changelog file into a list
             #
+            changelog = Debian.changelog(local=True)
+            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
+
             changelog, changelog_path = Debian.raw_changelog(local=True)
             with open(changelog_path, 'r') as f:
                 thelog = f.readlines()
-
-            title = "%s: %s -proposed tracker" % (thelog[0], thelog[1])
-
             with open(changelog_path, 'w') as f:
                 f.write(thelog[0])
                 f.write(thelog[1])
-                f.write("  * %s (%s)\n" % (title, bugid))
+                f.write("  * %s (LP: #%s)\n" % (title, bugid))
                 f.write("\n")
                 for line in thelog[2:]:
                     f.write(line)
