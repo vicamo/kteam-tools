@@ -5,7 +5,7 @@ from datetime                           import datetime, timedelta
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
 from ktl.log                            import center, cleave, cdebug, cinfo, Clog
-from ktl.launchpad                      import Launchpad
+from wfl.launchpad                      import Launchpad
 from ktl3.git                           import Git
 from ktl3.debian                        import Debian
 
@@ -78,7 +78,7 @@ class Tracking():
     #
     def __init__(s, args):
         s.args = args
-        s.launchpad = Launchpad('start-sru-cycle').service
+        s.launchpad = Launchpad(client='start-sru-cycle').service
         s.project_tracked = 'kernel-sru-workflow'
 
     def trackers(s, project):
