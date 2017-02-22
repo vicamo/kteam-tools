@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+#
+
+from datetime                           import datetime, timedelta
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO, WARNING
+from ktl.log                            import center, cleave, cdebug, cinfo, Clog
+from ktl.launchpad                      import Launchpad
+from ktl3.git                           import Git
+from ktl3.debian                        import Debian
+
+# AppError
+#
+# A general exception that can be raised when an error is encountered in the app.
+#
+class AppError(Exception):
+    # __init__
+    #
+    def __init__(self, error=''):
+        self.msg = error
+
+# WorkflowBugTask
+#
+class WorkflowBugTask(object):
+    dryrun = False
+    no_assignments    = False
+    no_status_changes = False
+
+    # __init__
+    #
+    def __init__(s, lp_task, task_name):
+        s.__status   = None
+        s.__assignee = None
+        setattr(s, 'name', task_name)
+        setattr(s, 'importance', lp_task.importance)
+        setattr(s, 'lp_task', lp_task)
+        s.__modified = False
+        s.bug = lp_task.bug
+
+    # status
+    #
+    @property
+    def status(s):
+        '''
+        Property: Gets the status for the task.
+        '''
+        if s.__status is None:
+            s.__status = s.lp_task.status
+        return s.__status
+
+    # assignee
+    #
+    @property
+    def assignee(s):
+        '''
+        Property: Gets the assignee for the task.
+        '''
+        if s.__assignee is None:
+            assignee = s.lp_task.assignee
+            if assignee is None:
+                s.__assignee = '*Unassigned'
+            else:
+                s.__assignee = assignee.display_name
+        return s.__assignee
+
+    # modified
+    #
+    @property
+    def modified(s):
+        return s.__modified
+
+# Tracking
+#
+class Tracking():
+    '''
+    '''
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+        s.launchpad = Launchpad('start-sru-cycle').service
+        s.project_tracked = 'kernel-sru-workflow'
+
+    def trackers(s, project):
+        '''
+        Return a list of all the tracking bugs that need to be processed.
+        '''
+        center(s.__class__.__name__ + '.trackers')
+
+        retval = {}
+
+        cdebug('project: %s' % project)
+        search_tags            = []
+        search_tags_combinator = "All"
+        # A list of the bug statuses that we care about
+        #
+        search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"]
+        # The tracking bugs that we are interested in should have been created recently (days).
+        #
+        search_since           = datetime.utcnow() - timedelta(days=30)
+        lp_project = s.launchpad.projects[project]
+        tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+
+        for task in tasks:
+            bug = task.bug
+            cdebug('    LP: #%s - %s' % (bug.id, bug.title))
+            retval[bug.id] = bug.title
+
+        cleave(s.__class__.__name__ + '.trackers')
+        return retval
+
+    @property
+    def repo_info(s):
+        # Check: Are we currently in a git repository?
+        #
+        if not Git.is_repo():
+            raise AppError('This script can only be run from within a git repository.')
+
+        changelog = Debian.changelog(local=True)
+
+        if changelog[0]['series'] == 'UNRELEASED':
+            raise AppError('You must set the changelog series to something other than UNRELEASED.')
+
+        return changelog[0]['package'],  changelog[0]['series']
+
+    # create_tasks_by_name_mapping
+    #
+    def create_tasks_by_name_mapping(s, bugid, project):
+        '''
+        We are only interested in the tasks that are specific to the workflow project. Others
+        are ignored.
+        '''
+        center(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        tasks_by_name = {}
+
+        cdebug('    Scanning bug tasks:', 'cyan')
+
+        lpbug = s.launchpad.bugs[bugid]
+        for task in lpbug.bug_tasks:
+            task_name       = task.bug_target_name
+            # task_name       = task.bug_target_name.replace(project, '').replace('/', '').split(' ', 1)[0]
+            task_name       = task.bug_target_name.replace(project, '').replace('/', '')
+            tasks_by_name[task_name] = WorkflowBugTask(task, task_name)
+
+        cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        return tasks_by_name
+
+    # main
+    #
+    def main(s):
+        retval = 1
+        try:
+            target_package, target_series = s.repo_info
+            for bugid in s.trackers(s.project_tracked):
+                tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
+                if '%s (Ubuntu %s)' % (target_package, target_series.title()) in tasks_by_name:
+                    break
+
+            # -------------------------------------------------------------------------------------
+            # C H A N G E L O G   W O R K
+
+            # Pull the entire changelog file into a list
+            #
+            changelog, changelog_path = Debian.raw_changelog(local=True)
+            with open(changelog_path, 'r') as f:
+                thelog = f.readlines()
+
+            title = "%s: %s -proposed tracker" % (thelog[0], thelog[1])
+
+            with open(changelog_path, 'w') as f:
+                f.write(thelog[0])
+                f.write(thelog[1])
+                f.write("  * %s (%s)\n" % (title, bugid))
+                f.write("\n")
+                for line in thelog[2:]:
+                    f.write(line)
+            retval = 0
+
+            lpbug = s.launchpad.bugs[bugid]
+            lpbug.title = title
+            lpbug.lp_save()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--info',  action='store_true', default=False, help='')
+    parser.add_argument('--debug', action='store_true', default=False, help='')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    Clog.color = True
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    elif args.info:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=WARNING, format=log_format)
+
+    exit(Tracking(args).main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
