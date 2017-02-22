@@ -9,12 +9,12 @@ class Launchpad():
     '''
     # __init__
     #
-    def __init__(s, staging):
+    def __init__(s, staging=False, client='kernel-team-sru-workflow-manager'):
         s._staging = staging
         defaults = {}
-        defaults['launchpad_client_name'] = 'kernel-team-sru-workflow-manager'
+        defaults['launchpad_client_name'] = client
         s.production_service = LaunchpadService(defaults)  # Some things are only available on the production
-                                                        # service.
+                                                           # service.
         if staging:
             defaults['launchpad_services_root'] = 'qastaging'
         s.default_service = LaunchpadService(defaults)
@@ -32,4 +32,3 @@ class Launchpad():
             lpserver = 'bugs.launchpad.net'
         retval = 'https://%s/bugs/%s' % (lpserver, bug_id)
         return retval
-
