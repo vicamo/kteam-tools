@@ -5,7 +5,7 @@ from datetime                           import datetime, timedelta
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
 from ktl.log                            import center, cleave, cdebug, cinfo, Clog
-from wfl.launchpad                      import Launchpad
+from ktl.launchpad                      import Launchpad
 from ktl3.git                           import Git
 from ktl3.debian                        import Debian
 
