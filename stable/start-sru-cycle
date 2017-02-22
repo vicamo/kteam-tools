@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from ktl.ubuntu                         import Ubuntu
+from ktl.tracking_bug                   import TrackingBug
+from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
+from logging                            import basicConfig, DEBUG, WARNING, INFO
+from wfl.log                            import Clog, center, cleave, cdebug
+
+# Crankers
+#
+class Crankers():
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+
+    # tracked_packages
+    #
+    def tracked_packages(s):
+        '''
+        Using the ktl/ubunty.py data create a dictionary of each series and all of the packages
+        that need tracking bugs created for them.
+
+        xenial:
+            linux:
+                'derivatives':
+                    linux-aws
+                    linux-raspi2
+                    linux-snapdragon
+                'backports':
+                    linux-lts-xenial
+        '''
+        retval = {}
+        ubuntu = Ubuntu()
+        for series in sorted(ubuntu.index_by_series_name, reverse=True):
+            record = ubuntu.index_by_series_name[series]
+            if record['supported']:
+                retval[series] = {}
+                if 'derivative-packages' in record:
+                    for package in record['derivative-packages']:
+                        retval[series][package] = {}
+                        retval[series][package]['derivatives'] = []
+                        retval[series][package]['backports']   = []
+
+                        for derivative in record['derivative-packages'][package]:
+                            retval[series][package]['derivatives'].append(derivative)
+
+                for entry in ubuntu.db.values():
+                    if 'backport-packages' in entry:
+                        for bp in entry['backport-packages']:
+                            if record['series_version'] == entry['backport-packages'][bp][1]:
+                                retval[series][package]['backports'].append(bp)
+
+        return retval
+
+    # add_cycle_tag
+    #
+    def add_cycle_tag(s, bug, tag):
+        tags = bug.tags
+        tags.append(tag)
+        bug.tags = tags
+        bug.lp_save()
+
+    # main
+    #
+    def main(s):
+        retval = 1
+        defaults = {
+            'launchpad_client_name' : 'start-sru-cycle',
+        }
+        try:
+            data = s.tracked_packages()
+            cycle_tag = 'kernel-sru-cycle-' + s.args.cycle
+
+            for series in sorted(data):
+                print('%s' % series)
+                for master_project in data[series]:
+                    print('    ' + master_project)
+
+                    # We instantiate a new LP instance at this point because it seems LP has
+                    # problems if you try to keep the same one around too long.
+                    #
+                    try:
+                        lp = LaunchpadService(defaults)
+                    except LaunchpadServiceError as e:
+                        print(e.msg)
+                        raise
+
+                    tb = TrackingBug(lp, False)
+                    master_bug = tb.open(master_project, '<version to be filled>', True, None, series)
+                    for task in master_bug.tasks:
+                        if 'kernel-sru-workflow/prepare-package' == task.bug_target_name:
+                            task.status = 'Confirmed'
+                    master_bug.tags.append(cycle_tag)
+
+                    for backport_project in data[series][master_project]['backports']:
+                        print('        ' + backport_project)
+                        bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, series)
+                        bug.tags.append(cycle_tag)
+
+                    for derivative_project in data[series][master_project]['derivatives']:
+                        print('        ' + derivative_project)
+                        bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
+                        bug.tags.append(cycle_tag)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('cycle',  metavar='cycle')
+
+    args = parser.parse_args()
+
+    # log_format = "%(message)s"
+    # basicConfig(level=DEBUG, format=log_format)
+    # Clog.dbg = True
+
+    exit(Crankers(args).main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
