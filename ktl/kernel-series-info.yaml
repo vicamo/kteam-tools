@@ -195,6 +195,7 @@
             - linux-raspi2
             - linux-snapdragon
             - linux-aws
+            - linux-joule
         development: false
         kernel: 4.4.0
         name: xenial
