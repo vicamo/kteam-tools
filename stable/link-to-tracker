@@ -78,7 +78,7 @@ class Tracking():
     #
     def __init__(s, args):
         s.args = args
-        s.launchpad = Launchpad(client='start-sru-cycle').service
+        s.launchpad = Launchpad('start-sru-cycle').service
         s.project_tracked = 'kernel-sru-workflow'
 
     def trackers(s, project):
