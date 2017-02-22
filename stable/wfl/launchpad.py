@@ -9,10 +9,10 @@ class Launchpad():
     '''
     # __init__
     #
-    def __init__(s, staging=False, client='kernel-team-sru-workflow-manager'):
+    def __init__(s, staging=False):
         s._staging = staging
         defaults = {}
-        defaults['launchpad_client_name'] = client
+        defaults['launchpad_client_name'] = 'kernel-team-sru-workflow-manager'
         s.production_service = LaunchpadService(defaults)  # Some things are only available on the production
                                                            # service.
         if staging:
