@@ -195,7 +195,6 @@
             - linux-raspi2
             - linux-snapdragon
             - linux-aws
-            - linux-joule
         development: false
         kernel: 4.4.0
         name: xenial
@@ -215,8 +214,6 @@
         - linux-hwe
         - linux-meta-hwe
         - linux-signed-hwe
-        - linux-joule
-        - linux-meta-joule
         snaps:
         - pc-kernel
         - raspi2-kernel
