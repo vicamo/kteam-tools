@@ -96,6 +96,11 @@ def get_status(state, record, seen=None):
                 for record2 in state['sources']:
                     if record2['source'] == bits[2]:
                         overall = accumulate_state(overall, get_status(state, record2, seen))
+    # Unsatisfiable Depends: et al are only in excuses.
+    if 'excuses' in record:
+        for line in record['excuses']:
+            if ' unsatisfiable ' in line:
+                overall = accumulate_state(overall, 'DEPENDS')
 
     # A reason of block essentially means that we are marked for blocking
     # this could be relevant (but we will have identified it above for a more
