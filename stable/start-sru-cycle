@@ -54,7 +54,7 @@ class Crankers():
                     if 'backport-packages' in entry:
                         for bp in entry['backport-packages']:
                             if record['series_version'] == entry['backport-packages'][bp][1]:
-                                retval[series][package]['backports'].append(bp)
+                                retval[series][package]['backports'].append((bp, entry['name']))
 
         return retval
 
@@ -98,15 +98,25 @@ class Crankers():
                             task.status = 'Confirmed'
                     master_bug.tags.append(cycle_tag)
 
-                    for backport_project in data[series][master_project]['backports']:
-                        print('        ' + backport_project)
-                        bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, series)
+                    backports = []
+                    for backport_project, backport_series in data[series][master_project]['backports']:
+                        print('        %s:%s' % (backport_series, backport_project))
+                        bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
                         bug.tags.append(cycle_tag)
+                        backports.append(bug.id)
 
+                    derivatives = []
                     for derivative_project in data[series][master_project]['derivatives']:
                         print('        ' + derivative_project)
                         bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
                         bug.tags.append(cycle_tag)
+                        derivatives.append(bug.id)
+
+                    description = master_bug.description
+                    description += '\n'
+                    description += 'backports: %s\n' % ','.join(backports)
+                    description += 'derivatives: %s\n' % ','.join(derivatives)
+                    master_bug.description = description
 
             retval = 0
 
