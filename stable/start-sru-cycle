@@ -94,7 +94,7 @@ class Crankers():
                     tb = TrackingBug(lp, False)
                     master_bug = tb.open(master_project, '<version to be filled>', True, None, series)
                     for task in master_bug.tasks:
-                        if 'kernel-sru-workflow/prepare-package' == task.bug_target_name:
+                        if 'prepare-package' in task.bug_target_name:
                             task.status = 'Confirmed'
                     master_bug.tags.append(cycle_tag)
 
