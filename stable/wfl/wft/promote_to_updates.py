@@ -1,5 +1,5 @@
 
-from wfl.log                            import center, cleave, cinfo, cdebug
+from wfl.log                            import center, cleave, cinfo
 from .promoter                          import Promoter
 
 class PromoteToUpdates(Promoter):
@@ -31,6 +31,14 @@ class PromoteToUpdates(Promoter):
         retval = False
 
         while True:
+
+            # Special case for Vivid kernel packages which should never go to -updates or -security.
+            # We are past support and only do this to support the Plano project.
+            #
+            if s.bug.series == "vivid":
+                s.task.status = 'Invalid'
+                retval = True
+                break
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():

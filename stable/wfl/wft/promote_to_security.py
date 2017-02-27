@@ -31,6 +31,14 @@ class PromoteToSecurity(Promoter):
 
         while True:
 
+            # Special case for Vivid kernel packages which should never go to -updates or -security.
+            # We are past support and only do this to support the Plano project.
+            #
+            if s.bug.series == "vivid":
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
             # If the security-signoff task is 'Invalid' then this task should also
             # be 'Invalid'. This task will no longer be processed after that.
             #
