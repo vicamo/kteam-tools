@@ -16,6 +16,9 @@ class TrackingBug:
         self.wf = Workflow()
         self.ub = Ubuntu()
         self.__dependency_list = None
+        self._targeted_series_name = None
+        self._series_specified = None
+        self._series_target = None
 
     # has_dependent_package
     #
@@ -79,7 +82,10 @@ class TrackingBug:
 
     @property
     def isdev(self):
-        return self.ub.is_development_series(self.targeted_series_name)
+        retval = False
+        if self.targeted_series_name is not None:
+            retval = self.ub.is_development_series(self.targeted_series_name)
+        return retval
 
     @property
     def targeted_series_name(self):
@@ -211,18 +217,72 @@ class TrackingBug:
 
                 # Determine and mark appropriate tasks Invalid
                 #
-                lin_ver = re.findall('([0-9]+\.[^-]+)', self.version)
-                if lin_ver:
-                    lin_ver = lin_ver[0]
-                    if not self.isdev and self.wf.is_task_invalid(self.package, task_name, lin_ver):
-                        task.status = "Invalid"
-                        cdebug('        status: Invalid')
-                        continue
+                if self.version is not None:
+                    lin_ver = re.findall('([0-9]+\.[^-]+)', self.version)
+                    if lin_ver:
+                        lin_ver = lin_ver[0]
+                        if not self.isdev and self.wf.is_task_invalid(self.package, task_name, lin_ver):
+                            task.status = "Invalid"
+                            cdebug('        status: Invalid')
+                            continue
                 if not self.new_abi and task_name.startswith('prepare-package-') and task_name != 'prepare-package-signed':
                     task.status = "Invalid"
                     cdebug('        status: Invalid')
 
         cleave(self.__class__.__name__ + '.reset_tasks')
+
+    def open_bare(s, package=None, ubuntu_package=False):
+        lp = s.lp.launchpad
+
+        general_task_blacklist = [
+            'trunk',
+            'latest',
+        ]
+
+        package_task_blacklist = [
+            'automated-testing',
+            'prepare-package',
+            'prepare-package-lbm',
+            'prepare-package-meta',
+            'prepare-package-ports-meta',
+            'prepare-package-signed',
+            'promote-to-proposed',
+            'promote-to-security',
+            'promote-to-updates',
+            'security-signoff',
+            'upload-to-ppa',
+        ]
+
+        s.version = None
+        s.new_abi = None
+        project = 'kernel-sru-workflow'
+        s.lp_project = lp.projects[project]
+        try:
+            lp_sru_project = lp.projects['kernel-sru-workflow']
+            lpbug = lp.bugs.createBug(target=lp_sru_project, title="%s : version to be filled" % package, description="unset", tags=[])
+            bug = s.lp.get_bug(lpbug.id)
+            print('LP: #%s' % bug.id)
+        except:
+            print(' ** Error: Failed to create a \'kernel-sru-workflow\' bug.')
+            cleave(s.__class__.__name__ + '.open')
+            return None
+
+        sc = s.lp_project.series_collection
+        for series in sc:
+            if series.display_name in general_task_blacklist:
+                continue
+
+            if (ubuntu_package is False) and (series.display_name in package_task_blacklist):
+                continue
+
+            cdebug('    adding: %s' % series.display_name)
+            nomination = bug.lpbug.addNomination(target=series)
+            if nomination.canApprove():
+                nomination.approve()
+
+        s.package = 'default'
+        s.reset_tasks(bug)
+        return bug
 
     def open(self, package, version, new_abi, master_bug, series_specified=None):
         center(self.__class__.__name__ + '.open')

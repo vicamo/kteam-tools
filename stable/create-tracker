@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from ktl.tracking_bug                   import TrackingBug
+from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
+
+# SimpleTracker
+#
+class SimpleTracker():
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+
+    # main
+    #
+    def main(s):
+        retval = 1
+        defaults = {
+            'launchpad_client_name' : 'start-sru-cycle',
+        }
+        try:
+            # We instantiate a new LP instance at this point because it seems LP has
+            # problems if you try to keep the same one around too long.
+            #
+            try:
+                lp = LaunchpadService(defaults)
+            except LaunchpadServiceError as e:
+                print(e.msg)
+                raise
+
+            tb = TrackingBug(lp, False)
+            tb.open_bare(s.args.package, s.args.ubuntu_package)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            print("")
+            print("Due to the above error(s), this script is unable to continue and is terminating.")
+            print("")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    package_help = '''Add a 'package' to the title
+    '''
+    ubuntu_package_help = '''Indicates the package is an Ubuntu package and will add all of the appropriate
+tasks that correspond to an Ubuntu package.
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('package', nargs='?', help=package_help )
+    parser.add_argument('--ubuntu-package', action='store_true', default=False, help=ubuntu_package_help )
+
+    args = parser.parse_args()
+
+    # log_format = "%(message)s"
+    # basicConfig(level=DEBUG, format=log_format)
+    # Clog.dbg = True
+
+    exit(SimpleTracker(args).main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
