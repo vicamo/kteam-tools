@@ -53,7 +53,17 @@ class Promoter(TaskHandler):
                     tested = False
 
             if not tested and 'testing-override' not in s.bug.tags:
-                break
+
+                if s.bug.tasks_by_name['promote-to-proposed'] in ['Fix Released']:
+                    # Make sure the block-proposed tag is on while testing is still happening.
+                    #
+                    if s.bug.dev_workflow_project:
+                        if 'block-proposed' not in s.bug.tags:
+                            s.bug.lpbug.tags.append('block-proposed')
+                    else:
+                        if 'block-proposed-%s' % s.bug.series not in s.bug.tags:
+                            s.bug.lpbug.tags.append('block-proposed-%s' % s.bug.series)
+                    break
 
             retval = True
             break
