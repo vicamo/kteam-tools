@@ -79,6 +79,7 @@ class Package():
 
         #info('     Extract package info\n')
         setattr(s, 'valid', False)
+        setattr(s, 'hwe', False)
         m = ver_rc.search(txt)
         if m is not None:
             matched = True
@@ -91,6 +92,12 @@ class Package():
             setattr(s, 'version', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
             setattr(s, 'kernel', m.group(2))
             setattr(s, 'abi', m.group(4))
+
+            if m.group(6):
+                s.hwe = True
+
+            setattr(s, 'test_series', s.ubuntu.lookup(m.group(2))['name'])
+            setattr(s, 'test_series_version', s.ubuntu.index_by_series_name[s.test_series]['series_version'])
 
             s.valid = True
 

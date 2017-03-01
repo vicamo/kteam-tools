@@ -171,17 +171,9 @@ class WorkflowBug():
             else:
                 cinfo('                 derivative: no', 'blue')
 
-            hwe = False
-            if '-lts-' in s.pkg_name:
-                hwe = True
-            elif s.pkg_name.startswith('linux-hwe'):
-                hwe = True
-
-            if hwe:
+            if s.__package.hwe:
                 cinfo('                        hwe: yes', 'blue')
-                kv = s.pkg_version.split('~')[0].split('-')[0]
-                hwe_series = s.ubuntu.lookup(kv)['name']
-                cinfo('                 hwe series: %s' % (hwe_series), 'blue')
+                cinfo('                 hwe series: %s' % (s.__package.test_series), 'blue')
             else:
                 cinfo('                        hwe: no', 'blue')
             cinfo('')
@@ -723,26 +715,15 @@ class WorkflowBug():
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.
         #
-        hwe = False
-        if '-lts-' in s.pkg_name:
-            hwe = True
-        elif '-hwe-' in s.pkg_name:
-            hwe = True
-
-        test_series = s.series
-        if hwe:
-            kv = s.pkg_version.split('~')[0].split('-')[0]
-            test_series = s.ubuntu.lookup(kv)['name']
-
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
             "op"             : op,
             "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
-            "series-name"    : test_series,
-            "series-version" : s.ubuntu.index_by_series_name[test_series]['series_version'],
-            "hwe"            : hwe,
+            "series-name"    : s.test_series,
+            "series-version" : s.test_series_version,
+            "hwe"            : s.hwe,
             "bug-id"         : s.lpbug.id,
             "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
             "kernel-version" : s.pkg_version,
@@ -764,6 +745,8 @@ class WorkflowBug():
 
         if s._dryrun or s._no_announcements:
             cinfo('    dryrun - Sending msgq announcement', 'red')
+            for i, v in msg.items():
+                cinfo( '        [' + str(i) + '] = ' + str(v), 'red' )
         else:
             if WorkflowBug.local_msgqueue_port:
                 mq = MsgQueue(address='localhost', port=WorkflowBug.local_msgqueue_port)
