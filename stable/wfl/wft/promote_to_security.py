@@ -59,6 +59,11 @@ class PromoteToSecurity(Promoter):
                 break
 
             if s._block_proposed():
+                cinfo('            A block-proposed tag exists on this tracking bug', 'yellow')
+                break
+
+            if s._kernel_block():
+                cinfo('            A kernel-block tag exists on this tracking bug', 'yellow')
                 break
 
             s.task.status = 'Confirmed'
