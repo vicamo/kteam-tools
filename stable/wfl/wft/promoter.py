@@ -65,6 +65,8 @@ class Promoter(TaskHandler):
                             s.bug.lpbug.tags.append('block-proposed-%s' % s.bug.series)
                     break
 
+                break
+
             retval = True
             break
 
