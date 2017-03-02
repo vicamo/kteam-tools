@@ -10,6 +10,19 @@ class Promoter(TaskHandler):
         super(Promoter, s).__init__(lp, task, bug)
         cleave(s.__class__.__name__ + '.__init__')
 
+    def _block_proposed(s):
+        '''
+        If any 'block-proposed' tags still exist return True.
+        '''
+        center(s.__class__.__name__ + '.security_signoff_verified')
+        retval = False
+
+        if ('block-proposed' in s.bug.tags) or ('block-proposed-%s' % s.bug.series in s.bugs.tags):
+            return True
+
+        cleave(s.__class__.__name__ + '.security_signoff_verified (%s)' % retval)
+        return retval
+
     def _security_signoff_verified(s):
         '''
         Check if the security-signoff task has been set to 'Fix Released'. Development

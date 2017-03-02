@@ -36,6 +36,9 @@ class PromoteToRelease(Promoter):
             if not s._testing_completed():
                 break
 
+            if s._block_proposed():
+                break
+
             s.task.status = 'Confirmed'
             retval = True
             break
