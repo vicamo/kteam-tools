@@ -18,7 +18,7 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.security_signoff_verified')
         retval = False
         if s.bug.sru_workflow_project:
-            if s.bug.tasks_by_name['security-signoff'].status not in ['Fix Released', 'Invalid']:
+            if s.bug.tasks_by_name['security-signoff'].status in ['Fix Released', 'Invalid']:
                 retval = True
             else:
                 cinfo('            security-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
