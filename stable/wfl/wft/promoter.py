@@ -10,17 +10,30 @@ class Promoter(TaskHandler):
         super(Promoter, s).__init__(lp, task, bug)
         cleave(s.__class__.__name__ + '.__init__')
 
+    def _kernel_block(s):
+        '''
+        If a 'kernel-block' tag exist return True.
+        '''
+        center(s.__class__.__name__ + '._kernel_block')
+        retval = False
+
+        if 'kernel-block' in s.bug.tags:
+            return True
+
+        cleave(s.__class__.__name__ + '._kernel_block (%s)' % retval)
+        return retval
+
     def _block_proposed(s):
         '''
         If any 'block-proposed' tags still exist return True.
         '''
-        center(s.__class__.__name__ + '.security_signoff_verified')
+        center(s.__class__.__name__ + '.block_proposed')
         retval = False
 
         if ('block-proposed' in s.bug.tags) or ('block-proposed-%s' % s.bug.series in s.bugs.tags):
             return True
 
-        cleave(s.__class__.__name__ + '.security_signoff_verified (%s)' % retval)
+        cleave(s.__class__.__name__ + '.block_proposed (%s)' % retval)
         return retval
 
     def _security_signoff_verified(s):
