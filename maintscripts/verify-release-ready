@@ -249,6 +249,7 @@ class VerifyReleaseReady():
             if branch not in ['master', 'master-next'] and not branch.endswith('-next'):
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
+                master_tracker_id='NOT-FOUND'
                 l = 0
                 for line in master_changelog[1]['content']:
                     l += 1
@@ -259,13 +260,11 @@ class VerifyReleaseReady():
                     if 'Tracking Bug' in line:
                         found_tracker = True
 
-                unique_tracker = False
                 if found_tracker:
-                    if tracker_id != master_tracker_id:
-                        unique_tracker = True
-
-
-                s.status('unique release tracking bug', unique_tracker)
+                    unique_tracker = tracker_id != master_tracker_id
+                    s.status('unique release tracking bug', unique_tracker)
+                else:
+                    s.status('master release tracking bug found', 'warning')
 
         # Verify that the changelog entry contains no "Miscellaneous" entries
         s.verify_changelog_nomisc()
