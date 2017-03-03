@@ -5,7 +5,7 @@ import yaml
 import re
 from ktl3.utils                         import date_to_string
 from ktl.ubuntu                         import Ubuntu
-from .log                               import cdebug, cwarn, center, cleave, cinfo
+from .log                               import cdebug, center, cleave, cinfo
 from .package                           import Package, PackageError
 from .check_component                   import CheckComponent
 import json
@@ -721,9 +721,9 @@ class WorkflowBug():
             "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
-            "series-name"    : s.test_series,
-            "series-version" : s.test_series_version,
-            "hwe"            : s.hwe,
+            "series-name"    : s.__package.test_series,
+            "series-version" : s.__package.test_series_version,
+            "hwe"            : s.__package.hwe,
             "bug-id"         : s.lpbug.id,
             "url"            : 'https://bugs.launchpad.net/bugs/%s' % (s.lpbug.id),
             "kernel-version" : s.pkg_version,
@@ -746,7 +746,7 @@ class WorkflowBug():
         if s._dryrun or s._no_announcements:
             cinfo('    dryrun - Sending msgq announcement', 'red')
             for i, v in msg.items():
-                cinfo( '        [' + str(i) + '] = ' + str(v), 'red' )
+                cinfo('        [' + str(i) + '] = ' + str(v), 'red')
         else:
             if WorkflowBug.local_msgqueue_port:
                 mq = MsgQueue(address='localhost', port=WorkflowBug.local_msgqueue_port)
