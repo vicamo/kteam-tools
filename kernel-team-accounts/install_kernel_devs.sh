@@ -20,28 +20,6 @@ then
 fi
 PASSWD="$1"
 
-kdev_new()
-{
-	local acct="$1"
-	local name="$2"
-	local lpid="$3"
-	local flags="$4"
-
-	kdev_current=${#kdev[*]}
-
-	kdev[$kdev_current]="$acct"
-	kdev_name[$kdev_current]="$name"
-
-	case "$lpid" in
-	*/*)		kdev_key[$kdev_current]="$lpid" ;;
-	*)		kdev_key[$kdev_current]="https://launchpad.net/$lpid/+sshkeys" ;;
-	esac
-
-	case ",$flags," in
-	*,admin,*)	kdev_passwd[$kdev_current]="true" ;;
-	esac
-}
-
 . kernel_devs.conf
 
 HOME=/home
