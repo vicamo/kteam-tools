@@ -97,6 +97,7 @@ class Crankers():
                         if 'prepare-package' in task.bug_target_name:
                             task.status = 'Confirmed'
                     master_bug.tags.append(cycle_tag)
+                    master_bug.tags.append('kernel-sru-master-kernel')
 
                     backports = []
                     for backport_project, backport_series in data[series][master_project]['backports']:
@@ -104,6 +105,7 @@ class Crankers():
                         bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
                         bug.tags.append(cycle_tag)
                         backports.append(bug.id)
+                        bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
 
                     derivatives = []
                     for derivative_project in data[series][master_project]['derivatives']:
@@ -111,6 +113,7 @@ class Crankers():
                         bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
                         bug.tags.append(cycle_tag)
                         derivatives.append(bug.id)
+                        bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
 
                     description = master_bug.description
                     description += '\n'
