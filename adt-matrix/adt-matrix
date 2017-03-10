@@ -312,7 +312,8 @@ class AutoPackageTest(object):
                 # Accumulate the latest versions of packages seen so we can detect missing results.
                 key = ' '.join((ressrc, arch))
                 if ver != 'blacklisted':
-                    self.latest[key] = ver
+                    if key not in self.latest or apt_pkg.version_compare(self.latest[key], ver) > 0:
+                        self.latest[key] = ver
 
                 # Blacklisted.
                 else:
