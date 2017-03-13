@@ -221,13 +221,15 @@ class AutoPackageTest(object):
             f = urlopen(url)
             if f.getcode() == 200:
                 result_paths = f.read().decode().strip().splitlines()
+            elif f.getcode() == 401:  # No permission to look which are per-bucket.
+                return False
             elif f.getcode() == 204:  # No content
                 result_paths = []
             else:
                 self.log_error('Failure to fetch swift results from %s: %u' %
                                (url, f.getcode()))
                 f.close()
-                return
+                return True
             f.close()
         except IOError as e:
             self.log_error('Failure to fetch swift results from %s: %s' % (url, str(e)))
@@ -238,6 +240,8 @@ class AutoPackageTest(object):
                 os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag, p, 'result.tar'),
                 os.path.basename(p), src, arch, trigger)
             self.dirty = True
+
+        return True
 
 
     def version_valid(self, version):
@@ -471,7 +475,8 @@ class AutoPackageTest(object):
             #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             for arch in archs:
-                adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch)
+                if not adt.fetch_swift_results('https://objectstorage.prodstack4-5.canonical.com/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch):
+                    return
 
 
     def save(self):
