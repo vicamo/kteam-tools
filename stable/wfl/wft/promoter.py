@@ -30,7 +30,7 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.block_proposed')
         retval = False
 
-        if ('block-proposed' in s.bug.tags) or ('block-proposed-%s' % s.bug.series in s.bugs.tags):
+        if ('block-proposed' in s.bug.tags) or ('block-proposed-%s' % s.bug.series in s.bug.tags):
             return True
 
         cleave(s.__class__.__name__ + '.block_proposed (%s)' % retval)
