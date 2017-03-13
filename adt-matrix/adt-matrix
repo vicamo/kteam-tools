@@ -222,6 +222,8 @@ class AutoPackageTest(object):
             if f.getcode() == 200:
                 result_paths = f.read().decode().strip().splitlines()
             elif f.getcode() == 401:  # No permission to look which are per-bucket.
+                self.log_error('Seemingly no swift results for %s: %u' %
+                               (url, f.getcode()))
                 return False
             elif f.getcode() == 204:  # No content
                 result_paths = []
