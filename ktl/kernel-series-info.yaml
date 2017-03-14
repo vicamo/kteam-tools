@@ -184,6 +184,8 @@
                 meta: linux-meta-snapdragon
             linux-aws:
                 meta: linux-meta-aws
+            linux-gke:
+                meta: linux-meta-gke
             linux-hwe:
                 meta: linux-meta-hwe
                 signed: linux-signed-hwe
@@ -195,6 +197,7 @@
             - linux-raspi2
             - linux-snapdragon
             - linux-aws
+            - linux-gke
         development: false
         kernel: 4.4.0
         name: xenial
@@ -207,6 +210,7 @@
         - linux-snapdragon
         - linux-meta-snapdragon
         - linux-aws
+        - linux-gke
         - linux-meta-aws
         - linux-hwe-edge
         - linux-meta-hwe-edge
