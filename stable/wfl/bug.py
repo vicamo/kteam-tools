@@ -478,6 +478,8 @@ class WorkflowBug():
                 retval = True
             else:
                 cinfo('It has been less than 2 hrs since the last package was either published or built.')
+                cinfo('    build time + 2 hrs: %s' % comp_date)
+                cinfo('                   now: %s' % now)
 
         cinfo('        Ready for testing: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
