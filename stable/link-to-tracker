@@ -180,6 +180,11 @@ class Tracking():
             lpbug.title = title
             lpbug.lp_save()
 
+            task = tasks_by_name['prepare-package'].lp_task
+            task.status = "In Progress"
+            task.assignee = launchpad.me
+            task.lp_save()
+
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
