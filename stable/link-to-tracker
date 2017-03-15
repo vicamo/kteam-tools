@@ -151,11 +151,16 @@ class Tracking():
         retval = 1
         try:
             target_package, target_series = s.repo_info
+            found = False
             for bugid in s.trackers(s.project_tracked):
                 tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
                 if '%s (Ubuntu %s)' % (target_package, target_series.title()) in tasks_by_name:
+                    found = True
                     break
 
+            if found == False:
+                raise AppError('Cannot find tracker bug matching package %s series %s' % (target_package,target_series))
+                exit(retval)
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
