@@ -38,8 +38,10 @@ class Crankers():
         retval = {}
         ubuntu = Ubuntu()
         for series in sorted(ubuntu.index_by_series_name, reverse=True):
-            record = ubuntu.index_by_series_name[series]
-            if record['supported']:
+           record = ubuntu.index_by_series_name[series]
+           if record['supported']:
+                if len(s.args.series) != 0 and series not in s.args.series:
+                    continue
                 retval[series] = {}
                 if 'derivative-packages' in record:
                     for package in record['derivative-packages']:
@@ -144,6 +146,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('cycle',  metavar='cycle')
+    parser.add_argument('--series', action='append', default=[], metavar='series')
 
     args = parser.parse_args()
 
