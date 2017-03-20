@@ -29,7 +29,8 @@ class TheApp():
         '''
         s.args = args
 
-        s.admin = s.args.queue + '-' + s.args.name
+        #s.admin = s.args.queue + '-' + s.args.name
+        s.admin = 'admin-' + s.args.name
 
     # _handler
     #
@@ -41,16 +42,21 @@ class TheApp():
             error("invalid work request form, ignored")
             return
 
-        if payload['key'] == 'admin-' + s.args.name and payload['cmd'][0] == 'quit':
-            s.mq.listen_stop()
-            return
+        if payload['key'] == s.admin:
+            if payload['cmd'][0] == 'quit':
+                s.mq.listen_stop()
+                return
+            elif payload['cmd'][0] not in s.args.admin:
+                error("invalid admin request cmd, ignored")
+                return
 
-        if payload['key'] != s.args.queue:
+        elif payload['key'] == s.args.queue:
+            if payload['cmd'][0] not in s.args.command:
+                error("invalid work request cmd, ignored")
+                return
+
+        else:
             error("work for another player '" + payload['key'] + "', ignored")
-            return
-
-        if payload['cmd'][0] not in s.args.command:
-            error("invalid work request cmd, ignored")
             return
 
         # Ensure we look in the current directory for these commands.
@@ -102,7 +108,7 @@ class TheApp():
             #raise "FOO"
 
             s.mq.listen_worker(s.args.queue, s.args.queue, s._handler)
-            s.mq.listen_worker('admin-' + s.args.name, 'admin-' + s.args.name, s._handler, auto_delete=True)
+            s.mq.listen_worker(s.admin, s.admin, s._handler, auto_delete=True)
 
             s.mq.listen_start()
 
@@ -130,6 +136,7 @@ examples:
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('--command', action='append', default=[], help='Add a valid command to the validator.')
+    parser.add_argument('--admin', action='append', default=[], help='Add a valid admin command to the validator.')
     parser.add_argument('--prefix-arg', action='append', default=[], help='Add a valid command to the validator.')
     parser.add_argument('name', help='Name of this instance in the admin domain')
     parser.add_argument('queue', help='Name of the queue to use')
