@@ -92,7 +92,7 @@ generate_readme >"README"
 	-e 's@\(http:[^ ]*\)@<a href="\1">\1</a>@' \
 	-e 's@\([^ ]*\.deb\>\)@<a href="\1">\1</a>@' \
 	-e 's@\([^ ]*\.patch\>\)@<a href="\1">\1</a>@' \
-	-e 's@\(\<SOURCES\|BUILD.LOG.[^ ]*\|[^ ]*.log.gz\>\)@<a href="\1">\1</a>@' \
+	-e 's@\(\<SOURCES\|BUILD.LOG.[^ )]*\|[^ ]*.log.gz\>\)@<a href="\1">\1</a>@' \
 	-e 's@$@<br>@' \
 	-e 's@^ @\&nbsp;@g'
     echo "</code>"
