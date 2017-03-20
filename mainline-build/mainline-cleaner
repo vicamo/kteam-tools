@@ -1,0 +1,24 @@
+#!/bin/bash
+P='mainline-cleaner'
+
+if [ "$#" -ne 0 ]; then
+	echo "Usage: $0" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+. "$here/lib-build"
+
+master_tree_select || exit 1
+
+# Clean the tree hard.
+echo "** cleaning git repository ..."
+git clean -x -f -d
+
+echo "*** git gc ..."
+git gc
