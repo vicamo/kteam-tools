@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+# mainline-logrotate -- post logrotate trigger.
+#
+/home/kernel/kteam-tools/mainline-build/mainline-work-kmsgq --to admin-`uname -n` mainline-cleaner
+/home/kernel/kteam-tools/mainline-build/mainline-work-kmsgq --to admin-`uname -n` quit
