@@ -11,11 +11,21 @@ if [ ! -f "$key" ]; then
 	exit 1
 fi
 
-echo "$P: starting job ($@) ..."
+echo "$(date --rfc-3339=seconds) $P: starting job ($@) ..."
 
 "$@"
 
-echo "$P: syncing results to kernel.ubuntu.com ..."
-rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
-	rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native"
-echo "$P: sync complete"
+# If this produced any syncable results push them up.
+results=0
+for dir in "$HOME/public_html"/*
+do
+	[ "$dir" != "$HOME/public_html/*" ] && results=1
+	break
+done
+if [ "$results" = 1 ]; then
+	echo "$(date --rfc-3339=seconds) $P: syncing results to kernel.ubuntu.com ..."
+	rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
+		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native"
+fi
+
+echo "$(date --rfc-3339=seconds) $P: job complete"
