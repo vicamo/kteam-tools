@@ -171,6 +171,9 @@
             linux-hwe:
             - linux
             - '16.10'
+            linux-hwe-edge:
+            - linux
+            - '16.10'
         dependent-packages:
             linux:
                 meta: linux-meta
