@@ -58,10 +58,6 @@ class PromoteToSecurity(Promoter):
             if not s._testing_completed():
                 break
 
-            if s._block_proposed():
-                cinfo('            A block-proposed tag exists on this tracking bug', 'yellow')
-                break
-
             if s._kernel_block():
                 cinfo('            A kernel-block tag exists on this tracking bug', 'yellow')
                 break
@@ -80,6 +76,10 @@ class PromoteToSecurity(Promoter):
         retval = False
 
         while True:
+
+            if s._block_proposed():
+                s._remove_block_proposed()
+                cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
 
             # Check if packages were copied to the right pocket->component
             #

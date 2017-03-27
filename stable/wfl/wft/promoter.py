@@ -36,6 +36,23 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.block_proposed (%s)' % retval)
         return retval
 
+    def _remove_block_proposed(s):
+        '''
+        Remove 'block-proposed' tags in order to signal britney.
+        '''
+        center(s.__class__.__name__ + '.remove_block_proposed')
+
+        try:
+            series_tag = 'block-proposed-%s' % s.bug.series
+            if series_tag in s.bug.lpbug.tags:
+                s.bug.lpbug.tags.remove(series_tag)
+            if 'block-proposed' in s.bug.lpbug.tags:
+                s.bug.lpbug.tags.remove('block-proposed')
+        except:
+            pass
+
+        cleave(s.__class__.__name__ + '.remove_block_proposed')
+
     def _security_signoff_verified(s):
         '''
         Check if the security-signoff task has been set to 'Fix Released'. Development

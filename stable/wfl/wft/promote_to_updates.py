@@ -50,10 +50,6 @@ class PromoteToUpdates(Promoter):
             if not s._testing_completed():
                 break
 
-            if s._block_proposed():
-                cinfo('            A block-proposed tag exists on this tracking bug', 'yellow')
-                break
-
             if s._kernel_block():
                 cinfo('            A kernel-block tag exists on this tracking bug', 'yellow')
                 break
@@ -75,6 +71,10 @@ class PromoteToUpdates(Promoter):
 
             # Check if packages were copied to the right pocket->component
             #
+            if s._block_proposed():
+                s._remove_block_proposed()
+                cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
+
             if not s.bug.packages_released:
                 cinfo('            packages have not been released', 'yellow')
                 break
