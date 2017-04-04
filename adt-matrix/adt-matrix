@@ -315,14 +315,9 @@ class AutoPackageTest(object):
                 exitcode = int(tar.extractfile('exitcode').read().strip())
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
-                # Accumulate the latest versions of packages seen so we can detect missing results.
-                key = ' '.join((ressrc, arch))
-                if ver != 'blacklisted':
-                    if key not in self.latest or apt_pkg.version_compare(self.latest[key], ver) < 0:
-                        self.latest[key] = ver
 
                 # Blacklisted.
-                else:
+                if ver == 'blacklisted':
                     latest = None
                     for larch in self.archs:
                         lkey = ' '.join((ressrc, larch))
@@ -346,6 +341,7 @@ class AutoPackageTest(object):
                     pass
 
                 # Work out the trigger package so we put this in a reasonable bucket.
+                is_proposed = False
                 if testinfo and 'custom_environment' in testinfo:
                     modern = False
                     for varval in testinfo['custom_environment']:
@@ -359,6 +355,9 @@ class AutoPackageTest(object):
 
                                     if tver == 'None':
                                         pass # causes this to be ignored.
+
+                                    elif tpkg == ressrc:
+                                        is_proposed = True
 
                                     elif tpkg.startswith('linux-meta'):
                                         bits = tver.split('.')
@@ -379,6 +378,12 @@ class AutoPackageTest(object):
                     # This is a triggered event not for linux, ignore.
                     #if modern and not kernel_pkg:
                     #    return
+
+                # Accumulate the latest versions of packages seen so we can detect missing results.
+                if not is_proposed and ver != 'blacklisted':
+                    key = ' '.join((ressrc, arch))
+                    if key not in self.latest or apt_pkg.version_compare(self.latest[key], ver) < 0:
+                        self.latest[key] = ver
 
                 # If this is testing a kernel package it should be for that package.
                 #if ressrc.startswith('linux'):
