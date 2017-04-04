@@ -233,9 +233,10 @@ class Package():
 
         ps = s.__get_published_sources(package, abi, archive, release, pocket)
         matches = s.__find_matches(ps, abi, release)
-        if len(matches) > 0 and s.__all_arches_built(matches):
+        if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
+            fullybuilt = fullybuilt and s.__all_arches_built(matches)
         else:
             fullybuilt   = False
             status  = ''
