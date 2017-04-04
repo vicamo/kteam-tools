@@ -36,6 +36,23 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.block_proposed (%s)' % retval)
         return retval
 
+    def _add_block_proposed(s):
+        '''
+        Add the block proposed tags
+        '''
+        center(s.__class__.__name__ + '._add_block_proposed')
+        retval = False
+
+        try:
+            series_tag = 'block-proposed-%s' % s.bug.series
+            s.bug.lpbug.tags.append(series_tag)
+            s.bug.lpbug.tags.append('block-proposed')
+        except:
+            pass
+
+        cleave(s.__class__.__name__ + '._add_block_proposed (%s)' % retval)
+        return retval
+
     def _remove_block_proposed(s):
         '''
         Remove 'block-proposed' tags in order to signal britney.
