@@ -57,6 +57,8 @@ class PromoteToProposed(Promoter):
                     s.bug.send_boot_testing_requests()
                     s.bug.bprops['boot-testing-requested'] = True
 
+                s._add_block_proposed()
+
                 retval = True
 
             break
