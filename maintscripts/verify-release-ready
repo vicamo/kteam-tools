@@ -271,7 +271,9 @@ class VerifyReleaseReady():
 
         # Verify the bugs in the changelog are public, targeted against linux and the
         # proper series, and marked Fix Committed.
-        s.verify_changelog_bugs()
+        tracker = s.verify_changelog_bugs()
+
+        s.verify_tracker_bug(tracker)
 
         s.verify_content()
 
@@ -353,6 +355,8 @@ class VerifyReleaseReady():
         changelog_series = changelog[1]['series']
         changelog_source_package = changelog[1]['package']
 
+        tracker = None
+
         for bug in changelog_bugs:
             # Error on private or invalid bugs
             try:
@@ -363,6 +367,7 @@ class VerifyReleaseReady():
 
             # Ignore kernel-release-tracking-bug's
             if 'kernel-release-tracking-bug' in lp_bug.tags:
+                tracker = lp_bug
                 continue
 
             # check bug tasks, is series/package/status correct?
@@ -389,6 +394,14 @@ class VerifyReleaseReady():
                 s.status('LP: #%s is not series %s' % (bug, changelog_series), 'warning')
             if not is_fix_committed:
                 s.status('LP: #%s is not fix committed' % bug, 'warning')
+
+        return tracker
+
+    def verify_tracker_bug(s, bug):
+        if bug == None:
+            s.status('No tracker bug found', 'warning')
+            return
+	s.status('Tracker bug found', bug.id)
 
     def verify_content(s):
         changelog = Debian.changelog()
