@@ -106,7 +106,7 @@ class Crankers():
                         print('        %s:%s' % (backport_series, backport_project))
                         bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
                         bug.tags.append(cycle_tag)
-                        backports.append(bug.id)
+                        backports.append(str(bug.id))
                         bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
 
                     derivatives = []
@@ -114,7 +114,7 @@ class Crankers():
                         print('        ' + derivative_project)
                         bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
                         bug.tags.append(cycle_tag)
-                        derivatives.append(bug.id)
+                        derivatives.append(str(bug.id))
                         bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
 
                     description = master_bug.description
