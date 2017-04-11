@@ -735,6 +735,16 @@ class WorkflowBug():
             "flavour"        : flavour,
         }
 
+        # Add the kernel-sru-cycle identifier to the message
+        #
+        cycle = None
+        for t in s.tags:
+            if t.startswith('kernel-sru-cycle-'):
+                cycle = t.replace('kernel-sru-cycle-', '')
+        if cycle is None:
+            cycle = '1962.11.02-00'
+        msg['sru-cycle'] = cycle
+
         # At this time only 2 arches have the lowlatency flavour
         #
         if flavour == 'lowlatency':
