@@ -445,6 +445,7 @@
         - linux-backports-modules-3.2.0
         series_version: '12.04'
         supported: true
+        esm: true
 
     '11.10':
         dependent-packages:
