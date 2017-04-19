@@ -495,7 +495,7 @@ class AutoPackageTest(object):
                 'kernel_abi':   self.kernel_abi,
                 'first_good':   self.first_good,
                 'current':      self.current,
-           l}
+            }
             with open(self.cache_file + '.new', 'w') as cfd:
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
