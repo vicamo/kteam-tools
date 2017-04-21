@@ -20,18 +20,20 @@ class CheckComponent():
         self.lp = lp
 
         self.main_packages = [
-                'linux-ec2',
-                'linux-ti-omap4',
-                'linux-armadaxp',
-                'linux-keystone',
-                'linux-meta-keystone',
-                'linux-hwe',
-                'linux-meta-hwe',
-                'linux-signed-hwe',
-                'linux-hwe-edge',
-                'linux-meta-hwe-edge',
-                'linux-signed-hwe-edge'
-            ]
+            'linux-ec2',
+            'linux-ti-omap4',
+            'linux-armadaxp',
+            'linux-keystone',
+            'linux-meta-keystone',
+            'linux-hwe',
+            'linux-meta-hwe',
+            'linux-signed-hwe',
+            'linux-hwe-edge',
+            'linux-meta-hwe-edge',
+            'linux-signed-hwe-edge',
+            'linux-aws',
+            'linux-meta-aws',
+        ]
 
         self.release_db = {}
         self.abi_db = {}
