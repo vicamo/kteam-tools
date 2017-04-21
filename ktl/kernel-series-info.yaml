@@ -132,7 +132,7 @@
                 meta: linux-meta-raspi2
         derivative-packages:
             linux: []
-        development: true
+        development: false
         kernel: 4.10.0
         name: zesty
         packages:
@@ -142,7 +142,7 @@
         - linux-meta-raspi2
         - linux-signed
         series_version: '17.04'
-        supported: false
+        supported: true
 
     '16.10':
         dependent-packages:
