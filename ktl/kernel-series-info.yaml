@@ -123,6 +123,27 @@
     #           oneiric backport, the list means, we are backporting from
     #           'linux' package present on '11.10'.
     #
+    '17.10':
+        dependent-packages:
+            linux:
+                meta: linux-meta
+                signed: linux-signed
+            linux-raspi2:
+                meta: linux-meta-raspi2
+        derivative-packages:
+            linux: []
+        development: true
+        kernel: 4.10.0
+        name: artful
+        packages:
+        - linux
+        - linux-meta
+        - linux-raspi2
+        - linux-meta-raspi2
+        - linux-signed
+        series_version: '17.10'
+        supported: false
+
     '17.04':
         dependent-packages:
             linux:
