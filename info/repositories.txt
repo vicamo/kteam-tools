@@ -97,6 +97,9 @@ git://kernel.ubuntu.com/ubuntu/ubuntu-yakkety-signed.git                    git:
 git://kernel.ubuntu.com/ubuntu/ubuntu-zesty.git                             git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty                                          launchpad	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-zesty-meta.git                        git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty                                     launchpad	active
 git://kernel.ubuntu.com/ubuntu/ubuntu-zesty-signed.git                      git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/zesty                                   launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-artful.git                            git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful                                         launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-artful-meta.git                       git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful                                    launchpad	active
+git://kernel.ubuntu.com/ubuntu/ubuntu-artful-signed.git                     git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/artful                                  launchpad	active
 git://kernel.ubuntu.com/ubuntu/unstable.git                                 git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable                                       launchpad	active
 git://kernel.ubuntu.com/ubuntu/wireless-crda.git                            -                                                                                                               wani	active
 git://kernel.ubuntu.com/virgin/testing/crack.git                            git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack                            wani	active
