@@ -20,7 +20,7 @@ print("""<html>
 <head>
 <meta id="refresh" http-equiv="refresh" content="90">
 <title>Kernel Dashboard</title>
-<script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
 <script type="text/javascript">
 $('html').addClass('js');
 
@@ -45,15 +45,15 @@ function jumpto() {
     }
 
     url = location.href.split('?')[0]
-    location.replace(url + query)
+
+    if (window.history.replaceState) {
+        window.history.replaceState({}, null, url + query)
+    } else {
+        location.replace(url + query)
+    }
 }
 
 $(function() {
-    $('.twist-trigger').click(function(){
-        id = $(this).attr('twist')
-        $("#" + id).toggleClass('hidden')
-        jumpto()
-    })
     if (!Date.now) {
 	Date.now = function() { return new Date().getTime(); }
     }
@@ -83,6 +83,12 @@ $(function() {
                 $(this).addClass('hidden')
             }
         }
+    })
+
+    $('.twist-trigger').click(function(){
+        id = $(this).attr('twist')
+        $("#" + id).toggleClass('hidden')
+        jumpto()
     })
 
     // Refresh automatically, note this needs to be sooner that the above

@@ -158,8 +158,8 @@ parse_v2()
 
 "$here/dashboard-update-announce" "$status.txt" "$status.txt.new"
 
-if [ ! -f "$out/jquery-1.11.3.min.js" ]; then
-	cp -p "$here/jquery-1.11.3.min.js" "$out/jquery-1.11.3.min.js"
+if [ ! -f "$out/jquery-3.2.1.min.js" ]; then
+	cp -p "$here/jquery-3.2.1.min.js" "$out/jquery-3.2.1.min.js"
 fi
 mv -f "$status.html.new" "$status.html"
 mv -f "$status.txt.new" "$status.txt"
