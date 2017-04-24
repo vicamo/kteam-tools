@@ -195,6 +195,9 @@
             linux-hwe-edge:
             - linux
             - '17.04'
+            linux-azure:
+            - linux
+            - '17.04'
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -207,6 +210,10 @@
                 meta: linux-meta-aws
             linux-gke:
                 meta: linux-meta-gke
+            linux-azure:
+                meta: linux-meta-azure
+            linux-joule:
+                meta: linux-meta-joule
             linux-hwe:
                 meta: linux-meta-hwe
                 signed: linux-signed-hwe
@@ -219,6 +226,7 @@
             - linux-snapdragon
             - linux-aws
             - linux-gke
+            - linux-joule
         development: false
         kernel: 4.4.0
         name: xenial
@@ -231,8 +239,12 @@
         - linux-snapdragon
         - linux-meta-snapdragon
         - linux-aws
+        - linux-azure
         - linux-gke
+        - linux-joule
         - linux-meta-aws
+        - linux-meta-azure
+        - linux-meta-joule
         - linux-hwe-edge
         - linux-meta-hwe-edge
         - linux-signed-hwe-edge
