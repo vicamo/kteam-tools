@@ -131,7 +131,7 @@ class VerifyReleaseReady():
                 v = v.split('~', 1)[0]
             msg = 'previous abi present (%s)' % (v)
             abi = Debian.abi()
-            if  v not in abi:
+            if v not in abi:
                 s.status(msg, False)
             else:
                 s.status(msg, True)
@@ -216,7 +216,7 @@ class VerifyReleaseReady():
             # contain '~<series_version>' (e.g. '~14.04.1')
             if 'linux-lts-' in cl1['package']:
                 v = cl1['version']
-            expect_tag = expect_tag_format%{'version':v}
+            expect_tag = expect_tag_format % {'version' : v}
             s.verify_tag(log, expect_tag)
         else:
             s.status('missing debian/gbp.conf', 'warning')
@@ -249,7 +249,7 @@ class VerifyReleaseReady():
             if branch not in ['master', 'master-next'] and not branch.endswith('-next'):
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
-                master_tracker_id='NOT-FOUND'
+                master_tracker_id = 'NOT-FOUND'
                 l = 0
                 for line in master_changelog[1]['content']:
                     l += 1
