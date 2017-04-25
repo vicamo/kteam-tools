@@ -231,7 +231,7 @@ class TrackingBug:
 
         cleave(self.__class__.__name__ + '.reset_tasks')
 
-    def open_bare(s, package=None, ubuntu_package=False):
+    def open_bare(s, package=None, ubuntu_package=False, private=False):
         lp = s.lp.launchpad
 
         general_task_blacklist = [
@@ -259,7 +259,7 @@ class TrackingBug:
         s.lp_project = lp.projects[project]
         try:
             lp_sru_project = lp.projects['kernel-sru-workflow']
-            lpbug = lp.bugs.createBug(target=lp_sru_project, title="%s : version to be filled" % package, description="unset", tags=[])
+            lpbug = lp.bugs.createBug(target=lp_sru_project, title="%s : version to be filled" % package, description="unset", tags=[], private=private)
             bug = s.lp.get_bug(lpbug.id)
             print('LP: #%s' % bug.id)
         except:
@@ -284,7 +284,7 @@ class TrackingBug:
         s.reset_tasks(bug)
         return bug
 
-    def open(self, package, version, new_abi, master_bug, series_specified=None):
+    def open(self, package, version, new_abi, master_bug, series_specified=None, private=False):
         center(self.__class__.__name__ + '.open')
         cdebug('    package: %s' % package)
         cdebug('    version: %s' % version)
@@ -347,7 +347,7 @@ class TrackingBug:
         cdebug("")
         cdebug("Creating the bug", 'blue')
         try:
-            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
+            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description, private=private)
         except:
             cerror('Bug creation failed: project: "ubuntu", package: %s' % package)
             cerror('                     (It\'s possible the package does not exist)')
