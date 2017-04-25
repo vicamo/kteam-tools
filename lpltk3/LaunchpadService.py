@@ -232,10 +232,10 @@ class LaunchpadService:
     #
     #    Create a new, launchpad bug.
     #
-    def create_bug(self, project, package, title, description, tags=[]):
+    def create_bug(self, project, package, title, description, tags=[], private=False):
         proj    = self.projects[project]
-        target  = self.launchpad.load(proj.self_link + "/+source/" + package);
-        lp_bug = self.launchpad.bugs.createBug(target=target, title=title, description=description, tags=[])
+        target  = self.launchpad.load(proj.self_link + "/+source/" + package)
+        lp_bug = self.launchpad.bugs.createBug(target=target, title=title, description=description, tags=[], private=private)
         return self.get_bug(lp_bug.id)
 
 # vi:set ts=4 sw=4 expandtab:
