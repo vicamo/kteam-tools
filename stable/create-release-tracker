@@ -45,6 +45,11 @@ class CreateTrackingBug():
         try:
             self.initialize()
 
+            # Require --force
+            #
+            if not self.args.force:
+                raise AppError('Are you sure you shouldn\'t be using start-sru-cycle?\n            If you are sure, you must run this with the --force\n            command line option.')
+
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
@@ -96,6 +101,9 @@ class CreateTrackingBug():
         except DebianError as e:
             eout(e.msg)
 
+        except AppError as e:
+            eout(e.msg)
+
         return
 
 if __name__ == '__main__':
@@ -106,6 +114,7 @@ if __name__ == '__main__':
     '''
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--force', action='store_true', default=False, help='People should really be using start-sru-cycle. However, if they have to use this, require the --force.')
     parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
     parser.add_argument('--master_bug', default=None, help='If you are running this from a derivative or backport branch, you should use this option to specify the number of the tracking bug for the master branch release where this was rebased on.')
 
