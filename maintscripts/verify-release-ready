@@ -10,7 +10,7 @@ from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
 from ktl.ubuntu                         import Ubuntu
 from ktl.termcolor                      import colored
-from launchpadlib.launchpad		import Launchpad
+from launchpadlib.launchpad             import Launchpad
 import re
 import ConfigParser
 
@@ -401,7 +401,7 @@ class VerifyReleaseReady():
         if bug == None:
             s.status('No tracker bug found', 'warning')
             return
-	s.status('Tracker bug found', bug.id)
+        s.status('Tracker bug found', bug.id)
 
     def verify_content(s):
         changelog = Debian.changelog()
