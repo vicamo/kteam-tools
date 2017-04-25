@@ -42,13 +42,6 @@ class VerifyReleaseReady():
         s.lp_ubuntu = s.lp.distributions['ubuntu']
         s.lp_devel_series = s.lp_ubuntu.current_series
 
-    # initialize
-    #
-    def initialize(s):
-        validation_sequence = [
-            (s.is_repo, True, 'is valid git repo'),
-        ]
-
     # Are we currently in a git repository?
     #
     def is_repo(s):
@@ -184,11 +177,6 @@ class VerifyReleaseReady():
             break
 
         changelog = Debian.changelog()
-
-        if cl1['package'] != 'linux':
-            tag_prefix = 'Ubuntu-' + cl1['package'].replace('linux-', '')
-        else:
-            tag_prefix = 'Ubuntu'
 
         # Check: Make sure the commit of the version is the correct text.
         #
@@ -470,12 +458,8 @@ class VerifyReleaseReady():
             s.status('final commit content', True)
 
     def verify_linux_meta(s, cl1, cl2):
-        cl1_version = cl1['linux-version'] # Current version line
-        cl1_abi   = cl1['ABI']
         cl1_build = cl1['upload-number']
 
-        cl2_version = cl2['linux-version'] # Previous version line
-        cl2_abi   = cl2['ABI']
         cl2_build = cl2['upload-number']
 
         while True:
@@ -558,8 +542,6 @@ class VerifyReleaseReady():
         ]
 
         try:
-            s.initialize()
-
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
