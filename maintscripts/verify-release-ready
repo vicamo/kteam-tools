@@ -290,7 +290,7 @@ class VerifyReleaseReady():
             s.status(msg, False)
             s.verbose("too many lines of text")
             closed = False
-        elif m == None:
+        elif m is None:
             s.status(msg, False)
             s.verbose("expected '%s', got '%s'" % (expected, commit[0]))
         else:
@@ -398,7 +398,7 @@ class VerifyReleaseReady():
         return tracker
 
     def verify_tracker_bug(s, bug):
-        if bug == None:
+        if bug is None:
             s.status('No tracker bug found', 'warning')
             return
         s.status('Tracker bug found', bug.id)
