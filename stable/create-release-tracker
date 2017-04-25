@@ -68,7 +68,8 @@ class CreateTrackingBug():
                           changelog[0]['version'],
                           changelog[0]['ABI'] != changelog[1]['ABI'],
                           self.args.master_bug,
-                          changelog[0]['series'])
+                          changelog[0]['series'],
+                          private=self.args.private)
 
             if self.args.cycle is not None:
                 bug.tags.append(self.args.cycle)
@@ -118,6 +119,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--force', action='store_true', default=False, help='People should really be using start-sru-cycle. However, if they have to use this, require the --force.')
+    parser.add_argument('--private', action='store_true', default=False, help='The bug will be private and not everyone will have access.')
     parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
     parser.add_argument('--master_bug', default=None, help='If you are running this from a derivative or backport branch, you should use this option to specify the number of the tracking bug for the master branch release where this was rebased on.')
     parser.add_argument('--cycle', default=None, help='The sru cycle tag to be applied to the bug that is created.')
