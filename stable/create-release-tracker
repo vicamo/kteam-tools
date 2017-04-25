@@ -1,106 +1,12 @@
 #!/usr/bin/env python
 #
 
-from sys                                import argv
-from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, eout
-from ktl.std_app                        import StdApp
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from ktl.utils                          import eout
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
-from ktl.log                            import Clog
-from logging                            import basicConfig, DEBUG, WARNING, INFO
-
-# CmdlineError
-#
-# The type of exception that will be raised by Cmdline.process() if there
-# are command line processing errors.
-#
-class CmdlineError(Exception):
-    # __init__
-    #
-    def __init__(self, error):
-        self.msg = error
-
-# Cmdline
-#
-# Do all the command line processing.
-#
-class Cmdline:
-    # __init__
-    #
-    def __init__(self):
-        self.cfg = {}
-
-    # error
-    #
-    def error(self, e, defaults):
-        if e != '':
-            print(e)
-        self.usage(defaults)
-
-    # usage
-    #
-    # Prints out the help text which explains the command line options.
-    #
-    def usage(self, defaults):
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [options]                                                                         \n" % self.cfg['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --staging        Use the staging LP server to create the bug. This is just for       \n")
-        stdo("                         testing and will go away when the database is reset.                \n")
-        stdo("                                                                                             \n")
-        stdo("        --master_bug=<bug number>                                                            \n")
-        stdo("                         If you are running this from a derivative or backport branch, you   \n")
-        stdo("                         should use this option to specify the number of the tracking bug for\n")
-        stdo("                         the master branch release where this was rebased on                 \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --staging                                                                         \n" % self.cfg['app_name'])
-
-    # process
-    #
-    # As you can probably tell from the name, this method is responsible
-    # for calling the getopt function to process the command line. All
-    # parameters are processed into class variables for use by other
-    # methods.
-    #
-    def process(self, argv, defaults):
-        self.cfg['app_name'] = argv[0]
-        result = True
-        try:
-            optsShort = ''
-            optsLong  = ['help', 'staging', 'master_bug=']
-            opts, args = getopt(argv[1:], optsShort, optsLong)
-
-            for opt, val in opts:
-                if (opt == '--help'):
-                    raise CmdlineError('')
-
-                elif (opt == '--staging'):
-                    self.cfg['staging'] = True
-
-                elif (opt == '--debug'):
-                    self.cfg['debug'] = True
-
-                elif opt in ('--master_bug'):
-                    self.cfg['master_bug'] = val
-
-        except GetoptError as error:
-            print(error, defaults)
-            raise CmdlineError('')
-
-        return self.cfg
-
-    # verify_options
-    #
-    def verify_options(self, cfg):
-        return
-
 
 # AppError
 #
@@ -114,21 +20,21 @@ class AppError(Exception):
 
 # CreateTrackingBug
 #
-class CreateTrackingBug(StdApp):
+class CreateTrackingBug():
     # __init__
     #
-    def __init__(self):
-        StdApp.__init__(self)
-        self.defaults = {}
+    def __init__(self, args):
+        self.args = args
 
     # initialize
     #
     def initialize(self):
-        self.defaults['launchpad_client_name'] = 'kernel-team-create-release-tracker'
-        if 'staging' in self.cfg:
-            self.defaults['launchpad_services_root'] = 'qastaging'
+        defaults = {}
+        defaults['launchpad_client_name'] = 'kernel-team-create-release-tracker'
+        if self.args.staging:
+            defaults['launchpad_services_root'] = 'qastaging'
         try:
-            self.lp = LaunchpadService(self.defaults)
+            self.lp = LaunchpadService(defaults)
         except LaunchpadServiceError as e:
             print(e.msg)
             raise
@@ -136,25 +42,15 @@ class CreateTrackingBug(StdApp):
     # main
     #
     def main(self):
-        cmdline = Cmdline()
         try:
-            cfg = cmdline.process(argv, self.defaults)
-            self.merge_config_options(self.defaults, cfg)
-            cmdline.verify_options(self.cfg)
             self.initialize()
 
             # Check: Are we currently in a git repository?
             #
             if not Git.is_repo():
                 raise AppError('This script can only be run from within a git repository.')
-            branch = Git.current_branch()
 
             changelog = Debian.changelog(local=True)
-
-            if 'master_bug' in self.cfg:
-                master_bug = self.cfg['master_bug']
-            else:
-                master_bug = None
 
             if changelog[0]['series'] == 'UNRELEASED':
                 raise AppError('You must set the changelog series to something other than UNRELEASED.')
@@ -162,11 +58,11 @@ class CreateTrackingBug(StdApp):
             # -------------------------------------------------------------------------------------
             # B U G   W O R K
 
-            tb = TrackingBug(self.lp, 'staging' in self.cfg)
+            tb = TrackingBug(self.lp, self.args.staging)
             bug = tb.open(changelog[0]['package'],
                           changelog[0]['version'],
                           changelog[0]['ABI'] != changelog[1]['ABI'],
-                          master_bug,
+                          self.args.master_bug,
                           changelog[0]['series'])
 
             # -------------------------------------------------------------------------------------
@@ -194,11 +90,6 @@ class CreateTrackingBug(StdApp):
         except KeyboardInterrupt:
             pass
 
-        # Handle command line errors.
-        #
-        except CmdlineError as e:
-            cmdline.error(e.msg, self.defaults)
-
         except GitError as e:
             eout(e.msg)
 
@@ -208,12 +99,18 @@ class CreateTrackingBug(StdApp):
         return
 
 if __name__ == '__main__':
-    # Clog.dbg = True
-    # Clog.color = True
-    # log_format = "%(levelname)s - %(message)s"
-    # basicConfig(level=DEBUG, format=log_format)
-    app = CreateTrackingBug()
-    app.main()
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
+    parser.add_argument('--master_bug', default=None, help='If you are running this from a derivative or backport branch, you should use this option to specify the number of the tracking bug for the master branch release where this was rebased on.')
+
+    args = parser.parse_args()
+
+    exit(CreateTrackingBug(args).main())
 
 # vi:set ts=4 sw=4 expandtab:
-
