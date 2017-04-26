@@ -1,0 +1,73 @@
+#!/bin/bash
+
+card()
+{
+	local name="$1"
+	local body="$2"
+
+	echo "*** $name ..."
+
+	so-trello list-addcard \
+		--board "$trello_board" \
+		--list "$trello_list" \
+		--card-name "$name" \
+		--card-desc "$body"
+}
+
+card2()
+{
+	echo "title<$1>"
+	echo "body<$2>"
+}
+
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 <board> <list> <proceedure text> <section title>" 1>&2
+	exit 1
+fi
+trello_board="$1"
+trello_list="$2"
+text="$3"
+title="$4"
+
+sed \
+	-e 's///g' \
+	-e "s/‘/'/g" \
+	-e "s/’/'/g" \
+	-e 's/“/"/g' \
+	-e 's/”/"/g' \
+ <"$text" | \
+awk '
+	BEGIN			{ emit=0 }
+	/^'"$title"'$/		{ emit=1; next }
+	/^$/			{ next }
+	/^[^ 1]/		{ emit=0; next }
+	(/^1./ && emit)		{ print "EOC" }
+	(emit == 1)		{ print $0 }
+	END			{ print "EOC" }
+' | {
+	title=""
+	body=""
+	while IFS='' read -r line
+	do
+		case "$line" in
+		EOC)
+			if [ "$title" != '' ]; then
+				card "$title" "$body"
+			fi
+			title=''
+			body=''
+			;;
+		'1. '*)
+			title=$( echo "$line" | sed -e 's/^1\. //' )
+			;;
+		*)
+			if [ "$body" = '' ]; then
+				body="$line"
+			else
+				body="$body
+$line"
+			fi
+			;;
+		esac
+	done
+}

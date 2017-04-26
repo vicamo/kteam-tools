@@ -1,0 +1,17 @@
+= Series Opening/Point Release/Series Closing Checklist =
+
+The official checklists for the kernel team is at the URL below:
+
+  https://docs.google.com/document/d/1dK1w1LyXSwxBEkCKUrR8sUMjSu_ok6J9b8JXH5VDyHM
+
+We recommend creating a new Trello board for the checklist and creating
+cards for each of the steps listed in the checklist.  The proceedure-cards
+script will use the so-trello (snap install so-trello) command to create
+these from the document.
+
+Create a new trello board called something sensible like "Artful Opening"
+and add a "Backlog" list to it.  Then visit the above document and save
+a textual copy of it; File/Download/Plain text (*.txt).  Then use the
+command below to create the cards:
+
+  ./proceedure-cards 'Artful Opening' 'Backlog' CHECKLIST.txt 'New Series Opening'
