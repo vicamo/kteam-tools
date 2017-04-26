@@ -124,6 +124,10 @@ repo_remote_url_set	'xenial'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+so
 repo_remote_url_set	'xenial-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial'
 repo_remote_url_set	'yakkety'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety'
 repo_remote_url_set	'yakkety-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety'
+repo_remote_url_set	'zesty' 		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty'
+repo_remote_url_set	'zesty-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty'
+repo_remote_url_set	'artful'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful'
+repo_remote_url_set	'artful-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful'
 
 repo_remote_url_set	'unstable'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable'
 

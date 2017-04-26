@@ -55,7 +55,9 @@ v3.14|v3.14.*|v3.15|v3.15.*|v3.16|v3.16.*)	master_release="utopic" ;;
 v3.17|v3.17.*|v3.18|v3.18.*|v3.19|v3.19.*)	master_release="vivid" ;;
 v4.0|v4.0.*|v4.1|v4.1.*|v4.2|v4.2.*)		master_release="wily" ;;
 v4.3|v4.3.*|v4.4|v4.4.*)			master_release="xenial" ;;
-*)						master_release="unstable" ;;
+v4.5|v4.5.*|v4.6|v4.6.*|v4.7|v4.7.*|v4.8|v4.8.*)	master_release="yakkety" ;;
+v4.9|v4.9.*|v4.10|v4.10.*)				master_release="zesty" ;;
+*)							master_release="unstable" ;;
 esac
 
 # Ensure we have the latest and greatest code in the master release.
