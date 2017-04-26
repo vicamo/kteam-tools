@@ -105,6 +105,9 @@ class Crankers():
                     for backport_project, backport_series in data[series][master_project]['backports']:
                         print('        %s:%s' % (backport_series, backport_project))
                         bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
+                        if bug == None:
+                            print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
+                            continue
                         bug.tags.append(cycle_tag)
                         backports.append(str(bug.id))
                         bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
@@ -113,6 +116,9 @@ class Crankers():
                     for derivative_project in data[series][master_project]['derivatives']:
                         print('        ' + derivative_project)
                         bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
+                        if bug == None:
+                            print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
+                            continue
                         bug.tags.append(cycle_tag)
                         derivatives.append(str(bug.id))
                         bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
