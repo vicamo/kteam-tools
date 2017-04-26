@@ -97,6 +97,10 @@ def sh(cmd, timeout=None, ignore_result=False, quiet=False):
             p.terminate()
             cleave("sh")
             raise ShellTimeoutError(cmd, timeout)
+    else:
+        # If a timeout has not been specified, we still need to wait for
+        # the thread to finish, but just don't care how long we wait.
+        t.join()
 
     while p.poll() is None:
         # read line without blocking
