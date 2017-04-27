@@ -215,17 +215,18 @@ class VerifyReleaseReady():
         #
         found_tracker = False
         for line in changelog[1]['content']:
-            if found_tracker:
-                if '#' in line:
+            if '-proposed tracker' in line:
+                found_tracker = True
+                try:
                     (junk, tracker_id) = line.split('#')
-                else:
+                    (tracker_id,junk) = tracker_id.split(')')
+                    tracker_id = int(tracker_id)
+                except:
                     tracker_id = 'warning'
                 s.status('conformant release tracking bug line', tracker_id)
                 if tracker_id == 'warning':
                     stdo(colored('\t%s\n' % line, 'yellow'))
                 break
-            if 'Tracking Bug' in line:
-                found_tracker = True
         s.status('release tracking bug', found_tracker)
 
         # If we are on a topic branch make sure we are not re-using the same tracking
@@ -238,15 +239,16 @@ class VerifyReleaseReady():
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
                 master_tracker_id = 'NOT-FOUND'
-                l = 0
                 for line in master_changelog[1]['content']:
-                    l += 1
-                    if found_tracker:
-                        if '#' in line:
+                    if '-proposed tracker' in line:
+                        try:
                             (junk, master_tracker_id) = line.split('#')
+                            (master_tracker_id, junk) = master_tracker_id.split(')')
+                            master_tracker_id = int(master_tracker_id)
+                            found_tracker = True
+                        except:
+                            break
                         break
-                    if 'Tracking Bug' in line:
-                        found_tracker = True
 
                 if found_tracker:
                     unique_tracker = tracker_id != master_tracker_id
