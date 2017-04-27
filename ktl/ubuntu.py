@@ -118,6 +118,24 @@ class Ubuntu:
 
         return retval
 
+    # development_series_version
+    #
+    @property
+    def development_series_version(self):
+        """
+        Assume there is one, and only one, development series.
+        """
+        retval = None
+        for series in self.db:
+            try:
+                if self.db[series]['development']:
+                    retval = series
+                    break
+            except KeyError:
+                    pass
+
+        return retval
+
     # last_release
     #
     @property
@@ -149,6 +167,20 @@ class Ubuntu:
         for series in self.db:
             if self.db[series]['supported']:
                 retval.append(self.db[series]['name'])
+
+        return retval
+
+    # supported_series_version
+    #
+    @property
+    def supported_series_version(self):
+        """
+        A list of all the currently supported series names.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                retval.append(series)
 
         return retval
 
