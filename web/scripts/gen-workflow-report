@@ -420,9 +420,8 @@ class GenWorkflowReport():
     def report(self):
         Dbg.enter("GenWorkflowReport.report")
 
-
-        series = self.ubuntu.supported_series
-        series.append(self.ubuntu.development_series)
+        series = self.ubuntu.supported_series_version
+        series.append(self.ubuntu.development_series_version)
 
         self.combined = {}
         for b in self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs']:
@@ -439,7 +438,7 @@ class GenWorkflowReport():
         retval = ''
         for ss in sorted(series):
             Dbg.verbose('%s\n' % ss)
-            retval += '<div class="l1-section-heading">%s</div>\n' % ss
+            retval += '<div class="l1-section-heading">%s - %s</div>\n' % (ss, self.ubuntu.db[ss]['name'])
 
             # Find all the packages for this series. This lets us sort the packages in
             # the report.
@@ -453,7 +452,7 @@ class GenWorkflowReport():
                     if package in pkgs:
                         pkgs[package].append(b)
                     else:
-                        pkgs[package] = [ b ]
+                        pkgs[package] = [b]
 
             # Get the bug details for all the packages in this series.
             #
@@ -461,7 +460,6 @@ class GenWorkflowReport():
                 for b in pkgs[pkg]:
                     bug = self.combined[b]
                     retval += self.__bug_details(b, 'kernel-sru-workflow')
-
 
         Dbg.leave("GenWorkflowReport.report")
         return retval
