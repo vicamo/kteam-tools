@@ -448,7 +448,7 @@ class GenWorkflowReport():
                 bug = self.combined[b]
                 title = bug['title']
                 package, other = title.split(':')
-                if bug['series name'] == ss:
+                if bug['series name'] == self.ubuntu.db[ss]['name']:
                     if package in pkgs:
                         pkgs[package].append(b)
                     else:
