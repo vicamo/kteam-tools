@@ -77,6 +77,8 @@ class CreateTrackingBug():
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
+            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
+
             # Pull the entire changelog file into a list
             #
             changelog, changelog_path = Debian.raw_changelog(local=True)
@@ -86,10 +88,7 @@ class CreateTrackingBug():
             with open(changelog_path, 'w') as f:
                 f.write(thelog[0])
                 f.write(thelog[1])
-                f.write("  [ %s ]\n" % (bug.owner.display_name))
-                f.write("\n")
-                f.write("  * Release Tracking Bug\n")
-                f.write("    - LP: #%s\n" % (bug.id))
+                f.write("  * %s (LP: #%s)\n" % (title, bug.id))
                 f.write("\n")
                 for line in thelog[2:]:
                     f.write(line)
