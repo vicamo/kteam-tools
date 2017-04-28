@@ -9,6 +9,7 @@
 #==============================================================================
 import sys, os, optparse, re
 from subprocess import *
+from urlparse import urlparse
 
 #------------------------------------------------------------------------------
 # Libraries shared by all kteam-tools will be found here (../lib)
@@ -50,7 +51,16 @@ parser.add_option("--ckt-ppa", action="store_true", dest="cktppa",
 parser.add_option("--no-tree-script", action="store_true", dest="forcemethod",
 		default=False, help="Use the external retrieving method " +
 			"even if there is a in-tree getabis.")
+parser.add_option("--pool", action="append", dest="additional_repos",
+		default=[], help="add the URL as an abi source")
 (opts, args) = parser.parse_args()
+
+for repo in opts.additional_repos:
+	try:
+		urlparse(repo)
+	except:
+		print "EE: invalid URL: %s" % repo
+		sys.exit(1)
 
 #------------------------------------------------------------------------------
 # The release tag (or SHA1) is a required argument
@@ -169,6 +179,8 @@ def DownloadPackage(pkgname, srcpkgname):
 	if opts.cktppa:
 		cmd += "http://ppa.launchpad.net/canonical-kernel-team/"
 		cmd += "ppa/ubuntu/pool/main/l/$src\n"
+	for repo in opts.additional_repos:
+		cmd += "%s\n" % repo
 	cmd += "\"\n"
 	cmd += "if test -f $pkg; then\n"
 	cmd += "	exit 0\n"
@@ -415,6 +427,9 @@ def TreeGetAbisRemote():
 	#----------------------------------------------------------------------
 	cmd  = "cd " + tmpdir + "\n"
 	cmd += "DEBIAN=. ./getabis " + kversion + " " + revision
+	for repo in opts.additional_repos:
+		cmd += " --pool '%s'" % repo
+        print "II: Running getabis: %s" % cmd
 	print "II: Running getabis on", opts.tgthost, "..."
 	sys.stdout.flush()
 	if not opts.dryrun:
@@ -453,6 +468,8 @@ def TreeGetAbis():
 		revision = version.split("-")[1]
 		cmd  = "./debian/scripts/misc/getabis " + kversion + " "
 		cmd += revision
+		for repo in opts.additional_repos:
+			cmd += " --pool '%s'" % repo
 		if not opts.dryrun:
 			rc = RunScript(cmd, getoutput=False)[0]
 		else:
