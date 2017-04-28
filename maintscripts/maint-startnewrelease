@@ -43,6 +43,9 @@ parser.add_option(
 	"--ckt-ppa", action="store_true", dest="cktppa", default=False,
 	help="pass --ckt-ppa to maint-getabis, to add c-k-t ppa as an "
 	     "abi source")
+parser.add_option(
+        "--pool", action="append", dest="additional_repos", default=[],
+        help="pass --pool to maint-getabis, add the URL as an abi source")
 epilog = "Example: user@test:~/ubuntu-oneiric$ %s " % (parser.get_prog_name())
 epilog += "--local --ckt-ppa"
 parser.epilog = epilog
@@ -127,6 +130,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --local"
 	if opts.cktppa:
 		cmd += " --ckt-ppa"
+	for repo in opts.additional_repos:
+		cmd += " --pool '%s'" % repo
         if "-lts-" in srcpkg:
             v = "Ubuntu-lts-" + version + '_' + lts_version
         elif "-raspi2" in srcpkg:
