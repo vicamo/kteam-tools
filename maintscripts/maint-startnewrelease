@@ -144,6 +144,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-azure-" + version
         elif "-caracalla" in srcpkg:
             v = "Ubuntu-caracalla-" + version
+        elif "-joule" in srcpkg:
+            v = "Ubuntu-joule-" + version
         else:
             v = "Ubuntu-" + version
 	print(cmd + " " + v)
