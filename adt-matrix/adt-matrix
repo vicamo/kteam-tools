@@ -788,10 +788,9 @@ table.matrix, table.matrix th, table.matrix td {{
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if self.tag == '' and status != 'GOOD' and ver == self.trigger:
                             triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
-                            # XXX: if we specify a test package trigger this is assumed as -proposed.
-                            #if lversion and version != lversion:
-                            #    pver = pkg + '/' + lversion
-                            #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
+                            if lversion and version != lversion:
+                                pver = pkg + '/' + lversion
+                                triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
                             page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg)
                     else:
                         page += '<td>&nbsp;'
