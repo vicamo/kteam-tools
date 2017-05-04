@@ -1,0 +1,44 @@
+From 15932a9529425a7063e3a065400c42e9fd1f28ee Mon Sep 17 00:00:00 2001
+From: Seth Forshee <seth.forshee@canonical.com>
+Date: Thu, 27 Apr 2017 11:53:05 -0500
+Subject: [PATCH] UBUNTU: [Debian] Use default compression for all packages
+
+BugLink: http://bugs.launchpad.net/bugs/1686782
+
+Currently we specify bzip2 compression for the main and extras
+packages, but bzip2 is no longer permitted in artful and causes
+a ftbfs. Switch to the default compression.
+
+Signed-off-by: Seth Forshee <seth.forshee@canonical.com>
+Acked-by: Brad Figg <brad.figg@canonical.com>
+Acked-by: Andy Whitcroft <andy.whitcroft@canonical.com>
+Signed-off-by: Kleber Sacilotto de Souza <kleber.souza@canonical.com>
+---
+ debian/rules.d/2-binary-arch.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/debian/rules.d/2-binary-arch.mk b/debian/rules.d/2-binary-arch.mk
+index 627d869f9aa7..edda3f3ba845 100644
+--- a/debian/rules.d/2-binary-arch.mk
++++ b/debian/rules.d/2-binary-arch.mk
+@@ -471,7 +471,7 @@ binary-%: install-%
+ 	dh_shlibdeps -p$(pkgimg) $(shlibdeps_opts)
+ 	$(lockme) dh_gencontrol -p$(pkgimg) -- -Vlinux:rprovides='$(rprovides)'
+ 	dh_md5sums -p$(pkgimg)
+-	dh_builddeb -p$(pkgimg) -- -Zbzip2 -z9
++	dh_builddeb -p$(pkgimg)
+ 
+ ifeq ($(do_extras_package),true)
+ 	if [ -f $(DEBIAN)/control.d/$(target_flavour).inclusion-list ] ; then \
+@@ -483,7 +483,7 @@ ifeq ($(do_extras_package),true)
+ 		dh_shlibdeps -p$(pkgimg_ex) $(shlibdeps_opts); \
+ 		$(lockme) dh_gencontrol -p$(pkgimg_ex); \
+ 		dh_md5sums -p$(pkgimg_ex); \
+-		dh_builddeb -p$(pkgimg_ex) -- -Zbzip2 -z9; \
++		dh_builddeb -p$(pkgimg_ex); \
+ 	fi
+ endif
+ 
+-- 
+2.11.0
+

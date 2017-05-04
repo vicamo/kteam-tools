@@ -1,0 +1,13 @@
+#!/bin/bash
+
+patch="${0%.trigger}"
+series="$1"
+build="$2"
+
+case "$series" in
+zesty|artful)	;;
+*)		exit 0 ;;
+esac
+
+echo "*** applying $patch ..."
+git am -C0 "$patch"
