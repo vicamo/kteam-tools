@@ -212,14 +212,6 @@ rm -f localversion-*
 # Commit the packaging.
 git commit -a -m "base packaging"
 
-#
-# ALL: allow us to default new config options.
-#
-if [ -d "$here/patches.$series" ]; then
-	echo "*** applying patches for series:$series ..."
-	git am -C1 "$here/patches.$series"/*
-fi
-
 # Look for file specific patches.
 adhoc="$here/adhoc"
 grep TRIGGER "$adhoc"/*.patch | \
