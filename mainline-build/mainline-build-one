@@ -212,21 +212,8 @@ rm -f localversion-*
 # Commit the packaging.
 git commit -a -m "base packaging"
 
-# Look for file specific patches.
+# Arbitrary patch trigger support.
 adhoc="$here/adhoc"
-grep TRIGGER "$adhoc"/*.patch | \
-while read patch sum file
-do
-	patch=${patch%:TRIGGER}
-	csum=`md5sum "$file" | awk '{print $1}'`
-
-	echo "*** checking $patch ($file $sum $csum) ..."
-	if [ "$sum" = "$csum" ]; then
-		echo "*** applying $patch ..."
-		git am -C1 "$patch"
-	fi
-done
-# Arbitrary trigger support.
 for trigger in "$adhoc"/*.trigger
 do
 	[ -x "$trigger" ] && "$trigger" "$series" "$build_release"
