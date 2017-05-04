@@ -5,7 +5,7 @@ series="$1"
 build="$2"
 
 case "$series" in
-zesty|artful)	;;
+zesty|artful|unstable)	;;
 *)		exit 0 ;;
 esac
 

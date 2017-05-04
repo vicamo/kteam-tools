@@ -2,7 +2,8 @@
 
 for patch in *.patch
 do
-	[ -f "$patch.trigger" ] && continue
+	count=$( grep -c '^TRIGGER ' "$patch" )
+	[ "$count" -ne 1 ] && continue
 	
 	{
 		cat - <<'EOF'
