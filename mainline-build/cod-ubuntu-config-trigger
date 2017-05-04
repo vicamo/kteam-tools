@@ -1,5 +1,5 @@
 #!/bin/bash
-P="cod-tags-trigger"
+P="cod-ubuntu-config-trigger"
 
 #set -e
 
@@ -24,8 +24,15 @@ mkdir -p "$master_tags"
 #
 wget -q -O "$tags_list.new" "$url" || exit 1
 
+count=$( wc -l "$tags_list.new" )
+if [ "$count" = 0 ]; then
+	echo "$P: empty tags list ignored." 1>&2
+	exit 1
+fi
+
 # First run is the base line.
 if [ ! -f "$tags_list" ]; then
+	echo "$P: first run ever using current as a baseline." 1>&2
 	mv "$tags_list.new" "$tags_list"
 	exit 0
 fi
