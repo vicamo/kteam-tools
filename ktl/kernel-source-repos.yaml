@@ -1,0 +1,23 @@
+---
+    linux-aws:             https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-aws
+    linux-meta-aws:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-aws
+    linux-azure:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-azure
+    linux-meta-azure:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-azure
+    linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+    linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+    linux-meta:            https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+    linux-signed:          https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
+    linux-raspi2:          https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+    linux-meta-raspi2:     https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+    linux-meta-snapdragon: https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+    linux-gke:             https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-gke
+    linux-meta-gke:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-gke
+    linux-joule:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-joule
+    linux-meta-joule:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-joule
+    linux-hwe:             https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+    linux-meta-hwe:        https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+    linux-signed-hwe:      https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
+    linux-hwe-edge:        https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
+    linux-meta-hwe-edge:   https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
+    linux-signed-hwe-edge: https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
+
