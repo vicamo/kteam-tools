@@ -75,8 +75,11 @@ eval `git show $GITBRANCH:debian/debian.env | grep DEBIAN=`
 ### Extract the distro target (e.g. "raring-proposed") from
 ### debian.master/changelog, and use it as the basis of the chroot.
 ### If it isn't useful, try to use the git repo directory name.
-chg="`git show $GITBRANCH:$DEBIAN/changelog | head -1`"
-DISTRO=`echo "$chg" | sed -n -e '1s/^.* \(.*\);.*$/\1/p'`
+DISTRO=$(
+    git show $GITBRANCH:$DEBIAN/changelog | grep '^[a-z]' | head -2 | sed -n -e 's/^.* \(.*\);.*$/\1/p'  | while read DISTRO
+    do [ "$DISTRO" != "UNRELEASED" ] && { echo $DISTRO; break; }
+    done
+    )
 CHROOT="$DISTRO"
 CHROOT="${CHROOT%-proposed}"
 if [ "$CHROOT" = "UNRELEASED" -o -z "$CHROOT" ]
@@ -97,6 +100,7 @@ else
 fi
 
 ### Get the version number - we need it to locate the orig tarball
+chg="`git show $GITBRANCH:$DEBIAN/changelog | head -1`"
 VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
 
 
