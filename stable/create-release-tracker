@@ -66,7 +66,7 @@ class CreateTrackingBug():
             tb = TrackingBug(self.lp, self.args.staging)
             bug = tb.open(changelog[0]['package'],
                           changelog[0]['version'],
-                          changelog[0]['ABI'] != changelog[1]['ABI'],
+                          True, #changelog[0]['ABI'] != changelog[1]['ABI'],
                           self.args.master_bug,
                           changelog[0]['series'],
                           private=self.args.private)
