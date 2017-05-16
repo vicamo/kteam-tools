@@ -514,7 +514,8 @@ class VerifyReleaseReady():
             'linux-raspi2',
             'linux-snapdragon',
             'linux-hwe',
-            'linux-hwe-edge'
+            'linux-hwe-edge',
+            'linux-joule'
         ]
 
         non_kernel_packages = [
@@ -534,6 +535,7 @@ class VerifyReleaseReady():
             'linux-meta-snapdragon',
             'linux-meta-hwe',
             'linux-meta-hwe-edge',
+            'linux-meta-joule',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
             'linux-signed-lts-saucy',
