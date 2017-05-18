@@ -133,7 +133,7 @@
         derivative-packages:
             linux: []
         development: true
-        kernel: 4.10.0
+        kernel: 4.11.0
         name: artful
         packages:
         - linux
