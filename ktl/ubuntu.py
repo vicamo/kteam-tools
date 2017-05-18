@@ -32,8 +32,8 @@ class Ubuntu:
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
-    # url = 'http://kernel.ubuntu.com/data/kernel-series-info.yaml'
+    # url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
     response = urlopen(url)
     content = response.read()
     if type(content) != str:
@@ -220,6 +220,18 @@ class Ubuntu:
             for entry in self.db.values():
                 if version.startswith(entry['kernel']):
                     retval = entry['name']
+                    series_version = entry['series_version']
+
+            # linux-azure is a backport that doesn't contain the 'upstream'
+            # series number on the package name, so we need to look for it
+            # first and then look for the target series.
+            if package.startswith('linux-azure'):
+                for entry in self.db.values():
+                    try:
+                        if set(['linux', series_version]) & set(entry['backport-packages'][package]):
+                            retval = entry['name']
+                    except KeyError:
+                        pass
 
         return retval
 
