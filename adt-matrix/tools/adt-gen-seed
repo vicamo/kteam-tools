@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+
+import sys
+import json
+from urllib.request import urlopen
+
+(series, url) = sys.argv[1:]
+
+if url.endswith(".html"):
+    url = url[:-5] + ".latest.json"
+
+with urlopen(url) as response:
+    data = json.loads(str(response.read(), 'utf-8'))
+
+(package, version) = (data['package'], data['version'])
+
+print("version %s %s %s \"seed version\"" % (series, package, version))
+
+tests_info = data['tests']
+for test_package, package_info in tests_info.items():
+    for arch, result in package_info.items():
+        status = result['status'];
+        print("result %s %s %s %s %s %s \"seed version\"" % (series, package, version, test_package, arch, status))
