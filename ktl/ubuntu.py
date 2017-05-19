@@ -228,7 +228,7 @@ class Ubuntu:
             if package.startswith('linux-azure'):
                 for entry in self.db.values():
                     try:
-                        if set(['linux', series_version]) & set(entry['backport-packages'][package]):
+                        if len(set(['linux', series_version]) & set(entry['backport-packages'][package])) == 2:
                             retval = entry['name']
                     except KeyError:
                         pass
