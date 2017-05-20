@@ -32,6 +32,8 @@ class CheckComponent():
             'linux-signed-hwe-edge',
             'linux-aws',
             'linux-meta-aws',
+            'linux-azure',
+            'linux-meta-azure',
         ]
 
         self.release_db = {}
