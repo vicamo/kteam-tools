@@ -691,6 +691,11 @@ class WorkflowBug():
             subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " available in ppa"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
+        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
+            msg = s.send_testing_message(op="boot", ppa=True, flavour=s.pkg_name.replace('linux-', ''))
+            subject = "[" + s.series + "] " + s.pkg_name + s.pkg_version + " available in ppa"
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
+
     # send_proposed_testing_requests
     #
     def send_proposed_testing_requests(s):
@@ -709,6 +714,11 @@ class WorkflowBug():
             # post that message again to kick off testing whenever I want.
             #
             subject = "[" + s.series + "] " + s.pkg_name + " lowlatency " + s.pkg_version + " uploaded"
+            s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
+
+        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
+            msg = s.send_testing_message(flavour=s.pkg_name.replace('linux-', ''))
+            subject = "[" + s.series + "] " + s.pkg_name + s.pkg_version + " available in ppa"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
     # send_testing_message
