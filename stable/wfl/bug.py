@@ -677,7 +677,8 @@ class WorkflowBug():
         msg = s.send_testing_message(op="boot", ppa=True)
 
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
-            msg = s.send_testing_message(op="boot", ppa=True, flavour=s.pkg_name.replace('linux-', ''))
+            flavour = s.pkg_name.replace('linux-', '')
+            msg = s.send_testing_message(op="boot", ppa=True, flavour=flavour)
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " available in ppa"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
         else:
@@ -702,7 +703,8 @@ class WorkflowBug():
         msg = s.send_testing_message()
 
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
-            msg = s.send_testing_message(flavour=s.pkg_name.replace('linux-', ''))
+            flavour = s.pkg_name.replace('linux-', '')
+            msg = s.send_testing_message(op=flavour, flavour=flavour)
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " available in ppa"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
         else:
