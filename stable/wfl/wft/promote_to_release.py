@@ -30,7 +30,7 @@ class PromoteToRelease(Promoter):
 
         while True:
 
-            if not s._security_signoff_verified:
+            if not s._security_signoff_verified():
                 break
 
             if not s._testing_completed():

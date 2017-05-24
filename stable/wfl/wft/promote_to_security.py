@@ -52,7 +52,7 @@ class PromoteToSecurity(Promoter):
                 if not s.master_bug_ready():
                     break
 
-            if not s._security_signoff_verified:
+            if not s._security_signoff_verified():
                 break
 
             if not s._testing_completed():
