@@ -747,6 +747,15 @@ class WorkflowBug():
             "flavour"        : flavour,
         }
 
+        # The simple rules we have for figuring out what is a hwe kernel and what is not are
+        # no longer valid with all the custom kernels that we are doing. We probably need
+        # yet another lookup table which maps from a package name to the seris on which it
+        # is to be booted. For now, I'm going with this truly aweful hack.
+        #
+        if s.pkg_name in ['linux-azure']:
+            msg['series-name'] = s.__package.series
+            msg['series-version'] = s.pkg_version
+
         # Add the kernel-sru-cycle identifier to the message
         #
         cycle = None
