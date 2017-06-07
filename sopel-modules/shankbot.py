@@ -11,6 +11,29 @@ except ImportError:
 
 import sopel.module
 
+# ShellTimeoutError
+#
+class ShellTimeoutError(Exception):
+    """
+    """
+    def __init__(self, cmd, timeout):
+        self.__cmd = cmd
+        self.__timeout = timeout
+
+    @property
+    def cmd(self):
+        '''
+        The shell command that was being executed when the timeout occured.
+        '''
+        return self.__cmd
+
+    @property
+    def timeout(self):
+        '''
+        The timeout period that expired.
+        '''
+        return self.__timeout
+
 # enqueue_output
 #
 def enqueue_output(out, queue, quiet=False):
@@ -36,6 +59,10 @@ def sh(cmd, timeout=None, ignore_result=False, quiet=False):
         if t.is_alive():
             p.terminate()
             raise ShellTimeoutError(cmd, timeout)
+    else:
+        # If a timeout has not been specified, we still need to wait for
+        # the thread to finish, but just don't care how long we wait.
+        t.join()
 
     while p.poll() is None:
         # read line without blocking
