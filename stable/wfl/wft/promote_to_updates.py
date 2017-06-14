@@ -19,6 +19,7 @@ class PromoteToUpdates(Promoter):
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
         s.jumper['Fix Released']  = s._fix_released
+        s.jumper['Invalid']       = s._invalid
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -126,6 +127,43 @@ class PromoteToUpdates(Promoter):
             break
 
         cleave(s.__class__.__name__ + '._fix_released (%s)' % retval)
+        return retval
+
+    # _invalid
+    #
+    def _invalid(s):
+        """
+        """
+        center(s.__class__.__name__ + '._invalid')
+        retval = False
+
+        while True:
+            if s.bug.packages_released:
+                cinfo('            packages have been released, but the task is set to "Invalid"', 'yellow')
+                break
+
+            if s.bug.sru_workflow_project:
+                if s.bug.tasks_by_name['security-signoff'] == "Fix Released":
+                    if not s.bug.packages_released_to_security:
+                        cinfo('            the packages have not been released to the security pocket', 'yellow')
+                        break
+
+            if not s._testing_completed():
+                break
+
+            # Since this is the one place where the master, project task is set Fix Released it needs to
+            # do more than just look at the promote-to-updates. It needs to also look at promote-to-security.
+            #
+            promote_to_security = s.bug.tasks_by_name['promote-to-security']
+            if promote_to_security.status not in ['Invalid', 'Fix Released']:
+                break
+
+            s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
+            msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
+            s.bug.add_comment('Workflow done!', msgbody)
+            break
+
+        cleave(s.__class__.__name__ + '._invalid (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
