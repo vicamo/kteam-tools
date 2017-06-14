@@ -34,8 +34,9 @@ class PromoteToUpdates(Promoter):
 
             # Special case for Vivid kernel packages which should never go to -updates or -security.
             # We are past support and only do this to support the Plano project.
+            # Azure kernel is also being promoted temporarily only to -proposed.
             #
-            if s.bug.series == "vivid":
+            if s.bug.series == "vivid" or s.bug.pkg_name == "linux-azure":
                 s.task.status = 'Invalid'
                 retval = True
                 break
