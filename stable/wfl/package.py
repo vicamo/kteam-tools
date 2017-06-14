@@ -43,11 +43,6 @@ class Package():
         s.ubuntu = Ubuntu()
         s.__distro_series = None
 
-        ckt = s.lp.launchpad.people['canonical-kernel-team']
-        s.ckt_ppa = ckt.getPPAByName(name='ppa')
-
-        s.main_archive = s.lp.launchpad.distributions["ubuntu"].main_archive
-
         # Determine some properties of the package we are looking at based on the
         # bug title. This information is used further on.
         #
@@ -59,6 +54,30 @@ class Package():
                                 'the version is not properly indicated in the bug title.'])
 
         setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
+
+        ubuntu_primary = s.lp.launchpad.archives.getByReference(reference='ubuntu')
+        if s.series == 'precise':
+            s.routing_mode = 'ESM'
+            ckt_esm_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-esm/ubuntu/ppa')
+            ckt_esm_proposed = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-esm/ubuntu/proposed')
+            esm_ppa = s.lp.launchpad.archives.getByReference(reference='~ubuntu-esm/ubuntu/esm')
+            s._routing = {
+                'ppa':      (ckt_esm_ppa, 'Release'),
+                'Proposed': (ckt_esm_proposed, 'Release'),
+                'Updates':  (esm_ppa, 'Release'),
+                'Security': (esm_ppa, 'Release'),
+                'Release':  (ubuntu_primary, 'Release'),
+            }
+        else:
+            s.routing_mode = 'ubuntu/primary'
+            ckt_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-team/ubuntu/ppa')
+            s._routing = {
+                'ppa':      (ckt_ppa, 'Release'),
+                'Proposed': (ubuntu_primary, 'Proposed'),
+                'Updates':  (ubuntu_primary, 'Updates'),
+                'Security': (ubuntu_primary, 'Security'),
+                'Release':  (ubuntu_primary, 'Release'),
+            }
 
         s.pkgs = s.dependent_packages
 
@@ -133,40 +152,27 @@ class Package():
                 version = s.version
 
             s._cache[dep] = {}
-            s._cache[dep]['ppa'] = {}
-            info = s.__is_fully_built(s.pkgs[dep], abi, s.ckt_ppa, version, None)
-            s._cache[dep]['ppa']['built']   = info[0]
-            s._cache[dep]['ppa']['creator'] = info[1]
-            s._cache[dep]['ppa']['signer']  = info[2]
-            s._cache[dep]['ppa']['published'] = info[3]
-            s._cache[dep]['ppa']['most_recent_build'] = info[4]
-            s._cache[dep]['ppa']['status'] = info[5]
-            cinfo('%-8s : %-5s / %-10s    (%s : %s)' % ('ppa', info[0], info[5], info[3], info[4]), 'cyan')
             if s.bug.sru_workflow_project:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-
-                for pocket in ['Proposed', 'Security', 'Updates']:
-                    s._cache[dep][pocket] = {}
-                    info = s.__is_fully_built(s.pkgs[dep], abi, s.main_archive, version, pocket)
-                    s._cache[dep][pocket]['built']   = info[0]
-                    s._cache[dep][pocket]['creator'] = info[1]
-                    s._cache[dep][pocket]['signer']  = info[2]
-                    s._cache[dep][pocket]['published'] = info[3]
-                    s._cache[dep][pocket]['most_recent_build'] = info[4]
-                    s._cache[dep][pocket]['status'] = info[5]
-                    cinfo('%-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
+                scan_pockets = ('ppa', 'Proposed', 'Security', 'Updates')
             else:
-                for pocket in ['Release', 'Proposed']:
-                    s._cache[dep][pocket] = {}
-                    info = s.__is_fully_built(s.pkgs[dep], abi, s.main_archive, version, pocket)
-                    s._cache[dep][pocket]['built']   = info[0]
-                    s._cache[dep][pocket]['creator'] = info[1]
-                    s._cache[dep][pocket]['signer']  = info[2]
-                    s._cache[dep][pocket]['published'] = info[3]
-                    s._cache[dep][pocket]['most_recent_build'] = info[4]
-                    s._cache[dep][pocket]['status'] = info[5]
-                    cinfo('%-8s : %-5s / %-10s    (%s : %s)' % (pocket, info[0], info[5], info[3], info[4]), 'cyan')
+                cdebug('Development Package', 'cyan')
+                cdebug('')
+                scan_pockets = ('ppa', 'Proposed', 'Release')
+
+            for pocket in scan_pockets:
+                (src_archive, src_pocket) = s._routing[pocket]
+
+                s._cache[dep][pocket] = {}
+                info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket)
+                s._cache[dep][pocket]['built']   = info[0]
+                s._cache[dep][pocket]['creator'] = info[1]
+                s._cache[dep][pocket]['signer']  = info[2]
+                s._cache[dep][pocket]['published'] = info[3]
+                s._cache[dep][pocket]['most_recent_build'] = info[4]
+                s._cache[dep][pocket]['status'] = info[5]
+                cinfo('%-8s : %-5s / %-10s    (%s : %s) [%s %s]' % (pocket, info[0], info[5], info[3], info[4], src_archive, src_pocket), 'cyan')
             Clog.indent -= 4
 
         cdebug('')

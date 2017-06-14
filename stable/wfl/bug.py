@@ -176,6 +176,7 @@ class WorkflowBug():
                 cinfo('                 hwe series: %s' % (s.__package.test_series), 'blue')
             else:
                 cinfo('                        hwe: no', 'blue')
+            cinfo('               routing_mode: %s' % (s.__package.routing_mode), 'blue')
             cinfo('')
 
             cinfo('    Targeted Project:', 'cyan')
