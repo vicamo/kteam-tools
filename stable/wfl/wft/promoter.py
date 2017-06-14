@@ -186,9 +186,7 @@ class Promoter(TaskHandler):
 
         master = s.bug.master_bug
 
-        if s.bug.sru_workflow_project:
-            tasks = required_sru_tasks
-
+        tasks = required_sru_tasks
         retval = True
         for t in tasks:
             try:
