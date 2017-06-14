@@ -160,9 +160,7 @@ class Promoter(TaskHandler):
                 required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
                 required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
 
-        if s.bug.sru_workflow_project:
-            tasks = required_sru_tasks
-
+        tasks = required_sru_tasks
         retval = True
         for t in tasks:
             try:
