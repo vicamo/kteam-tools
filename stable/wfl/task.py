@@ -50,7 +50,10 @@ class WorkflowBugTask(object):
         center(s.__class__.__name__ + '.status')
         cdebug('    val : %s' % val)
         if s.dryrun or WorkflowBugTask.no_status_changes:
-            cinfo('    dryrun - Set task %s to state %s' % (s.name, val), 'red')
+            if s.status != val:
+                cinfo('    dryrun - Set task %s to state %s (from %s)' % (s.name, val, s.status), 'red')
+            else:
+                cinfo('    dryrun - Set task %s to state %s (already %s)' % (s.name, val, s.status), 'yellow')
         else:
             if s.status != val:
                 cinfo('    Task %s status changing from %s to %s' % (s.name, s.__status, val), 'yellow')
