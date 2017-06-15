@@ -82,7 +82,7 @@ class PromoteToUpdates(Promoter):
             cinfo('    All components are now in -updates', 'magenta')
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
-            s.bug.phase = 'Promoted to proposed'
+            s.bug.phase = 'Promoted to updates'
             retval = True
             break
 
