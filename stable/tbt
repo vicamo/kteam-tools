@@ -83,7 +83,7 @@ class Tasks(object):
 
         for b in args.bugs:
             wb = WorkflowBug(s.lp.default_service, b)
-            wb.send_testing_request('proposed')
+            wb.send_proposed_testing_requests()
 
         cleave(s.__class__.__name__ + '.retest')
         return retval
