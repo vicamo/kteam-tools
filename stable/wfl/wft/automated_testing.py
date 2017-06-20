@@ -81,7 +81,7 @@ class AutomatedTesting(TaskHandler):
                         msgbody += "Please verify test results in %s\n" % s.regressions_url
                         # s.bug.add_comment('Automated-Testing regression', msgbody)
                     return state
-        print('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
+        cdebug('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
         return None
 
 # vi: set ts=4 sw=4 expandtab syntax=python
