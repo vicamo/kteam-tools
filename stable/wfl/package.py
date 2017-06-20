@@ -46,14 +46,12 @@ class Package():
         # Determine some properties of the package we are looking at based on the
         # bug title. This information is used further on.
         #
-        s.package = s.__title_decode(s.bug.lpbug.title)
+        s.__title_decode(s.bug.lpbug)
         if not s.valid:
             cwarn('        Unable to check package builds for this bug: either the package name or')
             cwarn('        the version are not properly indicated in the bug title.')
             raise PackageError(['Unable to check package builds for this bug: either the package name or',
                                 'the version is not properly indicated in the bug title.'])
-
-        setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
 
         ubuntu_primary = s.lp.launchpad.archives.getByReference(reference='ubuntu')
         if s.series == 'precise':
@@ -84,7 +82,9 @@ class Package():
         s._cache = None
         cleave('package::__init__')
 
-    def __title_decode(s, txt):
+    def __title_decode(s, lpbug):
+        txt = lpbug.title
+
         matched = False
         #                              .- package name (group(1))
         #                             /           .- kernel version (group(2))
@@ -115,8 +115,37 @@ class Package():
             if m.group(6):
                 s.hwe = True
 
-            setattr(s, 'test_series', s.ubuntu.lookup(m.group(2))['name'])
-            setattr(s, 'test_series_version', s.ubuntu.index_by_series_name[s.test_series]['series_version'])
+            # Work out what series this package is published in...
+            series_tag_entry = None
+            for tag in lpbug.tags:
+                if tag in s.ubuntu.index_by_series_name:
+                    series_tag_entry = s.ubuntu.index_by_series_name[tag]
+            # XXX: Bodge: we pass the source series to the test
+            # infrastructure and a hwe flag to tell it that is wrong ?
+            test_tag_entry = series_tag_entry
+            if s.hwe:
+                test_tag_entry = s.ubuntu.lookup(m.group(2))
+
+            # XXX: this should be universal.
+            if s.name == 'linux-azure' and series_tag_entry:
+                cdebug(' series: %s' % series_tag_entry['name'])
+                cdebug('  tests: %s' % test_tag_entry['name'])
+                setattr(s, 'series', series_tag_entry['name'])
+                setattr(s, 'test_series', test_tag_entry['name'])
+                setattr(s, 'test_series_version', test_tag_entry['series_version'])
+
+            else:
+                setattr(s, 'test_series', s.ubuntu.lookup(m.group(2))['name'])
+                setattr(s, 'test_series_version', s.ubuntu.index_by_series_name[s.test_series]['series_version'])
+                setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
+
+                # XXX: dump out any missmatches between the old and new algorithms.
+                if series_tag_entry:
+                    if s.test_series != test_tag_entry['name']:
+                        cerror("DEBUG/SERIES: test_series: tag based detection differs from version lookup?? (%s %s)" % (s.test_series, test_tag_entry['name']))
+                    if s.series != series_tag_entry['name']:
+                        cerror("DEBUG/SERIES: series: tag based detection differs from version lookup?? (%s %s)" % (s.test_series, series_tag_entry['name']))
+
 
             s.valid = True
 
@@ -271,6 +300,7 @@ class Package():
         cdebug('package: %s' % package, 'yellow')
         cdebug('    abi: %s' % abi,     'yellow')
         cdebug('archive: %s' % archive, 'yellow')
+        cdebug(' series: %s' % s.distro_series, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         if pocket == '':
             cdebug(' pocket: ppa', 'yellow')
@@ -294,6 +324,7 @@ class Package():
             cdebug('getPublishedSources: rule 4')
             ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published')
 
+        cdebug('records: %d' % len(ps), 'yellow')
         cleave(s.__class__.__name__ + '.__get_published_sources')
         return ps
 
@@ -303,6 +334,7 @@ class Package():
         center('Sources::__find_matches')
         cdebug('    abi: %s' % abi,     'yellow')
         cdebug('release: %s' % release, 'yellow')
+        cdebug('records: %d' % len(ps), 'yellow')
 
         match = False
         matches = []
@@ -411,11 +443,12 @@ class Package():
         Put together a list of all the packages that depend on this package.
         '''
         pkgs = {}
-        try:
-            series = s.ubuntu.series_name(s.name, s.version)
-        except KeyError:
-            raise SeriesLookupFailure(['Unable to determine the series from the kernel version specified',
-                                       'in the bug title.'])
+        series = s.series
+#        try:
+#            series = s.ubuntu.series_name(s.name, s.version)
+#        except KeyError:
+#            raise SeriesLookupFailure(['Unable to determine the series from the kernel version specified',
+#                                       'in the bug title.'])
 
         entry = s.ubuntu.lookup(series)
         if entry:
