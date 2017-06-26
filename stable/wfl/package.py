@@ -82,6 +82,12 @@ class Package():
         s._cache = None
         cleave('package::__init__')
 
+    def routing(self, pocket):
+        center(s.__class__.__name__ + '.routing')
+        routes = self._routing[pocket]
+        cleave(s.__class__.__name__ + '.routing')
+        return routes
+
     def __title_decode(s, lpbug):
         txt = lpbug.title
 

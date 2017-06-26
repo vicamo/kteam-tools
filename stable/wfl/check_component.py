@@ -14,9 +14,10 @@ from .log                               import cdebug, cerror
 #
 class CheckComponent():
 
-    def __init__(self, lp):
+    def __init__(self, lp, package):
         cdebug('CheckComponent::__init__ enter')
         self.lp = lp
+        self.package = package
 
         self.main_packages = [
             'linux-ec2',
@@ -38,26 +39,23 @@ class CheckComponent():
 
         self.release_db = {}
         self.abi_db = {}
-        self.kv = KernelVersions(lp.launchpad)
         cdebug('CheckComponent::__init__ leave')
         return
 
     def load_release_components(self, series, package):
         cdebug('        CheckComponent::load_release_components enter')
+        (archive, pocket) = self.package.routing("Release")
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
-        archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = self.kv.current_in_pocket('release', series, package)
-        if rel_ver:
-            pkg_rel = archive.getPublishedSources(exact_match=True, source_name=package, distro_series=lp_series, pocket='Release', version=rel_ver)
-            if pkg_rel:
-                src_pkg = pkg_rel[0]
-                self.release_db[package] = {}
-                self.release_db[package][None] = src_pkg.component_name
-                for bin_pkg in src_pkg.getPublishedBinaries():
-                    bname = bin_pkg.binary_package_name
-                    bcomponent = bin_pkg.component_name
-                    self.release_db[package][bname] = bcomponent
+        pkg_rel = archive.getPublishedSources(exact_match=True, source_name=package, distro_series=lp_series, status='Published', pocket=pocket)
+        if pkg_rel:
+            src_pkg = pkg_rel[0]
+            self.release_db[package] = {}
+            self.release_db[package][None] = src_pkg.component_name
+            for bin_pkg in src_pkg.getPublishedBinaries():
+                bname = bin_pkg.binary_package_name
+                bcomponent = bin_pkg.component_name
+                self.release_db[package][bname] = bcomponent
         cdebug('        CheckComponent::load_release_components leave')
         return
 
@@ -140,18 +138,14 @@ class CheckComponent():
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        rel_ver = self.kv.current_in_pocket('release', series, package)
-        if rel_ver:
-            pkg_rel = archive.getPublishedSources(exact_match=True, source_name=package, distro_series=lp_series, pocket='Release', version=rel_ver)
-            if pkg_rel:
-                src_pkg = pkg_rel[0]
-                self.abi_db[package] = {}
-                self.abi_db[package][None] = src_pkg.component_name
-                for bin_pkg in src_pkg.getPublishedBinaries():
-                    bname = self.name_abi_transform(bin_pkg.binary_package_name)
-                    self.abi_db[package][bname] = bin_pkg.component_name
-            else:
-                self.abi_db[package] = {}
+        pkg_rel = archive.getPublishedSources(exact_match=True, source_name=package, distro_series=lp_series, status='Published', pocket='Release')
+        if pkg_rel:
+            src_pkg = pkg_rel[0]
+            self.abi_db[package] = {}
+            self.abi_db[package][None] = src_pkg.component_name
+            for bin_pkg in src_pkg.getPublishedBinaries():
+                bname = self.name_abi_transform(bin_pkg.binary_package_name)
+                self.abi_db[package][bname] = bin_pkg.component_name
         else:
             self.abi_db[package] = {}
         cdebug('    CheckComponent::linux_abi_component leave (?)')
@@ -200,20 +194,21 @@ class CheckComponent():
 
     def get_published_sources(self, series, package, version, pocket):
         cdebug("    CheckComponent::get_published_sources enter")
-        if not version:
-            version = self.kv.current_in_pocket(pocket, series, package)
-            if not version:
-                cerror("No upload of %s for %s is currently available in" " the %s pocket" % (package, series, pocket))
-                cdebug("    CheckComponent::get_published_sources leave (None)")
-                return None
+        (archive, pocket) = self.package.routing(pocket.title())
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
-        archive = ubuntu.main_archive
         lp_series = ubuntu.getSeries(name_or_version=series)
-        ps = archive.getPublishedSources(exact_match=True,
-                                         source_name=package,
-                                         distro_series=lp_series,
-                                         pocket=pocket.title(),
-                                         version=version)
+        if version:
+            ps = archive.getPublishedSources(exact_match=True,
+                                             source_name=package,
+                                             distro_series=lp_series,
+                                             pocket=pocket,
+                                             version=version)
+        else:
+            ps = archive.getPublishedSources(exact_match=True,
+                                             source_name=package,
+                                             distro_series=lp_series,
+                                             pocket=pocket,
+                                             status='Published')
         if not ps:
             cerror("No results returned by getPublishedSources")
         cdebug("    CheckComponent::get_published_sources leave (ps)")

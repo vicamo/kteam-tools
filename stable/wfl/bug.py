@@ -955,7 +955,7 @@ class WorkflowBug():
             center(s.__class__.__name__ + '.check_component_in_pocket (False)')
             return False
 
-        check_component = CheckComponent(s.lp)
+        check_component = CheckComponent(s.lp, s.__package)
 
         pkg_list = s.relevant_packages_list()
 
