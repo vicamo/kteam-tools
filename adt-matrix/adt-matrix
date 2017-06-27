@@ -357,7 +357,7 @@ class AutoPackageTest(object):
                                     if tver == 'None':
                                         pass # causes this to be ignored.
 
-                                    elif tpkg == ressrc:
+                                    elif tpkg not in self.packages and tpkg == ressrc:
                                         is_proposed = True
 
                                     elif tpkg.startswith('linux-meta'):
@@ -370,7 +370,8 @@ class AutoPackageTest(object):
                                             #print("APW no meta mapping", key, tver)
                                         kernel_ver_rough = self.kernel_abi[key]
 
-                                    elif tpkg == 'linux' or \
+                                    # XXX: possible first stanza is sufficient.
+                                    elif tpkg in self.packages or tpkg == 'linux' or \
                                          tpkg.startswith('linux-lts-'):
                                         kernel_pkg = tpkg.replace('linux', 'linux-meta')
                                         kernel_ver_rough = tver
