@@ -706,7 +706,7 @@ class WorkflowBug():
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
             flavour = s.pkg_name.replace('linux-', '')
             msg = s.send_testing_message(op=flavour, flavour=flavour)
-            subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " available in ppa"
+            subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " uploaded"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
         else:
             # I have an email of the msgq message sent to myself. This allows me to easily
