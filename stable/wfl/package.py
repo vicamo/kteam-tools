@@ -66,6 +66,19 @@ class Package():
                 'Security': (esm_ppa, 'Release'),
                 'Release':  (ubuntu_primary, 'Release'),
             }
+
+        elif s.series == 'vivid':
+            s.routing_mode = 'ubuntu-core'
+            snappy_devices = s.lp.launchpad.archives.getByReference(reference='~snappy-dev/ubuntu/snappy-devices')
+            
+            s._routing = {
+                'ppa':      (ckt_ppa, 'Release'),
+                'Proposed': (ubuntu_primary, 'Proposed'),
+                'Updates':  (snappy_devices, 'Release')
+                'Security': (snappy_devices, 'Release')
+                'Release':  (ubuntu_primary, 'Release'),
+            }
+
         else:
             s.routing_mode = 'ubuntu/primary'
             ckt_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-team/ubuntu/ppa')
