@@ -65,19 +65,20 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series = None, source = None, parent = None, packages = [], stamp = None, live = False, latest = None, triggers = None, tag = '', hints = None, migration = None):
+    def __init__(self, series=None, source=None, parent=None, packages=None, stamp=None, live=False, latest=None, triggers=None, tag='', archive=None, hints=None, migration=None):
         self.cache = {}
         self.dirty = False
 
         self.series = series
         self.source = source
         self.parent = parent
-        self.packages = packages
+        self.packages = packages if packages else []
         self.packages_latest = latest
         self.stamp = stamp
         self.live = live
         self.triggers = triggers
         self.tag = tag
+        self.archive = archive
         self.migration = migration
 
         self.seen = {}
@@ -788,13 +789,15 @@ table.matrix, table.matrix th, table.matrix td {{
                         page += fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
                         # XXX: there is currently no way to specify the PPA for the retry.
-                        if self.tag == '' and status != 'GOOD' and ver == self.trigger:
+                        if status != 'GOOD' and ver == self.trigger:
                             triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
                             # XXX: if we specify a test package trigger this is assumed as -proposed.
                             #if lversion and version != lversion:
                             #    pver = pkg + '/' + lversion
                             #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
-                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg)
+                            archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
+
+                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive)
                     else:
                         page += '<td>&nbsp;'
 
@@ -927,12 +930,12 @@ table.matrix td {{
     
     updated = {}
 
-    (tag, hints) = sys.argv[1:]
+    (archive, hints) = sys.argv[1:]
 
-    if tag == '-':
+    if archive == '-':
         tag = ''
     else:
-        tag = '-' + sys.argv[1].replace('/', '-')
+        tag = '-' + archive.replace('/', '-')
 
     series_prev = None
     for line in sys.stdin:
@@ -979,6 +982,7 @@ table.matrix td {{
                 live = live,
                 triggers = triggers,
                 tag = tag,
+                archive = archive,
                 hints = hints,
                 migration = migration,
             )
