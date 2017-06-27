@@ -37,6 +37,7 @@ class PromoteToSecurity(Promoter):
             #
             if s.bug.series == "vivid" or s.bug.pkg_name == "linux-azure":
                 s.task.status = 'Invalid'
+                s.bug.tasks_by_name['security-signoff'].status = 'Invalid'
                 retval = True
                 break
 
