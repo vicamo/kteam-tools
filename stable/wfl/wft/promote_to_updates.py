@@ -18,8 +18,8 @@ class PromoteToUpdates(Promoter):
         s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
-        s.jumper['Fix Released']  = s._fix_released
-        s.jumper['Invalid']       = s._invalid
+        s.jumper['Fix Released']  = s._complete
+        s.jumper['Invalid']       = s._complete
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -91,79 +91,69 @@ class PromoteToUpdates(Promoter):
         cleave(s.__class__.__name__ + '._verify_promotion (%s)' % retval)
         return retval
 
-    # _fix_released
+    # _complete
     #
-    def _fix_released(s):
+    def _complete(s):
         """
         """
-        center(s.__class__.__name__ + '._fix_released')
+        center(s.__class__.__name__ + '._complete')
         retval = False
 
         while True:
-            if not s.bug.packages_released:
+            # Check that the promote-to-updates status matches -updates pocket.
+            promote_to_updates = s.bug.tasks_by_name['promote-to-updates']
+            #if promote_to_updates.status not in ['Invalid', 'Fix Released']:
+            #    break
+            if promote_to_updates.status == 'Invalid' and s.bug.packages_released:
+                cinfo('            packages have been released, but the task is set to "Invalid"', 'yellow')
+                break
+            elif promote_to_updates.status == 'Fix Released' and not s.bug.packages_released:
                 cinfo('            packages have not been released, but the task is set to "Fix Released"', 'yellow')
                 break
 
-            if s.bug.sru_workflow_project:
-                if s.bug.tasks_by_name['security-signoff'] == "Fix Released":
-                    if not s.bug.packages_released_to_security:
-                        cinfo('            the packages have not been released to the security pocket', 'yellow')
-                        break
+            # Since this is the one place where the master, project task is set Fix Released it needs to
+            # do more than just look at the promote-to-updates. It needs to also look at promote-to-security,
+            # confirm the testing is complete and that security signoff is completed.
 
+            # Confirm we have completed all testing.
             if not s._testing_completed():
                 break
 
-            # Since this is the one place where the master, project task is set Fix Released it needs to
-            # do more than just look at the promote-to-updates. It needs to also look at promote-to-security.
-            #
-            promote_to_security = s.bug.tasks_by_name['promote-to-security']
-            if promote_to_security.status not in ['Invalid', 'Fix Released']:
-                break
-
-            s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
-            s.bug.phase = 'Released'
-            msgbody = 'The package has been published and the bug is being set to Fix Released\n'
-            s.bug.add_comment('Package Released!', msgbody)
-            break
-
-        cleave(s.__class__.__name__ + '._fix_released (%s)' % retval)
-        return retval
-
-    # _invalid
-    #
-    def _invalid(s):
-        """
-        """
-        center(s.__class__.__name__ + '._invalid')
-        retval = False
-
-        while True:
-            if s.bug.packages_released:
-                cinfo('            packages have been released, but the task is set to "Invalid"', 'yellow')
+            # Confirm we have a valid security signoff.
+            if not s._security_signoff_verified():
                 break
 
             if s.bug.sru_workflow_project:
-                if s.bug.tasks_by_name['security-signoff'] == "Fix Released":
-                    if not s.bug.packages_released_to_security:
-                        cinfo('            the packages have not been released to the security pocket', 'yellow')
-                        break
+                # Check that the promote-to-security status matches -security pocket.
+                promote_to_security = s.bug.tasks_by_name['promote-to-security']
+                if promote_to_security.status not in ['Invalid', 'Fix Released']:
+                    cinfo('            promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status), 'yellow')
+                    break
+                if promote_to_security.status == 'Invalid' and s.bug.packages_released_to_security:
+                    cinfo('            packages have been released to security, but the task is set to "Invalid"', 'yellow')
+                    break
+                elif promote_to_security.status == 'Fix Released' and not s.bug.packages_released_to_security:
+                    cinfo('            packages have not been released to security, but the task is set to "Fix Released"', 'yellow')
+                    break
 
-            if not s._testing_completed():
-                break
+                # Check that the promote-to-security status matches that of the security-signoff.
+                security_signoff = s.bug.tasks_by_name['security-signoff']
+                if promote_to_security.status != security_signoff.status:
+                    cinfo('            package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status), 'yellow')
+                    break
 
-            # Since this is the one place where the master, project task is set Fix Released it needs to
-            # do more than just look at the promote-to-updates. It needs to also look at promote-to-security.
-            #
-            promote_to_security = s.bug.tasks_by_name['promote-to-security']
-            if promote_to_security.status not in ['Invalid', 'Fix Released']:
-                break
-
+            # All is completed so we can finally close out this workflow bug.
             s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
-            msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
-            s.bug.add_comment('Workflow done!', msgbody)
+            if promote_to_updates.status == 'Invalid':
+                msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
+                s.bug.add_comment('Workflow done!', msgbody)
+            else:
+                s.bug.phase = 'Released'
+                msgbody = 'The package has been published and the bug is being set to Fix Released\n'
+                s.bug.add_comment('Package Released!', msgbody)
             break
 
-        cleave(s.__class__.__name__ + '._invalid (%s)' % retval)
+        cleave(s.__class__.__name__ + '._complete (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
