@@ -7,7 +7,7 @@ import json
 from os.path                import exists, getmtime
 from time                   import time
 from datetime               import datetime
-from ktl3.dbg               import Dbg
+from .dbg                   import Dbg
 
 # o2ascii
 #
