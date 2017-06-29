@@ -100,6 +100,18 @@ class Git:
             raise GitError("no current branch")
         return result[0].replace("refs/heads/", "")
 
+    # remote
+    #
+    # Return a string that is the remote this branch tracks or origin.
+    #
+    @classmethod
+    def remote(cls):
+        branch = cls.current_branch()
+        status, result = run_command("git config branch.%s.remote" % branch, cls.debug)
+        if status != 0:
+            return "origin"
+        return result[0]
+
     # show
     #
     @classmethod

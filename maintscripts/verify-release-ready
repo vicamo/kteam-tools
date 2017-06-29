@@ -320,7 +320,8 @@ class VerifyReleaseReady():
         else:
             # Verify tag has been pushed!
             msg = 'tag pushed'
-            status, result = run_command("git ls-remote --tags origin %s" % expected)
+            branch = Git.remote()
+            status, result = run_command("git ls-remote --tags %s %s" % (branch, expected))
             if status == 0 and expected in result[0]:
                 s.status(msg, True)
             else:
