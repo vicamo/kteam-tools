@@ -3,7 +3,7 @@
 from datetime                           import datetime, timedelta
 import yaml
 import re
-from ktl3.utils                         import date_to_string
+from lib.utils                          import date_to_string
 from ktl.ubuntu                         import Ubuntu
 from .log                               import cdebug, center, cleave, cinfo
 from .package                           import Package, PackageError

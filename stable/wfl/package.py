@@ -5,7 +5,7 @@ import re
 from datetime                           import datetime
 
 from ktl.ubuntu                         import Ubuntu
-from ktl3.utils                         import date_to_string, dump
+from lib.utils                          import date_to_string, dump
 
 from .errors                            import ShankError, ErrorExit
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
