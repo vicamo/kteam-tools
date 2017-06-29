@@ -2,14 +2,14 @@
 
 import re
 import sys
-from lpltk.utils                import o2str
+from .utils                     import o2str
 from datetime                   import datetime
-from lpltk.tags                 import BugTags
-from lpltk.attachments          import Attachments
-from lpltk.person               import Person
-from lpltk.messages             import Messages
-from lpltk.nominations          import Nominations
-from lpltk.bug_activity         import Activity
+from .tags                      import BugTags
+from .attachments               import Attachments
+from .person                    import Person
+from .messages                  import Messages
+from .nominations               import Nominations
+from .bug_activity              import Activity
 
 def fix_time(t):
     return t
@@ -303,7 +303,7 @@ class Bug(object):
         # The following import is done here to work around a circular import
         # issue. bug_tasks imports bug.
         #
-        from lpltk.bug_tasks import BugTasks
+        from .bug_tasks import BugTasks
 
         return BugTasks(self.service, self.lpbug.bug_tasks_collection)
 

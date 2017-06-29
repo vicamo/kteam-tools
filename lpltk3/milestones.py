@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from lpltk.milestone                        import Milestone
-from lpltk.utils                            import typecheck_Collection
+from .milestone                             import Milestone
+from .utils                                 import typecheck_Collection
 
 class Milestones(object):
     # __init__

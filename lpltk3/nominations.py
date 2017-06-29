@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.nomination            import Nomination
+from .nomination                 import Nomination
 
 class Nominations(object):
     # __init__
@@ -39,7 +39,7 @@ class Nominations(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__lp_nominations == None:
+        if self.__lp_nominations is None:
             self.__lp_nominations = self.__bug.lpbug.getNominations()
 
 # vi:set ts=4 sw=4 expandtab:

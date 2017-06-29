@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
-from lpltk.message              import Message
+from .message                   import Message
 from fnmatch                    import fnmatch
-from lpltk.utils                import (
-    o2str,
-    typecheck_Entry
-    )
+from .utils                     import o2str, typecheck_Entry
 
 # Attachment
 #

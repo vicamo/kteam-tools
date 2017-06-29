@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.project                    import Project
+from .project                         import Project
 
 class Projects(object):
     # __init__
@@ -38,7 +38,7 @@ class Projects(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__projects == None:
+        if self.__projects is None:
             self.__projects = self.__service.launchpad.projects
 
 

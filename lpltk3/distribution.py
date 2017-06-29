@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-from lpltk.bug_tasks                   import BugTasks
-from lpltk.distribution_source_package import DistributionSourcePackage
-from lpltk.distro_series               import DistroSeries
-from lpltk.milestones                  import Milestones
-from lpltk.person                      import Person
-from lpltk.specification               import Specification
-from lpltk.utils                       import typecheck_Entry
+from .bug_tasks                        import BugTasks
+from .distribution_source_package      import DistributionSourcePackage
+from .distro_series                    import DistroSeries
+from .milestones                       import Milestones
+from .person                           import Person
+from .specification                    import Specification
+from .utils                            import typecheck_Entry
 
 # Distribution
 #
@@ -35,7 +35,7 @@ class Distribution(object):
     #
     @property
     def owner(self):
-        if self.__owner == None:
+        if self.__owner is None:
             self.__owner = Person(None, self.__lp_distribution.owner)
         return self.__owner
 
@@ -43,7 +43,7 @@ class Distribution(object):
     #
     @property
     def display_name(self):
-        if self.__display_name == None:
+        if self.__display_name is None:
             self.__display_name = self.__lp_distribution.display_name
         return self.__display_name
 
@@ -52,7 +52,7 @@ class Distribution(object):
     @property
     def all_series(self):
         '''Returns a list of all the series registered for this distro'''
-        if self.__all_series == None:
+        if self.__all_series is None:
             self.__all_series = []
             for series in self.__lp_distribution.series:
                 self.__all_series.append(DistroSeries(self.__service, None, series))
@@ -64,7 +64,7 @@ class Distribution(object):
     @property
     def supported_series(self):
         '''Returns a list of series that are supported'''
-        if self.__supported_series == None:
+        if self.__supported_series is None:
             self.__supported_series = []
             for series in self.all_series:
                 if series.status == 'Supported':
@@ -77,7 +77,7 @@ class Distribution(object):
     @property
     def current_series(self):
         '''The current series under development'''
-        if self.__current_series == None:
+        if self.__current_series is None:
             self.__current_series = DistroSeries(self.__service, None, self.__lp_distribution.current_series)
 
         return self.__current_series
@@ -99,7 +99,7 @@ class Distribution(object):
     #
     @property
     def all_milestones(self):
-        if self.__all_milestones == None:
+        if self.__all_milestones is None:
             self.__all_milestones = Milestones(self.__service, self.__lp_distribution.all_milestones)
 
         return self.__all_milestones
@@ -108,7 +108,7 @@ class Distribution(object):
     #
     @property
     def active_milestones(self):
-        if self.__active_milestones == None:
+        if self.__active_milestones is None:
             self.__active_milestones = Milestones(self.__service, self.__lp_distribution.active_milestones)
 
         return self.__active_milestones
@@ -116,7 +116,7 @@ class Distribution(object):
     # get_source_package
     #
     def get_source_package(self, source_pkg):
-        source_package = self.__lp_distribution.getSourcePackage(name = source_pkg)
+        source_package = self.__lp_distribution.getSourcePackage(name=source_pkg)
         if source_package is None:
             return None
         return DistributionSourcePackage(self.__service, source_package)
@@ -124,19 +124,18 @@ class Distribution(object):
     # get_series
     #
     def get_series(self, string):
-        return DistroSeries(self.__service, None, self.__lp_distribution.getSeries(name_or_version = string))
+        return DistroSeries(self.__service, None, self.__lp_distribution.getSeries(name_or_version=string))
 
     # searchTasks
     #
     def search_tasks(self, **params):
-        #bt = BugTasks(self.__service, self.lp_project.searchTasks(**params))
         bt = BugTasks(self.__service, self.__lp_distribution.searchTasks(**params))
         return bt
 
     # get_specification - Blueprints
     #
     def get_specification(self, specification_name):
-        specification = self.__lp_distribution.getSpecification(name = specification_name)
+        specification = self.__lp_distribution.getSpecification(name=specification_name)
         if specification is None:
             return None
         return Specification(self.__service, specification)

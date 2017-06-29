@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.message              import Message
+from .message                   import Message
 
 class Messages(object):
     # __init__
@@ -38,7 +38,7 @@ class Messages(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__messages == None:
+        if self.__messages is None:
             self.__messages = self.__tkbug.lpbug.messages_collection
 
 

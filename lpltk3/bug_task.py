@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
-from lpltk.person                      import Person
-from lpltk.bug                         import Bug
-from lpltk.milestone                   import Milestone
-from lpltk.utils                       import (o2str, typecheck_Entry)
+from .person                           import Person
+from .bug                              import Bug
+from .bugs                             import Bugs
+from .milestone                        import Milestone
+from .utils                            import (o2str, typecheck_Entry)
 
 # BugTask
 #
@@ -116,7 +117,6 @@ class BugTask(object):
         if self.__is_complete is None:
             self.__is_complete = self.lp_bug_task.is_complete
         return self.__is_complete
-
 
     # importance
     #
@@ -247,12 +247,10 @@ class BugTask(object):
     #
     @property
     def date_importance_set(self):
-        if (self.__date_importance_set is None and
-            self.importance not in ['Undecided', 'Unknown']):
+        if (self.__date_importance_set is None and self.importance not in ['Undecided', 'Unknown']):
             target = self.bug_target_name
             for activity in self.bug.activity:
-                if (activity.new_value == self.importance and
-                    activity.what_changed.split(':')[0] == target):
+                if (activity.new_value == self.importance and activity.what_changed.split(':')[0] == target):
                     self.__date_importance_set = activity.date_changed
                     return self.__date_importance_set
 
@@ -296,7 +294,7 @@ class BugTask(object):
         # The following import is done here to work around a circular import
         # issue. bug_tasks imports bug.
         #
-        from lpltk.bug_tasks import BugTasks
+        from .bug_tasks import BugTasks
 
         return BugTasks(self.__service, self.lp_bug_task.related_tasks_collection)
 
@@ -351,6 +349,6 @@ class BugTask(object):
             'target'           : source_pkg,
             'status'           : o2str(self.status),
             'importance'       : o2str(self.importance),
-            }
+        }
 
 # vi:set ts=4 sw=4 expandtab:

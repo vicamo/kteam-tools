@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.utils                 import (
-    o2str,
-    typecheck_Entry
-    )
+from .utils                     import o2str, typecheck_Entry
 
 # Person
 #
@@ -16,7 +13,7 @@ class Person(object):
     # Initialize the Person instance from a Launchpad bug.
     #
     def __init__(self, tkbug, lpperson):
-        if not tkbug is None:
+        if tkbug is not None:
             self.__commit_changes = tkbug.commit_changes
         self.__tkbug           = tkbug
         self.__person          = typecheck_Entry(lpperson)
@@ -33,7 +30,7 @@ class Person(object):
 
     def __ne__(self, other):
         if other is None:
-            return not self.__person is None
+            return self.__person is not None
         return self.__person != other.__person
 
     #--------------------------------------------------------------------------

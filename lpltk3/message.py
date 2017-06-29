@@ -1,10 +1,7 @@
 #!/usr/bin/python3
 
-from lpltk.utils                import (
-    o2str,
-    typecheck_Entry
-    )
-from lpltk.person               import Person
+from .utils                     import o2str, typecheck_Entry
+from .person                    import Person
 
 # Message
 #
@@ -25,35 +22,35 @@ class Message(object):
     #
     @property
     def owner(self):
-        if self.__owner == None:
+        if self.__owner is None:
             self.__owner = Person(self.__tkbug, self.__message.owner)
         return self.__owner
 
     # content
     @property
     def content(self):
-        if self.__content == None:
+        if self.__content is None:
             self.__content = o2str(self.__message.content)
         return self.__content
 
     # date_created
     @property
     def date_created(self):
-        if self.__date_created == None:
+        if self.__date_created is None:
             self.__date_created = self.__message.date_created
         return self.__date_created
 
     # parent
     @property
     def parent(self):
-        if self.__parent == None:
+        if self.__parent is None:
             self.__parent = Message(self.__tkbug, self.__message.parent)
         return self.__parent
 
     # subject
     @property
     def subject(self):
-        if self.__subject == None:
+        if self.__subject is None:
             self.__subject = o2str(self.__message.subject)
         return self.__subject
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.utils                    import typecheck_Entry
+from .utils                         import typecheck_Entry
 
 class BugTarget(object):
     # __init__
@@ -13,7 +13,7 @@ class BugTarget(object):
 
     @property
     def name(self):
-        if self.__name == None:
+        if self.__name is None:
             self.__name = self.__lp_bug_target.name
         return self.__name
 

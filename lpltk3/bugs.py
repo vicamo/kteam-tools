@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from lpltk.bug import Bug
-from lpltk.utils import typecheck_Collection
+from .bug                              import Bug
+from .utils                            import typecheck_Collection
 
 class Bugs(object):
     # __init__
@@ -39,8 +39,7 @@ class Bugs(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__bugs == None:
+        if self.__bugs is None:
             self.__bugs = self.__service.launchpad.bugs
-
 
 # vi:set ts=4 sw=4 expandtab:

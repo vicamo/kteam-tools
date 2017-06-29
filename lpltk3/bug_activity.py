@@ -1,10 +1,7 @@
 #!/usr/bin/python3
 
-from lpltk.person                   import Person
-from lpltk.utils                    import (
-    o2str,
-    typecheck_Entry
-    )
+from .person                        import Person
+from .utils                         import o2str, typecheck_Entry
 
 class Activity(object):
     # __init__
@@ -43,7 +40,7 @@ class Activity(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__lp_activities == None:
+        if self.__lp_activities is None:
             self.__lp_activities = self.__bug.lpbug.activity
 
 class BugActivity(object):
@@ -62,37 +59,37 @@ class BugActivity(object):
 
     @property
     def date_changed(self):
-        if self.__date_changed == None:
+        if self.__date_changed is None:
             self.__date_changed = self.__lp_bug_activity.datechanged
         return self.__date_changed
 
     @property
     def person(self):
-        if self.__person == None:
+        if self.__person is None:
             self.__person = Person(self.__bug, self.__lp_bug_activity.person)
         return self.__person
 
     @property
     def old_value(self):
-        if self.__old_value == None:
+        if self.__old_value is None:
             self.__old_value = self.__lp_bug_activity.oldvalue
         return self.__old_value
 
     @property
     def new_value(self):
-        if self.__new_value == None:
+        if self.__new_value is None:
             self.__new_value = self.__lp_bug_activity.newvalue
         return self.__new_value
 
     @property
     def what_changed(self):
-        if self.__what_changed == None:
+        if self.__what_changed is None:
             self.__what_changed = self.__lp_bug_activity.whatchanged
         return self.__what_changed
 
     @property
     def message(self):
-        if self.__message == None:
+        if self.__message is None:
             self.__message = o2str(self.__lp_bug_activity.message)
         return self.__message
 

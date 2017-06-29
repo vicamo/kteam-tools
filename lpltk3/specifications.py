@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from lpltk.specification import Specification
-from lpltk.utils         import typecheck_Collection
+from .specification      import Specification
+from .utils              import typecheck_Collection
 
 
 class Specifications(object):
@@ -40,7 +40,7 @@ class Specifications(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__specifications == None:
+        if self.__specifications is None:
             self.__specifications = self.__service.launchpad.specifications
 
 

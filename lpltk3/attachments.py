@@ -9,7 +9,7 @@ from copy                       import copy
 from locale                     import getpreferredencoding
 from zipfile                    import ZipFile
 
-from lpltk.attachment           import Attachment
+from .attachment                import Attachment
 from fnmatch                    import fnmatch
 
 # Attachments

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.distribution               import Distribution
+from .distribution                    import Distribution
 
 class Distributions(object):
     # __init__
@@ -38,8 +38,7 @@ class Distributions(object):
     # __fetch_if_needed
     #
     def __fetch_if_needed(self):
-        if self.__distributions == None:
+        if self.__distributions is None:
             self.__distributions = self.__service.launchpad.distributions
-
 
 # vi:set ts=4 sw=4 expandtab:

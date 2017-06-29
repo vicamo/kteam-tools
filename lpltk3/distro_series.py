@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from lpltk.milestones               import Milestones
-from lpltk.person                   import Person
-from lpltk.utils                    import (o2str, typecheck_Entry)
+from .milestones                    import Milestones
+from .person                        import Person
+from .utils                         import (o2str, typecheck_Entry)
 
 class DistroSeries(object):
     # __init__
@@ -29,87 +29,86 @@ class DistroSeries(object):
 
     @property
     def date_created(self):
-        if self.__date_created == None:
+        if self.__date_created is None:
             self.__date_created = self.__lp_distro_series.date_created
         return self.__date_created
 
     @property
     def date_released(self):
-        if self.__date_released == None:
+        if self.__date_released is None:
             self.__date_released = self.__lp_distro_series.datereleased
         return self.__date_released
 
     @property
     def owner(self):
-        if self.__owner == None:
+        if self.__owner is None:
             self.__owner = Person(self.__bug, self.__lp_distro_series.owner)
         return self.__owner
 
     @property
     def driver(self):
-        if self.__driver == None:
+        if self.__driver is None:
             self.__driver = Person(self.__bug, self.__lp_distro_series.driver)
         return self.__driver
 
     @property
     def status(self):
-        if self.__status == None:
+        if self.__status is None:
             self.__status = self.__lp_distro_series.status
         return self.__status
 
     @property
     def active(self):
-        if self.__active == None:
+        if self.__active is None:
             self.__active = self.__lp_distro_series.active
         return self.__active
 
     @property
     def supported(self):
-        if self.__supported == None:
+        if self.__supported is None:
             self.__supported = self.__lp_distro_series.supported
         return self.__supported
 
     @property
     def description(self):
-        if self.__description == None:
+        if self.__description is None:
             self.__description = o2str(self.__lp_distro_series.description)
         return self.__description
 
     @property
     def display_name(self):
-        if self.__display_name == None:
+        if self.__display_name is None:
             self.__display_name = o2str(self.__lp_distro_series.displayname)
         return self.__display_name
 
     @property
     def full_series_name(self):
-        if self.__full_series_name == None:
+        if self.__full_series_name is None:
             self.__full_series_name = o2str(self.__lp_distro_series.fullseriesname)
         return self.__full_series_name
 
     @property
     def name(self):
-        if self.__name == None:
+        if self.__name is None:
             self.__name = o2str(self.__lp_distro_series.name)
         return self.__name
 
     @property
     def summary(self):
-        if self.__summary == None:
+        if self.__summary is None:
             self.__summary = o2str(self.__lp_distro_series.summary)
         return self.__summary
 
     @property
     def title(self):
-        if self.__title == None:
+        if self.__title is None:
             self.__title = o2str(self.__lp_distro_series.title)
         return self.__title
 
     @property
     def active_milestones(self):
-        if self.__active_milestones == None:
-            self.__active_milestones = Milestones(self.__service,
-                self.__lp_distro_series.active_milestones)
+        if self.__active_milestones is None:
+            self.__active_milestones = Milestones(self.__service, self.__lp_distro_series.active_milestones)
         return self.__active_milestones
 
 # vi:set ts=4 sw=4 expandtab:

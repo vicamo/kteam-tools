@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from lpltk.bug_tasks                   import BugTasks
-from lpltk.milestone                   import Milestone
-from lpltk.utils                       import typecheck_Entry
+from .bug_tasks                        import BugTasks
+from .milestone                        import Milestone
+from .utils                            import typecheck_Entry
 
 # DistributionSourcePackage
 #
@@ -20,7 +20,7 @@ class DistributionSourcePackage(object):
     #
     @property
     def display_name(self):
-        if self.__display_name == None:
+        if self.__display_name is None:
             self.__display_name = self.lp_source_package.display_name
         return self.__display_name
 
@@ -28,7 +28,7 @@ class DistributionSourcePackage(object):
     #
     @property
     def name(self):
-        if self.__name == None:
+        if self.__name is None:
             self.__name = self.lp_source_package.name
         return self.__name
 
@@ -36,7 +36,7 @@ class DistributionSourcePackage(object):
     #
     @property
     def title(self):
-        if self.__title == None:
+        if self.__title is None:
             self.__title = self.lp_source_package.title
         return self.__title
 

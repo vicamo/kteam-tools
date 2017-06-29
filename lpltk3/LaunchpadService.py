@@ -6,11 +6,11 @@ import json
 import httplib2
 import launchpadlib
 from launchpadlib.launchpad     import *
-from lpltk.debug                import *
-from lpltk.bug                  import Bug
-from lpltk.distributions        import Distributions
-from lpltk.projects             import Projects
-from lpltk.person               import Person
+from .debug                     import *
+from .bug                       import Bug
+from .distributions             import Distributions
+from .projects                  import Projects
+from .person                    import Person
 
 class LaunchpadServiceError(Exception):
     """LaunchpadServiceError

@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
-from lpltk.utils                        import (
-    o2str,
-    typecheck_Entry
-    )
+from .utils                             import o2str, typecheck_Entry
 
 # Milestone
 #
@@ -49,4 +46,3 @@ class Milestone(object):
 
 
 # vi:set ts=4 sw=4 expandtab:
-

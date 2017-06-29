@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from lpltk.person                      import Person
-from lpltk.bug_tasks                   import BugTasks
-from lpltk.utils                       import typecheck_Entry
+from .person                           import Person
+from .bug_tasks                        import BugTasks
+from .utils                            import typecheck_Entry
 
 # Project
 #
@@ -26,7 +26,7 @@ class Project(object):
     #
     @property
     def owner(self):
-        if self.__owner == None:
+        if self.__owner is None:
             self.__owner = Person(None, self.lp_project.owner)
         return self.__owner
 
@@ -34,7 +34,7 @@ class Project(object):
     #
     @property
     def name(self):
-        if self.__name == None:
+        if self.__name is None:
             self.__name = self.lp_project.name
         return self.__name
 
@@ -42,7 +42,7 @@ class Project(object):
     #
     @property
     def display_name(self):
-        if self.__display_name == None:
+        if self.__display_name is None:
             self.__display_name = self.lp_project.display_name
         return self.__display_name
 

@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
 import sys
-from lpltk.bug_task                        import BugTask
-from lpltk.utils                           import (
-    typecheck_Collection,
-    typecheck_Entry,
-    )
+from .bug_task                             import BugTask
+from .utils                                import typecheck_Collection, typecheck_Entry
 
 class BugTasks(object):
     # __init__
@@ -69,7 +66,7 @@ class BugTasks(object):
                 if bt is None:
                     sys.stderr.write("No bug tracker found for upstream product\n")
                     continue
-                sys.stderr.write("Bug tracker type: %s (looking for %s)\n" %(bt.bug_tracker_type, bt_type))
+                sys.stderr.write("Bug tracker type: %s (looking for %s)\n" % (bt.bug_tracker_type, bt_type))
                 if bt.bug_tracker_type != bt_type:
                     continue
 
