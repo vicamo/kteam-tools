@@ -36,7 +36,7 @@ class VerifyReleaseReady():
         s.defaults['verbose'] = False
         s.passed = 0
         s.failed = 0
-        s.delimiter = 40
+        s.delimiter = 50
         # add launchpadlib support
         s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
         s.lp_ubuntu = s.lp.distributions['ubuntu']
@@ -199,6 +199,14 @@ class VerifyReleaseReady():
         config = ConfigParser.RawConfigParser()
         if config.read('debian/gbp.conf'):
             expect_tag_format = config.get('buildpackage', 'debian-tag')
+
+            # juergh: Derivatives have a different tag format, e.g., Ubuntu-raspi2-<version>
+            pkg = cl1['package']
+            if pkg.startswith('linux-') and not pkg.startswith('linux-lts-'):
+                deriv = pkg[6:]   # strip 'linux-'
+                expect_tag_format = expect_tag_format.replace('%(version)',
+                                                              deriv + '-%(version)')
+
             v = version
             # Starting with trusty, the lts backports closing commit and the tag
             # contain '~<series_version>' (e.g. '~14.04.1')
