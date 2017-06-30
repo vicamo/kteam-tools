@@ -147,7 +147,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"],
             'invalidate_tasks' : {
@@ -167,7 +167,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security',
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armel'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live', 'armel'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
         },
@@ -183,7 +183,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armhf'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
         },
@@ -199,7 +199,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armhf'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
         },
@@ -227,7 +227,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security'
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "hardware-certification"]
         }
@@ -259,7 +259,7 @@ class Workflow:
                 'regression-testing'         : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug'],
+                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
             'subscribers' :
                 [],
         }
