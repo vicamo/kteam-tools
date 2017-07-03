@@ -154,6 +154,7 @@ class WorkflowBug():
         # If a bug isn't to be processed, detect this as early as possible.
         #
         s.is_valid = s.check_is_valid(s.lpbug)
+        s.properties = s.lpbug.properties
 
         try:
             s.__package = Package(s.lp, s)
@@ -165,7 +166,6 @@ class WorkflowBug():
             for d in s.__package.pkgs:
                 cinfo('                        dep: "%s"' % d, 'blue')
 
-            s.properties = s.lpbug.properties
             if s.is_derivative_package:
                 cinfo('                 derivative: yes (%s)' % s.master_bug_id, 'blue')
             else:
@@ -188,8 +188,11 @@ class WorkflowBug():
                     cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
 
             s.tasks_by_name = s._create_tasks_by_name_mapping()
+
         except PackageError:
             s.is_valid = False
+            s.__package = None
+            s.tasks_by_name = s._create_tasks_by_name_mapping()
 
     # _remove_live_tag
     #
