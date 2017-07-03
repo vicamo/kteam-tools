@@ -322,7 +322,7 @@ class AutoPackageTest(object):
                     latest = None
                     for larch in self.archs:
                         lkey = ' '.join((ressrc, larch))
-                        if lkey in self.latest and (not latest or apt_pkg.version_compare(self.latest[lkey], latest) > 0):
+                        if lkey in self.latest and not self.latest[lkey] == 'unknown' and (not latest or apt_pkg.version_compare(self.latest[lkey], latest) > 0):
                             latest = self.latest[lkey]
 
                     key = ' '.join((ressrc, arch))
@@ -383,7 +383,7 @@ class AutoPackageTest(object):
                     #    return
 
                 # Accumulate the latest versions of packages seen so we can detect missing results.
-                if not is_proposed and ver != 'blacklisted':
+                if not is_proposed and ver != 'blacklisted' and version != 'unknown':
                     key = ' '.join((ressrc, arch))
                     if key not in self.latest or apt_pkg.version_compare(self.latest[key], ver) < 0:
                         self.latest[key] = ver
@@ -545,7 +545,7 @@ class AutoPackageTest(object):
             DBG = ''
             for arch in archs:
                 key = ' '.join((pkg, arch))
-                if key in self.latest and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
+                if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
                     DBG += ' ' + key + ' ' + self.latest[key]
                     latest = self.latest[key]
                 
