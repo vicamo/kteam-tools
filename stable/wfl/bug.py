@@ -191,11 +191,29 @@ class WorkflowBug():
         except PackageError:
             s.is_valid = False
 
+    # _remove_live_tag
+    #
+    def _remove_live_tag(s):
+        # If this task is now closed, also drop the live tag.
+        if s.is_valid and s.tasks_by_name[s.workflow_project].status == 'Fix Released':
+            if s._dryrun:
+                cinfo('    dryrun - workflow task is closed -- removing -live tag', 'red')
+            else:
+                cinfo('    action - workflow task is closed -- removing -live tag', 'red')
+
+                # Drop the "-live" tag as this one is moving dead.
+                if 'kernel-release-tracking-bug-live' in bug.tags:
+                    tags = s.lpbug.tags
+                    tags.remove('kernel-release-tracking-bug-live')
+                    s.lpbug.tags = tags
+                    s.lpbug.lp_save()
+
     # save
     #
     def save(s):
         s.props.flush()
         s.save_bug_properties()
+        s._remove_live_tag()
 
     @property
     def _dryrun(s):
