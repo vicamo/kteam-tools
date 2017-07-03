@@ -30,6 +30,11 @@ class TaskHandler(object):
 
         cleave(s.__cn__ + '.__init__')
 
+    # evaluate_state
+    #
+    def evaluate_status(s, state):
+        return s.jumper[state]()
+
     # _new
     #
     def _new(s):

@@ -184,7 +184,7 @@ class WorkflowManager():
             task_name = therest
 
             cls = s._task_map[workflow_task_name](s.lp, task, bug)
-            if cls.jumper[task.status]() and not s.args.dryrun:
+            if cls.evaluate_status(task.status) and not s.args.dryrun:
                 retval = True
                 cinfo('        True')
 
