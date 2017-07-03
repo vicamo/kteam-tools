@@ -134,14 +134,13 @@ class WorkflowManager():
         modified = True
         try:
             bug = WorkflowBug(s.lp.default_service, bugid)
-            if bug.is_valid:
-                while modified:
-                    try:
-                        cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
-                        modified = s.process_bug_tasks(bug)
+            while modified:
+                try:
+                    cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
+                    modified = s.process_bug_tasks(bug)
 
-                    except PackageError:
-                        pass
+                except PackageError:
+                    pass
             bug.save()
 
         except WorkflowBugError:

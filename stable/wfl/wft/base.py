@@ -33,6 +33,10 @@ class TaskHandler(object):
     # evaluate_state
     #
     def evaluate_status(s, state):
+        # By default we are not compatible with and invalid bug.
+        if not s.bug.is_valid:
+            return False
+
         return s.jumper[state]()
 
     # _new
