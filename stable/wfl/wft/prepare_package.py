@@ -25,7 +25,9 @@ class PreparePackageBase(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackageBase, s).__init__(lp, task, bug)
 
-        # The tracking bug should start this task out as 'Confirmed'.
+        # The tracking bug should start this task out as 'Confirmed'
+        # for primary packages.  Derivatives should flip to 'Confirmed'
+        # as soon as their primary is uploaded.
         #
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._common
@@ -35,14 +37,38 @@ class PreparePackageBase(TaskHandler):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    # evaluate_state
+    #
+    def evaluate_status(s, state):
+        # We ARE aware of invalid bugs ...
+        return s.jumper[state]()
+
     # _new
     #
     def _new(s):
         center(s.__class__.__name__ + '._new')
-        s.task.status = 'Confirmed'
-        s.task.timestamp('started')
-        s.bug.phase = 'Packaging'
-        retval = True
+
+        retval = False
+        while True:
+            # We only ping up the prepare-package to simplify handling.
+            if s.task.name != 'prepare-package':
+                break
+
+            # For derivative bugs we wait until the parent has at least got its
+            # primary package uploaded.  Then we must have something we _could_
+            # rebase on.
+            if s.bug.is_derivative_package:
+                master = s.bug.master_bug
+                if master.tasks_by_name['prepare-package'].status != 'Fix Released':
+                    retval = False
+                    break
+
+            s.task.status = 'Confirmed'
+            s.task.timestamp('started')
+            s.bug.phase = 'Packaging'
+            retval = True
+            break
+
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
         return retval
 
@@ -56,15 +82,20 @@ class PreparePackageBase(TaskHandler):
         center(s.__class__.__name__ + '._common')
         retval = False
 
-        # Since all the Prepare-package* packagestasks use this same method
-        # we need to determine which one we are working this time. That gives
-        # us the package to check if it's fully built.
-        #
-        pkg = s.task.name.replace('prepare-package', '').replace('-', '')
-        if pkg == '':
-            pkg = 'main'
+        while True:
+            if not s.bug.is_valid:
+                break
 
-        if s.bug.uploaded(pkg):
+            # Since all the Prepare-package* packagestasks use this same method
+            # we need to determine which one we are working this time. That gives
+            # us the package to check if it's fully built.
+            #
+            pkg = s.task.name.replace('prepare-package', '').replace('-', '')
+            if pkg == '':
+                pkg = 'main'
+            if not s.bug.uploaded(pkg):
+                break
+
             s.bug.phase = 'Uploaded'
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
@@ -75,7 +106,9 @@ class PreparePackageBase(TaskHandler):
                 # to have.
                 #
                 pass
+
             retval = True
+            break
 
         cleave(s.__class__.__name__ + '._common (%s)' % (retval))
         return retval
