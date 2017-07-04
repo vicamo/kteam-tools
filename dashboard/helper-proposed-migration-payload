@@ -248,11 +248,13 @@ for line in sys.stdin:
 
     # We always bump ABI so there should be no orphaned linux packages; if we find one
     # assume the meta is coming and mark it building.
+    # Check the item-name to avoid including binary removals.
     for record in state['sources']:
         if record['source'].startswith('linux') and \
            not record['source'].startswith('linux-meta') and \
            not record['source'].startswith('linux-signed') and \
-           record['source'] not in emitted:
+           record['source'] not in emitted and \
+           record['source'] == record['item-name']:
             source = record['source'].replace('linux', 'linux-meta')
             if source not in emitted:
                 britney.append((series, source, record['new-version'], 'BUILDING'))
