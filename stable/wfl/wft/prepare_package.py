@@ -29,7 +29,6 @@ class PreparePackageBase(TaskHandler):
         # for primary packages.  Derivatives should flip to 'Confirmed'
         # as soon as their primary is uploaded.
         #
-        s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._common
         s.jumper['Triaged']       = s._common
         s.jumper['In Progress']   = s._common
@@ -50,10 +49,6 @@ class PreparePackageBase(TaskHandler):
 
         retval = False
         while True:
-            # We only ping up the prepare-package to simplify handling.
-            if s.task.name != 'prepare-package':
-                break
-
             # For derivative bugs we wait until the parent has at least got its
             # primary package uploaded.  Then we must have something we _could_
             # rebase on.
@@ -70,6 +65,27 @@ class PreparePackageBase(TaskHandler):
             break
 
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
+        return retval
+
+    # _new_
+    #
+    def _new_dependent(s):
+        center(s.__class__.__name__ + '._new_dependent')
+
+        retval = False
+        while True:
+            # If our primary prepare-package has moved past Confirmed
+            # we can move this one on as well.
+            if s.bug.tasks_by_name['prepare-package'].status in ('New', 'Confirmed'):
+                retval = False
+                break
+
+            s.task.status = 'Confirmed'
+            s.task.timestamp('started')
+            retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._new_dependent (%s)' % (retval))
         return retval
 
     # _common
@@ -124,6 +140,7 @@ class PreparePackage(PreparePackageBase):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackage, s).__init__(lp, task, bug)
+        s.jumper['New']           = s._new
         cleave(s.__class__.__name__ + '.__init__')
 
 
@@ -137,6 +154,7 @@ class PreparePackageMeta(PreparePackageBase):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackageMeta, s).__init__(lp, task, bug)
+        s.jumper['New']           = s._new_dependent
         cleave(s.__class__.__name__ + '.__init__')
 
 
@@ -150,6 +168,7 @@ class PreparePackageSigned(PreparePackageBase):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackageSigned, s).__init__(lp, task, bug)
+        s.jumper['New']           = s._new_dependent
         cleave(s.__class__.__name__ + '.__init__')
 
 class PreparePackageLBM(PreparePackageBase):
@@ -162,6 +181,7 @@ class PreparePackageLBM(PreparePackageBase):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackageLBM, s).__init__(lp, task, bug)
+        s.jumper['New']           = s._new_dependent
         cleave(s.__class__.__name__ + '.__init__')
 
 
@@ -175,6 +195,7 @@ class PreparePackagePortsMeta(PreparePackageBase):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(PreparePackagePortsMeta, s).__init__(lp, task, bug)
+        s.jumper['New']           = s._new_dependent
         cleave(s.__class__.__name__ + '.__init__')
 
 
