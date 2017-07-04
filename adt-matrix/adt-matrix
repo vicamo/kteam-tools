@@ -309,6 +309,11 @@ class AutoPackageTest(object):
             self.log_error('Failure to fetch %s: %s' % (url, str(e)))
             return
 
+        # update latest_stamp
+        stamp = os.path.basename(os.path.dirname(url))
+        if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
+            self.seen[src_arch_key] = stamp
+
         (kernel_pkg, kernel_ver, kernel_ver_rough) = (None, None, None)
         testinfo = None
         try:
@@ -437,7 +442,6 @@ class AutoPackageTest(object):
                            (url, ressrc, src))
             return
 
-        stamp = os.path.basename(os.path.dirname(url))
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
 
@@ -473,12 +477,6 @@ class AutoPackageTest(object):
                 key = ' '.join((series, kernel_pkg, arch, src))
                 if key not in self.first_good:
                     self.first_good[key] = ident
-
-
-        # update latest_stamp
-        if src_arch_key not in self.seen or stamp > self.seen[src_arch_key]:
-            self.seen[src_arch_key] = stamp
-
 
     def update(self):
         for pkgarchs in self.packages:
