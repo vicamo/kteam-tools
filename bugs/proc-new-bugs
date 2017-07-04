@@ -26,7 +26,7 @@ class ProcNewBugs(BugEngine):
         """
         defaults = {}
         defaults['configuration_file'] = 'new.rc'
-        defaults['launchpad_client_name'] = 'lpltk.kernel.ProcNewBugs'
+        #defaults['launchpad_client_name'] = 'lpltk.kernel.ProcNewBugs'
         BugEngine.__init__(self, defaults)
 
 if __name__ == '__main__':

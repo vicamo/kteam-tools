@@ -31,7 +31,7 @@ class ProcDevSeriesBugs(BugEngine):
         """
         defaults = {}
         defaults['configuration_file'] = 'dev-series.rc'
-        defaults['launchpad_client_name'] = 'lpltk.kernel.ProcDevSeriesBugs'
+        #defaults['launchpad_client_name'] = 'lpltk.kernel.ProcDevSeriesBugs'
         BugEngine.__init__(self, defaults)
 
     # startup
