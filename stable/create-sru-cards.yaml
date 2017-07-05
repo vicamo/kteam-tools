@@ -8,6 +8,9 @@
           - 'Done'
         default_list: 'On Deck'
     cards:
+        - name: 'Review CVE matrix'
+        - name: 'Apply upstream stable updates'
+        - name: 'Apply patches from the ML'
         - name: 'Turn the crank'
           suffixes:
             - 'precise/lts-trusty'
