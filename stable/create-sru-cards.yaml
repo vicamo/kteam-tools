@@ -1,0 +1,42 @@
+---
+    board:
+        prefix_name: 'sru-cycle-'
+        trello_organization: 'kernelteam2'
+        lists:
+          - 'On Deck'
+          - 'In Progress'
+          - 'Done'
+        default_list: 'On Deck'
+    cards:
+        - name: 'Turn the crank'
+          suffixes:
+            - 'precise/lts-trusty'
+            - 'trusty'
+            - 'trusty/lts-xenial'
+            - 'xenial'
+            - 'xenial/raspi2'
+            - 'xenial/snapdragon'
+            - 'xenial/hwe'
+            - 'xenial/aws'
+            - 'xenial/gke'
+            - 'xenial/joule'
+            - 'xenial/azure'
+            - 'yakkety'
+            - 'yakkety/raspi2'
+            - 'zesty'
+            - 'zesty/raspi2'
+        - name: 'Produce kernel snaps'
+          suffixes:
+            - 'joule'
+            - 'caracalla'
+            - 'st. louis'
+          description: 'Update the kernel snap version on the repo'
+        - name: 'SRU bug spamming'
+          description: 'Run spam-proposed-release-bugs for the series on -proposed'
+        - name: 'SRU -proposed announcement'
+          description: 'Send the SRU announcement to the ML'
+        - name: 'Bill ClickTime hours'
+          suffixes:
+            - 'joule'
+            - 'caracalla'
+            - 'st. louis'
