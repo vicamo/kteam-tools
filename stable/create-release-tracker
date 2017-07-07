@@ -1,10 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
+import sys
+import os
+
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from ktl.utils                          import eout
-from ktl.git                            import Git, GitError
-from ktl.debian                         import Debian, DebianError
+from lib.utils                          import eout
+from lib.git                            import Git, GitError
+from lib.debian                         import Debian, DebianError
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
