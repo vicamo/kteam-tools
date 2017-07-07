@@ -17,10 +17,23 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '._kernel_block')
         retval = False
 
-        if 'kernel-block' in s.bug.tags:
+        if 'kernel-block' in s.bug.tags or 'kernel-block-proposed' in s.bug.tags:
             return True
 
         cleave(s.__class__.__name__ + '._kernel_block (%s)' % retval)
+        return retval
+
+    def _kernel_block_ppa(s):
+        '''
+        If a 'kernel-block-ppa' tag exist return True.
+        '''
+        center(s.__class__.__name__ + '._kernel_block_ppa')
+        retval = False
+
+        if 'kernel-block-ppa' in s.bug.tags:
+            return True
+
+        cleave(s.__class__.__name__ + '._kernel_block_ppa (%s)' % retval)
         return retval
 
     def _block_proposed(s):

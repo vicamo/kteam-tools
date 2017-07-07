@@ -49,18 +49,23 @@ class PromoteToProposed(Promoter):
                 if not s.master_bug_ready_for_proposed():
                     break
 
-            if s.bug.all_dependent_packages_fully_built:
-                s.task.status = 'Confirmed'
-                s.task.timestamp('started')
+            if not s.bug.all_dependent_packages_fully_built:
+                break
 
-                if 'boot-testing-requested' not in s.bug.bprops:
-                    s.bug.send_boot_testing_requests()
-                    s.bug.bprops['boot-testing-requested'] = True
+            if s._kernel_block_ppa():
+                cinfo('            A kernel-block-ppa tag exists on this tracking bug', 'yellow')
+                break
 
-                s._add_block_proposed()
+            s.task.status = 'Confirmed'
+            s.task.timestamp('started')
 
-                retval = True
+            if 'boot-testing-requested' not in s.bug.bprops:
+                s.bug.send_boot_testing_requests()
+                s.bug.bprops['boot-testing-requested'] = True
 
+            s._add_block_proposed()
+
+            retval = True
             break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
