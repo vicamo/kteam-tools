@@ -202,6 +202,7 @@
             linux-gcp:
             - linux
             - '16.10'
+        
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -233,6 +234,9 @@
             - linux-aws
             - linux-gke
             - linux-joule
+        proposed_only:
+            linux-azure: true
+            linux-gce: true
         development: false
         kernel: 4.4.0
         name: xenial
