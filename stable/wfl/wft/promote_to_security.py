@@ -31,11 +31,10 @@ class PromoteToSecurity(Promoter):
 
         while True:
 
-            # Special case for Vivid kernel packages which should never go to -updates or -security.
-            # We are past support and only do this to support the Plano project.
-            # Azure kernel is also being promoted temporarily only to -proposed.
+            # The kernels below are in evaluation.  These only get as far
+            # as -proposed and will not be promoted further:
             #
-            if s.bug.pkg_name == "linux-azure":
+            if s.bug.pkg_name in ("linux-azure", "linux-gcp"):
                 s.task.status = 'Invalid'
                 s.bug.tasks_by_name['security-signoff'].status = 'Invalid'
                 retval = True
