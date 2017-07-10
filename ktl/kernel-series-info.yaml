@@ -201,7 +201,7 @@
             - '17.10'
             linux-gcp:
             - linux
-            - '17.04'
+            - '16.10'
         dependent-packages:
             linux:
                 meta: linux-meta
