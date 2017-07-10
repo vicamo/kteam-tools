@@ -147,7 +147,7 @@ class Package():
                 test_tag_entry = s.ubuntu.lookup(m.group(2))
 
             # XXX: this should be universal.
-            if s.name == 'linux-azure' and series_tag_entry:
+            if s.name in ('linux-azure', 'linux-gcp') and series_tag_entry:
                 cdebug(' series: %s' % series_tag_entry['name'])
                 cdebug('  tests: %s' % test_tag_entry['name'])
                 setattr(s, 'series', series_tag_entry['name'])
