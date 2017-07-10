@@ -236,7 +236,7 @@
             - linux-joule
         proposed_only:
             linux-azure: true
-            linux-gce: true
+            linux-gcp: true
         development: false
         kernel: 4.4.0
         name: xenial
