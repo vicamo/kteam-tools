@@ -34,7 +34,7 @@ class PromoteToSecurity(Promoter):
             # The kernels below are in evaluation.  These only get as far
             # as -proposed and will not be promoted further:
             #
-            if s.bug.pkg_name in ("linux-azure", "linux-gcp"):
+            if s.bug.is_proposed_only:
                 s.task.status = 'Invalid'
                 s.bug.tasks_by_name['security-signoff'].status = 'Invalid'
                 retval = True

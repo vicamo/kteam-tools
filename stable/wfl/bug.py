@@ -263,6 +263,13 @@ class WorkflowBug():
         '''
         return WorkflowBug(s.lp, s.master_bug_id)
 
+    # is_proposed_only
+    #
+    @property
+    def is_proposed_only(s):
+        return s.__package.proposed_only
+
+
     # load_bug_properties
     #
     def load_bug_properties(s):

@@ -36,7 +36,7 @@ class PromoteToUpdates(Promoter):
             # The kernels below are in evaluation.  These only get as far
             # as -proposed and will not be promoted further:
             #
-            if s.bug.pkg_name in ("linux-azure", "linux-gcp"):
+            if s.bug.is_proposed_only:
                 s.task.status = 'Invalid'
                 retval = True
                 break

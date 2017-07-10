@@ -150,6 +150,7 @@ class Package():
 
             # XXX: this should be universal.
             if s.name in ('linux-azure', 'linux-gcp') and series_tag_entry:
+                series_entry = series_tag_entry
                 cdebug(' series: %s' % series_tag_entry['name'])
                 cdebug('  tests: %s' % test_tag_entry['name'])
                 setattr(s, 'series', series_tag_entry['name'])
@@ -157,7 +158,8 @@ class Package():
                 setattr(s, 'test_series_version', test_tag_entry['series_version'])
 
             else:
-                setattr(s, 'test_series', s.ubuntu.lookup(m.group(2))['name'])
+                series_entry = s.ubuntu.lookup(m.group(2))
+                setattr(s, 'test_series', series_entry['name'])
                 setattr(s, 'test_series_version', s.ubuntu.index_by_series_name[s.test_series]['series_version'])
                 setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
 
@@ -168,6 +170,8 @@ class Package():
                     if s.series != series_tag_entry['name']:
                         cerror("DEBUG/SERIES: series: tag based detection differs from version lookup?? (%s %s)" % (s.test_series, series_tag_entry['name']))
 
+            # Work out if this is a proposed only entry.
+            s.proposed_only = series_entry.get('proposed_only', {}).get(s.name, False)
 
             s.valid = True
 
