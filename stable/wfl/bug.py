@@ -698,7 +698,8 @@ class WorkflowBug():
     def send_boot_testing_requests(s):
         msg = s.send_testing_message(op="boot", ppa=True)
 
-        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
+        # XXX: likely should be "if s.pkg_name != 'linux' and not s.__package.hwe:"
+        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
             flavour = s.pkg_name.replace('linux-', '')
             msg = s.send_testing_message(op="boot", ppa=True, flavour=flavour)
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " available in ppa"
@@ -724,7 +725,8 @@ class WorkflowBug():
     def send_proposed_testing_requests(s):
         msg = s.send_testing_message()
 
-        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws']:
+        # XXX: likely should be "if s.pkg_name != 'linux' and not s.__package.hwe:"
+        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
             flavour = s.pkg_name.replace('linux-', '')
             msg = s.send_testing_message(op=flavour, flavour=flavour)
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " uploaded"
@@ -774,7 +776,8 @@ class WorkflowBug():
         # yet another lookup table which maps from a package name to the seris on which it
         # is to be booted. For now, I'm going with this truly aweful hack.
         #
-        if s.pkg_name in ['linux-azure']:
+        # XXX: likely should be "if not s.__package.hwe:"
+        if s.pkg_name in ['linux-azure', 'linux-gcp']:
             msg['series-name'] = s.__package.series
             msg['series-version'] = s.pkg_version
 
