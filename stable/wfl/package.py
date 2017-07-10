@@ -143,8 +143,10 @@ class Package():
             # XXX: Bodge: we pass the source series to the test
             # infrastructure and a hwe flag to tell it that is wrong ?
             test_tag_entry = series_tag_entry
-            if s.hwe:
-                test_tag_entry = s.ubuntu.lookup(m.group(2))
+            if ('backport-packages' in series_tag_entry and
+                s.name in series_tag_entry['backport-packages']):
+                backport_version = test_tag_entry['backport-packages'][s.name][1]
+                test_tag_entry = s.ubuntu.lookup(backport_version)
 
             # XXX: this should be universal.
             if s.name in ('linux-azure', 'linux-gcp') and series_tag_entry:
