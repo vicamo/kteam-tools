@@ -199,6 +199,9 @@
             linux-azure:
             - linux
             - '17.04'
+            linux-gcp:
+            - linux
+            - '17.04'
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -221,6 +224,8 @@
             linux-hwe-edge:
                 meta: linux-meta-hwe-edge
                 signed: linux-signed-hwe-edge
+            linux-gcp:
+                meta: linux-meta-gcp
         derivative-packages:
             linux:
             - linux-raspi2
