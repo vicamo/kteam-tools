@@ -192,13 +192,13 @@
         backport-packages:
             linux-hwe:
             - linux
-            - '16.10'
+            - '17.04'
             linux-hwe-edge:
             - linux
             - '17.04'
             linux-azure:
             - linux
-            - '17.04'
+            - '17.10'
             linux-gcp:
             - linux
             - '17.04'
