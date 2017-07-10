@@ -696,8 +696,6 @@ class WorkflowBug():
     # send_boot_testing_requests
     #
     def send_boot_testing_requests(s):
-        msg = s.send_testing_message(op="boot", ppa=True)
-
         # XXX: likely should be "if s.pkg_name != 'linux' and not s.__package.hwe:"
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
             flavour = s.pkg_name.replace('linux-', '')
@@ -705,6 +703,8 @@ class WorkflowBug():
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " available in ppa"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
         else:
+            msg = s.send_testing_message(op="boot", ppa=True)
+
             # I have an email of the msgq message sent to myself. This allows me to easily
             # post that message again to kick off testing whenever I want.
             #
@@ -723,8 +723,6 @@ class WorkflowBug():
     # send_proposed_testing_requests
     #
     def send_proposed_testing_requests(s):
-        msg = s.send_testing_message()
-
         # XXX: likely should be "if s.pkg_name != 'linux' and not s.__package.hwe:"
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
             flavour = s.pkg_name.replace('linux-', '')
@@ -732,6 +730,8 @@ class WorkflowBug():
             subject = "[" + s.series + "] " + s.pkg_name + ' ' + s.pkg_version + " uploaded"
             s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
         else:
+            msg = s.send_testing_message()
+
             # I have an email of the msgq message sent to myself. This allows me to easily
             # post that message again to kick off testing whenever I want.
             #
