@@ -549,7 +549,7 @@ class AutoPackageTest(object):
                 
             for arch in archs:
                 prev_status = None
-                good_ever = {}
+                good_ever = False
 
                 # Look up a parental series/package result to track implied regressions.
                 if self.parent != '-':
@@ -584,6 +584,8 @@ class AutoPackageTest(object):
                         elif mark and ident > mark:
                             status = 'REGR'
                             version += '\nparent tree GOOD'
+                        elif not good_ever and (not prev_status or prev_status == 'NEVER'):
+                            status = 'NEVER'
                         else:
                             status = 'FAIL'
                     elif arch in some_ever or (ver == verlist[-1] and pkg in self.packages_latest and arch in self.packages_latest[pkg]):
@@ -652,7 +654,7 @@ class AutoPackageTest(object):
             self.current[self.series + '-' + self.source] = miss
             self.dirty = True
 
-        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0, 'SKIP': 0 }
+        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0, 'SKIP': 0, 'NEVER': 0 }
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
@@ -668,7 +670,7 @@ class AutoPackageTest(object):
         total = 0
         summary = []
         primary_state = None
-        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD', 'SKIP' ]:
+        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'NEVER', 'GOOD', 'SKIP' ]:
             if state and status[state] > 0:
                 if not primary_state:
                     primary_state = state
@@ -701,8 +703,8 @@ class AutoPackageTest(object):
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS, .SKIP {{ background-color: yellow; }}
-.HINTFAIL {{ background-color: orange; }}
-.FAIL {{ background-color: lightgreen; }}
+.FAIL {{ background-color: orange; }}
+.NEVER {{ background-color: lightgreen; }}
 .REGR {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
 table.matrix {{
@@ -767,7 +769,6 @@ table.matrix, table.matrix th, table.matrix td {{
                 if arch == archs_good[0]:
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
-                hinted_fail = False
                 for ver in verlist:
                     if ver == 'race':
                         page += "<td>" + race_text
@@ -788,15 +789,6 @@ table.matrix, table.matrix th, table.matrix td {{
                             annot += '\npackage updated'
 
                         status_class = status
-                        if status in ('SKIP', 'MISS'):
-                            pass
-                        elif status == 'FAIL':
-                            if 'hinted' in annot:
-                                hinted_fail = True
-                            if hinted_fail:
-                                status_class = 'HINTFAIL'
-                        else:
-                            hinted_fail = False
 
                         page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
@@ -906,8 +898,8 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .BUILDING {{ background-color: yellow; }}
 .RUNNING {{ background-color: yellow; }}
 .MISS, .SKIP, .MISSING {{ background-color: yellow; }}
-.FAIL {{ background-color: lightgreen; }}
-.ALWAYSFAIL {{ background-color: yellow; }}
+.NEVER {{ background-color: lightgreen; }}
+.FAIL {{ background-color: yellow; }}
 .REGR, .REGRESSION {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
 #.sREGR {{ color: red; }}
