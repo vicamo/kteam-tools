@@ -1,6 +1,6 @@
 ---
     board:
-        prefix_name: 'sru-cycle-'
+        prefix_name: 'SRU Cycle '
         trello_organization: 'kernelteam2'
         lists:
           - 'On Deck'
