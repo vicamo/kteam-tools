@@ -670,7 +670,7 @@ class AutoPackageTest(object):
         total = 0
         summary = []
         primary_state = None
-        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'NEVER', 'GOOD', 'SKIP' ]:
+        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD', 'NEVER', 'SKIP' ]:
             if state and status[state] > 0:
                 if not primary_state:
                     primary_state = state
