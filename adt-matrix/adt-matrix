@@ -899,7 +899,7 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .RUNNING {{ background-color: yellow; }}
 .MISS, .SKIP, .MISSING {{ background-color: yellow; }}
 .NEVER {{ background-color: lightgreen; }}
-.FAIL {{ background-color: yellow; }}
+.FAIL {{ background-color: orange; }}
 .REGR, .REGRESSION {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
 #.sREGR {{ color: red; }}
