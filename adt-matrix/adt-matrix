@@ -616,9 +616,9 @@ class AutoPackageTest(object):
                     if hints:
                         (lstatus, reason) = hints
                         version += '\n('
-                        if lstatus != '-':
+                        if lstatus != '-' and reason != "seed version":
                             version += 'hinted ' + lstatus
-                        if lstatus != '-' and reason:
+                        if lstatus != '-' and reason != "seed version" and reason:
                             version += ': '
                         if reason:
                             version += reason
@@ -701,7 +701,8 @@ class AutoPackageTest(object):
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS, .SKIP {{ background-color: yellow; }}
-.FAIL {{ background-color: orange; }}
+.HINTFAIL {{ background-color: orange; }}
+.FAIL {{ background-color: lightgreen; }}
 .REGR {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
 table.matrix {{
@@ -766,6 +767,7 @@ table.matrix, table.matrix th, table.matrix td {{
                 if arch == archs_good[0]:
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
+                hinted_fail = False
                 for ver in verlist:
                     if ver == 'race':
                         page += "<td>" + race_text
@@ -784,7 +786,19 @@ table.matrix, table.matrix th, table.matrix td {{
                             fmt = '<td class="{0}">{1}'
                         if version != lversion:
                             annot += '\npackage updated'
-                        page += fmt.format(status, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
+
+                        status_class = status
+                        if status in ('SKIP', 'MISS'):
+                            pass
+                        elif status == 'FAIL':
+                            if 'hinted' in annot:
+                                hinted_fail = True
+                            if hinted_fail:
+                                status_class = 'HINTFAIL'
+                        else:
+                            hinted_fail = False
+
+                        page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if status != 'GOOD' and ver == self.trigger:
