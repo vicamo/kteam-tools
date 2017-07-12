@@ -18,7 +18,7 @@ hints="$here/hints"
 if [ ! -d "$hints" ]; then
 	git clone "$git" "$hints"
 else
-	(cd "$hints" && git checkout -f && git pull)
+	(cd "$hints" && git checkout -f && git fetch origin && git reset --hard origin/master)
 fi
 
 mkdir -p "$html"
