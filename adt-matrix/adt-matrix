@@ -740,7 +740,7 @@ table.matrix, table.matrix th, table.matrix td {{
                 continue
 
             (version, flavour) = verflav.split()
-            page += '<th>' + version if version != '0' else 'Reference'
+            page += '<th>' + version if version != '0' else '<th>Reference'
         page += '</tr>\n'
 
         # Data ...
