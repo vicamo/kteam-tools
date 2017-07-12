@@ -601,7 +601,7 @@ class AutoPackageTest(object):
 
                         # If we are hinting to FAIL then we are indicating that previous GOOD stati
                         # are to be ignored, reset tracking.
-                        if status == 'FAIL':
+                        if status in ('FAIL', 'NEVER'):
                             #print("APW:", ver, pkg, arch, "override", self.hint_status[(ver, pkg, arch)], 'triggering reset')
                             good_ever = False
                             mark = None
