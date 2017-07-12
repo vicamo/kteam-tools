@@ -28,6 +28,8 @@
             - 'yakkety/raspi2'
             - 'zesty'
             - 'zesty/raspi2'
+        - name: 'Turn the crank - Intel Euclid'
+          description: 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
         - name: 'Produce kernel snaps'
           suffixes:
             - 'joule'
