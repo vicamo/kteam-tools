@@ -22,6 +22,6 @@ tests_info = data['tests']
 for test_package, package_info in sorted(tests_info.items(), key=operator.itemgetter(0)):
     for arch, result in sorted(package_info.items(), key=operator.itemgetter(0)):
         status = result['status'];
-        if status in ('REGN', 'REGR'):
+        if status in ('REGN', 'REGR', 'SKIP', 'MISS'):
             status = 'GOOD'
         print("result %s %s %s %s %s %s \"seed version\"" % (series, package, version, test_package, arch, status))
