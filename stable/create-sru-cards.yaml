@@ -22,7 +22,6 @@
             - 'xenial/hwe'
             - 'xenial/aws'
             - 'xenial/gke'
-            - 'xenial/joule'
             - 'xenial/azure'
             - 'yakkety'
             - 'yakkety/raspi2'
@@ -32,7 +31,6 @@
           description: 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
         - name: 'Produce kernel snaps'
           suffixes:
-            - 'joule'
             - 'caracalla'
             - 'st. louis'
             - 'xenial/pc-kernel'
@@ -47,6 +45,5 @@
           description: 'Send the SRU announcement to the ML'
         - name: 'Bill ClickTime hours'
           suffixes:
-            - 'joule'
             - 'caracalla'
             - 'st. louis'
