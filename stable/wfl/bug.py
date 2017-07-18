@@ -315,8 +315,6 @@ class WorkflowBug():
             newd += '-- swm properties --\n'
             newd += new_props
 
-            for line in new_props.split('\n'):
-                cinfo('    ' + line)
             if s.lpbug.description != newd:
                 if s._dryrun:
                     cinfo('    dryrun - updating SWM properties', 'red')
@@ -325,6 +323,8 @@ class WorkflowBug():
                     s.lpbug.description = newd
             else:
                 cinfo('    noop - SWM properties unchanged', 'yellow')
+            for line in new_props.split('\n'):
+                cinfo('        ' + line)
 
         cleave(s.__class__.__name__ + '.save_bug_properties')
         return retval
