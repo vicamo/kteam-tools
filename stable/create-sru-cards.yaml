@@ -11,6 +11,7 @@
         - name: 'Review CVE matrix'
         - name: 'Apply upstream stable updates'
         - name: 'Apply patches from the ML'
+        - name: 'Create tracking bugs'
         - name: 'Turn the crank'
           suffixes:
             - 'precise/lts-trusty'
