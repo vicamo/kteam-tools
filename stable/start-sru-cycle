@@ -101,7 +101,9 @@ class Crankers():
                     tb = TrackingBug(lp, False)
                     master_bug = tb.open(master_project, '<version to be filled>', True, None, series)
                     for task in master_bug.tasks:
-                        if 'prepare-package' in task.bug_target_name:
+                        # Move the primary package to Confirmed, link-to-tracker and
+                        # shanky will keep on top of the others and move them as needed.
+                        if task.bug_target_name.endswith('/prepare-package'):
                             task.status = 'Confirmed'
                     master_bug.tags.append(cycle_tag)
                     master_bug.tags.append('kernel-sru-master-kernel')
