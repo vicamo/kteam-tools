@@ -179,8 +179,11 @@ class Tracking():
             found = []
             for (bugid, tasks_by_name) in found_tasks:
                 lpbug = s.launchpad.bugs[bugid]
-                if '<version to be filled>' in lpbug.title:
-                    found.append((bugid, tasks_by_name, lpbug))
+                if '<version to be filled>' not in lpbug.title:
+                    continue
+                if s.args.sru_cycle and s.bug_to_sru_cycle(lpbug) != s.args.sru_cycle:
+                    continue
+                found.append((bugid, tasks_by_name, lpbug))
 
             if len(found) == 0:
                 raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package,target_series))
@@ -194,7 +197,7 @@ class Tracking():
 
             (bugid, tasks_by_name, lpbug) = found[0]
 
-            print("LP: #{} ({})".format(bugid, lpbug.title))
+            print("LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
 
             if s.args.dry_run:
                 print("Dry Run -- no changes made")
@@ -254,6 +257,7 @@ if __name__ == '__main__':
     parser.add_argument('--info',  action='store_true', default=False, help='')
     parser.add_argument('--debug', action='store_true', default=False, help='')
     parser.add_argument('--dry-run', action='store_true', default=False, help='')
+    parser.add_argument('--sru-cycle', action='store', help='')
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
