@@ -148,30 +148,23 @@ class Package():
                 backport_version = test_tag_entry['backport-packages'][s.name][1]
                 test_tag_entry = s.ubuntu.lookup(backport_version)
 
-            # XXX: this should be universal.
-            if s.name in ('linux-azure', 'linux-gcp') and series_tag_entry:
-                series_entry = series_tag_entry
-                cdebug(' series: %s' % series_tag_entry['name'])
-                cdebug('  tests: %s' % test_tag_entry['name'])
-                setattr(s, 'series', series_tag_entry['name'])
-                setattr(s, 'test_series', test_tag_entry['name'])
-                setattr(s, 'test_series_version', test_tag_entry['series_version'])
+            # Set the series and test_series attributes
+            cdebug(' series: %s' % series_tag_entry['name'])
+            cdebug('  tests: %s' % test_tag_entry['name'])
+            setattr(s, 'series', series_tag_entry['name'])
+            setattr(s, 'test_series', test_tag_entry['name'])
+            setattr(s, 'test_series_version', test_tag_entry['series_version'])
 
-            else:
-                series_entry = s.ubuntu.lookup(m.group(2))
-                setattr(s, 'test_series', series_entry['name'])
-                setattr(s, 'test_series_version', s.ubuntu.index_by_series_name[s.test_series]['series_version'])
-                setattr(s, 'series', s.ubuntu.series_name(s.name, s.version))
-
-                # XXX: dump out any missmatches between the old and new algorithms.
-                if series_tag_entry:
-                    if s.test_series != test_tag_entry['name']:
-                        cerror("DEBUG/SERIES: test_series: tag based detection differs from version lookup?? (%s %s)" % (s.test_series, test_tag_entry['name']))
-                    if s.series != series_tag_entry['name']:
-                        cerror("DEBUG/SERIES: series: tag based detection differs from version lookup?? (%s %s)" % (s.test_series, series_tag_entry['name']))
+            # Dump out any missmatches between the old and new algorithms.
+            test_old_entry = s.ubuntu.lookup(m.group(2))
+            series_old_entry = s.ubuntu.index_by_series_name[s.ubuntu.series_name(s.name, s.version)]
+            if test_tag_entry != test_old_entry:
+                    cerror("DEBUG/SERIES: %s: test_series: tag based detection differs from version lookup?? (old=%s tag=%s)" % (s.name, test_old_entry['name'], test_tag_entry['name']))
+            if series_tag_entry != series_old_entry:
+                    cerror("DEBUG/SERIES: %s: series: tag based detection differs from version lookup?? (old=%s tag=%s)" % (s.name, series_old_entry['name'], series_tag_entry['name']))
 
             # Work out if this is a proposed only entry.
-            s.proposed_only = series_entry.get('proposed_only', {}).get(s.name, False)
+            s.proposed_only = series_tag_entry.get('proposed_only', {}).get(s.name, False)
 
             s.valid = True
 
