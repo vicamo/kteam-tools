@@ -304,24 +304,27 @@ class WorkflowBug():
         newd = ''
 
         if len(s.bprops) > 0:
-            new_props = yaml.dump(s.bprops, default_flow_style=False)
+            new_props = yaml.dump(s.bprops, default_flow_style=False).strip()
 
-            if s._dryrun:
-                cinfo('    dryrun - updating SWM properties', 'red')
-                for line in new_props.split('\n'):
-                    cinfo('        ' + line)
+            description = s.lpbug.description
+            for l in description.split('\n'):
+                if l.startswith('-- swm properties --'):
+                    break
+                newd += l + '\n'
+
+            newd += '-- swm properties --\n'
+            newd += new_props
+
+            for line in new_props.split('\n'):
+                cinfo(line)
+            if s.lpbug.description != newd:
+                if s._dryrun:
+                    cinfo('dryrun - updating SWM properties', 'red')
+                else:
+                    cinfo('action - updating SWM properties', 'red')
+                    s.lpbug.description = newd
             else:
-                cinfo('    action - updating SWM properties', 'red')
-                description = s.lpbug.description
-                for l in description.split('\n'):
-                    if l.startswith('-- swm properties --'):
-                        break
-                    newd += l + '\n'
-
-                newd += '-- swm properties --\n'
-                newd += new_props
-
-                s.lpbug.description = newd
+                cinfo('noop - SWM properties unchanged', 'yellow')
 
         cleave(s.__class__.__name__ + '.save_bug_properties')
         return retval
