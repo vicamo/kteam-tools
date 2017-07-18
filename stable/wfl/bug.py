@@ -324,7 +324,7 @@ class WorkflowBug():
             else:
                 cinfo('    noop - SWM properties unchanged', 'yellow')
             for line in new_props.split('\n'):
-                cinfo('        ' + line)
+                cinfo('        ' + line, 'magenta')
 
         cleave(s.__class__.__name__ + '.save_bug_properties')
         return retval
