@@ -226,10 +226,13 @@ class Tracking():
             lpbug.title = title
             lpbug.lp_save()
 
-            task = tasks_by_name['prepare-package'].lp_task
-            task.status = "In Progress"
-            task.assignee = s.launchpad.me
-            task.lp_save()
+            for task_name in tasks_by_name:
+                if 'prepare-package' not in task_name:
+                    continue
+                task = tasks_by_name[task_name].lp_task
+                task.status = "In Progress"
+                task.assignee = s.launchpad.me
+                task.lp_save()
 
         except AppError as e:
             print("ERROR: " + str(e), file=sys.stderr)
