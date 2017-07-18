@@ -478,10 +478,6 @@
         name: precise
         packages:
         - linux-meta
-        - linux-ti-omap4
-        - linux-meta-ti-omap4
-        - linux-armadaxp
-        - linux-meta-armadaxp
         - linux-lts-trusty
         - linux-meta-lts-trusty
         - linux-signed-lts-trusty
