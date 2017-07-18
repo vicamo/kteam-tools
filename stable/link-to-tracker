@@ -166,6 +166,14 @@ class Tracking():
             if found == False:
                 raise AppError('Cannot find tracker bug matching package %s series %s' % (target_package,target_series))
                 exit(retval)
+
+            lpbug = s.launchpad.bugs[bugid]
+            print("LP: #{} ({})".format(bugid, lpbug.title))
+
+            if s.args.dry_run:
+                print("Dry Run -- no changes made")
+                return 0
+
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
@@ -186,7 +194,6 @@ class Tracking():
                     f.write(line)
             retval = 0
 
-            lpbug = s.launchpad.bugs[bugid]
             lpbug.title = title
             lpbug.lp_save()
 
@@ -217,6 +224,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--info',  action='store_true', default=False, help='')
     parser.add_argument('--debug', action='store_true', default=False, help='')
+    parser.add_argument('--dry-run', action='store_true', default=False, help='')
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
