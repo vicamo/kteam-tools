@@ -150,24 +150,50 @@ class Tracking():
         cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
         return tasks_by_name
 
+    # bug_to_sru_cycle
+    #
+    def bug_to_sru_cycle(s, bug):
+        cycle = '--'
+        for tag in bug.tags:
+            if tag.startswith('kernel-sru-cycle-'):
+                cycle = tag[17:]
+                break
+
+        return cycle
+
     # main
     #
     def main(s):
         retval = 1
         try:
             target_package, target_series = s.repo_info
-            found = False
-            for bugid in s.trackers(s.project_tracked):
+            found_tasks = []
+            for (bugid, title) in s.trackers(s.project_tracked).items():
+                if not title.startswith(target_package + ':'):
+                    continue
                 tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
                 if '%s (Ubuntu %s)' % (target_package, target_series.title()) in tasks_by_name:
-                    found = True
-                    break
+                    found_tasks.append((bugid, tasks_by_name))
 
-            if found == False:
-                raise AppError('Cannot find tracker bug matching package %s series %s' % (target_package,target_series))
+            # Look through the list and see what we have -- pick out the open ones.
+            found = []
+            for (bugid, tasks_by_name) in found_tasks:
+                lpbug = s.launchpad.bugs[bugid]
+                if '<version to be filled>' in lpbug.title:
+                    found.append((bugid, tasks_by_name, lpbug))
+
+            if len(found) == 0:
+                raise AppError('Cannot find tracking bug matching package %s series %s' % (target_package,target_series))
+                exit(retval)
+            elif len(found) != 1:
+                for (bugid, tasks_by_name, lpbug) in found:
+                    print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
+
+                raise AppError('Multiple tracking bug matching package %s series %s' % (target_package,target_series))
                 exit(retval)
 
-            lpbug = s.launchpad.bugs[bugid]
+            (bugid, tasks_by_name, lpbug) = found[0]
+
             print("LP: #{} ({})".format(bugid, lpbug.title))
 
             if s.args.dry_run:
@@ -201,6 +227,9 @@ class Tracking():
             task.status = "In Progress"
             task.assignee = s.launchpad.me
             task.lp_save()
+
+        except AppError as e:
+            print("ERROR: " + str(e), file=sys.stderr)
 
         # Handle the user presses <ctrl-C>.
         #
