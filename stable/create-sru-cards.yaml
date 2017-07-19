@@ -24,8 +24,6 @@
             - 'xenial/aws'
             - 'xenial/gke'
             - 'xenial/azure'
-            - 'yakkety'
-            - 'yakkety/raspi2'
             - 'zesty'
             - 'zesty/raspi2'
         - name: 'Turn the crank - Intel Euclid'
