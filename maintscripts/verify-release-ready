@@ -542,6 +542,7 @@ class VerifyReleaseReady():
             'linux-meta-lts-vivid',
             'linux-meta-lts-wily',
             'linux-meta-lts-xenial',
+            'linux-meta-aws',
             'linux-meta-raspi2',
             'linux-meta-snapdragon',
             'linux-meta-hwe',
