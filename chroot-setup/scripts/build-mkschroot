@@ -213,6 +213,14 @@ case $SUITE in
 esac
 
 case $SUITE in
+artful)
+	case $ARCH in
+	amd64)	ADDPKG="python-sphinx python-sphinx-rtd-theme" ;;
+	esac
+	;;
+esac
+
+case $SUITE in
 	*) _SUITE=$SUITE
 		;;
 	esac
