@@ -186,7 +186,7 @@
         - linux-meta-raspi2
         - linux-signed
         series_version: '16.10'
-        supported: true
+        supported: false
 
     '16.04':
         backport-packages:
