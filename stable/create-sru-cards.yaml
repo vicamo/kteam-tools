@@ -46,3 +46,4 @@
           suffixes:
             - 'caracalla'
             - 'st. louis'
+        - name: 'Update master branches after promotion to -updates'
