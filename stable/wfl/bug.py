@@ -205,7 +205,7 @@ class WorkflowBug():
                 cinfo('    action - workflow task is closed -- removing -live tag', 'red')
 
                 # Drop the "-live" tag as this one is moving dead.
-                if 'kernel-release-tracking-bug-live' in bug.tags:
+                if 'kernel-release-tracking-bug-live' in s.lpbug.tags:
                     tags = s.lpbug.tags
                     tags.remove('kernel-release-tracking-bug-live')
                     s.lpbug.tags = tags
