@@ -781,9 +781,7 @@ class WorkflowBug():
             "series-version" : s.__package.test_series_version,
             "hwe"            : s.__package.hwe,
             "kernel-version" : s.pkg_version,
-            "version"        : s.pkg_version,
             "package"        : s.pkg_name,
-            "package-version": s.pkg_version,
             "flavour"        : flavour,
         }
 
