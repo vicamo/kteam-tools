@@ -206,10 +206,7 @@ class WorkflowBug():
 
                 # Drop the "-live" tag as this one is moving dead.
                 if 'kernel-release-tracking-bug-live' in s.lpbug.tags:
-                    tags = s.lpbug.tags
-                    tags.remove('kernel-release-tracking-bug-live')
-                    s.lpbug.tags = tags
-                    s.lpbug.lp_save()
+                    s.lpbug.tags.remove('kernel-release-tracking-bug-live')
 
     # save
     #
