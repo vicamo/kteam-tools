@@ -220,7 +220,8 @@ class Package():
                 s._cache[dep][pocket]['published'] = info[3]
                 s._cache[dep][pocket]['most_recent_build'] = info[4]
                 s._cache[dep][pocket]['status'] = info[5]
-                cinfo('%-8s : %-5s / %-10s    (%s : %s) [%s %s]' % (pocket, info[0], info[5], info[3], info[4], src_archive, src_pocket), 'cyan')
+                s._cache[dep][pocket]['version'] = info[6]
+                cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive, src_pocket), 'cyan')
             Clog.indent -= 4
 
         cdebug('')
@@ -285,12 +286,16 @@ class Package():
         cdebug('release: %s' % release, 'yellow')
         cdebug(' pocket: %s' % pocket, 'yellow')
 
-        ps = s.__get_published_sources(package, abi, archive, release, pocket)
+        # Do a loose match, we will select for the specific version we wanted
+        # in __find_matches but this way we have the published version for
+        # pocket emptyness checks.
+        ps = s.__get_published_sources(package, abi, archive, pocket=pocket)
         matches = s.__find_matches(ps, abi, release)
         if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
             fullybuilt = fullybuilt and s.__all_arches_built(matches)
+            version = matches[0].source_package_version
         else:
             fullybuilt   = False
             status  = ''
@@ -298,9 +303,12 @@ class Package():
             signer  = None
             published = None
             most_recent_build = None
+            version = None
+            if len(ps) > 0:
+                version = ps[0].source_package_version
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
-        return fullybuilt, creator, signer, published, most_recent_build, status
+        return fullybuilt, creator, signer, published, most_recent_build, status, version
 
     # __get_published_sources
     #
@@ -372,9 +380,10 @@ class Package():
             cdebug('exact version match required')
             for p in ps:
                 src_ver = p.source_package_version
-                cdebug('adding: %s' % src_ver, 'green')
-                matches.append(p)
-                match = True
+                if src_ver == release:
+                    cdebug('adding: %s' % src_ver, 'green')
+                    matches.append(p)
+                    match = True
 
         cleave('Sources::__find_matches (%s)' % match)
         return matches

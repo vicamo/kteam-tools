@@ -428,6 +428,29 @@ class WorkflowBug():
 
         return retval
 
+    # proposed_pocket_clear
+    #
+    @property
+    def proposed_pocket_clear(s):
+        '''
+        Check that the proposed pocket is either empty or contains the same version
+        as found in -updates/-release.
+        '''
+        retval = True
+
+        if s.sru_workflow_project:
+            pocket = 'Updates'
+        else:
+            pocket = 'Release'
+
+        bi = s.__package.build_info
+        for pkg in bi:
+            if bi[pkg]['Proposed']['version'] not in (None, bi[pkg][pocket]['version']):
+                cinfo('            %s has %s pending in -proposed.' % (pkg, bi[pkg]['Proposed']['version']), 'yellow')
+                retval = False
+
+        return retval
+
     # all_dependent_packages_fully_built
     #
     @property

@@ -52,6 +52,10 @@ class PromoteToProposed(Promoter):
             if not s.bug.all_dependent_packages_fully_built:
                 break
 
+            if not s.bug.is_proposed_only and not s.bug.proposed_pocket_clear:
+                cinfo('            Another kernel is currently pending in -proposed', 'yellow')
+                break
+
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block-ppa tag exists on this tracking bug', 'yellow')
                 break
