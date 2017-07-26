@@ -449,6 +449,19 @@ class WorkflowBug():
                 cinfo('            %s has %s pending in -proposed.' % (pkg, bi[pkg]['Proposed']['version']), 'yellow')
                 retval = False
 
+        # If proposed is not clear, consider if it is full due to a bug
+        # which has been duplicated against me.
+        if not retval:
+            # XXX: XXX: lpltk does NOT let me get to the duplicate list!?!?!?!
+            duplicates = s.lpbug.lpbug.duplicates
+            #duplicates = [ s.lp.get_bug('1703532') ]
+            for dup in duplicates:
+                dup_wb = WorkflowBug(s.lp, dup.id)
+                if dup_wb.__package.all_built_and_in_proposed:
+                    cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup.id,), 'yellow')
+                    retval = True
+                    break
+
         return retval
 
     # all_dependent_packages_fully_built
