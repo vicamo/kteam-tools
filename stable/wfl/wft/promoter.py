@@ -18,7 +18,7 @@ class Promoter(TaskHandler):
         retval = False
 
         if 'kernel-block' in s.bug.tags or 'kernel-block-proposed' in s.bug.tags:
-            return True
+            retval = True
 
         cleave(s.__class__.__name__ + '._kernel_block (%s)' % retval)
         return retval
@@ -31,7 +31,7 @@ class Promoter(TaskHandler):
         retval = False
 
         if 'kernel-block-ppa' in s.bug.tags:
-            return True
+            retval = True
 
         cleave(s.__class__.__name__ + '._kernel_block_ppa (%s)' % retval)
         return retval
@@ -44,7 +44,7 @@ class Promoter(TaskHandler):
         retval = False
 
         if 'kernel-unblock-ppa' in s.bug.tags:
-            return True
+            retval = True
 
         cleave(s.__class__.__name__ + '._kernel_unblock_ppa (%s)' % retval)
         return retval
