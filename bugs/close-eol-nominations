@@ -6,6 +6,7 @@ from getopt                         import getopt, GetoptError
 from ktl.utils                      import stdo, error
 from ktl.ubuntu                     import Ubuntu
 from launchpadlib.launchpad         import Launchpad
+from urllib2                        import HTTPError
 import os
 
 # CmdlineError
@@ -126,24 +127,34 @@ class CloseNominations():
     # main
     #
     def main(self, series):
-        try:
-            self.initialize(series)
-            # LP:320596 - Series.searchTasks() always returns an empty collection
-            # Should be fixed in later versions to not require omit_targeted=False
-            tasks = self.linux.searchTasks(omit_targeted=False)
-            for task in tasks:
-                print task.bug.id, task.bug.title
-                task.status = "Won't Fix"
-                task.bug.newMessage(subject=self.subject, content=self.comment)
-                task.lp_save()
+        retry = True
+        print "Starting pass ..."
+        while retry:
+            retry = False
+            try:
+                self.initialize(series)
+                # LP:320596 - Series.searchTasks() always returns an empty collection
+                # Should be fixed in later versions to not require omit_targeted=False
+                tasks = self.linux.searchTasks(omit_targeted=False)
+                for task in tasks:
+                    print task.bug.id, task.bug.title
+                    task.status = "Won't Fix"
+                    task.bug.newMessage(subject=self.subject, content=self.comment)
+                    task.lp_save()
 
-        # Handle the user presses <ctrl-C>.
-        #
-        except KeyboardInterrupt:
-            pass
+            except HTTPError as e:
+                if e.code == 503:
+                    retry = True
+                else:
+                    raise e
 
-        except Exit:
-            pass
+            # Handle the user presses <ctrl-C>.
+            #
+            except KeyboardInterrupt:
+                pass
+
+            except Exit:
+                pass
 
         return
 
