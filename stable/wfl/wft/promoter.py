@@ -36,6 +36,19 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '._kernel_block_ppa (%s)' % retval)
         return retval
 
+    def _kernel_unblock_ppa(s):
+        '''
+        If a 'kernel-unblock-ppa' tag exist return True.
+        '''
+        center(s.__class__.__name__ + '._kernel_unblock_ppa')
+        retval = False
+
+        if 'kernel-unblock-ppa' in s.bug.tags:
+            return True
+
+        cleave(s.__class__.__name__ + '._kernel_unblock_ppa (%s)' % retval)
+        return retval
+
     def _block_proposed(s):
         '''
         If any 'block-proposed' tags still exist return True.
