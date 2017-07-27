@@ -747,24 +747,25 @@ class WorkflowBug():
     # send_boot_testing_requests
     #
     def send_boot_testing_requests(s):
-        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
-            flavour = s.pkg_name.replace('linux-', '')
-            s.send_testing_request(op="boot", ppa=True, flavour=flavour)
-        else:
-            s.send_testing_request(op="boot", ppa=True)
-            if s.series == 'xenial':
-                s.send_testing_request(op="boot", ppa=True, flavour='lowlatency')
+        s.send_testing_requests(op="boot", ppa=True)
 
     # send_proposed_testing_requests
     #
     def send_proposed_testing_requests(s):
+        s.send_testing_requests(op="sru", ppa=False)
+
+    # send_testing_requests
+    #
+    def send_testing_requests(s, op="sru", ppa=False):
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
-            flavour = s.pkg_name.replace('linux-', '')
-            s.send_testing_request(op=flavour, flavour=flavour)
+            flavours = [ s.pkg_name.replace('linux-', '') ]
         else:
-            s.send_testing_request()
+            flavours = [ 'generic' ]
             if s.series == 'xenial':
-                s.send_testing_request(flavour='lowlatency')
+                flavours.append('lowlatency')
+
+        for flavour in flavours:
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
 
     # send_testing_request
     #
