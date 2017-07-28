@@ -166,6 +166,9 @@ class Package():
             # Work out if this is a proposed only entry.
             s.proposed_only = series_tag_entry.get('proposed_only', {}).get(s.name, False)
 
+            # Determine testing flavours.
+            s.test_flavours = series_tag_entry.get('test_flavours', {}).get(s.name, None)
+
             s.valid = True
 
         if not matched:

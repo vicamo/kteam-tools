@@ -177,6 +177,8 @@ class WorkflowBug():
             else:
                 cinfo('                        hwe: no', 'blue')
             cinfo('               routing_mode: %s' % (s.__package.routing_mode), 'blue')
+            cinfo('              test_flavours: %s' % (s.test_flavours()), 'blue')
+            cinfo('       test_flavours_legacy: %s' % (s.test_flavours_legacy()), 'blue')
             cinfo('')
 
             cinfo('    Targeted Project:', 'cyan')
@@ -754,9 +756,27 @@ class WorkflowBug():
     def send_proposed_testing_requests(s):
         s.send_testing_requests(op="sru", ppa=False)
 
-    # send_testing_requests
+    # test_flavours
     #
-    def send_testing_requests(s, op="sru", ppa=False):
+    def test_flavours(s):
+        flavours = s.__package.test_flavours
+        if not flavours:
+            # XXX: this makes no sense at all to be limited to xenial.
+            generic = (s.pkg_name == 'linux' or
+                       s.pkg_name.startswith('linux-hwe') or
+                       s.pkg_name.startswith('linux-lts-'))
+            if generic and s.series == 'xenial':
+                flavours = [ 'generic', 'lowlatency' ]
+            elif generic:
+                flavours = [ 'generic' ]
+            else:
+                flavours = [ s.pkg_name.replace('linux-', '') ]
+
+        return flavours
+
+    # test_flavours_legacy
+    #
+    def test_flavours_legacy(s):
         if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
             flavours = [ s.pkg_name.replace('linux-', '') ]
         else:
@@ -764,7 +784,12 @@ class WorkflowBug():
             if s.series == 'xenial':
                 flavours.append('lowlatency')
 
-        for flavour in flavours:
+        return flavours
+
+    # send_testing_requests
+    #
+    def send_testing_requests(s, op="sru", ppa=False):
+        for flavour in s.test_flavours_old():
             s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
 
     # send_testing_request
