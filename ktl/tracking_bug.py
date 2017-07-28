@@ -111,10 +111,10 @@ class TrackingBug:
 
         # Add the 'block-proposed' tag both for development kernels and for the
         # latest release series
-        if self.isdev or self.ub.last_release == self.targeted_series_name:
-            taglist.append('block-proposed')
-        if not self.isdev:
-            taglist.append('block-proposed-%s' % self.targeted_series_name)
+        #if self.isdev or self.ub.last_release == self.targeted_series_name:
+        #    taglist.append('block-proposed')
+        #if not self.isdev:
+        #    taglist.append('block-proposed-%s' % self.targeted_series_name)
         for itag in taglist:
             bug.tags.append(itag)
 
