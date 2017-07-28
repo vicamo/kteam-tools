@@ -797,7 +797,8 @@ class WorkflowBug():
     def send_testing_request(s, op="sru", ppa=False, flavour="generic"):
         msg = s.send_testing_message(op, ppa, flavour)
 
-        subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + " uploaded" if not ppa else " available in ppa"
+        where = " uploaded" if not ppa else " available in ppa"
+        subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + where
         s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
 
     # send_testing_message
