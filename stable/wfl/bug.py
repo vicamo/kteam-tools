@@ -789,7 +789,7 @@ class WorkflowBug():
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
-        for flavour in s.test_flavours_old():
+        for flavour in s.test_flavours_legacy():
             s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
 
     # send_testing_request
