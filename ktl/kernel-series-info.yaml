@@ -237,6 +237,10 @@
         proposed_only:
             linux-azure: true
             linux-gcp: true
+        test_flavours:
+            linux:
+            - generic
+            - lowlatency
         development: false
         kernel: 4.4.0
         name: xenial
