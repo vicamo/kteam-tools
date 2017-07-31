@@ -44,7 +44,19 @@ class PromoteToProposed(Promoter):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        while True:
+        while not retval:
+            if not s.bug.any_in_pocket('Proposed'):
+                break
+
+            s.task.status = 'Fix Committed'
+            s.task.timestamp('started')
+
+            s._add_block_proposed()
+
+            retval = True
+            break
+
+        while not retval:
             if not s.bug.all_dependent_packages_fully_built:
                 break
 
@@ -83,7 +95,19 @@ class PromoteToProposed(Promoter):
         center(s.__class__.__name__ + '._verify_promotion')
         retval = False
 
-        while True:
+        while not retval:
+            if s.task.status == 'Fix Committed':
+                break
+
+            if not s.bug.any_in_pocket('Proposed'):
+                break
+
+            s.task.status = 'Fix Committed'
+
+            retval = True
+            break
+
+        while not retval:
 
             # Check if packages were copied to the right pocket->component
             #
@@ -104,6 +128,7 @@ class PromoteToProposed(Promoter):
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             s.bug.phase = 'Promoted to proposed'
+
             retval = True
             break
 

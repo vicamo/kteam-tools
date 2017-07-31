@@ -534,6 +534,30 @@ class Package():
         cleave('Package::fully_built (%s : %s)' % (pkg, retval))
         return retval
 
+    # any_in_pocket
+    #
+    def any_in_pocket(s, pocket='Proposed'):
+        '''
+        Any dependent packages are in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.any_in_pocket')
+        retval = False
+
+        for pkg in s.srcs:
+            try:
+                pkg_seen = s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']
+            except KeyError:
+                pkg_seen = False
+
+            if pkg_seen:
+                cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
+                retval = True
+            else:
+                cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
+
+        cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
+        return retval
+
     # all_built_and_in_proposed
     #
     @property

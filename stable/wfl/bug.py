@@ -511,6 +511,16 @@ class WorkflowBug():
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
         return retval
 
+    # any_in_pocket
+    #
+    def any_in_pocket(s, pocket):
+        center(s.__class__.__name__ + '.any_in_pocket')
+
+        retval = s.__package.any_in_pocket(pocket) 
+
+        cleave(s.__class__.__name__ + '.any_in_pocket (%s)' % (retval))
+        return retval
+
     # ready_for_testing
     #
     @property
