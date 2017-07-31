@@ -195,7 +195,7 @@
             - '17.04'
             linux-hwe-edge:
             - linux
-            - '17.04'
+            - '17.10'
             linux-azure:
             - linux
             - '17.10'
