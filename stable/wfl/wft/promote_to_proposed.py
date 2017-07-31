@@ -45,12 +45,16 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while True:
+            if not s.bug.all_dependent_packages_fully_built:
+                break
+
+            if 'boot-testing-requested' not in s.bug.bprops:
+                s.bug.send_boot_testing_requests()
+                s.bug.bprops['boot-testing-requested'] = True
+
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
                     break
-
-            if not s.bug.all_dependent_packages_fully_built:
-                break
 
             if (not s.bug.is_proposed_only and
                 not s.bug.proposed_pocket_clear and
@@ -64,10 +68,6 @@ class PromoteToProposed(Promoter):
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
-
-            if 'boot-testing-requested' not in s.bug.bprops:
-                s.bug.send_boot_testing_requests()
-                s.bug.bprops['boot-testing-requested'] = True
 
             s._add_block_proposed()
 
