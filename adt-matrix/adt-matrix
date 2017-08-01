@@ -1003,23 +1003,20 @@ table.matrix td {{
         matrix = adt.matrix(results, limit=6, limit_url=html_all)
         with open(html + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
-
-            os.rename(html + '.new', html)
+        os.rename(html + '.new', html)
 
         # Detail matrix ...
         matrix = adt.matrix(results)
         with open(html_all + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
-
-            os.rename(html_all + '.new', html_all)
+        os.rename(html_all + '.new', html_all)
 
         # Latest results (as hints)
         page = adt.hints(results)
         seeds = series + '-' + package + '.seeds'
         with open(seeds + '.new', 'w') as hfd:
             print(page, end=None, file=hfd)
-
-            os.rename(seeds + '.new', seeds)
+        os.rename(seeds + '.new', seeds)
 
         # Latest results as json.
         latest = adt.hints_raw(results)

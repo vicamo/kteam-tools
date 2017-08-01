@@ -71,6 +71,8 @@ class AdtMatrixSeed(object):
         if 'dependencies' in record:
             for how in record['dependencies']:
                 for depends_package in record['dependencies'][how]:
+                    if not depends_package.startswith('linux'):
+                        continue
                     for record2 in state['sources']:
                         if record2['source'] == depends_package:
                             hier += self.britney_hierachy(state, record2, seen)
