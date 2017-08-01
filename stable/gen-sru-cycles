@@ -45,9 +45,9 @@ class TheApp(object):
         print('')
         print('cycle: %s through %s' % (sd.strftime('%d-%b'), ed.strftime('%d-%b')))
         print('====================================================================')
-        print('         %s   Last day for kernel commits for this cycle' % (sd.strftime('%d-%b')))
+        print('         %s   Last day for kernel commits for this cycle.' % (sd.strftime('%d-%b')))
         print('%s - %s   Kernel prep week.' % ((sd + timedelta(days=3)).strftime('%d-%b'), (sd + timedelta(days=8)).strftime('%d-%b')))
-        print('%s - %s   Bug verification & Regression testing..' % ((sd + timedelta(days=9)).strftime('%d-%b'), (sd + timedelta(days=21)).strftime('%d-%b')))
+        print('%s - %s   Bug verification & Regression testing.' % ((sd + timedelta(days=9)).strftime('%d-%b'), (sd + timedelta(days=21)).strftime('%d-%b')))
         print('         %s   Release to -updates.' % ((sd + timedelta(days=24)).strftime('%d-%b')))
         print('')
 
