@@ -178,7 +178,6 @@ class WorkflowBug():
                 cinfo('                        hwe: no', 'blue')
             cinfo('               routing_mode: %s' % (s.__package.routing_mode), 'blue')
             cinfo('              test_flavours: %s' % (s.test_flavours()), 'blue')
-            cinfo('       test_flavours_legacy: %s' % (s.test_flavours_legacy()), 'blue')
             cinfo('')
 
             cinfo('    Targeted Project:', 'cyan')
@@ -784,22 +783,10 @@ class WorkflowBug():
 
         return flavours
 
-    # test_flavours_legacy
-    #
-    def test_flavours_legacy(s):
-        if s.pkg_name in ['linux-azure', 'linux-gke', 'linux-aws', 'linux-gcp']:
-            flavours = [ s.pkg_name.replace('linux-', '') ]
-        else:
-            flavours = [ 'generic' ]
-            if s.series == 'xenial':
-                flavours.append('lowlatency')
-
-        return flavours
-
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
-        for flavour in s.test_flavours_legacy():
+        for flavour in s.test_flavours():
             s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
 
     # send_testing_request
