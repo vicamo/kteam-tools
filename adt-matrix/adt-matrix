@@ -39,6 +39,8 @@ from functools import cmp_to_key
 from datetime import datetime
 import shlex
 
+retry_url = "https://autopkgtest.ubuntu.com/request.cgi"
+
 def srchash(src):
     '''archive hash prefix for source package'''
 
@@ -801,7 +803,7 @@ table.matrix, table.matrix th, table.matrix td {{
                             #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
                             archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
 
-                            page += '&nbsp;<a href="https://autopkgtest.ubuntu.com/request.cgi/?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive)
+                            page += '&nbsp;<a href="{5}?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
                     else:
                         page += '<td>&nbsp;'
 
@@ -872,6 +874,61 @@ table.matrix, table.matrix th, table.matrix td {{
                         miss = True
             if not miss:
                 break
+
+        return page
+
+    def retry_urls(self, results):
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
+        if not len(verlist):
+            return ''
+
+        pkgver = verlist[-1]
+
+        entries = []
+        # Convert to a tagged form for future expansion.
+        for tpkg in results[pkgver]:
+            for arch in results[pkgver][tpkg]:
+                (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
+
+                triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+                archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
+                entry = "{6} {5}?release={0}&trigger={1}&arch={2}&package={3}{4}\n".format(self.series, '&trigger='.join(triggers), arch, tpkg, archive, retry_url, status)
+                entries.append((status + ' ' + arch + ' ' + tpkg, entry))
+
+        page = ''
+        for (key, entry) in sorted(entries):
+            page += entry
+
+        return page
+
+    def retry_cmds(self, results):
+        verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
+        if not len(verlist):
+            return ''
+
+        pkgver = verlist[-1]
+
+        entries = []
+        # Convert to a tagged form for future expansion.
+        for tpkg in results[pkgver]:
+            for arch in results[pkgver][tpkg]:
+                (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
+
+                triggers = [ self.meta ]
+                archive = "--ppa " + self.archive if self.archive != '-' else ''
+                entry = "run-autopkgtest{ppa} -s {series} -a {arch} --trigger {triggers} {package} # {status}\n".format(**{
+                    'ppa': archive,
+                    'series': self.series,
+                    'arch': arch,
+                    'triggers': '--trigger '.join(triggers),
+                    'package': tpkg,
+                    'status': status,
+                    })
+                entries.append((status + ' ' + arch + ' ' + tpkg, entry))
+
+        page = ''
+        for (key, entry) in sorted(entries):
+            page += entry
 
         return page
 
@@ -1024,6 +1081,19 @@ table.matrix td {{
         with open(latest_json + '.new', 'w') as cfd:
             json.dump(latest, cfd, indent=2)
         os.rename(latest_json + '.new', latest_json)
+
+        # retry ...
+        retry_urls = adt.retry_urls(results)
+        retry_urls_file = series + '-' + package + '.retry'
+        with open(retry_urls_file + '.new', 'w') as rfd:
+            print(retry_urls, end='', file=rfd)
+        os.rename(retry_urls_file + '.new', retry_urls_file)
+
+        retry_cmds = adt.retry_cmds(results)
+        retry_cmds_file = series + '-' + package + '.cmds'
+        with open(retry_cmds_file + '.new', 'w') as rfd:
+            print(retry_cmds, end='', file=rfd)
+        os.rename(retry_cmds_file + '.new', retry_cmds_file)
 
         # Summary index table.
         if migration in ('DEPENDS', 'BUILDING', 'NBS'):
