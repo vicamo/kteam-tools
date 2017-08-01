@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import yaml
 import argparse
+import os
 
 # the so-trello root dir needs to be on PYTHONPATH
 from trellotool.trellotool import TrelloTool
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='cli tool to create trello cards for SRU cycles')
     parser.add_argument('cycle', metavar='CYCLE', help='cycle tag', action='store')
     parser.add_argument('--config', metavar='CONFIG', help='config yaml file', required=False, action='store',
-                        default='create-sru-cards.yaml')
+                        default='%s/create-sru-cards.yaml' % os.path.dirname(__file__))
 
     args = parser.parse_args()
     SRUCardsCreator(args.config, args.cycle).create()
