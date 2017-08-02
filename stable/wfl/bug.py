@@ -796,7 +796,7 @@ class WorkflowBug():
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + where
-        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com')
+        s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com')
 
     # send_testing_message
     #
