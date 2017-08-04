@@ -1,0 +1,7 @@
+#!/bin/bash
+
+case "$1" in
+generate)
+    "$HOME/kteam-tools/kpi/bugs/bugs-groper" && "$HOME/kteam-tools/kpi/bugs/generate-prometheus-data" >kernel-bugs.txt
+    ;;
+esac
