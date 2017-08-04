@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 #
 
-from os                                 import getenv
+import sys
+import os
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', 'py2')))
+
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import error, basicConfig, INFO, DEBUG
-from ubuntu                             import Ubuntu
+from ktl.ubuntu                         import Ubuntu
 
 import datetime
 import sqlite3
-import json
+# import json
 
 # BugStats
 #
@@ -93,7 +96,7 @@ class BugStats():
 
 
 if __name__ == '__main__':
-    if getenv('DEBUG'):
+    if os.getenv('DEBUG'):
         LOGLEVEL = DEBUG
     else:
         LOGLEVEL = INFO
