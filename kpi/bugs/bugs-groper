@@ -1,0 +1,808 @@
+#!/usr/bin/env python3
+#
+
+from os                                 import getenv
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import error, info, debug, basicConfig, DEBUG, WARNING
+from urllib.request                     import urlopen
+from datetime                           import date
+from launchpadlib.launchpad             import Launchpad
+from lazr.restfulclient.errors          import NotFound
+
+import re
+import yaml
+import json
+import sqlite3
+
+# LP
+#
+class LP():
+    # __init__
+    #
+    def __init__(self):
+        '''
+        Connect to the launchpad service.
+        '''
+        # self.__lp = Launchpad.login_with('bjf', 'production', '.shadow-cache', timeout=5, max_failed_attempts=5)
+        self.__lp = Launchpad.login_anonymously('bjf', 'production', '.shadow-cache', timeout=5)
+        self.task_handler = None
+        self.__bug_task_handler = None
+        self.iterations = 0
+
+    # lp
+    #
+    @property
+    def lp(self):
+        '''
+        The object returned by Launchpad.login_with.
+        '''
+        return self.__lp
+
+    # browser
+    #
+    @property
+    def browser(self):
+        '''
+        The _browser object from the launchpad object returned by Launchpad.login_with.
+        '''
+        return self.lp._browser
+
+    # get_json_from_link
+    #
+    def get_json_from_link(self, link):
+        try:
+            if link is not None:
+                return json.loads(self.browser.get(link).decode("utf-8"))
+        except NotFound:
+            pass
+        return None
+
+    # register_query_results_handler
+    #
+    def register_query_results_handler(self, handler):
+        self.__bug_task_handler = handler
+
+    # search
+    #
+    def search(self, search_link):
+        retval = None
+        try:
+            retval = self.get_json_from_link(search_link)
+        # except (NotFound, HTTPError, ServerError, ClientError) as e:
+        except:
+            for attempt in range(5):
+                info("RETRY #%s" % str(attempt))
+                try:
+                    retval = self.get_json_from_link(search_link)
+                    break
+                except:
+                    continue
+        # except Exception as e:
+        #     error("Unexpected exception: %s" % str(e))
+
+        return retval
+
+    # perform_query
+    #
+    def perform_query(self, query):
+
+        # If this is the initial query, we need to set the last_link
+        # attribute.
+        #
+        if query.is_clean():
+            modified_since = ''
+            if query.start_time:
+                modified_since = '&modified_since="%s"' % query.start_time
+            query.last_link = query.search_link + modified_since
+            query.start_time = str(date.today())
+
+        # Do the search and go through all the results.
+        #
+        while True:
+            debug('Fetching another collection')
+            results = self.search(query.last_link)
+            self.iterations += 1
+            if results is None:
+                break
+
+            for task in results['entries']:
+                self.__bug_task_handler(task)
+
+            try:
+                query.last_link = results['next_collection_link']
+            except KeyError:
+                debug('No more collection links.')
+                break
+
+        query.is_clean(True)
+        query.last_link = ''
+        query.serialize()
+
+# LPQuery
+#
+class LPQuery():
+    # __init__
+    #
+    def __init__(self, filename):
+        '''
+        Using a properly formatted file initialize a new LaunchPad Query
+        object which maintains the state for a LP task search.
+        '''
+        with open(filename, 'r') as f:
+            self.__dict__ = json.loads(f.read())
+            self.filename = filename
+
+    # serialize
+    #
+    def serialize(self):
+        '''
+        Write the current state back to the query file.
+        '''
+        with open(self.filename, 'w') as f:
+            f.write(json.dumps(self.__dict__, indent=4, sort_keys=True))
+
+    # is_clean
+    #
+    def is_clean(self, val=None):
+        if val is not None:
+            self.state = val
+        return self.state
+
+# Ubuntu
+#
+class Ubuntu:
+
+    # The series information data is now encoded in a yaml file in this same directory
+    # and which is accessed via the URL you see below. If you make changes to the yaml
+    # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
+    # directory on kernel.ubuntu.com.
+    #
+    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    # url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
+    response = urlopen(url)
+    content = response.read()
+    if type(content) != str:
+        content = content.decode('utf-8')
+    data = yaml.load(content)
+    db = data
+
+    index_by_kernel_version = {}
+    for v in db:
+        index_by_kernel_version[db[v]['kernel']] = db[v]
+
+    index_by_series_name = {}
+    for v in db:
+        index_by_series_name[db[v]['name']] = db[v]
+
+    kernel_source_packages = []
+    for v in db:
+        for p in db[v]['packages']:
+            if p not in kernel_source_packages:
+                kernel_source_packages.append(p)
+
+    # lookup
+    #
+    def lookup(self, key):
+        """
+        Using the given key, find the matching record in the db and return that record.
+        Note, the key argument can be a series-name, series-version or a kernel-version.
+        """
+        if key in Ubuntu.db:
+            record = Ubuntu.db[key]
+        elif key in Ubuntu.index_by_kernel_version:
+            record = Ubuntu.index_by_kernel_version[key]
+        elif key in Ubuntu.index_by_series_name:
+            record = Ubuntu.index_by_series_name[key]
+        else:
+            raise KeyError(key)
+
+        return record
+
+    # is_development_series
+    #
+    def is_development_series(self, series):
+        '''
+        Returns True if the series passed in is the current series under development.
+        '''
+        try:
+            retval = self.index_by_series_name[series]['development']
+        except KeyError:
+            retval = False
+        return retval
+
+    # is_supported_series
+    #
+    def is_supported_series(self, series):
+        """
+        Lookup the given series and return whether it is still supported or not. Note, since
+        this uses the 'lookup' method, the series argument can be a series-name, series-version
+        or a kernel-version.
+        """
+        retval = False
+
+        rec = self.lookup(series)
+        retval = rec['supported']
+
+        return retval
+
+    # development_series
+    #
+    @property
+    def development_series(self):
+        """
+        Assume there is one, and only one, development series.
+        """
+        retval = None
+        for series in self.db:
+            try:
+                if self.db[series]['development']:
+                    retval = self.db[series]['name']
+                    break
+            except KeyError:
+                    pass
+
+        return retval
+
+    # development_series_version
+    #
+    @property
+    def development_series_version(self):
+        """
+        Assume there is one, and only one, development series.
+        """
+        retval = None
+        for series in self.db:
+            try:
+                if self.db[series]['development']:
+                    retval = series
+                    break
+            except KeyError:
+                    pass
+
+        return retval
+
+    # last_release
+    #
+    @property
+    def last_release(self):
+        """
+        Return the series name for the last release, i.e. development_series - 1
+        """
+        devel_series = self.development_series
+        devel_version = self.lookup(devel_series)['series_version']
+        (y, m) = devel_version.split('.')
+        if m == '10':
+            m = '04'
+        else:
+            y = str(int(y) - 1)
+            m = '10'
+        release_version = "%s.%s" % (y, m)
+        release_series = self.lookup(release_version)['name']
+
+        return release_series
+
+    # supported_series
+    #
+    @property
+    def supported_series(self):
+        """
+        A list of all the currently supported series names.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                retval.append(self.db[series]['name'])
+
+        return retval
+
+    # supported_series_version
+    #
+    @property
+    def supported_series_version(self):
+        """
+        A list of all the currently supported series names.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                retval.append(series)
+
+        return retval
+
+    # active_packages
+    #
+    @property
+    def active_packages(self):
+        """
+        A list of all the packages for all the supported series.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                for pkg in self.db[series]['packages']:
+                    if pkg not in retval:
+                        retval.append(pkg)
+
+        return retval
+
+    # series where that package-version is found
+    #
+    def series_name(self, package, version):
+        """
+        Return the series name where that package-version is found
+        """
+        retval = None
+
+        if package.startswith('linux-lts-') or package.startswith('linux-hwe'):
+            for entry in self.db.values():
+                # starting with trusty, the lts packages now include the series
+                # version instead of the series name, e.g: 3.16.0-23.31~14.04.2
+                # instead of 3.16.0-23.31~trusty1
+                expected = '.*~(%s\.\d+|%s\d+)' % (entry['series_version'], entry['name'])
+                if re.match(expected, version):
+                    retval = entry['name']
+        else:
+            for entry in self.db.values():
+                if version.startswith(entry['kernel']):
+                    retval = entry['name']
+                    series_version = entry['series_version']
+
+            # linux-azure is a backport that doesn't contain the 'upstream'
+            # series number on the package name, so we need to look for it
+            # first and then look for the target series.
+            if package.startswith('linux-azure'):
+                for entry in self.db.values():
+                    try:
+                        if len(set(['linux', series_version]) & set(entry['backport-packages'][package])) == 2:
+                            retval = entry['name']
+                    except KeyError:
+                        pass
+
+        return retval
+
+# KernelTools
+#
+class KernelTools():
+    ubuntu = Ubuntu()
+
+    # _ubuntu_series_lookup
+    #
+    @classmethod
+    def _ubuntu_series_lookup(cls, version):
+        """
+        Given a version find the corresponding series name and version. The version
+        could be a kernel version or a series version.
+
+        This method returns a (series_name, series_version) tuple.
+        """
+        debug(' . Looking up the series name for (%s)' % version)
+        series_name = None
+        series_version = None
+        if series_name is None:
+            m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', version)
+            if m is not None:
+                kver = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
+                if kver in cls.ubuntu.index_by_kernel_version:
+                    series_name    = cls.ubuntu.index_by_kernel_version[kver]['name']
+                    series_version = cls.ubuntu.index_by_kernel_version[kver]['series_version']
+                    debug('    - found kernel version in the db')
+            else:
+                debug('    - didn\'t match kernel version pattern')
+
+        if series_name is None:
+            m = re.search('([0-9+)\.([0-9]+)', version)
+            if m is not None:
+                dnum = m.group(1)
+                if dnum in cls.ubuntu.db:
+                    series_name    = cls.ubuntu.db[dnum]['name']
+                    series_version = cls.ubuntu.db[dnum]['series_version']
+                    debug('    - found series version in the db')
+            else:
+                debug('    - didn\'t match series version pattern')
+
+        if series_name is None:
+            try:
+                rec = cls.ubuntu.lookup(version)
+                series_name = rec['name']
+                series_version = rec['series_version']
+            except KeyError:
+                pass
+
+        debug('    - returning (%s)' % series_name)
+        return (series_name, series_version)
+
+    @classmethod
+    def _find_series_in_description(cls, lp_bug):
+        """
+        Look in the bugs description to see if we can determine which distro the
+        the user is running (hardy/intrepid/jaunty/karmic/lucid/etc.).
+        """
+        debug(' . Looking for the series in the description')
+        series_name = None
+        series_version = None
+
+        desc_lines = lp_bug['description'].split('\n')
+        for line in desc_lines:
+            # Sometimes there is a "DistroRelease:" line in the description.
+            #
+            m = re.search('DistroRelease:\s*(.*)', line)
+            if m is not None:
+                (series_name, series_version) = cls._ubuntu_series_lookup(m.group(1))
+                if series_name != '':
+                    break
+
+            # Sometimes there is the results of 'uname -a' or a dmesg in
+            # the description.
+            #
+            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if m is not None:
+                kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                if series_name != '':
+                    break
+
+            if 'Description:' in line:
+                m = re.search('Description:\s*([0-9]+\.[0-9]+)', line)
+                if m is not None:
+                    (series_name, series_version) = cls._ubuntu_series_lookup(m.group(1))
+                    if series_name != '':
+                        break
+
+            if 'Release:' in line:
+                m = re.search('Release:\s+([0-9]+\.[0-9]+)', line)
+                if m is not None:
+                    (series_name, series_version) = cls._ubuntu_series_lookup(m.group(1))
+                    if series_name != '':
+                        break
+
+            m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if m is not None:
+                kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                if series_name != '':
+                    break
+
+            # Sometimes it's just in the description
+            #
+            m = re.search('Ubuntu ((hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring)) [0-9]+\.[0-9]+', line)
+            if (m is not None):
+                series_name = m.group(1)
+                series_version = cls._ubuntu_series_version_lookup(series_name)
+
+        if series_name is None:
+            debug('     - Not found')
+
+        return (series_name, series_version)
+
+    # _ubuntu_series_version_lookup
+    #
+    @classmethod
+    def _ubuntu_series_version_lookup(cls, series_name):
+        debug(' . Looking up the series version for (%s)\n' % series_name)
+        retval = ''
+        for version in cls.ubuntu.index_by_kernel_version:
+            if series_name == cls.ubuntu.index_by_kernel_version[version]['name']:
+                retval = version
+                break
+        return retval
+
+    # _find_series_in_tags
+    #
+    @classmethod
+    def _find_series_in_tags(cls, lp_bug):
+        """
+        Search through all the tags on a bug to see if we can find the series that the
+        bug was filed against.
+        """
+        debug(' . Looking for the series in the tags')
+        series_name = None
+        series_version = None
+
+        if 'breezy' in lp_bug['tags']:
+            return ('breezy', '5.10')
+
+        for series in Ubuntu.index_by_series_name:
+            if series in lp_bug['tags']:
+                (series_name, series_version) = cls._ubuntu_series_lookup(series)
+                if series_name is not None:
+                    break
+
+        if series_name is None:
+            debug('     - Not found')
+
+        return (series_name, series_version)
+
+    # _find_series_in_title
+    #
+    @classmethod
+    def _find_series_in_title(cls, lp_bug):
+        """
+        Scan title for a pattern that looks like a distro name or version, and
+        return the newest release version found.
+        """
+        debug(' . Looking for the series in the title')
+        series_name = None
+        series_version = None
+        for rel_num, rel in cls.ubuntu.db.items():
+            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" % (rel['name'], rel_num.replace(".", "\."))
+            regex = re.compile(pat, re.IGNORECASE)
+            if regex.search(lp_bug['title']):
+                (series_name, series_version) = cls._ubuntu_series_lookup(rel['name'])
+
+        if series_name is None:
+            debug('     - Not found')
+
+        return (series_name, series_version)
+
+    @classmethod
+    def determine_series_name_and_version(cls, lp_bug):
+        series_name = None
+        series_version = None
+        debug("Enter determine_series_name_and_version")
+
+        if series_name is None:
+            (series_name, series_version) = cls._find_series_in_tags(lp_bug)
+
+        if series_name is None:
+            (series_name, series_version) = cls._find_series_in_description(lp_bug)
+
+        if series_name is None:
+            (series_name, series_version) = cls._find_series_in_title(lp_bug)
+
+        if series_name is None:
+            (series_name, series_version) = cls._find_series_in_attachments(lp_bug)
+
+        if series_name is None:
+            info("    Unable to determine the series-name / series-version")
+
+        debug("Leave determine_series_name_and_version")
+        return (series_name, series_version)
+
+    # _find_series_in_attachments
+    #
+    @classmethod
+    def _find_series_in_attachments(cls, lp_bug):
+        """
+        Look through the various files attached to the bug, by the original
+        submitter/owner and see if we can determine the distro from there.
+        """
+        debug(' . Looking for the series in the attachments')
+        series_name = None
+        series_version = None
+        kernel_version = ''
+
+        try:
+            bug_owner = cls.person_display_name(lp_bug['owner_link'])
+            if bug_owner is None:
+                raise # Will get eaten at the bottom
+
+            lp_attachments = cls.lp.get_json_from_link(lp_bug['attachments_collection_link'])
+            for attachment in lp_attachments['entries']:
+                debug('     - attachment: "%s"' % (attachment['title']))
+                try:
+                    # kern.log
+                    #
+                    m = re.search('kern.log]*', attachment['title'])
+                    if m is not None:
+                        if not cls.is_bug_owner(bug_owner, attachment):
+                            continue
+                        debug('         - examining')
+                        kernel_version = cls._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                            if series_name is not None:
+                                break
+
+                    # BootDmesg.txt
+                    #
+                    m = re.search('Boot[Dd]mesg[.txt|.log]*', attachment['title'])
+                    if m is not None:
+                        if not cls.is_bug_owner(bug_owner, attachment):
+                            continue
+                        debug('     - BootDmesg.log')
+                        kernel_version = cls._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                            if series_name is not None:
+                                break
+
+                    # Dmesg.txt / dmesg.log
+                    #
+                    m = re.search('[Dd]mesg[.txt|.log]*', attachment['title'])
+                    if m is not None:
+                        if not cls.is_bug_owner(bug_owner, attachment):
+                            continue
+                        debug('     - Dmesg.log')
+                        kernel_version = cls._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                            if series_name is not None:
+                                break
+
+                    # version.log
+                    #
+                    if series_name is None:
+                        if 'version' in attachment['title']:
+                            if not cls.is_bug_owner(bug_owner, attachment):
+                                continue
+                            debug('     - version.log')
+                            try:
+                                txt = LP.get_attachment_contents(attachment['data_link'])
+                                for line in txt:
+                                    m = re.search('Ubuntu\s+(\d+)\.(\d+)\.(\d+)\-(\d+)\.(\d+)\-', line)
+                                    if (m is not None):
+                                        debug('       - found')
+                                        kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                        break
+                            except:
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, lp_bug.id))
+                                pass
+                            if kernel_version is not None:
+                                (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                                if series_name is not None:
+                                    break
+
+                    # alsa-info
+                    #
+                    if series_name is None:
+                        if 'alsa-info' in attachment['title']:
+                            if not cls.is_bug_owner(bug_owner, attachment):
+                                continue
+                            debug('     - alsa-info.log')
+                            try:
+                                txt = LP.get_attachment_contents(attachment['data_link'])
+                                for line in txt:
+                                    m = re.search('Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', line)
+                                    if (m is not None):
+                                        debug('       - found')
+                                        kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                        break
+                            except:
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, lp_bug.id))
+                                pass
+                            if kernel_version is not None:
+                                (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                                if series_name is not None:
+                                    break
+
+                    # xorg.0.log
+                    #
+                    if series_name is None:
+                        m = re.search('[Xx]org\.0\.log.*', attachment['title'])
+                        if m is not None:
+                            if not cls.is_bug_owner(bug_owner, attachment):
+                                continue
+                            debug('     - Xorg.0.log')
+                            try:
+                                txt = LP.get_attachment_contents(attachment['data_link'])
+                                for line in txt:
+                                    if "Current Operating System" not in line:
+                                        continue
+                                    m = re.search('Linux \S+ ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+                                    if (m is not None):
+                                        debug('       - found')
+                                        kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                        break
+                            except:
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, lp_bug.id))
+                                pass
+                            if kernel_version != '':
+                                (series_name, series_version) = cls._ubuntu_series_lookup(kernel_version)
+                                if series_name is not None:
+                                    break
+
+                except:
+                    pass # Just eat any exceptions
+        except:
+            pass # Just eat any exceptions
+
+        if series_name is None:
+            debug('     - Not found')
+
+        return (series_name, series_version)
+
+# BugFinder
+#
+class BugFinder():
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(self, args):
+        self.args = args
+        self.lp = LP()
+
+        try:
+            self.sql = sqlite3.connect('bugs.db')
+            cursor = self.sql.cursor()
+            cursor.execute('''CREATE TABLE IF NOT EXISTS
+                              bugs(id INTEGER PRIMARY KEY, title TEXT, status TEXT, project TEXT, series TEXT)''')
+            self.sql.commit()
+        except Exception as e:
+            self.sql.rollback()
+            self.sql.close()
+            raise e
+
+    def determine_series(s, bug_id):
+
+        while True:
+            try:
+                lp_bug = s.lp.get_json_from_link('https://api.launchpad.net/1.0/bugs/' + str(bug_id))
+                break
+            except:
+                s.lp = LP()
+                print('retrying...')
+
+        (series_name, series_version) = KernelTools.determine_series_name_and_version(lp_bug)
+
+        if series_name is None:
+            retval = 'invalid'
+        else:
+            retval = series_name
+
+        return retval
+
+    # lp_task_handler
+    #
+    def lp_task_handler(self, lp_task):
+
+        # Get the bugid by taking the end of the URL.
+        #
+        bug_id = int(lp_task['bug_link'].split('/')[-1])
+
+        try:
+            with self.sql:
+                c = self.sql.cursor()
+                c.execute('SELECT * FROM bugs where id="%s"' % (bug_id))
+                all_rows = c.fetchall()
+                if len(all_rows) == 0:
+                    series = self.determine_series(bug_id)
+                    with self.sql:
+                        self.sql.execute('''INSERT INTO bugs(id, title, status, project, series)
+                                            VALUES(?,?,?,?,?)''', (bug_id, lp_task['title'], lp_task['status'], 'linux', series))
+        except sqlite3.IntegrityError:
+            print('Record already exists for %s' % bug_id)
+
+    # main
+    #
+    def main(self):
+        retval = 1
+        try:
+            q = LPQuery('all-kernel-bugs.q')
+            self.lp.register_query_results_handler(self.lp_task_handler)
+            self.lp.perform_query(q)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            error("")
+            error("Due to the above error(s), this script is unable to continue and is terminating.")
+            error("")
+
+        self.sql.close()
+        return retval
+
+if __name__ == '__main__':
+    if getenv('DEBUG'):
+        LOGLEVEL = DEBUG
+    else:
+        LOGLEVEL = WARNING
+    basicConfig(level=LOGLEVEL, format="%(levelname)s - %(message)s")
+
+    app_description = '''
+    '''
+    app_epilog = '''
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    args = parser.parse_args()
+
+    app = BugFinder(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
