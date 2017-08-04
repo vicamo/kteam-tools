@@ -4,6 +4,6 @@ case "$1" in
 generate)
     (cd /srv/kernel.ubuntu.com/www/kpi/bugs  &&
     "$HOME/kteam-tools/kpi/bugs/bugs-groper" &&
-    "$HOME/kteam-tools/kpi/bugs/generate-prometheus-data") >kernel-bugs.txt
+    "$HOME/kteam-tools/kpi/bugs/generate-prometheus-data" >kernel-bugs.txt)
     ;;
 esac
