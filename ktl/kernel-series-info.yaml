@@ -475,9 +475,7 @@
             linux-ti-omap4:
                 meta: linux-meta-ti-omap4
         derivative-packages:
-            linux:
-            - linux-ti-omap4
-            - linux-armadaxp
+            linux: []
         kernel: 3.2.0
         name: precise
         packages:
