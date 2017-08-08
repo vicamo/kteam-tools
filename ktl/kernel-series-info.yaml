@@ -233,7 +233,6 @@
             - linux-snapdragon
             - linux-aws
             - linux-gke
-            - linux-joule
         proposed_only:
             linux-azure: true
             linux-gcp: true
@@ -255,10 +254,8 @@
         - linux-aws
         - linux-azure
         - linux-gke
-        - linux-joule
         - linux-meta-aws
         - linux-meta-azure
-        - linux-meta-joule
         - linux-hwe-edge
         - linux-meta-hwe-edge
         - linux-signed-hwe-edge
@@ -269,7 +266,6 @@
         - pc-kernel
         - raspi2-kernel
         - snapdragon-kernel
-        - joule-kernel
         series_version: '16.04'
         supported: true
 
