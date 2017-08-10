@@ -43,7 +43,11 @@ class Ubuntu:
 
     index_by_kernel_version = {}
     for v in db:
-        index_by_kernel_version[db[v]['kernel']] = db[v]
+        if 'kernels' in db[v]:
+            for version in db[v]['kernels']:
+                index_by_kernel_version[version] = db[v]
+        else:
+            index_by_kernel_version[db[v]['kernel']] = db[v]
 
     index_by_series_name = {}
     for v in db:
@@ -218,9 +222,16 @@ class Ubuntu:
                     retval = entry['name']
         else:
             for entry in self.db.values():
-                if version.startswith(entry['kernel']):
-                    retval = entry['name']
-                    series_version = entry['series_version']
+                if 'kernels' in entry:
+                    for kversion in entry['kernels']:
+                        if version.startswith(kversion):
+                            retval = entry['name']
+                            series_version = entry['series_version']
+                            break
+                else:
+                    if version.startswith(entry['kernel']):
+                        retval = entry['name']
+                        series_version = entry['series_version']
 
             # linux-azure is a backport that doesn't contain the 'upstream'
             # series number on the package name, so we need to look for it
