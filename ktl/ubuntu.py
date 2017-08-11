@@ -46,6 +46,7 @@ class Ubuntu:
         if 'kernels' in db[v]:
             for version in db[v]['kernels']:
                 index_by_kernel_version[version] = db[v]
+            db[v]['kernel'] = db[v]['kernels'][0]
         else:
             index_by_kernel_version[db[v]['kernel']] = db[v]
 
