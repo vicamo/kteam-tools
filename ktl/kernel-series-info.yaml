@@ -133,6 +133,7 @@
         derivative-packages:
             linux: []
         development: true
+        kernel: 4.11.0
         kernels:
         - 4.11.0
         - 4.12.0
