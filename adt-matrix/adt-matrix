@@ -622,10 +622,10 @@ class AutoPackageTest(object):
                     hints = self.hint_match(ver, pkg, arch)
 
                     # HINTS: test hints -- looks and see if this test package/version has a hint.
-                    if not hints and status != 'GOOD':
+                    if not hints:
                         hints = self.hint_test_match(pkg, lversion, arch)
 
-                    if hints and hints[0] != '-':
+                    if hints and hints[0] != '-' and (hints[0] != 'SKIP' or status in ('REGR', 'REGN')):
                         #print("APW:", ver, pkg, arch, "override", hints)
                         (status, reason) = hints
 
