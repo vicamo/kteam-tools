@@ -20,6 +20,13 @@ if [ ! -d "$hints" ]; then
 else
 	(cd "$hints" && git checkout -f && git fetch origin && git reset --hard origin/master)
 fi
+if [ ! -d "$hints-britney" ]; then
+	bzr branch lp:~ubuntu-release/britney/hints-ubuntu "$hints-britney"
+else
+	(cd "$hints-britney" && bzr pull --overwrite)
+fi
+(cd "$hints-britney" && egrep -h '^force-badtest' *) | sed -e 's/^/britney /' \
+	>"$hints/primary.hints.d/devel--britney.conf"
 
 mkdir -p "$html"
 (
