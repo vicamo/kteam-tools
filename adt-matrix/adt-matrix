@@ -138,8 +138,9 @@ class AutoPackageTest(object):
         if self.map_archs and key in self.map_archs:
             self.archs = self.map_archs[key]
 
-        # Load up the hits file.
+        # Load up the hints file.
         self.hint_status = {}
+        self.hint_test = {}
         if hints and hints != '-':
             hints_list = []
             if os.path.isfile(hints):
@@ -184,6 +185,17 @@ class AutoPackageTest(object):
                                     for test_arch in test_archs.split(','):
                                         self.hint_status[(kernel_ver + ' ' + kernel_pkg, test_pkg, test_arch)] = (test_status, reason)
 
+                        elif args[0] == 'britney':
+                            if len(args) < 3:
+                                print("WARNING: hints syntax error: britney <cmd> <arg>...")
+                                print("         " + line.strip())
+                                continue
+                            if args[1] == 'force-badtest':
+                                for arg in args[2:]:
+                                    bits = arg.split('/') + ['all']
+                                    self.hint_test[bits[0], bits[1], bits[2]] = ('SKIP', 'britney')
+            #print(self.hint_status, file=sys.stderr)
+            #print(self.hint_test, file=sys.stderr)
 
     def log_error(self, msg):
         if self.verbose:
@@ -524,6 +536,19 @@ class AutoPackageTest(object):
         return None
 
 
+    def hint_test_match(self, pkg, ver, arch):
+        for hint in [
+                (pkg, ver, arch),
+                (pkg, 'all', arch),
+                (pkg, ver, 'all'),
+                (pkg, 'all', 'all'),
+            ]:
+            if hint in self.hint_test:
+                return self.hint_test[hint]
+
+        return None
+
+
     def results_data(self):
         result = {}
         verlist = self.version_list()
@@ -595,6 +620,11 @@ class AutoPackageTest(object):
 
                     # HINTS: override results using hint data.
                     hints = self.hint_match(ver, pkg, arch)
+
+                    # HINTS: test hints -- looks and see if this test package/version has a hint.
+                    if not hints and status != 'GOOD':
+                        hints = self.hint_test_match(pkg, lversion, arch)
+
                     if hints and hints[0] != '-':
                         #print("APW:", ver, pkg, arch, "override", hints)
                         (status, reason) = hints
