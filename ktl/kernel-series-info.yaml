@@ -231,14 +231,18 @@
                 signed: linux-signed-hwe-edge
             linux-gcp:
                 meta: linux-meta-gcp
+            linux-kvm:
+                meta: linux-meta-kvm
         derivative-packages:
             linux:
             - linux-raspi2
             - linux-snapdragon
             - linux-aws
             - linux-gke
+            - linux-kvm
         proposed_only:
             linux-azure: true
+            linux-kvm: true
         test_flavours:
             linux:
             - generic
@@ -265,6 +269,8 @@
         - linux-hwe
         - linux-meta-hwe
         - linux-signed-hwe
+        - linux-kvm
+        - linux-meta-kvm
         snaps:
         - pc-kernel
         - raspi2-kernel
