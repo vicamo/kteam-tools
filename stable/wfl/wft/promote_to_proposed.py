@@ -32,6 +32,7 @@ class PromoteToProposed(Promoter):
         s.jumper['Confirmed']     = s._verify_promotion
         s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
+        s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
 
         s.ubuntu = Ubuntu()
