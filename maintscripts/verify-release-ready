@@ -12,7 +12,6 @@ from ktl.ubuntu                         import Ubuntu
 from ktl.termcolor                      import colored
 from launchpadlib.launchpad             import Launchpad
 import re
-import ConfigParser
 
 # AppError
 #
@@ -196,28 +195,18 @@ class VerifyReleaseReady():
         # Construct the expected tag, and verify that it matches the
         # latest commit tag
         #
-        config = ConfigParser.RawConfigParser()
-        if config.read('debian/gbp.conf'):
-            expect_tag_format = config.get('buildpackage', 'debian-tag')
-
-            # juergh: Derivatives have a different tag format, e.g., Ubuntu-raspi2-<version>
-            pkg = cl1['package']
-            if pkg.startswith('linux-') and not pkg.startswith('linux-lts-'):
-                deriv = pkg[6:]   # strip 'linux-'
-                expect_tag_format = expect_tag_format.replace('%(version)',
-                                                              deriv + '-%(version)')
-
-            v = version
-            # Starting with trusty, the lts backports closing commit and the tag
-            # contain '~<series_version>' (e.g. '~14.04.1')
-            if 'linux-lts-' in cl1['package']:
-                v = cl1['version']
-            expect_tag = expect_tag_format % {'version' : v}
-            s.verify_tag(log, expect_tag)
+        pkg = cl1['package']
+        if pkg.startswith('linux-lts'):
+            tag_prefix = 'Ubuntu-lts'
+            v = cl1['version']
+        elif pkg.startswith('linux-hwe'):
+            tag_prefix = 'Ubuntu-hwe'
+            v = cl1['version']
         else:
-            s.status('missing debian/gbp.conf', 'warning')
-            if closed:
-                s.verify_tag(log, expected_re)
+            tag_prefix = pkg.replace('linux', 'Ubuntu')
+            v = version
+        expect_tag = "%s-%s" % (tag_prefix, v.replace('~', '_'))
+        s.verify_tag(log, expect_tag)
 
         # Look to see if a tracking bug has been added to the changelog
         #
