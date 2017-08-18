@@ -28,6 +28,8 @@
             - 'zesty/raspi2'
         - name: 'Turn the crank - Intel Euclid'
           description: 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
+        - name: 'Review regression tests results'
+        - name: 'Review automated (ADT) tests results'
         - name: 'Produce kernel snaps'
           suffixes:
             - 'caracalla'
