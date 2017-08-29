@@ -138,6 +138,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-ti-omap4-" + version
         elif "-aws" in srcpkg:
             v = "Ubuntu-aws-" + version
+        elif "-gcp" in srcpkg:
+            v = "Ubuntu-gcp-" + version
         elif "-gke" in srcpkg:
             v = "Ubuntu-gke-" + version
         elif "-azure" in srcpkg:
