@@ -23,6 +23,7 @@
             - 'xenial/hwe'
             - 'xenial/aws'
             - 'xenial/gke'
+            - 'xenial/gcp'
             - 'xenial/azure'
             - 'zesty'
             - 'zesty/raspi2'
