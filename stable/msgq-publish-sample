@@ -44,7 +44,6 @@ examples:
             "date"           : "2015-01-26 20:09:48.928018",
             "series-name"    : "trusty",
             "series-version" : "10.04",
-            "hwe"            : False,
             "bug id"         : 1410384,
             "url"            : "https://bugs.launchpad.net/bugs/1410384",
             "version"        : "3.13.0-45.74",

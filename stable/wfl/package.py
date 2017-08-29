@@ -118,7 +118,6 @@ class Package():
 
         #info('     Extract package info\n')
         setattr(s, 'valid', False)
-        setattr(s, 'hwe', False)
         m = ver_rc.search(txt)
         if m is not None:
             matched = True
@@ -132,16 +131,11 @@ class Package():
             setattr(s, 'kernel', m.group(2))
             setattr(s, 'abi', m.group(4))
 
-            if m.group(6):
-                s.hwe = True
-
             # Work out what series this package is published in...
             series_tag_entry = None
             for tag in lpbug.tags:
                 if tag in s.ubuntu.index_by_series_name:
                     series_tag_entry = s.ubuntu.index_by_series_name[tag]
-            # XXX: Bodge: we pass the source series to the test
-            # infrastructure and a hwe flag to tell it that is wrong ?
             test_tag_entry = series_tag_entry
             if ('backport-packages' in series_tag_entry and
                 s.name in series_tag_entry['backport-packages']):

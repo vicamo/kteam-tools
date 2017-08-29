@@ -171,11 +171,6 @@ class WorkflowBug():
             else:
                 cinfo('                 derivative: no', 'blue')
 
-            if s.__package.hwe:
-                cinfo('                        hwe: yes', 'blue')
-                cinfo('                 hwe series: %s' % (s.__package.test_series), 'blue')
-            else:
-                cinfo('                        hwe: no', 'blue')
             cinfo('               routing_mode: %s' % (s.__package.routing_mode), 'blue')
             cinfo('              test_flavours: %s' % (s.test_flavours()), 'blue')
             cinfo('')
@@ -814,7 +809,6 @@ class WorkflowBug():
             "date"           : str(datetime.utcnow()),
             "series-name"    : s.__package.test_series,
             "series-version" : s.__package.test_series_version,
-            "hwe"            : s.__package.hwe,
             "kernel-version" : s.pkg_version,
             "package"        : s.pkg_name,
             "flavour"        : flavour,
