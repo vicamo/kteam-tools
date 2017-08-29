@@ -526,6 +526,7 @@ class VerifyReleaseReady():
             'linux-hwe-edge',
             'linux-joule',
             'linux-azure',
+            'linux-gcp',
             'linux-gke'
         ]
 
@@ -549,6 +550,7 @@ class VerifyReleaseReady():
             'linux-meta-hwe-edge',
             'linux-meta-joule',
             'linux-meta-azure',
+            'linux-meta-gcp',
             'linux-meta-gke',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
