@@ -25,6 +25,7 @@
             - 'xenial/gke'
             - 'xenial/gcp'
             - 'xenial/azure'
+            - 'xenial/kvm'
             - 'zesty'
             - 'zesty/raspi2'
         - name: 'Turn the crank - Intel Euclid'
