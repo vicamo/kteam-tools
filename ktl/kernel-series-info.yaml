@@ -233,6 +233,8 @@
                 meta: linux-meta-gcp
             linux-kvm:
                 meta: linux-meta-kvm
+            linux-euclid:
+                meta: linux-meta-euclid
         derivative-packages:
             linux:
             - linux-raspi2
@@ -240,6 +242,7 @@
             - linux-aws
             - linux-gke
             - linux-kvm
+            - linux-euclid
         test_flavours:
             linux:
             - generic
@@ -268,6 +271,8 @@
         - linux-signed-hwe
         - linux-kvm
         - linux-meta-kvm
+        - linux-euclid
+        - linux-meta-euclid
         snaps:
         - pc-kernel
         - raspi2-kernel
