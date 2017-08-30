@@ -516,7 +516,8 @@ class VerifyReleaseReady():
             'linux-joule',
             'linux-azure',
             'linux-gcp',
-            'linux-gke'
+            'linux-gke',
+            'linux-kvm'
         ]
 
         non_kernel_packages = [
@@ -541,6 +542,7 @@ class VerifyReleaseReady():
             'linux-meta-azure',
             'linux-meta-gcp',
             'linux-meta-gke',
+            'linux-meta-kvm',
             'linux-signed-lts-raring',
             'linux-signed-lts-quantal',
             'linux-signed-lts-saucy',
