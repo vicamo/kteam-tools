@@ -148,6 +148,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-caracalla-" + version
         elif "-joule" in srcpkg:
             v = "Ubuntu-joule-" + version
+        elif "-kvm" in srcpkg:
+            v = "Ubuntu-kvm-" + version
         else:
             v = "Ubuntu-" + version
 	print(cmd + " " + v)
