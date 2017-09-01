@@ -69,8 +69,7 @@ class PromoteToProposed(Promoter):
                 if not s.master_bug_ready_for_proposed():
                     break
 
-            if (not s.bug.is_proposed_only and
-                not s.bug.proposed_pocket_clear and
+            if (not s.bug.proposed_pocket_clear and
                 not s._kernel_unblock_ppa()):
                 cinfo('            Another kernel is currently pending in -proposed', 'yellow')
                 break
