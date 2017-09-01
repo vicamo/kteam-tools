@@ -242,7 +242,6 @@
             - linux-kvm
         proposed_only:
             linux-azure: true
-            linux-kvm: true
         test_flavours:
             linux:
             - generic
