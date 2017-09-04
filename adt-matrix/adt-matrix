@@ -193,7 +193,8 @@ class AutoPackageTest(object):
                             if args[1] == 'force-badtest':
                                 for arg in args[2:]:
                                     bits = arg.split('/') + ['all']
-                                    self.hint_test[bits[0], bits[1], bits[2]] = ('SKIP', 'britney')
+                                    description = 'britney -- force-badtest ' + '/'.join(bits[0:2])
+                                    self.hint_test[bits[0], bits[1], bits[2]] = ('SKIP', description)
             #print(self.hint_status, file=sys.stderr)
             #print(self.hint_test, file=sys.stderr)
 
