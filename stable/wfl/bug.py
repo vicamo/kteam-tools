@@ -458,6 +458,8 @@ class WorkflowBug():
             #duplicates = [ s.lp.get_bug('1703532') ]
             for dup in duplicates:
                 dup_wb = WorkflowBug(s.lp, dup.id)
+                if not dup_wb.is_valid:
+                    continue
                 if dup_wb.__package.all_built_and_in_proposed:
                     cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup.id,), 'yellow')
                     retval = True
