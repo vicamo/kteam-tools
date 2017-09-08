@@ -345,6 +345,9 @@
             linux-lts-xenial:
             - linux
             - '16.04'
+            linux-aws:
+            - linux
+            - '16.04'
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -363,6 +366,8 @@
             linux-lts-xenial:
                 meta: linux-meta-lts-xenial
                 signed: linux-signed-lts-xenial
+            linux-aws:
+                meta: linux-meta-aws
         derivative-packages:
             linux: []
         development: false
