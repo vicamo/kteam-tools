@@ -240,8 +240,6 @@
             - linux-aws
             - linux-gke
             - linux-kvm
-        proposed_only:
-            linux-azure: true
         test_flavours:
             linux:
             - generic
