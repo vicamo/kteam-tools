@@ -847,12 +847,12 @@ class WorkflowBug():
 
         if ppa:
             msg['pocket'] = 'ppa'
-            if s.pkg_name in ['linux-lts-trusty'] or s.pkg_name in ['precise']:
+            if s.series in ['precise']:
                 msg['ppa'] = 'ppa:canonical-kernel-esm/ppa'
             else:
                 msg['ppa'] = 'ppa:canonical-kernel-team/ppa'
             msg['key']    = 'kernel.published.ppa.%s' % s.series
-        elif s.pkg_name in ['linux-lts-trusty'] or s.pkg_name in ['precise']:
+        elif s.series in ['precise']:
             msg['pocket'] = 'ppa'
             msg['ppa']    = 'ppa:canonical-kernel-esm/proposed'
             msg['key']    = 'kernel.published.ppa.%s' % s.series
