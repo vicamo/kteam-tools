@@ -105,10 +105,15 @@ class KernelPackages:
             key2 = seriesname + ' ' + sourcename.replace('linux', 'linux-meta')
             if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) > 0:
                 # If this build is complete we no longer need to scan it.
+
                 complete = True
+                build_seen = False
                 for build in pub.getBuilds():
+                    build_seen = True
                     if build.buildstate not in ('Successfully built', 'Failed to build', 'Failed to upload', 'Cancelled build'):
                         complete = False
+                if not build_seen:
+                    complete = False
                 if complete and key not in s.cache_version or s.cache_version[key] != sver:
                     s.cache_version[key] = sver
                     s.dirty = True
