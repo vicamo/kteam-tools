@@ -42,6 +42,7 @@
             - 'xenial/dragonboard-kernel'
             - 'xenial/aws'
             - 'xenial/gke'
+            - 'xenial/gcp'
           description: 'Update the kernel snap version on the repo'
         - name: 'SRU bug spamming'
           description: 'Run spam-proposed-release-bugs for the series on -proposed'
