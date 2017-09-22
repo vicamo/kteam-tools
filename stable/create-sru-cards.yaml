@@ -16,6 +16,7 @@
           suffixes:
             - 'precise/lts-trusty'
             - 'trusty'
+            - 'trusty/aws'
             - 'trusty/lts-xenial'
             - 'xenial'
             - 'xenial/raspi2'
