@@ -1,0 +1,80 @@
+#!/bin/bash
+P='cod-changeset-build'
+
+if [ "$#" -ne 5 ]; then
+	echo "Usage: $0 <series> <package> <sha> <id> <title>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+. "$here/lib-build"
+. "$here/lib-chroot"
+
+series="$1"
+package="$2"
+sha="$3"
+id="$4"
+title="$5"
+
+master_tree_select
+
+result="../RESULT"
+rm -rf "$result"
+mkdir -p "$result"
+
+echo "$P '$series' '$package' '$sha' '$id' '$title'" >"$result/REBUILD"
+
+# Ensure we have the commit identified.
+repo_remote_update_list $series
+
+build_release="$series"
+
+# Make a branch at the specified sha.
+git checkout HEAD^ --
+git branch -D "changeset-$id" || true
+git checkout -b "changeset-$id" "$sha"
+
+# Clean the tree so we can tell what architectures need building.
+git clean -x -f -d
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean
+archs=$( grep Architecture debian/control | awk '{ for (c=2; c <= NF; c++) { print $c } }' | sort -u )
+
+for arch in $archs
+do
+	case "$arch" in
+	all|x32)	continue ;;
+	amd64)		build=-b ;;
+	*)		build=-B ;;
+	esac
+
+	case "$arch" in
+	amd64|i386)	barch="$arch" ;;
+	*)		barch="amd64" ;;
+	esac
+
+	echo "build $barch on $barch ..."
+
+	# Make things shiney.
+	git clean -x -f -d
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean
+	do_chroot "$build_release-$barch" \
+		dpkg-buildpackage -a "$arch" "$build" -d 2>&1 | tee -a "$result/$arch.log"
+	rc="$?"
+	echo "$rc" >"$result/$arch.status"
+	echo "build $barch on $barch ... rc=$rc"
+done
+
+# Clean out any build artifacts ...
+rm -f "$master_main"/*.deb "$master_main"/*.udeb "$master_main"/*.tar.gz
+
+# Output.
+publish="$HOME/public_html/test-build/$series/$package/$id--$sha"
+mkdir -p "$publish"
+mv "$result"/* "$publish"

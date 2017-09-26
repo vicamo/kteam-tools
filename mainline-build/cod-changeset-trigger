@@ -1,0 +1,78 @@
+#!/bin/bash
+P="cod-changeset-trigger"
+
+set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+. "$here/lib-build"
+
+# Ensure we have our state directory.
+mkdir -p "$master_main/state/changeset"
+
+#
+# UBUNTU SOURCE: tips of the ubuntu trees et al
+#
+now_tm=`date +%s`
+date=`date +%Y%m%d%H%M`
+
+repo="linux"
+
+while read series package branch
+do
+	current="${series}_${package}_${branch}"
+	curr="$master_main/state/changeset/$current"
+	branch="$series/$branch"
+
+	repo_update_ubuntu "$repo" "$series"
+
+	tip=$( cd "$master_main/$repo" && git log -1 --format=%H "$branch" )
+	if [ ! -f "$curr" ]; then
+		echo "$tip" >"$curr.new"
+		mv -f "$curr.new" "$curr"
+		continue
+	fi
+	prev=$( cat "$curr" )
+
+	echo "repo<$repo> branch<$branch> tip<$tip> prev<$prev> curr<$curr>"
+
+	# If the tip matches our last upload then there is nothing to do.
+	if [ "$tip" = "$prev" ]; then
+		echo "nominal tip unchanged, skipping"
+		continue
+	fi
+
+	( cd "$master_main/$repo" && git log "$prev..$tip" ) | "$here/git-changeset" | \
+	while read sha1 changeset title
+	do
+		# Queue up the build.
+		echo "$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$sha1" "$changeset" "$title"
+	done
+		
+	# Commit the new tip.
+	echo "$tip" >"$curr.new"
+	mv -f "$curr.new" "$curr"
+
+done <<EOL
+artful linux master-next
+zesty linux master-next
+xenial linux master-next
+trusty linux master-next
+precise linux master-next
+EOL
+
+#pre-proposed wily linux master-next linux-meta master -
+#pre-proposed utopic linux master-next linux-meta master no-release
+#pre-proposed lucid linux master-next linux-meta master no-release
+#pre-proposed lucid linux-lbm master no-release
+#pre-proposed utopic linux goldfish linux-meta goldfish -
+#pre-proposed utopic linux grouper linux-meta grouper -
+#pre-proposed utopic linux maguro linux-meta maguro -
+#pre-proposed utopic linux mako linux-meta mako -
+#pre-proposed utopic linux manta linux-meta manta -
+#pre-proposed raring linux-lbm master no-release
+#pre-proposed raring linux master-next linux-meta master no-release

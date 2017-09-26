@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import os
+import sys
+
+import codecs
+import urllib.request
+import json
+
+import textwrap
+
+sys.stdin = codecs.getreader("utf-8")(sys.stdin.detach())
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+
+entries = []
+def add_entry(entry):
+    if entry and 'ignore' not in entry:
+        if 'bugs' not in entry and 'cves' in entry:
+            for cve in entry['cves']:
+                if cve not in bugs:
+                    bugs.append(cve)
+        entries.append(entry)
+
+# Suck up the git log output and extract the information we need.
+bugs = []
+entry = None
+subject_wait = False
+for line in sys.stdin:
+    if line.startswith('commit '):
+        add_entry(entry)
+        entry = {}
+        subject_wait = True
+        entry['commit'] = line.split()[1]
+
+    elif line.startswith('Author: '):
+        bits = line.strip().split(maxsplit=1)
+        entry['author'] = bits[1]
+
+    elif subject_wait and line.startswith('    '):
+        subject_wait = False
+        entry['subject'] = line.strip()
+
+    elif line.startswith('    BugLink: ') and 'launchpad.net' in line:
+        bits = line.strip().split(maxsplit=1)
+        bits = bits[1].split('/')
+        entry.setdefault('bugs', []).append(bits[-1])
+
+        # Accumulate bug numbers.
+        if bits[-1] not in bugs:
+            bugs.append(bits[-1])
+
+    elif line.startswith('    CVE-'):
+        entry.setdefault('cves', []).append(line.strip())
+
+    elif line.startswith('    Ignore:'):
+        entry['ignore'] = True
+
+add_entry(entry)
+
+##entries.reverse()
+
+# Go through the entries and clear out authors for upstream commits.
+current = ['-']
+for entry in entries:
+    bugs = set(entry.get('bugs', entry.get('cves', ['-'])))
+    commit = entry['commit']
+    if bugs == current:
+        continue
+    current = bugs
+    print(commit, ','.join(bugs), entry['subject'])
