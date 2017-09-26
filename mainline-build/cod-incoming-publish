@@ -153,6 +153,13 @@ if [ -d "$HOME/incoming/config" ]; then
 	find "$HOME/incoming/config" -empty -type d -delete
 fi
 
+# Copy in the incoming test-build results.
+mkdir -p "$HOME/public_html/test-build"
+if [ -d "$HOME/incoming/test-build" ]; then
+	rsync -v -a --remove-source-files "$HOME/incoming/test-build/" "$HOME/public_html/test-build/"
+	find "$HOME/incoming/test-build" -empty -type d -delete
+fi
+
 # Finally re-evaluate any 'current' links.
 (
 	cd "$outgoing" || exit 1
