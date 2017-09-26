@@ -29,4 +29,9 @@ esac
 #
 "$here/cod-source-trigger"
 
+#
+# UBUNTU CHANGESET: build testing per changeset
+#
+"$here/cod-changeset-trigger"
+
 echo "$P: trigger run complete"
