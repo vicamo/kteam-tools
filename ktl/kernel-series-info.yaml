@@ -273,10 +273,6 @@
         - linux-meta-kvm
         - linux-euclid
         - linux-meta-euclid
-        snaps:
-        - pc-kernel
-        - raspi2-kernel
-        - snapdragon-kernel
         series_version: '16.04'
         supported: true
         lts: true
