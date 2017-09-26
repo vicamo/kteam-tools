@@ -17,6 +17,6 @@ exec ./mainline-worker-kmsgq \
 	--command mainline-build \
 	--command mainline-flush \
 	--command cod-mainline-native-source \
-	--command cod-changeset-trigger \
+	--command cod-changeset-build \
 	`hostname` mainline-todo \
 	"$@"
