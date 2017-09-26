@@ -25,7 +25,7 @@ done
 if [ "$results" = 1 ]; then
 	echo "$(date --rfc-3339=seconds) $P: syncing results to kernel.ubuntu.com ..."
 	rsync -e "ssh -i $key" -a -v $HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
-		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native"
+		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native" "$HOME/public_html/test-build"
 fi
 
 echo "$(date --rfc-3339=seconds) $P: job complete"
