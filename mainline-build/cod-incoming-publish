@@ -163,11 +163,11 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		build=${build#./}
 
 		echo "$P: $build: test-build publishing ..."
-		announce=2
+		announce='build'
 		if [ -d "$out/test-build/$build" ]; then
 			echo "$P: $build: result already published, removing previous ..."
 			rm -rf "$out/test-build/$build"
-			announce=1
+			announce='rebuild'
 		fi
 		mkdir -p "$out/test-build/`dirname "$build"`"
 		mv "$incoming/test-build/$build" "$out/test-build/$build"
