@@ -60,9 +60,9 @@ add_entry(entry)
 ##entries.reverse()
 
 # Go through the entries and clear out authors for upstream commits.
-current = ['-']
+current = ['None']
 for entry in entries:
-    bugs = set(entry.get('bugs', entry.get('cves', ['-'])))
+    bugs = set(entry.get('bugs', entry.get('cves', ['None'])))
     commit = entry['commit']
     if bugs == current:
         continue
