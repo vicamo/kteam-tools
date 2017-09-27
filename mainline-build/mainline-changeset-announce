@@ -1,0 +1,46 @@
+#!/usr/bin/python
+from __future__                         import print_function
+import smtplib
+import sys
+import os
+from ktl.shanky                         import send_to_shankbot
+
+build = sys.argv[1]
+reason = sys.argv[2]
+
+summary = os.path.join(build, 'SUMMARY')
+
+(build, commit) = os.path.basename(build).split('--')
+
+params = {
+    'build':    build,
+    'commit':   commit,
+    'reason':   reason,
+}
+
+status = []
+overall_status = 'succeeded'
+with open(summary) as bfd:
+    for line in bfd:
+        args = line.strip().split()
+        if args[0] == 'Status:':
+            if int(args[2]) != 0:
+                overall_status = 'failed'
+                state = 'failed'
+            else:
+                state = 'good'
+            status.append(args[1] + ' ' + state + ' (rc=' + str(args[2]) + ')')
+
+        elif args[0] == 'Series:':
+            params['series'] = args[1]
+
+        elif args[0] == 'Package:':
+            params['package'] = args[1]
+
+params['status'] = status
+params['overall_status'] = overall_status
+
+# Send to shanky for publication in IRC.
+msg = "test rebuild: {series} {package} {commit} {reason} complete {overall_status}\n".format(**params)
+##print(msg)
+send_to_shankbot(msg)
