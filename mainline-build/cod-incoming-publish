@@ -15,6 +15,7 @@ incoming="$HOME/incoming"
 lock_tmp="$incoming/.LOCK-$$"
 lock="$incoming/.LOCK"
 
+out="$HOME/public_html"
 outgoing="$HOME/public_html/mainline"
 
 # One at a time please...
@@ -35,7 +36,7 @@ do
 	build=`dirname "$commit"`
 	build=${build#./}
 
-	echo "$P: $build: publishing ..."
+	echo "$P: $build: mainline publishing ..."
 	announce=-2
 	if [ -d "$outgoing/$build" ]; then
 		echo "$P: $build: result already published, removing previous ..."
@@ -161,17 +162,17 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		build=`dirname "$summary"`
 		build=${build#./}
 
-		echo "$P: $build: publishing ..."
+		echo "$P: $build: test-build publishing ..."
 		announce=2
-		if [ -d "$outgoing/test-build/$build" ]; then
+		if [ -d "$out/test-build/$build" ]; then
 			echo "$P: $build: result already published, removing previous ..."
-			rm -rf "$outgoing/test-build/$build"
+			rm -rf "$out/test-build/$build"
 			announce=1
 		fi
-		mkdir -p "$outgoing/test-build/`dirname "$build"`"
-		mv "$incoming/test-build/$build" "$outgoing/test-build/$build"
+		mkdir -p "$out/test-build/`dirname "$build"`"
+		mv "$incoming/test-build/$build" "$out/test-build/$build"
 		echo "$P: $build: announcing ..."
-		"$here/mainline-changeset-announce" "$build" "$announce"
+		"$here/mainline-changeset-announce" "$out/test-build/$build" "$announce"
 	done
 	find "$HOME/incoming/test-build" -empty -type d -delete
 fi
