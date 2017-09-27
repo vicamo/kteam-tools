@@ -249,6 +249,10 @@
             - linux-gke
             - linux-kvm
             - linux-euclid
+        derivative-snaps:
+            linux:
+            - caracalla-kernel
+            - stlouis-kernel
         test_flavours:
             linux:
             - generic
