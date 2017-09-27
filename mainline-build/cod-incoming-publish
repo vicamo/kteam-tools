@@ -153,13 +153,28 @@ if [ -d "$HOME/incoming/config" ]; then
 	find "$HOME/incoming/config" -empty -type d -delete
 fi
 
-# Copy in the incoming test-build results.
-mkdir -p "$HOME/public_html/test-build"
+
 if [ -d "$HOME/incoming/test-build" ]; then
-	rsync -v -a --remove-source-files "$HOME/incoming/test-build/" "$HOME/public_html/test-build/"
+	(cd "$incoming/test-build" && find . -name SUMMARY) | \
+	while read summary
+	do
+		build=`dirname "$summary"`
+		build=${build#./}
+
+		echo "$P: $build: publishing ..."
+		announce=2
+		if [ -d "$outgoing/test-build/$build" ]; then
+			echo "$P: $build: result already published, removing previous ..."
+			rm -rf "$outgoing/test-build/$build"
+			announce=1
+		fi
+		mkdir -p "$outgoing/test-build/`dirname "$build"`"
+		mv "$incoming/test-build/$build" "$outgoing/test-build/$build"
+		echo "$P: $build: announcing ..."
+		"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce" "$outgoing/$build/BUILT"
+	done
 	find "$HOME/incoming/test-build" -empty -type d -delete
 fi
-
 # Finally re-evaluate any 'current' links.
 (
 	cd "$outgoing" || exit 1

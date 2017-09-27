@@ -45,7 +45,10 @@ do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean
 archs=$( grep Architecture debian/control | awk '{ for (c=2; c <= NF; c++) { print $c } }' | sort -u )
 
-: >"$result/SUMMARY"
+cat - <<EOL >"$result/SUMMARY"
+Series: $series
+Package: $package
+EOL
 for arch in $archs
 do
 	case "$arch" in
@@ -69,7 +72,7 @@ do
 		dpkg-buildpackage -a "$arch" "$build" -d 2>&1 | tee -a "$result/$arch.log"
 	rc="$?"
 	echo "$rc" >"$result/$arch.status"
-	echo "$arch $rc" >>"$result/SUMMARY"
+	echo "Status: $arch $rc" >>"$result/SUMMARY"
 	echo "build $barch on $barch ... rc=$rc"
 done
 
