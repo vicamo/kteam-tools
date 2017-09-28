@@ -206,7 +206,7 @@
             linux-gcp:
             - linux
             - '17.04'
-        
+
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -274,6 +274,7 @@
         - snapdragon-kernel
         series_version: '16.04'
         supported: true
+        lts: true
 
     '15.10':
         dependent-packages:
@@ -380,6 +381,7 @@
         - linux-signed-lts-xenial
         series_version: '14.04'
         supported: true
+        lts: true
 
     '13.10':
         dependent-packages:
@@ -494,6 +496,7 @@
         series_version: '12.04'
         supported: true
         esm: true
+        lts: true
 
     '11.10':
         dependent-packages:
