@@ -182,6 +182,10 @@ class WorkflowManager():
             therest = task_name[len(s.projectname) + 1:].strip()
             task_name = therest
 
+            if workflow_task_name not in s._task_map:
+                cinfo('        Unknown workflow task')
+                continue
+
             cls = s._task_map[workflow_task_name](s.lp, task, bug)
             if cls.evaluate_status(task.status) and not s.args.dryrun:
                 retval = True
