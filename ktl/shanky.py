@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 #
 
-# The named pipe used for getting messages to shankbot, the irc bot.
-#
-shank_pipe_path = "/tmp/shank.pipe"
+from ktl.msgq                           import MsgQueue
 
 def send_to_shankbot(msg):
-    with open(shank_pipe_path, 'w') as shank_pipe:
-        shank_pipe.write(msg)
+    mq = MsgQueue()
 
-
-if __name__ == "__main__":
-    import sys
-    send_to_shankbot(' '.join(sys.argv[1:]) + '\n')
+    msg = {
+        "key"            : "kernel.irc",
+        "op"             : "notice",
+        "msg"            : msg,
+        "notice"         : True,
+    }
+    return mq.publish(msg['key'], msg)
 
 # vi:set ts=4 sw=4 expandtab:
