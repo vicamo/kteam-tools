@@ -15,11 +15,7 @@ class UbuntuError(Exception):
 # DefaultAssigneeMissing
 #
 class DefaultAssigneeMissing(Exception):
-    # __init__
-    #
-    def __init__(self, error):
-        self.msg = error
-
+    pass
 
 # Methods related to workflow in tracking bugs
 #

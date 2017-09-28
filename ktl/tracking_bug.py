@@ -200,7 +200,7 @@ class TrackingBug:
                     assignee = self.wf.assignee(self.package, task_name, self.isdev)
                 except DefaultAssigneeMissing as e:
                     print('*** Warning:')
-                    print('    %s' % e.message)
+                    print('    %s' % str(e))
                     continue
                 if assignee is None:
                     if not self.quiet:
