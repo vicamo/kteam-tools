@@ -15,14 +15,18 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 entries = []
 def add_entry(entry):
     if entry and 'ignore' not in entry:
-        if 'bugs' not in entry and 'cves' in entry:
-            for cve in entry['cves']:
-                if cve not in bugs:
-                    bugs.append(cve)
+        if 'bugs' in entry:
+            ids = ','.join(set(entry['bugs']))
+        elif 'cves' in entry:
+            ids = ','.join(set(entry['cves']))
+        elif 'UBUNTU: Ubuntu-' in entry['subject']:
+            ids = entry['subject'][8:]
+
+        entry['id'] = ids.replace('/', '-').replace(' ', '-')
+
         entries.append(entry)
 
 # Suck up the git log output and extract the information we need.
-bugs = []
 entry = None
 subject_wait = False
 for line in sys.stdin:
@@ -45,10 +49,6 @@ for line in sys.stdin:
         bits = bits[1].split('/')
         entry.setdefault('bugs', []).append(bits[-1])
 
-        # Accumulate bug numbers.
-        if bits[-1] not in bugs:
-            bugs.append(bits[-1])
-
     elif line.startswith('    CVE-'):
         entry.setdefault('cves', []).append(line.strip())
 
@@ -62,9 +62,9 @@ add_entry(entry)
 # Go through the entries and clear out authors for upstream commits.
 current = ['None']
 for entry in entries:
-    bugs = set(entry.get('bugs', entry.get('cves', ['None'])))
+    ids = entry.get('id', 'None')
     commit = entry['commit']
-    if bugs == current:
+    if ids == current:
         continue
-    current = bugs
-    print(commit, ','.join(bugs), entry['subject'])
+    current = ids
+    print(commit, ids, entry['subject'])

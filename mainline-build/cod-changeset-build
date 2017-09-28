@@ -48,6 +48,9 @@ archs=$( grep Architecture debian/control | awk '{ for (c=2; c <= NF; c++) { pri
 cat - <<EOL >"$result/SUMMARY"
 Series: $series
 Package: $package
+Subject: $title
+Hash: $sha
+Id: $id
 EOL
 for arch in $archs
 do
