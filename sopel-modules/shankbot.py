@@ -179,16 +179,16 @@ def update(bot, trigger):
 
     bot.say(trigger.nick + ', ' + 'roger, roger')
 
-    cmd = '(cd /srv/kernel.ubuntu.com/www/sru; make %s)' % (what,)
+    cmd = '(cd /srv/kernel.ubuntu.com/www/sru; flock /tmp/sru-reports.lock make %s)' % (what,)
 
     (rc, output) = sh(cmd, quiet=True)
     if rc == 0:
-        bot.say(trigger.nick + ', ' + 'report updated')
+        bot.say(trigger.nick + ', ' + 'report %s updated' % (what,))
     elif rc == 254:
         cmd = 'pastebinit -f python /tmp/exceptions.log'
         (rc, output) = sh(cmd, quiet=True)
         bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
     else:
-        bot.say(trigger.nick + ', ' + 'report update failed rc=%d' % (rc,))
+        bot.say(trigger.nick + ', ' + 'report %s update failed rc=%d' % (what, rc))
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
