@@ -165,4 +165,30 @@ def retest(bot, trigger):
                 (rc, output) = sh(cmd, quiet=True)
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
 
+@sopel.module.nickname_commands('update')
+def update(bot, trigger):
+    '''
+    When someone asks the bot to update various reports.
+    '''
+    what = trigger.match.groups()[1]
+    if what is None:
+        what = 'shankbot'
+    elif not what.endswith('.html') or ';' in what or ' ' in what:
+        bot.say(trigger.nick + ', ' + 'I do not recognise that report.')
+        return
+
+    bot.say(trigger.nick + ', ' + 'roger, roger')
+
+    cmd = '(cd /srv/kernel.ubuntu.com/www/sru; make %s)' % (what,)
+
+    (rc, output) = sh(cmd, quiet=True)
+    if rc == 0:
+        bot.say(trigger.nick + ', ' + 'report updated')
+    elif rc == 254:
+        cmd = 'pastebinit -f python /tmp/exceptions.log'
+        (rc, output) = sh(cmd, quiet=True)
+        bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
+    else:
+        bot.say(trigger.nick + ', ' + 'report update failed rc=%d' % (rc,))
+
 # vi:set ts=4 sw=4 expandtab syntax=python:
