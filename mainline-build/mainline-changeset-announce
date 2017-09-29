@@ -37,10 +37,13 @@ with open(summary) as bfd:
         elif args[0] == 'Package:':
             params['package'] = args[1]
 
+        elif args[0] == 'Id:':
+            params['id'] = args[1]
+
 params['status'] = status
 params['overall_status'] = overall_status
 
 # Send to shanky for publication in IRC.
-msg = "test rebuild: {series} {package} {commit} {reason} complete {overall_status}\n".format(**params)
+msg = "test rebuild: {series} {package} {id} {commit} {reason} complete {overall_status}\n".format(**params)
 ##print(msg)
 send_to_shankbot(msg)

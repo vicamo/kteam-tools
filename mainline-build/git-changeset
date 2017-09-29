@@ -47,7 +47,7 @@ for line in sys.stdin:
     elif line.startswith('    BugLink: ') and 'launchpad.net' in line:
         bits = line.strip().split(maxsplit=1)
         bits = bits[1].split('/')
-        entry.setdefault('bugs', []).append(bits[-1])
+        entry.setdefault('bugs', []).append('LP#' + bits[-1])
 
     elif line.startswith('    CVE-'):
         entry.setdefault('cves', []).append(line.strip())
