@@ -103,6 +103,8 @@ def help(bot, trigger):
     bot.say('Recognized commands:')
     bot.say('    shank [<bugid> <bugid> .. <bugid>]')
     bot.say('        Update one or more tracking bugs.')
+    bot.say('    update [<what>]')
+    bot.say('        Update one or all of the primary sru reports.')
     bot.say('    retest <bugid> [<bugid> .. <bugid>]')
     bot.say('        Restart testing for one or more tracking bugs.')
 
