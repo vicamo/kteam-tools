@@ -312,7 +312,7 @@
         - linux-meta
         - linux-signed
         series_version: '15.04'
-        supported: true
+        supported: false
 
     '14.10':
         dependent-packages:
