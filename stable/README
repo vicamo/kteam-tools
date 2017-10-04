@@ -58,3 +58,27 @@ generate-meeting-report
     Example:
         sru-report > srus.json
 	generate-meeting-report srus.json
+
+create-sru-cards.py:
+    Create a Trello board for a SRU cycle and add cards for the tasks
+    which need to be done.
+    The cycle given is the date of the Monday in week #1 in
+    YYYY.MM.DD format.
+
+    Setup:
+      - git clone https://code.launchpad.net/~apw/+git/so-trello
+      - cd <kteam-tools-repo>/stable && \
+        ln -s <so-trello-repo>/trellotool .
+        or
+        add "export PYTHONPATH=<so-trello-repo>:$PYTHONPATH" to .profile
+        / <shell>rc
+      - first time run ($HOME/.trellotool does not exist): run
+        create-sru-cards <any YYYY.MM.DD date>, this will print an
+        authentication link
+        - follow link and accept trellotool to access trello
+        - copy <token>
+        - create $HOME/.trellotool (if it does not exist) and add:
+          trello_token: <token>
+
+    Example:
+      create-sru-cards.py 2017.10.09
