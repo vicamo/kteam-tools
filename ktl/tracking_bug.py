@@ -64,27 +64,28 @@ class TrackingBug:
             if lp_series.name == 'prepare-package-signed' and not s.has_dependent_package(targeted_series_name, package, 'signed'):
                 cdebug('    no prepare-package-signed', 'yellow')
                 break
-            if lp_series.name == 'snap-release-to-edge':
-                cdebug('    no snap-release-to-edge', 'yellow')
-                break
-            if lp_series.name == 'snap-release-to-beta':
-                cdebug('    no snap-release-to-beta', 'yellow')
-                break
-            if lp_series.name == 'snap-release-to-candidate':
-                cdebug('    no snap-release-to-candidate', 'yellow')
-                break
-            if lp_series.name == 'snap-release-to-stable':
-                cdebug('    no snap-release-to-stable', 'yellow')
-                break
-            if lp_series.name == 'snap-qa-testing':
-                cdebug('    no snap-qa-testing', 'yellow')
-                break
-            if lp_series.name == 'snap-publish':
-                cdebug('    no snap-publish', 'yellow')
-                break
-            if lp_series.name == 'snap-certification-testing':
-                cdebug('    no snap-certification-testing', 'yellow')
-                break
+            if not s.has_dependent_package(targeted_series_name, package, 'snap'):
+                if lp_series.name == 'snap-release-to-edge':
+                    cdebug('    no snap-release-to-edge', 'yellow')
+                    break
+                if lp_series.name == 'snap-release-to-beta':
+                    cdebug('    no snap-release-to-beta', 'yellow')
+                    break
+                if lp_series.name == 'snap-release-to-candidate':
+                    cdebug('    no snap-release-to-candidate', 'yellow')
+                    break
+                if lp_series.name == 'snap-release-to-stable':
+                    cdebug('    no snap-release-to-stable', 'yellow')
+                    break
+                if lp_series.name == 'snap-qa-testing':
+                    cdebug('    no snap-qa-testing', 'yellow')
+                    break
+                if lp_series.name == 'snap-publish':
+                    cdebug('    no snap-publish', 'yellow')
+                    break
+                if lp_series.name == 'snap-certification-testing':
+                    cdebug('    no snap-certification-testing', 'yellow')
+                    break
             retval = True
             break
         return retval
