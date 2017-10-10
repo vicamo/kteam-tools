@@ -41,8 +41,8 @@ diff "$tags_list" "$tags_list.new" | \
 	egrep '^>' | tac >"$tags_list.added"
 
 count=$( wc -l <"$tags_list.added" )
-if [ "$count" -gt 20 ]; then
-	echo "$P: $count new tags is greater than 20 not processing." 1>&2
+if [ "$count" -gt 100 ]; then
+	echo "$P: $count new tags is greater than 100 not processing." 1>&2
 	exit 1
 fi
 
