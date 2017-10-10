@@ -42,8 +42,9 @@ with open(summary) as bfd:
 
 params['status'] = status
 params['overall_status'] = overall_status
+params['url'] = "http://kernel.ubuntu.com/~kernel-ppa/test-build/{series}/{package}/{id}--{commit}/".format(**params).replace('#', '%23')
 
 # Send to shanky for publication in IRC.
-msg = "test rebuild: {series} {package} {id} {commit} {reason} complete {overall_status}\n".format(**params)
+msg = "test rebuild: {series} {package} {id} {reason} complete {overall_status} {url}\n".format(**params)
 ##print(msg)
 send_to_shankbot(msg)
