@@ -27,7 +27,7 @@ esac
 #
 # UBUNTU SOURCE: source package uploads, tips of the ubuntu trees etc
 #
-"$here/cod-source-trigger"
+##"$here/cod-source-trigger"
 
 #
 # UBUNTU CHANGESET: build testing per changeset
