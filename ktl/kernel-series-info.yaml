@@ -211,19 +211,14 @@
             linux:
                 meta: linux-meta
                 signed: linux-signed
-                snap: pc-kernel
             linux-raspi2:
                 meta: linux-meta-raspi2
-                snap: pi2-kernel
             linux-snapdragon:
                 meta: linux-meta-snapdragon
-                snap: dragonboard-kernel
             linux-aws:
                 meta: linux-meta-aws
-                snap: aws-kernel
             linux-gke:
                 meta: linux-meta-gke
-                snap: gke-kernel
             linux-azure:
                 meta: linux-meta-azure
             linux-joule:
@@ -236,11 +231,23 @@
                 signed: linux-signed-hwe-edge
             linux-gcp:
                 meta: linux-meta-gcp
-                snap: gcp-kernel
             linux-kvm:
                 meta: linux-meta-kvm
             linux-euclid:
                 meta: linux-meta-euclid
+        dependent-snaps:
+            linux:
+                snap: pc-kernel
+            linux-raspi2:
+                snap: pi2-kernel
+            linux-snapdragon:
+                snap: dragonboard-kernel
+            linux-aws:
+                snap: aws-kernel
+            linux-gke:
+                snap: gke-kernel
+            linux-gcp:
+                snap: gcp-kernel
         derivative-packages:
             linux:
             - linux-raspi2
