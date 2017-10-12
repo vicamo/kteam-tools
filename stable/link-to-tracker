@@ -179,7 +179,7 @@ class Tracking():
             found = []
             for (bugid, tasks_by_name) in found_tasks:
                 lpbug = s.launchpad.bugs[bugid]
-                if '<version to be filled>' not in lpbug.title:
+                if not s.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
                 if s.args.sru_cycle and s.bug_to_sru_cycle(lpbug) != s.args.sru_cycle:
                     continue
@@ -260,6 +260,7 @@ if __name__ == '__main__':
     parser.add_argument('--info',  action='store_true', default=False, help='')
     parser.add_argument('--debug', action='store_true', default=False, help='')
     parser.add_argument('--dry-run', action='store_true', default=False, help='')
+    parser.add_argument('--re-run', action='store_true', default=False, help='')
     parser.add_argument('--sru-cycle', action='store', help='')
     args = parser.parse_args()
 
