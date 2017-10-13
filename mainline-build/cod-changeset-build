@@ -45,7 +45,9 @@ do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean
 archs=$( grep Architecture debian/control | awk '{ for (c=2; c <= NF; c++) { print $c } }' | sort -u )
 
+host=$( hostname )
 cat - <<EOL >"$result/SUMMARY"
+Host: $host
 Series: $series
 Package: $package
 Subject: $title
