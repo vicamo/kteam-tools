@@ -142,6 +142,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-gcp-" + version
         elif "-gke" in srcpkg:
             v = "Ubuntu-gke-" + version
+        elif "-azure-edge" in srcpkg:
+            v = "Ubuntu-azure-edge-" + version
         elif "-azure" in srcpkg:
             v = "Ubuntu-azure-" + version
         elif "-caracalla" in srcpkg:
