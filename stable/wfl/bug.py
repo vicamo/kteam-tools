@@ -1013,7 +1013,7 @@ class WorkflowBug():
         """
         center(s.__class__.__name__ + '.check_component_in_pocket')
         cdebug('tstamp_prop: ' + tstamp_prop)
-        cdebug('     pocket: %s' % pocket, 'green')
+        cdebug('     pocket: %s' % pocket)
 
         # If the packages are not all built and in -proposed then just bail out of
         # here.
@@ -1026,6 +1026,7 @@ class WorkflowBug():
 
         pkg_list = s.relevant_packages_list()
 
+        primary_src_component = None
         missing_pkg = []
         mis_lst = []
         for pkg in pkg_list:
@@ -1044,12 +1045,17 @@ class WorkflowBug():
                     missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
                 continue
 
+            # We are going to use the primary package source component as
+            # our guide.  If we do not have that, then we cannot check.
+            if pkg == s.pkg_name:
+                primary_src_component = ps[0].component_name
+
             if 'linux-signed' in pkg:
                 src_ver = ps[0].source_package_version
                 if src_ver.startswith(s.pkg_version):
                     mis_lst.extend(check_component.mismatches_list(s.series,
                                    pkg, ps[0].source_package_version,
-                                   pocket, ps))
+                                   pocket, ps, primary_src_component))
                 else:
                     missing_pkg.append([pkg, 'for version=%s' % (s.pkg_version)])
             elif not check_ver:
@@ -1064,14 +1070,19 @@ class WorkflowBug():
                 if src_ver.startswith(v1) or src_ver.startswith(v2):
                     mis_lst.extend(check_component.mismatches_list(s.series,
                                    pkg, ps[0].source_package_version,
-                                   pocket, ps))
+                                   pocket, ps, primary_src_component))
                 else:
                     missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
             else:
                 mis_lst.extend(check_component.mismatches_list(s.series,
-                               pkg, check_ver, pocket, ps))
+                               pkg, check_ver, pocket, ps, primary_src_component))
 
-        cdebug('missing_pkg is set')
+        if missing_pkg:
+            cdebug('missing_pkg is set')
+            cinfo('        packages not yet available in pocket')
+            cdebug('check_component_in_pocket leave (False)')
+            return False
+
         if mis_lst:
             cdebug('mis_lst is set')
 
