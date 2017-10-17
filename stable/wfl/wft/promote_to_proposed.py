@@ -96,7 +96,7 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while not retval:
-            if s.task.status == 'Fix Committed':
+            if s.task.status in ('Fix Committed', 'Incomplete'):
                 break
 
             if not s.bug.any_in_pocket('Proposed'):
@@ -107,7 +107,7 @@ class PromoteToProposed(Promoter):
             retval = True
             break
 
-        while not retval:
+        while True:
 
             # Check if packages were copied to the right pocket->component
             #

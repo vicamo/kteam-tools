@@ -1086,24 +1086,26 @@ class WorkflowBug():
         if mis_lst:
             cdebug('mis_lst is set')
 
-            s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
+            task_name = 'promote-to-%s' % (pocket,)
+            if s.tasks_by_name[task_name] != 'Incomplete':
+                s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
 
-            body  = "The following packages ended up in the wrong"
-            body += " component in the -%s pocket:\n" % (pocket)
-            for item in mis_lst:
-                cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
-                body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
+                body  = "The following packages ended up in the wrong"
+                body += " component in the -%s pocket:\n" % (pocket)
+                for item in mis_lst:
+                    cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
+                    body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
 
-            subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
-            to_address  = "kernel-team@lists.ubuntu.com"
-            to_address += ", ubuntu-installer@lists.ubuntu.com"
-            s.send_email(subject, body, to_address)
+                subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
+                to_address  = "kernel-team@lists.ubuntu.com"
+                to_address += ", ubuntu-installer@lists.ubuntu.com"
+                s.send_email(subject, body, to_address)
 
-            body += "\n\nOnce this is fixed, set the "
-            body += "promote-to-%s to Fix Released again" % (pocket)
-            s.add_comment('Packages outside of proper component', body)
-            if not s._dryrun:
-                s.props.set({tstamp_prop: None})
+                body += "\n\nOnce this is fixed, set the "
+                body += "promote-to-%s to Fix Released again" % (pocket)
+                s.add_comment('Packages outside of proper component', body)
+                if not s._dryrun:
+                    s.props.set({tstamp_prop: None})
 
             cinfo('        packages ended up in the wrong pocket')
             cdebug('check_component_in_pocket leave (False)')
