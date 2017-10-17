@@ -204,9 +204,9 @@ class Git:
         cls.log_results['commits']       = []
         cls.log_results['buglink-index'] = {}
         if num != -1:
-            status, result = run_command("git log -%d" % (num), cls.debug)
+            status, result = run_command("git log --pretty=medium -%d" % (num), cls.debug)
         else:
-            status, result = run_command("git log", cls.debug)
+            status, result = run_command("git log --pretty=medium", cls.debug)
         commit       = {}
         commit_text  = []
         current_sha1 = 'unknown'
