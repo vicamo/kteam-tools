@@ -36,6 +36,7 @@ class CheckComponent():
             'linux-azure',
             'linux-meta-azure',
             'linux-kvm',
+            'linux-meta-kvm',
         ]
 
         self.release_db = {}
