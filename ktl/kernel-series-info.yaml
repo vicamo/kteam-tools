@@ -228,6 +228,9 @@
             linux-azure:
             - linux
             - '17.10'
+            linux-azure-edge:
+            - linux
+            - '17.10'
             linux-gcp:
             - linux
             - '17.04'
@@ -249,6 +252,8 @@
                 meta: linux-meta-gke
             linux-azure:
                 meta: linux-meta-azure
+            linux-azure-edge:
+                meta: linux-meta-azure-edge
             linux-joule:
                 meta: linux-meta-joule
             linux-hwe:
@@ -314,9 +319,11 @@
         - linux-meta-snapdragon
         - linux-aws
         - linux-azure
+        - linux-azure-edge
         - linux-gke
         - linux-meta-aws
         - linux-meta-azure
+        - linux-meta-azure-edge
         - linux-hwe-edge
         - linux-meta-hwe-edge
         - linux-signed-hwe-edge

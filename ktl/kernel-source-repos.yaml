@@ -3,6 +3,8 @@
     linux-meta-aws:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-meta-aws
     linux-azure:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/linux-azure
     linux-meta-azure:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/linux-meta-azure
+    linux-azure-edge:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/linux-azure
+    linux-meta-azure-edge: https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/linux-meta-azure
     linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux-meta:            https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
