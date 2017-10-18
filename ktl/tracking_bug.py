@@ -9,10 +9,11 @@ from ktl.log                            import cdebug, cerror, cwarn, center, cl
 
 class TrackingBug:
 
-    def __init__(self, lp, staging, quiet=False):
+    def __init__(self, lp, staging=False, quiet=False, new_package=False):
         self.lp = lp
         self.staging = staging
         self.quiet = quiet
+        self.new_package = new_package
         self.wf = Workflow()
         self.ub = Ubuntu()
         self.__dependency_list = None
@@ -147,17 +148,23 @@ class TrackingBug:
         '''
         Nominate the series for this package.
         '''
-        nomination = bug.lpbug.addNomination(target=self.series_target)
-        if nomination.canApprove():
-            nomination.approve()
+        if not self.new_package:
+            state = 'Confirmed'
+            nomination = bug.lpbug.addNomination(target=self.series_target)
+            if nomination.canApprove():
+                nomination.approve()
+        else:
+            state = 'Invalid'
         bug.tags.append(self.targeted_series_name)
 
         # There should only be 2 tasks at this point, the 'linux (ubuntu)' task and the series
         # specific one we just added. Set them both to "Confirmed".
+        # For a new package will have skipped the nomination, and we make this "Invalid"
+        # instead.
         #
         for task in bug.tasks:
             if self.targeted_series_name.title() in task.bug_target_name:
-                task.status = "Confirmed"
+                task.status = state
 
     def reset_tasks(self, bug):
         center(self.__class__.__name__ + '.reset_tasks')
@@ -355,12 +362,16 @@ class TrackingBug:
             description += '%s-master-bug: %s' % (prop_pfx, master_bug)
 
         cdebug("")
-        cdebug("Creating the bug", 'blue')
+        bug_package = package
+        if self.new_package:
+            cdebug("New package so using linux package", 'blue')
+            bug_package = 'linux'
+        cdebug("Creating the bug for " + bug_package, 'blue')
         try:
-            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description, private=private)
+            bug = self.lp.create_bug(project='ubuntu', package=bug_package, title=title, description=description, private=private)
         except:
             cerror('Bug creation failed: project: "ubuntu", package: %s' % package)
-            cerror('                     (It\'s possible the package does not exist)')
+            cerror('                     (It\'s possible the package does not exist, specify new-package?)')
             cleave(self.__class__.__name__ + '.open')
             return None
 
