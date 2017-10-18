@@ -1,8 +1,8 @@
 ---
     linux-aws:             https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-aws
-    linux-meta-aws:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-aws
-    linux-azure:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-azure
-    linux-meta-azure:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-azure
+    linux-meta-aws:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-meta-aws
+    linux-azure:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/linux-azure
+    linux-meta-azure:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/linux-meta-azure
     linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux:                 https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux-meta:            https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
@@ -10,10 +10,10 @@
     linux-raspi2:          https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux-meta-raspi2:     https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
     linux-meta-snapdragon: https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
-    linux-gke:             https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-gke
-    linux-meta-gke:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-gke
-    linux-joule:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/linux-joule
-    linux-meta-joule:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/linux-joule
+    linux-gke:             https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/linux-gke
+    linux-meta-gke:        https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/linux-meta-gke
+    linux-joule:           https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-joule/+git/linux-joule
+    linux-meta-joule:      https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-joule/+git/linux-meta-joule
     linux-hwe:             https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial
     linux-meta-hwe:        https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial
     linux-signed-hwe:      https://code.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial
