@@ -155,6 +155,8 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
+            linux-goldfish:
+                meta: linux-meta-goldfish
         derivative-packages:
             linux:
             - linux-raspi2
@@ -235,6 +237,12 @@
                 meta: linux-meta-kvm
             linux-euclid:
                 meta: linux-meta-euclid
+            linux-flo:
+                meta: linux-meta-flo
+            linux-goldfish:
+                meta: linux-meta-goldfish
+            linux-mako:
+                meta: linux-meta-mako
         dependent-snaps:
             linux:
                 snap: pc-kernel
@@ -501,6 +509,14 @@
                 signed: linux-signed-lts-trusty
             linux-ti-omap4:
                 meta: linux-meta-ti-omap4
+            linux-flo:
+                meta: linux-meta-flo
+            linux-goldfish:
+                meta: linux-meta-goldfish
+            linux-mako:
+                meta: linux-meta-mako
+            linux-manta:
+                meta: linux-meta-manta
         derivative-packages:
             linux: []
         kernel: 3.2.0
