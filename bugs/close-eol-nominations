@@ -42,7 +42,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                               \n")
-        stdo("        %s <series>                                      \n" % defaults['app_name'])
+        stdo("        %s <series> <package>                            \n" % defaults['app_name'])
         stdo("                                                         \n")
         stdo("    Options:                                             \n")
         stdo("        --help           Prints this text.               \n")
@@ -70,8 +70,8 @@ class Cmdline:
             if result: # No errors yet
                 # There might be some bugs listed on the command line.
                 #
-                if len(args) == 1:
-                    return args[0]
+                if len(args) == 2:
+                    return args[0:2]
                 else:
                     Cmdline.usage(self, defaults)
                     return None
@@ -106,7 +106,7 @@ class CloseNominations():
 
     # initialize
     #
-    def initialize(self, series):
+    def initialize(self, series, package):
         """
         A separate initialize that we can control when it gets called (not
         when the object is instantiated).
@@ -120,19 +120,19 @@ class CloseNominations():
 
         self.distro        = self.lp.distributions['ubuntu']
         self.series        = self.distro.getSeries(name_or_version=series)
-        self.linux = self.series.getSourcePackage(name='linux')
+        self.linux = self.series.getSourcePackage(name=package)
 
         return
 
     # main
     #
-    def main(self, series):
+    def main(self, series, package):
         retry = True
         print "Starting pass ..."
         while retry:
             retry = False
             try:
-                self.initialize(series)
+                self.initialize(series, package)
                 # LP:320596 - Series.searchTasks() always returns an empty collection
                 # Should be fixed in later versions to not require omit_targeted=False
                 tasks = self.linux.searchTasks(omit_targeted=False)
@@ -168,12 +168,12 @@ if __name__ == '__main__':
     #
     ubuntu = Ubuntu()
     cmdline = Cmdline()
-    series = cmdline.process(argv)
+    (series, package) = cmdline.process(argv)
     series = series.lower()
     try:
         if series and not ubuntu.is_supported_series(series):
             app = CloseNominations(series)
-            app.main(series)
+            app.main(series, package)
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)
 
