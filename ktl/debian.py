@@ -52,6 +52,8 @@ class Debian:
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
 
+    parent_bug_section_rc = compile("^\s*\[ Ubuntu: .*\]")
+
     # debian_directories
     #
     @classmethod
@@ -154,7 +156,10 @@ class Debian:
             raise DebianError("The first line in the changelog is not a version line.")
 
         content = []
+        own_content = []
         bugs = []
+        own_bugs = []
+        parsing_own_bugs = True
 
         for line in changelog_contents:
             m = cls.version_line_rc.match(line)
@@ -176,8 +181,10 @@ class Debian:
                 section['series']  = release
                 section['pocket']  = pocket
                 section['content'] = content
+                section['own-content'] = own_content
                 section['package'] = package
                 section['bugs'] = set(bugs)
+                section['own-bugs'] = set(own_bugs)
 
                 m = cls.version_rc.match(version)
                 if m is not None:
@@ -189,14 +196,24 @@ class Debian:
 
                 retval.append(section)
                 content = []
+                own_content = []
                 bugs = []
+                own_bugs = []
+                parsing_own_bugs = True
             else:
+                if cls.parent_bug_section_rc.match(line):
+                    parsing_own_bugs = False
+
                 # find bug numbers and append them to the list
                 for bug_line_match in finditer(cls.bug_rc, line):
                     bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
                     bugs.extend(bug_matches)
+                    if parsing_own_bugs:
+                        own_bugs.extend(bug_matches)
 
                 content.append(line)
+                if parsing_own_bugs:
+                    own_content.append(line)
 
         return retval
 

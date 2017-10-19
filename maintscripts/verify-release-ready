@@ -328,7 +328,7 @@ class VerifyReleaseReady():
         # entries were inserted by debian/scripts/misc/git-ubuntu-log
         msg = 'no "Miscellaneous" entries'
         changelog = Debian.changelog()
-        content = changelog[1]['content']
+        content = changelog[1]['own-content']
         for line in content:
             m = re.match("\* Miscellaneous .* changes$", line.strip())
             if m:
@@ -339,7 +339,7 @@ class VerifyReleaseReady():
 
     def verify_changelog_bugs(s):
         changelog = Debian.changelog()
-        changelog_bugs = changelog[1]['bugs']
+        changelog_bugs = changelog[1]['own-bugs']
         changelog_series = changelog[1]['series']
         changelog_source_package = changelog[1]['package']
 
