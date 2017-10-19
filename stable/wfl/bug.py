@@ -153,13 +153,15 @@ class WorkflowBug():
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
-        s.is_valid = s.check_is_valid(s.lpbug)
+        (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
         s.properties = s.lpbug.properties
 
         try:
             s.__package = Package(s.lp, s)
 
             cinfo('                      title: "%s"' % s.title, 'blue')
+            cinfo('                   is_valid: %s' % s.is_valid, 'blue')
+            cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
             cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
             cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
             cinfo('                     series: "%s"' % s.__package.series, 'blue')
@@ -329,24 +331,26 @@ class WorkflowBug():
         Determine if this bug is one that we want to be processing. Bugs that we
         should not be processing are ones that are not currently "In Progress".
         '''
-        retval = True
+        workflow = False
+        valid = False
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
+                workflow = True
                 s.workflow_project = task_name
                 s.dev_workflow_project = task_name == 'kernel-development-workflow'
                 s.sru_workflow_project = task_name == 'kernel-sru-workflow'
                 if t.status == 'In Progress':
+                    valid = True
                     continue
                 else:
                     if s._sauron:
                         continue
                     cdebug('        Not processing this bug because master task state is set to %s' % (t.status))
                     cdebug('        Quitting this bug')
-                    retval = False
 
-        return retval
+        return (workflow, valid)
 
     # _create_tasks_by_name_mapping
     #
@@ -453,7 +457,7 @@ class WorkflowBug():
             #duplicates = [ s.lp.get_bug('1703532') ]
             for dup in duplicates:
                 dup_wb = WorkflowBug(s.lp, dup.id)
-                if not dup_wb.is_valid:
+                if not dup_wb.is_workflow:
                     continue
                 if dup_wb.__package.all_built_and_in_proposed:
                     cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup.id,), 'yellow')
