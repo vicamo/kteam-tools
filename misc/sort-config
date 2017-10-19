@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# sort-config - sort a kernel config file as splitconfig does
+# Kamal Mostafa <kamal@canonical.com>
+#
+
+[ "$1" = "-i" ] && { iflag=1; shift; }	### inplace: write to the config file
+
+config="$1"				### a kernel .config file
+
+[ -f "$config" ] || {
+    echo "usage: sort-config [-i] configfile" 1>&2
+    exit 1
+}
+
+set -e
+
+header="$(sed -n '/CONFIG/q;p' $config)"
+
+TMPOUT=$(mktemp)
+trap "rm -f $TMPOUT" 0
+
+### Method:
+### 0. Pass the header (comment block) through.
+### 1. Homogenize the config lines for sorting (strip '=' and leading '#').
+### 2. Sort by the first column.
+### 3. Put back the stripped '=' and '#' markers.
+
+{
+echo "$header"
+cat "$config" \
+| sed -e '/^CONFIG/s/=/ /' -e 's/^# CONFIG/CONFIG/' -e '/^#/d' \
+| LC_ALL=C sort -k1,1 \
+| sed -e '/is not set/s/^/# /' -e '/^CONFIG/s/ /=/'
+} > "$TMPOUT"
+
+if [ "$iflag" = "1" ]
+then
+	mv "$TMPOUT" "$config"
+else
+	cat "$TMPOUT"
+fi
