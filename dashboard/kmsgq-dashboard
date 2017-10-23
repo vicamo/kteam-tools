@@ -80,8 +80,11 @@ class TheApp():
         # Install the new record.
         if 'updates' in payload:
             s.db_data[uid] = payload['updates']
-        else:
+        elif uid in s.db_data:
             del s.db_data[uid]
+        else:
+            cerror('status-bulk: <{}> id deletion requested but not present'.format(uid))
+            return
         s._db_write()
 
         # Write out this bulk batch into a file by uid.
