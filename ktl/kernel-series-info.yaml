@@ -237,6 +237,9 @@
                 meta: linux-meta-kvm
             linux-euclid:
                 meta: linux-meta-euclid
+            linux-oem:
+                meta: linux-meta-oem
+                signed: linux-signed-oem
             linux-flo:
                 meta: linux-meta-flo
             linux-goldfish:
@@ -298,6 +301,9 @@
         - linux-meta-kvm
         - linux-euclid
         - linux-meta-euclid
+        - linux-oem
+        - linux-signed-oem
+        - linux-meta-oem
         series_version: '16.04'
         supported: true
         lts: true
