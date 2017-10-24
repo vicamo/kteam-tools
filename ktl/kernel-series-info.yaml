@@ -208,6 +208,9 @@
             linux-gcp:
             - linux
             - '17.04'
+            linux-oem:
+            - linux
+            - '17.10'
 
         dependent-packages:
             linux:
