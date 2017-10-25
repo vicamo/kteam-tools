@@ -123,7 +123,7 @@
     #           oneiric backport, the list means, we are backporting from
     #           'linux' package present on '11.10'.
     #
-    '17.10':
+    '18.04':
         dependent-packages:
             linux:
                 meta: linux-meta
@@ -133,7 +133,30 @@
         derivative-packages:
             linux: []
         development: true
-        kernel: 4.11.0
+        kernels:
+        - 4.13.0
+        - 4.14.0
+        - 4.15.0
+        name: bionic
+        packages:
+        - linux
+        - linux-meta
+        - linux-raspi2
+        - linux-meta-raspi2
+        - linux-signed
+        series_version: '18.04'
+        supported: false
+
+    '17.10':
+        dependent-packages:
+            linux:
+                meta: linux-meta
+                signed: linux-signed
+            linux-raspi2:
+                meta: linux-meta-raspi2
+        derivative-packages:
+            linux: []
+        development: false
         kernels:
         - 4.11.0
         - 4.12.0
@@ -146,7 +169,7 @@
         - linux-meta-raspi2
         - linux-signed
         series_version: '17.10'
-        supported: false
+        supported: true
 
     '17.04':
         dependent-packages:
