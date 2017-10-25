@@ -45,11 +45,11 @@ timestamp()
 	done <<EOL
 precise http://people.canonical.com/~ubuntu-archive/proposed-migration/precise precise precise-updates precise-proposed
 trusty http://people.canonical.com/~ubuntu-archive/proposed-migration/trusty trusty trusty-updates trusty-proposed
-vivid http://people.canonical.com/~ubuntu-archive/proposed-migration/vivid vivid vivid-updates vivid-proposed
 xenial http://people.canonical.com/~ubuntu-archive/proposed-migration/xenial xenial xenial-updates xenial-proposed
 yakkety http://people.canonical.com/~ubuntu-archive/proposed-migration/yakkety yakkety yakkety-updates yakkety-proposed
 zesty http://people.canonical.com/~ubuntu-archive/proposed-migration/zesty zesty zesty-updates zesty-proposed
 artful http://people.canonical.com/~ubuntu-archive/proposed-migration/artful artful artful-updates artful-proposed
+bionic http://people.canonical.com/~ubuntu-archive/proposed-migration/bionic bionic bionic-updates bionic-proposed
 EOL
 } | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" "$out/overall.txt.new" | \
     "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
