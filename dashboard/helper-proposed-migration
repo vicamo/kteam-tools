@@ -29,7 +29,8 @@ timestamp()
 		fname=`basename "$urlt"`
 		(cd "$outd" && wget -qN -nd "$urlt")
 		if [ -f "$outd/$fname" ]; then
-			ln -f "$outd/$fname" "$file.migration"
+			cp -p "$outd/$fname" "$outd/$fname.live"
+			ln -f "$outd/$fname.live" "$file.migration"
 		fi
 
 		# Look at the triggers for a base timestamp.
