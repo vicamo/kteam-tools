@@ -114,7 +114,7 @@ class KernelPackages:
                         complete = False
                 if not build_seen:
                     complete = False
-                if complete and key not in s.cache_version or s.cache_version[key] != sver:
+                if complete and (key not in s.cache_version or s.cache_version[key] != sver):
                     s.cache_version[key] = sver
                     s.dirty = True
 
