@@ -39,6 +39,9 @@ git checkout HEAD^ --
 git branch -D "changeset-$id" || true
 git checkout -b "changeset-$id" "$sha"
 
+# Find the commit time.
+cts=$( git log -1 --pretty=format:%ct "$sha" )
+
 # Clean the tree so we can tell what architectures need building.
 git clean -x -f -d
 do_chroot "$build_release-amd64" \
@@ -53,6 +56,7 @@ Package: $package
 Subject: $title
 Hash: $sha
 Id: $id
+Committed: $cts
 EOL
 for arch in $archs
 do
