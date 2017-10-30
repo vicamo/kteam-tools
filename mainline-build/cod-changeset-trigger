@@ -57,7 +57,7 @@ do
 	while read sha1 changeset title
 	do
 		# Queue up the build.
-		"$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$sha1" "$changeset" "$title"
+		"$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$sha1" "$changeset"
 	done
 		
 	# Commit the new tip.
