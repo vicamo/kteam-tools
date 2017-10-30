@@ -2,7 +2,7 @@
 P='cod-changeset-build'
 
 # Title used to be added, ignore it.
-if [ "$#" -ne 4 -a "$#" -ne 5]; then
+if [ "$#" -ne 4 -a "$#" -ne 5 ]; then
 	echo "Usage: $0 <series> <package> <sha> <id>" 1>&2
 	exit 1
 fi
