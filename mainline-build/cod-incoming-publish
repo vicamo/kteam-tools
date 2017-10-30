@@ -175,6 +175,19 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		"$here/mainline-changeset-announce" "$out/test-build/$build" "$announce"
 	done
 	find "$HOME/incoming/test-build" -empty -type d -delete
+
+	# Rebuild the summaries.
+	(
+		cd "$out/test-build" || exit 1
+
+		for sp in */*
+		do
+			[ ! -d "$sp" ] && continue
+
+			"$here/cod-changeset-summary" "$sp" >"$sp/index.html.new"
+			mv -f "$sp/index.html.new" "$sp/index.html"
+		done
+	)
 fi
 # Finally re-evaluate any 'current' links.
 (

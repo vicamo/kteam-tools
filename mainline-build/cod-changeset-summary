@@ -1,0 +1,89 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import os
+import sys
+from urllib import quote
+
+directory = sys.argv[1]
+
+meta = {}
+results = []
+for (dirname, dirs, files) in os.walk(directory):
+    # Only interested in the leaves.
+    if len(dirs) != 0:
+        continue
+
+    if 'SUMMARY' not in files:
+        continue
+
+    with open(os.path.join(dirname, 'SUMMARY')) as summary_fd:
+        entry = {
+            'directory': os.path.basename(dirname),
+        }
+        overall = None
+        for line in summary_fd:
+            bits = line.strip().split(None, 1)
+            (key, value) = (bits[0][:-1].lower(), bits[1])
+            if key == 'status':
+                (arch, value) = value.split(None, 1)
+                key += '/' + arch
+                if not overall:
+                    overall = value
+                elif value == '1':
+                    overall = value
+            entry[key] = bits[1]
+        entry['status'] = overall
+
+        results.append((entry['committed'], entry))
+
+results.sort(reverse=True)
+
+meta['series'] = results[0][1]['series']
+meta['package'] = results[0][1]['package']
+
+print('''<html>
+<head>
+<title>Build Tests for {series}/{package}</title>
+<style>
+.GOOD {{ background-color: green; }}
+.FAIL {{ background-color: red; }}
+table.matrix {{
+    border-collapse: collapse;
+}}
+#table.matrix, table.matrix th, table.matrix td {{
+#   border: 1px solid black;
+#}}
+#.row:nth-child(6n+1) {{ background-color: darkgrey }}
+#.row:nth-child(6n+2) {{ background-color: darkgrey }}
+#.row:nth-child(6n+3) {{ background-color: darkgrey }}
+.row:nth-child(even) {{ background-color: lightgrey }}
+
+</style>
+</head>
+<body>
+<h1>Build Tests for {series}/{package}</h1>
+<table class="matrix">
+<tr><th>Subject<th>Status'''.format(**meta))
+for _, entry in results:
+    status = entry['status']
+
+    if status == '0':
+        status_string = 'GOOD'
+        status_class = 'GOOD'
+    else:
+        status_string = 'FAIL rc=' + status
+        status_class = 'FAIL'
+    commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={hash}".format(**entry)
+    status_url = "http://kernel.ubuntu.com/~kernel-ppa/test-build/"
+    status_url += quote("{series}/{package}/{directory}".format(**entry))
+    print('<tr class="row"><td><a href="{commit_url}">{id}</a> -- {subject}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
+        commit_url=commit_url,
+        status_string=status_string,
+        status_class=status_class,
+        status_url=status_url,
+        **entry
+        ))
+print('''</table>
+<body>
+</html>''')
