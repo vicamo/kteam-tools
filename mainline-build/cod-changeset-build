@@ -77,10 +77,13 @@ do
 	git clean -x -f -d
 	do_chroot "$build_release-amd64" \
 		fakeroot debian/rules clean
-	do_chroot "$build_release-$barch" \
-		dpkg-buildpackage -a "$arch" "$build" -d 2>&1 | tee -a "$result/$arch.log"
-	rc="$?"
-	echo "$rc" >"$result/$arch.status"
+	{
+		do_chroot "$build_release-$barch" \
+			dpkg-buildpackage -a "$arch" "$build" -d
+		rc="$?"
+		echo "$rc" >"$result/$arch.status"
+	} 2>&1 | tee -a "$result/$arch.log"
+	read rc <"$result/$arch.status"
 	echo "Status: $arch $rc" >>"$result/SUMMARY"
 	echo "build $barch on $barch ... rc=$rc"
 done
