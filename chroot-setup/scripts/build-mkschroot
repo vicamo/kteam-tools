@@ -215,7 +215,7 @@ esac
 case $SUITE in
 artful|bionic)
 	case $ARCH in
-	amd64)	ADDPKG="python-sphinx python-sphinx-rtd-theme" ;;
+	amd64)	ADDPKG="$ADDPKG python-sphinx python-sphinx-rtd-theme" ;;
 	esac
 	;;
 esac
