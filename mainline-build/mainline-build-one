@@ -166,15 +166,17 @@ echo "abinum<$abinum>"
 branch="BUILD.$abinum"
 branch=`echo "$branch" | sed -e 's/-/./g'`
 
+# Make sure git is ready for anything...
+rm -rf .git/rebase-apply
+git clean -x -f -d
+
 # Ensure we get the uptodate machinary.
 git fetch "$series"
-git checkout -f "$series/master"
+git checkout HEAD^ --
 git branch -D "$branch"
-
 
 # Ensure the source directory is pristine before we start.
 rm -rf .dotest
-git clean -x -f -d
 
 #
 # Checkout the source at the specified version.

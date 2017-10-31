@@ -819,7 +819,7 @@ table.matrix, table.matrix th, table.matrix td {{
                         else:
                             fmt = '<td class="{0}">{1}'
                         if version != lversion:
-                            annot += '\npackage updated'
+                            annot += '\npackage updated to ' + str(lversion)
 
                         status_class = status
 
