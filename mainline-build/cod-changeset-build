@@ -39,6 +39,13 @@ git checkout HEAD^ --
 git branch -D "changeset-$id" || true
 git checkout -b "changeset-$id" "$sha"
 
+# Arbitrary patch trigger support.
+adhoc="$here/adhoc"
+for trigger in "$adhoc"/*.trigger
+do
+	[ -x "$trigger" ] && "$trigger" "$series" "$build_release"
+done
+
 # Find the commit time.
 cts=$( git log -1 --pretty=format:%ct "$sha" )
 title=$( git log -1 --pretty=format:%s "$sha" )
