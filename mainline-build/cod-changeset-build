@@ -35,6 +35,7 @@ repo_remote_update_list $series
 build_release="$series"
 
 # Make a branch at the specified sha.
+git clean -x -f -d
 git checkout HEAD^ --
 git branch -D "changeset-$id" || true
 git checkout -b "changeset-$id" "$sha"
