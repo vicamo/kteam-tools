@@ -31,7 +31,7 @@ for (dirname, dirs, files) in os.walk(directory):
                 key += '/' + arch
                 if not overall:
                     overall = value
-                elif value == '1':
+                elif value != '0':
                     overall = value
             entry[key] = bits[1]
         entry['status'] = overall
