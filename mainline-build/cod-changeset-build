@@ -34,8 +34,11 @@ repo_remote_update_list $series
 
 build_release="$series"
 
-# Make a branch at the specified sha.
+# Make sure git is ready for anything...
+rm -rf .git/rebase-apply
 git clean -x -f -d
+
+# Make a branch at the specified sha.
 git checkout HEAD^ --
 git branch -D "changeset-$id" || true
 git checkout -b "changeset-$id" "$sha"
