@@ -20,6 +20,7 @@ for (dirname, dirs, files) in os.walk(directory):
     with open(os.path.join(dirname, 'SUMMARY')) as summary_fd:
         entry = {
             'directory': os.path.basename(dirname),
+            'host': 'unknown',
         }
         overall = None
         for line in summary_fd:
