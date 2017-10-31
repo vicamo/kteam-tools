@@ -172,13 +172,15 @@ class Tracking():
                 if not title.startswith(target_package + ':'):
                     continue
                 tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
-                if '%s (Ubuntu %s)' % (target_package, target_series.title()) in tasks_by_name:
-                    found_tasks.append((bugid, tasks_by_name))
+                found_tasks.append((bugid, tasks_by_name))
 
             # Look through the list and see what we have -- pick out the open ones.
             found = []
             for (bugid, tasks_by_name) in found_tasks:
                 lpbug = s.launchpad.bugs[bugid]
+                if '%s (Ubuntu %s)' % (target_package, target_series.title()) not in tasks_by_name and \
+                        target_series not in lpbug.tags:
+                    continue
                 if not s.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
                 if s.args.sru_cycle and s.bug_to_sru_cycle(lpbug) != s.args.sru_cycle:
