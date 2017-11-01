@@ -24,7 +24,7 @@ for (dirname, dirs, files) in os.walk(directory):
         }
         overall = None
         for line in summary_fd:
-            bits = line.strip().split(None, 1)
+            bits = line.strip().split(None, 1) + [ '' ]
             (key, value) = (bits[0][:-1].lower(), bits[1])
             if key == 'status':
                 (arch, value) = value.split(None, 1)
