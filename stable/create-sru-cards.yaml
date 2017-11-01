@@ -29,6 +29,7 @@
             - 'xenial/kvm'
             - 'zesty'
             - 'zesty/raspi2'
+            - 'artful'
         - name: 'Turn the crank - Intel Euclid'
           description: 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
         - name: 'SRU -proposed announcement'
