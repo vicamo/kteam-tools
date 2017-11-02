@@ -10,4 +10,4 @@ zesty|artful|unstable)	;;
 esac
 
 echo "*** applying $patch ..."
-git am -C0 "$patch"
+git am -C0 "$patch" || git am --abort
