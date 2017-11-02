@@ -36,6 +36,7 @@ build_release="$series"
 
 # Make sure git is ready for anything...
 rm -rf .git/rebase-apply
+git reset --hard HEAD
 git clean -x -f -d
 
 # Make a branch at the specified sha.
