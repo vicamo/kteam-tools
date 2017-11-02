@@ -157,7 +157,7 @@
         derivative-packages:
             linux:
             - linux-raspi2
-         development: false
+        development: false
         kernels:
         - 4.11.0
         - 4.12.0
