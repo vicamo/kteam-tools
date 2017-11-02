@@ -11,5 +11,5 @@ fi
 
 if ! grep -q -s 'force no-pie for distro compilers that enable pie by default' Makefile; then
 	echo "*** applying $patch ..."
-	git am -C0 "$patch"
+	git am -C0 "$patch" || git am --abort
 fi
