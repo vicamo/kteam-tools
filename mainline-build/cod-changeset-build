@@ -3,7 +3,7 @@ P='cod-changeset-build'
 
 # Title used to be added, ignore it.
 if [ "$#" -ne 4 -a "$#" -ne 5 ]; then
-	echo "Usage: $0 <series> <package> <sha> <id>" 1>&2
+	echo "Usage: $0 <series> <package> <commit-ish> <id>" 1>&2
 	exit 1
 fi
 
@@ -18,7 +18,7 @@ esac
 
 series="$1"
 package="$2"
-sha="$3"
+commit="$3"
 id="$4"
 
 master_tree_select
@@ -27,10 +27,10 @@ result="../RESULT"
 rm -rf "$result"
 mkdir -p "$result"
 
-echo "$P '$series' '$package' '$sha' '$id'" >"$result/REBUILD"
+echo "$P '$series' '$package' '$commit' '$id'" >"$result/REBUILD"
 
 # Ensure we have the commit identified.
-repo_remote_update_list $series
+repo_remote_update_list crack $series
 
 build_release="$series"
 
@@ -39,10 +39,10 @@ rm -rf .git/rebase-apply
 git reset --hard HEAD
 git clean -x -f -d
 
-# Make a branch at the specified sha.
+# Make a branch at the specified commit.
 git checkout HEAD^ --
 git branch -D "changeset-$id" || true
-git checkout -b "changeset-$id" "$sha"
+git checkout -b "changeset-$id" "$commit"
 
 # Arbitrary patch trigger support.
 adhoc="$here/adhoc"
@@ -52,8 +52,9 @@ do
 done
 
 # Find the commit time.
-cts=$( git log -1 --pretty=format:%ct "$sha" )
-title=$( git log -1 --pretty=format:%s "$sha" )
+sha=$( git log -1 --pretty=fomat:%H "$commit" )
+cts=$( git log -1 --pretty=format:%ct "$commit" )
+title=$( git log -1 --pretty=format:%s "$commit" )
 
 # Clean the tree so we can tell what architectures need building.
 git clean -x -f -d

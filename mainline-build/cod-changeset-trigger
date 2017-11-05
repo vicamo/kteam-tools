@@ -22,6 +22,9 @@ date=`date +%Y%m%d%H%M`
 
 repo="linux"
 
+# Work out where we are going to push the tags et al to.
+repo_remote_url "crack-push"; push_url="$RET"
+
 while read series package branch
 do
 	current="${series}_${package}_${branch}"
@@ -56,8 +59,19 @@ do
 	( cd "$master_main/$repo" && git log "$prev..$tip" ) | "$here/git-changeset" | \
 	while read sha1 changeset title
 	do
+		# We cannot assume any remote machine has this sha1 so tag it with a
+		# temporary name, and publish that into the crack repository.
+		tag="cod/changeset/$series/hash--$sha1"
+		git tag -d "$tag" || true
+		git tag "$tag" "$tip"
+
+		# Note if this fails the job will fail, but it is better that the job
+		# is created and logged so we can rerun it rather than never knowing
+		# about it.
+		git push "$push_url" tag "$tag"
+
 		# Queue up the build.
-		"$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$sha1" "$changeset"
+		"$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$tag" "$changeset"
 	done
 		
 	# Commit the new tip.
