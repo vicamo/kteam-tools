@@ -52,7 +52,7 @@ do
 done
 
 # Find the commit time.
-sha=$( git log -1 --pretty=fomat:%H "$commit" )
+sha=$( git log -1 --pretty=format:%H "$commit" )
 cts=$( git log -1 --pretty=format:%ct "$commit" )
 title=$( git log -1 --pretty=format:%s "$commit" )
 
