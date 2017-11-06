@@ -122,6 +122,7 @@ repo_remote_url_set	'wily'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+sou
 repo_remote_url_set	'wily-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily'
 repo_remote_url_set	'xenial'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial'
 repo_remote_url_set	'xenial-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial'
+repo_remote_url_set	'xenial--linux-azure'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure'
 repo_remote_url_set	'yakkety'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety'
 repo_remote_url_set	'yakkety-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety'
 repo_remote_url_set	'zesty' 		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty'
@@ -159,6 +160,10 @@ repo_remote_update()
 	local url
 	
 	repo_remote_url "$remote"; url="$RET"
+	if [ "$url" = '' ]; then
+		remote="${remote%--linux}"
+		repo_remote_url "$remote"; url="$RET"
+	fi
 
 	repo_remote_update_as "$remote" "$url"
 }
