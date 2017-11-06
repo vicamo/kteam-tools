@@ -22,6 +22,7 @@
             - 'xenial/raspi2'
             - 'xenial/snapdragon'
             - 'xenial/hwe'
+            - 'xenial/hwe-edge'
             - 'xenial/aws'
             - 'xenial/gke'
             - 'xenial/gcp'
