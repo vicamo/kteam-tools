@@ -39,8 +39,8 @@ git clean -x -f -d
 
 # Make a branch at the specified commit.
 git checkout HEAD^ --
-git branch -D "config-$id" || true
-git checkout -b "config-$id" "$tag"
+git branch -D "config-$series" || true
+git checkout -b "config-$series" "$tag"
 
 # Generate the configs at this checkout.
 do_chroot "$build_release-amd64" \
