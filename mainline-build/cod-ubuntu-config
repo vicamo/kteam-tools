@@ -32,8 +32,17 @@ rm -rf CONFIGS
 series_to_build_release "$series"
 build_release="$RET"
 
+# Make sure git is ready for anything...
+rm -rf .git/rebase-apply
+git reset --hard HEAD
+git clean -x -f -d
+
+# Make a branch at the specified commit.
+git checkout HEAD^ --
+git branch -D "config-$id" || true
+git checkout -b "config-$id" "$tag"
+
 # Generate the configs at this checkout.
-git checkout -f "$tag"
 do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean genconfigs
 
