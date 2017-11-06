@@ -23,7 +23,7 @@ tag="$4"
 master_tree_select
 
 # Ensure we have the commit identified.
-repo_remote_update_list $series
+repo_remote_update_list "$series--$package"
 
 # Clean out the rubbish.
 rm -rf CONFIGS
@@ -39,8 +39,8 @@ git clean -x -f -d
 
 # Make a branch at the specified commit.
 git checkout HEAD^ --
-git branch -D "config-$series" || true
-git checkout -b "config-$series" "$tag"
+git branch -D "config-$tag" || true
+git checkout -b "config-$tag" "$tag"
 
 # Generate the configs at this checkout.
 do_chroot "$build_release-amd64" \
