@@ -122,6 +122,7 @@ repo_remote_url_set	'wily'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+sou
 repo_remote_url_set	'wily-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily'
 repo_remote_url_set	'xenial'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial'
 repo_remote_url_set	'xenial-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial'
+repo_remote_url_set	'xenial--linux-aws'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws'
 repo_remote_url_set	'xenial--linux-azure'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure'
 repo_remote_url_set	'yakkety'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety'
 repo_remote_url_set	'yakkety-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety'
