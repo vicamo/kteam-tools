@@ -126,6 +126,7 @@ repo_remote_url_set	'xenial--linux-aws'	'git://git.launchpad.net/~canonical-kern
 repo_remote_url_set	'xenial--linux-azure'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure'
 repo_remote_url_set	'xenial--linux-gcp'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp'
 repo_remote_url_set	'xenial--linux-gke'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke'
+repo_remote_url_set	'xenial--linux-kvm'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm'
 repo_remote_url_set	'yakkety'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety'
 repo_remote_url_set	'yakkety-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety'
 repo_remote_url_set	'zesty' 		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty'
