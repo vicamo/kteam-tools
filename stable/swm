@@ -5,7 +5,8 @@
 
 import sys
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, WARNING, INFO
+from logging                            import basicConfig, DEBUG, WARNING, INFO, getLogger, Formatter, StreamHandler
+from logging.handlers                   import RotatingFileHandler
 import traceback
 
 from wfl.log                            import Clog, center, cleave, cdebug
@@ -44,14 +45,22 @@ examples:
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    if args.debug:
-        log_format = "%(levelname)s - %(message)s"
-        basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
-        Clog.dbg = True
+    logger = getLogger('') # Get the root logger
+    if args.logfile:
+        handler = RotatingFileHandler(args.logfile, maxBytes=1024 * 1024 * 1, backupCount=5)
     else:
-        log_format = "%(message)s"
-        basicConfig(filename=args.logfile, level=INFO, format=log_format)
+        handler = StreamHandler()
+
+    if args.debug:
+        Clog.dbg = True
+        fmt = Formatter("%(levelname)s - %(message)s")
+        logger.setLevel(DEBUG)
+    else:
         Clog.dbg = False
+        fmt = Formatter("%(message)s")
+        logger.setLevel(INFO)
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
 
     center('__main__')
     if args.debug:
