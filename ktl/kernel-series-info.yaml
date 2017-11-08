@@ -131,7 +131,8 @@
             linux-raspi2:
                 meta: linux-meta-raspi2
         derivative-packages:
-            linux: []
+            linux:
+            - linux-raspi2
         development: true
         kernels:
         - 4.13.0
