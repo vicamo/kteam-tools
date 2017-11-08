@@ -1,0 +1,873 @@
+# kernel series information file (YAML format)
+#
+# For each existing series this file contains a record.  That dictionary record
+# defines attributes of the series such as whether it is currently supported or
+# if it is the development release.  It also contains a list of sources within
+# that series.
+#
+# File format:
+# The file en-toto is an unnamed dictionary containing a named series of Series
+# records (see below).  The name for a record is the official series name, for
+# example 18.04.
+#
+# Series record fields:
+#  * name (string)
+#	the short code name for this series (artful, bionic etc)
+#  * development (bool)
+#	set to true if this is the current development release
+#  * supported (bool)
+#	set to true if this series is receiving SRU updates
+#  * lts (bool)
+#	set to true if this series is an LTS release
+#  * esm (bool)
+#	set to true if this series is receiving extended support
+#  * sources (dictionary)
+#	a named series of Source records (see below).  The name is the primary
+#	source package name for example linux-aws.
+#  * versions (list)
+#	list of kernel versions that this series contains latest last
+#
+# Source record fields:
+#  * supported (bool)
+#	set to true if this source package is receiving SRU updates
+#  * packages (dictionary)
+#	a named series of Package records (see below).  The name is the source
+#	package name for that element.
+#  * snaps (dictionary)
+#	a named series of Snap records (see below).  The name is the snap
+#	package name for that element.
+#  * derives-from (Dependency)
+#	indicates that this kernel derives from another kernel; a Dependency
+#	record (see below).  Normally this indicates that this source is
+#	derivative of and rebased onto the indicated source.
+#
+# Package record fields:
+#  * type (string)
+#	the type of the debian package, meta, signed, lbm, lrm, or lum
+#  * repo (Repository)
+#	the repository for this source package; a Repository record (see
+#	below).
+#
+# Snap record fields:
+#  * repo (Repository)
+#	the repository for the source for the snapcraft.yaml etc for this snap
+#	package; a Repository record (see below).
+#
+# Repository record elements:
+#  * 0 (string)
+#	git repository URL
+#  * 1 (string) <optional>
+#	optional branch name within the repository
+#
+# Dependency record elements:
+#  * 0 (string)
+#	official series name containing the depended on source
+#  * 1 (string)
+#	source package name of the depeneded on source
+
+# 18.04 (bionic)
+'18.04':
+    name: bionic
+    development: true
+    versions: ['4.13.0', '4.14.0', '4.15.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                linux-meta-raspi2:
+                    type: meta
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+
+# 17.10 (artful)
+'17.10':
+    name: artful
+    supported: true
+    versions: ['4.11.0', '4.12.0', '4.13.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/artful']
+            supported: true
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/artful', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/artful', 'raspi2']
+            supported: true
+            derived-from: [ '17.10', 'linux' ]
+
+# 17.04 (zesty)
+'17.04':
+    name: zesty
+    supported: true
+    versions: ['4.10.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/zesty']
+            supported: true
+
+        linux-goldfish:
+            packages:
+                linux-goldfish:
+                linux-meta-goldfish:
+                    type: meta
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/zesty', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/zesty', 'raspi2']
+            supported: true
+            derived-from: [ '17.04', 'linux' ]
+
+# 16.10 (yakkety)
+'16.10':
+    name: yakkety
+    versions: ['4.8.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                linux-meta-raspi2:
+                    type: meta
+            supported: true
+            derived-from: [ '16.10', 'linux' ]
+
+# 16.04 (xenial)
+'16.04':
+    name: xenial
+    supported: true
+    lts: true
+    versions: ['4.4.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial']
+            snaps:
+                caracalla-kernel:
+                pc-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'pc']
+                stlouis-kernel:
+            supported: true
+
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial']
+            snaps:
+                aws-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'aws']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure']
+            supported: true
+            derived-from: [ '17.10', 'linux' ]
+
+        linux-azure-edge:
+            packages:
+                linux-azure-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure-edge']
+                linux-meta-azure-edge:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure-edge']
+            supported: true
+            derived-from: [ '17.10', 'linux' ]
+
+        linux-euclid:
+            packages:
+                linux-euclid:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-euclid']
+                linux-meta-euclid:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-euclid']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-flo:
+            packages:
+                linux-flo:
+                linux-meta-flo:
+                    type: meta
+
+        linux-gcp:
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp']
+            snaps:
+                gcp-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gcp']
+            supported: true
+            derived-from: [ '17.04', 'linux' ]
+
+        linux-gke:
+            packages:
+                linux-gke:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke']
+                linux-meta-gke:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke']
+            snaps:
+                gke-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gke']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-goldfish:
+            packages:
+                linux-goldfish:
+                linux-meta-goldfish:
+                    type: meta
+
+        linux-hwe:
+            packages:
+                linux-hwe:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe']
+                linux-meta-hwe:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'hwe']
+                linux-signed-hwe:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe']
+            supported: true
+            derived-from: [ '17.04', 'linux' ]
+
+        linux-hwe-edge:
+            packages:
+                linux-hwe-edge:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe-edge']
+                linux-meta-hwe-edge:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'hwe-edge']
+                linux-signed-hwe-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe-edge']
+            supported: true
+            derived-from: [ '17.10', 'linux' ]
+
+        linux-joule:
+            packages:
+                linux-joule:
+                linux-meta-joule:
+                    type: meta
+
+        linux-kvm:
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-mako:
+            packages:
+                linux-mako:
+                linux-meta-mako:
+                    type: meta
+
+        linux-oem:
+            packages:
+                linux-oem:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem']
+                linux-meta-oem:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem']
+                linux-signed-oem:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem']
+            supported: true
+            derived-from: [ '17.10', 'linux' ]
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/xenial', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/xenial', 'raspi2']
+            snaps:
+                pi2-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'raspi2']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snapdragon/+git/xenial', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-snapdragon/+git/xenial', 'snapdragon']
+            snaps:
+                dragonboard-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'snapdragon']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+# 15.10 (wily)
+'15.10':
+    name: wily
+    versions: ['4.2.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                linux-meta-raspi2:
+                    type: meta
+            supported: true
+            derived-from: [ '15.10', 'linux' ]
+
+# 15.04 (vivid)
+'15.04':
+    name: vivid
+    versions: ['3.19.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+# 14.10 (utopic)
+'14.10':
+    name: utopic
+    versions: ['3.16.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+# 14.04 (trusty)
+'14.04':
+    name: trusty
+    supported: true
+    lts: true
+    versions: ['3.13.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty']
+            supported: true
+
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/trusty']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/trusty']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+        linux-keystone:
+            packages:
+                linux-keystone:
+                linux-meta-keystone:
+                    type: meta
+
+        linux-lts-utopic:
+            packages:
+                linux-lts-utopic:
+                linux-meta-lts-utopic:
+                    type: meta
+                linux-signed-lts-utopic:
+                    type: signed
+            derived-from: [ '14.10', 'linux' ]
+
+        linux-lts-vivid:
+            packages:
+                linux-lts-vivid:
+                linux-meta-lts-vivid:
+                    type: meta
+                linux-signed-lts-vivid:
+                    type: signed
+            derived-from: [ '15.04', 'linux' ]
+
+        linux-lts-wily:
+            packages:
+                linux-lts-wily:
+                linux-meta-lts-wily:
+                    type: meta
+                linux-signed-lts-wily:
+                    type: signed
+            derived-from: [ '15.10', 'linux' ]
+
+        linux-lts-xenial:
+            packages:
+                linux-lts-xenial:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-xenial']
+                linux-meta-lts-xenial:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-xenial']
+                linux-signed-lts-xenial:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-xenial']
+            supported: true
+            derived-from: [ '16.04', 'linux' ]
+
+# 13.10 (saucy)
+'13.10':
+    name: saucy
+    versions: ['3.11.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-lowlatency:
+            packages:
+                linux-lowlatency:
+                linux-meta-lowlatency:
+                    type: meta
+            supported: true
+            derived-from: [ '13.10', 'linux' ]
+
+        linux-ppc:
+            packages:
+                linux-ppc:
+                linux-meta-ppc:
+                    type: meta
+            supported: true
+            derived-from: [ '13.10', 'linux' ]
+
+# 13.04 (raring)
+'13.04':
+    name: raring
+    versions: ['3.8.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-lowlatency:
+            packages:
+                linux-lowlatency:
+                linux-meta-lowlatency:
+                    type: meta
+            supported: true
+            derived-from: [ '13.04', 'linux' ]
+
+        linux-ppc:
+            packages:
+                linux-ppc:
+                linux-meta-ppc:
+                    type: meta
+            supported: true
+            derived-from: [ '13.04', 'linux' ]
+
+# 12.10 (quantal)
+'12.10':
+    name: quantal
+    versions: ['3.5.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-3.5.0:
+                    type: lbm
+                linux-meta:
+                    type: meta
+                linux-signed:
+                    type: signed
+            supported: true
+
+        linux-armadaxp:
+            packages:
+                linux-armadaxp:
+                linux-meta-armadaxp:
+                    type: meta
+            supported: true
+            derived-from: [ '12.10', 'linux' ]
+
+        linux-lowlatency:
+            packages:
+                linux-lowlatency:
+                linux-meta-lowlatency:
+                    type: meta
+            supported: true
+            derived-from: [ '12.10', 'linux' ]
+
+        linux-ti-omap4:
+            packages:
+                linux-ti-omap4:
+                linux-meta-ti-omap4:
+                    type: meta
+            supported: true
+            derived-from: [ '12.10', 'linux' ]
+
+# 12.04 (precise)
+'12.04':
+    name: precise
+    supported: true
+    lts: true
+    esm: true
+    versions: ['3.2.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise']
+                linux-backports-modules-3.2.0:
+                    type: lbm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise']
+            supported: true
+
+        linux-armadaxp:
+            packages:
+                linux-armadaxp:
+                linux-meta-armadaxp:
+                    type: meta
+
+        linux-flo:
+            packages:
+                linux-flo:
+                linux-meta-flo:
+                    type: meta
+
+        linux-goldfish:
+            packages:
+                linux-goldfish:
+                linux-meta-goldfish:
+                    type: meta
+
+        linux-lts-quantal:
+            packages:
+                linux-lts-quantal:
+                linux-meta-lts-quantal:
+                    type: meta
+                linux-signed-lts-quantal:
+                    type: signed
+
+        linux-lts-raring:
+            packages:
+                linux-lts-raring:
+                linux-meta-lts-raring:
+                    type: meta
+                linux-signed-lts-raring:
+                    type: signed
+
+        linux-lts-saucy:
+            packages:
+                linux-lts-saucy:
+                linux-meta-lts-saucy:
+                    type: meta
+                linux-signed-lts-saucy:
+                    type: signed
+
+        linux-lts-trusty:
+            packages:
+                linux-lts-trusty:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-trusty']
+                linux-meta-lts-trusty:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-trusty']
+                linux-signed-lts-trusty:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-trusty']
+            supported: true
+            derived-from: [ '14.04', 'linux' ]
+
+        linux-mako:
+            packages:
+                linux-mako:
+                linux-meta-mako:
+                    type: meta
+
+        linux-manta:
+            packages:
+                linux-manta:
+                linux-meta-manta:
+                    type: meta
+
+        linux-ti-omap4:
+            packages:
+                linux-ti-omap4:
+                linux-meta-ti-omap4:
+                    type: meta
+
+# 11.10 (oneiric)
+'11.10':
+    name: oneiric
+    versions: ['3.0.0']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-3.0.0:
+                    type: lbm
+                linux-meta:
+                    type: meta
+            supported: true
+
+        linux-ti-omap4:
+            packages:
+                linux-ti-omap4:
+                linux-meta-ti-omap4:
+                    type: meta
+            supported: true
+            derived-from: [ '11.10', 'linux' ]
+
+# 11.04 (natty)
+'11.04':
+    name: natty
+    versions: ['2.6.38']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-2.6.38:
+                    type: lbm
+                linux-meta:
+                    type: meta
+            supported: true
+
+        linux-ti-omap4:
+            packages:
+                linux-ti-omap4:
+                linux-meta-ti-omap4:
+                    type: meta
+            supported: true
+            derived-from: [ '11.04', 'linux' ]
+
+# 10.10 (maverick)
+'10.10':
+    name: maverick
+    versions: ['2.6.35']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-2.6.35:
+                    type: lbm
+                linux-meta:
+                    type: meta
+                linux-ports-meta:
+                    type: ports-meta
+            supported: true
+
+        linux-mvl-dove:
+            packages:
+                linux-mvl-dove:
+                linux-meta-mvl-dove:
+                    type: meta
+            supported: true
+            derived-from: [ '10.10', 'linux' ]
+
+        linux-ti-omap4:
+            packages:
+                linux-ti-omap4:
+                linux-meta-ti-omap4:
+                    type: meta
+            supported: true
+            derived-from: [ '10.10', 'linux' ]
+
+# 10.04 (lucid)
+'10.04':
+    name: lucid
+    versions: ['2.6.32']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-2.6.32:
+                    type: lbm
+                linux-meta:
+                    type: meta
+                linux-ports-meta:
+                    type: ports-meta
+            supported: true
+
+        linux-ec2:
+            packages:
+                linux-ec2:
+                linux-meta-ec2:
+                    type: meta
+            supported: true
+            derived-from: [ '10.04', 'linux' ]
+
+# 9.10 (karmic)
+'9.10':
+    name: karmic
+    versions: ['2.6.31']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-2.6.31:
+                    type: lbm
+                linux-meta:
+                    type: meta
+                linux-ports-meta:
+                    type: ports-meta
+            supported: true
+
+        linux-ec2:
+            packages:
+                linux-ec2:
+                linux-meta-ec2:
+                    type: meta
+            supported: true
+            derived-from: [ '9.10', 'linux' ]
+
+        linux-fsl-imx51:
+            packages:
+                linux-fsl-imx51:
+                linux-meta-fsl-imx51:
+                    type: meta
+            supported: true
+            derived-from: [ '9.10', 'linux' ]
+
+        linux-mvl-dove:
+            packages:
+                linux-mvl-dove:
+                linux-meta-mvl-dove:
+                    type: meta
+            supported: true
+            derived-from: [ '9.10', 'linux' ]
+
+# 9.04 (jaunty)
+'9.04':
+    name: jaunty
+    versions: ['2.6.28']
+
+# 8.10 (intrepid)
+'8.10':
+    name: intrepid
+    versions: ['2.6.27']
+
+# 8.04 (hardy)
+'8.04':
+    name: hardy
+    versions: ['2.6.24']
+    sources:
+        linux:
+            packages:
+                linux:
+                linux-backports-modules-2.6.24:
+                    type: lbm
+                linux-restricted-modules-2.6.24:
+                    type: lrm
+                linux-ubuntu-modules-2.6.24:
+                    type: lum
+                linux-meta:
+                    type: meta
+
+# 7.10 (gutsy)
+'7.10':
+    name: gutsy
+    versions: ['2.6.22']
+
+# 7.04 (feisty)
+'7.04':
+    name: feisty
+    versions: ['2.6.20']
+
+# 6.06 (dapper)
+'6.06':
+    name: dapper
+    versions: ['2.6.15']
+    sources:
+        linux-source-2.6.15:
+            packages:
+                linux-source-2.6.15:
+                linux-backports-modules-2.6.15:
+                    type: lbm
+                linux-restricted-modules-2.6.15:
+                    type: lrm
