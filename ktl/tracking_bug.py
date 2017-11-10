@@ -17,6 +17,7 @@ class TrackingBug:
         self.wf = Workflow()
         self.ub = Ubuntu()
         self.__dependency_list = None
+        self.__dependency_snap_list = None
         self._targeted_series_name = None
         self._series_specified = None
         self._series_target = None
@@ -40,6 +41,20 @@ class TrackingBug:
 
         retval = dependent_package in self.__dependency_list
         return retval
+
+    # _get_dependent_snap_prop
+    def _get_dependent_snap_prop(self, series, main_package, prop):
+        '''
+        Return the value of the property of the dependent snap for the
+        specified series/package. Return None if not found.
+        '''
+        if self.__dependency_snap_list is None:
+            try:
+                record = self.ub.lookup(series)
+                self.__dependency_snap_list = record['dependent-snaps'][main_package]
+            except KeyError:
+                self.__dependency_snap_list = {}
+        return self.__dependency_snap_list.get(prop, None)
 
     # valid_series
     #
@@ -65,7 +80,7 @@ class TrackingBug:
             if lp_series.name == 'prepare-package-signed' and not s.has_dependent_package(targeted_series_name, package, 'signed'):
                 cdebug('    no prepare-package-signed', 'yellow')
                 break
-            if not s.has_dependent_package(targeted_series_name, package, 'snap'):
+            if s._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
                 if lp_series.name == 'snap-release-to-edge':
                     cdebug('    no snap-release-to-edge', 'yellow')
                     break
@@ -87,6 +102,22 @@ class TrackingBug:
                 if lp_series.name == 'snap-certification-testing':
                     cdebug('    no snap-certification-testing', 'yellow')
                     break
+            else:
+                if lp_series.name == 'snap-certification-testing':
+                    hw_cert = s._get_dependent_snap_prop(targeted_series_name, package, 'hw-cert')
+                    if hw_cert is None or not hw_cert:
+                        cdebug('    no snap-certification-testing', 'yellow')
+                        break
+                if lp_series.name == 'snap-qa-testing':
+                    qa = s._get_dependent_snap_prop(targeted_series_name, package, 'qa')
+                    if qa is None or not qa:
+                        cdebug('    no snap-qa-testing', 'yellow')
+                        break
+                if lp_series.name == 'snap-publish':
+                    gated = s._get_dependent_snap_prop(targeted_series_name, package, 'gated')
+                    if gated is None or not gated:
+                        cdebug('    no snap-publish', 'yellow')
+                        break
             retval = True
             break
         return retval
@@ -310,6 +341,7 @@ class TrackingBug:
         cdebug('    series_specified: %s' % series_specified)
 
         self.__dependency_list = None
+        self.__dependency_snap_list = None
 
         self.package = package
         self.version = version
