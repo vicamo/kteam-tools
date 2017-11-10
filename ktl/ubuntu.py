@@ -9,6 +9,70 @@ except ImportError:
 
 import yaml
 
+
+def convert_v2_to_v1(data):
+    data_v1 = {}
+    for series_key, series in data.items():
+        series_v1 = data_v1.setdefault(series_key, {})
+
+        series_v1['series_version'] = series_key
+        series_v1['name'] = series['name']
+        for key in ('development', 'supported'):
+            series_v1[key] = series.get(key, False)
+        for key in ('lts', 'esm'):
+            if series.get(key, False):
+                series_v1[key] = series[key]
+
+        if 'versions' in series:
+            series_v1['kernels'] = series['versions']
+            series_v1['kernel'] = series_v1['kernels'][-1]
+
+        if 'sources' not in series:
+            continue
+
+        series_v1['derivative-packages'] = {}
+
+        # We need this to exist even if there are none.
+        series_v1['derivative-packages']['linux'] = []
+        for source_key, source in series['sources'].items():
+            if 'derived-from' in source:
+                (derived_series, derived_package) = source['derived-from']
+                if derived_series == series_key:
+                    derivative_packages = series_v1['derivative-packages'].setdefault(derived_package, [])
+                    derivative_packages.append(source_key)
+                else:
+                    backport_packages = series_v1.setdefault('backport-packages', {})
+                    backport_packages[source_key] = [ derived_package, derived_series ]
+
+            for package_key, package in source['packages'].items():
+                if 'supported' in source and source['supported']:
+                    series_v1.setdefault('packages', []).append(package_key)
+
+                if not package:
+                    continue
+
+                dependent_packages = series_v1.setdefault('dependent-packages', {})
+                dependent_packages_package = dependent_packages.setdefault(source_key, {})
+
+                if 'type' in package:
+                    dependent_packages_package[package['type']] = package_key
+
+            if 'snaps' in source:
+                for snap_key, snap in source['snaps'].items():
+                    if snap and 'repo' in snap:
+                        dependent_snaps = series_v1.setdefault('dependent-snaps', {})
+                        dependent_snaps_source = dependent_snaps.setdefault(source_key, {})
+                        for key in [ 'snap' ] + [ "snap" + str(x) for x in range(2, 10) ]:
+                            if key in dependent_snaps_source:
+                                continue
+                            dependent_snaps_source[key] = snap_key
+                            break
+                    else:
+                        derivative_snaps = series_v1.setdefault('derivative-snaps', {})
+                        derivative_snaps.setdefault(source_key, []).append(snap_key)
+
+    return data_v1
+
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
 # but not for some others (some ARM packages are known to be wrong). This is because the ARM kernels used for some
@@ -33,7 +97,8 @@ class Ubuntu:
     # directory on kernel.ubuntu.com.
     #
     url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
-    # url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
+    # url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    # url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     response = urlopen(url)
     content = response.read()
     if type(content) != str:
@@ -56,9 +121,10 @@ class Ubuntu:
 
     kernel_source_packages = []
     for v in db:
-        for p in db[v]['packages']:
-            if p not in kernel_source_packages:
-                kernel_source_packages.append(p)
+        if 'packages' in db[v]:
+            for p in db[v]['packages']:
+                if p not in kernel_source_packages:
+                    kernel_source_packages.append(p)
 
     # lookup
     #

@@ -1,0 +1,320 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import os
+import sys
+import yaml
+
+
+def series_package_repo(series, package):
+    result = 'BROKEN'
+    if package in ('linux', 'linux-signed', 'linux-meta'):
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package) ]
+
+    elif package.endswith('-raspi2') or package.endswith('-snapdragon') or package.endswith('-goldfish') or package.endswith('-flo'):
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package), package.split('-')[-1] ]
+
+    elif package in ('linux-backports-modules-3.2.0'):
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}".format(series=series, package=package) ]
+
+    elif package.endswith('-aws'):
+        result = [ "git://git.launchpad.net/~canonical-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package) ]
+
+    elif (package.endswith('-azure') or
+          package.endswith('-azure-edge') or
+          package.endswith('-euclid') or
+          package.endswith('-gcp') or
+          package.endswith('-gke') or
+          package.endswith('-kvm') or
+          package.endswith('-oem')
+         ):
+        result = [ "git://git.launchpad.net/~canonical-kernel/ubuntu/+source/{package}".format(series=series, package=package) ]
+
+    elif (package.startswith('linux-lts-') or
+          package.startswith('linux-signed-lts-') or
+          package.startswith('linux-meta-lts-')
+         ):
+        bits = package.split('-')
+        branch = 'lts-backport-' + bits[-1]
+        package = '-'.join(bits[:-2])
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}".format(series=series, package=package), branch ]
+
+    elif (package.endswith('-hwe') or
+          package.endswith('-hwe-edge')
+         ):
+        bits = package.split('-')
+        if bits[1] in ('signed', 'meta'):
+            branch = '-'.join(bits[2:])
+            package = '-'.join(bits[:2])
+        else:
+            branch = '-'.join(bits[1:])
+            package = '-'.join(bits[:1])
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}".format(series=series, package=package), branch ]
+
+    return str(result)
+
+
+snaps_series_snap_repo = {}
+ubuntu_kernel_snaps = """
+aws-kernel  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:aws    2017-07-17 09:24:33 BST
+gke-kernel  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:gke    2017-07-17 09:47:35 BST
+gcp-kernel  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:gcp    2017-09-21 14:33:42 BST
+dragonboard-kernel  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:snapdragon     2016-11-08 15:41:08 GMT
+pi2-kernel  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:raspi2     2016-11-08 15:13:59 GMT
+pc-kernel   ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:pc     2016-11-08 15:15:52 GMT
+pi2-kernel-testing-arm64    ~ubuntu-kernel/ubuntu/+source/linux/+git/xenial:raspi2  2017-08-17 07:01:15 BST
+pi2-kernel-testing  ~ubuntu-kernel/ubuntu/+source/linux/+git/xenial:raspi2  2017-08-17 06:35:33 BST
+gke-kernel-test     ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:gke-test   2017-07-26 16:05:56 BST
+aws-kernel-test     ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:aws-test   2017-07-26 11:53:14 BST
+snapdragon-kernel-test  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:snapdragon-test    2017-07-17 11:09:22 BST
+raspi2-kernel-test  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:raspi2-test    2017-07-17 16:24:35 BST
+pc-kernel-test  ~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial:pc-test    2016-12-05 13:44:21 GMT
+joule-uvc       2017-05-08 13:43:18 BST
+test-kernel-snap    ~ubuntu-kernel/ubuntu/+source/linux/+git/xenial:master-next
+"""
+for entry in ubuntu_kernel_snaps.strip().split('\n'):
+    bits = entry.split()
+    if len(bits) < 5:
+        continue
+    (snap, repo_branch) = bits[0:2]
+    (repo, branch) = repo_branch.split(':')
+    series = repo.split('/')[-1]
+
+    #print(series, snap, repo, branch)
+    snaps_series_snap_repo[(series, snap)] = str([ "git://git.launchpad.net/" + repo, branch ])
+
+
+def series_snap_repo(series, snap):
+    return snaps_series_snap_repo.get((series, snap), None)
+
+
+# Load up the existing data.
+with open('kernel-series-info.yaml') as dfd:
+    data = yaml.load(dfd)
+
+print("""
+# kernel series information file (YAML format)
+#
+# For each existing series this file contains a record.  That dictionary record
+# defines attributes of the series such as whether it is currently supported or
+# if it is the development release.  It also contains a list of sources within
+# that series.
+#
+# File format:
+# The file en-toto is an unnamed dictionary containing a named series of Series
+# records (see below).  The name for a record is the official series name, for
+# example 18.04.
+#
+# Series record fields:
+#  * name (string)
+#	the short code name for this series (artful, bionic etc)
+#  * development (bool)
+#	set to true if this is the current development release
+#  * supported (bool)
+#	set to true if this series is receiving SRU updates
+#  * lts (bool)
+#	set to true if this series is an LTS release
+#  * esm (bool)
+#	set to true if this series is receiving extended support
+#  * sources (dictionary)
+#	a named series of Source records (see below).  The name is the primary
+#	source package name for example linux-aws.
+#  * versions (list)
+#	list of kernel versions that this series contains latest last
+#
+# Source record fields:
+#  * supported (bool)
+#	set to true if this source package is receiving SRU updates
+#  * packages (dictionary)
+#	a named series of Package records (see below).  The name is the source
+#	package name for that element.
+#  * snaps (dictionary)
+#	a named series of Snap records (see below).  The name is the snap
+#	package name for that element.
+#  * derives-from (Dependency)
+#	indicates that this kernel derives from another kernel; a Dependency
+#	record (see below).  Normally this indicates that this source is
+#	derivative of and rebased onto the indicated source.
+#
+# Package record fields:
+#  * type (string)
+#	the type of the debian package, meta, signed, lbm, lrm, or lum
+#  * repo (Repository)
+#	the repository for this source package; a Repository record (see
+#	below).
+#
+# Snap record fields:
+#  * repo (Repository)
+#	the repository for the source for the snapcraft.yaml etc for this snap
+#	package; a Repository record (see below).
+#
+# Repository record elements:
+#  * 0 (string)
+#	git repository URL
+#  * 1 (string) <optional>
+#	optional branch name within the repository
+#
+# Dependency record elements:
+#  * 0 (string)
+#	official series name containing the depended on source
+#  * 1 (string)
+#	source package name of the depeneded on source
+""".lstrip())
+
+series_map = {}
+series_supported = {}
+for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].split('.'))], reverse=True):
+    series_map[series_key] = series['name']
+    series_supported[series_key] = series.get('supported', False)
+
+first = True
+for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].split('.'))], reverse=True):
+    if not first:
+        print("")
+    first = True
+    print("# {} ({})".format(series_key, series_map[series_key]))
+    print("'{}':".format(series_key))
+    print("    name: {}".format(series['name']))
+    for key in ('development', 'supported', 'lts', 'esm'):
+        if series.get(key, False):
+            print("    {}: true".format(key))
+
+    if 'kernels' in series:
+        print("    versions: " + str(series['kernels']))
+    elif 'kernel' in series:
+        print("    versions: " + str([ series['kernel' ]]))
+
+    if ('dependent-packages' not in series and
+        len(series.get('packages', [])) == 0
+       ): 
+        first = False
+        continue
+
+    if 'dependent-packages' not in series:
+        def package_key(package):
+            if package.startswith('linux-meta'):
+                key = base_kernel + package[len('linux-meta'):]
+
+            elif package.startswith('linux-signed'):
+                key = base_kernel + package[len('linux-signed'):]
+
+            elif package.startswith('linux-backports-modules-'):
+                key = base_kernel
+
+            elif package.startswith('linux-restricted-modules-'):
+                key = base_kernel
+
+            elif package == 'linux-ports-meta':
+                key = base_kernel
+
+            else:
+                key = package
+
+            return key
+
+        base_kernel = 'BROKEN'
+        if 'linux' in series['packages']:
+            base_kernel = 'linux'
+        elif 'linux-source-2.6.15' in series['packages']:
+            base_kernel = 'linux-source-2.6.15'
+
+        # For very old series we only actually have the packages list,
+        # use this to intuit the dependent and derivative package lists.
+        dependent_packages = {}
+        derivative_packages = {}
+        for prime, package in [ (package_key(x), x) for x in series['packages'] ]:
+            dependent_packages_prime = dependent_packages.setdefault(prime, {})
+
+            if prime == package:
+                if package != base_kernel:
+                    derivative_packages.setdefault(base_kernel, []).append(package)
+                continue
+
+            type = 'BROKEN'
+            if package.startswith('linux-meta'):
+                type = 'meta'
+
+            elif package.startswith('linux-signed'):
+                type = 'signed'
+
+            elif package.startswith('linux-backports-modules-'):
+                type = 'lbm'
+
+            elif package.startswith('linux-restricted-modules-'):
+                type = 'lrm'
+
+            elif package.startswith('linux-ubuntu-modules-'):
+                type = 'lum'
+
+            elif package == 'linux-ports-meta':
+                type = 'ports-meta'
+
+            dependent_packages_prime[type] = package
+
+        series['dependent-packages'] = dependent_packages
+        series['derivative-packages'] = derivative_packages
+
+    # derivative-packages indicates packages in this series which depend on
+    # a package in this series.
+    # backports-packages indicates packages in this series which depend on
+    # a package in a specified series.
+    supported = {}
+    derived = {}
+    if 'derivative-packages' in series:
+        for package_key, packages in series['derivative-packages'].items():
+            supported[package_key] = True
+            for package in packages:
+                supported[package] = True
+                derived[package] = "[ '{}', '{}' ]".format(series_key, package_key)
+    if 'backport-packages' in series:
+        for package_key, packages in series['backport-packages'].items():
+            if series_supported[packages[1]]:
+                supported[package_key] = True
+            derived[package_key] = "[ '{}', '{}' ]".format(packages[1], packages[0])
+
+    #test_flavours = {}
+    #if 'test_flavours' in series:
+    #    for package_key, flavours in series['test_flavours'].items():
+    #        test_flavours[package_key] = flavours
+
+    snap_data = {}
+    if 'dependent-snaps' in series:
+        for package_key, snaps in series['dependent-snaps'].items():
+            for snap in snaps.values():
+                package_snap_data = snap_data.setdefault(package_key, {})
+                package_snap_data[snap] = str(series_snap_repo(series_map[series_key], snap))
+    if 'derivative-snaps' in series:
+        for package_key, snaps in series['derivative-snaps'].items():
+            for snap in snaps:
+                package_snap_data = snap_data.setdefault(package_key, {})
+                package_snap_data[snap] = str(series_snap_repo(series_map[series_key], snap))
+
+    for package_key, packages in sorted(series['dependent-packages'].items()):
+        if first:
+            print("    sources:")
+        else:
+            print("")
+        first = False
+        print("        {}:".format(package_key))
+
+        print("            packages:")
+        print("                {}:".format(package_key))
+        if package_key in supported and series_supported[series_key]:
+            print("                    repo: {}".format(series_package_repo(series_map[series_key], package_key)))
+        for dpackage_key, dpackage in sorted(packages.items(), key=lambda x: x[0]):
+            print("                {}:".format(dpackage))
+            print("                    type: {}".format(dpackage_key))
+            if package_key in supported and series_supported[series_key]:
+                print("                    repo: {}".format(series_package_repo(series_map[series_key], dpackage)))
+
+        if package_key in snap_data:
+            print("            snaps:")
+            for snap_key, snap_info in sorted(snap_data[package_key].items(), key=lambda x: x[0]):
+                print("                {}:".format(snap_key))
+                if snap_info != 'None':
+                    print("                    repo:", snap_info)
+
+        if package_key in supported:
+            print("            supported: true")
+        if package_key in derived:
+            print("            derived-from: {}".format(derived[package_key]))
