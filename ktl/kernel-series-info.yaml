@@ -123,6 +123,51 @@
     #           oneiric backport, the list means, we are backporting from
     #           'linux' package present on '11.10'.
     #
+    # * dependent-snaps (dictionary)
+    #       Dictionary used to list the packages which should have snap related
+    #       tasks added to the same tracking bug used for the debian packages.
+    #       This information will be used to create and process the tracking
+    #       bugs.
+    #
+    #       Format:
+    #           'dependent-snaps': {
+    #             <source package name A>: {
+    #               'snap': <snap name>
+    #               'gated': (bool)
+    #               'stable': (bool)
+    #               'arches': [<arch 1>[,arch2...]]
+    #             }
+    #             <source package name B>: ...
+    #           }
+    #
+    #           Fields:
+    #             - gated:   whether the snap is gated by another snap. This controls if the
+    #                        snap will be refreshed automatically by the users once it
+    #                        hits the stable channel. (bool)
+    #             - stable:  whether the snap should be published to the stable channel. (bool)
+    #             - qa:      whether the snap needs QA testing (snap-qa-testing task). (bool)
+    #             - hw-cert: whether the snap needs HW certification tests
+    #                        (snap-certification-testing). (bool)
+    #             - arches:  list of architectures which the snap is built for.
+    #
+    #       Example:
+    #           dependent-snaps:
+    #               linux:
+    #                   snap: pc-kernel
+    #                   gated: false
+    #                   stable: true
+    #                   qa: true
+    #                   hw-cert: true
+    #                   arches:
+    #                   - amd64
+    #                   - i386
+    #
+    # * derivative-snaps (dictionary)
+    #       Similar to 'dependent-snaps', but used to list the snaps which should have
+    #       separate tracking bugs from the master debian package. This is useful when
+    #       the same debian package will be used to generate several debian packages
+    #       and need a tracking bug for each of the snaps.
+    #
     '18.04':
         dependent-packages:
             linux:
@@ -282,16 +327,53 @@
         dependent-snaps:
             linux:
                 snap: pc-kernel
+                gated: false
+                stable: true
+                qa: false
+                hw-cert: true
+                arches:
+                - amd64
+                - i386
             linux-raspi2:
                 snap: pi2-kernel
+                gated: false
+                stable: true
+                qa: false
+                hw-cert: true
+                arches:
+                - armhf
             linux-snapdragon:
                 snap: dragonboard-kernel
+                gated: false
+                stable: true
+                qa: false
+                hw-cert: true
+                arches:
+                - arm64
             linux-aws:
                 snap: aws-kernel
+                gated: false
+                stable: false
+                qa: false
+                hw-cert: false
+                arches:
+                - amd64
             linux-gke:
                 snap: gke-kernel
+                gated: false
+                stable: false
+                qa: false
+                hw-cert: false
+                arches:
+                - amd64
             linux-gcp:
                 snap: gcp-kernel
+                gated: false
+                stable: false
+                qa: false
+                hw-cert: false
+                arches:
+                - amd64
         derivative-packages:
             linux:
             - linux-raspi2
