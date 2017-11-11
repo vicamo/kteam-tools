@@ -459,7 +459,7 @@ class WorkflowBug():
                 dup_wb = WorkflowBug(s.lp, dup.id)
                 if not dup_wb.is_workflow:
                     continue
-                if dup_wb.__package.all_built_and_in_proposed:
+                if dup_wb.__package and dup_wb.__package.all_built_and_in_proposed:
                     cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup.id,), 'yellow')
                     retval = True
                     break
