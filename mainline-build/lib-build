@@ -168,7 +168,7 @@ repo_remote_update()
 	
 	repo_remote_url "$remote"; url="$RET"
 	if [ "$url" = '' ]; then
-		remote="${remote%--linux}"
+		remote="${remote%--*}"
 		repo_remote_url "$remote"; url="$RET"
 	fi
 
