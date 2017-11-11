@@ -136,6 +136,8 @@ repo_remote_url_set	'zesty' 		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+so
 repo_remote_url_set	'zesty-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty'
 repo_remote_url_set	'artful'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful'
 repo_remote_url_set	'artful-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful'
+repo_remote_url_set	'bionic'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic'
+repo_remote_url_set	'bionic-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic'
 
 repo_remote_url_set	'unstable'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable'
 
