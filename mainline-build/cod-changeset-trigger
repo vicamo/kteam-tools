@@ -56,23 +56,28 @@ do
 		prev="$tip^"
 	fi
 
-	( cd "$master_main/$repo" && git log "$prev..$tip" ) | "$here/git-changeset" | \
-	while read sha1 changeset title
-	do
-		# We cannot assume any remote machine has this sha1 so tag it with a
-		# temporary name, and publish that into the crack repository.
-		tag="cod/changeset/$series/hash--$sha1"
-		git tag -d "$tag" || true
-		git tag "$tag" "$tip"
+	(
+		cd "$master_main/$repo" || exit 1
 
-		# Note if this fails the job will fail, but it is better that the job
-		# is created and logged so we can rerun it rather than never knowing
-		# about it.
-		git push "$push_url" tag "$tag"
+		git log "$prev..$tip" | "$here/git-changeset" | \
+		while read sha1 changeset title
+		do
+			# We cannot assume any remote machine has this sha1 so tag it with a
+			# temporary name, and publish that into the crack repository.
+			tag="cod/changeset/$series/hash--$sha1"
+			git tag -d "$tag" || true
+			git tag "$tag" "$tip"
 
-		# Queue up the build.
-		"$here/cod-enqueue" "cod-changeset-build" "$series" "$package" "$tag" "$changeset"
-	done
+			# Note if this fails the job will fail, but it is better that the job
+			# is created and logged so we can rerun it rather than never knowing
+			# about it.
+			git push "$push_url" tag "$tag"
+
+			# Queue up the build.
+			"$here/cod-enqueue" "cod-changeset-build" \
+				"$series" "$package" "$tag" "$changeset"
+		done
+	)
 		
 	# Commit the new tip.
 	echo "$tip" >"$curr.new"
