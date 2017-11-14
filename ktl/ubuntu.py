@@ -23,12 +23,14 @@ def convert_v2_to_v1(data):
             if series.get(key, False):
                 series_v1[key] = series[key]
 
-        if 'versions' in series:
-            series_v1['kernels'] = series['versions']
-            series_v1['kernel'] = series_v1['kernels'][-1]
-
         if 'sources' not in series:
             continue
+
+        for source_key, source in series['sources'].items():
+            if 'versions' in source:
+                series_v1['kernels'] = source['versions']
+                series_v1['kernel'] = series_v1['kernels'][-1]
+                break
 
         series_v1['derivative-packages'] = {}
 

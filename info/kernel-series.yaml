@@ -24,10 +24,10 @@
 #  * sources (dictionary)
 #	a named series of Source records (see below).  The name is the primary
 #	source package name for example linux-aws.
-#  * versions (list)
-#	list of kernel versions that this series contains latest last
 #
 # Source record fields:
+#  * versions (list)
+#	list of kernel versions that this source contains latest last
 #  * supported (bool)
 #	set to true if this source package is receiving SRU updates
 #  * packages (dictionary)
@@ -85,9 +85,9 @@
 '18.04':
     name: bionic
     development: true
-    versions: ['4.13.0', '4.14.0', '4.15.0']
     sources:
         linux:
+            versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
                 linux-meta:
@@ -108,9 +108,9 @@
 '17.10':
     name: artful
     supported: true
-    versions: ['4.11.0', '4.12.0', '4.13.0']
     sources:
         linux:
+            versions: ['4.11.0', '4.12.0', '4.13.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful']
@@ -136,9 +136,9 @@
 '17.04':
     name: zesty
     supported: true
-    versions: ['4.10.0']
     sources:
         linux:
+            versions: ['4.10.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty']
@@ -169,9 +169,9 @@
 # 16.10 (yakkety)
 '16.10':
     name: yakkety
-    versions: ['4.8.0']
     sources:
         linux:
+            versions: ['4.8.0']
             packages:
                 linux:
                 linux-meta:
@@ -193,9 +193,9 @@
     name: xenial
     supported: true
     lts: true
-    versions: ['4.4.0']
     sources:
         linux:
+            versions: ['4.4.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial']
@@ -419,9 +419,9 @@
 # 15.10 (wily)
 '15.10':
     name: wily
-    versions: ['4.2.0']
     sources:
         linux:
+            versions: ['4.2.0']
             packages:
                 linux:
                 linux-meta:
@@ -441,9 +441,9 @@
 # 15.04 (vivid)
 '15.04':
     name: vivid
-    versions: ['3.19.0']
     sources:
         linux:
+            versions: ['3.19.0']
             packages:
                 linux:
                 linux-meta:
@@ -455,9 +455,9 @@
 # 14.10 (utopic)
 '14.10':
     name: utopic
-    versions: ['3.16.0']
     sources:
         linux:
+            versions: ['3.16.0']
             packages:
                 linux:
                 linux-meta:
@@ -471,9 +471,9 @@
     name: trusty
     supported: true
     lts: true
-    versions: ['3.13.0']
     sources:
         linux:
+            versions: ['3.13.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty']
@@ -544,9 +544,9 @@
 # 13.10 (saucy)
 '13.10':
     name: saucy
-    versions: ['3.11.0']
     sources:
         linux:
+            versions: ['3.11.0']
             packages:
                 linux:
                 linux-meta:
@@ -574,9 +574,9 @@
 # 13.04 (raring)
 '13.04':
     name: raring
-    versions: ['3.8.0']
     sources:
         linux:
+            versions: ['3.8.0']
             packages:
                 linux:
                 linux-meta:
@@ -604,9 +604,9 @@
 # 12.10 (quantal)
 '12.10':
     name: quantal
-    versions: ['3.5.0']
     sources:
         linux:
+            versions: ['3.5.0']
             packages:
                 linux:
                 linux-backports-modules-3.5.0:
@@ -647,9 +647,9 @@
     supported: true
     lts: true
     esm: true
-    versions: ['3.2.0']
     sources:
         linux:
+            versions: ['3.2.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise']
@@ -737,9 +737,9 @@
 # 11.10 (oneiric)
 '11.10':
     name: oneiric
-    versions: ['3.0.0']
     sources:
         linux:
+            versions: ['3.0.0']
             packages:
                 linux:
                 linux-backports-modules-3.0.0:
@@ -759,9 +759,9 @@
 # 11.04 (natty)
 '11.04':
     name: natty
-    versions: ['2.6.38']
     sources:
         linux:
+            versions: ['2.6.38']
             packages:
                 linux:
                 linux-backports-modules-2.6.38:
@@ -781,9 +781,9 @@
 # 10.10 (maverick)
 '10.10':
     name: maverick
-    versions: ['2.6.35']
     sources:
         linux:
+            versions: ['2.6.35']
             packages:
                 linux:
                 linux-backports-modules-2.6.35:
@@ -813,9 +813,9 @@
 # 10.04 (lucid)
 '10.04':
     name: lucid
-    versions: ['2.6.32']
     sources:
         linux:
+            versions: ['2.6.32']
             packages:
                 linux:
                 linux-backports-modules-2.6.32:
@@ -837,9 +837,9 @@
 # 9.10 (karmic)
 '9.10':
     name: karmic
-    versions: ['2.6.31']
     sources:
         linux:
+            versions: ['2.6.31']
             packages:
                 linux:
                 linux-backports-modules-2.6.31:
@@ -877,19 +877,31 @@
 # 9.04 (jaunty)
 '9.04':
     name: jaunty
-    versions: ['2.6.28']
+    sources:
+        linux:
+            versions: ['2.6.28']
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
 
 # 8.10 (intrepid)
 '8.10':
     name: intrepid
-    versions: ['2.6.27']
+    sources:
+        linux:
+            versions: ['2.6.27']
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
 
 # 8.04 (hardy)
 '8.04':
     name: hardy
-    versions: ['2.6.24']
     sources:
         linux:
+            versions: ['2.6.24']
             packages:
                 linux:
                 linux-backports-modules-2.6.24:
@@ -904,19 +916,31 @@
 # 7.10 (gutsy)
 '7.10':
     name: gutsy
-    versions: ['2.6.22']
+    sources:
+        linux:
+            versions: ['2.6.22']
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
 
 # 7.04 (feisty)
 '7.04':
     name: feisty
-    versions: ['2.6.20']
+    sources:
+        linux:
+            versions: ['2.6.20']
+            packages:
+                linux:
+                linux-meta:
+                    type: meta
 
 # 6.06 (dapper)
 '6.06':
     name: dapper
-    versions: ['2.6.15']
     sources:
         linux-source-2.6.15:
+            versions: ['2.6.15']
             packages:
                 linux-source-2.6.15:
                 linux-backports-modules-2.6.15:

@@ -119,10 +119,10 @@ print("""
 #  * sources (dictionary)
 #	a named series of Source records (see below).  The name is the primary
 #	source package name for example linux-aws.
-#  * versions (list)
-#	list of kernel versions that this series contains latest last
 #
 # Source record fields:
+#  * versions (list)
+#	list of kernel versions that this source contains latest last
 #  * supported (bool)
 #	set to true if this source package is receiving SRU updates
 #  * packages (dictionary)
@@ -195,16 +195,16 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
         if series.get(key, False):
             print("    {}: true".format(key))
 
-    if 'kernels' in series:
-        print("    versions: " + str(series['kernels']))
-    elif 'kernel' in series:
-        print("    versions: " + str([ series['kernel' ]]))
-
     if ('dependent-packages' not in series and
-        len(series.get('packages', [])) == 0
+        len(series.get('packages', [])) == 0 and
+        'kernels' not in series and
+        'kernel' not in series
        ): 
         first = False
         continue
+
+    if len(series.get('packages', [])) == 0:
+        series['packages'] = [ 'linux', 'linux-meta' ]
 
     if 'dependent-packages' not in series:
         def package_key(package):
@@ -321,6 +321,12 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
             print("")
         first = False
         print("        {}:".format(package_key))
+
+        if package_key in ('linux', 'linux-source-2.6.15'):
+            if 'kernels' in series:
+                print("            versions: " + str(series['kernels']))
+            elif 'kernel' in series:
+                print("            versions: " + str([ series['kernel' ]]))
 
         print("            packages:")
         print("                {}:".format(package_key))
