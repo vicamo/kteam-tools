@@ -95,6 +95,9 @@ with open('kernel-series-info.yaml') as dfd:
 print("""
 # kernel series information file (YAML format)
 #
+# after editing run the command below and commit the result with this file:
+#  (cd ../ktl && ./ksi-convert-v2-v1 >kernel-series-info.yaml)
+#
 # For each existing series this file contains a record.  That dictionary record
 # defines attributes of the series such as whether it is currently supported or
 # if it is the development release.  It also contains a list of sources within
