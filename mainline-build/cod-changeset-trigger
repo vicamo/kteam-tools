@@ -66,12 +66,12 @@ do
 			# temporary name, and publish that into the crack repository.
 			tag="cod/changeset/$series/hash--$sha1"
 			git tag -d "$tag" || true
-			git tag "$tag" "$tip"
+			git tag "$tag" "$sha1"
 
 			# Note if this fails the job will fail, but it is better that the job
 			# is created and logged so we can rerun it rather than never knowing
 			# about it.
-			git push "$push_url" tag "$tag"
+			git push --force "$push_url" tag "$tag"
 
 			# Queue up the build.
 			"$here/cod-enqueue" "cod-changeset-build" \
