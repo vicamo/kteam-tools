@@ -49,9 +49,25 @@
 #	below).
 #
 # Snap record fields:
+#  * primary (bool)
+#       this is the primary snap for this package, will be conflated with the
+#       main tracking bug.
 #  * repo (Repository)
 #	the repository for the source for the snapcraft.yaml etc for this snap
 #	package; a Repository record (see below).
+#  * gated (bool)
+#       whether the snap is gated by another snap. This controls if the snap
+#       will be refreshed automatically by the users once it hits the stable
+#       channel.
+#  * stable (bool)
+#       whether the snap should be published to the stable channel.
+#  * qa (bool)
+#       whether the snap needs QA testing (snap-qa-testing task).
+#  * hw-cert (bool)
+#       whether the snap needs HW certification tests
+#       (snap-certification-testing).
+#  * arches (list)
+#       list of architectures which the snap is built for.
 #
 # Repository record elements:
 #  * 0 (string)
@@ -192,7 +208,13 @@
             snaps:
                 caracalla-kernel:
                 pc-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'pc']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64', 'i386']
                 stlouis-kernel:
             supported: true
 
@@ -205,7 +227,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial']
             snaps:
                 aws-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'aws']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
 
@@ -254,7 +282,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp']
             snaps:
                 gcp-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '17.04', 'linux' ]
 
@@ -267,7 +301,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke']
             snaps:
                 gke-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gke']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
 
@@ -347,7 +387,13 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/xenial', 'raspi2']
             snaps:
                 pi2-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'raspi2']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['armhf']
             supported: true
             derived-from: [ '16.04', 'linux' ]
 
@@ -360,7 +406,13 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-snapdragon/+git/xenial', 'snapdragon']
             snaps:
                 dragonboard-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'snapdragon']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['arm64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
 

@@ -59,14 +59,12 @@ def convert_v2_to_v1(data):
 
             if 'snaps' in source:
                 for snap_key, snap in source['snaps'].items():
-                    if snap and 'repo' in snap:
+                    if snap and 'primary' in snap:
                         dependent_snaps = series_v1.setdefault('dependent-snaps', {})
-                        dependent_snaps_source = dependent_snaps.setdefault(source_key, {})
-                        for key in [ 'snap' ] + [ "snap" + str(x) for x in range(2, 10) ]:
-                            if key in dependent_snaps_source:
-                                continue
-                            dependent_snaps_source[key] = snap_key
-                            break
+                        dependent_snaps_source = dependent_snaps.setdefault(source_key, snap)
+                        dependent_snaps_source['snap'] = snap_key
+                        del dependent_snaps_source['primary']
+                        del dependent_snaps_source['repo']
                     else:
                         derivative_snaps = series_v1.setdefault('derivative-snaps', {})
                         derivative_snaps.setdefault(source_key, []).append(snap_key)

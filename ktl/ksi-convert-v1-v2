@@ -144,9 +144,25 @@ print("""
 #	below).
 #
 # Snap record fields:
+#  * primary (bool)
+#       this is the primary snap for this package, will be conflated with the
+#       main tracking bug.
 #  * repo (Repository)
 #	the repository for the source for the snapcraft.yaml etc for this snap
 #	package; a Repository record (see below).
+#  * gated (bool)
+#       whether the snap is gated by another snap. This controls if the snap
+#       will be refreshed automatically by the users once it hits the stable
+#       channel.
+#  * stable (bool)
+#       whether the snap should be published to the stable channel.
+#  * qa (bool)
+#       whether the snap needs QA testing (snap-qa-testing task).
+#  * hw-cert (bool)
+#       whether the snap needs HW certification tests
+#       (snap-certification-testing).
+#  * arches (list)
+#       list of architectures which the snap is built for.
 #
 # Repository record elements:
 #  * 0 (string)
@@ -280,14 +296,23 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
     snap_data = {}
     if 'dependent-snaps' in series:
         for package_key, snaps in series['dependent-snaps'].items():
-            for snap in snaps.values():
-                package_snap_data = snap_data.setdefault(package_key, {})
-                package_snap_data[snap] = str(series_snap_repo(series_map[series_key], snap))
+            package_snap_data = snap_data.setdefault(package_key, {})
+            snap = 'BROKEN'
+            if 'snap' in snaps:
+                snap = snaps['snap']
+            per_snap_data = {}
+            per_snap_data['repo'] = str(series_snap_repo(series_map[series_key], snap))
+            per_snap_data['primary'] = 'true'
+            for snap_key, snap_val in snaps.items():    
+                if snap_key == 'snap':
+                    continue
+                per_snap_data[snap_key] = snap_val
+            package_snap_data[snap] = per_snap_data
     if 'derivative-snaps' in series:
         for package_key, snaps in series['derivative-snaps'].items():
             for snap in snaps:
                 package_snap_data = snap_data.setdefault(package_key, {})
-                package_snap_data[snap] = str(series_snap_repo(series_map[series_key], snap))
+                package_snap_data[snap] = { 'repo': str(series_snap_repo(series_map[series_key], snap)) }
 
     for package_key, packages in sorted(series['dependent-packages'].items()):
         if first:
@@ -311,8 +336,16 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
             print("            snaps:")
             for snap_key, snap_info in sorted(snap_data[package_key].items(), key=lambda x: x[0]):
                 print("                {}:".format(snap_key))
-                if snap_info != 'None':
-                    print("                    repo:", snap_info)
+                if snap_info:
+                    for snap_info_key in ('primary', 'repo', 'gated', 'stable', 'qa', 'hw-cert', 'arches'):
+                        if snap_info_key not in snap_info:
+                            continue
+                        snap_info_val = snap_info[snap_info_key]
+                        if snap_info_key == 'repo' and snap_info_val == 'None':
+                            continue
+                        if snap_info_val in (True, False):
+                            snap_info_val = str(snap_info_val).lower()
+                        print("                    {}: {}".format(snap_info_key, snap_info_val))
 
         if package_key in supported:
             print("            supported: true")
