@@ -85,6 +85,7 @@
 '18.04':
     name: bionic
     development: true
+    supported: false
     sources:
         linux:
             versions: ['4.13.0', '4.14.0', '4.15.0']
@@ -107,6 +108,7 @@
 # 17.10 (artful)
 '17.10':
     name: artful
+    development: false
     supported: true
     sources:
         linux:
@@ -135,6 +137,7 @@
 # 17.04 (zesty)
 '17.04':
     name: zesty
+    development: false
     supported: true
     sources:
         linux:
@@ -169,6 +172,8 @@
 # 16.10 (yakkety)
 '16.10':
     name: yakkety
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['4.8.0']
@@ -191,6 +196,7 @@
 # 16.04 (xenial)
 '16.04':
     name: xenial
+    development: false
     supported: true
     lts: true
     sources:
@@ -419,6 +425,8 @@
 # 15.10 (wily)
 '15.10':
     name: wily
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['4.2.0']
@@ -441,6 +449,8 @@
 # 15.04 (vivid)
 '15.04':
     name: vivid
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.19.0']
@@ -455,6 +465,8 @@
 # 14.10 (utopic)
 '14.10':
     name: utopic
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.16.0']
@@ -469,6 +481,7 @@
 # 14.04 (trusty)
 '14.04':
     name: trusty
+    development: false
     supported: true
     lts: true
     sources:
@@ -544,6 +557,8 @@
 # 13.10 (saucy)
 '13.10':
     name: saucy
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.11.0']
@@ -574,6 +589,8 @@
 # 13.04 (raring)
 '13.04':
     name: raring
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.8.0']
@@ -604,6 +621,8 @@
 # 12.10 (quantal)
 '12.10':
     name: quantal
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.5.0']
@@ -644,6 +663,7 @@
 # 12.04 (precise)
 '12.04':
     name: precise
+    development: false
     supported: true
     lts: true
     esm: true
@@ -737,6 +757,8 @@
 # 11.10 (oneiric)
 '11.10':
     name: oneiric
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['3.0.0']
@@ -759,6 +781,8 @@
 # 11.04 (natty)
 '11.04':
     name: natty
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.38']
@@ -781,6 +805,8 @@
 # 10.10 (maverick)
 '10.10':
     name: maverick
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.35']
@@ -813,6 +839,8 @@
 # 10.04 (lucid)
 '10.04':
     name: lucid
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.32']
@@ -837,6 +865,8 @@
 # 9.10 (karmic)
 '9.10':
     name: karmic
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.31']
@@ -877,6 +907,8 @@
 # 9.04 (jaunty)
 '9.04':
     name: jaunty
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.28']
@@ -888,6 +920,8 @@
 # 8.10 (intrepid)
 '8.10':
     name: intrepid
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.27']
@@ -899,6 +933,8 @@
 # 8.04 (hardy)
 '8.04':
     name: hardy
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.24']
@@ -916,6 +952,8 @@
 # 7.10 (gutsy)
 '7.10':
     name: gutsy
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.22']
@@ -927,6 +965,8 @@
 # 7.04 (feisty)
 '7.04':
     name: feisty
+    development: false
+    supported: false
     sources:
         linux:
             versions: ['2.6.20']
@@ -938,6 +978,8 @@
 # 6.06 (dapper)
 '6.06':
     name: dapper
+    development: false
+    supported: false
     sources:
         linux-source-2.6.15:
             versions: ['2.6.15']

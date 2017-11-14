@@ -191,7 +191,9 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
     print("# {} ({})".format(series_key, series_map[series_key]))
     print("'{}':".format(series_key))
     print("    name: {}".format(series['name']))
-    for key in ('development', 'supported', 'lts', 'esm'):
+    for key in ('development', 'supported'):
+        print("    {}: {}".format(key, str(series.get(key, False)).lower()))
+    for key in ('lts', 'esm'):
         if series.get(key, False):
             print("    {}: true".format(key))
 
