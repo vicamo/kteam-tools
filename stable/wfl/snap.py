@@ -69,7 +69,7 @@ class SnapStore:
                 url = "%s?%s" % (urljoin(s.base_url, s._dependent_snap['snap']), params)
                 req = Request(url, headers=headers)
                 with urlopen(req) as resp:
-                    version = json.loads(resp.read())['version']
+                    version = json.loads(resp.read().decode('utf-8'))['version']
                     s._snap_store_versions[channel][arch] = version
             except HTTPError as e:
                 # Error 404 is returned if the snap has never been published
