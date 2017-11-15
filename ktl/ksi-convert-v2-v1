@@ -5,7 +5,7 @@ import os
 import sys
 import yaml
 
-from ubuntu import convert_v2_to_v1
+from kernel_series import convert_v2_to_v1
 
 # Load up the existing data.
 with open('../info/kernel-series.yaml') as dfd:

@@ -10,69 +10,6 @@ except ImportError:
 import yaml
 
 
-def convert_v2_to_v1(data):
-    data_v1 = {}
-    for series_key, series in data.items():
-        series_v1 = data_v1.setdefault(series_key, {})
-
-        series_v1['series_version'] = series_key
-        series_v1['name'] = series['codename']
-        for key in ('development', 'supported'):
-            series_v1[key] = series.get(key, False)
-        for key in ('lts', 'esm'):
-            if series.get(key, False):
-                series_v1[key] = series[key]
-
-        if 'sources' not in series:
-            continue
-
-        for source_key, source in series['sources'].items():
-            if 'versions' in source:
-                series_v1['kernels'] = source['versions']
-                series_v1['kernel'] = series_v1['kernels'][-1]
-                break
-
-        series_v1['derivative-packages'] = {}
-
-        # We need this to exist even if there are none.
-        series_v1['derivative-packages']['linux'] = []
-        for source_key, source in series['sources'].items():
-            if 'derived-from' in source:
-                (derived_series, derived_package) = source['derived-from']
-                if derived_series == series_key:
-                    derivative_packages = series_v1['derivative-packages'].setdefault(derived_package, [])
-                    derivative_packages.append(source_key)
-                else:
-                    backport_packages = series_v1.setdefault('backport-packages', {})
-                    backport_packages[source_key] = [ derived_package, derived_series ]
-
-            for package_key, package in source['packages'].items():
-                if 'supported' in source and source['supported']:
-                    series_v1.setdefault('packages', []).append(package_key)
-
-                if not package:
-                    continue
-
-                dependent_packages = series_v1.setdefault('dependent-packages', {})
-                dependent_packages_package = dependent_packages.setdefault(source_key, {})
-
-                if 'type' in package:
-                    dependent_packages_package[package['type']] = package_key
-
-            if 'snaps' in source:
-                for snap_key, snap in source['snaps'].items():
-                    if snap and 'primary' in snap:
-                        dependent_snaps = series_v1.setdefault('dependent-snaps', {})
-                        dependent_snaps_source = dependent_snaps.setdefault(source_key, snap)
-                        dependent_snaps_source['snap'] = snap_key
-                        del dependent_snaps_source['primary']
-                        del dependent_snaps_source['repo']
-                    else:
-                        derivative_snaps = series_v1.setdefault('derivative-snaps', {})
-                        derivative_snaps.setdefault(source_key, []).append(snap_key)
-
-    return data_v1
-
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
 # but not for some others (some ARM packages are known to be wrong). This is because the ARM kernels used for some
