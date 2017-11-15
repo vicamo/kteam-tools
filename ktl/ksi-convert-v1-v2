@@ -109,7 +109,7 @@ print("""
 # example 18.04.
 #
 # Series record fields:
-#  * name (string)
+#  * codename (string)
 #	the short code name for this series (artful, bionic etc)
 #  * development (bool)
 #	set to true if this is the current development release
@@ -193,7 +193,7 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
     first = True
     print("# {} ({})".format(series_key, series_map[series_key]))
     print("'{}':".format(series_key))
-    print("    name: {}".format(series['name']))
+    print("    codename: {}".format(series['name']))
     for key in ('development', 'supported'):
         print("    {}: {}".format(key, str(series.get(key, False)).lower()))
     for key in ('lts', 'esm'):

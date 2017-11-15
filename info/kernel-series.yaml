@@ -14,7 +14,7 @@
 # example 18.04.
 #
 # Series record fields:
-#  * name (string)
+#  * codename (string)
 #	the short code name for this series (artful, bionic etc)
 #  * development (bool)
 #	set to true if this is the current development release
@@ -86,7 +86,7 @@
 
 # 18.04 (bionic)
 '18.04':
-    name: bionic
+    codename: bionic
     development: true
     supported: false
     sources:
@@ -110,7 +110,7 @@
 
 # 17.10 (artful)
 '17.10':
-    name: artful
+    codename: artful
     development: false
     supported: true
     sources:
@@ -139,7 +139,7 @@
 
 # 17.04 (zesty)
 '17.04':
-    name: zesty
+    codename: zesty
     development: false
     supported: true
     sources:
@@ -174,7 +174,7 @@
 
 # 16.10 (yakkety)
 '16.10':
-    name: yakkety
+    codename: yakkety
     development: false
     supported: false
     sources:
@@ -198,7 +198,7 @@
 
 # 16.04 (xenial)
 '16.04':
-    name: xenial
+    codename: xenial
     development: false
     supported: true
     lts: true
@@ -427,7 +427,7 @@
 
 # 15.10 (wily)
 '15.10':
-    name: wily
+    codename: wily
     development: false
     supported: false
     sources:
@@ -451,7 +451,7 @@
 
 # 15.04 (vivid)
 '15.04':
-    name: vivid
+    codename: vivid
     development: false
     supported: false
     sources:
@@ -467,7 +467,7 @@
 
 # 14.10 (utopic)
 '14.10':
-    name: utopic
+    codename: utopic
     development: false
     supported: false
     sources:
@@ -483,7 +483,7 @@
 
 # 14.04 (trusty)
 '14.04':
-    name: trusty
+    codename: trusty
     development: false
     supported: true
     lts: true
@@ -559,7 +559,7 @@
 
 # 13.10 (saucy)
 '13.10':
-    name: saucy
+    codename: saucy
     development: false
     supported: false
     sources:
@@ -591,7 +591,7 @@
 
 # 13.04 (raring)
 '13.04':
-    name: raring
+    codename: raring
     development: false
     supported: false
     sources:
@@ -623,7 +623,7 @@
 
 # 12.10 (quantal)
 '12.10':
-    name: quantal
+    codename: quantal
     development: false
     supported: false
     sources:
@@ -665,7 +665,7 @@
 
 # 12.04 (precise)
 '12.04':
-    name: precise
+    codename: precise
     development: false
     supported: true
     lts: true
@@ -759,7 +759,7 @@
 
 # 11.10 (oneiric)
 '11.10':
-    name: oneiric
+    codename: oneiric
     development: false
     supported: false
     sources:
@@ -783,7 +783,7 @@
 
 # 11.04 (natty)
 '11.04':
-    name: natty
+    codename: natty
     development: false
     supported: false
     sources:
@@ -807,7 +807,7 @@
 
 # 10.10 (maverick)
 '10.10':
-    name: maverick
+    codename: maverick
     development: false
     supported: false
     sources:
@@ -841,7 +841,7 @@
 
 # 10.04 (lucid)
 '10.04':
-    name: lucid
+    codename: lucid
     development: false
     supported: false
     sources:
@@ -867,7 +867,7 @@
 
 # 9.10 (karmic)
 '9.10':
-    name: karmic
+    codename: karmic
     development: false
     supported: false
     sources:
@@ -909,7 +909,7 @@
 
 # 9.04 (jaunty)
 '9.04':
-    name: jaunty
+    codename: jaunty
     development: false
     supported: false
     sources:
@@ -922,7 +922,7 @@
 
 # 8.10 (intrepid)
 '8.10':
-    name: intrepid
+    codename: intrepid
     development: false
     supported: false
     sources:
@@ -935,7 +935,7 @@
 
 # 8.04 (hardy)
 '8.04':
-    name: hardy
+    codename: hardy
     development: false
     supported: false
     sources:
@@ -954,7 +954,7 @@
 
 # 7.10 (gutsy)
 '7.10':
-    name: gutsy
+    codename: gutsy
     development: false
     supported: false
     sources:
@@ -967,7 +967,7 @@
 
 # 7.04 (feisty)
 '7.04':
-    name: feisty
+    codename: feisty
     development: false
     supported: false
     sources:
@@ -980,7 +980,7 @@
 
 # 6.06 (dapper)
 '6.06':
-    name: dapper
+    codename: dapper
     development: false
     supported: false
     sources:

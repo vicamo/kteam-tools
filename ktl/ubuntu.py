@@ -16,7 +16,7 @@ def convert_v2_to_v1(data):
         series_v1 = data_v1.setdefault(series_key, {})
 
         series_v1['series_version'] = series_key
-        series_v1['name'] = series['name']
+        series_v1['name'] = series['codename']
         for key in ('development', 'supported'):
             series_v1[key] = series.get(key, False)
         for key in ('lts', 'esm'):
