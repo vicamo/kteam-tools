@@ -46,9 +46,10 @@ def convert_v2_to_v1(data):
                     backport_packages = series_v1.setdefault('backport-packages', {})
                     backport_packages[source_key] = [ derived_package, derived_series ]
 
+            series_v1['packages'] = []
             for package_key, package in source['packages'].items():
                 if 'supported' in source and source['supported']:
-                    series_v1.setdefault('packages', []).append(package_key)
+                    series_v1['packages'].append(package_key)
 
                 if not package:
                     continue
