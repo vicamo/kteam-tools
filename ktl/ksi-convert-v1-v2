@@ -11,16 +11,40 @@ def series_package_repo(series, package):
     if package in ('linux', 'linux-signed', 'linux-meta'):
         result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package) ]
 
-    elif package.endswith('-raspi2') or package.endswith('-snapdragon') or package.endswith('-goldfish') or package.endswith('-flo'):
-        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package), package.split('-')[-1] ]
+    elif package in ('linux-ports-meta'):
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package='linux-meta'), 'ports' ]
 
-    elif package in ('linux-backports-modules-3.2.0'):
+    elif (package.endswith('-raspi2') or
+          package.endswith('-snapdragon') or
+          package.endswith('-goldfish') or
+          package.endswith('-mako') or
+          package.endswith('-manta') or
+          package.endswith('-ti-omap4') or
+          package.endswith('-mvl-dove') or
+          package.endswith('-fsl-imx51') or
+          package.endswith('-ec2') or
+          package.endswith('-flo')
+        ):
+        bits = package.split('-')
+        if bits[1] in ('signed', 'meta'):
+            package = '-'.join(bits[:2])
+            branch = '-'.join(bits[2:])
+        else:
+            package = '-'.join(bits[:1])
+            branch = '-'.join(bits[1:])
+        result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package), branch ]
+
+    elif (package.startswith('linux-backports-modules-') or
+          package.startswith('linux-restricted-modules-') or
+          package.startswith('linux-ubuntu-modules-')
+        ):
         result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}".format(series=series, package=package) ]
 
     elif package.endswith('-aws'):
         result = [ "git://git.launchpad.net/~canonical-kernel/ubuntu/+source/{package}/+git/{series}".format(series=series, package=package) ]
 
-    elif (package.endswith('-azure') or
+    elif (package.endswith('-joule') or
+          package.endswith('-azure') or
           package.endswith('-azure-edge') or
           package.endswith('-euclid') or
           package.endswith('-gcp') or
@@ -50,6 +74,14 @@ def series_package_repo(series, package):
             branch = '-'.join(bits[1:])
             package = '-'.join(bits[:1])
         result = [ "git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}".format(series=series, package=package), branch ]
+
+    elif (package.endswith('-keystone') or
+          package.endswith('-lowlatency') or
+          package.endswith('-armadaxp') or
+          package.endswith('-ppc') or
+          package == 'linux-source-2.6.15'
+         ):
+        return None
 
     return str(result)
 
@@ -335,13 +367,15 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
 
         print("            packages:")
         print("                {}:".format(package_key))
-        if package_key in supported and series_supported[series_key]:
-            print("                    repo: {}".format(series_package_repo(series_map[series_key], package_key)))
+        repo = series_package_repo(series_map[series_key], package_key)
+        if repo:
+            print("                    repo: {}".format(repo))
         for dpackage_key, dpackage in sorted(packages.items(), key=lambda x: x[0]):
             print("                {}:".format(dpackage))
             print("                    type: {}".format(dpackage_key))
-            if package_key in supported and series_supported[series_key]:
-                print("                    repo: {}".format(series_package_repo(series_map[series_key], dpackage)))
+            repo = series_package_repo(series_map[series_key], dpackage)
+            if repo:
+                print("                    repo: {}".format(repo))
 
         if package_key in snap_data:
             print("            snaps:")
