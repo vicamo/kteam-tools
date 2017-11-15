@@ -9,7 +9,7 @@ except ImportError:
 
 import yaml
 
-from kernel_series import convert_v2_to_v1
+from ktl.kernel_series import convert_v2_to_v1
 
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
