@@ -319,11 +319,13 @@ class KernelSeries:
             content = content.decode('utf-8')
         self._data = yaml.load(content)
 
+        self._development_series = None
         self._codename_to_series = {}
         for series_key, series in self._data.items():
-            if 'codename' not in series:
-                continue
-            self._codename_to_series[series['codename']] = series_key
+            if series.get('development', False):
+                self._development_series = series_key
+            if 'codename' in series:
+                self._codename_to_series[series['codename']] = series_key
 
     @staticmethod
     def key_series_name(series):
@@ -334,13 +336,17 @@ class KernelSeries:
         return [ KernelSeriesEntry(self, series_key, series)
                  for series_key, series in self._data.items() ]
 
-    def lookup_series(self, series=None, codename=None):
-        if not series and not codename:
-            raise KeyError("series/codename required")
-        if codename:
+    def lookup_series(self, series=None, codename=None, development=False):
+        if not series and not codename and not development:
+            raise KeyError("series/codename/development required")
+        if not series and codename:
             if codename not in self._codename_to_series:
                 raise KeyError("series {} not found".format(series))
             series = self._codename_to_series[codename]
+        if not series and development:
+            if not self._development_series:
+                raise KeyError("development series not defined")
+            series = self._development_series
         if series:
             if series not in self._data:
                 raise KeyError("series {} not found".format(series))
@@ -362,7 +368,13 @@ if __name__ == '__main__':
     if series2.codename != 'xenial':
         print('series2.codename != xenial')
 
-    print(str(series), str(series2))
+    series3 = db.lookup_series(development=True)
+    if series3.name != '18.04':
+        print('series3.name != 18.04')
+    if series3.codename != 'bionic':
+        print('series3.codename != bionic')
+
+    print(str(series), str(series2), str(series3))
 
     for series2 in sorted(db.series, key=db.key_series_name):
         print(series2)
