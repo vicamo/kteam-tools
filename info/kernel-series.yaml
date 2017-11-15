@@ -101,7 +101,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
-            supported: true
 
         linux-raspi2:
             packages:
@@ -110,7 +109,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
-            supported: true
             derived-from: [ '18.04', 'linux' ]
 
 # 17.10 (artful)
@@ -196,7 +194,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/yakkety']
-            supported: true
 
         linux-raspi2:
             packages:
@@ -205,7 +202,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety', 'raspi2']
-            supported: true
             derived-from: [ '16.10', 'linux' ]
 
 # 16.04 (xenial)
@@ -462,7 +458,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/wily']
-            supported: true
 
         linux-raspi2:
             packages:
@@ -471,7 +466,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily', 'raspi2']
-            supported: true
             derived-from: [ '15.10', 'linux' ]
 
 # 15.04 (vivid)
@@ -491,7 +485,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/vivid']
-            supported: true
 
 # 14.10 (utopic)
 '14.10':
@@ -510,7 +503,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/utopic']
-            supported: true
 
 # 14.04 (trusty)
 '14.04':
@@ -614,14 +606,12 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/saucy']
-            supported: true
 
         linux-lowlatency:
             packages:
                 linux-lowlatency:
                 linux-meta-lowlatency:
                     type: meta
-            supported: true
             derived-from: [ '13.10', 'linux' ]
 
         linux-ppc:
@@ -629,7 +619,6 @@
                 linux-ppc:
                 linux-meta-ppc:
                     type: meta
-            supported: true
             derived-from: [ '13.10', 'linux' ]
 
 # 13.04 (raring)
@@ -649,14 +638,12 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/raring']
-            supported: true
 
         linux-lowlatency:
             packages:
                 linux-lowlatency:
                 linux-meta-lowlatency:
                     type: meta
-            supported: true
             derived-from: [ '13.04', 'linux' ]
 
         linux-ppc:
@@ -664,7 +651,6 @@
                 linux-ppc:
                 linux-meta-ppc:
                     type: meta
-            supported: true
             derived-from: [ '13.04', 'linux' ]
 
 # 12.10 (quantal)
@@ -687,14 +673,12 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/quantal']
-            supported: true
 
         linux-armadaxp:
             packages:
                 linux-armadaxp:
                 linux-meta-armadaxp:
                     type: meta
-            supported: true
             derived-from: [ '12.10', 'linux' ]
 
         linux-lowlatency:
@@ -702,7 +686,6 @@
                 linux-lowlatency:
                 linux-meta-lowlatency:
                     type: meta
-            supported: true
             derived-from: [ '12.10', 'linux' ]
 
         linux-ti-omap4:
@@ -712,7 +695,6 @@
                 linux-meta-ti-omap4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/quantal', 'ti-omap4']
-            supported: true
             derived-from: [ '12.10', 'linux' ]
 
 # 12.04 (precise)
@@ -845,7 +827,6 @@
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric']
-            supported: true
 
         linux-ti-omap4:
             packages:
@@ -854,7 +835,6 @@
                 linux-meta-ti-omap4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/oneiric', 'ti-omap4']
-            supported: true
             derived-from: [ '11.10', 'linux' ]
 
 # 11.04 (natty)
@@ -874,7 +854,6 @@
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty']
-            supported: true
 
         linux-ti-omap4:
             packages:
@@ -883,7 +862,6 @@
                 linux-meta-ti-omap4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/natty', 'ti-omap4']
-            supported: true
             derived-from: [ '11.04', 'linux' ]
 
 # 10.10 (maverick)
@@ -906,7 +884,6 @@
                 linux-ports-meta:
                     type: ports-meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick', 'ports']
-            supported: true
 
         linux-mvl-dove:
             packages:
@@ -915,7 +892,6 @@
                 linux-meta-mvl-dove:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick', 'mvl-dove']
-            supported: true
             derived-from: [ '10.10', 'linux' ]
 
         linux-ti-omap4:
@@ -925,7 +901,6 @@
                 linux-meta-ti-omap4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/maverick', 'ti-omap4']
-            supported: true
             derived-from: [ '10.10', 'linux' ]
 
 # 10.04 (lucid)
@@ -948,7 +923,6 @@
                 linux-ports-meta:
                     type: ports-meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid', 'ports']
-            supported: true
 
         linux-ec2:
             packages:
@@ -957,7 +931,6 @@
                 linux-meta-ec2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid', 'ec2']
-            supported: true
             derived-from: [ '10.04', 'linux' ]
 
 # 9.10 (karmic)
@@ -988,6 +961,7 @@
                 linux-meta-ec2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'ec2']
+            derived-from: [ '9.10', 'linux' ]
 
         linux-fsl-imx51:
             packages:
@@ -996,6 +970,7 @@
                 linux-meta-fsl-imx51:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'fsl-imx51']
+            derived-from: [ '9.10', 'linux' ]
 
         linux-mvl-dove:
             packages:
@@ -1004,6 +979,7 @@
                 linux-meta-mvl-dove:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'mvl-dove']
+            derived-from: [ '9.10', 'linux' ]
 
 # 9.04 (jaunty)
 '9.04':

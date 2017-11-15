@@ -305,8 +305,7 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
             dependent_packages_prime[type] = package
 
         series['dependent-packages'] = dependent_packages
-        if series.get('supported', False):
-            series['derivative-packages'] = derivative_packages
+        series['derivative-packages'] = derivative_packages
 
     # derivative-packages indicates packages in this series which depend on
     # a package in this series.
@@ -316,9 +315,11 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
     derived = {}
     if 'derivative-packages' in series:
         for package_key, packages in series['derivative-packages'].items():
-            supported[package_key] = True
+            if series_supported[series_key]:
+                supported[package_key] = True
             for package in packages:
-                supported[package] = True
+                if series_supported[series_key]:
+                    supported[package] = True
                 derived[package] = "[ '{}', '{}' ]".format(series_key, package_key)
     if 'backport-packages' in series:
         for package_key, packages in series['backport-packages'].items():
