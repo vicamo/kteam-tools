@@ -74,6 +74,34 @@ def convert_v2_to_v1(data):
     return data_v1
 
 
+class KernelRepoEntry:
+    def __init__(self, ks, owner, data):
+        if isinstance(data, list):
+            new_data = { 'url': data[0] }
+            if len(data) == 2:
+                new_data['branch'] = data[1]
+            data = new_data
+
+        self._ks = ks
+        self._owner = owner
+        self._data = data if data else {}
+
+    @property
+    def owner(self):
+        return self._owner.series
+
+    @property
+    def url(self):
+        return self._data['url']
+
+    @property
+    def branch(self):
+        return self._data.get('branch', None)
+
+    def __str__(self):
+        return "{} {}".format(self.repo, self.branch)
+
+
 class KernelSnapEntry:
     def __init__(self, ks, source, name, data):
         self._ks = ks
@@ -95,7 +123,10 @@ class KernelSnapEntry:
 
     @property
     def repo(self):
-        return self._data.get('repo', None)
+        data = self._data.get('repo', None)
+        if not data:
+            return None
+        return KernelRepoEntry(self._ks, self, data)
 
     @property
     def primary(self):
@@ -154,7 +185,10 @@ class KernelPackageEntry:
 
     @property
     def repo(self):
-        return self._data.get('repo', None)
+        data = self._data.get('repo', None)
+        if not data:
+            return None
+        return KernelRepoEntry(self._ks, self, data)
 
     def __str__(self):
         return "{} {} {}".format(str(self.source), self.name, self.type)
