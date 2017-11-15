@@ -109,7 +109,14 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
-            derived-from: [ '18.04', 'linux' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'snapdragon']
 
 # 17.10 (artful)
 '17.10':
@@ -139,6 +146,14 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'raspi2']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'snapdragon']
 
 # 17.04 (zesty)
 '17.04':
@@ -176,6 +191,14 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'raspi2']
             supported: true
             derived-from: [ '17.04', 'linux' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
 
 # 16.10 (yakkety)
 '16.10':

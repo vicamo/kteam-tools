@@ -175,9 +175,10 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
+            linux-snapdragon:
+                meta: linux-meta-snapdragon
         derivative-packages:
-            linux:
-            - linux-raspi2
+            linux: []
         development: true
         kernels:
         - 4.13.0
@@ -190,6 +191,8 @@
         - linux-raspi2
         - linux-meta-raspi2
         - linux-signed
+        - linux-snapdragon
+        - linux-meta-snapdragon
         series_version: '18.04'
         supported: false
 
@@ -200,6 +203,8 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
+            linux-snapdragon:
+                meta: linux-meta-snapdragon
         derivative-packages:
             linux:
             - linux-raspi2
@@ -215,6 +220,8 @@
         - linux-raspi2
         - linux-meta-raspi2
         - linux-signed
+        - linux-snapdragon
+        - linux-meta-snapdragon
         series_version: '17.10'
         supported: true
 
@@ -225,6 +232,8 @@
                 signed: linux-signed
             linux-raspi2:
                 meta: linux-meta-raspi2
+            linux-snapdragon:
+                meta: linux-meta-snapdragon
             linux-goldfish:
                 meta: linux-meta-goldfish
         derivative-packages:
@@ -239,6 +248,8 @@
         - linux-raspi2
         - linux-meta-raspi2
         - linux-signed
+        - linux-snapdragon
+        - linux-meta-snapdragon
         series_version: '17.04'
         supported: true
 
