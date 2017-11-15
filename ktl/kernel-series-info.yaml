@@ -1,833 +1,623 @@
----
-    # db: dictionary of Ubuntu releases, with its kernel package, version
-    # and miscelaneous information used by scripts throughout the tree
-    #
-    # Format:
-    # db = {
-    #   <release number string> : {
-    #      'field 1' : <value 1>,
-    #      'field 2' : <value 2>,
-    #      ...
-    #      'field n' : <value n>
-    #   }
-    # }
-    #
-    # release number string is the number of the release, '10.10', '12.04', etc.
-    # For each release, we have a dictionary assigned to it which consists of a
-    # set of fields with values assigned, relevant to that release. The possible
-    # fields are:
-    #
-    # * development (bool)
-    #       indicates if this release represents the current Ubuntu development
-    #       release
-    #
-    # * series_verson (string)
-    #       same as release number string
-    #
-    # * kernel (string)
-    #       the main kernel version used in this release (from linux package),
-    #       eg. '3.2.0'
-    #
-    # * name (string)
-    #       first name of this release, eg. 'precise'
-    #
-    # * supported (bool)
-    #       indicates if this is an stable supported  release (not a development
-    #       release, and not EOL - end of life)
-    #
-    # * packages (list)
-    #       list of source package names supported in this release.
-    #
-    # * dependent-packages (dictionary)
-    #       dictionary mapping a package to its dependent packages
-    #       Format:
-    #           'dependent-packages' : {
-    #             <source package name> : {
-    #               'task name 1' : <source package name 1 linked to this task>,
-    #               'task name 2' : <source package name 2 linked to this task>,
-    #               ...
-    #               'task name n' : <source package name n linked to this task>
-    #             }
-    #           }
-    #       - source package name is the name of the source package uploaded.
-    #       - task name can be one of the following: 'meta', 'lbm', 'lrm',
-    #         'lum', 'ports-meta', 'signed'
-    #
-    #       The information on this dictionary is solely used as an way to
-    #       process and create tracking bugs. Using this information the
-    #       scripts can know which packages needs extra 'prepare-package-*'
-    #       tasks in tracking bugs, and which package name relates to its
-    #       respective 'prepare-package-*' task:
-    #       - For 'meta', 'lbm', 'lrm', 'lum', 'ports-meta' and 'signed',
-    #         they are used when opening a tracking bug to know if that
-    #         tracking bug needs respectively the tasks
-    #         'prepare-package-meta', 'prepare-package-lbm', etc.
-    #       - For 'meta', 'lbm', 'lrm', 'lum' and 'ports-meta', shank bot
-    #         (stable/sru-workflow-manager) uses the dictionary to know
-    #         what's the package name for that task, to check if the package
-    #         is built on the ppa with the needed ABI. For 'signed', it uses
-    #         the dictionary to know what's the package name for the
-    #         prepare-package-signed task, and to check if the package with
-    #         same ABI-VERSION is built on the ppa.
-    #
-    # * derivative-packages (dictionary)
-    #       dictionary solely used by shank bot to know which tracking bugs
-    #       it needs to open for rebasable branches, when the master linux
-    #       packages are built on the ppa.
-    #       Format:
-    #           'derivative-packages' : {
-    #             <source package name A> : [
-    #                  <source package name 1>,
-    #                  <source package name 2>,
-    #                  ...
-    #                  <source package name n>
-    #               ],
-    #             <source package name B> : [ ... ],
-    #             ...
-    #             <source package name n> : [ ... ]
-    #           }
-    #           Example:
-    #           'derivative-packages' : {
-    #             'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
-    #           }
-    #           This example means for shank bot that when 'linux' package is
-    #           built on the c-k-t PPA, open automatically tracking bugs for
-    #           'linux-ti-omap4' and 'linux-armadaxp' packages so they can be
-    #           rebased on top of linux master branch and worked on.
-    #
-    # * backport-packages (dictionary)
-    #       if the release is an LTS (Long Term Support), this will provide a
-    #       mapping of available backport packages on it, so shank bot can properly
-    #       open new tracking bugs for them. It's different from derivative-packages
-    #       field, because the tracking bug is opened when a linux master branch is
-    #       built on another release, so this field serves as a reverse map. But the
-    #       purpose is the same, and also is solely used to open new tracking bugs
-    #       for backport packages.
-    #       Format:
-    #           'backport-packages' : {
-    #             <backport source package name 1> : [
-    #               <original source package name of backported package>,
-    #               <release number from where it's being backported>
-    #             ],
-    #             ...
-    #             <backport source package name N> : [ ... ]
-    #           }
-    #           Consider this backports-package entry for '10.04' (Lucid) for
-    #           example:
-    #           'backport-packages' : {
-    #             'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
-    #             'linux-lts-backport-natty' : [ 'linux', '11.04' ],
-    #             'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
-    #            }
-    #           Above we have listed the three backports it can have. Taking
-    #           oneiric backport, the list means, we are backporting from
-    #           'linux' package present on '11.10'.
-    #
-    # * dependent-snaps (dictionary)
-    #       Dictionary used to list the packages which should have snap related
-    #       tasks added to the same tracking bug used for the debian packages.
-    #       This information will be used to create and process the tracking
-    #       bugs.
-    #
-    #       Format:
-    #           'dependent-snaps': {
-    #             <source package name A>: {
-    #               'snap': <snap name>
-    #               'gated': (bool)
-    #               'stable': (bool)
-    #               'arches': [<arch 1>[,arch2...]]
-    #             }
-    #             <source package name B>: ...
-    #           }
-    #
-    #           Fields:
-    #             - gated:   whether the snap is gated by another snap. This controls if the
-    #                        snap will be refreshed automatically by the users once it
-    #                        hits the stable channel. (bool)
-    #             - stable:  whether the snap should be published to the stable channel. (bool)
-    #             - qa:      whether the snap needs QA testing (snap-qa-testing task). (bool)
-    #             - hw-cert: whether the snap needs HW certification tests
-    #                        (snap-certification-testing). (bool)
-    #             - arches:  list of architectures which the snap is built for.
-    #
-    #       Example:
-    #           dependent-snaps:
-    #               linux:
-    #                   snap: pc-kernel
-    #                   gated: false
-    #                   stable: true
-    #                   qa: true
-    #                   hw-cert: true
-    #                   arches:
-    #                   - amd64
-    #                   - i386
-    #
-    # * derivative-snaps (dictionary)
-    #       Similar to 'dependent-snaps', but used to list the snaps which should have
-    #       separate tracking bugs from the master debian package. This is useful when
-    #       the same debian package will be used to generate several debian packages
-    #       and need a tracking bug for each of the snaps.
-    #
-    '18.04':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
-        derivative-packages:
-            linux: []
-        development: true
-        kernels:
-        - 4.13.0
-        - 4.14.0
-        - 4.15.0
-        name: bionic
-        packages:
-        - linux
-        - linux-meta
-        - linux-raspi2
-        - linux-meta-raspi2
-        - linux-signed
-        - linux-snapdragon
-        - linux-meta-snapdragon
-        series_version: '18.04'
-        supported: false
+#
+# AUTOGENERATED FROM info/kernel-series.yaml DO NOT EDIT
+#
 
-    '17.10':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
-        derivative-packages:
-            linux:
-            - linux-raspi2
-        development: false
-        kernels:
-        - 4.11.0
-        - 4.12.0
-        - 4.13.0
-        name: artful
-        packages:
-        - linux
-        - linux-meta
-        - linux-raspi2
-        - linux-meta-raspi2
-        - linux-signed
-        - linux-snapdragon
-        - linux-meta-snapdragon
-        series_version: '17.10'
-        supported: true
-
-    '17.04':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
-            linux-goldfish:
-                meta: linux-meta-goldfish
-        derivative-packages:
-            linux:
-            - linux-raspi2
-        development: false
-        kernel: 4.10.0
-        name: zesty
-        packages:
-        - linux
-        - linux-meta
-        - linux-raspi2
-        - linux-meta-raspi2
-        - linux-signed
-        - linux-snapdragon
-        - linux-meta-snapdragon
-        series_version: '17.04'
-        supported: true
-
-    '16.10':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-        derivative-packages:
-            linux:
-            - linux-raspi2
-        development: false
-        kernel: 4.8.0
-        name: yakkety
-        packages:
-        - linux
-        - linux-meta
-        - linux-raspi2
-        - linux-meta-raspi2
-        - linux-signed
-        series_version: '16.10'
-        supported: false
-
-    '16.04':
-        backport-packages:
-            linux-hwe:
-            - linux
-            - '17.04'
-            linux-hwe-edge:
-            - linux
-            - '17.10'
-            linux-azure:
-            - linux
-            - '17.10'
-            linux-azure-edge:
-            - linux
-            - '17.10'
-            linux-gcp:
-            - linux
-            - '17.04'
-            linux-oem:
-            - linux
-            - '17.10'
-
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-            linux-snapdragon:
-                meta: linux-meta-snapdragon
-            linux-aws:
-                meta: linux-meta-aws
-            linux-gke:
-                meta: linux-meta-gke
-            linux-azure:
-                meta: linux-meta-azure
-            linux-azure-edge:
-                meta: linux-meta-azure-edge
-            linux-joule:
-                meta: linux-meta-joule
-            linux-hwe:
-                meta: linux-meta-hwe
-                signed: linux-signed-hwe
-            linux-hwe-edge:
-                meta: linux-meta-hwe-edge
-                signed: linux-signed-hwe-edge
-            linux-gcp:
-                meta: linux-meta-gcp
-            linux-kvm:
-                meta: linux-meta-kvm
-            linux-euclid:
-                meta: linux-meta-euclid
-            linux-oem:
-                meta: linux-meta-oem
-                signed: linux-signed-oem
-            linux-flo:
-                meta: linux-meta-flo
-            linux-goldfish:
-                meta: linux-meta-goldfish
-            linux-mako:
-                meta: linux-meta-mako
-        dependent-snaps:
-            linux:
-                snap: pc-kernel
-                gated: false
-                stable: true
-                qa: false
-                hw-cert: true
-                arches:
-                - amd64
-                - i386
-            linux-raspi2:
-                snap: pi2-kernel
-                gated: false
-                stable: true
-                qa: false
-                hw-cert: true
-                arches:
-                - armhf
-            linux-snapdragon:
-                snap: dragonboard-kernel
-                gated: false
-                stable: true
-                qa: false
-                hw-cert: true
-                arches:
-                - arm64
-            linux-aws:
-                snap: aws-kernel
-                gated: false
-                stable: false
-                qa: false
-                hw-cert: false
-                arches:
-                - amd64
-            linux-gke:
-                snap: gke-kernel
-                gated: false
-                stable: false
-                qa: false
-                hw-cert: false
-                arches:
-                - amd64
-            linux-gcp:
-                snap: gcp-kernel
-                gated: false
-                stable: false
-                qa: false
-                hw-cert: false
-                arches:
-                - amd64
-        derivative-packages:
-            linux:
-            - linux-raspi2
-            - linux-snapdragon
-            - linux-aws
-            - linux-gke
-            - linux-kvm
-            - linux-euclid
-        derivative-snaps:
-            linux:
-            - caracalla-kernel
-            - stlouis-kernel
-        test_flavours:
-            linux:
-            - generic
-            - lowlatency
-        development: false
-        kernel: 4.4.0
-        name: xenial
-        packages:
-        - linux
-        - linux-meta
-        - linux-signed
-        - linux-raspi2
-        - linux-meta-raspi2
-        - linux-snapdragon
-        - linux-meta-snapdragon
-        - linux-aws
-        - linux-azure
-        - linux-azure-edge
-        - linux-gke
-        - linux-meta-aws
-        - linux-meta-azure
-        - linux-meta-azure-edge
-        - linux-hwe-edge
-        - linux-meta-hwe-edge
-        - linux-signed-hwe-edge
-        - linux-hwe
-        - linux-meta-hwe
-        - linux-signed-hwe
-        - linux-kvm
-        - linux-meta-kvm
-        - linux-euclid
-        - linux-meta-euclid
-        - linux-oem
-        - linux-signed-oem
-        - linux-meta-oem
-        series_version: '16.04'
-        supported: true
-        lts: true
-
-    '15.10':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-raspi2:
-                meta: linux-meta-raspi2
-        derivative-packages:
-            linux:
-            - linux-raspi2
-        development: false
-        kernel: 4.2.0
-        name: wily
-        packages:
-        - linux
-        - linux-meta
-        - linux-raspi2
-        - linux-meta-raspi2
-        series_version: '15.10'
-        supported: false
-
-    '15.04':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-        derivative-packages:
-            linux: []
-        development: false
-        kernel: 3.19.0
-        name: vivid
-        packages:
-        - linux
-        - linux-meta
-        - linux-signed
-        series_version: '15.04'
-        supported: false
-
-    '14.10':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-        derivative-packages:
-            linux: []
-        development: false
-        kernel: 3.16.0
-        name: utopic
-        packages:
-        - linux
-        - linux-meta
-        series_version: '14.10'
-        supported: false
-
-    '14.04':
-        backport-packages:
-            linux-lts-utopic:
-            - linux
-            - '14.10'
-            linux-lts-vivid:
-            - linux
-            - '15.04'
-            linux-lts-wily:
-            - linux
-            - '15.10'
-            linux-lts-xenial:
-            - linux
-            - '16.04'
-            linux-aws:
-            - linux
-            - '16.04'
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-keystone:
-                meta: linux-meta-keystone
-            linux-lts-utopic:
-                meta: linux-meta-lts-utopic
-                signed: linux-signed-lts-utopic
-            linux-lts-vivid:
-                meta: linux-meta-lts-vivid
-                signed: linux-signed-lts-vivid
-            linux-lts-wily:
-                meta: linux-meta-lts-wily
-                signed: linux-signed-lts-wily
-            linux-lts-xenial:
-                meta: linux-meta-lts-xenial
-                signed: linux-signed-lts-xenial
-            linux-aws:
-                meta: linux-meta-aws
-        derivative-packages:
-            linux: []
-        development: false
-        kernel: 3.13.0
-        name: trusty
-        packages:
-        - linux
-        - linux-meta
-        - linux-signed
-        - linux-lts-xenial
-        - linux-meta-lts-xenial
-        - linux-signed-lts-xenial
-        series_version: '14.04'
-        supported: true
-        lts: true
-
-    '13.10':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-lowlatency:
-                meta: linux-meta-lowlatency
-            linux-ppc:
-                meta: linux-meta-ppc
-        derivative-packages:
-            linux:
-            - linux-lowlatency
-            - linux-ppc
-        development: false
-        kernel: 3.11.0
-        name: saucy
-        packages:
-        - linux
-        - linux-meta
-        - linux-exynos5
-        series_version: '13.10'
-        supported: false
-
-    '13.04':
-        dependent-packages:
-            linux:
-                meta: linux-meta
-                signed: linux-signed
-            linux-lowlatency:
-                meta: linux-meta-lowlatency
-            linux-ppc:
-                meta: linux-meta-ppc
-        derivative-packages:
-            linux:
-            - linux-lowlatency
-            - linux-ppc
-        development: false
-        kernel: 3.8.0
-        name: raring
-        packages:
-        - linux
-        - linux-meta
-        - linux-meta-ti-omap4
-        series_version: '13.04'
-        supported: false
-
-    '12.10':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-3.5.0
-                meta: linux-meta
-                signed: linux-signed
-            linux-armadaxp:
-                meta: linux-meta-armadaxp
-            linux-lowlatency:
-                meta: linux-meta-lowlatency
-            linux-ti-omap4:
-                meta: linux-meta-ti-omap4
-        derivative-packages:
-            linux:
-            - linux-ti-omap4
-            - linux-armadaxp
-            - linux-lowlatency
-        kernel: 3.5.0
-        name: quantal
-        packages:
-        - linux
-        - linux-meta
-        - linux-ti-omap4
-        - linux-meta-ti-omap4
-        - linux-armadaxp
-        - linux-meta-armadaxp
-        series_version: '12.10'
-        supported: false
-
-    '12.04':
-        backport-packages:
-            linux-lts-trusty:
-            - linux
-            - '14.04'
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-3.2.0
-                meta: linux-meta
-            linux-armadaxp:
-                meta: linux-meta-armadaxp
-            linux-lts-quantal:
-                meta: linux-meta-lts-quantal
-                signed: linux-signed-lts-quantal
-            linux-lts-raring:
-                meta: linux-meta-lts-raring
-                signed: linux-signed-lts-raring
-            linux-lts-saucy:
-                meta: linux-meta-lts-saucy
-                signed: linux-signed-lts-saucy
-            linux-lts-trusty:
-                meta: linux-meta-lts-trusty
-                signed: linux-signed-lts-trusty
-            linux-ti-omap4:
-                meta: linux-meta-ti-omap4
-            linux-flo:
-                meta: linux-meta-flo
-            linux-goldfish:
-                meta: linux-meta-goldfish
-            linux-mako:
-                meta: linux-meta-mako
-            linux-manta:
-                meta: linux-meta-manta
-        derivative-packages:
-            linux: []
-        kernel: 3.2.0
-        name: precise
-        packages:
-        - linux-meta
-        - linux-lts-trusty
-        - linux-meta-lts-trusty
-        - linux-signed-lts-trusty
-        - linux-backports-modules-3.2.0
-        series_version: '12.04'
-        supported: true
-        esm: true
-        lts: true
-
-    '11.10':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-3.0.0
-                meta: linux-meta
-            linux-ti-omap4:
-                meta: linux-meta-ti-omap4
-        derivative-packages:
-            linux:
-            - linux-ti-omap4
-        kernel: 3.0.0
-        name: oneiric
-        packages:
-        - linux
-        - linux-meta
-        - linux-ti-omap4
-        - linux-meta-ti-omap4
-        - linux-backports-modules-3.0.0
-        series_version: '11.10'
-        supported: false
-
-    '11.04':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-2.6.38
-                meta: linux-meta
-            linux-ti-omap4:
-                meta: linux-meta-ti-omap4
-        derivative-packages:
-            linux:
-            - linux-ti-omap4
-        kernel: 2.6.38
-        name: natty
-        packages:
-        - linux
-        - linux-meta
-        - linux-ti-omap4
-        - linux-meta-ti-omap4
-        - linux-backports-modules-2.6.38
-        series_version: '11.04'
-        supported: false
-
-    '10.10':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-2.6.35
-                meta: linux-meta
-                ports-meta: linux-ports-meta
-            linux-mvl-dove:
-                meta: linux-meta-mvl-dove
-            linux-ti-omap4:
-                meta: linux-meta-ti-omap4
-        derivative-packages:
-            linux:
-            - linux-ti-omap4
-            - linux-mvl-dove
-        kernel: 2.6.35
-        name: maverick
-        packages:
-        - linux
-        - linux-ti-omap4
-        - linux-mvl-dove
-        - linux-meta
-        - linux-ports-meta
-        - linux-meta-mvl-dove
-        - linux-meta-ti-omap4
-        - linux-backports-modules-2.6.35
-        series_version: '10.10'
-        supported: false
-
-    '10.04':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-2.6.32
-                meta: linux-meta
-                ports-meta: linux-ports-meta
-            linux-ec2:
-                meta: linux-meta-ec2
-        derivative-packages:
-            linux:
-            - linux-ec2
-        kernel: 2.6.32
-        name: lucid
-        packages:
-        - linux
-        - linux-ec2
-        - linux-meta
-        - linux-ports-meta
-        - linux-meta-ec2
-        - linux-backports-modules-2.6.32
-        series_version: '10.04'
-        supported: false
-
-    '9.10':
-        kernel: 2.6.31
-        name: karmic
-        packages:
-        - linux
-        - linux-fsl-imx51
-        - linux-mvl-dove
-        - linux-ec2
-        - linux-meta
-        - linux-ports-meta
-        - linux-meta-ec2
-        - linux-meta-mvl-dove
-        - linux-meta-fsl-imx51
-        - linux-backports-modules-2.6.31
-        series_version: '9.10'
-        supported: false
-
-    '9.04':
-        kernel: 2.6.28
-        name: jaunty
-        packages: []
-        series_version: '9.04'
-        supported: false
-
-    '8.10':
-        kernel: 2.6.27
-        name: intrepid
-        packages: []
-        series_version: '8.10'
-        supported: false
-
-    '8.04':
-        dependent-packages:
-            linux:
-                lbm: linux-backports-modules-2.6.24
-                lrm: linux-restricted-modules-2.6.24
-                lum: linux-ubuntu-modules-2.6.24
-                meta: linux-meta
-        kernel: 2.6.24
-        name: hardy
-        packages:
-        - linux
-        - linux-meta
-        - linux-backports-modules-2.6.24
-        - linux-ubuntu-modules-2.6.24
-        - linux-restricted-modules-2.6.24
-        series_version: '8.04'
-        supported: false
-
-    '7.10':
-        kernel: 2.6.22
-        name: gutsy
-        packages: []
-        series_version: '7.10'
-        supported: false
-
-    '7.04':
-        kernel: 2.6.20
-        name: feisty
-        packages: []
-        series_version: '7.04'
-        supported: false
-
-    '6.06':
-        kernel: 2.6.15
-        name: dapper
-        packages:
-        - linux-source-2.6.15
-        - linux-backports-modules-2.6.15
-        - linux-restricted-modules-2.6.15
-        series_version: '6.06'
-        supported: false
+'10.04':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-2.6.32
+      meta: linux-meta
+      ports-meta: linux-ports-meta
+    linux-ec2:
+      meta: linux-meta-ec2
+  derivative-packages:
+    linux:
+    - linux-ec2
+  development: false
+  kernel: 2.6.32
+  kernels:
+  - 2.6.32
+  name: lucid
+  packages: []
+  series_version: '10.04'
+  supported: false
+'10.10':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-2.6.35
+      meta: linux-meta
+      ports-meta: linux-ports-meta
+    linux-mvl-dove:
+      meta: linux-meta-mvl-dove
+    linux-ti-omap4:
+      meta: linux-meta-ti-omap4
+  derivative-packages:
+    linux:
+    - linux-mvl-dove
+    - linux-ti-omap4
+  development: false
+  kernel: 2.6.35
+  kernels:
+  - 2.6.35
+  name: maverick
+  packages: []
+  series_version: '10.10'
+  supported: false
+'11.04':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-2.6.38
+      meta: linux-meta
+    linux-ti-omap4:
+      meta: linux-meta-ti-omap4
+  derivative-packages:
+    linux:
+    - linux-ti-omap4
+  development: false
+  kernel: 2.6.38
+  kernels:
+  - 2.6.38
+  name: natty
+  packages: []
+  series_version: '11.04'
+  supported: false
+'11.10':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-3.0.0
+      meta: linux-meta
+    linux-ti-omap4:
+      meta: linux-meta-ti-omap4
+  derivative-packages:
+    linux:
+    - linux-ti-omap4
+  development: false
+  kernel: 3.0.0
+  kernels:
+  - 3.0.0
+  name: oneiric
+  packages: []
+  series_version: '11.10'
+  supported: false
+'12.04':
+  backport-packages:
+    linux-lts-trusty:
+    - linux
+    - '14.04'
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-3.2.0
+      meta: linux-meta
+    linux-armadaxp:
+      meta: linux-meta-armadaxp
+    linux-flo:
+      meta: linux-meta-flo
+    linux-goldfish:
+      meta: linux-meta-goldfish
+    linux-lts-quantal:
+      meta: linux-meta-lts-quantal
+      signed: linux-signed-lts-quantal
+    linux-lts-raring:
+      meta: linux-meta-lts-raring
+      signed: linux-signed-lts-raring
+    linux-lts-saucy:
+      meta: linux-meta-lts-saucy
+      signed: linux-signed-lts-saucy
+    linux-lts-trusty:
+      meta: linux-meta-lts-trusty
+      signed: linux-signed-lts-trusty
+    linux-mako:
+      meta: linux-meta-mako
+    linux-manta:
+      meta: linux-meta-manta
+    linux-ti-omap4:
+      meta: linux-meta-ti-omap4
+  derivative-packages:
+    linux: []
+  development: false
+  esm: true
+  kernel: 3.2.0
+  kernels:
+  - 3.2.0
+  lts: true
+  name: precise
+  packages: []
+  series_version: '12.04'
+  supported: true
+'12.10':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-3.5.0
+      meta: linux-meta
+      signed: linux-signed
+    linux-armadaxp:
+      meta: linux-meta-armadaxp
+    linux-lowlatency:
+      meta: linux-meta-lowlatency
+    linux-ti-omap4:
+      meta: linux-meta-ti-omap4
+  derivative-packages:
+    linux:
+    - linux-ti-omap4
+    - linux-armadaxp
+    - linux-lowlatency
+  development: false
+  kernel: 3.5.0
+  kernels:
+  - 3.5.0
+  name: quantal
+  packages: []
+  series_version: '12.10'
+  supported: false
+'13.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-lowlatency:
+      meta: linux-meta-lowlatency
+    linux-ppc:
+      meta: linux-meta-ppc
+  derivative-packages:
+    linux:
+    - linux-ppc
+    - linux-lowlatency
+  development: false
+  kernel: 3.8.0
+  kernels:
+  - 3.8.0
+  name: raring
+  packages: []
+  series_version: '13.04'
+  supported: false
+'13.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-lowlatency:
+      meta: linux-meta-lowlatency
+    linux-ppc:
+      meta: linux-meta-ppc
+  derivative-packages:
+    linux:
+    - linux-ppc
+    - linux-lowlatency
+  development: false
+  kernel: 3.11.0
+  kernels:
+  - 3.11.0
+  name: saucy
+  packages: []
+  series_version: '13.10'
+  supported: false
+'14.04':
+  backport-packages:
+    linux-aws:
+    - linux
+    - '16.04'
+    linux-lts-utopic:
+    - linux
+    - '14.10'
+    linux-lts-vivid:
+    - linux
+    - '15.04'
+    linux-lts-wily:
+    - linux
+    - '15.10'
+    linux-lts-xenial:
+    - linux
+    - '16.04'
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-aws:
+      meta: linux-meta-aws
+    linux-keystone:
+      meta: linux-meta-keystone
+    linux-lts-utopic:
+      meta: linux-meta-lts-utopic
+      signed: linux-signed-lts-utopic
+    linux-lts-vivid:
+      meta: linux-meta-lts-vivid
+      signed: linux-signed-lts-vivid
+    linux-lts-wily:
+      meta: linux-meta-lts-wily
+      signed: linux-signed-lts-wily
+    linux-lts-xenial:
+      meta: linux-meta-lts-xenial
+      signed: linux-signed-lts-xenial
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 3.13.0
+  kernels:
+  - 3.13.0
+  lts: true
+  name: trusty
+  packages:
+  - linux-meta-aws
+  - linux-aws
+  series_version: '14.04'
+  supported: true
+'14.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 3.16.0
+  kernels:
+  - 3.16.0
+  name: utopic
+  packages: []
+  series_version: '14.10'
+  supported: false
+'15.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 3.19.0
+  kernels:
+  - 3.19.0
+  name: vivid
+  packages: []
+  series_version: '15.04'
+  supported: false
+'15.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-raspi2:
+      meta: linux-meta-raspi2
+  derivative-packages:
+    linux:
+    - linux-raspi2
+  development: false
+  kernel: 4.2.0
+  kernels:
+  - 4.2.0
+  name: wily
+  packages: []
+  series_version: '15.10'
+  supported: false
+'16.04':
+  backport-packages:
+    linux-azure:
+    - linux
+    - '17.10'
+    linux-azure-edge:
+    - linux
+    - '17.10'
+    linux-gcp:
+    - linux
+    - '17.04'
+    linux-hwe:
+    - linux
+    - '17.04'
+    linux-hwe-edge:
+    - linux
+    - '17.10'
+    linux-oem:
+    - linux
+    - '17.10'
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-aws:
+      meta: linux-meta-aws
+    linux-azure:
+      meta: linux-meta-azure
+    linux-azure-edge:
+      meta: linux-meta-azure-edge
+    linux-euclid:
+      meta: linux-meta-euclid
+    linux-flo:
+      meta: linux-meta-flo
+    linux-gcp:
+      meta: linux-meta-gcp
+    linux-gke:
+      meta: linux-meta-gke
+    linux-goldfish:
+      meta: linux-meta-goldfish
+    linux-hwe:
+      meta: linux-meta-hwe
+      signed: linux-signed-hwe
+    linux-hwe-edge:
+      meta: linux-meta-hwe-edge
+      signed: linux-signed-hwe-edge
+    linux-joule:
+      meta: linux-meta-joule
+    linux-kvm:
+      meta: linux-meta-kvm
+    linux-mako:
+      meta: linux-meta-mako
+    linux-oem:
+      meta: linux-meta-oem
+      signed: linux-signed-oem
+    linux-raspi2:
+      meta: linux-meta-raspi2
+    linux-snapdragon:
+      meta: linux-meta-snapdragon
+  dependent-snaps:
+    linux:
+      arches:
+      - amd64
+      - i386
+      gated: false
+      hw-cert: true
+      qa: false
+      snap: pc-kernel
+      stable: true
+    linux-aws:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: aws-kernel
+      stable: false
+    linux-gcp:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: gcp-kernel
+      stable: false
+    linux-gke:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: gke-kernel
+      stable: false
+    linux-raspi2:
+      arches:
+      - armhf
+      gated: false
+      hw-cert: true
+      qa: false
+      snap: pi2-kernel
+      stable: true
+    linux-snapdragon:
+      arches:
+      - arm64
+      gated: false
+      hw-cert: true
+      qa: false
+      snap: dragonboard-kernel
+      stable: true
+  derivative-packages:
+    linux:
+    - linux-snapdragon
+    - linux-aws
+    - linux-raspi2
+    - linux-euclid
+    - linux-kvm
+    - linux-gke
+  derivative-snaps:
+    linux:
+    - stlouis-kernel
+    - caracalla-kernel
+  development: false
+  kernel: 4.4.0
+  kernels:
+  - 4.4.0
+  lts: true
+  name: xenial
+  packages: []
+  series_version: '16.04'
+  supported: true
+'16.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-raspi2:
+      meta: linux-meta-raspi2
+  derivative-packages:
+    linux:
+    - linux-raspi2
+  development: false
+  kernel: 4.8.0
+  kernels:
+  - 4.8.0
+  name: yakkety
+  packages: []
+  series_version: '16.10'
+  supported: false
+'17.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-goldfish:
+      meta: linux-meta-goldfish
+    linux-raspi2:
+      meta: linux-meta-raspi2
+    linux-snapdragon:
+      meta: linux-meta-snapdragon
+  derivative-packages:
+    linux:
+    - linux-raspi2
+  development: false
+  kernel: 4.10.0
+  kernels:
+  - 4.10.0
+  name: zesty
+  packages:
+  - linux
+  - linux-meta
+  - linux-signed
+  series_version: '17.04'
+  supported: true
+'17.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-raspi2:
+      meta: linux-meta-raspi2
+    linux-snapdragon:
+      meta: linux-meta-snapdragon
+  derivative-packages:
+    linux:
+    - linux-raspi2
+  development: false
+  kernel: 4.13.0
+  kernels:
+  - 4.11.0
+  - 4.12.0
+  - 4.13.0
+  name: artful
+  packages:
+  - linux
+  - linux-meta
+  - linux-signed
+  series_version: '17.10'
+  supported: true
+'18.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-raspi2:
+      meta: linux-meta-raspi2
+    linux-snapdragon:
+      meta: linux-meta-snapdragon
+  derivative-packages:
+    linux: []
+  development: true
+  kernel: 4.15.0
+  kernels:
+  - 4.13.0
+  - 4.14.0
+  - 4.15.0
+  name: bionic
+  packages: []
+  series_version: '18.04'
+  supported: false
+'6.06':
+  dependent-packages:
+    linux-source-2.6.15:
+      lbm: linux-backports-modules-2.6.15
+      lrm: linux-restricted-modules-2.6.15
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.15
+  kernels:
+  - 2.6.15
+  name: dapper
+  packages: []
+  series_version: '6.06'
+  supported: false
+'7.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.20
+  kernels:
+  - 2.6.20
+  name: feisty
+  packages: []
+  series_version: '7.04'
+  supported: false
+'7.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.22
+  kernels:
+  - 2.6.22
+  name: gutsy
+  packages: []
+  series_version: '7.10'
+  supported: false
+'8.04':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-2.6.24
+      lrm: linux-restricted-modules-2.6.24
+      lum: linux-ubuntu-modules-2.6.24
+      meta: linux-meta
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.24
+  kernels:
+  - 2.6.24
+  name: hardy
+  packages: []
+  series_version: '8.04'
+  supported: false
+'8.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.27
+  kernels:
+  - 2.6.27
+  name: intrepid
+  packages: []
+  series_version: '8.10'
+  supported: false
+'9.04':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+  derivative-packages:
+    linux: []
+  development: false
+  kernel: 2.6.28
+  kernels:
+  - 2.6.28
+  name: jaunty
+  packages: []
+  series_version: '9.04'
+  supported: false
+'9.10':
+  dependent-packages:
+    linux:
+      lbm: linux-backports-modules-2.6.31
+      meta: linux-meta
+      ports-meta: linux-ports-meta
+    linux-ec2:
+      meta: linux-meta-ec2
+    linux-fsl-imx51:
+      meta: linux-meta-fsl-imx51
+    linux-mvl-dove:
+      meta: linux-meta-mvl-dove
+  derivative-packages:
+    linux:
+    - linux-mvl-dove
+    - linux-fsl-imx51
+    - linux-ec2
+  development: false
+  kernel: 2.6.31
+  kernels:
+  - 2.6.31
+  name: karmic
+  packages: []
+  series_version: '9.10'
+  supported: false
