@@ -980,7 +980,6 @@
                 linux-ports-meta:
                     type: ports-meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'ports']
-            supported: true
 
         linux-ec2:
             packages:
@@ -989,8 +988,6 @@
                 linux-meta-ec2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'ec2']
-            supported: true
-            derived-from: [ '9.10', 'linux' ]
 
         linux-fsl-imx51:
             packages:
@@ -999,8 +996,6 @@
                 linux-meta-fsl-imx51:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'fsl-imx51']
-            supported: true
-            derived-from: [ '9.10', 'linux' ]
 
         linux-mvl-dove:
             packages:
@@ -1009,8 +1004,6 @@
                 linux-meta-mvl-dove:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/karmic', 'mvl-dove']
-            supported: true
-            derived-from: [ '9.10', 'linux' ]
 
 # 9.04 (jaunty)
 '9.04':

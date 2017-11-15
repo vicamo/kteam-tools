@@ -305,7 +305,8 @@ for series_key, series in sorted(data.items(), key=lambda x: [map(int, x[0].spli
             dependent_packages_prime[type] = package
 
         series['dependent-packages'] = dependent_packages
-        series['derivative-packages'] = derivative_packages
+        if series.get('supported', False):
+            series['derivative-packages'] = derivative_packages
 
     # derivative-packages indicates packages in this series which depend on
     # a package in this series.
