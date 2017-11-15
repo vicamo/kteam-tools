@@ -1,6 +1,12 @@
 #
 # lib-build -- helpers for triggers and build recipies
 #
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
 master_main="$HOME/COD"
 master_tree="$master_main/linux"
 
@@ -76,70 +82,10 @@ repo_remote_url_set	'crack-extra'		'git://git.launchpad.net/~ubuntu-kernel-test/
 repo_remote_url_set	'stable-queue'		'git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git'
 repo_remote_url_set	'stable-queue-3.2'	'git://git.kernel.org/pub/scm/linux/kernel/git/bwh/linux-3.2.y-queue.git'
 
-repo_remote_url_set	'hardy'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy.git'
-repo_remote_url_set	'hardy-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-hardy-meta.git'
-repo_remote_url_set	'intrepid'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid.git'
-repo_remote_url_set	'intrepid-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-intrepid-meta.git'
-repo_remote_url_set	'jaunty'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty.git'
-repo_remote_url_set	'jaunty-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-jaunty-meta.git'
-repo_remote_url_set	'karmic'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic.git'
-repo_remote_url_set	'karmic-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-karmic-meta.git'
-repo_remote_url_set	'maverick'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick.git'
-repo_remote_url_set	'maverick-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-maverick-meta.git'
-repo_remote_url_set	'natty'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty.git'
-repo_remote_url_set	'natty-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-natty-meta.git'
-repo_remote_url_set	'oneiric'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric.git'
-repo_remote_url_set	'oneiric-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-oneiric-meta.git'
-repo_remote_url_set	'quantal'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal.git'
-repo_remote_url_set	'quantal-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-quantal-meta.git'
-repo_remote_url_set	'raring'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring.git'
-repo_remote_url_set	'raring-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-raring-meta.git'
-repo_remote_url_set	'saucy'			'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy.git'
-repo_remote_url_set	'saucy-meta'		'git://kernel.ubuntu.com/ubuntu-archive/ubuntu-saucy-meta.git'
-
-repo_remote_url_set	'lucid'			'git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git'
-repo_remote_url_set	'lucid-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-lucid-meta.git'
-
-#repo_remote_url_set	'precise'		'git://kernel.ubuntu.com/ubuntu/ubuntu-precise.git'
-#repo_remote_url_set	'precise-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-precise-meta.git'
-#repo_remote_url_set	'trusty'		'git://kernel.ubuntu.com/ubuntu/ubuntu-trusty.git'
-#repo_remote_url_set	'trusty-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-trusty-meta.git'
-#repo_remote_url_set	'utopic'		'git://kernel.ubuntu.com/ubuntu/ubuntu-utopic.git'
-#repo_remote_url_set	'utopic-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-utopic-meta.git'
-#repo_remote_url_set	'vivid'			'git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git'
-#repo_remote_url_set	'vivid-meta'		'git://kernel.ubuntu.com/ubuntu/ubuntu-vivid-meta.git'
-
-repo_remote_url_set	'precise'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise'
-repo_remote_url_set	'precise-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise'
-repo_remote_url_set	'precise-lbm'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0/+git/precise'
-repo_remote_url_set	'trusty'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty'
-repo_remote_url_set	'trusty-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty'
-repo_remote_url_set	'trusty--linux-aws'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/trusty'
-repo_remote_url_set	'utopic'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic'
-repo_remote_url_set	'utopic-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic'
-repo_remote_url_set	'vivid'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid'
-repo_remote_url_set	'vivid-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid'
-repo_remote_url_set	'wily'			'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily'
-repo_remote_url_set	'wily-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily'
-repo_remote_url_set	'xenial'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial'
-repo_remote_url_set	'xenial-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial'
-repo_remote_url_set	'xenial--linux-aws'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial'
-repo_remote_url_set	'xenial--linux-azure'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure'
-repo_remote_url_set	'xenial--linux-gcp'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp'
-repo_remote_url_set	'xenial--linux-gke'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke'
-repo_remote_url_set	'xenial--linux-kvm'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm'
-repo_remote_url_set	'xenial--linux-joule'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-joule'
-repo_remote_url_set	'xenial--linux-oem'	'git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem'
-repo_remote_url_set	'yakkety'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety'
-repo_remote_url_set	'yakkety-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety'
-repo_remote_url_set	'zesty' 		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty'
-repo_remote_url_set	'zesty-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty'
-repo_remote_url_set	'artful'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful'
-repo_remote_url_set	'artful-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful'
-repo_remote_url_set	'bionic'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic'
-repo_remote_url_set	'bionic-meta'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic'
-
 repo_remote_url_set	'unstable'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable'
+
+# Use kernel-series.yaml to load up the repo definitions for Ubuntu packages.
+eval $( "$here/mainline-config" )
 
 # Update a specific remote to the latest available, if the remote is missing
 # then add it using the urls above.
