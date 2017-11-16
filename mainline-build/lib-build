@@ -94,9 +94,11 @@ repo_remote_update_as()
 	local remote="$1"
 	local url="$2"
 	local curr
+	local rc
 
-	curr=`git config "remote.$remote.url"`
-	if [ "$?" -eq 0 -a "$curr" != "$url" ]; then
+	rc=0
+	curr=`git config "remote.$remote.url"` || rc=1
+	if [ "$rc" -eq 0 -a "$curr" != "$url" ]; then
 		echo "$P: removing $remote remote ($curr) ..."
 		git remote rm "$remote" || true
 		curr=""
