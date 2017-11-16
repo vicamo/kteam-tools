@@ -85,6 +85,7 @@ do
 
 done <<EOL
 artful linux master-next
+artful linux-raspi2 raspi2
 zesty linux master-next
 xenial linux master-next
 trusty linux master-next
