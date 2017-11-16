@@ -166,9 +166,6 @@ echo "abinum<$abinum>"
 branch="BUILD.$abinum"
 branch=`echo "$branch" | sed -e 's/-/./g'`
 
-# Ensure we have the commit identified.
-repo_remote_update_list $series
-
 # Make sure git is ready for anything...
 rm -rf .git/rebase-apply
 git reset --hard HEAD
