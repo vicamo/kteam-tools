@@ -60,7 +60,12 @@ title=$( git log -1 --pretty=format:%s "$commit" )
 git clean -x -f -d
 do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean
-archs=$( grep Architecture debian/control | awk '{ for (c=2; c <= NF; c++) { print $c } }' | sort -u )
+archs=$(
+	grep Architecture debian/control |
+	awk '{ for (c=2; c <= NF; c++) { print $c } }' |
+	sed -e 's/all/amd64/' |
+	sort -u
+)
 
 host=$( hostname )
 cat - <<EOL >"$result/SUMMARY"
