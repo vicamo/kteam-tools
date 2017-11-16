@@ -53,6 +53,7 @@ print('''<html>
 table.matrix {{
     border-collapse: collapse;
 }}
+table.matrix th {{ text-align: left; }}
 #table.matrix, table.matrix th, table.matrix td {{
 #   border: 1px solid black;
 #}}
