@@ -67,7 +67,7 @@ table.matrix th {{ text-align: left; }}
 <body>
 <h1>Build Tests for {series}/{package}</h1>
 <table class="matrix">
-<tr><th>Subject<th>Builder<th>Status'''.format(**meta))
+<tr><th>Changeset<th>Builder<th>Status'''.format(**meta))
 for _, entry in results:
     status = entry['status']
 
