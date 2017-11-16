@@ -1,9 +1,11 @@
 #!/bin/bash
 P='cod-changeset-build'
 
+# Options.
+
 # Title used to be added, ignore it.
-if [ "$#" -ne 4 -a "$#" -ne 5 ]; then
-	echo "Usage: $0 <series> <package> <commit-ish> <id>" 1>&2
+if [ "$#" -ne 5 ]; then
+	echo "Usage: $0 <series> <package> <remote> <commit-ish> <id>" 1>&2
 	exit 1
 fi
 
@@ -18,8 +20,9 @@ esac
 
 series="$1"
 package="$2"
-commit="$3"
-id="$4"
+remote="$3"
+commit="$4"
+id="$5"
 
 master_tree_select
 
@@ -30,7 +33,7 @@ mkdir -p "$result"
 echo "$P '$series' '$package' '$commit' '$id'" >"$result/REBUILD"
 
 # Ensure we have the commit identified.
-repo_remote_update_list crack
+repo_remote_update_list $remote
 
 build_release="$series"
 

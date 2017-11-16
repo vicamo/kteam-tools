@@ -77,7 +77,7 @@ do
 
 			# Queue up the build.
 			"$here/cod-enqueue" "cod-changeset-build" \
-				"$series" "$package" "$tag" "$changeset"
+				"$series" "$package" "crack" "$tag" "$changeset"
 		done
 	)
 		
