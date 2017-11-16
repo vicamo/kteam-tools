@@ -151,6 +151,23 @@ repo_update_ubuntu()
 	)
 }
 
+#
+# Add and update the remote repositories as needed.
+#
+repo_update_remote()
+{
+	local repo="$1"
+	local package="$2"
+	local url
+
+	(
+		repo_select "$master_main/$repo"
+		repo_remote_url "$package"; url="$RET"
+
+		repo_remote_update_as "$package" "$url"
+	)
+}
+
 
 #
 # series_to_build_release -- map from a series to a sane build series.
