@@ -85,7 +85,7 @@ repo_remote_url_set	'stable-queue-3.2'	'git://git.kernel.org/pub/scm/linux/kerne
 repo_remote_url_set	'unstable'		'git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable'
 
 # Use kernel-series.yaml to load up the repo definitions for Ubuntu packages.
-eval $( "$here/mainline-config" )
+eval $( "$here/mainline-config" 'lib-build' )
 
 # Update a specific remote to the latest available, if the remote is missing
 # then add it using the urls above.
