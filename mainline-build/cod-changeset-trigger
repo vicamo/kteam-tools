@@ -29,9 +29,10 @@ while read series package branch
 do
 	current="${series}_${package}_${branch}"
 	curr="$master_main/state/changeset/$current"
-	branch="$series/$branch"
+	remote="$series--$package"
+	branch="$remote/$branch"
 
-	repo_update_ubuntu "$repo" "$series"
+	repo_update_remote "$repo" "$remote"
 
 	tip=$( cd "$master_main/$repo" && git log -1 --format=%H "$branch" )
 	if [ ! -f "$curr" ]; then
