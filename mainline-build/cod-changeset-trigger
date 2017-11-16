@@ -36,9 +36,9 @@ do
 
 	tip=$( cd "$master_main/$repo" && git log -1 --format=%H "$branch" )
 	if [ ! -f "$curr" ]; then
-		echo "$tip" >"$curr.new"
+		echo "previously unscanned tip, only rebuilding tip"
+		git log -1 --pretty=format:%H "$tip^" >"$curr.new"
 		mv -f "$curr.new" "$curr"
-		continue
 	fi
 	prev=$( cat "$curr" )
 
