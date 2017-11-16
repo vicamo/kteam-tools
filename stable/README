@@ -66,7 +66,7 @@ create-sru-cards.py:
     YYYY.MM.DD format.
 
     Setup:
-      - git clone https://code.launchpad.net/~apw/+git/so-trello
+      - git clone https://git.launchpad.net/~apw/+git/so-trello
       - cd <kteam-tools-repo>/stable && \
         ln -s <so-trello-repo>/trellotool .
         or
