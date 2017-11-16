@@ -49,6 +49,7 @@ print('''<html>
 <style>
 .GOOD {{ background-color: green; }}
 .FAIL {{ background-color: red; }}
+.UBUNTU {{ background-color: #FFFF99; }}
 table.matrix {{
     border-collapse: collapse;
 }}
@@ -69,6 +70,10 @@ table.matrix {{
 for _, entry in results:
     status = entry['status']
 
+    row_class = 'row'
+    if entry['id'].startswith('Ubuntu-'):
+        row_class = 'UBUNTU'
+
     if status == '0':
         status_string = 'GOOD'
         status_class = 'GOOD'
@@ -78,11 +83,12 @@ for _, entry in results:
     commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={hash}".format(**entry)
     status_url = "http://kernel.ubuntu.com/~kernel-ppa/test-build/"
     status_url += quote("{series}/{package}/{directory}".format(**entry))
-    print('<tr class="row"><td><a href="{commit_url}">{id}</a> -- {subject}<td class="{status_class}"><a href="{status_url}">{status_string}</a><td>{host}'.format(
+    print('<tr class="{row_class}"><td><a href="{commit_url}">{id}</a> -- {subject}<td class="{status_class}"><a href="{status_url}">{status_string}</a><td>{host}'.format(
         commit_url=commit_url,
         status_string=status_string,
         status_class=status_class,
         status_url=status_url,
+        row_class=row_class,
         **entry
         ))
 print('''</table>
