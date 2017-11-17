@@ -172,7 +172,7 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		mkdir -p "$out/test-build/`dirname "$build"`"
 		mv "$incoming/test-build/$build" "$out/test-build/$build"
 		echo "$P: $build: announcing ..."
-		"$here/mainline-changeset-announce" "$out/test-build/$build" "$announce"
+		"$here/cod-changeset-announce" "$out/test-build/$build" "$announce"
 	done
 	find "$HOME/incoming/test-build" -empty -type d -delete
 
