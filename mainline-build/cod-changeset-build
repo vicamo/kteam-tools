@@ -71,6 +71,7 @@ archs=$(
 )
 
 host=$( hostname )
+time=$( date +%s )
 cat - <<EOL >"$result/SUMMARY"
 Host: $host
 Series: $series
@@ -79,6 +80,7 @@ Subject: $title
 Hash: $sha
 Id: $id
 Committed: $cts
+Start: $time
 EOL
 for arch in $archs
 do
@@ -109,6 +111,9 @@ do
 	echo "Status: $arch $rc" >>"$result/SUMMARY"
 	echo "build $arch on $barch ... rc=$rc"
 done
+
+time=$( date +%s )
+echo "End: $time" >>"$result/SUMMARY"
 
 # Clean out any build artifacts ...
 rm -f "$master_main"/*.deb "$master_main"/*.udeb "$master_main"/*.tar.gz
