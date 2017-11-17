@@ -317,8 +317,7 @@ class KernelSeriesEntry:
 # KernelSeries
 #
 class KernelSeries:
-    #_url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
-    _url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
+    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
 
     def __init__(self):
         response = urlopen(self._url)
