@@ -25,6 +25,7 @@ repo="linux"
 # Work out where we are going to push the tags et al to.
 repo_remote_url "crack-push"; push_url="$RET"
 
+"$here/mainline-config" 'changeset' | \
 while read series package branch
 do
 	current="${series}_${package}_${branch}"
@@ -84,24 +85,4 @@ do
 	# Commit the new tip.
 	echo "$tip" >"$curr.new"
 	mv -f "$curr.new" "$curr"
-
-done <<EOL
-artful linux master-next
-artful linux-raspi2 raspi2
-zesty linux master-next
-xenial linux master-next
-trusty linux master-next
-precise linux master-next
-EOL
-
-#pre-proposed wily linux master-next linux-meta master -
-#pre-proposed utopic linux master-next linux-meta master no-release
-#pre-proposed lucid linux master-next linux-meta master no-release
-#pre-proposed lucid linux-lbm master no-release
-#pre-proposed utopic linux goldfish linux-meta goldfish -
-#pre-proposed utopic linux grouper linux-meta grouper -
-#pre-proposed utopic linux maguro linux-meta maguro -
-#pre-proposed utopic linux mako linux-meta mako -
-#pre-proposed utopic linux manta linux-meta manta -
-#pre-proposed raring linux-lbm master no-release
-#pre-proposed raring linux master-next linux-meta master no-release
+done

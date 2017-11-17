@@ -10,6 +10,7 @@ def usage():
 Usage: mainline-config <mode>
        mode:
          lib-build      -- repository configuration for lib-build
+         changeset      -- supported packages for changeset tracking
           """.strip(), file=sys.stderr)
     sys.exit(1)
 
@@ -30,5 +31,32 @@ if mode == 'lib-build':
                         print("repo_remote_url_set '{}' '{}';".format(series.codename, repo.url))
                     print("repo_remote_url_set '{}--{}' '{}';".format(series.codename, package.name, repo.url))
 
+elif mode == 'changeset':
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.supported:
+            continue
+        for source in sorted(series.sources, key=lambda x: x.name):
+            if not source.supported:
+                continue
+
+            if source.derived_from:
+                continue
+
+            for package in sorted(source.packages, key=lambda x: x.name):
+                if source.name != package.name:
+                    continue
+
+                repo = package.repo
+                if not repo:
+                    continue
+
+                branch = repo.branch
+                if not branch:
+                    if package.name == 'linux':
+                        branch = 'master-next'
+                    else:
+                        branch = 'master'
+
+                print(series.codename, source.name, branch)
 else:
     usage()
