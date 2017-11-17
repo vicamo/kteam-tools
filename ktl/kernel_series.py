@@ -33,22 +33,24 @@ def convert_v2_to_v1(data):
                 break
 
         series_v1['derivative-packages'] = {}
-
-        # We need this to exist even if there are none.
+        series_v1['packages'] = []
         series_v1['derivative-packages']['linux'] = []
         for source_key, source in series['sources'].items():
-            if 'derived-from' in source:
-                (derived_series, derived_package) = source['derived-from']
-                if derived_series == series_key:
-                    derivative_packages = series_v1['derivative-packages'].setdefault(derived_package, [])
-                    derivative_packages.append(source_key)
-                else:
-                    backport_packages = series_v1.setdefault('backport-packages', {})
-                    backport_packages[source_key] = [ derived_package, derived_series ]
+            if source.get('supported', False) and not source.get('copy-forward', False):
+                if 'derived-from' in source:
+                    (derived_series, derived_package) = source['derived-from']
+                    if derived_series == series_key:
+                        derivative_packages = series_v1['derivative-packages'].setdefault(derived_package, [])
+                        derivative_packages.append(source_key)
+                    else:
+                        backport_packages = series_v1.setdefault('backport-packages', {})
+                        backport_packages[source_key] = [ derived_package, derived_series ]
 
-            series_v1['packages'] = []
+                else:
+                    series_v1['derivative-packages'].setdefault(source_key, [])
+
             for package_key, package in source['packages'].items():
-                if 'supported' in source and source['supported']:
+                if source.get('supported', False) and not source.get('copy-forward', False):
                     series_v1['packages'].append(package_key)
 
                 if not package:
@@ -311,7 +313,8 @@ class KernelSeriesEntry:
 # KernelSeries
 #
 class KernelSeries:
-    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    #_url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    _url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
 
     def __init__(self):
         response = urlopen(self._url)

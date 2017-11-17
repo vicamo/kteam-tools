@@ -11,8 +11,7 @@
     linux-ec2:
       meta: linux-meta-ec2
   derivative-packages:
-    linux:
-    - linux-ec2
+    linux: []
   development: false
   kernel: 2.6.32
   kernels:
@@ -32,9 +31,7 @@
     linux-ti-omap4:
       meta: linux-meta-ti-omap4
   derivative-packages:
-    linux:
-    - linux-mvl-dove
-    - linux-ti-omap4
+    linux: []
   development: false
   kernel: 2.6.35
   kernels:
@@ -51,8 +48,7 @@
     linux-ti-omap4:
       meta: linux-meta-ti-omap4
   derivative-packages:
-    linux:
-    - linux-ti-omap4
+    linux: []
   development: false
   kernel: 2.6.38
   kernels:
@@ -69,8 +65,7 @@
     linux-ti-omap4:
       meta: linux-meta-ti-omap4
   derivative-packages:
-    linux:
-    - linux-ti-omap4
+    linux: []
   development: false
   kernel: 3.0.0
   kernels:
@@ -121,7 +116,13 @@
   - 3.2.0
   lts: true
   name: precise
-  packages: []
+  packages:
+  - linux-lts-trusty
+  - linux-signed-lts-trusty
+  - linux-meta-lts-trusty
+  - linux-backports-modules-3.2.0
+  - linux-meta
+  - linux
   series_version: '12.04'
   supported: true
 '12.10':
@@ -137,10 +138,7 @@
     linux-ti-omap4:
       meta: linux-meta-ti-omap4
   derivative-packages:
-    linux:
-    - linux-ti-omap4
-    - linux-armadaxp
-    - linux-lowlatency
+    linux: []
   development: false
   kernel: 3.5.0
   kernels:
@@ -159,9 +157,7 @@
     linux-ppc:
       meta: linux-meta-ppc
   derivative-packages:
-    linux:
-    - linux-ppc
-    - linux-lowlatency
+    linux: []
   development: false
   kernel: 3.8.0
   kernels:
@@ -180,9 +176,7 @@
     linux-ppc:
       meta: linux-meta-ppc
   derivative-packages:
-    linux:
-    - linux-ppc
-    - linux-lowlatency
+    linux: []
   development: false
   kernel: 3.11.0
   kernels:
@@ -196,15 +190,6 @@
     linux-aws:
     - linux
     - '16.04'
-    linux-lts-utopic:
-    - linux
-    - '14.10'
-    linux-lts-vivid:
-    - linux
-    - '15.04'
-    linux-lts-wily:
-    - linux
-    - '15.10'
     linux-lts-xenial:
     - linux
     - '16.04'
@@ -237,6 +222,12 @@
   lts: true
   name: trusty
   packages:
+  - linux-meta-lts-xenial
+  - linux-lts-xenial
+  - linux-signed-lts-xenial
+  - linux
+  - linux-meta
+  - linux-signed
   - linux-meta-aws
   - linux-aws
   series_version: '14.04'
@@ -279,8 +270,7 @@
     linux-raspi2:
       meta: linux-meta-raspi2
   derivative-packages:
-    linux:
-    - linux-raspi2
+    linux: []
   development: false
   kernel: 4.2.0
   kernels:
@@ -416,7 +406,37 @@
   - 4.4.0
   lts: true
   name: xenial
-  packages: []
+  packages:
+  - linux-meta-azure
+  - linux-azure
+  - linux-meta-snapdragon
+  - linux-snapdragon
+  - linux-meta-aws
+  - linux-aws
+  - linux-raspi2
+  - linux-meta-raspi2
+  - linux-meta-azure-edge
+  - linux-azure-edge
+  - linux
+  - linux-meta
+  - linux-signed
+  - linux-hwe-edge
+  - linux-meta-hwe-edge
+  - linux-signed-hwe-edge
+  - linux-meta-euclid
+  - linux-euclid
+  - linux-meta-kvm
+  - linux-kvm
+  - linux-meta-gke
+  - linux-gke
+  - linux-hwe
+  - linux-meta-hwe
+  - linux-signed-hwe
+  - linux-meta-oem
+  - linux-oem
+  - linux-signed-oem
+  - linux-gcp
+  - linux-meta-gcp
   series_version: '16.04'
   supported: true
 '16.10':
@@ -426,9 +446,10 @@
       signed: linux-signed
     linux-raspi2:
       meta: linux-meta-raspi2
+    linux-snapdragon:
+      meta: linux-meta-snapdragon
   derivative-packages:
-    linux:
-    - linux-raspi2
+    linux: []
   development: false
   kernel: 4.8.0
   kernels:
@@ -457,6 +478,8 @@
   - 4.10.0
   name: zesty
   packages:
+  - linux-raspi2
+  - linux-meta-raspi2
   - linux
   - linux-meta
   - linux-signed
@@ -482,6 +505,8 @@
   - 4.13.0
   name: artful
   packages:
+  - linux-raspi2
+  - linux-meta-raspi2
   - linux
   - linux-meta
   - linux-signed
@@ -505,7 +530,10 @@
   - 4.14.0
   - 4.15.0
   name: bionic
-  packages: []
+  packages:
+  - linux
+  - linux-meta
+  - linux-signed
   series_version: '18.04'
   supported: false
 '6.06':
@@ -609,10 +637,7 @@
     linux-mvl-dove:
       meta: linux-meta-mvl-dove
   derivative-packages:
-    linux:
-    - linux-mvl-dove
-    - linux-fsl-imx51
-    - linux-ec2
+    linux: []
   development: false
   kernel: 2.6.31
   kernels:
