@@ -259,6 +259,10 @@ class KernelSourceEntry:
 
         return source
 
+    @property
+    def copy_forward(self):
+        return self._data.get('copy-forward', False)
+
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
 

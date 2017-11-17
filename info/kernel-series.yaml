@@ -43,6 +43,9 @@
 #	indicates that this kernel derives from another kernel; a Dependency
 #	record (see below).  Normally this indicates that this source is
 #	derivative of and rebased onto the indicated source.
+#  * copy-forward (bool)
+#	set to true if this source package updated by copy from its
+#	derived-from source.
 #
 # Package record fields:
 #  * type (string)
@@ -101,6 +104,7 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
+            supported: true
 
         linux-raspi2:
             packages:
@@ -109,6 +113,9 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
+            supported: true
+            derived-from: [ '17.10', 'linux-raspi2' ]
+            copy-forward: true
 
         linux-snapdragon:
             packages:
@@ -117,6 +124,9 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'snapdragon']
+            supported: true
+            derived-from: [ '16.04', 'linux-snapdragon' ]
+            copy-forward: true
 
 # 17.10 (artful)
 '17.10':
@@ -154,6 +164,9 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'snapdragon']
+            supported: true
+            derived-from: [ '16.04', 'linux-snapdragon' ]
+            copy-forward: true
 
 # 17.04 (zesty)
 '17.04':
@@ -199,6 +212,9 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
+            supported: true
+            derived-from: [ '16.04', 'linux-snapdragon' ]
+            copy-forward: true
 
 # 16.10 (yakkety)
 '16.10':
@@ -226,6 +242,16 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety', 'raspi2']
             derived-from: [ '16.10', 'linux' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
+            derived-from: [ '16.04', 'linux-snapdragon' ]
+            copy-forward: true
 
 # 16.04 (xenial)
 '16.04':
