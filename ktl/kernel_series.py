@@ -282,6 +282,10 @@ class KernelSeriesEntry:
         return self._data['codename']
 
     @property
+    def opening(self):
+        return self._data.get('opening', False)
+
+    @property
     def development(self):
         return self._data.get('development', False)
 
@@ -317,7 +321,8 @@ class KernelSeriesEntry:
 # KernelSeries
 #
 class KernelSeries:
-    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    #_url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    _url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
 
     def __init__(self):
         response = urlopen(self._url)
