@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+#
+
+import sys
+import os
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', 'py2')))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import error, basicConfig, INFO, DEBUG
+from ktl.ubuntu                         import Ubuntu
+
+import datetime
+import sqlite3
+# import json
+
+# BugStats
+#
+class BugStats():
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        s.args = args
+
+        try:
+            s.db = sqlite3.connect('bugs.db')
+        except Exception as e:
+            s.db.close()
+            raise e
+
+    # main
+    #
+    def main(s):
+        retval = 1
+
+        status = [
+            "New",
+            "Incomplete",
+            "Opinion",
+            "Invalid",
+            "Won\'t Fix",
+            "Expired",
+            "Confirmed",
+            "Triaged",
+            "In Progress",
+            "Fix Committed",
+            "Fix Released",
+            "Incomplete (with response)",
+            "Incomplete (without response)",
+        ]
+
+        try:
+
+            data = {}
+            ibsn = list(Ubuntu.index_by_series_name.keys())
+            # ibsn.append('invalid')
+            # ibsn.append('unknown')
+            for source in ['linux']:
+                data[source] = {}
+                for series in ibsn:
+                    data[source][series] = {}
+                    c = s.db.cursor()
+                    c.execute('SELECT * from bugs WHERE series="%s" AND project="%s"' % (series, source))
+                    all_rows = c.fetchall()
+                    data[source][series]['total'] = len(all_rows)
+                    for condition in status:
+                        c = s.db.cursor()
+                        c.execute('SELECT * from bugs WHERE series="%s" AND project="%s" AND status="%s"' % (series, source, condition))
+                        all_rows = c.fetchall()
+                        data[source][series][condition] = len(all_rows)
+            # print(json.dumps(data, sort_keys=True, indent=4))
+
+            # timestamp = int(datetime.datetime.utcnow().seconds() * 1000.0)
+            timestamp = datetime.datetime.utcnow().timestamp()
+            for source in sorted(data):
+                for series in sorted(data[source]):
+                    buf = '%s_kernel_bugs_by_series_by_status,series=%s ' % (source, series)
+                    stats = []
+                    for status in sorted(data[source][series]):
+                        index = status.replace(' ', '_').replace('(', '').replace(')', '')
+                        stats.append('"%s"=%d' % (index, data[source][series][status]))
+                    buf += '%s %d' % (','.join(stats), timestamp)
+                    print(buf)
+
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        if retval > 0:
+            error("")
+            error("Due to the above error(s), this script is unable to continue and is terminating.")
+            error("")
+
+        s.db.close()
+        return retval
+
+
+if __name__ == '__main__':
+    if os.getenv('DEBUG'):
+        LOGLEVEL = DEBUG
+    else:
+        LOGLEVEL = INFO
+    basicConfig(level=LOGLEVEL, format="%(levelname)s - %(message)s")
+
+    app_description = '''
+    '''
+    app_epilog = '''
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    args = parser.parse_args()
+
+    app = BugStats(args)
+    exit(app.main())
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
