@@ -115,116 +115,66 @@ fi
 #------------------------------------------------------------------------------
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
-ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache devscripts"
-ADDPKG="$ADDPKG xmlto docbook-utils transfig sharutils"
-ADDPKG="$ADDPKG docbook-utils gawk m4 bash-completion bc lzop libssl-dev libusbip-dev uuid-dev"
-ADDPKG="$ADDPKG libpopt-dev libreadline6-dev"
-ADDPKGDEP=
-case $SUITE in
-	precise|trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
-		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
-		case ${ARCH} in
-			i386|amd64)
-				ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
+ADDPKG="fakeroot vim git-core devscripts lzop u-boot-utils snapcraft patchutils"
+get_build_dep "${SUITE}"
+echo "Build dep: $BUILD_DEP"
+ADDPKGDEP=${BUILD_DEP}
+
+get_build_arches "${SUITE}"
+echo "Build architectures: $BUILD_ARCHES"
+while read arch pkgs
+do
+	[ ${ARCH} != "amd64" ] && continue
+	case " $BUILD_ARCHES " in 
+	*\ $arch\ *)	ADDPKG="$ADDPKG $pkgs"
+			echo "Cross Compilers: $pkgs"
 			;;
-		esac
-		;;
-	*)
-		if [ "$SUITE" != "" ]; then
-			echo "Unknown suite <$SUITE>!" >&2
-			exit 1
-		fi
-		;;
-esac
+	esac
+done <<EOL
+armel		gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+armhf		gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+powerpc		gcc-powerpc-linux-gnu g++-powerpc-linux-gnu
+arm64		gcc-aarch64-linux-gnu
+ppc64el		gcc-powerpc64le-linux-gnu
+s390x		gcc-s390x-linux-gnu
+EOL
 
 case $SUITE in
-	precise|trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
+precise)
+	ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency";
 	case ${ARCH} in
-		i386|amd64)
-			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
+	i386)
+		ADDPKG="$ADDPKG linux-headers-generic-pae linux-headers-lowlatency-pae";
 		;;
 	esac
 	;;
-	*)
-		;;
 esac
 
-case $SUITE in
-	trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
-	case ${ARCH} in
-		i386|amd64)
-			ADDPKG="$ADDPKG gcc-powerpc-linux-gnu g++-powerpc-linux-gnu";
+# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
+case $ARCH in
+armhf)
+	case $SUITE in
+	trusty) ADDPKG="$ADDPKG gcc-4.6" ;;
+	esac
+	case $SUITE in
+	trusty|utopic|vivid|xenial|yakkety|zesty)
+		ADDPKG="$ADDPKG gcc-4.7"
 		;;
 	esac
 	;;
-	*)
+amd64)
+	case $SUITE in
+	trusty|utopic|vivid|xenial|yakkety|zesty)
+		ADDPKG="$ADDPKG gcc-4.7-arm-linux-gnueabihf"
 		;;
-esac
-
-case $SUITE in
-	precise)
-		ADDPKG="$ADDPKG linux-source linux-headers-generic linux-headers-server linux-headers-virtual linux-headers-lowlatency libpci-dev libaudit-dev python-dev";
-		case ${ARCH} in
-			i386)
-				ADDPKG="$ADDPKG linux-headers-generic-pae linux-headers-lowlatency-pae";
-			;;
-		esac
-	;;
-	trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
-		ADDPKG="$ADDPKG flex bison libunwind8-dev libaudit-dev python-dev libpci-dev";
-	;;
-	*)
-		;;
-esac
-
-case $SUITE in
-	trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
-		# armhf binaries fail with gcc-4.8, 4.7 has issues on manta.
-		ADDPKG="$ADDPKG gcc-4.6 gcc-4.7"
-		case $ARCH in
-			amd64|i386) ADDPKG="$ADDPKG gcc-4.7-arm-linux-gnueabihf"
-			;;
-		*)
-			;;
-		esac
-		;;
-	*)
-		;;
-esac
-
-case $SUITE in
-	trusty|utopic|vivid|wily|xenial|yakkety|zesty|artful|bionic)
-		ADDPKG="$ADDPKG libiberty-dev pkg-config dh-systemd"
-		case $ARCH in
-			amd64) ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf gcc-arm-linux-gnueabi gcc-powerpc-linux-gnu gcc-aarch64-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu"
-			;;
-		esac
-		;;
-esac
-
-case $SUITE in
-	xenial|yakkety|zesty|artful|bionic)
-		case $ARCH in
-			amd64) ADDPKG="$ADDPKG gcc-s390x-linux-gnu snapcraft liblzma-dev patchutils"
-			;;
-		esac
-		;;
-esac
-
-case $SUITE in
-artful|bionic)
-	case $ARCH in
-	amd64)	ADDPKG="$ADDPKG python-sphinx python-sphinx-rtd-theme" ;;
 	esac
 	;;
 esac
 
 case $SUITE in
-	*) _SUITE=$SUITE
-		;;
-	esac
-	
+*)	_SUITE=$SUITE ;;
+esac
+
 if [ "$ARCH" = "" ]; then
 	NAME="$SUITE"
 else
@@ -346,29 +296,20 @@ if $DOINSTALL; then
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
 fi
 
-PKGLIST=/tmp/$$.pkglist
-${SCHROOTCMD} -- dpkg -l > $PKGLIST
+# Install build-essentials ...
+${SCHROOTCMD} -- apt-get -y --force-yes --no-install-recommends install build-essential
 
+# ... and then the build-dependencies of the packages we wish to build.
+echo ADDPKGDEP=${ADDPKGDEP}
+${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source ${ADDPKGDEP}
+
+# Finally add any addhoc packages such as cross compilers.
 echo ADDPKG=${ADDPKG}
-pkg_found="/tmp/$$.pkg_found"
 for i in ${ADDPKG}
 do
-	rm -f $pkg_found
-	cat $PKGLIST | egrep "^ii  " | while read ii pkg junk
-	do
-		if [ "$i" = "$pkg" ]
-		then
-			echo "$i" > $pkg_found
-		fi
-	done
-	if [ ! -f $pkg_found ]
-	then
+	installed=$( ${SCHROOTCMD} -- dpkg -l $i | grep '^ii' | wc -l )
+	if [ "$installed" -eq 0 ]; then
 		echo Installing $i
 		${SCHROOTCMD} -- apt-get -y --force-yes --no-install-recommends install $i
 	fi
 done
-rm -f $pkg_found
-rm -f $PKGLIST
-echo PKGLIST $PKGLIST
-echo ADDPKGDEP=${ADDPKGDEP}
-${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source $ADDPKGDEP
