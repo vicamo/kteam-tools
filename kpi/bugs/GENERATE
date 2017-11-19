@@ -4,6 +4,7 @@ case "$1" in
 generate)
     (cd /srv/kernel.ubuntu.com/www/kpi/bugs  &&
     "$HOME/kteam-tools/kpi/bugs/bugs-groper" &&
-    "$HOME/kteam-tools/kpi/bugs/generate-prometheus-data" >kernel-bugs.txt)
+    "$HOME/kteam-tools/kpi/bugs/generate-influxdb-data" >kernel-bugs.txt)
+    curl -i -XPOST 'http://influxdb.cloud.kpi.internal:8086/write?db=kernel' --data-binary '@kernel-bugs.txt' --netrc-file $HOME/.influx-kernel.auth
     ;;
 esac
