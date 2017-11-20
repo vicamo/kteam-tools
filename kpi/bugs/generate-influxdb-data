@@ -76,7 +76,7 @@ class BugStats():
             timestamp = datetime.datetime.utcnow().timestamp()
             for source in sorted(data):
                 for series in sorted(data[source]):
-                    buf = '%s_kernel_bugs_by_series_by_status,series=%s ' % (source, series)
+                    buf = 'kernel_bugs_by_series_by_package_by_status,series=%s,package=%s ' % (series, source)
                     stats = []
                     for status in sorted(data[source][series]):
                         index = status.replace(' ', '_').replace('(', '').replace(')', '')
