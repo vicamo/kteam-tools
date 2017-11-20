@@ -85,8 +85,8 @@ class BugStats():
                     buf = 'kernel_bugs_by_series_by_package_by_status,series=%s,package=%s ' % (series, source)
                     stats = []
                     for status in sorted(data[source][series]):
-                        index = status.replace(' ', '_').replace('(', '').replace(')', '')
-                        stats.append('"%s"=%d' % (index, data[source][series][status]))
+                        index = status.replace(' ', '_').replace('(', '').replace(')', '').replace('\'', '')
+                        stats.append('%s=%d' % (index, data[source][series][status]))
                     buf += '%s %d' % (','.join(stats), timestamp)
                     print(buf)
 
