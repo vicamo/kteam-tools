@@ -30,6 +30,12 @@ class BugStats():
             s.db.close()
             raise e
 
+    def date_to_influx_ts(s, date):
+        epoch = datetime.datetime.utcfromtimestamp(0)
+        dt = date
+        timestamp = int((dt - epoch).total_seconds() * 1000000000.0)
+        return timestamp
+
     # main
     #
     def main(s):
@@ -72,8 +78,8 @@ class BugStats():
                         data[source][series][condition] = len(all_rows)
             # print(json.dumps(data, sort_keys=True, indent=4))
 
-            # timestamp = int(datetime.datetime.utcnow().seconds() * 1000.0)
-            timestamp = datetime.datetime.utcnow().timestamp()
+            timestamp = s.date_to_influx_ts(datetime.datetime.utcnow())
+
             for source in sorted(data):
                 for series in sorted(data[source]):
                     buf = 'kernel_bugs_by_series_by_package_by_status,series=%s,package=%s ' % (series, source)
