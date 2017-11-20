@@ -39,6 +39,7 @@ parse_emit()
 		case "$R_warning" in
 		*m)	let R_warning="${R_warning%m}*60" ;;
 		*h)	let R_warning="${R_warning%h}*3600" ;;
+		*hr)	let R_warning="${R_warning%hr}*3600" ;;
 		esac
 		let R_warning="$R_warning+(5*60)"
 	fi
@@ -46,6 +47,7 @@ parse_emit()
 		case "$R_alert" in
 		*m)	let R_alert="${R_alert%m}*60" ;;
 		*h)	let R_alert="${R_alert%h}*3600" ;;
+		*hr)	let R_alert="${R_alert%hr}*3600" ;;
 		esac
 		let R_alert="$R_alert+(5*60)"
 	fi
