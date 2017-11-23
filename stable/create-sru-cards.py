@@ -4,8 +4,8 @@ import argparse
 import os
 
 # the so-trello root dir needs to be on PYTHONPATH
-from trellotool.trellotool import TrelloTool
-
+from trellotool.trellotool              import TrelloTool
+from ktl.ubuntu                         import Ubuntu
 
 class TrelloError(Exception):
     pass
@@ -112,19 +112,65 @@ class SRUCardsCreator:
         with open(self.config_file, 'r') as cfd:
             self.config = yaml.safe_load(cfd)
 
-    def create(self):
+    def get_crankturn_cards(self):
+        cardlist = []
+        ubuntu = Ubuntu()
+
+        esm_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
+
+        for series in sorted(ubuntu.index_by_series_name, reverse=True):
+            record = ubuntu.index_by_series_name[series]
+            if record['supported']:
+                desc = None
+                if ('esm' in record) and record['esm']:
+                    desc = 'ESM mode: Note different git location and build PPA'
+                cardlist.append(('%s/linux' % (series), desc))
+
+                if 'derivative-packages' in record:
+                    for package in record['derivative-packages']:
+                        for derivative in record['derivative-packages'][package]:
+                            if derivative == 'linux-euclid':
+                                cardlist.append(('%s/%s' % (series, derivative), esm_desc))
+                            else:
+                                cardlist.append(('%s/%s' % (series, derivative), desc))
+
+                for entry in ubuntu.db.values():
+                    if 'backport-packages' in entry:
+                        for bp in entry['backport-packages']:
+                            if record['series_version'] == entry['backport-packages'][bp][1]:
+                                desc = ''
+                                if ('esm' in entry['name']) and entry['name']['esm']:
+                                    desc = 'ESM mode: Note different git location and build PPA'
+                                cardlist.append(('%s/%s' % (entry['name'], bp), desc))
+
+        return cardlist
+
+    def create(self, dryrun):
         """
         Create the board, the lists and the cards form the config file
 
         :return: None
         """
         # create the board with the lists on the organization
-        board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
-        board.create(self.config['board']['trello_organization'])
-        board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
+        if dryrun:
+            print('Create board: %s' % (self.config['board']['prefix_name'] + self.cycle))
+        else:
+            board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
+            board.create(self.config['board']['trello_organization'])
+            board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
 
         # add the cards to the board, under the default list
         for card in self.config['cards']:
+            if card['name'] == 'Turn the crank':
+                for (card_name, card_desc) in self.get_crankturn_cards():
+                    if dryrun:
+                        print('Adding card: %s' % (card_name))
+                        if card_desc:
+                            print('             %s' % (card_desc))
+                    else:
+                        board.add_card(card_name, card_desc)
+                continue
+
             card_names = []
             if 'suffixes' in card:
                 for suffix in card['suffixes']:
@@ -137,15 +183,23 @@ class SRUCardsCreator:
                 card_desc = card['description']
 
             for card_name in card_names:
-                board.add_card(card_name, card_desc)
+                if dryrun:
+                    print('Adding card: %s' % (card_name))
+                    if card_desc:
+                        print('             %s' % (card_desc))
+                else:
+                    board.add_card(card_name, card_desc)
 
-        print("Board '%s' created: %s" % (board.name, board.url))
+        if not dryrun:
+            print("Board '%s' created: %s" % (board.name, board.url))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='cli tool to create trello cards for SRU cycles')
     parser.add_argument('cycle', metavar='CYCLE', help='cycle tag', action='store')
     parser.add_argument('--config', metavar='CONFIG', help='config yaml file', required=False, action='store',
                         default='%s/create-sru-cards.yaml' % os.path.dirname(__file__))
+    parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
+                        action='store_true', default=False)
 
     args = parser.parse_args()
-    SRUCardsCreator(args.config, args.cycle).create()
+    SRUCardsCreator(args.config, args.cycle).create(args.dry_run)
