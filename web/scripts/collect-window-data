@@ -304,7 +304,6 @@ class CollectRegressionsData(StdApp):
                     deletion_list = []
                     for t in tasks:
                         bug = KernelBug(t.bug)
-                        print(bug.id)
                         task = self.__get_relevant_task(bug, package_name)
                         #self.__verbose_bug_info(bug)
 
@@ -367,7 +366,6 @@ class CollectRegressionsData(StdApp):
             if bugs_db != None:
                 with open(self.cfg['database'], 'w') as f:
                     f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
-                    print "wrote an updated database"
 
         # Handle the user presses <ctrl-C>.
         #
