@@ -16,5 +16,5 @@ esac
 priority="A"
 
 #exec $here/../queue/queue enqueue mainline "$priority" "$@"
-echo `date --rfc-3339=seconds` $here/mainline-work-kmsgq "$@" >>"$HOME/logs/cod-enqueue-`date +\%Y-\%U`"
+echo `date --rfc-3339=seconds` $here/mainline-work-kmsgq "$@" >>"$HOME/logs/cod-enqueue.log"
 exec $here/mainline-work-kmsgq "$@"
