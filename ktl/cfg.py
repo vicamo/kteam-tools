@@ -6,6 +6,7 @@ from os                                 import _exit
 from dbg                                import Dbg
 from utils                              import dump
 import json
+import yaml
 
 
 # CfgError
@@ -34,7 +35,11 @@ class Cfg():
         user_config = {}
         if path.exists(fname):
             with open(fname, 'r') as f:
-                user_config = json.load(f)
+                try:
+                    user_config = json.load(f)
+                except ValueError:
+                    f.seek(0)
+                    user_config = yaml.safe_load(f)
                 Dbg.verbose("user config file (%s) loaded\n" % (fname))
 
         Dbg.leave("utils.load_user_config")
