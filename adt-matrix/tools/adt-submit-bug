@@ -1,0 +1,71 @@
+#!/usr/bin/python3
+
+import sys
+import json
+import subprocess
+from urllib.request import urlopen
+
+from launchpadlib.launchpad import Launchpad
+
+(url, test_package) = sys.argv[1:]
+
+if url.endswith(".html"):
+    url = url[:-5] + ".latest.json"
+
+with urlopen(url) as response:
+    data = json.loads(str(response.read(), 'utf-8'))
+
+(series, package, version) = (data['series'], data['package'], data['version'])
+package = package.replace('-meta', '')
+
+tests_info = data['tests']
+if test_package not in tests_info:
+    print("{}: {}: test for package not found".format(sys.argv[0], test_package))
+    sys.exit(1)
+
+broken = []
+test_version = None
+package_info = tests_info[test_package]
+for arch in sorted(package_info.keys()):
+    arch_info = package_info[arch]
+    test_version = arch_info.get('version', test_version)
+
+    if arch_info['status'] not in ('REGR', 'REGN'):
+        continue
+
+    broken.append((arch, arch_info['status'], arch_info['result_link']))
+
+keys = {
+    'test_package': test_package,
+    'test_version': test_version,
+    'package': package,
+    'version': version,
+}
+title = "{test_package} {test_version} ADT test failure with {package} {version}".format(**keys)
+
+print(title)
+desc_lines = ['Testing failed on:' ]
+for (arch, state, url) in broken:
+    desc_lines.append("    {}: {}log.gz".format(arch, url))
+description = "\n".join(desc_lines)
+
+print(description)
+
+lp = Launchpad.login_with('adt-submit-bug', 'production')
+distro = lp.distributions("ubuntu")
+source = distro.getSourcePackage(name=test_package)
+
+#print(source.self_link, title, description)
+
+bug = lp.bugs.createBug(target=source, title=title, description=description)
+tags = bug.tags
+tags.append('kernel-adt-failure')
+#tags.append('kernel-adt-failure-lts-trusty')
+bug.tags = tags
+bug.lp_save()
+
+if len(broken):
+    (arch, state, url) = broken[0]
+    subprocess.run([sys.argv[0] + '-dkms', url + 'log.gz', str(bug.id)])
+
+print("http://bugs.launchpad.net/bugs/" + str(bug.id))

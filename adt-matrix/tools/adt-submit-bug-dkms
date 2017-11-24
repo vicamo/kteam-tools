@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <adt log url> <bug>" 1>&2
+	exit 1
+fi
+url="$1"
+bug="$2"
+
+tmp=$( mktemp -d )
+cd "$tmp" || exit 1
+
+url=$( echo "$url" | sed -e 's@/log.gz$@/artifacts.tar.gz@' )
+
+echo "Downloading $url"
+curl "$url" >"artifacts.tar.gz" || exit 1
+
+tar zxf "artifacts.tar.gz"
+
+find artifacts -name '*-make-logs.tar' | \
+while read file
+do
+	tar xvf "$file"
+done
+
+find . -name make.log | \
+while read file
+do
+	bug-update --bug "$bug" --attach "$file"
+done
+
+# Done done done.
+[ "$tmp" != "" ] && rm -rf "$tmp"
