@@ -60,18 +60,18 @@ class IrcClient(threading.Thread):
     # on_ping
     #
     def on_ping(s, line):
-        center('Enter IrcClient::on_ping')
+        center('IrcClient::on_ping')
 
         sent = s.client_ssl_socket.send('PONG %s\r\n' % (line.replace('PING :', '')))
         cdebug('sending PONG')
         sent_pong = True
 
-        cleave('Enter IrcClient::on_ping')
+        cleave('IrcClient::on_ping')
 
     # on_join
     #
     def on_join(s, line):
-        center('Enter IrcClient::on_join')
+        center('IrcClient::on_join')
 
         cdebug('line: "%s"' % line)
         who = line.split('!')[0].replace(':', '')
@@ -81,12 +81,12 @@ class IrcClient(threading.Thread):
         else:
             cdebug('%s just joined' % who)
 
-        cleave('Enter IrcClient::on_join')
+        cleave('IrcClient::on_join')
 
     # privmsg_parse
     #
     def privmsg_parse(s, line):
-        center('Enter IrcClient::privmsg_parse')
+        center('IrcClient::privmsg_parse')
 
         cmd  = None
         chan = None
@@ -120,13 +120,13 @@ class IrcClient(threading.Thread):
 
         cdebug(' ')
 
-        cleave('Enter IrcClient::privmsg_parse')
+        cleave('IrcClient::privmsg_parse')
         return [me, cmd, chan, msg, who]
 
     # on_privmsg
     #
     def on_privmsg(s, line):
-        center('Enter IrcClient::on_privmsg')
+        center('IrcClient::on_privmsg')
 
         (forme, cmd, chan, msg, who) = s.privmsg_parse(line)
 
@@ -140,7 +140,7 @@ class IrcClient(threading.Thread):
             if 'quit' == msg:
                 s.privmsg('%s, I don\'t know how to quit.' % who)
 
-        cleave('Enter IrcClient::on_privmsg')
+        cleave('IrcClient::on_privmsg')
 
     # privmsg
     #
@@ -179,9 +179,11 @@ class IrcClient(threading.Thread):
                         logged_in = True
 
             try:
+                cdebug("Waiting on IRC")
                 data = s.client_ssl_socket.recv(4096)
                 lines = data.split('\r\n')
                 for line in lines:
+                    cdebug("Got line: " + line)
                     if line == "": continue                             # Ignore blank lines
 
                     # We only care about 3 commands. PING, JOIN and PRIVMSG.
@@ -219,12 +221,12 @@ class IrcClient(threading.Thread):
     # _connect
     #
     def _connect(s, host, port, use_ssl):
-        center('Enter IrcClient::__init__')
+        center('IrcClient::__init__')
         s.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.client_socket.connect((host, port))
         s.client_ssl_socket = ssl.wrap_socket(s.client_socket)
-        s.client_socket.settimeout(1)
-        cleave('Leave IrcClient::__init__')
+        s.client_socket.settimeout(5)
+        cleave('IrcClient::__init__')
 
     # _handle_EXIT
     #
@@ -295,6 +297,7 @@ class TheApp():
         cdebug('----------------------------------------------------------------------------')
 
         if 'key' in payload:
+            cdebug("TheApp::_handler payload={}".format(payload['key']))
             if payload['key'] == 'kernel.irc':
                 content = s.decode_payload(payload)
 
