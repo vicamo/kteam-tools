@@ -196,6 +196,8 @@ class IrcClient(threading.Thread):
                         s.on_join(line)
 
                     elif 'PRIVMSG ' in line:
+                        # We care that the other end is alive, their version request is sufficient.
+                        sent_pong = True
                         s.on_privmsg(line)
                         cdebug('line: "%s"' % line)
 
