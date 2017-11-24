@@ -78,7 +78,7 @@ class History(object):
         retval = 1
 
         ibsn = list(Ubuntu.index_by_series_name.keys())
-        for day in datespan(date(2014, 1, 1), date(2015, 1, 1)):
+        for day in datespan(date(2012, 1, 1), date(2013, 1, 1)):
             d = day.strftime("%Y-%m-%d")
 
             data = {}

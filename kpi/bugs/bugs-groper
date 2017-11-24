@@ -5,7 +5,7 @@ from os                                 import getenv
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import error, info, debug, basicConfig, DEBUG, WARNING
 from urllib.request                     import urlopen
-from datetime                           import date
+from datetime                           import date, datetime
 from launchpadlib.launchpad             import Launchpad
 from lazr.restfulclient.errors          import NotFound
 
@@ -731,7 +731,7 @@ class BugFinder():
             self.sql = sqlite3.connect('bugs.db')
             cursor = self.sql.cursor()
             cursor.execute('''CREATE TABLE IF NOT EXISTS
-                              bugs(id INTEGER PRIMARY KEY, title TEXT, status TEXT, project TEXT, series TEXT)''')
+                              bugs(id INTEGER PRIMARY KEY, title TEXT, status TEXT, project TEXT, series TEXT, created DATETIME)''')
             self.sql.commit()
         except Exception as e:
             self.sql.rollback()
@@ -761,6 +761,10 @@ class BugFinder():
     #
     def lp_task_handler(self, lp_task):
 
+        dc = lp_task['date_created'].split('.')[0].split('T')[0]
+        (y, m, d) = dc.split('-')
+        date_created = date(int(y), int(m), int(d))
+
         # Get the bugid by taking the end of the URL.
         #
         bug_id = int(lp_task['bug_link'].split('/')[-1])
@@ -773,8 +777,8 @@ class BugFinder():
                 if len(all_rows) == 0:
                     series = self.determine_series(bug_id)
                     with self.sql:
-                        self.sql.execute('''INSERT INTO bugs(id, title, status, project, series)
-                                            VALUES(?,?,?,?,?)''', (bug_id, lp_task['title'], lp_task['status'], 'linux', series))
+                        self.sql.execute('''INSERT INTO bugs(id, title, status, project, series, created)
+                                            VALUES(?,?,?,?,?,?)''', (bug_id, lp_task['title'], lp_task['status'], 'linux', series, date_created))
         except sqlite3.IntegrityError:
             print('Record already exists for %s' % bug_id)
 
