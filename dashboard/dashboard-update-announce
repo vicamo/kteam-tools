@@ -3,9 +3,21 @@
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG, info, warning
+import os
+import sys
+
 from ktl.msgq                           import MsgQueue
+from ktl.messaging                      import Email
+from ktl.cfg                            import Cfg
 
 if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = sys.argv[0]
+    defaults['configuration_file'] = os.path.dirname(__file__) + '/dashboard.cfg'
+
+    # XXX: should parse the command line ... to produce second argument here.
+    cfg = Cfg.merge_options(defaults, {})
+
     # Command line argument setup and initial processing
     #
     app_description = '''
@@ -53,6 +65,7 @@ examples:
                     mode_before = before[tag]
 
                 if mode_before != 'unknown' and mode_before != mode:
+                    print("Sending IRC annoucement")
                     m = 'Dashboard: {0}/{1} (on {2}) now {3}'.format(section, title, host, mode)
                     m = m.replace('%s', ' ').replace('%p', '%')
                     msg = {
@@ -63,7 +76,18 @@ examples:
                     }
                     mq.publish(msg['key'], msg)
 
-        retval = 0
+                if 'email' in cfg:
+                    if mode_before != mode and mode == 'alert':
+                        print("Sending EMAIL annoucement")
+                        email = Email(smtp_server=cfg['email']['smtp_server'], smtp_port=cfg['email']['smtp_port'])
+                        detail = """
+The kernel dashboard monitoring is now showing an alert:\r
+\r
+    {msg}\r
+\r
+Kernel Team\r
+""".lstrip().format(msg=m)
+                    email.send(cfg['email']['from'], cfg['email']['to'], m, detail)
 
     # Handle the user presses <ctrl-C>.
     #
@@ -71,4 +95,3 @@ examples:
         warning("Aborting ...")
 
 # vi:set ts=4 sw=4 expandtab:
-
