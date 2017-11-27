@@ -14,7 +14,7 @@ import json
 from lpltk.LaunchpadService             import LaunchpadService
 from ktl.utils                          import error, date_to_string, string_to_date, stdo, json_load, FileDoesntExist
 from ktl.std_app                        import StdApp
-from ktl.ubuntu                         import Ubuntu
+#from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_bug                     import KernelBug
 from ktl.termcolor                      import colored
 from bug_handler                        import BugHandler
@@ -62,7 +62,7 @@ class BugEngine(StdApp):
     def __initialize(self):
         Dbg.enter("BugEngine.__initialize")
 
-        self.ubuntu = Ubuntu()
+        #self.ubuntu = Ubuntu()
 
         Dbg.verbose('Connecting to LaunchPad')
         if 'staging' in self.cfg:
