@@ -2,7 +2,6 @@
 #
 
 from ktl.git                            import Git, GitError
-from ktl.ubuntu                         import Ubuntu
 
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
@@ -24,8 +23,6 @@ class Kernel:
     debug               = False
     __makefile_contents = ''
     __version           = ''   # kernel version
-    __series_version    = ''
-    __series_name       = ''
 
     # version
     #
@@ -33,19 +30,6 @@ class Kernel:
     def version(cls):
         cls.__fetch_if_needed()
         return cls.__version
-
-    # series_name
-    #
-    @classmethod
-    def series_name(cls):
-        cls.__fetch_if_needed()
-        return cls.__series_name
-
-    # release
-    #
-    @classmethod
-    def release(cls):
-        return cls.series_name()
 
     # __fetch_if_needed
     #
@@ -91,13 +75,6 @@ class Kernel:
                             if int(version) >= 3:
                                 sublevel = '0'
                             cls.__version = version + '.' + patchlevel + '.' + sublevel
-
-                            ubuntu = Ubuntu()
-                            rec = ubuntu.lookup(cls.__version)
-                            cls.__series_name    = rec['name']
-                            cls.__series_version = rec['series_version']
-                            if cls.__series_name == '':
-                                raise KernelError("Failed to find a series with the given kernel version.")
                         else:
                             raise KernelError("The makefile didn't contain the expected 4 lines.")
                     else:
