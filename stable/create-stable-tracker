@@ -6,7 +6,6 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.debian                         import Debian
-from ktl.ubuntu                         import Ubuntu
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -139,11 +138,12 @@ class CreateTrackingBug(StdApp):
             print("version: %s" % self.cfg['version'])
             version = self.cfg['version']
             changelog = Debian.changelog(local=True)
-            ub = Ubuntu()
-            series = ub.series_name(changelog[0]['package'], changelog[0]['version'])
+            series_name = changelog[0]['release']
+            if series_name == 'UNRELEASED':
+                series_name = changelog[1]['release']
 
             # Title:
-            title = "%s update to %s stable release" % (series.title(), self.cfg['version'])
+            title = "%s update to %s stable release" % (series_name.title(), self.cfg['version'])
 
             # Repository - see if it's a tree we maintain
             if "-ckt" in version:
@@ -195,7 +195,7 @@ class CreateTrackingBug(StdApp):
             ubuntu = lp.distributions["ubuntu"]
             sc = ubuntu.series_collection
             for s in sc:
-                if s.name == series:
+                if s.name == series_name.title():
                     nomination = bug.lpbug.addNomination(target=s)
                     if nomination.canApprove():
                         nomination.approve()
