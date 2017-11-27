@@ -5,7 +5,6 @@ from ktl.utils                          import stdo, eout, dump
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import Kernel, KernelError
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 import re
@@ -243,9 +242,6 @@ class deb(StdApp):
 
         except GitError as e:
             eout(e.msg[0])
-
-        except KernelError as e:
-            eout(e.msg)
 
         return
 

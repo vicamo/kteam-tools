@@ -8,7 +8,6 @@ from ktl.utils                          import stdo, error, run_command, eout
 from ktl.git                            import Git, GitError
 #from re                                 import compile, IGNORECASE, MULTILINE
 #from commands                           import getstatusoutput
-#from ktl.kernel                         import Kernel
 from os                                 import path #, mkdir, remove, rename, getenv
 from string                             import rsplit
 #from shutil                             import move
