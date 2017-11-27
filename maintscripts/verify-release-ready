@@ -7,8 +7,7 @@ from logging                            import basicConfig, INFO, DEBUG
 from ktl.utils                          import stdo, eout, run_command
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import Kernel, KernelError
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.termcolor                      import colored
 from launchpadlib.launchpad             import Launchpad
 import re
@@ -90,14 +89,39 @@ class VerifyReleaseReady():
         # Verify the version information in the changelog
         #
         while True:
-            # Version is correct
+            # Check: That the release information is correct.
             #
-            msg = 'kernel version (%s)' % (Kernel.version())
-            if cl1_version != Kernel.version():
+            msg = 'release (%s)' % (cl1['release'])
+            kernel_series = KernelSeries()
+            series = kernel_series.lookup_series(codename=cl1['release'])
+            if not series:
                 s.status(msg, False)
-                s.verbose("expected '%s' but got: '%s'" % (Kernel.version(), cl1_version))
+                s.verbose("invalid series specified '%s'" % (cl1['release'],))
             else:
                 s.status(msg, True)
+
+            msg = 'package (%s)' % (cl1['package'])
+            source = None
+            if series:
+                source = series.lookup_source(cl1['package'])
+                if not source:
+                    s.status(msg, False)
+                    s.verbose("invalid source specified '%s' not found in series '%s'" % (cl1['package'], cl1['release']))
+                else:
+                    s.status(msg, True)
+
+            msg = 'version (%s)' % (cl1['version'])
+            if source:
+                found = False
+                for version in source.versions:
+                    if cl1['version'].startswith(version + '-'):
+                        found = True
+                        break
+                if not found:
+                    s.status(msg, False)
+                    s.verbose("invalid version specified '%s' not found in series '%s' source '%s'" % (cl1['version'], cl1['package'], cl1['release']))
+                else:
+                    s.status(msg, True)
 
             # Check: Make sure the ABI is *always* incremented
             #
@@ -161,17 +185,6 @@ class VerifyReleaseReady():
             for emptyFile in empty:
                 msg = 'Empty override file: %s' % emptyFile
                 s.status(msg, False)
-
-            # Check: That the release information is correct.
-            #
-            ub = Ubuntu()
-            series = ub.series_name(cl1['package'], cl1['version'])
-            msg = 'release (%s)' % (series)
-            if cl1['release'] != series:
-                s.status(msg, False)
-                s.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
-            else:
-                s.status(msg, True)
 
             break
 
@@ -613,9 +626,6 @@ class VerifyReleaseReady():
             eout(colored(e.msg, 'red'))
 
         except GitError as e:
-            eout(colored(e.msg, 'red'))
-
-        except KernelError as e:
             eout(colored(e.msg, 'red'))
 
         return s.failed
