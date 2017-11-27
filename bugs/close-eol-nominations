@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 #
 
-from sys                            import argv
+import sys
 from getopt                         import getopt, GetoptError
 from ktl.utils                      import stdo, error
-from ktl.ubuntu                     import Ubuntu
+from ktl.kernel_series              import KernelSeries
 from launchpadlib.launchpad         import Launchpad
 from urllib2                        import HTTPError
 import os
+
 
 # CmdlineError
 #
@@ -49,6 +50,7 @@ class Cmdline:
         stdo("                                                         \n")
         stdo("    Examples:                                            \n")
         stdo("        %s karmic                                        \n" % defaults['app_name'])
+        sys.exit(1)
 
     # process
     #
@@ -160,20 +162,21 @@ class CloseNominations():
 
 if __name__ == '__main__':
     defaults = {}
-    defaults['app_name'] = argv[0]
+    defaults['app_name'] = sys.argv[0]
     defaults['launchpad_client_name']   = 'close-eol-nominations'
 
     # The cmdline processing is done here partially so the debug options
     # can be processed right away.
     #
-    ubuntu = Ubuntu()
+    kernel_series = KernelSeries()
     cmdline = Cmdline()
-    (series, package) = cmdline.process(argv)
-    series = series.lower()
+    (series_name, package) = cmdline.process(sys.argv)
+    series_name = series_name.lower()
     try:
-        if series and not ubuntu.is_supported_series(series):
-            app = CloseNominations(series)
-            app.main(series, package)
+        series = kernel_series.lookup_series(codename=series_name)
+        if series_name and not series.supported:
+            app = CloseNominations(series_name)
+            app.main(series_name, package)
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)
 
