@@ -5,7 +5,7 @@ import os
 
 # the so-trello root dir needs to be on PYTHONPATH
 from trellotool.trellotool              import TrelloTool
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 
 class TrelloError(Exception):
     pass
@@ -114,34 +114,35 @@ class SRUCardsCreator:
 
     def get_crankturn_cards(self):
         cardlist = []
-        ubuntu = Ubuntu()
+        kernel_series = KernelSeries()
 
         esm_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
 
-        for series in sorted(ubuntu.index_by_series_name, reverse=True):
-            record = ubuntu.index_by_series_name[series]
-            if record['supported']:
-                desc = None
-                if ('esm' in record) and record['esm']:
-                    desc = 'ESM mode: Note different git location and build PPA'
-                cardlist.append(('%s/linux' % (series), desc))
+        for master_series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+            if master_series.supported:
+                for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+                    desc = None
+                    if series.esm:
+                        desc = 'ESM mode: Note different git location and build PPA'
 
-                if 'derivative-packages' in record:
-                    for package in record['derivative-packages']:
-                        for derivative in record['derivative-packages'][package]:
-                            if derivative == 'linux-euclid':
-                                cardlist.append(('%s/%s' % (series, derivative), esm_desc))
-                            else:
-                                cardlist.append(('%s/%s' % (series, derivative), desc))
+                    for source in sorted(series.sources, key=lambda x: x.name):
+                        if not source.supported:
+                            continue
+                        if source.copy_forward:
+                            continue
+                        derived_from = source.derived_from
+                        if derived_from:
+                            #print("DERIVED", source.name, derived_from.series.name, master_series.name)
+                            if derived_from.series.name != master_series.name:
+                                continue
+                        else:
+                            #print("NON-DERIVED", source.name, series.name, master_series.name)
+                            if series.name != master_series.name:
+                                #print("NON-DERIVED", source.name, series.name, master_series.name, "NOT-SAME")
+                                continue
 
-                for entry in ubuntu.db.values():
-                    if 'backport-packages' in entry:
-                        for bp in entry['backport-packages']:
-                            if record['series_version'] == entry['backport-packages'][bp][1]:
-                                desc = ''
-                                if ('esm' in entry['name']) and entry['name']['esm']:
-                                    desc = 'ESM mode: Note different git location and build PPA'
-                                cardlist.append(('%s/%s' % (entry['name'], bp), desc))
+                        my_desc = esm_desc if source.name == 'linux-euclid' else desc
+                        cardlist.append(('%s/%s' % (series.codename, source.name), my_desc))
 
         return cardlist
 
