@@ -7,10 +7,10 @@ from getopt                             import getopt, GetoptError
 from lpltk.LaunchpadService             import LaunchpadService
 
 from ktl.kernel_bug                     import KernelBug
+from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import stdo, error
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
-from ktl.ubuntu                         import Ubuntu
 
 # CmdlineError
 #
@@ -75,7 +75,7 @@ class Cmdline:
         """
         result = True
         try:
-            cfg = {}
+            cfg = { 'bug-ids': [] }
             optsShort = ''
             optsLong  = ['help', 'verbose', 'debug=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
@@ -131,7 +131,7 @@ class MarkUnsupportedWontFix():
         Dbg.enter("MarkUnsupportedWontFix.__init__")
 
         self.cfg    = cfg
-        self.ubuntu = Ubuntu()
+        self.kernel_series = KernelSeries()
 
         self.comment = "This bug was filed against a series that is no longer supported and so is being marked as Won't Fix. If this issue still exists in a supported series, please file a new bug.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
         self.comment_subject = "Unsupported series, setting status to \"Won't Fix\"."
@@ -221,11 +221,23 @@ class MarkUnsupportedWontFix():
         """
         try:
             bug.print_verbose_info()
+            print("%s: %s" % (bug.id, bug.title))
 
             series_name, series_version = bug.series
             Dbg.verbose("      Series: %s" % (series_name))
 
-            if not self.ubuntu.is_supported_series(series_name):
+            if series_name == '':
+                Dbg.verbose(" (%s)\n" % "series not determined")
+                print(" (%s)\n" % "series not determined")
+                return
+
+            series = self.kernel_series.lookup_series(codename=series_name.lower())
+            if not series:
+                Dbg.verbose(" (%s)\n" % "series unknown")
+                print(" (%s)\n" % "series unknown")
+                return
+
+            if not series.supported:
                 Dbg.verbose(" (%s)\n" % "unsupported")
                 linux_task = bug.get_relevant_task("linux")
                 if linux_task is not None:
