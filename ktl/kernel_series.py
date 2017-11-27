@@ -112,6 +112,9 @@ class KernelSnapEntry:
         self._name = name
         self._data = data if data else {}
 
+    def __eq__(self, other):
+        return self._name == other._name
+
     @property
     def series(self):
         return self._source.series
@@ -170,6 +173,9 @@ class KernelPackageEntry:
         self._name = name
         self._data = data if data else {}
 
+    def __eq__(self, other):
+        return self._name == other._name
+
     @property
     def series(self):
         return self._source.series
@@ -203,6 +209,9 @@ class KernelSourceEntry:
         self._series = series
         self._name = name
         self._data = data if data else {}
+
+    def __eq__(self, other):
+        return self.name == other.name
 
     @property
     def name(self):
@@ -272,6 +281,9 @@ class KernelSeriesEntry:
         self._ks = ks
         self._name = name
         self._data = data
+
+    def __eq__(self, other):
+        return self._name == other._name
 
     @property
     def name(self):
