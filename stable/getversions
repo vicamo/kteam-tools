@@ -5,8 +5,7 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, run_command
 from ktl.std_app                        import StdApp
-from ktl.ubuntu                         import Ubuntu
-from ktl.kernel                         import *
+from ktl.kernel_series                  import KernelSeries
 from ktl.archive                        import *
 from launchpadlib.launchpad             import Launchpad
 from os.path                            import basename
@@ -176,57 +175,29 @@ class report(StdApp):
         self.distro = ar.distro_versions(force=False)
 
         # Have a section for each release
+        kernel_series = KernelSeries()
         ubuntu = Ubuntu()
         releases = ubuntu.db
         allinfo = {}
-        for num in sorted(releases.iterkeys(), key=lambda x:releases[x]['name']):
-            seriesdata = releases[num]
-            seriesname = seriesdata['name']
-
+        for series in kernel_series.series:
             # skip unsupported kernels
-            if not seriesdata['supported']:
-                #print "%s is not supported" % seriesdata['name']
+            if not series.supported:
+                #print "%s is not supported" % series.codename
                 continue
-
-            series_packages = seriesdata['packages']
 
             if self.debug:
                 print '================================================='
-                print "Release %s (%s)" % (seriesname, num)
+                print "Release %s (%s)" % (series.codename, num)
 
-            # We list these here to determine the order they present in
-            pnames = [
-                'linux',
-                'linux-source-2.6.15',
-                'linux-meta',
-                'linux-ports-meta',
-                'linux-backports-modules-2.6.15',
-                'linux-backports-modules-2.6.31',
-                'linux-backports-modules-2.6.32',
-                'linux-restricted-modules-2.6.24',
-                'linux-backports-modules-2.6.35',
-                'linux-ubuntu-modules-2.6.24',
-                'linux-ec2',
-                'linux-meta-ec2',
-                'linux-ti-omap4',
-                'linux-meta-ti-omap4',
-                'linux-mvl-dove',
-                'linux-meta-mvl-dove',
-                'linux-fsl-imx51',
-                'linux-meta-fsl-imx51',
-                'linux-lts-backport-maverick',
-                'linux-meta-lts-backport-maverick',
-                'linux-lts-backport-natty',
-                'linux-meta-lts-backport-natty']
             seriesinfo = {}
-            for package in pnames:
-                if package in series_packages:
-                    pinfo = self.getversions(seriesname, package)
+            for source in series.sources:
+                for package in source.packages:
+                    pinfo = self.getversions(series.codename, package.name)
                     if len(pinfo):
-                        seriesinfo[package] = pinfo
+                        seriesinfo[package.name] = pinfo
                         #print 'pinfo:', package, ':', json.dumps(pinfo, sort_keys=True, indent=4)
             if len(seriesinfo):
-                allinfo[seriesname] = seriesinfo
+                allinfo[series.codename] = seriesinfo
                 #print 'seriesinfo:', seriesname, ':', json.dumps(seriesinfo, sort_keys=True, indent=4)
 
         print json.dumps(allinfo, sort_keys=True, indent=4)
