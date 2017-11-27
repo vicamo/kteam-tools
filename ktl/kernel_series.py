@@ -365,7 +365,7 @@ class KernelSeries:
             raise KeyError("series/codename/development required")
         if not series and codename:
             if codename not in self._codename_to_series:
-                raise KeyError("series {} not found".format(series))
+                raise KeyError("series codename {} not found".format(codename))
             series = self._codename_to_series[codename]
         if not series and development:
             if not self._development_series:
