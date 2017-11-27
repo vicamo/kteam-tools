@@ -11,7 +11,7 @@ import bug_handlers.dev_series  # This imports all the bug handler plugins that 
                                 # will use.
 
 from ktl.debian                         import Debian
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import o2ascii
 
 # ProcDevSeriesBugs
@@ -39,12 +39,9 @@ class ProcDevSeriesBugs(BugEngine):
     def startup(self):
         # Figure out what the development series is.
         #
-        ubuntu = Ubuntu()
-        for k in ubuntu.db:
-            rec = ubuntu.db[k]
-            if 'development' in rec and rec['development']:
-                dev_series = rec['name']
-                break
+        kernel_series = KernelSeries()
+        devel = kernel_series.lookup_series(development=True)
+        dev_series = devel.codename
 
         # Figure out which kernel version for the development series is in the
         # release pocket.
