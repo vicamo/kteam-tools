@@ -15,6 +15,7 @@
 
 from launchpadlib.launchpad import Launchpad
 from ktl.ubuntu import Ubuntu
+from ktl.kernel_series import KernelSeries
 from datetime import *
 import os
 import urllib
@@ -48,8 +49,9 @@ for line in FILE:
     stats[key] = int(key_val[1])
 FILE.close()
 
-ubuntu = Ubuntu()
-releases = sorted(ubuntu.supported_series, reverse=True)
+kernel_series = KernelSeries()
+releases = [ series.codename for series in sorted(filter(lambda series: series.supported, kernel_series.series), key=KernelSeries.key_series_name, reverse=True) ]
+
 #releases = ['oneiric', 'natty', 'maverick', 'lucid', 'hardy']
 
 regressions = ['regression-update', 'regression-release', 'regression-proposed']
