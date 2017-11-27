@@ -133,11 +133,11 @@ class SRUCardsCreator:
                         derived_from = source.derived_from
                         if derived_from:
                             #print("DERIVED", source.name, derived_from.series.name, master_series.name)
-                            if derived_from.series.name != master_series.name:
+                            if derived_from.series != master_series:
                                 continue
                         else:
                             #print("NON-DERIVED", source.name, series.name, master_series.name)
-                            if series.name != master_series.name:
+                            if series != master_series:
                                 #print("NON-DERIVED", source.name, series.name, master_series.name, "NOT-SAME")
                                 continue
 
