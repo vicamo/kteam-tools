@@ -12,8 +12,8 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
-from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_bug                     import KernelBug
+from ktl.kernel_series                  import KernelSeries
 from datetime                           import datetime
 import re
 
@@ -176,7 +176,7 @@ class ProcessNewRegressionBugs(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
-        self.ubuntu = Ubuntu()
+        self.kernel_series = KernelSeries()
 
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
@@ -331,7 +331,10 @@ class ProcessNewRegressionBugs(StdApp):
             #
             (series_name, series_version) = bug.series
             if series_name != '':
-                if self.ubuntu.is_supported_series(series_name):
+                series = kernel_series.lookup_series(series_name)
+                if not series:
+                    self.verbose("           - Unknown series identified (%s).\n" % (series_name,))
+                elif series.supported:
                     self.verbose("           - Supported series.\n")
                 else:
                     self.verbose("           - Filed against a series that is no longer supported.\n")
