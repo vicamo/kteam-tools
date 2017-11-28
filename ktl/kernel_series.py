@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
 
-import re
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -153,10 +152,6 @@ class KernelSnapEntry:
     @property
     def hw_cert(self):
         return self._data.get('hw-cert', False)
-
-    @property
-    def repo(self):
-        return self._data.get('repo', None)
 
     @property
     def arches(self):
