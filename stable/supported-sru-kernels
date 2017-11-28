@@ -2,7 +2,7 @@
 #
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 import json
 import yaml
 
@@ -23,14 +23,18 @@ class Crankers():
         retval = 1
         try:
             data = {}
-            ubuntu = Ubuntu()
-            for series in sorted(ubuntu.index_by_series_name, reverse=True):
-                record = ubuntu.index_by_series_name[series]
-                if record['supported']:
-                    data[series] = {}
-                    data[series]['debs'] = []
-                    for package in record['packages']:
-                        data[series]['debs'].append(package)
+            kernel_series = KernelSeries()
+            for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+                if not series.supported:
+                    continue
+
+                data[series.codename] = {}
+                data[series.codename]['debs'] = []
+                for source in series.sources:
+                    if not source.supported or source.copy_forward:
+                        continue
+                    for package in source.packages:
+                        data[series.codename]['debs'].append(package.name)
 
             if s.args.yaml:
                 print(yaml.dump(data, default_flow_style=False, indent=4, explicit_start=True))
