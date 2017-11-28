@@ -50,7 +50,7 @@ for line in FILE:
 FILE.close()
 
 kernel_series = KernelSeries()
-releases = [ series.codename for series in sorted(filter(lambda series: series.supported, kernel_series.series), key=KernelSeries.key_series_name, reverse=True) ]
+releases = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True) if series.supported ]
 
 #releases = ['oneiric', 'natty', 'maverick', 'lucid', 'hardy']
 
