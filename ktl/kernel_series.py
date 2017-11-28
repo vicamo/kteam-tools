@@ -90,7 +90,12 @@ class KernelRepoEntry:
 
     @property
     def owner(self):
-        return self._owner.series
+        return self._owner
+
+    # XXX: should this object have a name ?
+
+    def __eq__(self, other):
+        return self.url == other.url and self.branch == other.branch
 
     @property
     def url(self):
@@ -155,6 +160,7 @@ class KernelSnapEntry:
 
     @property
     def arches(self):
+        # XXX: should this be []
         return self._data.get('arches', None)
 
     def __str__(self):
@@ -225,6 +231,7 @@ class KernelSourceEntry:
         if derived_from:
             return derived_from.versions
 
+        # XXX: should this be []
         return None
 
     @property
@@ -233,9 +240,12 @@ class KernelSourceEntry:
 
     @property
     def packages(self):
+        # XXX: should this return None when empty
         result = []
-        for package_key, package in self._data.get('packages', {}).items():
-            result.append(KernelPackageEntry(self._ks, self, package_key, package))
+        packages = self._data.get('packages')
+        if packages:
+            for package_key, package in packages.items():
+                result.append(KernelPackageEntry(self._ks, self, package_key, package))
         return result
 
     def lookup_package(self, package_key):
@@ -246,10 +256,19 @@ class KernelSourceEntry:
 
     @property
     def snaps(self):
+        # XXX: should this return None when empty
         result = []
-        for snap_key, snap in self._data.get('snaps', {}).items():
-            result.append(KernelSnapEntry(self._ks, self, snap_key, snap))
+        snaps = self._data.get('snaps')
+        if snaps:
+            for snap_key, snap in snaps.items():
+                result.append(KernelSnapEntry(self._ks, self, snap_key, snap))
         return result
+
+    def lookup_snap(self, snap_key):
+        snap = self._data.get('snaps', {}).get(snap_key, False)
+        if snap == False:
+            raise KeyError("snap {} not found in source {}".format(snap_key, self))
+        return KernelSnapEntry(self._ks, self, snap_key, snap)
 
     @property
     def derived_from(self):
@@ -275,7 +294,7 @@ class KernelSeriesEntry:
     def __init__(self, ks, name, data):
         self._ks = ks
         self._name = name
-        self._data = data
+        self._data = data if data else {}
 
     def __eq__(self, other):
         return self._name == other._name
@@ -314,14 +333,17 @@ class KernelSeriesEntry:
     @property
     def sources(self):
         result = []
-        for source_key, source in self._data.get('sources', {}).items():
-            result.append(KernelSourceEntry(self._ks, self, source_key, source))
+        sources = self._data.get('sources')
+        if sources:
+            for source_key, source in sources.items():
+                result.append(KernelSourceEntry(self._ks, self, source_key, source))
         return result
 
     def lookup_source(self, source_key):
-        source = self._data.get('sources', {}).get(source_key)
-        if not source:
-            raise KeyError("source {} not found in series {}".format(source_key, series))
+        sources = self._data.get('sources', {})
+        if not sources or source_key not in sources:
+            raise KeyError("source {} not found in series {}".format(source_key, self.name))
+        source = sources[source_key]
         return KernelSourceEntry(self._ks, self, source_key, source)
 
 
@@ -331,16 +353,22 @@ class KernelSeries:
     _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
 
-    def __init__(self):
-        response = urlopen(self._url)
-        content = response.read()
-        if type(content) != str:
-            content = content.decode('utf-8')
-        self._data = yaml.load(content)
+    def __init__(self, url=None, data=None):
+        if not data:
+            if not url:
+                url = self._url
+            response = urlopen(url)
+            data = response.read()
+
+        if type(data) != str:
+            data = data.decode('utf-8')
+        self._data = yaml.load(data)
 
         self._development_series = None
         self._codename_to_series = {}
         for series_key, series in self._data.items():
+            if not series:
+                continue
             if series.get('development', False):
                 self._development_series = series_key
             if 'codename' in series:
