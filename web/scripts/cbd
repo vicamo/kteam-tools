@@ -12,7 +12,7 @@ from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 import json
 
 # CmdlineError
@@ -216,6 +216,8 @@ class CollectRegressionsData(StdApp):
     # main
     #
     def main(self):
+        kernel_series = KernelSeries()
+
         cmdline = Cmdline()
         using_search_since = False
         try:
@@ -316,9 +318,9 @@ class CollectRegressionsData(StdApp):
                     bugs_db = None
                     raise
 
-            u = Ubuntu()
+            deelopment_series = kernel_series.lookup_series(development=True)
             bugs_db['info'] = {}
-            bugs_db['info']['dev series'] = u.development_series
+            bugs_db['info']['dev series'] = development_series.codename
             if bugs_db != None:
                 with open(self.cfg['database'], 'w') as f:
                     f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
