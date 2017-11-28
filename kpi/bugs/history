@@ -8,7 +8,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, INFO, DEBUG
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from lib.shell                          import sh
 
 from datetime                           import date, datetime, timedelta
@@ -77,7 +77,8 @@ class History(object):
     def main(s):
         retval = 1
 
-        ibsn = list(Ubuntu.index_by_series_name.keys())
+        kernel_series = KernelSeries()
+        ibsn = [ series.codename for series in kernel_series.series ]
         for day in datespan(date(2012, 1, 1), date(2013, 1, 1)):
             d = day.strftime("%Y-%m-%d")
 
