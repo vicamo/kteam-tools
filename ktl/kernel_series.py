@@ -250,7 +250,7 @@ class KernelSourceEntry:
 
     def lookup_package(self, package_key):
         package = self._data.get('packages', {}).get(package_key, False)
-        if package == False:
+        if package is False:
             raise KeyError("package {} not found in source {}".format(package_key, self))
         return KernelPackageEntry(self._ks, self, package_key, package)
 
