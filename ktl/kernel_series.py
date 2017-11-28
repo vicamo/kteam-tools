@@ -235,6 +235,13 @@ class KernelSourceEntry:
         return None
 
     @property
+    def version(self):
+        versions = self.versions
+        if not versions or len(versions) < 1:
+            return None
+        return versions[-1]
+
+    @property
     def supported(self):
         return self._data.get('supported', False)
 

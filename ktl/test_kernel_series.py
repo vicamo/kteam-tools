@@ -355,18 +355,47 @@ class TestKernelSourceEntry(unittest.TestCase):
         self.assertEqual(source1.name, 'linux')
         self.assertEqual(source2.name, 'linux-raspi2')
 
-    def test_versions_present(self):
+    def test_versions_present_one(self):
         data = """
         '18.04':
             sources:
                 linux:
-                    versions: [ 1, 2, 3 ]
+                    versions: [ 1 ]
         """
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
         
-        self.assertItemsEqual(source.versions, [ 1, 2, 3 ])
+        self.assertItemsEqual(source.versions, [ 1 ])
+        self.assertEqual(source.version, 1)
+
+    def test_versions_present_many(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    versions: [ 1, 2, 3, 10 ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertItemsEqual(source.versions, [ 1, 2, 3, 10 ])
+        self.assertEqual(source.version, 10)
+
+    def test_versions_present_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    versions: []
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertItemsEqual(source.versions, [])
+        self.assertEqual(source.version, None)
 
     def test_versions_absent(self):
         data = """
