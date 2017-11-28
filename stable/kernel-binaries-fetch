@@ -12,7 +12,7 @@ from ktl.utils                          import stdo, error, dump, json_load, Fil
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
 from ktl.debian                         import Debian
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 
 # CmdlineError
 #
@@ -206,15 +206,11 @@ class PPA():
         return ppa_diff
 
     def dev_series_kernel_version(self):
-        u = Ubuntu()
-
-        retval = '0.0.0'
-        for series in u.index_by_series_name:
-            if u.is_development_series(series):
-                retval = u.lookup(series)['kernel']
-                break
-
-        return retval
+        kernel_series = KernelSeries()
+        series = kernel_series.lookup_series(development=True)
+        source = series.lookup_source('linux')
+        version = source.version
+        return version if version else '0.0.0'
 
     # archive_build_summaries
     #
