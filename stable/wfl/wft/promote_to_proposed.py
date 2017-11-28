@@ -1,6 +1,5 @@
 
 from wfl.log                            import center, cleave, cinfo
-from ktl.ubuntu                         import Ubuntu
 from .promoter                          import Promoter
 
 class PromoteToProposed(Promoter):
@@ -34,8 +33,6 @@ class PromoteToProposed(Promoter):
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
-
-        s.ubuntu = Ubuntu()
 
         cleave(s.__class__.__name__ + '.__init__')
 
