@@ -7,7 +7,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import error, basicConfig, INFO, DEBUG
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 
 import datetime
 import sqlite3
@@ -54,7 +54,8 @@ class BugStats():
         try:
 
             data = {}
-            ibsn = list(Ubuntu.index_by_series_name.keys())
+            kernel_series = KernelSeries()
+            ibsn = [ series.codename for series in kernel_series.series ]
             # ibsn.append('invalid')
             # ibsn.append('unknown')
             for source in ['linux']:
