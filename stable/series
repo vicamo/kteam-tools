@@ -5,7 +5,7 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 
 # *** You may remove this comment block from your application
 #
@@ -147,11 +147,17 @@ class Seriess(StdApp):
 
             self.initialize()
 
-            u = Ubuntu()
+            kernel_series = KernelSeries()
             stdo("Version  Name         Kernel\n")
             stdo("-------  -----------  ------\n")
-            for k in sorted(u.index_by_series_name, reverse=True):
-                stdo("%7s  %-12s %s\n" % (u.index_by_series_name[k]['series_version'], k, u.index_by_series_name[k]['kernel']))
+            for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+                try:
+                    source = series.lookup_source('linux')
+                except KeyError:
+                    for source in series.sources:
+                        if source.version:
+                            break
+                stdo("%7s  %-12s %s\n" % (series.name, series.codename, source.version))
 
         # Handle the user presses <ctrl-C>.
         #
