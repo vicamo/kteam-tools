@@ -215,11 +215,19 @@ class PPAinfo(StdApp):
                 sourceinfo['creator'] = sourceinfo['package_creator_link'].split('/')[-1].strip('~') 
                 sourceinfo['signer'] = sourceinfo['package_signer_link'].split('/')[-1].strip('~') 
                 #version =  sourceinfo['source_package_version'].split('-')[0]
-                rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
+                rm = re.match('[0-9]\.[0-9]\.[0-9]', sourceinfo['source_package_version'])
+                if not rm:
+                    print '\nUnknown package'
+                    continue
                 version = rm.group(0)
                 print '\nVersion', version
                 ubuntu = Ubuntu()
-                rec = ubuntu.lookup(version)
+                try:
+                    rec = ubuntu.lookup(version)
+                except KeyError:
+                    print '\nNo series mapping'
+                    continue
+
                 sourceinfo['distribution'] = rec['name']
 
                 # And strip some things we don't care about
