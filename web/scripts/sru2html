@@ -150,8 +150,7 @@ class SruReport:
         retval += '\n'
 
         trackers_only_packages = ['linux-lts-backport-maverick', 'linux-lts-backport-natty', 'linux-lts-backport-oneiric', 'linux-lts-quantal']
-        suite_keys = self.data['releases'].keys()
-        suite_keys.sort()
+        suite_keys = self.data['releases_order']
         for rls in suite_keys:
             if len(self.data['releases'][rls]) == 0:
                 retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls

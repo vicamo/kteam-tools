@@ -216,7 +216,7 @@ class SruReport(StdApp):
         self.components   = ['main', 'universe']
 
         kernel_series = KernelSeries()
-        self.all_series   = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True) if series.supported or series.development ]
+        self.all_series   = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development ]
 
         self.tempdir = None
 
@@ -462,6 +462,7 @@ class SruReport(StdApp):
                                 results['releases'][rls][pkg]['bugs'][bug]['tags']  = []
 
             results['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
+            results['releases_order'] = self.all_series
             print json.dumps(results, sort_keys=True, indent=4)
 
         # Handle the user presses <ctrl-C>.
