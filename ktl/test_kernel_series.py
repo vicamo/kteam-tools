@@ -62,6 +62,12 @@ class TestKernelSeries(unittest.TestCase):
         self.assertEqual(series.name, '18.04')
         self.assertEqual(series.codename, 'bionic')
 
+    def test_lookup_series_invalid_no_selectors(self):
+        ks = KernelSeries(data=self.data_yaml)
+
+        with self.assertRaises(ValueError):
+            series = ks.lookup_series()
+
     def test_series(self):
         ks = KernelSeries(data=self.data_yaml)
         series_names = [ s.name for s in ks.series ]
