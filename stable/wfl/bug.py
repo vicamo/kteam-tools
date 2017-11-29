@@ -812,7 +812,6 @@ class WorkflowBug():
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : s.__package.test_series,
-            "series-version" : s.__package.test_series_version,
             "kernel-version" : s.pkg_version,
             "package"        : s.pkg_name,
             "flavour"        : flavour,
@@ -826,7 +825,6 @@ class WorkflowBug():
         # XXX: likely should be "if not s.__package.hwe:"
         if s.pkg_name in ['linux-azure', 'linux-gcp']:
             msg['series-name'] = s.__package.series
-            msg['series-version'] = s.pkg_version
 
         # Add the kernel-sru-cycle identifier to the message
         #

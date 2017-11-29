@@ -134,7 +134,6 @@ class Package():
             cdebug('  tests: %s' % test_tag_entry['name'])
             setattr(s, 'series', series_tag_entry['name'])
             setattr(s, 'test_series', test_tag_entry['name'])
-            setattr(s, 'test_series_version', test_tag_entry['series_version'])
 
             # Dump out any missmatches between the old and new algorithms.
             test_old_entry = s.ubuntu.lookup(m.group(2))
