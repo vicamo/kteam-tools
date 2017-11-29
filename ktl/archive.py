@@ -191,8 +191,20 @@ class Archive:
         archive = lp.distributions['ubuntu'].getArchive(name='primary')
         kernel_series = KernelSeries()
 
+        # Grab a list of all of the supported debian package names.
+        kernel_source_packages = []
+        for series in kernel_series.series:
+            if not series.supported:
+                continue
+            for source in series.sources:
+                if not source.supported:
+                    continue
+                for package in source.packages:
+                    if package.name not in kernel_source_packages:
+                        kernel_source_packages.append(package.name)
+
         for astatus in statuses:
-            for pname in Ubuntu.kernel_source_packages:
+            for pname in kernel_source_packages:
                 if self.debug:
                     print 'fetching for package', pname, 'status', astatus
                 outdict = {}
