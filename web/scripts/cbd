@@ -318,7 +318,7 @@ class CollectRegressionsData(StdApp):
                     bugs_db = None
                     raise
 
-            deelopment_series = kernel_series.lookup_series(development=True)
+            development_series = kernel_series.lookup_series(development=True)
             bugs_db['info'] = {}
             bugs_db['info']['dev series'] = development_series.codename
             if bugs_db != None:
