@@ -123,17 +123,10 @@ class Package():
             for tag in lpbug.tags:
                 if tag in s.ubuntu.index_by_series_name:
                     series_tag_entry = s.ubuntu.index_by_series_name[tag]
-            test_tag_entry = series_tag_entry
-            if ('backport-packages' in series_tag_entry and
-                s.name in series_tag_entry['backport-packages']):
-                backport_version = test_tag_entry['backport-packages'][s.name][1]
-                test_tag_entry = s.ubuntu.lookup(backport_version)
 
-            # Set the series and test_series attributes
+            # Set the series attribute
             cdebug(' series: %s' % series_tag_entry['name'])
-            cdebug('  tests: %s' % test_tag_entry['name'])
             setattr(s, 'series', series_tag_entry['name'])
-            setattr(s, 'test_series', test_tag_entry['name'])
 
             # Work out if this is a proposed only entry.
             s.proposed_only = series_tag_entry.get('proposed_only', {}).get(s.name, False)

@@ -811,7 +811,7 @@ class WorkflowBug():
             "who"            : ["kernel"],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
-            "series-name"    : s.__package.test_series,
+            "series-name"    : s.series,
             "kernel-version" : s.pkg_version,
             "package"        : s.pkg_name,
             "flavour"        : flavour,
