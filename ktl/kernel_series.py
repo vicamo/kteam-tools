@@ -256,10 +256,10 @@ class KernelSourceEntry:
         return result
 
     def lookup_package(self, package_key):
-        package = self._data.get('packages', {}).get(package_key, False)
-        if package is False:
-            raise KeyError("package {} not found in source {}".format(package_key, self))
-        return KernelPackageEntry(self._ks, self, package_key, package)
+        packages = self._data.get('packages')
+        if not packages or package_key not in packages:
+            return None
+        return KernelPackageEntry(self._ks, self, package_key, packages[package_key])
 
     @property
     def snaps(self):
@@ -272,10 +272,10 @@ class KernelSourceEntry:
         return result
 
     def lookup_snap(self, snap_key):
-        snap = self._data.get('snaps', {}).get(snap_key, False)
-        if snap == False:
-            raise KeyError("snap {} not found in source {}".format(snap_key, self))
-        return KernelSnapEntry(self._ks, self, snap_key, snap)
+        snaps = self._data.get('snaps')
+        if not snaps or snap_key not in snaps:
+            return None
+        return KernelSnapEntry(self._ks, self, snap_key, snaps[snap_key])
 
     @property
     def derived_from(self):
@@ -347,11 +347,10 @@ class KernelSeriesEntry:
         return result
 
     def lookup_source(self, source_key):
-        sources = self._data.get('sources', {})
+        sources = self._data.get('sources')
         if not sources or source_key not in sources:
-            raise KeyError("source {} not found in series {}".format(source_key, self.name))
-        source = sources[source_key]
-        return KernelSourceEntry(self._ks, self, source_key, source)
+            return None
+        return KernelSourceEntry(self._ks, self, source_key, sources[source_key])
 
 
 # KernelSeries
@@ -403,18 +402,17 @@ class KernelSeries:
 
     def lookup_series(self, series=None, codename=None, development=False):
         if not series and not codename and not development:
-            raise KeyError("series/codename/development required")
+            raise ValueError("series/codename/development required")
         if not series and codename:
             if codename not in self._codename_to_series:
-                raise KeyError("series codename {} not found".format(codename))
+                return None
             series = self._codename_to_series[codename]
         if not series and development:
             if not self._development_series:
-                raise KeyError("development series not defined")
+                return None
             series = self._development_series
-        if series:
-            if series not in self._data:
-                raise KeyError("series {} not found".format(series))
+        if series and series not in self._data:
+            return None
         return KernelSeriesEntry(self, series, self._data[series])
 
 

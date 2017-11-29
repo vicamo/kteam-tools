@@ -265,9 +265,9 @@ class TestKernelSeriesEntry(unittest.TestCase):
         """
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
 
-        with self.assertRaises(KeyError):
-            source = series.lookup_source('linux')
+        self.assertEqual(source, None)
 
     def test_lookup_source_no_source_entries(self):
         data = """
@@ -277,8 +277,8 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
-        with self.assertRaises(KeyError):
-            source = series.lookup_source('linux')
+        source = series.lookup_source('linux')
+        self.assertEqual(source, None)
 
     def test_lookup_source_present(self):
         data = """
