@@ -332,7 +332,7 @@ class TrackingBug:
         s.reset_tasks(bug)
         return bug
 
-    def open(self, package, version, new_abi, master_bug, series_specified=None, private=False):
+    def open(self, package, version, new_abi, master_bug, series_specified, private=False):
         center(self.__class__.__name__ + '.open')
         cdebug('    package: %s' % package)
         cdebug('    version: %s' % version)
@@ -352,9 +352,6 @@ class TrackingBug:
         #
         series_target = None
         targeted_series_name = series_specified
-        if not series_specified:
-            targeted_series_name = self.ub.series_name(package, version)
-            cdebug('targeted_series_name: %s' % targeted_series_name)
         if targeted_series_name:
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
