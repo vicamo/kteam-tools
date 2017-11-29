@@ -256,7 +256,7 @@ class Archive:
                     print 'records in outdict after fetch', len(outdict)
                 unsupported = []
                 serieslist = []
-                for series in kernel_series:
+                for series in kernel_series.series:
                     if not series.supported:
                         if self.debug:
                             print 'DEBUG: Fetching from archive, will skip release ', series.codename
