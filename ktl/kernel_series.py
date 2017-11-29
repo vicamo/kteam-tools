@@ -359,17 +359,28 @@ class KernelSeriesEntry:
 class KernelSeries:
     _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
+    _data = None
+
+    @classmethod
+    def __load_once(cls):
+        if not cls._data:
+            print("DOWNLOADING")
+            response = urlopen(cls._url)
+            data = response.read()
+            if type(data) != str:
+                data = data.decode('utf-8')
+            cls._data = yaml.load(data)
 
     def __init__(self, url=None, data=None):
-        if not data:
-            if not url:
-                url = self._url
-            response = urlopen(url)
-            data = response.read()
-
-        if type(data) != str:
-            data = data.decode('utf-8')
-        self._data = yaml.load(data)
+        if data or url:
+            if url:
+                response = urlopen(url)
+                data = response.read()
+            if type(data) != str:
+                data = data.decode('utf-8')
+            self._data = yaml.load(data)
+        else:
+            self.__load_once()
 
         self._development_series = None
         self._codename_to_series = {}
