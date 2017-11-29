@@ -135,14 +135,6 @@ class Package():
             setattr(s, 'series', series_tag_entry['name'])
             setattr(s, 'test_series', test_tag_entry['name'])
 
-            # Dump out any missmatches between the old and new algorithms.
-            test_old_entry = s.ubuntu.lookup(m.group(2))
-            series_old_entry = s.ubuntu.index_by_series_name[s.ubuntu.series_name(s.name, s.version)]
-            if test_tag_entry != test_old_entry:
-                    cerror("DEBUG/SERIES: %s: test_series: tag based detection differs from version lookup?? (old=%s tag=%s)" % (s.name, test_old_entry['name'], test_tag_entry['name']))
-            if series_tag_entry != series_old_entry:
-                    cerror("DEBUG/SERIES: %s: series: tag based detection differs from version lookup?? (old=%s tag=%s)" % (s.name, series_old_entry['name'], series_tag_entry['name']))
-
             # Work out if this is a proposed only entry.
             s.proposed_only = series_tag_entry.get('proposed_only', {}).get(s.name, False)
 
