@@ -87,7 +87,7 @@ The kernel dashboard monitoring is now showing an alert:\r
 \r
 Kernel Team\r
 """.lstrip().format(msg=m)
-                    email.send(cfg['email']['from'], cfg['email']['to'], m, detail)
+                        email.send(cfg['email']['from'], cfg['email']['to'], m, detail)
 
     # Handle the user presses <ctrl-C>.
     #
