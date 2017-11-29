@@ -18,7 +18,7 @@ import atexit
 import shutil
 import time
 from lpltk.LaunchpadService             import LaunchpadService
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.archive                        import Archive
 
 # stdo
@@ -212,11 +212,11 @@ class SruReport(StdApp):
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
         self.ports_root   = 'http://ports.ubuntu.com/ubuntu-ports'
-        self.ubuntu = Ubuntu()
 
         self.components   = ['main', 'universe']
-        self.all_series   = self.ubuntu.supported_series
-        self.all_series.append(self.ubuntu.development_series)
+
+        kernel_series = KernelSeries()
+        self.all_series   = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True) if series.supported or series.development ]
 
         self.tempdir = None
 
@@ -332,15 +332,9 @@ class SruReport(StdApp):
                 # Go through the archive data and find all the relevant series and packages
                 # and thier versions. Seed the results dictionary with this information.
                 #
-                m = self.ubuntu.db
-                for num in sorted(m.iterkeys(), key=lambda x:m[x]['name']):
-                    if not m[num]['supported']:
-                        if 'development' not in m[num] or not m[num]['development']:
-                            continue
-
-                    series      = m[num]['name']
-                    series_pkgs = m[num]['packages']
-                    results['releases'][series] = {}
+                for series in self.all_series:
+                    if series not in results['releases']:
+                        results['releases'][series] = {}
 
                     # Add any versions from the ppa
                     #
