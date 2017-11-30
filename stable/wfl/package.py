@@ -4,7 +4,7 @@
 import re
 from datetime                           import datetime
 
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from lib.utils                          import date_to_string, dump
 
 from .errors                            import ShankError, ErrorExit
@@ -40,7 +40,7 @@ class Package():
         s.lp = lp
         s.bug = shankbug
 
-        s.ubuntu = Ubuntu()
+        s.kernel_series = KernelSeries()
         s.__distro_series = None
 
         # Determine some properties of the package we are looking at based on the
@@ -121,18 +121,27 @@ class Package():
             # Work out what series this package is published in...
             series_tag_entry = None
             for tag in lpbug.tags:
-                if tag in s.ubuntu.index_by_series_name:
-                    series_tag_entry = s.ubuntu.index_by_series_name[tag]
+                series_tag_entry = s.kernel_series.lookup_series(codename=tag)
+                if series_tag_entry:
+                    break
 
             # Set the series attribute
-            cdebug(' series: %s' % series_tag_entry['name'])
-            setattr(s, 'series', series_tag_entry['name'])
+            cdebug(' series: %s' % series_tag_entry.codename)
+            setattr(s, 'series', series_tag_entry.codename)
+
+            # XXX: neither of these is (currently) specified in the
+            # KernelSeries format; luckily neither is currently in use.
+            # proposed_only is normally only used for the first couple of
+            # kernels in a series and we have been using kernel-block-proposed
+            # tags for that so it appears redundant.  test_flavours is a
+            # layering violation, the backends are learning to handle flavours
+            # so the bodge we have in the bug.test_flavours is good enough.
 
             # Work out if this is a proposed only entry.
-            s.proposed_only = series_tag_entry.get('proposed_only', {}).get(s.name, False)
+            s.proposed_only = False
 
             # Determine testing flavours.
-            s.test_flavours = series_tag_entry.get('test_flavours', {}).get(s.name, None)
+            s.test_flavours = None
 
             s.valid = True
 
@@ -439,22 +448,10 @@ class Package():
         Put together a list of all the packages that depend on this package.
         '''
         pkgs = {}
-        series = s.series
-#        try:
-#            series = s.ubuntu.series_name(s.name, s.version)
-#        except KeyError:
-#            raise SeriesLookupFailure(['Unable to determine the series from the kernel version specified',
-#                                       'in the bug title.'])
-
-        entry = s.ubuntu.lookup(series)
-        if entry:
-            if 'dependent-packages' in entry:
-                if s.name in entry['dependent-packages']:
-                    pkgs.update(entry['dependent-packages'][s.name])
-
-        # The package depends upon itself
-        #
-        pkgs['main'] = s.name
+        series = s.kernel_series.lookup_series(codename=s.series)
+        source = series.lookup_source(s.name)
+        for package in source.packages:
+            pkgs[package.type if package.type else 'main'] = package.name
 
         return pkgs
 
