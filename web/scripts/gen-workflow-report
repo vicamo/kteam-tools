@@ -10,7 +10,7 @@ import json
 from ktl.utils                          import stdo, stde, error, dump, string_to_date
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.bugs                           import DeltaTime
 
 # Exit
@@ -225,7 +225,6 @@ class GenWorkflowReport():
 
             self.html_template = self.file_load('%ssru-workflow-template.html' % argv[0].replace('gen-workflow-report', ''))
             self.bugs_db = self.json_load(self.cfg['database-file'])
-            self.ubuntu  = Ubuntu()
 
         except CfgError as e:
             error(e)
@@ -420,8 +419,8 @@ class GenWorkflowReport():
     def report(self):
         Dbg.enter("GenWorkflowReport.report")
 
-        series = self.ubuntu.supported_series_version
-        series.append(self.ubuntu.development_series_version)
+        kernel_series = KernelSeries()
+        series   = [ series for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development ]
 
         self.combined = {}
         for b in self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs']:
@@ -436,9 +435,9 @@ class GenWorkflowReport():
             pass
 
         retval = ''
-        for ss in sorted(series):
+        for ss in series:
             Dbg.verbose('%s\n' % ss)
-            retval += '<div class="l1-section-heading">%s - %s</div>\n' % (ss, self.ubuntu.db[ss]['name'])
+            retval += '<div class="l1-section-heading">%s - %s</div>\n' % (ss.codename, ss.name)
 
             # Find all the packages for this series. This lets us sort the packages in
             # the report.
@@ -448,7 +447,7 @@ class GenWorkflowReport():
                 bug = self.combined[b]
                 title = bug['title']
                 package, other = title.split(':')
-                if bug['series name'] == self.ubuntu.db[ss]['name']:
+                if bug['series name'] == ss.codename:
                     if package in pkgs:
                         pkgs[package].append(b)
                     else:
