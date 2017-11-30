@@ -10,7 +10,7 @@ import json
 from ktl.utils                          import stdo, stde, error, dump, string_to_date, json_load, file_load, date_to_string, string_to_date
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.bugs                           import DeltaTime
 
 # Exit
@@ -229,8 +229,10 @@ class GenWorkflowReport():
             self.initialize()
 
             stats = {}
-            for ss in sorted(self.ubuntu.supported_series):
+            kernel_series = KernelSeries()
+            series = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported ]
 
+            for ss in series:
                 for b in self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs']:
                     bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][b]
                     title = bug['title']
