@@ -4,7 +4,6 @@ from datetime                           import datetime, timedelta
 import yaml
 import re
 from lib.utils                          import date_to_string
-from ktl.ubuntu                         import Ubuntu
 from .log                               import cdebug, center, cleave, cinfo
 from .package                           import Package, PackageError
 from .check_component                   import CheckComponent
@@ -135,8 +134,6 @@ class WorkflowBug():
             s.is_valid = False
             cdebug('Failed to get bug #%s' % bugid, 'red')
             raise WorkflowBugError('Invalid bug number %s' % bugid)
-
-        s.ubuntu = Ubuntu()
 
         # Pass along any "global" settings to the WorkflowBugTask.
         #
