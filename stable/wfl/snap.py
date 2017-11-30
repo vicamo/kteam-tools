@@ -116,4 +116,4 @@ class SnapStore:
                 return False
 
         return (store_version is not None and
-                store_version.rpartition('.')[0] == "%s.%s" % (s.bug.kernel_version, s.bug.abi))
+                store_version == s.bug.pkg_version)
