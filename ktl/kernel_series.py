@@ -363,7 +363,6 @@ class KernelSeries:
     @classmethod
     def __load_once(cls):
         if not cls._data:
-            print("DOWNLOADING")
             response = urlopen(cls._url)
             data = response.read()
             if type(data) != str:
