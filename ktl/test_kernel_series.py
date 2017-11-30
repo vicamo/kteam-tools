@@ -763,7 +763,7 @@ class TestKernelPackageEntry(unittest.TestCase):
         source = series.lookup_source('linux')
         package = source.lookup_package('linux-meta')
 
-        self.assertEqual(package.type, 'prime')
+        self.assertEqual(package.type, None)
 
     def test_repo_present(self):
         data = """

@@ -191,7 +191,7 @@ class KernelPackageEntry:
 
     @property
     def type(self):
-        return self._data.get('type', 'prime')
+        return self._data.get('type', None)
 
     @property
     def repo(self):
