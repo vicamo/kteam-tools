@@ -5,7 +5,6 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 import json
 import requests
 import re
-from ktl.ubuntu                         import Ubuntu
 
 # TheApp
 #
@@ -17,7 +16,6 @@ class TheApp(object):
     #
     def main(s, args):
         retval = 0
-        ubuntu = Ubuntu()
 
         #                              .- package name (group(1))
         #                             /           .- kernel version (group(2))
@@ -47,9 +45,9 @@ class TheApp(object):
                         continue
 
                     version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
-                    rec = ubuntu.lookup(m.group(2))
+
                     versions[version] = {
-                        'series': rec['name'],
+                        'series': bug['series name'],
                         'pkg' : m.group(1),
                     }
 
