@@ -1,4 +1,4 @@
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from datetime                           import date
 
 import yaml
@@ -164,15 +164,13 @@ class LpPeoplePpaDistributionsStub():
     '''
     def __init__(s, config):
         s.config = config
-        s.ubuntu = Ubuntu()
         s.main_archive = PPAStub('main-archive', s.config)
         s.people = {'canonical-kernel-team': s}
         s.distributions = {'ubuntu': s}
 
         # Get a list of series
-        s.series_collection = []
-        for n in s.ubuntu.index_by_series_name.keys():
-            s.series_collection.append(SeriesCollectionStub(n))
+        kernel_series = KernelSeries()
+        s.series_collection = [ SeriesCollectionStub(series.codename) for series in kernel_series.series ]
 
     def getPPAByName(s, name):
         return PPAStub(name, s.config)
