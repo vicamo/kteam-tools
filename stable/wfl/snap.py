@@ -10,6 +10,8 @@ except ImportError:
 import json
 from .errors import ShankError
 
+from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
+
 
 # SnapStoreError
 #
@@ -35,12 +37,12 @@ class SnapStore:
 
     # __init__
     #
-    def __init__(s, bug):
+    def __init__(s, bug, snap):
         """
         :param bug: WorkflowBug object
         """
         s.bug = bug
-        s._dependent_snap = None
+        s._dependent_snap = snap
         s._snap_store_versions = {}  # dictionary with {<channel>: {<arch>: <version>[, ...]}[, ...]}
 
     # _get_snap_info
@@ -52,21 +54,16 @@ class SnapStore:
 
         :return: nothing
         """
-        if s._dependent_snap is None:
-            try:
-                record = s.bug.ubuntu.lookup(s.bug.series)
-                s._dependent_snap = record['dependent-snaps'][s.bug.pkg_name]
-            except KeyError:
-                raise SnapStoreError('Could not find snap for series/package \'%s/%s\'' %
-                                     (s.bug.series, s.bug.pkg_name))
+        cdebug("    dependent_snap.name = %s" % str(s._dependent_snap.name))
+        cdebug("    dependent_snap.arches = %s" % str(s._dependent_snap.arches))
 
         s._snap_store_versions[channel] = {}
-        for arch in s._dependent_snap['arches']:
+        for arch in s._dependent_snap.arches:
             try:
                 headers = s.common_headers
                 headers['X-Ubuntu-Architecture'] = arch
                 params = urlencode({'fields': 'version', 'channel': channel})
-                url = "%s?%s" % (urljoin(s.base_url, s._dependent_snap['snap']), params)
+                url = "%s?%s" % (urljoin(s.base_url, s._dependent_snap.name), params)
                 req = Request(url, headers=headers)
                 with urlopen(req) as resp:
                     version = json.loads(resp.read().decode('utf-8'))['version']

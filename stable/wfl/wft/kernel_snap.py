@@ -3,6 +3,8 @@ from wfl.log                                    import center, cleave, cinfo, ce
 from wfl.snap                                   import SnapStore, SnapStoreError
 from .base                                      import TaskHandler
 
+from ktl.kernel_series                          import KernelSeries
+
 
 class KernelSnapBase(TaskHandler):
     '''
@@ -14,25 +16,38 @@ class KernelSnapBase(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(KernelSnapBase, s).__init__(lp, task, bug)
 
-        s.snap_store = SnapStore(bug)
-        s._snap_info = None
+        s._snap_info = False
+        s._snap_store = None
 
         cleave(s.__class__.__name__ + '.__init__')
 
     @property
     def snap_info(s):
         '''
-        Return a dictionary with the snap info from kernel-series-info.yaml.
-        If not found, an empty dictionary is returned.
+        Return a KernelSeriesSnapEntry for the snap.  If not found, None
+        is returned.
         '''
-        if s._snap_info is None:
-            try:
-                record = s.bug.ubuntu.lookup(s.bug.series)
-                s._snap_info = record['dependent-snaps'][s.bug.pkg_name]
-            except KeyError:
-                s._snap_info = {}
+        if s._snap_info == False:
+            # XXX: we so should keep this package object as an attr on the bug.
+            kernel_series = KernelSeries()
+            series = kernel_series.lookup_series(codename=s.bug.series)
+            package = series.lookup_source(s.bug.pkg_name)
+
+            # XXX: the bugs we create need to record the snap name.
+            snaps = package.snaps
+            s._snap_info = None
+            for snap in snaps:
+                if snap.primary:
+                    s._snap_info = snap
+                    break
 
         return s._snap_info
+
+    @property
+    def snap_store(s):
+        if s._snap_store is None:
+            s._snap_store = SnapStore(s.bug, s.snap_info)
+        return s._snap_store
 
 
 class SnapReleaseToEdge(KernelSnapBase):
@@ -237,8 +252,7 @@ class SnapReleaseToStable(KernelSnapBase):
         retval = False
 
         # Set the task to invalid if 'stable' is not set on kernel-series-info.yaml
-        stable = s.snap_info.get('stable', None)
-        if stable is None or not stable:
+        if not s.snap_info.stable:
             cinfo('    not a stable snap', 'yellow')
             s.task.status = 'Invalid'
             retval = True
