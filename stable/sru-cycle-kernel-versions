@@ -41,7 +41,7 @@ class TheApp(object):
 
                 m = ver_rc.search(title)
                 if m is not None:
-                    if m.group(1) != 'linux' and '-lts-' not in m.group(1):
+                    if m.group(1) != 'linux' and '-lts-' not in m.group(1) and '-hwe' not in m.group(1):
                         continue
 
                     version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
