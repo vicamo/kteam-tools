@@ -608,6 +608,14 @@ class WorkflowBug():
         return s.__package.series
 
     @property
+    def source(s):
+        '''
+        Decoded from the kernel version in the bug title, the KS source object associated
+        with that kernel version is returned.
+        '''
+        return s.__package.source
+
+    @property
     def abi(s):
         '''
         The abi number from the full version in the bug title is returned.

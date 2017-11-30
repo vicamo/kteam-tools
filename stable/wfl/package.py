@@ -129,6 +129,12 @@ class Package():
             cdebug(' series: %s' % series_tag_entry.codename)
             setattr(s, 'series', series_tag_entry.codename)
 
+            # Lookup the KernelSeries package and attach that.
+            source = None
+            if series_tag_entry:
+                source = series_tag_entry.lookup_source(s.name)
+            setattr(s, 'source', source)
+
             # XXX: neither of these is (currently) specified in the
             # KernelSeries format; luckily neither is currently in use.
             # proposed_only is normally only used for the first couple of

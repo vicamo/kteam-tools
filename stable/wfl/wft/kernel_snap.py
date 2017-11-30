@@ -3,8 +3,6 @@ from wfl.log                                    import center, cleave, cinfo, ce
 from wfl.snap                                   import SnapStore, SnapStoreError
 from .base                                      import TaskHandler
 
-from ktl.kernel_series                          import KernelSeries
-
 
 class KernelSnapBase(TaskHandler):
     '''
@@ -29,17 +27,15 @@ class KernelSnapBase(TaskHandler):
         '''
         if s._snap_info == False:
             # XXX: we so should keep this package object as an attr on the bug.
-            kernel_series = KernelSeries()
-            series = kernel_series.lookup_series(codename=s.bug.series)
-            package = series.lookup_source(s.bug.pkg_name)
-
-            # XXX: the bugs we create need to record the snap name.
-            snaps = package.snaps
-            s._snap_info = None
-            for snap in snaps:
-                if snap.primary:
-                    s._snap_info = snap
-                    break
+            package = s.bug.source
+            if package:
+                # XXX: the bugs we create need to record the snap name.
+                snaps = package.snaps
+                s._snap_info = None
+                for snap in snaps:
+                    if snap.primary:
+                        s._snap_info = snap
+                        break
 
         return s._snap_info
 
