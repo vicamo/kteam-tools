@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 #
 
-from os                                 import getenv
+import sys
+import os
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import error, info, debug, basicConfig, DEBUG, WARNING
 from urllib.request                     import urlopen
@@ -13,6 +16,8 @@ import re
 import yaml
 import json
 import sqlite3
+
+from ktl.kernel_series import convert_v2_to_v1
 
 # LP
 #
@@ -148,6 +153,13 @@ class LPQuery():
             self.state = val
         return self.state
 
+# UbuntuError
+#
+class UbuntuError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
 
 # Ubuntu
 #
@@ -158,21 +170,23 @@ class Ubuntu:
     # file you need to update the kteam-tools.kernel.ubuntu.com repo in the ~kernel-ppa
     # directory on kernel.ubuntu.com.
     #
-    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
-    # url = 'file:///home/work/kteam-tools/ktl/kernel-series-info.yaml'
+    #url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/ktl/kernel-series-info.yaml'
+    url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    # url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     response = urlopen(url)
     content = response.read()
     if type(content) != str:
         content = content.decode('utf-8')
     data = yaml.load(content)
-    db = data
+
+    db = convert_v2_to_v1(data)
 
     index_by_kernel_version = {}
     for v in db:
         if 'kernels' in db[v]:
             for version in db[v]['kernels']:
                 index_by_kernel_version[version] = db[v]
-            db[v]['kernel'] = db[v]['kernels'][0]
+            db[v]['kernel'] = db[v]['kernels'][-1]
         else:
             index_by_kernel_version[db[v]['kernel']] = db[v]
 
@@ -182,9 +196,10 @@ class Ubuntu:
 
     kernel_source_packages = []
     for v in db:
-        for p in db[v]['packages']:
-            if p not in kernel_source_packages:
-                kernel_source_packages.append(p)
+        if 'packages' in db[v]:
+            for p in db[v]['packages']:
+                if p not in kernel_source_packages:
+                    kernel_source_packages.append(p)
 
     # lookup
     #
@@ -372,7 +387,6 @@ class Ubuntu:
                         pass
 
         return retval
-
 
 # KernelTools
 #
@@ -807,7 +821,7 @@ class BugFinder():
         return retval
 
 if __name__ == '__main__':
-    if getenv('DEBUG'):
+    if os.getenv('DEBUG'):
         LOGLEVEL = DEBUG
     else:
         LOGLEVEL = WARNING
