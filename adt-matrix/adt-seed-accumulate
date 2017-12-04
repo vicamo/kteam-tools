@@ -111,6 +111,8 @@ class AdtMatrixSeed(object):
                     # Do not remove the old-version if the new version is not yet fully published.
                     if old_version != record['old-version'] or 'missing-builds' not in record or 'on-architectures' not in record['missing-builds']:
                         print('remove-package -y -m NBS -d ubuntu -s {}-proposed -e {} {}'.format(series, old_version, record['source']))
+                    else:
+                        print('# remove-package -y -m NBS -d ubuntu -s {}-proposed -e {} {}    # missing-builds'.format(series, old_version, record['source']))
             # XXX: old-format -- remove when gone.
             elif 'excuses' in record:
                 pkgs = {}
