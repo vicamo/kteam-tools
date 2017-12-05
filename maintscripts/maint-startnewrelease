@@ -154,6 +154,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v = "Ubuntu-kvm-" + version
         elif "-oem" in srcpkg:
             v = "Ubuntu-oem-" + version
+        elif "-euclid" in srcpkg:
+            v = "Ubuntu-euclid-" + version
         else:
             v = "Ubuntu-" + version
 	print(cmd + " " + v)
