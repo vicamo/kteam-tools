@@ -31,19 +31,10 @@ class Announce:
 
         self.mq = None
 
-    def __message(self, key, subject, body):
-        routing = self.routing.get(key)
-        if not routing:
-            return False
-
+    def __message(self, key, subject, body, lcfg):
         cfg = self.cfg.get('message', {})
-        lcfg = routing.get('message')
-        if lcfg:
-            cfg.update(lcfg)
+        cfg.update(lcfg)
 
-        if not cfg.get('enable', False):
-            return False
-            
         if not self.mq:
             if self.cfg.get('local', False):
                 self.mq = MsgQueue(address='localhost', port=9123)
@@ -58,29 +49,20 @@ class Announce:
         }
         self.mq.publish(msg['key'], msg)
 
-        return True
-
-    def __email(self, key, subject, body):
-        routing = self.routing.get(key)
-        if not routing or 'email' not in routing:
-            return False
-
+    def __email(self, key, subject, body, lcfg):
         cfg = self.cfg.get('email', {})
-        lcfg = routing.get('email')
-        if lcfg:
-            cfg.update(lcfg)
-            
-        if not cfg.get('enable', False):
-            return False
+        cfg.update(lcfg)
             
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
 
-        return True
-
     def send(self, key, subject, body):
-        self.__message(key, subject, body)
-        self.__email(key, subject, body)
+        routing = self.routing.get(key, [])
+        for route in routing:
+            if route.get('type') == 'email':
+                self.__email(key, subject, body, route)
+            elif route.get('type') == 'message':
+                self.__message(key, subject, body, route)
 
 
 if __name__ == '__main__':
