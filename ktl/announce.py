@@ -40,6 +40,9 @@ class Announce:
         lcfg = routing.get('message')
         if lcfg:
             cfg.update(lcfg)
+
+        if not cfg.get('enable', False):
+            return False
             
         if not self.mq:
             if self.cfg.get('local', False):
@@ -66,6 +69,9 @@ class Announce:
         lcfg = routing.get('email')
         if lcfg:
             cfg.update(lcfg)
+            
+        if not cfg.get('enable', False):
+            return False
             
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
