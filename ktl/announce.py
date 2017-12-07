@@ -29,6 +29,8 @@ class Announce:
 
         self.routing = self.cfg.get('routing', {})
 
+        self.mq = None
+
     def __message(self, key, subject, body):
         routing = self.routing.get(key)
         if not routing:
@@ -39,10 +41,11 @@ class Announce:
         if lcfg:
             cfg.update(lcfg)
             
-        if self.cfg.get('local', False):
-            mq = MsgQueue(address='localhost', port=9123)
-        else:
-            mq = MsgQueue()
+        if not self.mq:
+            if self.cfg.get('local', False):
+                self.mq = MsgQueue(address='localhost', port=9123)
+            else:
+                self.mq = MsgQueue()
 
         msg = {
             "key"            : "kernel.irc",
@@ -50,7 +53,7 @@ class Announce:
             "msg"            : subject,
             "notice"         : True
         }
-        mq.publish(msg['key'], msg)
+        self.mq.publish(msg['key'], msg)
 
         return True
 
