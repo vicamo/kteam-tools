@@ -35,3 +35,7 @@
             - 'caracalla'
             - 'st. louis'
         - name: 'Update master branches after promotion to -updates'
+        - name: 'Copy forward kernels to -proposed'
+          description: 'Copy linux-snapdragon etc forward to later releases'
+        - name: 'Release copy forward kernels'
+          description: 'Once primary kernels are released also release the copy forward kernels'
