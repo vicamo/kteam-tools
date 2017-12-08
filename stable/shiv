@@ -55,7 +55,26 @@ class IrcClient(threading.Thread):
             IrcClientCommand.NOTICE:  s._handle_NOTICE,
         }
         s.cfg = cfg
+
+        if isinstance(cfg['channel'], str):
+            cfg['channel'] = list(cfg['channel'])
+
         s._connect(cfg['host'], cfg['port'], cfg['ssl'])
+
+    # irc_decode
+    #
+    def irc_decode(s, line):
+        who = 'UNKNOWN'
+        if line[0] == ':':
+            (who, line) = line.split(' ', 1)
+            who = who[1:].split('!')[0]
+
+        bits = line.split(' :')
+        cmd = bits[0].split(' ')
+        if len(bits) > 0:
+            cmd.append(bits[1])
+
+        return who, cmd
 
     # on_ping
     #
@@ -73,11 +92,15 @@ class IrcClient(threading.Thread):
     def on_join(s, line):
         center('IrcClient::on_join')
 
+        (who, cmd) = s.irc_decode(line)
+
         cdebug('line: "%s"' % line)
-        who = line.split('!')[0].replace(':', '')
+        cdebug('who: "%s"' % who)
+        cdebug('cmd: "%s"' % str(cmd))
+
         if who == s.cfg['nick']:
             cdebug('I just joined')
-            sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], '\o/'))
+            sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (cmd[1], '\o/'))
         else:
             cdebug('%s just joined' % who)
 
@@ -138,14 +161,14 @@ class IrcClient(threading.Thread):
             cdebug('     who: %s' % who)
 
             if 'quit' == msg:
-                s.privmsg('%s, I don\'t know how to quit.' % who)
+                s.privmsg(chan, '%s, I don\'t know how to quit.' % who)
 
         cleave('IrcClient::on_privmsg')
 
     # privmsg
     #
-    def privmsg(s, msg):
-        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], msg))
+    def privmsg(s, chan, msg):
+        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (chan, msg))
 
     # run
     #
@@ -174,7 +197,8 @@ class IrcClient(threading.Thread):
                 elif sent_pong:
                     if not sent_join:
                         cdebug('sending JOIN')
-                        sent = s.client_ssl_socket.send('JOIN ' + s.cfg['channel'] + '\r\n')
+                        for channel in s.cfg['channel']:
+                            sent = s.client_ssl_socket.send('JOIN ' + channel + '\r\n')
                         sent_join = True
                         logged_in = True
 
@@ -243,14 +267,16 @@ class IrcClient(threading.Thread):
     #
     def _handle_SEND(s, cmd):
         center('IrcClient::_handle_SEND')
-        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (s.cfg['channel'], cmd.data))
+        (channel, line) = cmd.data
+        sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (channel, line))
         cleave('IrcClient::_handle_SEND')
 
     # _handle_NOTICE
     #
     def _handle_NOTICE(s, cmd):
         center('IrcClient::_handle_SEND')
-        sent = s.client_ssl_socket.send('NOTICE %s :%s\r\n' % (s.cfg['channel'], cmd.data))
+        (channel, line) = cmd.data
+        sent = s.client_ssl_socket.send('NOTICE %s :%s\r\n' % (channel, line))
         cleave('IrcClient::_handle_SEND')
 
 # TheApp
@@ -302,19 +328,24 @@ class TheApp():
             cdebug("TheApp::_handler payload={}".format(payload['key']))
             if payload['key'] == 'kernel.irc':
                 content = s.decode_payload(payload)
+                channel = payload.get('channel', s.irc.cfg['channel'][0])
+                # If they send things to the wrong channel ...
+                if channel not in s.irc.cfg['channel']:
+                    channel = s.irc.cfg['channel'][0]
 
                 cdebug('content: "%s"' % str(content))
+                cdebug('channel: "%s"' % str(channel))
 
                 if payload['notice']:
                     for line in content:
-                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, line))
+                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, (channel, line)))
                 else:
                     for line in content:
-                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, line))
+                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (channel, line)))
 
         else:
             content = 'unrecognized payload with no \'key\': %s' % json.dumps(payload, sort_keys=True, indent=4)
-            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, content))
+            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (s.irc.cfg['channel'][0], content)))
 
         cleave("TheApp::_handler")
 
