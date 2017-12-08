@@ -44,6 +44,7 @@ class Announce:
         msg = {
             "key"            : "kernel.irc",
             "op"             : "notice",
+            "channel"        : cfg['channel'],
             "msg"            : subject,
             "notice"         : True
         }
