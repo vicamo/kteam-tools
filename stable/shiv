@@ -25,11 +25,41 @@ class IrcClientCommand(object):
     SEND:       Data string
     EXIT:       None
     """
-    SEND, EXIT, NOTICE, IRC_RAW = range(4)
+    SEND, EXIT, NOTICE, IRC_RAW, MSGQ_RAW = range(5)
 
     def __init__(s, type, data=None):
         s.type = type
         s.data = data
+
+
+class MsgqReader(threading.Thread):
+    # __init__
+    #
+    def __init__(s, mq, cmd_q, queue):
+        center('MsgqReader::__init__')
+        super(MsgqReader, s).__init__()
+        s.mq = mq
+        s.cmd_q = cmd_q
+        s.queue = queue
+        s.daemon = True
+        cleave('MsgqReader::__init__')
+
+    # _handler
+    #
+    def _handler(s, payload):
+        s.cmd_q.put(IrcClientCommand(IrcClientCommand.MSGQ_RAW, payload))
+
+    # run
+    #
+    def run(s):
+        center('MsgqReader::run')
+        try:
+            s.mq.listen(s.queue, 'kernel.#', s._handler)
+        except Exception as e:
+            s.cmd_q.put(IrcClientCommand(IrcClientCommand.EXIT, e))
+            raise e
+        cleave('MsgqReader::run')
+
 
 class IrcClientReader(threading.Thread):
     # __init__
@@ -49,16 +79,20 @@ class IrcClientReader(threading.Thread):
     def run(s):
         center('IrcClientReader::run')
         while s.alive.isSet():
-            cdebug("IrcClientReader: Waiting on IRC")
-            data = s.socket.recv(4096)
-            lines = data.split('\r\n')
-            for line in lines:
-                cdebug("Got line: <" + line + ">")
-                # Ignore blank lines
-                if line == "":
-                    continue
+            try:
+                cdebug("IrcClientReader: Waiting on IRC")
+                data = s.socket.recv(4096)
+                lines = data.split('\r\n')
+                for line in lines:
+                    cdebug("Got line: <" + line + ">")
+                    # Ignore blank lines
+                    if line == "":
+                        continue
 
-                s.cmd_q.put(IrcClientCommand(IrcClientCommand.IRC_RAW, line))
+                    s.cmd_q.put(IrcClientCommand(IrcClientCommand.IRC_RAW, line))
+            except Exception as e:
+                s.cmd_q.put(IrcClientCommand(IrcClientCommand.EXIT, e))
+                raise e
         cleave('IrcClientReader::run')
 
     # join
@@ -68,23 +102,17 @@ class IrcClientReader(threading.Thread):
         threading.Thread.join(s, timeout)
 
 
-class IrcClient(threading.Thread):
-    """
-    Implements the threading.Thread interface (start, join, etc.) and
-    can be controlled via the cmd_q Queue attribute. Replies are placed in
-    the reply_q Queue attribute.
-    """
-
+class IrcClient:
     # __init__
     #
-    def __init__(s, cmd_q=Queue.Queue(), reply_q=Queue.Queue(), cfg={}, msgq=None):
-        super(IrcClient, s).__init__()
+    def __init__(s, cmd_q=Queue.Queue(), reply_q=Queue.Queue(), cfg={}, msgq=None, queue=None):
         s.cmd_q = cmd_q
         s.reply_q = reply_q
         s.alive = threading.Event()
         s.alive.set()
         s.socket = None
         s.msgq = msgq
+        s.queue = queue
 
         s.logged_in     = False
         s.sent_password = False
@@ -98,6 +126,7 @@ class IrcClient(threading.Thread):
             IrcClientCommand.SEND:    s._handle_SEND,
             IrcClientCommand.NOTICE:  s._handle_NOTICE,
             IrcClientCommand.IRC_RAW: s._handle_IRC_RAW,
+            IrcClientCommand.MSGQ_RAW: s._handle_MSGQ_RAW,
         }
         s.cfg = cfg
 
@@ -109,6 +138,10 @@ class IrcClient(threading.Thread):
         # Start the IRC reader thread.
         s.irc_client_reader = IrcClientReader(s.client_ssl_socket, s.cmd_q)
         s.irc_client_reader.start()
+
+        # Start the MsgQ listener.
+        s.msgq_listener = MsgqReader(s.msgq, s.cmd_q, s.queue)
+        s.msgq_listener.start()
 
     # irc_decode
     #
@@ -210,7 +243,8 @@ class IrcClient(threading.Thread):
             cdebug('     who: %s' % who)
 
             if 'quit' == msg:
-                s.privmsg(chan, '%s, I don\'t know how to quit.' % who)
+                s.privmsg(chan, '%s, going, going, gone.' % who)
+                sys.exit(1)
 
         cleave('IrcClient::on_privmsg')
 
@@ -270,13 +304,15 @@ class IrcClient(threading.Thread):
         s.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.client_socket.connect((host, port))
         s.client_ssl_socket = ssl.wrap_socket(s.client_socket)
-        #s.client_socket.settimeout(5)
+        #s.client_socket.settimeout(15)
         cleave('IrcClient::__init__')
 
     # _handle_EXIT
     #
     def _handle_EXIT(s, cmd):
         center('IrcClient::_handle_EXIT')
+        if cmd.data:
+            raise cmd.data
         s.alive.clear()
         #s.irc_client_reader.join()
         s.client_ssl_socket.close()
@@ -319,22 +355,6 @@ class IrcClient(threading.Thread):
             s.on_privmsg(line)
         cleave('IrcClient::_handle_IRC_RAW')
 
-
-# TheApp
-#
-class TheApp():
-    '''
-    This class is just the engine that makes everything go.
-    '''
-
-    # __init__
-    #
-    def __init__(s, args):
-        '''
-        '''
-        s.args = args
-        s.queue_name = 'kernel-irc-kmsgq'
-
     # decode_payload
     #
     def decode_payload(s, payload):
@@ -369,26 +389,49 @@ class TheApp():
             cdebug("TheApp::_handler payload={}".format(payload['key']))
             if payload['key'] == 'kernel.irc':
                 content = s.decode_payload(payload)
-                channel = payload.get('channel', s.irc.cfg['channel'][0])
+                channel = payload.get('channel', s.cfg['channel'][0])
                 # If they send things to the wrong channel ...
-                if channel not in s.irc.cfg['channel']:
-                    channel = s.irc.cfg['channel'][0]
+                if channel not in s.cfg['channel']:
+                    channel = s.cfg['channel'][0]
 
                 cdebug('content: "%s"' % str(content))
                 cdebug('channel: "%s"' % str(channel))
 
                 if payload['notice']:
                     for line in content:
-                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, (channel, line)))
+                        s.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, (channel, line)))
                 else:
                     for line in content:
-                        s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (channel, line)))
+                        s.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (channel, line)))
 
         else:
             content = 'unrecognized payload with no \'key\': %s' % json.dumps(payload, sort_keys=True, indent=4)
-            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (s.irc.cfg['channel'][0], content)))
+            s.cmd_q.put(IrcClientCommand(IrcClientCommand.SEND, (s.irc.cfg['channel'][0], content)))
 
         cleave("TheApp::_handler")
+
+    # _handle_MSGQ_RAW
+    #
+    def _handle_MSGQ_RAW(s, cmd):
+        center('IrcClient::_handle_MSGQ_RAW')
+        s._handler(cmd.data)
+        cleave('IrcClient::_handle_MSGQ_RAW')
+
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+        s.queue_name = 'kernel-irc-kmsgq'
 
     # main
     #
@@ -414,10 +457,9 @@ class TheApp():
                 'name'     : 'Kernel Bot',
                 'channel'  : cfg['channel'],
             }
-            s.irc = IrcClient(cfg=irc_cfg, msgq=mq)
-            s.irc.start()
+            s.irc = IrcClient(cfg=irc_cfg, msgq=mq, queue=args.queue)
 
-            mq.listen(s.args.queue, 'kernel.#', s._handler)
+            s.irc.run()
 
             print("done")
             retval = 0
@@ -426,7 +468,6 @@ class TheApp():
         #
         except KeyboardInterrupt:
             print("Aborting ...")
-            s.irc.cmd_q.put(IrcClientCommand(IrcClientCommand.EXIT))
 
         cleave("TheApp::main")
         return retval
