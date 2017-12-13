@@ -27,7 +27,8 @@ for (dirname, dirs, files) in os.walk(directory):
             bits = line.strip().split(None, 1) + [ '' ]
             (key, value) = (bits[0][:-1].lower(), bits[1])
             if key == 'status':
-                (arch, value) = value.split(None, 1)
+                sbits = value.split(None, 1) + [ '0' ]
+                (arch, value) = sbits[0:2]
                 key += '/' + arch
                 if not overall:
                     overall = value
