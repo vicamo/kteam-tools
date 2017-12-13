@@ -82,6 +82,8 @@ class IrcClientReader(threading.Thread):
             try:
                 cdebug("IrcClientReader: Waiting on IRC")
                 data = s.socket.recv(4096)
+                if not data:
+                    raise Exception('IrcClientReader: lost connection')
                 lines = data.split('\r\n')
                 for line in lines:
                     cdebug("Got line: <" + line + ">")
@@ -114,13 +116,6 @@ class IrcClient:
         s.msgq = msgq
         s.queue = queue
 
-        s.logged_in     = False
-        s.sent_password = False
-        s.sent_nick     = False
-        s.sent_user     = False
-        s.sent_join     = False
-        s.sent_pong     = False
-
         s.handlers = {
             IrcClientCommand.EXIT:    s._handle_EXIT,
             IrcClientCommand.SEND:    s._handle_SEND,
@@ -132,6 +127,13 @@ class IrcClient:
 
         if isinstance(cfg['channel'], str):
             cfg['channel'] = list(cfg['channel'])
+
+        s.irc_register = [
+            'PASS ' + s.cfg['password'] + '\r\n',
+            'NICK ' + s.cfg['nick'] + '\r\n',
+            'USER %s 0 * :%s\r\n' % (s.cfg['user'], s.cfg['name']),
+        ]
+        s.irc_joins = [ 'JOIN ' + channel + '\r\n' for channel in s.cfg['channel'] ]
 
         s._connect(cfg['host'], cfg['port'], cfg['ssl'])
 
@@ -153,7 +155,7 @@ class IrcClient:
 
         bits = line.split(' :')
         cmd = bits[0].split(' ')
-        if len(bits) > 0:
+        if len(bits) > 1:
             cmd.append(bits[1])
 
         return who, cmd
@@ -253,35 +255,27 @@ class IrcClient:
     def privmsg(s, chan, msg):
         sent = s.client_ssl_socket.send('PRIVMSG %s :%s\r\n' % (chan, msg))
 
-    # irc_state_machine
+    # send_registration
     #
-    def irc_state_machine(s):
-        if not s.logged_in:
-            if not s.sent_password:
-                cdebug('sending PASS')
-                sent = s.client_ssl_socket.send('PASS ' + s.cfg['password'] + '\r\n')
-                s.sent_password = True
-            elif not s.sent_nick:
-                cdebug('sending NICK')
-                sent = s.client_ssl_socket.send('NICK ' + s.cfg['nick'] + '\r\n')
-                s.sent_nick = True
-            elif not s.sent_user:
-                cdebug('sending USER')
-                sent = s.client_ssl_socket.send('USER %s 0 * :%s\r\n' % (s.cfg['user'], s.cfg['name']))
-                s.sent_user = True
-            elif s.sent_pong:
-                if not s.sent_join:
-                    cdebug('sending JOIN')
-                    for channel in s.cfg['channel']:
-                        sent = s.client_ssl_socket.send('JOIN ' + channel + '\r\n')
-                    s.sent_join = True
-                    s.logged_in = True
+    def send_registration(s):
+        cdebug('Registration Start')
+        for cmd in s.irc_register:
+            cdebug('send_registration: ' + cmd.split(' ')[0])
+            sent = s.client_ssl_socket.send(cmd)
+
+    # send_join
+    #
+    def send_join(s):
+        if len(s.irc_joins) > 0:
+            cmd = s.irc_joins.pop(0)
+            cdebug('send_join: ' + cmd.strip())
+            sent = s.client_ssl_socket.send(cmd)
 
     # run
     #
     def run(s):
+        s.send_registration()
         while s.alive.isSet():
-            s.irc_state_machine()
             try:
                 # Queue.get with timeout to allow checking s.alive
                 cmd = s.cmd_q.get(True)
@@ -342,16 +336,20 @@ class IrcClient:
         line = cmd.data
         cdebug('line: "%s"' % line)
         # We only care about 3 commands. PING, JOIN and PRIVMSG.
-        if 'PING ' in line:
+        (who, cmd) = s.irc_decode(line)
+        if cmd[0] == '001':
+            cdebug('Registration Successful')
+            s.send_join()
+
+        if cmd[0] == 'PING':
             s.on_ping(line)
-            s.sent_pong = True
 
-        elif 'JOIN ' in line:
+        elif cmd[0] == 'JOIN':
             s.on_join(line)
+            s.send_join()
 
-        elif 'PRIVMSG ' in line:
+        elif cmd[0] == 'PRIVMSG':
             # We care that the other end is alive, their version request is sufficient.
-            s.sent_pong = True
             s.on_privmsg(line)
         cleave('IrcClient::_handle_IRC_RAW')
 
