@@ -289,7 +289,7 @@
     - '17.10'
     linux-gcp:
     - linux
-    - '17.04'
+    - '17.10'
     linux-hwe:
     - linux
     - '17.04'

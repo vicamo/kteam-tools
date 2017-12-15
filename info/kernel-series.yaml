@@ -360,7 +360,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            derived-from: [ '17.04', 'linux' ]
+            derived-from: [ '17.10', 'linux' ]
 
         linux-gke:
             packages:
