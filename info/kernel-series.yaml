@@ -107,6 +107,15 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
             supported: true
+            testing:
+                - type: metal
+                  cloud: metal
+                  arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armel']
+                  flavours: ['generic', 'lowlatency']
+                - type: cloud
+                  cloud: ['aws', 'azure', 'gcp']
+                  arches: ['amd64']
+                  flavours: ['generic', 'lowlatency']
 
         linux-raspi2:
             packages:
