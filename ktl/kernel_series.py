@@ -290,12 +290,37 @@ class KernelSourceEntry:
         return source
 
     @property
+    def testable_flavours(self):
+        retval = []
+        for flavour in self._data['testing']['flavours'].keys():
+            f = self._data['testing']['flavours'][flavour]
+            retval.append(KernelSourceTestingFlavourEntry(flavour, f['arches'], f['clouds']))
+        return retval
+
+    @property
     def copy_forward(self):
         return self._data.get('copy-forward', False)
 
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
 
+class KernelSourceTestingFlavourEntry:
+    def __init__(self, name, arches, clouds):
+        self._name = name
+        self._arches = arches
+        self._clouds = clouds
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def arches(self):
+        return self._arches
+
+    @property
+    def clouds(self):
+        return self._clouds
 
 class KernelSeriesEntry:
     def __init__(self, ks, name, data):
@@ -358,6 +383,7 @@ class KernelSeriesEntry:
 class KernelSeries:
     _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
+    #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
     _data = None
 
     @classmethod
