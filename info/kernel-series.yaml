@@ -108,14 +108,15 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
             supported: true
             testing:
-                - type: metal
-                  cloud: metal
-                  arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armel']
-                  flavours: ['generic', 'lowlatency']
-                - type: cloud
-                  cloud: ['aws', 'azure', 'gcp']
-                  arches: ['amd64']
-                  flavours: ['generic', 'lowlatency']
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
             packages:
@@ -157,6 +158,16 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/artful']
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
             packages:
@@ -197,6 +208,16 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/zesty']
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-goldfish:
             packages:
@@ -244,6 +265,16 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/yakkety']
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
             packages:
@@ -294,6 +325,16 @@
                     arches: ['amd64', 'i386']
                 stlouis-kernel:
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-aws:
             packages:
@@ -313,6 +354,13 @@
                     arches: ['amd64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
 
         linux-azure:
             packages:
@@ -323,6 +371,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
 
         linux-azure-edge:
             packages:
@@ -333,6 +388,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure-edge']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            testing:
+                flavours:
+                    azure-edge:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
 
         linux-euclid:
             packages:
@@ -370,6 +432,13 @@
                     arches: ['amd64']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gcp']
 
         linux-gke:
             packages:
@@ -389,6 +458,13 @@
                     arches: ['amd64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            testing:
+                flavours:
+                    gke:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gke']
 
         linux-goldfish:
             packages:
@@ -410,6 +486,13 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe']
             supported: true
             derived-from: [ '17.04', 'linux' ]
+            testing:
+                flavours:
+                    hwe:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal']
 
         linux-hwe-edge:
             packages:
@@ -423,6 +506,13 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe-edge']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            testing:
+                flavours:
+                    hwe-edge:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        clouds: ['metal']
 
         linux-joule:
             packages:
@@ -441,6 +531,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['kvm']
 
         linux-mako:
             packages:
@@ -462,6 +559,13 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            testing:
+                flavours:
+                    oem:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
 
         linux-raspi2:
             packages:
@@ -583,6 +687,16 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty']
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-aws:
             packages:
