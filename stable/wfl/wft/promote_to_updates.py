@@ -141,6 +141,15 @@ class PromoteToUpdates(Promoter):
                     cinfo('            package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status), 'yellow')
                     break
 
+                # Check that all snap tasks are either "Invalid" or "Fix Released"
+                snap_done = True
+                for taskname in s.bug.tasks_by_name:
+                    if taskname.startswith('snap-') and s.bug.tasks_by_name[taskname].status not in ['Invalid', 'Fix Released']:
+                        cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (taskname, s.bug.tasks_by_name[taskname].status), 'yellow')
+                        snap_done = False
+                if not snap_done:
+                    break
+
             # All is completed so we can finally close out this workflow bug.
             s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
             if promote_to_updates.status == 'Invalid':
