@@ -292,9 +292,10 @@ class KernelSourceEntry:
     @property
     def testable_flavours(self):
         retval = []
-        for flavour in self._data['testing']['flavours'].keys():
-            f = self._data['testing']['flavours'][flavour]
-            retval.append(KernelSourceTestingFlavourEntry(flavour, f['arches'], f['clouds']))
+        if 'testing' in self._data:
+            for flavour in self._data['testing']['flavours'].keys():
+                f = self._data['testing']['flavours'][flavour]
+                retval.append(KernelSourceTestingFlavourEntry(flavour, f['arches'], f['clouds']))
         return retval
 
     @property
