@@ -891,6 +891,13 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise']
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
 
         linux-armadaxp:
             packages:
