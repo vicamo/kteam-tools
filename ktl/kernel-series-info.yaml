@@ -292,7 +292,7 @@
     - '17.10'
     linux-hwe:
     - linux
-    - '17.04'
+    - '17.10'
     linux-hwe-edge:
     - linux
     - '17.10'

@@ -485,7 +485,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe']
             supported: true
-            derived-from: [ '17.04', 'linux' ]
+            derived-from: [ '17.10', 'linux' ]
             testing:
                 flavours:
                     hwe:
