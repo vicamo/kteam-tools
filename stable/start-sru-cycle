@@ -116,7 +116,7 @@ class Crankers():
                             print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
                             continue
                         bug.tags.append(cycle_tag)
-                        backports.append(str(bug.id))
+                        backports.append('bug {} ({})'.format(str(bug.id), backport_project))
                         bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
 
                     derivatives = []
@@ -127,13 +127,13 @@ class Crankers():
                             print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
                             continue
                         bug.tags.append(cycle_tag)
-                        derivatives.append(str(bug.id))
+                        derivatives.append('bug {} ({})'.format(str(bug.id), derivative_project))
                         bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
 
                     description = master_bug.description
                     description += '\n'
-                    description += 'backports: %s\n' % ','.join(backports)
-                    description += 'derivatives: %s\n' % ','.join(derivatives)
+                    description += 'backports: %s\n' % ', '.join(backports)
+                    description += 'derivatives: %s\n' % ', '.join(derivatives)
                     master_bug.description = description
 
             retval = 0
