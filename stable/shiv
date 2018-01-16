@@ -333,7 +333,7 @@ class IrcClient:
     #
     def _handle_IRC_RAW(s, cmd):
         center('IrcClient::_handle_IRC_RAW')
-        line = cmd.data
+        line = cmd.data.decode('utf-8')
         cdebug('line: "%s"' % line)
         # We only care about 3 commands. PING, JOIN and PRIVMSG.
         (who, cmd) = s.irc_decode(line)
