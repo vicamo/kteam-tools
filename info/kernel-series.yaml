@@ -496,14 +496,14 @@
 
         linux-hwe-edge:
             packages:
-                linux-hwe-edge:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe-edge']
+                #linux-hwe-edge:
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe-edge']
                 linux-meta-hwe-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'hwe-edge']
-                linux-signed-hwe-edge:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe-edge']
+                #linux-signed-hwe-edge:
+                #    type: signed
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe-edge']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
