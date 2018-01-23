@@ -3,7 +3,7 @@ from __future__                         import print_function
 import smtplib
 import sys
 import os
-from ktl.shanky                         import send_to_shankbot
+from ktl.announce                       import Announce
 
 build = sys.argv[1]
 reason = sys.argv[2]
@@ -43,8 +43,9 @@ with open(summary) as bfd:
 params['status'] = status
 params['overall_status'] = overall_status
 params['url'] = "http://kernel.ubuntu.com/~kernel-ppa/test-build/{series}/{package}/{id}--{commit}/".format(**params).replace('#', '%23')
+msg = "test rebuild: {series} {package} {id} {reason} complete {overall_status} {url}".format(**params)
 
 # Send to shanky for publication in IRC.
-msg = "test rebuild: {series} {package} {id} {reason} complete {overall_status} {url}\n".format(**params)
 ##print(msg)
-send_to_shankbot(msg)
+announce = Announce()
+announce.send('cod-changeset', msg, msg)
