@@ -31,7 +31,7 @@ class Announce:
 
         self.mq = None
 
-    def __message(self, key, subject, body, lcfg):
+    def __message(self, key, message, lcfg):
         cfg = self.cfg.get('message', {})
         cfg.update(lcfg)
 
@@ -45,7 +45,7 @@ class Announce:
             "key"            : "kernel.irc",
             "op"             : "notice",
             "channel"        : cfg['channel'],
-            "msg"            : subject,
+            "msg"            : message,
             "notice"         : True
         }
         self.mq.publish(msg['key'], msg)
@@ -57,13 +57,21 @@ class Announce:
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
 
-    def send(self, key, subject, body):
+    def send(self, key, subject=None, body=None, summary=None):
+        if subject == None and summary == None:
+            raise ValueError("subject or summary required")
+
+        if summary == None:
+            summary = subject
+        if body == None:
+            body = subject
+
         routing = self.routing.get(key, [])
         for route in routing:
             if route.get('type') == 'email':
                 self.__email(key, subject, body, route)
             elif route.get('type') == 'message':
-                self.__message(key, subject, body, route)
+                self.__message(key, summary, route)
 
 
 if __name__ == '__main__':
