@@ -7,15 +7,8 @@ from ktl.announce                       import Announce
 
 commit = sys.argv[1]
 published = sys.argv[2]
-build = sys.argv[3]
+reason = sys.argv[3]
 built = sys.argv[4]
-
-if build == 2:
-    reason = 'build'
-elif build == 1:
-    reason = 'rebuild'
-else:
-    reason = build
 
 status = []
 overall_status = 'succeeded'

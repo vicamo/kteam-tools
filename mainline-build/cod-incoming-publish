@@ -37,11 +37,11 @@ do
 	build=${build#./}
 
 	echo "$P: $build: mainline publishing ..."
-	announce=-2
+	announce='build'
 	if [ -d "$outgoing/$build" ]; then
 		echo "$P: $build: result already published, removing previous ..."
 		rm -rf "$outgoing/$build"
-		announce=-1
+		announce='rebuild'
 	fi
 	mkdir -p "$outgoing/`dirname "$build"`"
 	mv "$incoming/mainline/$build" "$outgoing/$build" && \
@@ -50,12 +50,12 @@ do
 		rm -f "$outgoing/$build/CHECKSUMS.gpg"
 		gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
 
+		# Only announce top level results.
 		case "$build" in
-		*/*)	;;
-		*)	announce="${announce#-}" ;;
+		*/*)	announce='' ;;
 		esac
 	}
-	if [ "$announce" -gt 0 ]; then
+	if [ "$announce" != '' ]; then
 		echo "$P: $build: announcing ..."
 		"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce" "$outgoing/$build/BUILT"
 	fi
