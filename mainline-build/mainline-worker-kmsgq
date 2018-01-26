@@ -14,6 +14,7 @@ from ktl.log                            import cdebug, center, cleave, cerror
 from ktl.msgq                           import MsgQueue
 import time
 from subprocess                         import Popen
+from ktl.announce                       import Announce
 
 # TheApp
 #
@@ -31,6 +32,14 @@ class TheApp():
 
         #s.admin = s.args.queue + '-' + s.args.name
         s.admin = 'admin-' + s.args.name
+
+    # _announce
+    #
+    def _announce(s, to, message):
+        message = to + " " + s.args.name + " " + message
+
+        announce = Announce()
+        announce.send(to, message, message)
 
     # _handler
     #
@@ -59,6 +68,9 @@ class TheApp():
             error("work for another player '" + payload['key'] + "', ignored")
             return
 
+        job_tag = ' '.join(payload['cmd'])
+        s._announce('cod-job-start', 'starting ' + job_tag)
+
         # Ensure we look in the current directory for these commands.
         payload['cmd'][0] = './' + payload['cmd'][0]
         if s.args.prefix_arg:
@@ -79,14 +91,20 @@ class TheApp():
             print("Complete", payload['cmd'])
             sys.stdout.flush()
 
+            s._announce('cod-job-stop', 'finished ' + job_tag)
+
 
         except OSError:
             error("work request failed")
+
+            s._announce('cod-job-stop', 'failed ' + job_tag)
 
         except:
             error("work request exploded")
             #print(sys.exc_info()[0])
             print(traceback.format_exc())
+
+            s._announce('cod-job-stop', 'exploded ' + job_tag)
 
         cdebug(payload)
 
@@ -107,10 +125,14 @@ class TheApp():
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
 
+            s._announce('cod-job-control', 'start')
+
             s.mq.listen_worker(s.args.queue, s.args.queue, s._handler)
             s.mq.listen_worker(s.admin, s.admin, s._handler, auto_delete=True)
 
             s.mq.listen_start()
+
+            s._announce('cod-job-control', 'quit')
 
             print("Exiting")
             retval = 0

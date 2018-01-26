@@ -17,9 +17,7 @@ if [ ! -f "$key" ]; then
 	exit 1
 fi
 
-host=$( uname -n )
 echo "$(date --rfc-3339=seconds) $P: starting job ($@) ..."
-"$here/../ktl/announce.py" cod-job-start "cod-job $host starting $*" "Starting crack-of-the day job on $host:\n    $*\n"
 
 "$@"
 
@@ -36,5 +34,4 @@ if [ "$results" = 1 ]; then
 		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native" "$HOME/public_html/test-build"
 fi
 
-"$here/../ktl/announce.py" cod-job-stop "cod-job $host finished $*" "Finished crack-of-the day job on $host:\n    $*\n"
 echo "$(date --rfc-3339=seconds) $P: job complete"
