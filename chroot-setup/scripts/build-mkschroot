@@ -285,7 +285,7 @@ then
 fi
 
 # Ensure we have the extention PPA key and configuration.
-${SCHROOTCMD} -- apt-key add - <<EOL
+cat - >"$TARGET/ppa-key" <<EOL
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mI0ETPbc7gEEANZKYrN9oZwXU/sMVa1If6VO9TyqSuF533/LAyLM5VjGTtS5ugzE
@@ -299,6 +299,9 @@ zqMoZIib+Ez5dMpJhMfBVC7XMxPn6jEzqWR4qpS549wUUA==
 =RJWU
 -----END PGP PUBLIC KEY BLOCK-----
 EOL
+${SCHROOTCMD} -- apt-key add - /ppa-key
+rm -f "$TARGET/ppa-key"
+
 cat - <<EOC >$TARGET/etc/apt/sources.list.d/canonical-kernel-team-ubuntu-builder-extra-$SUITE.list
 deb http://ppa.launchpad.net/canonical-kernel-team/builder-extra/ubuntu $SUITE main
 EOC
