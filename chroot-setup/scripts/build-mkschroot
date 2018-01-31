@@ -299,7 +299,7 @@ zqMoZIib+Ez5dMpJhMfBVC7XMxPn6jEzqWR4qpS549wUUA==
 =RJWU
 -----END PGP PUBLIC KEY BLOCK-----
 EOL
-${SCHROOTCMD} -- apt-key add - /ppa-key
+${SCHROOTCMD} -- apt-key add /ppa-key
 rm -f "$TARGET/ppa-key"
 
 cat - <<EOC >$TARGET/etc/apt/sources.list.d/canonical-kernel-team-ubuntu-builder-extra-$SUITE.list
