@@ -284,6 +284,12 @@ then
 		>$TARGET/etc/apt/apt.conf.d/01proxy-from-http_proxy
 fi
 
+# Ensure we have the extention PPA key and configuration.
+${SCHROOTCMD} -- apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B892ACEA
+cat - <<EOC >$TARGET/etc/apt/sources.list.d/canonical-kernel-team-ubuntu-builder-extra-$SUITE.list
+deb http://ppa.launchpad.net/canonical-kernel-team/builder-extra/ubuntu $SUITE main
+EOC
+
 ${SCHROOTCMD} -- dpkg --configure -a
 ${SCHROOTCMD} -- apt-get -y --force-yes update
 ${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
