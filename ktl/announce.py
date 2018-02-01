@@ -46,7 +46,6 @@ class Announce:
             "op"             : "notice",
             "channel"        : cfg['channel'],
             "msg"            : message,
-            "notice"         : True
         }
         self.mq.publish(msg['key'], msg)
 

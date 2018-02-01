@@ -3,14 +3,13 @@
 
 from ktl.msgq                           import MsgQueue
 
-def send_to_shankbot(msg):
+def send_to_shankbot(msg, op="notice"):
     mq = MsgQueue()
 
     msg = {
         "key"            : "kernel.irc",
-        "op"             : "notice",
+        "op"             : op,
         "msg"            : msg,
-        "notice"         : True,
     }
     return mq.publish(msg['key'], msg)
 

@@ -40,9 +40,8 @@ examples:
 
         msg = {
             "key"            : "kernel.irc",
-            "op"             : "notice",
+            "op"             : "notice" if args.notice else "message",
             "msg"            : args.msg,
-            "notice"         : args.notice,
         }
         mq.publish(msg['key'], msg)
 
