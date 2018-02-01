@@ -57,10 +57,9 @@ if not mailenforce:
 	mailenforce = "@canonical.com"
 
 debem = os.getenv("DEBEMAIL")
-if debem is not None:
-	if mailenforce not in debem:
-		print 'DEBEMAIL does not contain', mailenforce
-		sys.exit(1)
+if (debem is None) or (debem is not None and mailenforce not in debem):
+            print 'DEBEMAIL is unset, or does not contain', mailenforce
+            sys.exit(1)
 
 #------------------------------------------------------------------------------
 # Find the abstracted debian directory and make sure it is there (IOW we are
