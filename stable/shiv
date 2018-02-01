@@ -394,7 +394,12 @@ class IrcClient:
                 cdebug('content: "%s"' % str(content))
                 cdebug('channel: "%s"' % str(channel))
 
-                if payload['notice']:
+                if 'notice' in payload:
+                    op = 'notice' if payload['notice'] else 'message'
+                else:
+                    op = payload.get('op', 'message')
+
+                if op == 'notice':
                     for line in content:
                         s.cmd_q.put(IrcClientCommand(IrcClientCommand.NOTICE, (channel, line)))
                 else:
