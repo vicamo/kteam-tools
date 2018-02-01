@@ -43,7 +43,7 @@ class Announce:
 
         msg = {
             "key"            : "kernel.irc",
-            "op"             : "notice",
+            "op"             : cfg['type'],
             "channel"        : cfg['channel'],
             "msg"            : message,
         }
@@ -69,7 +69,7 @@ class Announce:
         for route in routing:
             if route.get('type') == 'email':
                 self.__email(key, subject, body, route)
-            elif route.get('type') == 'message':
+            elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
 
 
