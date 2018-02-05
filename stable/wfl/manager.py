@@ -150,7 +150,7 @@ class WorkflowManager():
             # Bug doesn't exist?
             modified = False
 
-        except SeriesLookupFailure as e:
+        except (SeriesLookupFailure, PackageError) as e:
             for l in e.message:
                 print(l)
 

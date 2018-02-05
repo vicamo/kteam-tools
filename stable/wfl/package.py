@@ -79,6 +79,9 @@ class Package():
             }
 
         s.pkgs = s.dependent_packages
+        if s.pkgs == None:
+            raise PackageError(['Unable to check package builds for this bug: either the package name or',
+                                'the version is not properly indicated in the bug title.'])
 
         s._cache = None
         cleave('package::__init__')
@@ -456,6 +459,8 @@ class Package():
         pkgs = {}
         series = s.kernel_series.lookup_series(codename=s.series)
         source = series.lookup_source(s.name)
+        if source is None:
+            return None
         for package in source.packages:
             pkgs[package.type if package.type else 'main'] = package.name
 
