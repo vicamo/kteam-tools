@@ -184,7 +184,10 @@ class WorkflowBug():
 
             s.tasks_by_name = s._create_tasks_by_name_mapping()
 
-        except PackageError:
+        except PackageError as e:
+            # Report why we are not valid.
+            for l in e.message:
+                cinfo(l, 'red')
             s.is_valid = False
             s.__package = None
             s.tasks_by_name = s._create_tasks_by_name_mapping()

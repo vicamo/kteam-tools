@@ -18,7 +18,7 @@ class PackageError(ShankError):
     shankbug could not be determined.
     '''
     def __init__(s, emsg):
-        super(ShankError, s).__init__(emsg)
+        super(PackageError, s).__init__(emsg)
 
 # SeriesLookupFailure
 #
@@ -27,7 +27,7 @@ class SeriesLookupFailure(ShankError):
     Thrown when the series lookup throws a KeyError exception.
     '''
     def __init__(s, emsg):
-        super(ShankError, s).__init__(emsg)
+        super(SeriesLookupFailure, s).__init__(emsg)
 
 # Package
 #
@@ -48,8 +48,6 @@ class Package():
         #
         s.__title_decode(s.bug.lpbug)
         if not s.valid:
-            cwarn('        Unable to check package builds for this bug: either the package name or')
-            cwarn('        the version are not properly indicated in the bug title.')
             raise PackageError(['Unable to check package builds for this bug: either the package name or',
                                 'the version is not properly indicated in the bug title.'])
 

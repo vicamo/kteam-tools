@@ -142,15 +142,16 @@ class WorkflowManager():
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
                     modified = s.process_bug_tasks(bug)
 
-                except PackageError:
-                    pass
+                except PackageError as e:
+                    for l in e.message:
+                        cinfo(l, 'red')
             bug.save()
 
         except WorkflowBugError:
             # Bug doesn't exist?
             modified = False
 
-        except (SeriesLookupFailure, PackageError) as e:
+        except SeriesLookupFailure as e:
             for l in e.message:
                 print(l)
 
