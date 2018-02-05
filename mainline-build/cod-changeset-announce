@@ -42,14 +42,19 @@ with open(summary) as bfd:
 
 params['status'] = status
 params['overall_status'] = overall_status
-params['url'] = "http://kernel.ubuntu.com/~kernel-ppa/test-build/{series}/{package}/{id}--{commit}/".format(**params).replace('#', '%23')
+params['long_url'] = "http://kernel.ubuntu.com/~kernel-ppa/test-build/{series}/{package}/{id}--{commit}/".format(**params).replace('#', '%23')
+params['url'] = "http://kernel.ubuntu.com/~kernel-ppa/test-build/{series}/{package}/".format(**params).replace('#', '%23')
 
 summary = "changeset build: {series} {package} {id} {reason} complete {overall_status} {url}".format(**params)
 subject = "Changeset Build {series} {package} {id} {reason} complete {overall_status}".format(**params)
 body  = """The changeset {reason} for {series} {package} is now complete ({overall_status}) and available\r
 at the URL below:\r
 \r
-    {url}/\r
+    {long_url}\r
+\r
+Overall status for {series} {package} is available at the URL below:
+\r
+    {url}\r
 \r
 Kernel Team\r
 """.format(**params)
