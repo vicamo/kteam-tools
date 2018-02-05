@@ -78,8 +78,7 @@ class Package():
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
-            raise PackageError(['Unable to check package builds for this bug: either the package name or',
-                                'the version is not properly indicated in the bug title.'])
+            raise PackageError(['Unable to check package builds for this bug: the package/series combination is invalid'])
 
         s._cache = None
         cleave('package::__init__')
