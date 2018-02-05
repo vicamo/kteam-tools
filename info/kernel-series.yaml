@@ -140,6 +140,23 @@
             derived-from: [ '16.04', 'linux-snapdragon' ]
             copy-forward: true
 
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+
 # 17.10 (artful)
 '17.10':
     codename: artful
