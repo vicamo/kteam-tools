@@ -156,9 +156,14 @@ class WorkflowBug():
         try:
             s.__package = Package(s.lp, s)
 
+            # If the package is only partial (valid == False) then we are not valid either.
+            if not s.__package.valid:
+                s.is_valid = False
+
             cinfo('                      title: "%s"' % s.title, 'blue')
             cinfo('                   is_valid: %s' % s.is_valid, 'blue')
             cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
+            cinfo('                      valid: %s' % s.__package.valid, 'blue')
             cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
             cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
             cinfo('                     series: "%s"' % s.__package.series, 'blue')
@@ -182,15 +187,14 @@ class WorkflowBug():
                 for prop in s.properties:
                     cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
 
-            s.tasks_by_name = s._create_tasks_by_name_mapping()
-
         except PackageError as e:
             # Report why we are not valid.
             for l in e.message:
                 cinfo(l, 'red')
             s.is_valid = False
             s.__package = None
-            s.tasks_by_name = s._create_tasks_by_name_mapping()
+
+        s.tasks_by_name = s._create_tasks_by_name_mapping()
 
     # _remove_live_tag
     #
@@ -494,6 +498,17 @@ class WorkflowBug():
                 break
 
         return retval
+
+    # valid_package
+    #
+    def valid_package(s, pkg):
+        center(s.__class__.__name__ + '.valid_package')
+
+        retval = pkg in s.__package.pkgs
+
+        cleave(s.__class__.__name__ + '.valid_package')
+        return retval
+
 
     # uploaded
     #

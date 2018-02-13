@@ -46,10 +46,8 @@ class Package():
         # Determine some properties of the package we are looking at based on the
         # bug title. This information is used further on.
         #
-        s.__title_decode(s.bug.lpbug)
-        if not s.valid:
-            raise PackageError(['Unable to check package builds for this bug: either the package name or',
-                                'the version is not properly indicated in the bug title.'])
+        if not s.__title_decode(s.bug.lpbug):
+            raise PackageError(['Unable to determine series/package for this bug.'])
 
         ubuntu_primary = s.lp.launchpad.archives.getByReference(reference='ubuntu')
         if s.series == 'precise':
@@ -104,7 +102,7 @@ class Package():
         #                                                    .- abi (group(4))
 
         #info('     Extract package info\n')
-        setattr(s, 'valid', False)
+        s.valid = False
         m = ver_rc.search(txt)
         if m is not None:
             matched = True
@@ -117,23 +115,6 @@ class Package():
             setattr(s, 'version', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
             setattr(s, 'kernel', m.group(2))
             setattr(s, 'abi', m.group(4))
-
-            # Work out what series this package is published in...
-            series_tag_entry = None
-            for tag in lpbug.tags:
-                series_tag_entry = s.kernel_series.lookup_series(codename=tag)
-                if series_tag_entry:
-                    break
-
-            # Set the series attribute
-            cdebug(' series: %s' % series_tag_entry.codename)
-            setattr(s, 'series', series_tag_entry.codename)
-
-            # Lookup the KernelSeries package and attach that.
-            source = None
-            if series_tag_entry:
-                source = series_tag_entry.lookup_source(s.name)
-            setattr(s, 'source', source)
 
             # XXX: neither of these is (currently) specified in the
             # KernelSeries format; luckily neither is currently in use.
@@ -151,8 +132,45 @@ class Package():
 
             s.valid = True
 
+        # Try just a package match.
+        if not matched:
+            #                            .- package name (group(1))
+            #                           /
+            pkg_rc     = re.compile("(\S+):")
+            m = pkg_rc.search(txt)
+            if m is not None:
+                matched = True
+                cdebug('package: %s' % m.group(1))
+                cdebug('version: INVALID')
+
+                s.name = m.group(1)
+                s.version = None
+
+                # Determine testing flavours.
+                s.test_flavours = None
+
         if not matched:
             cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
+            return False
+
+        # Work out what series this package is published in...
+        series_tag_entry = None
+        for tag in lpbug.tags:
+            series_tag_entry = s.kernel_series.lookup_series(codename=tag)
+            if series_tag_entry:
+                break
+
+        # Set the series attribute
+        cdebug(' series: %s' % series_tag_entry.codename)
+        setattr(s, 'series', series_tag_entry.codename)
+
+        # Lookup the KernelSeries package and attach that.
+        source = None
+        if series_tag_entry:
+            source = series_tag_entry.lookup_source(s.name)
+        setattr(s, 'source', source)
+
+        return True
 
     # __determine_build_status
     #
