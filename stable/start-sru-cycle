@@ -10,8 +10,6 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from ktl.ubuntu                         import Ubuntu
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
-from logging                            import basicConfig, DEBUG, WARNING, INFO
-from wfl.log                            import Clog, center, cleave, cdebug
 
 # Crankers
 #
