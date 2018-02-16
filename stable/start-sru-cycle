@@ -96,7 +96,7 @@ class Crankers():
                         print(e.msg)
                         raise
 
-                    tb = TrackingBug(lp, False)
+                    tb = TrackingBug(lp)
                     master_bug = tb.open(master_project, '<version to be filled>', True, None, series)
                     for task in master_bug.tasks:
                         # Move the primary package to Confirmed, link-to-tracker and
