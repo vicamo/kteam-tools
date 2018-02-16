@@ -71,13 +71,32 @@ class Crankers():
         bug.tags = tags
         bug.lp_save()
 
+    # tb
+    #
+    @property
+    def tb(s):
+        '''
+        To work around LP issues with keeping objects around for a while and to help
+        make things a little more robust, recreate the LP connection and a new TrackingBug
+        instance each time we want to open/create a new tracking bug.
+        '''
+        # We instantiate a new LP instance at this point because it seems LP has
+        # problems if you try to keep the same one around too long.
+        #
+        try:
+            defaults = {
+                'launchpad_client_name' : 'start-sru-cycle',
+            }
+            lp = LaunchpadService(defaults)
+            return(TrackingBug(lp))
+        except LaunchpadServiceError as e:
+            print(e.msg)
+            raise
+
     # main
     #
     def main(s):
         retval = 1
-        defaults = {
-            'launchpad_client_name' : 'start-sru-cycle',
-        }
         try:
             data = s.tracked_packages()
             cycle_tag = 'kernel-sru-cycle-' + s.args.cycle
@@ -87,17 +106,7 @@ class Crankers():
                 for master_project in data[series]:
                     print('    ' + master_project)
 
-                    # We instantiate a new LP instance at this point because it seems LP has
-                    # problems if you try to keep the same one around too long.
-                    #
-                    try:
-                        lp = LaunchpadService(defaults)
-                    except LaunchpadServiceError as e:
-                        print(e.msg)
-                        raise
-
-                    tb = TrackingBug(lp)
-                    master_bug = tb.open(master_project, '<version to be filled>', True, None, series)
+                    master_bug = s.tb.open(master_project, '<version to be filled>', True, None, series)
                     for task in master_bug.tasks:
                         # Move the primary package to Confirmed, link-to-tracker and
                         # shanky will keep on top of the others and move them as needed.
@@ -109,7 +118,7 @@ class Crankers():
                     backports = []
                     for backport_project, backport_series in data[series][master_project]['backports']:
                         print('        %s:%s' % (backport_series, backport_project))
-                        bug = tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
+                        bug = s.tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
                         if bug is None:
                             print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
                             continue
@@ -120,7 +129,7 @@ class Crankers():
                     derivatives = []
                     for derivative_project in data[series][master_project]['derivatives']:
                         print('        ' + derivative_project)
-                        bug = tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
+                        bug = s.tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
                         if bug is None:
                             print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
                             continue
