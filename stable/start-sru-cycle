@@ -41,8 +41,8 @@ class Crankers():
         retval = {}
         ubuntu = Ubuntu()
         for series in sorted(ubuntu.index_by_series_name, reverse=True):
-           record = ubuntu.index_by_series_name[series]
-           if record['supported']:
+            record = ubuntu.index_by_series_name[series]
+            if record['supported']:
                 if len(s.args.series) != 0 and series not in s.args.series:
                     continue
                 retval[series] = {}
