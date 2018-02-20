@@ -18,6 +18,7 @@ fi
 
 echo "$0: killing current runner after 4 hours"
 
+mv "$state" "$state.killed"
 kill $(lsof /tmp/mainline-worker.lck  | awk '{print $2}')
 
 exit 0
