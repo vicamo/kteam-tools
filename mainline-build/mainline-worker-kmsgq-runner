@@ -18,6 +18,11 @@ if [ ! -f "$key" ]; then
 fi
 
 echo "$(date --rfc-3339=seconds) $P: starting job ($@) ..."
+mkdir -p "$HOME/COD"
+{
+	echo "$(date +%s)"
+	echo "Running: $*"
+} >"$HOME/COD/.runner.state"
 
 "$@"
 
@@ -34,4 +39,5 @@ if [ "$results" = 1 ]; then
 		rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload" "$HOME/public_html/config" "$HOME/public_html/native" "$HOME/public_html/test-build"
 fi
 
+rm -f "$HOME/COD/.runner.state"
 echo "$(date --rfc-3339=seconds) $P: job complete"
