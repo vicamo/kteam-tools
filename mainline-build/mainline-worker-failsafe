@@ -1,0 +1,23 @@
+#!/bin/bash
+
+state="$HOME/COD/.runner.state"
+
+# If we have no job running, all is well.
+if [ ! -f "$state" ]; then
+	exit 0
+fi
+
+now=$( date +%s )
+read started <"$state"
+let hours="($now - $started) / 3600"
+
+# If it has been running less than 4 hours all is well.
+if [ "$hours" -lt 4 ]; then
+	exit 0
+fi
+
+echo "$0: killing current runner after 4 hours"
+
+kill $(lsof /tmp/mainline-worker.lck  | awk '{print $2}')
+
+exit 0
