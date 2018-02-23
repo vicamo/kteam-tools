@@ -113,6 +113,23 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.security_signoff_verified (%s)' % retval)
         return retval
 
+    def _stakeholder_signoff_verified(s):
+        '''
+        Check if the stakeholder-signoff task has been set to 'Fix Released'. Development
+        series tracking bugs do not have this task and should always return True.
+        '''
+        center(s.__class__.__name__ + '.stakeholder_signoff_verified')
+        retval = False
+        if s.bug.sru_workflow_project:
+            if s.bug.tasks_by_name['stakeholder-signoff'].status in ['Fix Released', 'Invalid']:
+                retval = True
+            else:
+                cinfo('            stakeholder-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
+        else:
+            retval = True
+        cleave(s.__class__.__name__ + '.stakeholder_signoff_verified (%s)' % retval)
+        return retval
+
     # _testing_completed
     #
     def _testing_completed(s):

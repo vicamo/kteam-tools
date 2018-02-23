@@ -48,6 +48,9 @@ class PromoteToUpdates(Promoter):
             if not s._security_signoff_verified():
                 break
 
+            if not s._stakeholder_signoff_verified():
+                break
+
             if not s._testing_completed():
                 break
 
