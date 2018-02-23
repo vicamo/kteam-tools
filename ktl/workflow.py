@@ -153,23 +153,6 @@ class Workflow:
                 'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
             }
         },
-        'linux-ti-omap4' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'ubuntu-armel-kernel',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'upload-to-ppa'              : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'ubuntu-armel-kernel',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live', 'armel'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"]
-        },
         'linux-armadaxp' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-hwe-arm-kernel',
@@ -344,7 +327,5 @@ if __name__ == '__main__':
 
     print(workflow.assignee('linux', 'prepare-package'))
     print(workflow.assignee('linux', 'nonexistent-task'))
-    print(workflow.initial_tags('linux-ti-omap4'))
-    print(workflow.subscribers('linux-ti-omap4'))
 
 # vi:set ts=4 sw=4 expandtab:
