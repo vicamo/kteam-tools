@@ -44,6 +44,7 @@ class WorkflowManager():
             'snap-qa-testing'           : wfl.wft.SnapQaTesting,
             'snap-certification-testing': wfl.wft.SnapCertificationTesting,
             'snap-publish'              : wfl.wft.SnapPublish,
+            'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
         }
 
         WorkflowBug.sauron            = s.args.sauron
