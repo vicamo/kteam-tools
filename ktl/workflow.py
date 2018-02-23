@@ -153,22 +153,6 @@ class Workflow:
                 'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
             }
         },
-        'linux-keystone' :  {
-            'task_assignment' : {
-                'prepare-package'            : 'canonical-hwe-arm-kernel',
-                'prepare-package-meta'       : 'canonical-hwe-arm-kernel',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-hwe-arm-kernel',
-                'regression-testing'         : 'canonical-hwe-arm-kernel',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security'
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live', 'armhf'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru"]
-        },
         'default' :  {
             'task_assignment' : {
                 'snap-release-to-beta'       : 'canonical-kernel-team',
