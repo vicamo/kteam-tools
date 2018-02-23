@@ -21,10 +21,6 @@ class CheckComponent():
 
         self.main_packages = [
             'linux-ec2',
-            'linux-ti-omap4',
-            'linux-armadaxp',
-            'linux-keystone',
-            'linux-meta-keystone',
             'linux-hwe',
             'linux-meta-hwe',
             'linux-signed-hwe',
