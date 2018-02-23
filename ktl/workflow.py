@@ -143,7 +143,8 @@ class Workflow:
                 'regression-testing'         : 'canonical-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security'
+                'security-signoff'           : 'canonical-security',
+                'stakeholder-signoff'        : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
@@ -177,7 +178,8 @@ class Workflow:
                 'regression-testing'         : 'canonical-kernel-team',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security'
+                'security-signoff'           : 'canonical-security',
+                'stakeholder-signoff'        : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
