@@ -156,6 +156,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            stakeholder: 'jrp'
 
 # 17.10 (artful)
 '17.10':
@@ -395,6 +396,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            stakeholder: 'jrp'
 
         linux-azure-edge:
             packages:
@@ -412,6 +414,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            stakeholder: 'jrp'
 
         linux-euclid:
             packages:
