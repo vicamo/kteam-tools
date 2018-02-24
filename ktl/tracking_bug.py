@@ -22,6 +22,11 @@ class TrackingBug:
         self._targeted_series_name = None
         self._series_specified = None
         self._series_target = None
+        self._snap_prop_map = {
+            'snap-sertification-testing' : 'hw-cert',
+            'snap-qa-testing' : 'qa',
+            'snap-publish' : 'gated',
+        }
 
     # has_dependent_package
     #
@@ -59,7 +64,7 @@ class TrackingBug:
 
     # valid_series
     #
-    def valid_series(s, lp_series, series_specified, targeted_series_name, package):
+    def valid_series(self, lp_series, series_specified, targeted_series_name, package):
         retval = False
         while True:
             if not lp_series.active:
@@ -69,38 +74,21 @@ class TrackingBug:
             if lp_series.name == 'upload-to-ppa' and not series_specified:
                 cdebug('    no upload-to-ppa', 'yellow')
                 break
-            if lp_series.name == 'prepare-package-lbm' and not s.has_dependent_package(targeted_series_name, package, 'lbm'):
-                cdebug('    no prepare-package-lbm', 'yellow')
-                break
-            if lp_series.name == 'prepare-package-meta' and not s.has_dependent_package(targeted_series_name, package, 'meta'):
-                cdebug('    no prepare-package-meta', 'yellow')
-                break
-            if lp_series.name == 'prepare-package-ports-meta' and not s.has_dependent_package(targeted_series_name, package, 'ports-meta'):
-                cdebug('    no prepare-package-ports-meta', 'yellow')
-                break
-            if lp_series.name == 'prepare-package-signed' and not s.has_dependent_package(targeted_series_name, package, 'signed'):
-                cdebug('    no prepare-package-signed', 'yellow')
-                break
-            if s._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
-                if lp_series.name.startswith('snap-'):
+            if lp_series.name.startswith('prepare-package-'):
+                dep = lp_series.name.replace('prepare-package-', '')
+                if not self.has_dependent_package(targeted_series_name, package, dep):
                     cdebug('    no %s' % lp_series.name, 'yellow')
-                    break
-            else:
-                if lp_series.name == 'snap-certification-testing':
-                    hw_cert = s._get_dependent_snap_prop(targeted_series_name, package, 'hw-cert')
-                    if hw_cert is None or not hw_cert:
-                        cdebug('    no snap-certification-testing', 'yellow')
+            if lp_series.name.startswith('snap-'):
+                if self._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
+                    if lp_series.name.startswith('snap-'):
+                        cdebug('    no %s' % lp_series.name, 'yellow')
                         break
-                if lp_series.name == 'snap-qa-testing':
-                    qa = s._get_dependent_snap_prop(targeted_series_name, package, 'qa')
-                    if qa is None or not qa:
-                        cdebug('    no snap-qa-testing', 'yellow')
-                        break
-                if lp_series.name == 'snap-publish':
-                    gated = s._get_dependent_snap_prop(targeted_series_name, package, 'gated')
-                    if gated is None or not gated:
-                        cdebug('    no snap-publish', 'yellow')
-                        break
+                    else:
+                        if lp_series.name in self._snap_prop_map.keys():
+                            prop = self._get_dependent_snap_prop(targeted_series_name, package, self._snap_prop_map[lp_series.name])
+                            if prop is None or not prop:
+                                cdebug('    no %s' % lp_series.name, 'yellow')
+                                break
             if lp_series.name == 'stakeholder-signoff':
                 ks = KernelSeries()
                 cursor = ks.lookup_series(codename=targeted_series_name)
