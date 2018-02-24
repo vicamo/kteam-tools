@@ -299,6 +299,7 @@ class TrackingBug:
             'promote-to-updates',
             'security-signoff',
             'upload-to-ppa',
+            'stakeholder-signoff',
         ]
 
         s.version = None
