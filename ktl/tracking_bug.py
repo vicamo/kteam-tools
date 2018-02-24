@@ -3,6 +3,7 @@
 
 from ktl.workflow                       import Workflow, DefaultAssigneeMissing
 from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 import re
 
 from ktl.log                            import cdebug, cerror, cwarn, center, cleave
@@ -118,6 +119,14 @@ class TrackingBug:
                     if gated is None or not gated:
                         cdebug('    no snap-publish', 'yellow')
                         break
+            if lp_series.name == 'stakeholder-signoff':
+                ks = KernelSeries()
+                cursor = ks.lookup_series(codename=targeted_series_name)
+                cursor = cursor.lookup_source(package)
+                if cursor.stakeholder is None:
+                    cdebug('    no stakeholder-signoff', 'yellow')
+                    break
+
             retval = True
             break
         return retval
@@ -245,7 +254,7 @@ class TrackingBug:
                 #
                 task_name = parts[2].strip()
                 try:
-                    assignee = self.wf.assignee(self.package, task_name, self.isdev)
+                    assignee = self.wf.assignee_ex(self.targeted_series_name, self.package, task_name, self.isdev)
                 except DefaultAssigneeMissing as e:
                     print('*** Warning:')
                     print('    %s' % str(e))

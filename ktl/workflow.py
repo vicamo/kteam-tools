@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 
+from ktl.kernel_series                  import KernelSeries
 import re
 
 # UbuntuError
@@ -222,6 +223,19 @@ class Workflow:
 
     # assignee
     #
+    def assignee_ex(self, series_codename, packagename, taskname, devel):
+        '''
+        '''
+        retval = None
+        if packagename in ['stakeholder-signoff']:
+            ks = KernelSeries()
+            cursor = ks.lookup_series(codename=series_codename)
+            cursor = cursor.lookup_source(packagename)
+            retval = cursor.stakeholder
+        else:
+            retval = self.assignee(packagename, taskname, devel)
+        return retval
+
     def assignee(self, packagename, taskname, devel):
         """
         Using the given package name and task name, return the launchpad
