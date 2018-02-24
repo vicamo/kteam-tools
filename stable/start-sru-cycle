@@ -88,7 +88,7 @@ class Crankers():
                 'launchpad_client_name' : 'start-sru-cycle',
             }
             lp = LaunchpadService(defaults)
-            return(TrackingBug(lp))
+            return(TrackingBug(lp, staging=s.args.staging))
         except LaunchpadServiceError as e:
             print(e.msg)
             raise
@@ -159,14 +159,21 @@ class Crankers():
 
 if __name__ == '__main__':
     app_description = '''
+start-sru-cycle creates all of the tracking bugs for a kernel SRU cycle. It
+can also be used to create a subset of the tracking bugs if only one series
+is being re-spun.
     '''
 
     app_epilog = '''
+Examples:
+    start-sru-cycle 2018.01.01-1
+    start-sru-cycle 2018.02.20-3 --series artful
     '''
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('cycle',  metavar='cycle')
-    parser.add_argument('--series', action='append', default=[], metavar='series')
+    parser.add_argument('cycle',  metavar='cycle', help='The sru cycle tag to be applied to the bugs that are created. The format is YYYY.MM.DD-# where the final "-#" is the spin number. If this is the initial start of a new SRU cycle the spin number will be 1 and is incremented for every re-spin. (e.g. \'2017.04.04-1\').')
+    parser.add_argument('--series', action='append', default=[], metavar='series', help='Only the tracking bugs will be created for a single series. This includes the main kernel and all of it\'s derivatives.')
+    parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
 
     args = parser.parse_args()
 
