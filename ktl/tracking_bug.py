@@ -82,26 +82,8 @@ class TrackingBug:
                 cdebug('    no prepare-package-signed', 'yellow')
                 break
             if s._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
-                if lp_series.name == 'snap-release-to-edge':
-                    cdebug('    no snap-release-to-edge', 'yellow')
-                    break
-                if lp_series.name == 'snap-release-to-beta':
-                    cdebug('    no snap-release-to-beta', 'yellow')
-                    break
-                if lp_series.name == 'snap-release-to-candidate':
-                    cdebug('    no snap-release-to-candidate', 'yellow')
-                    break
-                if lp_series.name == 'snap-release-to-stable':
-                    cdebug('    no snap-release-to-stable', 'yellow')
-                    break
-                if lp_series.name == 'snap-qa-testing':
-                    cdebug('    no snap-qa-testing', 'yellow')
-                    break
-                if lp_series.name == 'snap-publish':
-                    cdebug('    no snap-publish', 'yellow')
-                    break
-                if lp_series.name == 'snap-certification-testing':
-                    cdebug('    no snap-certification-testing', 'yellow')
+                if lp_series.name.startswith('snap-'):
+                    cdebug('    no %s' % lp_series.name, 'yellow')
                     break
             else:
                 if lp_series.name == 'snap-certification-testing':
