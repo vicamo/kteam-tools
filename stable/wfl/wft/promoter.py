@@ -121,10 +121,15 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.stakeholder_signoff_verified')
         retval = False
         if s.bug.sru_workflow_project:
-            if s.bug.tasks_by_name['stakeholder-signoff'].status in ['Fix Released', 'Invalid']:
+            try:
+                if s.bug.tasks_by_name['stakeholder-signoff'].status in ['Fix Released', 'Invalid']:
+                    retval = True
+                else:
+                    cinfo('            stakeholder-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
+            except KeyError:
+                # stakeholder-signoff must not exist
+                #
                 retval = True
-            else:
-                cinfo('            stakeholder-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
         else:
             retval = True
         cleave(s.__class__.__name__ + '.stakeholder_signoff_verified (%s)' % retval)
