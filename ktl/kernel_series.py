@@ -246,6 +246,10 @@ class KernelSourceEntry:
         return self._data.get('supported', False)
 
     @property
+    def stakeholder(self):
+        return self._data.get('stakeholder', None)
+
+    @property
     def packages(self):
         # XXX: should this return None when empty
         result = []
