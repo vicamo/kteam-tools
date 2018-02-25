@@ -27,6 +27,14 @@ class TrackingBug:
             'snap-qa-testing' : 'qa',
             'snap-publish' : 'gated',
         }
+        self._valid_dev_tasks = [
+            'automated-testing',
+            'prepare-package',
+            'prepare-package-meta',
+            'prepare-package-signed',
+            'promote-to-release',
+            'regression-testing',
+        ]
 
     # has_dependent_package
     #
@@ -96,6 +104,10 @@ class TrackingBug:
                 if cursor.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
                     break
+            if lp_series.name == 'promote-to-release' and not self.isdev:
+                break
+            if self.isdev and lp_series.name not in self._valid_dev_tasks:
+                break
 
             retval = True
             break
