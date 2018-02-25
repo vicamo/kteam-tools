@@ -87,6 +87,8 @@ class Crankers():
             defaults = {
                 'launchpad_client_name' : 'start-sru-cycle',
             }
+            if s.args.staging:
+                defaults['launchpad_services_root'] = 'qastaging'
             lp = LaunchpadService(defaults)
             return(TrackingBug(lp, staging=s.args.staging))
         except LaunchpadServiceError as e:
