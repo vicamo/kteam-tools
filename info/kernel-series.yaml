@@ -158,6 +158,32 @@
                         clouds: ['azure']
             stakeholder: 'jrp'
 
+        linux-gcp:
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic']
+            snaps:
+                gcp-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gcp']
+
 # 17.10 (artful)
 '17.10':
     codename: artful
@@ -437,10 +463,10 @@
         linux-gcp:
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/xenial']
                 linux-meta-gcp:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/xenial']
             snaps:
                 gcp-kernel:
                     primary: true
