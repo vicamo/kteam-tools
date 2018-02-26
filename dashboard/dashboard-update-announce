@@ -37,7 +37,7 @@ examples:
         basicConfig(level=INFO, format=log_format)
 
     try:
-        announce = Announce(config={ 'message': { 'local': args.local } })
+        announce = Announce(config={ 'local': args.local })
 
         before = {}
         with file(args.before) as ofd:
