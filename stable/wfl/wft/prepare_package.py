@@ -109,10 +109,17 @@ class PreparePackageBase(TaskHandler):
                 break
 
             # Since all the Prepare-package* packagestasks use this same method
-            # we need to determine which one we are working this time. That gives
-            # us the package to check if it's fully built.
+            # we need to determine which one we are working this time.
             #
             pkg = s._package_name()
+
+            # Confirm whether this package is actually valid
+            if not s.bug.valid_package(pkg):
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
+            # Confirm that this package is uploaded.
             if not s.bug.uploaded(pkg):
                 break
 
