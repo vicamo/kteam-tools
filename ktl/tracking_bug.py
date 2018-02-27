@@ -86,6 +86,7 @@ class TrackingBug:
                 dep = lp_series.name.replace('prepare-package-', '')
                 if not self.has_dependent_package(targeted_series_name, package, dep):
                     cdebug('    no %s' % lp_series.name, 'yellow')
+                    break
             if lp_series.name.startswith('snap-'):
                 if self._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
                     if lp_series.name.startswith('snap-'):
