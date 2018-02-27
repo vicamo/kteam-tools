@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
@@ -22,6 +22,10 @@ class Crankers():
     def __init__(s, args):
         s.args = args
 
+    def series_wanted(s, series):
+        return (not series.development and
+                (len(s.args.series) == 0 or series.codename in s.args.series))
+
     # tracked_packages
     #
     def tracked_packages(s):
@@ -29,38 +33,29 @@ class Crankers():
         Using the ktl/ubunty.py data create a dictionary of each series and all of the packages
         that need tracking bugs created for them.
 
-        xenial:
-            linux:
-                'derivatives':
-                    linux-aws
-                    linux-raspi2
-                    linux-snapdragon
-                'backports':
-                    linux-lts-xenial
+        (xenial,linux):
+            [(xenial,linux-aws), (xenial,linux-raspi2),
+             (xenial,linux-snapdragon), (trusty,linux-lts-xenial)]
         '''
         retval = {}
-        ubuntu = Ubuntu()
-        for series in sorted(ubuntu.index_by_series_name, reverse=True):
-            record = ubuntu.index_by_series_name[series]
-            if record['supported']:
-                if len(s.args.series) != 0 and series not in s.args.series:
+        kernel_series = KernelSeries()
+        for series in sorted(kernel_series.series, key=lambda s: s.codename):
+            if not series.supported or series.development:
+                continue
+#            if len(s.args.series) != 0 and series.name not in s.args.series:
+#                continue
+
+            for source in series.sources:
+                if not source.supported or source.copy_forward:
                     continue
-                retval[series] = {}
-                if 'derivative-packages' in record:
-                    for package in record['derivative-packages']:
-                        retval[series][package] = {}
-                        retval[series][package]['derivatives'] = []
-                        retval[series][package]['backports']   = []
-
-                        for derivative in record['derivative-packages'][package]:
-                            retval[series][package]['derivatives'].append(derivative)
-
-                for entry in ubuntu.db.values():
-                    if 'backport-packages' in entry:
-                        for bp in entry['backport-packages']:
-                            if record['series_version'] == entry['backport-packages'][bp][1]:
-                                retval[series][package]['backports'].append((bp, entry['name']))
-
+                derived_from = source.derived_from
+                if not derived_from:
+                    if s.series_wanted(series):
+                        retval.setdefault((series.codename, source.name), [])
+                else:
+                    if s.series_wanted(derived_from.series):
+                        retval_series = retval.setdefault((derived_from.series.codename, derived_from.name), [])
+                        retval_series.append((series.codename, source.name))
         return retval
 
     # add_cycle_tag
@@ -103,52 +98,44 @@ class Crankers():
             data = s.tracked_packages()
             cycle_tag = 'kernel-sru-cycle-' + s.args.cycle
 
-            for series in sorted(data):
+            for (series, master_package) in sorted(data):
                 print('%s' % series)
-                for master_project in data[series]:
-                    print('    ' + master_project)
+                print('    ' + master_package)
 
-                    print('        %s:%s' % (series, master_project))
+                print('        %s:%s' % (series, master_package))
+                if not s.args.dryrun:
+                    master_bug = s.tb.open(master_package, '<version to be filled>', True, None, series)
+                    for task in master_bug.tasks:
+                        # Move the primary package to Confirmed, link-to-tracker and
+                        # shanky will keep on top of the others and move them as needed.
+                        if task.bug_target_name.endswith('/prepare-package'):
+                            task.status = 'Confirmed'
+                    master_bug.tags.append(cycle_tag)
+                    master_bug.tags.append('kernel-sru-master-kernel')
+
+                derivatives = []
+                backports = []
+                for (derivative_series, derivative_package) in data[(series, master_package)]:
+                    print('        %s:%s' % (derivative_series, derivative_package))
                     if not s.args.dryrun:
-                        master_bug = s.tb.open(master_project, '<version to be filled>', True, None, series)
-                        for task in master_bug.tasks:
-                            # Move the primary package to Confirmed, link-to-tracker and
-                            # shanky will keep on top of the others and move them as needed.
-                            if task.bug_target_name.endswith('/prepare-package'):
-                                task.status = 'Confirmed'
-                        master_bug.tags.append(cycle_tag)
-                        master_bug.tags.append('kernel-sru-master-kernel')
-
-                    backports = []
-                    for backport_project, backport_series in data[series][master_project]['backports']:
-                        print('        %s:%s' % (backport_series, backport_project))
-                        if not s.args.dryrun:
-                            bug = s.tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
-                            if bug is None:
-                                print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
-                                continue
-                            bug.tags.append(cycle_tag)
-                            backports.append('bug {} ({})'.format(str(bug.id), backport_project))
+                        bug = s.tb.open(derivative_package, '<version to be filled>', True, master_bug.id, derivative_series)
+                        if bug is None:
+                            print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
+                            continue
+                        bug.tags.append(cycle_tag)
+                        if series == derivative_series:
+                            derivatives.append('bug {} ({})'.format(str(bug.id), derivative_package))
+                            bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
+                        else:
+                            backports.append('bug {} ({})'.format(str(bug.id), derivative_package))
                             bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
 
-                    derivatives = []
-                    for derivative_project in data[series][master_project]['derivatives']:
-                        print('        %s:%s' % (series, derivative_project))
-                        if not s.args.dryrun:
-                            bug = s.tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
-                            if bug is None:
-                                print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
-                                continue
-                            bug.tags.append(cycle_tag)
-                            derivatives.append('bug {} ({})'.format(str(bug.id), derivative_project))
-                            bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
-
-                    if not s.args.dryrun:
-                        description = master_bug.description
-                        description += '\n'
-                        description += 'backports: %s\n' % ', '.join(backports)
-                        description += 'derivatives: %s\n' % ', '.join(derivatives)
-                        master_bug.description = description
+                if not s.args.dryrun:
+                    description = master_bug.description
+                    description += '\n'
+                    description += 'backports: %s\n' % ', '.join(backports)
+                    description += 'derivatives: %s\n' % ', '.join(derivatives)
+                    master_bug.description = description
 
             retval = 0
 
