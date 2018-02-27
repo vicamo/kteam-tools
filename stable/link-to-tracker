@@ -232,6 +232,8 @@ class Tracking():
                 if 'prepare-package' not in task_name:
                     continue
                 task = tasks_by_name[task_name].lp_task
+                if task.status == 'Invalid':
+                    continue
                 task.status = "In Progress"
                 task.assignee = s.launchpad.me
                 task.lp_save()
