@@ -2,7 +2,6 @@
 #
 
 from ktl.workflow                       import Workflow, DefaultAssigneeMissing
-from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_series                  import KernelSeries
 import re
 
@@ -16,7 +15,7 @@ class TrackingBug:
         self.quiet = quiet
         self.new_package = new_package
         self.wf = Workflow()
-        self.ub = Ubuntu()
+        self.kernel_series = KernelSeries()
         self.__dependency_list = None
         self.__dependency_snap_list = None
         self._targeted_series_name = None
@@ -38,37 +37,38 @@ class TrackingBug:
 
     # has_dependent_package
     #
-    def has_dependent_package(self, series, main_package, dependent_package):
+    def has_dependent_package(self, series_name, main_package, dependent_package):
         '''
         Returns true/false depending on if the main package has the specified
         dependent package as a dependency.
         '''
-        if self.__dependency_list is None:
-            try:
-                record = self.ub.lookup(series)
-                try:
-                    self.__dependency_list = record['dependent-packages'][main_package]
-                except KeyError:
-                    self.__dependency_list = {}
-            except KeyError:
-                self.__dependency_list = {}
+        series = self.kernel_series.lookup_series(codename=series_name)
+        if not series:
+            return False
+        source = series.lookup_source(main_package)
+        if not source:
+            return False
+        for package in source.packages:
+            if package.type == dependent_package:
+                return True
+        return False
 
-        retval = dependent_package in self.__dependency_list
-        return retval
-
-    # _get_dependent_snap_prop
-    def _get_dependent_snap_prop(self, series, main_package, prop):
+    # _get_dependent_snap
+    def _get_dependent_snap(self, series_name, main_package):
         '''
         Return the value of the property of the dependent snap for the
         specified series/package. Return None if not found.
         '''
-        if self.__dependency_snap_list is None:
-            try:
-                record = self.ub.lookup(series)
-                self.__dependency_snap_list = record['dependent-snaps'][main_package]
-            except KeyError:
-                self.__dependency_snap_list = {}
-        return self.__dependency_snap_list.get(prop, None)
+        series = self.kernel_series.lookup_series(codename=series_name)
+        if not series:
+            return False
+        source = series.lookup_source(main_package)
+        if not source:
+            return False
+        for snap in source.snaps:
+            if snap.primary:
+                return snap
+        return None
 
     # valid_series
     #
@@ -88,19 +88,24 @@ class TrackingBug:
                     cdebug('    no %s' % lp_series.name, 'yellow')
                     break
             if lp_series.name.startswith('snap-'):
-                if self._get_dependent_snap_prop(targeted_series_name, package, 'snap') is None:
-                    if lp_series.name.startswith('snap-'):
+                snap = self._get_dependent_snap(targeted_series_name, package)
+                if not snap:
+                    cdebug('    no %s' % lp_series.name, 'yellow')
+                    break
+                if lp_series.name == 'snap-certification-testing':
+                    if not snap.hw_cert:
                         cdebug('    no %s' % lp_series.name, 'yellow')
                         break
-                    else:
-                        if lp_series.name in self._snap_prop_map.keys():
-                            prop = self._get_dependent_snap_prop(targeted_series_name, package, self._snap_prop_map[lp_series.name])
-                            if prop is None or not prop:
-                                cdebug('    no %s' % lp_series.name, 'yellow')
-                                break
+                elif lp_series.name == 'snap-qa-testing':
+                    if not snap.qa:
+                        cdebug('    no %s' % lp_series.name, 'yellow')
+                        break
+                elif lp_series.name == 'snap-publish':
+                    if not snap.gated:
+                        cdebug('    no %s' % lp_series.name, 'yellow')
+                        break
             if lp_series.name == 'stakeholder-signoff':
-                ks = KernelSeries()
-                cursor = ks.lookup_series(codename=targeted_series_name)
+                cursor = self.kernel_series.lookup_series(codename=targeted_series_name)
                 cursor = cursor.lookup_source(package)
                 if cursor.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
@@ -116,10 +121,11 @@ class TrackingBug:
 
     @property
     def isdev(self):
-        retval = False
         if self.targeted_series_name is not None:
-            retval = self.ub.is_development_series(self.targeted_series_name)
-        return retval
+            series = self.kernel_series.lookup_series(codename=self.targeted_series_name)
+            if series and series.development:
+                return True
+        return False
 
     @property
     def targeted_series_name(self):
