@@ -108,42 +108,47 @@ class Crankers():
                 for master_project in data[series]:
                     print('    ' + master_project)
 
-                    master_bug = s.tb.open(master_project, '<version to be filled>', True, None, series)
-                    for task in master_bug.tasks:
-                        # Move the primary package to Confirmed, link-to-tracker and
-                        # shanky will keep on top of the others and move them as needed.
-                        if task.bug_target_name.endswith('/prepare-package'):
-                            task.status = 'Confirmed'
-                    master_bug.tags.append(cycle_tag)
-                    master_bug.tags.append('kernel-sru-master-kernel')
+                    print('        %s:%s' % (series, master_project))
+                    if not s.args.dryrun:
+                        master_bug = s.tb.open(master_project, '<version to be filled>', True, None, series)
+                        for task in master_bug.tasks:
+                            # Move the primary package to Confirmed, link-to-tracker and
+                            # shanky will keep on top of the others and move them as needed.
+                            if task.bug_target_name.endswith('/prepare-package'):
+                                task.status = 'Confirmed'
+                        master_bug.tags.append(cycle_tag)
+                        master_bug.tags.append('kernel-sru-master-kernel')
 
                     backports = []
                     for backport_project, backport_series in data[series][master_project]['backports']:
                         print('        %s:%s' % (backport_series, backport_project))
-                        bug = s.tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
-                        if bug is None:
-                            print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
-                            continue
-                        bug.tags.append(cycle_tag)
-                        backports.append('bug {} ({})'.format(str(bug.id), backport_project))
-                        bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
+                        if not s.args.dryrun:
+                            bug = s.tb.open(backport_project, '<version to be filled>', True, master_bug.id, backport_series)
+                            if bug is None:
+                                print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
+                                continue
+                            bug.tags.append(cycle_tag)
+                            backports.append('bug {} ({})'.format(str(bug.id), backport_project))
+                            bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
 
                     derivatives = []
                     for derivative_project in data[series][master_project]['derivatives']:
-                        print('        ' + derivative_project)
-                        bug = s.tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
-                        if bug is None:
-                            print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
-                            continue
-                        bug.tags.append(cycle_tag)
-                        derivatives.append('bug {} ({})'.format(str(bug.id), derivative_project))
-                        bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
+                        print('        %s:%s' % (series, derivative_project))
+                        if not s.args.dryrun:
+                            bug = s.tb.open(derivative_project, '<version to be filled>', True, master_bug.id, series)
+                            if bug is None:
+                                print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
+                                continue
+                            bug.tags.append(cycle_tag)
+                            derivatives.append('bug {} ({})'.format(str(bug.id), derivative_project))
+                            bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
 
-                    description = master_bug.description
-                    description += '\n'
-                    description += 'backports: %s\n' % ', '.join(backports)
-                    description += 'derivatives: %s\n' % ', '.join(derivatives)
-                    master_bug.description = description
+                    if not s.args.dryrun:
+                        description = master_bug.description
+                        description += '\n'
+                        description += 'backports: %s\n' % ', '.join(backports)
+                        description += 'derivatives: %s\n' % ', '.join(derivatives)
+                        master_bug.description = description
 
             retval = 0
 
@@ -176,6 +181,7 @@ Examples:
     parser.add_argument('cycle',  metavar='cycle', help='The sru cycle tag to be applied to the bugs that are created. The format is YYYY.MM.DD-# where the final "-#" is the spin number. If this is the initial start of a new SRU cycle the spin number will be 1 and is incremented for every re-spin. (e.g. \'2017.04.04-1\').')
     parser.add_argument('--series', action='append', default=[], metavar='series', help='Only the tracking bugs will be created for a single series. This includes the main kernel and all of it\'s derivatives.')
     parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
+    parser.add_argument('--dry-run', '--dryrun', action='store_true', default=False, help='Make no permanent changes.', dest='dryrun')
 
     args = parser.parse_args()
 
