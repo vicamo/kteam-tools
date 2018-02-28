@@ -295,7 +295,7 @@
     - '17.10'
     linux-hwe-edge:
     - linux
-    - '17.10'
+    - '18.04'
     linux-oem:
     - linux
     - '17.10'
@@ -517,12 +517,27 @@
     linux:
       meta: linux-meta
       signed: linux-signed
+    linux-azure:
+      meta: linux-meta-azure
+    linux-gcp:
+      meta: linux-meta-gcp
     linux-raspi2:
       meta: linux-meta-raspi2
     linux-snapdragon:
       meta: linux-meta-snapdragon
+  dependent-snaps:
+    linux-gcp:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: gcp-kernel
+      stable: false
   derivative-packages:
-    linux: []
+    linux:
+    - linux-gcp
+    - linux-azure
   development: true
   kernel: 4.15.0
   kernels:
@@ -531,9 +546,13 @@
   - 4.15.0
   name: bionic
   packages:
+  - linux-gcp
+  - linux-meta-gcp
   - linux
   - linux-meta
   - linux-signed
+  - linux-meta-azure
+  - linux-azure
   series_version: '18.04'
   supported: false
 '6.06':
