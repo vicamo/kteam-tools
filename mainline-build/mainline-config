@@ -33,7 +33,7 @@ if mode == 'lib-build':
 
 elif mode == 'changeset':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-        if series.opening or not series.supported:
+        if series.opening or (not series.supported and not series.development):
             continue
         for source in sorted(series.sources, key=lambda x: x.name):
             if not source.supported:
