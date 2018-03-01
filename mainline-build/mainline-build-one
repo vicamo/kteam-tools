@@ -286,11 +286,19 @@ git checkout "$configs" -- debian.master/config || git checkout "$series/$fbranc
 # Take the defaults for the configuration, applying any local
 # overrides for the series and also applying a default =m
 # for tristate options regardless of the kernel default.
+{
+	[ -f "$here/config.$series" ] && cat "$here/config.$series"
+} >"$debian/config/OVERRIDES"
 try=0
 while :
 do
 	let try="$try + 1"
 	echo "fix-configs: iteration $try ..."
+
+	# Take the defaults, if nothing changes we are done.
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean defaultconfigs
+	git diff --exit-code && break
 
 	# Attempt to enable any tri-state options.
 	{
@@ -301,14 +309,8 @@ do
 	cat "$debian/config/OVERRIDES"
 	echo "^-- OVERRIDES"
 
-	# Take the defaults, if nothing changes we are done.
-	do_chroot "$build_release-amd64" \
-		fakeroot debian/rules clean defaultconfigs
-	git diff --exit-code && break
-
 	# Commit the differences.
 	if [ "$try" -eq 1 ]; then
-		git commit --no-edit -a -s -m 'UBUNTU: [Config] default configs'
 		git commit -a -m "configs (based on $configs)"
 	else
 		git commit --no-edit -a --ame
