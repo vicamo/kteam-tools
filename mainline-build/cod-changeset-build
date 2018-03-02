@@ -30,7 +30,7 @@ result="../RESULT"
 rm -rf "$result"
 mkdir -p "$result"
 
-echo "$P '$series' '$package' '$commit' '$id'" >"$result/REBUILD"
+echo "$P '$series' '$package' '$remote' '$commit' '$id'" >"$result/REBUILD"
 
 # Ensure we have the commit identified.
 repo_remote_update_list $remote
