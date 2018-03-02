@@ -191,6 +191,7 @@ if [ -d "$HOME/incoming/test-build" ]; then
 	)
 	# Rebuild the dashboard.
 	"$here/cod-changeset-dashboard" "$out/test-build"
+	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
 fi
 # Finally re-evaluate any 'current' links.
 (
