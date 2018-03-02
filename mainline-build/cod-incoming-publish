@@ -184,10 +184,13 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		do
 			[ ! -d "$sp" ] && continue
 
-			"$here/cod-changeset-summary" "$sp" >"$sp/index.html.new"
+			"$here/cod-changeset-summary" "$sp" "$sp"
 			mv -f "$sp/index.html.new" "$sp/index.html"
+			mv -f "$sp/latest.json.new" "$sp/latest.json"
 		done
 	)
+	# Rebuild the dashboard.
+	"$here/cod-changeset-dashboard" "$out/test-build"
 fi
 # Finally re-evaluate any 'current' links.
 (

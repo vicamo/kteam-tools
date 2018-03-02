@@ -7,52 +7,27 @@ import sys
 from urllib import quote
 
 directory = sys.argv[1]
-prefix = sys.argv[2]
 
-html = os.path.join(prefix, "index.html.new")
-latest = os.path.join(prefix, "latest.json.new")
-
-meta = {}
 results = []
 for (dirname, dirs, files) in os.walk(directory):
-    # Only interested in the leaves.
-    if len(dirs) != 0:
+    if 'latest.json' not in files:
         continue
 
-    if 'SUMMARY' not in files:
-        continue
+    with open(os.path.join(dirname, 'latest.json')) as entry_fd:
+        entry = json.load(entry_fd)
 
-    with open(os.path.join(dirname, 'SUMMARY')) as summary_fd:
-        entry = {
-            'directory': os.path.basename(dirname),
-            'host': '-',
-        }
-        overall = None
-        for line in summary_fd:
-            bits = line.strip().split(None, 1) + [ '' ]
-            (key, value) = (bits[0][:-1].lower(), bits[1])
-            if key == 'status':
-                sbits = value.split(None, 1) + [ '256' ]
-                (arch, value) = sbits[0:2]
-                key += '/' + arch
-                if not overall:
-                    overall = value
-                elif value != '0':
-                    overall = value
-            entry[key] = bits[1]
-        entry['status'] = overall
+    results.append(entry)
 
-        results.append((entry['committed'], entry))
+results.sort(key=lambda x: x['series'] + ' ' + x['package'])
 
-results.sort(reverse=True)
+meta = {}
 
-meta['series'] = results[0][1]['series']
-meta['package'] = results[0][1]['package']
+html = os.path.join(directory, "index.html.new")
 
 with open(html, "w") as html_fd:
     print('''<html>
 <head>
-<title>Build Tests for {series}/{package}</title>
+<title>Build Tests Summary</title>
 <style>
 .GOOD {{ background-color: green; }}
 .FAIL {{ background-color: red; }}
@@ -81,15 +56,15 @@ table.matrix td {{
 </style>
 </head>
 <body>
-<h1>Build Tests for {series}/{package}</h1>
+<h1>Build Tests Summary</h1>
 <table class="matrix">
-<tr><th>Changeset<th>Builder<th>Status'''.format(**meta), file=html_fd)
-    for _, entry in results:
+<tr><th>Series<th>Package<th>Changeset<th>Builder<th>Status'''.format(**meta), file=html_fd)
+    for entry in results:
         status = entry['status']
 
         row_class = 'row'
-        if entry['id'].startswith('Ubuntu-'):
-            row_class = 'UBUNTU'
+        #if entry['id'].startswith('Ubuntu-'):
+        #    row_class = 'UBUNTU'
 
         if status == '0':
             status_string = 'GOOD'
@@ -100,7 +75,7 @@ table.matrix td {{
         commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={hash}".format(**entry)
         status_url = "http://kernel.ubuntu.com/~kernel-ppa/test-build/"
         status_url += quote("{series}/{package}/{directory}".format(**entry))
-        print('<tr class="{row_class}"><td><a href="{commit_url}">{id}</a> -- {subject}<td>{host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
+        print('<tr class="{row_class}"><td>{series}<td>{package}<td><a href="{commit_url}">{id}</a> -- {subject}<td>{host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
             commit_url=commit_url,
             status_string=status_string,
             status_class=status_class,
@@ -111,6 +86,3 @@ table.matrix td {{
     print('''</table>
 <body>
 </html>''', file=html_fd)
-
-with open(latest, "w") as latest_fd:
-    json.dump(results[0][1], latest_fd)
