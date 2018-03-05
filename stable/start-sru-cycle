@@ -26,6 +26,9 @@ class Crankers():
         return (not series.development and
                 (len(s.args.series) == 0 or series.codename in s.args.series))
 
+    def source_wanted(s, source):
+        return (len(s.args.source) == 0 or source.name in s.args.source)
+
     # tracked_packages
     #
     def tracked_packages(s):
@@ -47,6 +50,8 @@ class Crankers():
 
             for source in series.sources:
                 if not source.supported or source.copy_forward:
+                    continue
+                if not s.source_wanted(source):
                     continue
                 derived_from = source.derived_from
                 if not derived_from:
@@ -166,11 +171,16 @@ Examples:
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('cycle',  metavar='cycle', help='The sru cycle tag to be applied to the bugs that are created. The format is YYYY.MM.DD-# where the final "-#" is the spin number. If this is the initial start of a new SRU cycle the spin number will be 1 and is incremented for every re-spin. (e.g. \'2017.04.04-1\').')
-    parser.add_argument('--series', action='append', default=[], metavar='series', help='Only the tracking bugs will be created for a single series. This includes the main kernel and all of it\'s derivatives.')
+    parser.add_argument('--series', action='append', default=[], metavar='series', help='Only creates tracking bugs for the specified series. This includes the main kernel and all of it\'s derivatives. Can be used multiple times.')
+    parser.add_argument('--source', action='append', default=[], metavar='source', help='Only create tracking bugs for the specified source package(s). Requiers exactly one series argument to be given. This option can be used multiple times.')
     parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
     parser.add_argument('--dry-run', '--dryrun', action='store_true', default=False, help='Make no permanent changes.', dest='dryrun')
 
     args = parser.parse_args()
+
+    if len(args.source) > 0 and len(args.series) != 1:
+        print("Specifying sources only allowed for a single series")
+        exit(1)
 
     # log_format = "%(message)s"
     # basicConfig(level=DEBUG, format=log_format)
