@@ -1,0 +1,9 @@
+#!/bin/bash
+
+from="/home/cking/static-analysis/daily-logs"
+publish="$HOME/public_html/static-analysis/daily"
+
+# Blow away any old data and copy over the latest drop.
+rm -rf "$publish"
+mkdir -p "$publish"
+cp -rp "$from/"* "$publish/"
