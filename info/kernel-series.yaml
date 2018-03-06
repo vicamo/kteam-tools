@@ -238,7 +238,7 @@
 '17.04':
     codename: zesty
     development: false
-    supported: true
+    supported: false
     sources:
         linux:
             versions: ['4.10.0']
