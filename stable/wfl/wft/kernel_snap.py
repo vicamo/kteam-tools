@@ -26,7 +26,6 @@ class KernelSnapBase(TaskHandler):
         is returned.
         '''
         if s._snap_info == False:
-            # XXX: we so should keep this package object as an attr on the bug.
             package = s.bug.source
             if package:
                 # XXX: the bugs we create need to record the snap name.
