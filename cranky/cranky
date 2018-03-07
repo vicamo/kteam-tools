@@ -1,0 +1,21 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$?" -ne 0 ]; then
+	echo "Usage: $0 <cmd> ..." 1>&2
+	exit 1
+fi
+cmd="$1"
+shift
+
+if [ ! -f "$here/cranky-$cmd" ]; then
+	echo "$0: $cmd: command unknown" 1>&2
+	exit 1
+fi
+
+exec "$here/cranky-$cmd" "$@"
