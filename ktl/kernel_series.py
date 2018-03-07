@@ -6,6 +6,8 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
+import os
+import sys
 import yaml
 
 
@@ -387,20 +389,21 @@ class KernelSeriesEntry:
 #
 class KernelSeries:
     _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
+    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'info', 'kernel-series.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
     _data = None
 
     @classmethod
-    def __load_once(cls):
+    def __load_once(cls, url):
         if not cls._data:
-            response = urlopen(cls._url)
+            response = urlopen(url)
             data = response.read()
             if type(data) != str:
                 data = data.decode('utf-8')
             cls._data = yaml.load(data)
 
-    def __init__(self, url=None, data=None):
+    def __init__(self, url=None, data=None, use_local=False):
         if data or url:
             if url:
                 response = urlopen(url)
@@ -409,7 +412,7 @@ class KernelSeries:
                 data = data.decode('utf-8')
             self._data = yaml.load(data)
         else:
-            self.__load_once()
+            self.__load_once(self._url_local if use_local else self._url)
 
         self._development_series = None
         self._codename_to_series = {}
