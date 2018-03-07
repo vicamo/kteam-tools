@@ -196,6 +196,16 @@ class TrackingBug:
             if self.targeted_series_name.title() in task.bug_target_name:
                 task.status = state
 
+    def set_workflow_task_status(self, bug, status):
+        center(self.__class__.__name__ + '.set_workflow_task_status')
+        for task in bug.tasks:
+            task_name       = task.bug_target_display_name
+            parts = task_name.partition(self.lp_project.display_name)
+            if parts[0] == '' and parts[1] == self.lp_project.display_name and parts[2] == '':
+                task.status = status
+                task.importance = "Medium"
+        cleave(self.__class__.__name__ + '.set_workflow_task_status')
+
     def reset_tasks(self, bug):
         center(self.__class__.__name__ + '.reset_tasks')
 
@@ -215,14 +225,6 @@ class TrackingBug:
                 task.status = "Invalid"
                 cdebug('        is main linux task', 'white')
                 cdebug('        status: %s; importance: %s' % (task.status, task.importance), 'green')
-
-            # Is this the main SRU Workflow task? "Kernel SRU Workflow"
-            #
-            elif parts[0] == '' and parts[1] == self.lp_project.display_name and parts[2] == '':
-                cdebug('        is main SRU Workflow task', 'white')
-                task.status = "In Progress"
-                task.importance = "Medium"
-                cdebug('        status: %s; importance: %s' % (task.status, task.importance))
 
             # Else, it must be one of the SRU Workflow tasks.
             #
@@ -440,6 +442,7 @@ class TrackingBug:
                     nomination.approve()
 
         self.reset_tasks(bug)
+        self.set_workflow_task_status(bug, 'In Progress')
 
         cleave(self.__class__.__name__ + '.open')
         return bug
