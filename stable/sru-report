@@ -143,6 +143,10 @@ class Cmdline:
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
+        stdo("        --series=<series>                                                                    \n")
+        stdo("                         Produce the report only for the specified comma separated           \n")
+        stdo("                         series.                                                             \n")
+        stdo("                                                                                             \n")
         stdo("        --archive-versions                                                                   \n")
         stdo("                         Include all the version information for all the packages in         \n")
         stdo("                         the archive, in the output data.                                    \n")
@@ -160,10 +164,11 @@ class Cmdline:
     def process(self, argv, defaults):
         self.cfg['app_name'] = argv[0]
         self.cfg['archive-versions'] = False
+        self.cfg['series'] = []
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'archive-versions']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'series=', 'archive-versions']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -178,6 +183,9 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
+
+                elif opt in ('--series'):
+                    self.cfg['series'] = val.split(',')
 
                 elif opt in ('--archive-versions'):
                     self.cfg['archive-versions'] = True
@@ -218,6 +226,7 @@ class SruReport(StdApp):
 
         kernel_series = KernelSeries()
         self.all_series   = [series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development ]
+        self.requested_series = []
 
         self.tempdir = None
 
@@ -237,6 +246,11 @@ class SruReport(StdApp):
             ar = Archive()
             self.ppa       = ar.ppa_versions(force=False)
             self.dversions = ar.distro_versions(force=False)
+
+        if len(self.cfg['series']) > 0:
+            self.requested_series = self.cfg['series']
+        else:
+            self.requested_series = self.all_series
 
         self.dbg('core', "initialize: leave\n")
         return
@@ -332,7 +346,7 @@ class SruReport(StdApp):
                 # Go through the archive data and find all the relevant series and packages
                 # and thier versions. Seed the results dictionary with this information.
                 #
-                for series in self.all_series:
+                for series in self.requested_series:
                     if series not in results['releases']:
                         results['releases'][series] = {}
 
@@ -366,7 +380,7 @@ class SruReport(StdApp):
             # Now go through all the packages that are currently in proposed and pull out
             # the bug (and any other) information.
             #
-            for rls in self.all_series:
+            for rls in self.requested_series:
                 self.dbg('core', "Series: '%s'\n" % (rls))
                 self.dbg('core', "    Coponents: '%s'\n" % (self.components))
                 for component in self.components:
@@ -398,7 +412,7 @@ class SruReport(StdApp):
 
             # Pending Ubuntu Stable Release Updates
             #
-            for rls in self.all_series:
+            for rls in self.requested_series:
                 if rls not in results['releases']:
                     results['releases'][rls] = {}
                 if rls in pending:
@@ -461,7 +475,7 @@ class SruReport(StdApp):
                                 results['releases'][rls][pkg]['bugs'][bug]['tags']  = []
 
             results['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
-            results['releases_order'] = self.all_series
+            results['releases_order'] = self.requested_series
             print(json.dumps(results, sort_keys=True, indent=4))
 
         # Handle the user presses <ctrl-C>.
