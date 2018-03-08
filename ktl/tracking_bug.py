@@ -214,6 +214,7 @@ class TrackingBug:
         #
         cdebug("")
         cdebug("Setting status and importance", 'blue')
+        cdebug('targeted_series_name: %s' % self.targeted_series_name.capitalize())
         for task in bug.tasks:
             task_name       = task.bug_target_display_name
             cdebug('    %s' % task_name, 'cyan')
@@ -226,6 +227,11 @@ class TrackingBug:
                 cdebug('        is main linux task', 'white')
                 cdebug('        status: %s; importance: %s' % (task.status, task.importance), 'green')
 
+            # This is the main SRU Workflow task
+            #
+            elif parts[0] == '' and parts[1] == self.lp_project.display_name and parts[2] == '':
+                continue
+
             # Else, it must be one of the SRU Workflow tasks.
             #
             else:
@@ -236,7 +242,8 @@ class TrackingBug:
                     try:
                         task.importance = "Medium"
                     except:
-                        cwarn('Failed to set the task (%s) importance to "Medium".' % (task_name))
+                        if self.targeted_series_name.capitalize() not in parts[0]:
+                            cwarn('Failed to set the task (%s) importance to "Medium".' % (task_name))
                     cdebug('        status: %s; importance: %s' % (task.status, task.importance))
                     continue # We don't set the assignee for this task
 
