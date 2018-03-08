@@ -18,4 +18,4 @@ if [ ! -f "$here/cranky-$cmd" ]; then
 	exit 1
 fi
 
-exec "$here/cranky-$cmd" "$@"
+P="cranky $cmd" exec "$here/cranky-$cmd" "$@"
