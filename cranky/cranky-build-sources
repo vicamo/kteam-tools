@@ -5,9 +5,16 @@
 #  - parameters
 #  - config for mapping 'bionic/main' -> git2/ubuntu-bionic
 #  - -v needs to be something ... sometimes
+#  - -sa too
+#  - unstable is not the series
+#  - --meta-option v=<sometihg>
+#  - --profile <override> in concert with series-linux as "overrides"
 
-
-set +x
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
 
 create_chroot()
 {
@@ -17,14 +24,14 @@ create_chroot()
 	local chroot="$series-$arch"
 
 	# Validate the chroot.
-	schroot -c "$chroot" /bin/true >/dev/null 2>&1 && {
-		echo "II: $chroot available"
+	schroot --directory / -c "$chroot" /bin/true >/dev/null 2>&1 && {
+		echo "II: $chroot base chroot available"
 		RET="$chroot"
 		return
 	}
 
 	# Create the base chroot.
-	echo "II: $chroot needed -- creating"
+	echo "II: $chroot base chroot needed -- creating"
 
 	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" </dev/null
 	sudo sed -i -e 's/^profile=sbuild/profile=default/g' "/etc/schroot/chroot.d/sbuild-$series-$arch"
@@ -41,8 +48,8 @@ create_session()
 	local session="srcpkg-$series-$arch-$package"
 
 	# Validate the session.
-	schroot -r -c "$session" /bin/true >/dev/null 2>&1 && {
-		echo "II: $session available"
+	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
+		echo "II: $session session available"
 		RET="$session"
 		return
 	}
@@ -52,7 +59,7 @@ create_session()
 	local chroot="$RET"
 
 	# Create the base session.
-	echo "II: $session needed -- creating"
+	echo "II: $session sesssion needed -- creating"
 
 	schroot -b -n "$session" -c "$chroot"
 
@@ -89,12 +96,20 @@ build_src()
 	)
 }
 
-series='bionic'
-arch='amd64'
-sources='bionic bionic-signed bionic-meta'
+# MAIN:
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $P <series> <source>" 1>&2
+	exit 1
+fi
 
-# Ensure we have the updated session.
-update_session "$series" "$arch" "linux"
+series="$1"
+package="$2"
+
+sources=$( "$here/lib/config" 'source-packages-path' "$series" "$package" )
+
+# Ensure we have the updated session -- use amd64/linux for all packages as that
+# is a superset.
+update_session "$series" "amd64" "linux"
 session="$RET"
 
 # Build the source.
