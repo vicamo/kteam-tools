@@ -6,11 +6,11 @@ from os                                 import path
 from datetime                           import datetime
 import json
 
-from dbg                                import Dbg
+from .dbg                               import Dbg
 
 # Exit
 #
-class Exit():
+class Exit(Exception):
     """
     If an error message has already been displayed and we want to just exit the app, this
     exception is raised.
@@ -19,7 +19,7 @@ class Exit():
 
 # FileDoesntExist
 #
-class FileDoesntExist():
+class FileDoesntExist(Exception):
     def __init__(self, file_name=''):
         self.file_name = file_name
 

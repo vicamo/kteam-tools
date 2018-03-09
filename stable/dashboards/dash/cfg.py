@@ -3,8 +3,7 @@
 
 from os                                 import path
 from os                                 import _exit
-from dbg                                import Dbg
-from utils                              import dump
+from .dbg                               import Dbg
 import json
 
 
@@ -62,7 +61,6 @@ class Cfg():
         #         file and merge that with the final configuration. Any existing config
         #         values are replaced by those from the config file.
         #
-        cfg_fname = None
         if 'configuration_file' in cmdline_options:
             cfg['configuration_file'] = cmdline_options['configuration_file']
         elif 'configuration_file' in defaults:
@@ -91,7 +89,8 @@ class Cfg():
             for k in cfg:
                 str = "%s" % (k)
                 Dbg.verbose('    %-25s = "%s"\n' % (str, cfg[k]))
-            if 'exit' in Dbg.levels: _exit(0)
+            if 'exit' in Dbg.levels:
+                _exit(0)
 
         Dbg.leave("utils.merge_config_options")
         return cfg
