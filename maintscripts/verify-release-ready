@@ -553,6 +553,7 @@ class VerifyReleaseReady():
             'linux-signed-hwe',
             'linux-signed-hwe-edge',
             'linux-signed-oem',
+            'linux-signed-azure',
             'linux-backports-modules-3.5.0',
             'linux-backports-modules-3.2.0',
             'linux-backports-modules-2.6.32',
