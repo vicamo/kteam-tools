@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 import sys
 import os
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py2')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
 
 from sys                                import stdout, argv
 from os                                 import path, unlink, _exit
@@ -19,7 +19,7 @@ import shutil
 import time
 from lpltk.LaunchpadService             import LaunchpadService
 from ktl.kernel_series                  import KernelSeries
-from ktl.archive                        import Archive
+from lib.archive                        import Archive
 
 # stdo
 #
@@ -84,14 +84,14 @@ class StdApp:
             for k in self.cfg:
                 str = "%s" % (k)
                 stdo('    %-25s = "%s"\n' % (str, self.cfg[k]))
-            if 'exit' in self.cfg['debug']: _exit(0)
+            if 'exit' in self.cfg['debug']:
+                _exit(0)
 
         return
 
     def dbg(self, system, msg):
-        if 'debug' in self.cfg:
-            if system in self.cfg['debug']:
-                stdo("dbg: %s" % (msg))
+        return
+        stdo("dbg: %s" % (msg))
 
 # CmdlineError
 #
@@ -117,7 +117,8 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '':
+            print(e)
         self.usage(defaults)
 
     # usage
@@ -188,7 +189,7 @@ class Cmdline:
                 if len(args) > 0:
                     self.cfg['source_pkgs'] = args
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -216,7 +217,7 @@ class SruReport(StdApp):
         self.components   = ['main', 'universe']
 
         kernel_series = KernelSeries()
-        self.all_series   = [ series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development ]
+        self.all_series   = [series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development ]
 
         self.tempdir = None
 
@@ -246,7 +247,7 @@ class SruReport(StdApp):
         resp = {'content-type': ''}
         if tagfile.startswith('http:') or tagfile.startswith('ftp:'):
             url = tagfile
-            tagfile, resp = urllib.urlretrieve(url)
+            tagfile, resp = urllib.request.urlretrieve(url)
             atexit.register(unlink, tagfile)
 
         if tagfile.endswith('.gz'):
@@ -287,9 +288,10 @@ class SruReport(StdApp):
         with a publishing date (time record) and a bug list string.'''
 
         # enable this for quick testing
-        #return (time.localtime(), '')
+        # return (time.localtime(), '')
 
-        chlog = urllib.urlopen(url).read()
+        chlog = urllib.request.urlopen(url).read()
+        chlog = chlog.decode('utf-8')
 
         m = self.published_date_pattern.search(chlog)
         if m:
@@ -316,10 +318,8 @@ class SruReport(StdApp):
     def main(self):
         results = {}
         pending = {}             # suite -> package -> (release_ver, proposed_ver, update_ver)
-        security_superseded = {} # suite -> package -> (proposed_ver, security_ver)
         cleanup = {}             # suite -> package
         cmdline = Cmdline()
-        kernel_rc = re.compile('^linux.*$')
         try:
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
@@ -328,7 +328,7 @@ class SruReport(StdApp):
 
             results['releases'] = {}
             if self.cfg['archive-versions']:
-                #-----------------------------------------------------------------------------
+                # -----------------------------------------------------------------------------
                 # Go through the archive data and find all the relevant series and packages
                 # and thier versions. Seed the results dictionary with this information.
                 #
@@ -362,7 +362,7 @@ class SruReport(StdApp):
                             results['releases'][series][sp] = {}
                         results['releases'][series][sp][pocket] = spv
 
-            #-----------------------------------------------------------------------------
+            # -----------------------------------------------------------------------------
             # Now go through all the packages that are currently in proposed and pull out
             # the bug (and any other) information.
             #
@@ -378,19 +378,21 @@ class SruReport(StdApp):
                         updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, rls, component))
                         security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, rls, component))
                     except:
-                        self.dbg('core', "    Failed to run tagfile_to_dict, skipped\n")
+                        print('core', "    Failed to run tagfile_to_dict, skipped\n")
+                        raise
 
                     for package in sorted(proposed.keys()):
-                        if 'linux' != package[:5]: continue
+                        if 'linux' != package[:5]:
+                            continue
                         self.dbg('core', "        Proposed Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
                             security_ver = security.get(package, '')
                             pending.setdefault(rls, {})[package] = (release.get(package, ''), proposed[package], update_ver, security_ver)
 
-                            #security_ver = security.get(package, '')
-                            #if apt_pkg.version_compare(proposed[package], security_ver) < 0:
-                            #    security_superseded.setdefault(rls, {})[package] = (proposed[package], security_ver)
+                            # security_ver = security.get(package, '')
+                            # if apt_pkg.version_compare(proposed[package], security_ver) < 0:
+                            #     security_superseded.setdefault(rls, {})[package] = (proposed[package], security_ver)
                         else:
                             cleanup.setdefault(rls, []).append(package)
 
@@ -405,8 +407,8 @@ class SruReport(StdApp):
                         lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
                         (vrel, vprop, vupd, vsec) = pending[rls][pkg]
 
-                        (date, bugs) = self.get_changelog_info(lpurl+vprop)
-                        age = int((time.time()-time.mktime(date))/86400)
+                        (date, bugs) = self.get_changelog_info(lpurl + vprop)
+                        age = int((time.time() - time.mktime(date)) / 86400)
 
                         if pkg not in results['releases'][rls]:
                             results['releases'][rls][pkg] = {}
@@ -445,9 +447,6 @@ class SruReport(StdApp):
                                 elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
                                 elif 'verification-done' in lp_bug.tags: state = 'verified'
 
-                                if 'hw-specific' in lp_bug.tags:
-                                    attrib = '(hw)'
-
                                 results['releases'][rls][pkg]['bugs'][bug]['title'] = lp_bug.title
                                 results['releases'][rls][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
                                 results['releases'][rls][pkg]['bugs'][bug]['state'] = state
@@ -463,7 +462,7 @@ class SruReport(StdApp):
 
             results['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
             results['releases_order'] = self.all_series
-            print json.dumps(results, sort_keys=True, indent=4)
+            print(json.dumps(results, sort_keys=True, indent=4))
 
         # Handle the user presses <ctrl-C>.
         #
@@ -476,6 +475,7 @@ class SruReport(StdApp):
             cmdline.error(e.msg, self.defaults)
 
         return
+
 
 if __name__ == '__main__':
     app = SruReport()
