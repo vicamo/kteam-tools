@@ -413,6 +413,9 @@
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
