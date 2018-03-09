@@ -147,9 +147,6 @@
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic']
-                linux-signed-azure:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/azure']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
