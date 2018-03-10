@@ -1,4 +1,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<style>
+a:link {
+    color: green; 
+    background-color: transparent; 
+    text-decoration: none;
+}
+
+a:visited {
+    color: green; 
+    background-color: transparent;
+    text-decoration: none;
+}
+</style>
 <% #>
 
 # https://www.viget.com/articles/color-contrast/
@@ -212,56 +225,13 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                                         % if rls in cadence:
 
                                             % for pkg in sorted(cadence[rls]):
-                                            <%
-                                                bug_count = 0
-                                                missing  = 0
-                                                verified = 0
-                                                tracker  = 0
-                                                needing_verification = 0
-                                                if rls != dev_series:
-                                                    try:
-                                                        if 'bugs' in sru['releases'][rls][pkg]:
-                                                            if rls in sru['releases']:
-                                                                bug_count = len(sru['releases'][rls][pkg]['bugs'])
-
-                                                                for bid in sru['releases'][rls][pkg]['bugs']:
-                                                                    b = sru['releases'][rls][pkg]['bugs'][bid]
-                                                                    if b['state'] == 'missing':
-                                                                        missing += 1
-                                                                    elif b['state'] == 'verified':
-                                                                        verified += 1
-                                                                    elif 'tracker' in b['state']:
-                                                                        tracker += 1
-                                                                needing_verification = bug_count - tracker
-                                                    except KeyError:
-                                                        pass
-
-                                            %>
                                                 <tr style="line-height: 100%">
                                                     <td>&nbsp;</td>
-
                                                     <%
-                                                        # % if needing_verification == verified:
-                                                        # <td width="120" align="right" style="color: green">
-                                                        # % elif missing > 0:
-                                                        # <td width="120" align="right" style="color: red">
-                                                        # % else:
-                                                        # <td width="120" align="right">
-                                                        # % endif
+                                                        url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % cadence[rls][pkg]['bug']
                                                     %>
-                                                    <td width="120" align="right" style="color: green">${cadence[rls][pkg]['version']}</td>
-
-                                                    <%
-                                                        # % if needing_verification == verified:
-                                                        # <td style="color: green">
-                                                        # % elif missing > 0:
-                                                        # <td style="color: red">
-                                                        # % else:
-                                                        # <td>
-                                                        # % endif
-                                                    %>
-                                                    <td style="color: green">${pkg}</td>
-
+                                                    <td width="120" align="right" style="color: green"><a href="${url}">${cadence[rls][pkg]['version']}</a></td>
+                                                    <td style="color: green"><a href="${url}">${pkg}</a></td>
                                                     <td>${cadence[rls][pkg]['phase']}</td>
                                                 </tr>
                                             % endfor
