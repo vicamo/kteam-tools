@@ -216,23 +216,26 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <%
                                         sru = data['sru']
-                                        releases = sru['releases'].keys()
+                                        releases = data['releases']
                                     %>
-                                    % for rls in sorted(releases):
+                                    % for rls in sorted(releases, reverse=True):
+                                        <%
+                                            codename = releases[rls].capitalize()
+                                        %>
                                         <tr>
-                                            <td colspan="5" style="background: #e9e7e5;">${rls}</td>
+                                            <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                         </tr>
-                                        % if rls in cadence:
+                                        % if releases[rls] in cadence:
 
-                                            % for pkg in sorted(cadence[rls]):
+                                            % for pkg in sorted(cadence[releases[rls]]):
                                                 <tr style="line-height: 100%">
                                                     <td>&nbsp;</td>
                                                     <%
-                                                        url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % cadence[rls][pkg]['bug']
+                                                        url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % cadence[releases[rls]][pkg]['bug']
                                                     %>
-                                                    <td width="120" align="right" style="color: green"><a href="${url}">${cadence[rls][pkg]['version']}</a></td>
+                                                    <td width="120" align="right" style="color: green"><a href="${url}">${cadence[releases[rls]][pkg]['version']}</a></td>
                                                     <td style="color: green"><a href="${url}">${pkg}</a></td>
-                                                    <td>${cadence[rls][pkg]['phase']}</td>
+                                                    <td>${cadence[releases[rls]][pkg]['phase']}</td>
                                                 </tr>
                                             % endfor
                                         % endif
