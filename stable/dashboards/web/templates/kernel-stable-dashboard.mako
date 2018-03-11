@@ -112,30 +112,31 @@ def __status_bite(bug):
         # Not ready for promotion, where are we with testing?
         #
         retval = '<table width="100%"><tr>'
+        retval += '<td style="padding: 0 0">%s</td>' % __coloured('Testing', 'green')
 
         # automated-testing
         #
         automated_testing_status = __task_status(bug, 'automated-testing')
         color = __testing_status_colors[automated_testing_status]
-        retval += '<td width="25%%" style="padding: 0 0">automated: %-26s</td>' % (__coloured(automated_testing_status, color))
+        retval += '<td width="15%%" style="padding: 0 0">automated: %-26s</td>' % (__coloured(automated_testing_status, color))
 
         # certification-testing
         #
         certification_testing_status = __task_status(bug, 'certification-testing')
         color = __testing_status_colors[certification_testing_status]
-        retval += '<td width="25%%" style="padding: 0 0">vertification: %-26s</td>' % (__coloured(certification_testing_status, color))
+        retval += '<td width="15%%" style="padding: 0 0">vertification: %-26s</td>' % (__coloured(certification_testing_status, color))
 
         # regression-testing
         #
         certification_testing_status = __task_status(bug, 'regression-testing')
         color = __testing_status_colors[certification_testing_status]
-        retval += '<td width="25%%" style="padding: 0 0">regression: %-26s</td>' % (__coloured(certification_testing_status, color))
+        retval += '<td width="15%%" style="padding: 0 0">regression: %-26s</td>' % (__coloured(certification_testing_status, color))
 
         # verification-testing
         #
         verification_testing_status = __task_status(bug, 'verification-testing')
         color = __testing_status_colors[verification_testing_status]
-        retval += '<td width="25%%" style="padding: 0 0">verification: %-26s</td>' % (__coloured(verification_testing_status, color))
+        retval += '<td width="15%%" style="padding: 0 0">verification: %-26s</td>' % (__coloured(verification_testing_status, color))
 
         retval += '</tr></table>'
 
