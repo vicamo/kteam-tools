@@ -26,6 +26,7 @@ __testing_status_colors = {
     'Fix Committed' : 'green',
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
+    'n/a'           : 'grey',
 }
 
 def __task_status(bug, task_name):
@@ -33,9 +34,12 @@ def __task_status(bug, task_name):
         for t in bug['tasks']:
             if t['target-name'] == '%s/%s' % ('kernel-sru-workflow', task_name):
                 return t['status']
+            if 'kernel-development-workflow' in t['target-name']:
+                if t['target-name'] == '%s/%s' % ('kernel-development-workflow', task_name):
+                    return t['status']
     except KeyError:
         return 'missing %s' % task_name
-    return 'unknown'
+    return 'n/a'
 
 def __assignee(bug, task_name):
     try:
@@ -117,26 +121,38 @@ def __status_bite(bug):
         # automated-testing
         #
         automated_testing_status = __task_status(bug, 'automated-testing')
-        color = __testing_status_colors[automated_testing_status]
-        retval += '<td width="15%%" style="padding: 0 0">automated: %-26s</td>' % (__coloured(automated_testing_status, color))
+        if automated_testing_status == 'n/a':
+            retval += '<td width="15%%" style="padding: 0 0"> </td>'
+        else:
+            color = __testing_status_colors[automated_testing_status]
+            retval += '<td width="15%%" style="padding: 0 0">automated: %-26s</td>' % (__coloured(automated_testing_status, color))
 
         # certification-testing
         #
         certification_testing_status = __task_status(bug, 'certification-testing')
-        color = __testing_status_colors[certification_testing_status]
-        retval += '<td width="15%%" style="padding: 0 0">vertification: %-26s</td>' % (__coloured(certification_testing_status, color))
+        if certification_testing_status == 'n/a':
+            retval += '<td width="15%%" style="padding: 0 0"> </td>'
+        else:
+            color = __testing_status_colors[certification_testing_status]
+            retval += '<td width="15%%" style="padding: 0 0">certification: %-26s</td>' % (__coloured(certification_testing_status, color))
 
         # regression-testing
         #
-        certification_testing_status = __task_status(bug, 'regression-testing')
-        color = __testing_status_colors[certification_testing_status]
-        retval += '<td width="15%%" style="padding: 0 0">regression: %-26s</td>' % (__coloured(certification_testing_status, color))
+        regression_testing_status = __task_status(bug, 'regression-testing')
+        if regression_testing_status == 'n/a':
+            retval += '<td width="15%%" style="padding: 0 0"> </td>'
+        else:
+            color = __testing_status_colors[regression_testing_status]
+            retval += '<td width="15%%" style="padding: 0 0">regression: %-26s</td>' % (__coloured(regression_testing_status, color))
 
         # verification-testing
         #
         verification_testing_status = __task_status(bug, 'verification-testing')
-        color = __testing_status_colors[verification_testing_status]
-        retval += '<td width="15%%" style="padding: 0 0">verification: %-26s</td>' % (__coloured(verification_testing_status, color))
+        if verification_testing_status == 'n/a':
+            retval += '<td width="15%%" style="padding: 0 0"> </td>'
+        else:
+            color = __testing_status_colors[verification_testing_status]
+            retval += '<td width="15%%" style="padding: 0 0">verification: %-26s</td>' % (__coloured(verification_testing_status, color))
 
         retval += '</tr></table>'
 
