@@ -215,7 +215,6 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                                     -->
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <%
-                                        sru = data['sru']
                                         releases = data['releases']
                                     %>
                                     % for rls in sorted(releases, reverse=True):
