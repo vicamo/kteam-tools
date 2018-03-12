@@ -24,14 +24,14 @@ Base is set to 0.75em or 12px (if browser default is 16px).
 #dash-header {
   background-color: #dd4814;
              color: #fff;
-           padding: 15px 30px;
+           padding: 10px 30px;
      border-radius: 0 0 6px 6px;
         box-shadow: 0 0 3px rgba(0,0,0,0.5);
 }
 
 #dash-header h1 {
             margin: 0;
-         font-size: 1.5em;
+         font-size: 1.25em;
 }
 
 #dash-timestamp {
