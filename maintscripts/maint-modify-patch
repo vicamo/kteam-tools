@@ -255,6 +255,39 @@ class ModifyPatch(StdApp):
 
         return retval
 
+    # cve_block
+    #
+    def cve_block(self, existing_cves):
+        """
+        Create the block of text that will be inserted that contains all the CVE text.
+        """
+
+        retval = ''
+
+        if 'cveid' in self.cfg and len(self.cfg['cveid']) > 0:
+            if self.cfg['cveid'] not in existing_cves:
+                retval += 'CVE-%s\n' % self.cfg['cveid']
+                retval += '\n' # One blank line after the CVE line
+
+        return retval
+
+    # bug_block
+    #
+    def bug_block(self, existing_buglinks):
+        """
+        Create the block of text that will be inserted that contains all the buglinks.
+        """
+
+        retval = ''
+
+        if 'bugids' in self.cfg and len(self.cfg['bugids']) > 0:
+            for bug_id in self.cfg['bugids']:
+                if bug_id not in existing_buglinks:
+                    retval += 'BugLink: %s%s\n' % (self.cfg['buglink_base_url'], bug_id)
+                    retval += '\n' # One blank line after the BugLink line
+
+        return retval
+
     # main
     #
     def main(self):
@@ -361,11 +394,7 @@ class ModifyPatch(StdApp):
                         else:
                             # Add the CVE id here.
                             #
-                            if 'cveid' in self.cfg and len(self.cfg['cveid']) > 0:
-                                if self.cfg['cveid'] not in existing_cves:
-                                    dst.write('CVE-%s\n' % self.cfg['cveid'])
-                                    dst.write('\n') # One blank line after the CVE line
-
+                            dst.write(self.cve_block(existing_cves))
                             cve_insertion_point = False # Done!
                             looking_4_buglink_insertion_point = True
 
@@ -390,11 +419,7 @@ class ModifyPatch(StdApp):
                         else:
                             # Add the buglinks.
                             #
-                            if 'bugids' in self.cfg and len(self.cfg['bugids']) > 0:
-                                for bug_id in self.cfg['bugids']:
-                                    if bug_id not in existing_buglinks:
-                                        dst.write('BugLink: %s%s\n' % (self.cfg['buglink_base_url'], bug_id))
-                                        dst.write('\n') # One blank line after the BugLink line
+                            dst.write(self.bug_block(existing_buglinks))
                             buglink_insertion_point = False
                             looking_4_sob_insertion_point = True
 
