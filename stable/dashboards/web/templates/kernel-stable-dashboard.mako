@@ -220,7 +220,7 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                         <div id="dash-timestamp">
                             <p>Generated on ${timestamp}</p>
                         </div>
-                        <h1>Kernel Stable Team</h1>
+                        <h1>Kernel Team Dashboard</h1>
                     </div> <!-- header -->
 
                     <div class="dash-section">
