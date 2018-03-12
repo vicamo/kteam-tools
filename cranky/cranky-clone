@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+#
+# Clone the trees that make up a set of kernel packages
+#
+# Juerg Haefliger <juerg.haefliger@canonical.com>
+#
+
+import argparse
+import os
+import sys
+
+from subprocess import call
+
+# Add ../ to the Python search path
+sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
+                                                 os.pardir, os.pardir)))
+
+from cranky.utils import cerror, cinfo
+from ktl.kernel_series import KernelSeries
+
+
+def clone_repos(args):
+    if args.variant == "main":
+        source = "linux"
+    else:
+        source = "linux-%s" % args.variant
+
+    cinfo("Codename: %s" % args.codename)
+    cinfo("Variant:  %s" % args.variant)
+    cinfo("Source:   %s" % source)
+
+    # Parse kernel series info
+    ks = KernelSeries()
+    ks_series = ks.lookup_series(codename=args.codename)
+    if ks_series is None:
+        cerror("Kernel series '%s' not found" % args.codename, die=False)
+        cinfo("Available series: %s" % ", ".join(sorted([s.codename for s in
+                                                         ks.series])))
+        sys.exit(1)
+
+    ks_source = ks_series.lookup_source(source)
+    if ks_source is None:
+        cerror("Kernel source '%s' not found" % source, die=False)
+        cinfo("Available sources: %s" % ", ".join(sorted([s.name for s in
+                                                          ks_series.sources])))
+        sys.exit(1)
+
+    if len(ks_source.packages) == 0:
+        cerror("No kernel packages found")
+
+    # Cycle through the packages and clone the repos
+    summary = []
+    for pkg in ks_source.packages:
+        repo = pkg.repo
+        if repo.branch is None:
+            branch = "master"
+        else:
+            branch = repo.branch
+
+        # The base repo dirname, i.e., bionic/linux
+        repo_dir = os.path.join(args.codename, "linux")
+
+        # Append -meta or -signed to the repo dirname
+        if pkg.type is not None:
+            repo_dir = "%s-%s" % (repo_dir, pkg.type)
+
+        # It's a stand-alone repo if the package is not a main package and the
+        # source is on the master branch, so append the variant's name to the
+        # repo dirname
+        if args.variant != "main" and branch == "master":
+            repo_dir = "%s-%s" % (repo_dir, args.variant)
+
+        # Add info for the summary
+        summary.append({"name": pkg.name, "dir": repo_dir, "branch": branch})
+
+        # Clone the repo
+        if os.path.exists(os.path.join(repo_dir, '.git')):
+            cinfo("Directory '%s' exists already" % repo_dir)
+        else:
+            cinfo("Cloning '%s' into %s" % (pkg.name, repo_dir))
+            cmd = ["git", "clone", "--branch", branch]
+            if pkg.type is None:
+                if args.reference is not None:
+                    cmd.extend(["--reference", args.reference])
+                if args.dissociate:
+                    cmd.extend(["--dissociate"])
+            cmd.extend([repo.url, repo_dir])
+            if args.verbose:
+                cinfo("Calling: %s" % " ".join(cmd))
+            call(cmd)
+
+    # Print the summary
+    cinfo("Summary:")
+    for s in summary:
+        cinfo("  Repo '%(name)s' in directory '%(dir)s' "
+              "(branch '%(branch)s')" % s)
+
+
+if __name__ == '__main__':
+    desc = """
+Clone the repos (typically linux, linux-meta, and linux-signed) that make up a
+set of Ubuntu kernel packages.
+"""
+
+    parser = argparse.ArgumentParser(description=desc, formatter_class=
+                                     argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("codename", help="kernel series codename (artful, "
+                        "bionic, ...)")
+    parser.add_argument("variant", nargs="?", default="main", help="kernel "
+                        "variant (main [default], raspi2 ...)")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="increase verbosity")
+    parser.add_argument("-r", "--reference", help="obtain objects from an "
+                        "existing local repository (git option)")
+    parser.add_argument("-d", "--dissociate", action="store_true",
+                        help="borrow the objects from the referenced local "
+                        "repository only to reduce network transfer (git "
+                        "option)")
+
+    clone_repos(parser.parse_args())
