@@ -108,7 +108,7 @@ class KernelRepoEntry:
         return self._data.get('branch', None)
 
     def __str__(self):
-        return "{} {}".format(self.repo, self.branch)
+        return "{} {}".format(self.url, self.branch)
 
 
 class KernelSnapEntry:
