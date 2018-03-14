@@ -21,6 +21,8 @@ def add_entry(entry):
             ids = ','.join(set(entry['cves']))
         elif 'UBUNTU: Ubuntu-' in entry['subject']:
             ids = entry['subject'][8:]
+        else:
+            ids = hex(hash(entry['subject'])).strip()
 
         entry['id'] = ids.replace('/', '-').replace(' ', '-')
 
