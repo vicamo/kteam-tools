@@ -93,12 +93,12 @@ def __status_bite(bug):
             retval = __coloured('Being copied to -proposed', '#bca136')
             break
         elif proposed_status == 'Fix Committed':
-            retval = __coloured('Publishing to -proposed', '#bca136')
+            retval = __coloured('Publishing to -proposed', '#3455db')
             break
 
         prep_status = __task_status(bug, 'prepare-package')
         if prep_status == 'New':
-            retval = __coloured('Not ready to be cranked', 'blue')
+            retval = __coloured('Not ready to be cranked', 'grey')
             break
         elif prep_status == 'Confirmed':
             retval = __coloured('Ready to be cranked', '#bca136')
@@ -110,7 +110,7 @@ def __status_bite(bug):
             retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), 'magenta')
             break
         elif prep_status == 'Fix Released' and proposed_status == 'New':
-            retval = __coloured('Building', 'magenta')
+            retval = __coloured('Building', '#3455db')
             break
 
         # Not ready for promotion, where are we with testing?
