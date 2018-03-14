@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import sys
+import subprocess
+
+from argparse			import ArgumentParser
+from launchpadlib.launchpad	import Launchpad
+
+class Bug2Card:
+    def bug_title(self, bug_nr):
+        bug = self.lp.bugs[bug_nr]
+        return bug.title
+
+    def make_card(self, bug):
+        card_name = 'LP #%d - %s' % (bug, self.bug_title(bug))
+
+        argv = ['/snap/bin/so-trello', 'list-addcard',
+                '--board', self.board,
+                '--list', self.list,
+                '--card-name', card_name,
+                '--card-desc', 'http://bugs.launchpad.net/bugs/%d' % (bug)]
+        for card_member in self.card_members:
+            argv.extend(['--card-member', card_member])
+
+        subprocess.run(argv)
+
+    def main(self, args):
+        parser = ArgumentParser(description='Create trello card from LP bug')
+        parser.add_argument('bug', type=int, nargs='+', help='Bug numbers to cretae card from.')
+        parser.add_argument('--board', help='trello board', default='Development Tasks')
+        parser.add_argument('--list', help='trello list', default='Backlog')
+        parser.add_argument('--card-member', help='add a card member', action='append', default=['me'])
+
+        args = parser.parse_args()
+        bugs = args.bug
+        self.board = args.board
+        self.list = args.list
+        self.card_members = args.card_member
+
+        self.lp = Launchpad.login_anonymously('bug2card', 'production')
+
+        for bug in bugs:
+            self.make_card(bug)
+
+if __name__ == '__main__':
+    Bug2Card().main(sys.argv)
