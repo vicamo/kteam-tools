@@ -87,7 +87,7 @@ def __status_bite(bug):
                 retval = __coloured('Released to updates and security', 'green')
             break
         elif proposed_status == 'Confirmed':
-            retval = __coloured('**  Waiting to be copied to -poposed **', 'red')
+            retval = __coloured('Waiting to be copied to -poposed', 'red')
             break
         elif proposed_status == 'In Progress':
             retval = __coloured('Being copied to -proposed', '#bca136')
