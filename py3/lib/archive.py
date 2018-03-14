@@ -11,6 +11,25 @@ from ktl.kernel_series      import KernelSeries
 from os.path                import exists, getmtime
 from time                   import time
 
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K(object):
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+
 def compare_versions(version1, version2):
     # print 'comparing ', version1, 'and', version2
     # 2.6.35-26.46
@@ -134,7 +153,7 @@ class Archive:
             psrc = ppa.getPublishedSources(status=astatus)
             for p in psrc:
                 fd = urlopen(p.self_link)
-                sourceinfo = json.load(fd)
+                sourceinfo = json.loads(fd.read().decode('utf-8'))
 
                 # Add some plain text fields for some info
                 sourceinfo['creator'] = sourceinfo['package_creator_link'].split('/')[-1].strip('~')
@@ -218,7 +237,7 @@ class Archive:
                 psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname)
                 for p in  psrc:
                     fd = urlopen(p.self_link)
-                    sourceinfo = json.load(fd)
+                    sourceinfo = json.loads(fd.read().decode('utf-8'))
                     if self.debug:
                         print('fetched', sourceinfo['source_package_name'], sourceinfo['source_package_version'])
 
@@ -271,11 +290,14 @@ class Archive:
                     else:
                         serieslist.append(series.codename)
                 # remove unwanted ones
+                purge = []
                 for name, sourceinfo in outdict.items():
                     if sourceinfo['series'] in unsupported:
                         if self.debug:
                             print('DEBUG: Fetching from archive, skipping ', name)
-                        del(outdict[name])
+                        purge.append(name)
+                for k in purge:
+                    del(outdict[k])
 
                 #
                 # We now have a collection of all supported packages for a given
@@ -290,7 +312,7 @@ class Archive:
                                     print('found matching',  json.dumps(sourceinfo, sort_keys=True, indent=4))
                                 templist[sourceinfo['source_package_version']] = name
                         # Now sort the templist
-                        slist = sorted(templist, compare_versions, reverse=True)
+                        slist = sorted(templist, key=cmp_to_key(compare_versions), reverse=True)
                         # and delete all but the highest version from the main list
                         for k in range(1, len(slist)):
                             if self.debug:
