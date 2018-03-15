@@ -176,10 +176,9 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
 
     if b['series name'] not in cadence:
         cadence[b['series name']] = {}
-    cadence[b['series name']][package] = {}
-    cadence[b['series name']][package]['bug'] = bid
-    cadence[b['series name']][package]['version'] = version
-    cadence[b['series name']][package]['phase'] = __status_bite(b)
+    if package not in cadence[b['series name']]:
+        cadence[b['series name']][package] = []
+    cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': __status_bite(b) })
 
 if 'kernel-development-workflow' in data['workflow']['bug-collections']:
     for bid in data['workflow']['bug-collections']['kernel-development-workflow']['bugs']:
@@ -196,10 +195,9 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
 
         if b['series name'] not in cadence:
             cadence[b['series name']] = {}
-        cadence[b['series name']][package] = {}
-        cadence[b['series name']][package]['bug'] = bid
-        cadence[b['series name']][package]['version'] = version
-        cadence[b['series name']][package]['phase'] = __status_bite(b)
+        if package not in cadence[b['series name']]:
+            cadence[b['series name']][package] = []
+        cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': __status_bite(b) })
 
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
@@ -242,17 +240,18 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                                             <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                         </tr>
                                         % if releases[rls] in cadence:
-
                                             % for pkg in sorted(cadence[releases[rls]]):
-                                                <tr style="line-height: 100%">
-                                                    <td>&nbsp;</td>
-                                                    <%
-                                                        url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % cadence[releases[rls]][pkg]['bug']
-                                                    %>
-                                                    <td width="120" align="right" style="color: green"><a href="${url}">${cadence[releases[rls]][pkg]['version']}</a></td>
-                                                    <td style="color: green"><a href="${url}">${pkg}</a></td>
-                                                    <td>${cadence[releases[rls]][pkg]['phase']}</td>
-                                                </tr>
+                                                % for bug in cadence[releases[rls]][pkg]:
+                                                    <tr style="line-height: 100%">
+                                                        <td>&nbsp;</td>
+                                                        <%
+                                                            url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
+                                                        %>
+                                                        <td width="120" align="right" style="color: green"><a href="${url}">${bug['version']}</a></td>
+                                                        <td style="color: green"><a href="${url}">${pkg}</a></td>
+                                                        <td>${bug['phase']}</td>
+                                                    </tr>
+                                                % endfor
                                             % endfor
                                         % endif
                                     % endfor
