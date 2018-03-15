@@ -10,14 +10,24 @@ fi
 killit=''
 
 # Check for the common failures which cause hangs.
-last_msg=$( tail -1 "$HOME/logs/cod-worker.log" )
-
 if [ "$killit" = '' ]; then
+	last_msg=$( tail -1 "$HOME/logs/cod-worker.log" )
 	case "$last_msg" in
 	'libfakeroot, when sending message: Interrupted system call')
 		killit="libfakeroot hang"
 		;;
 	esac
+fi
+
+# Check for long periods of quiet indicative of a hang.
+if [ "$killit" = '' ]; then
+	now=$( date +%s )
+	last_update=$( stat --format=%Z ~/logs/cod-worker.log )
+	let minutes="($now - $last_update) / 60"
+
+	if [ "$minutes" -ge 15 ]; then
+		killit="log silent for more than 15 minutes"
+	fi
 fi
 
 # Check for excessive run times.
