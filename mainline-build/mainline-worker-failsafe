@@ -7,18 +7,39 @@ if [ ! -f "$state" ]; then
 	exit 0
 fi
 
-now=$( date +%s )
-read started <"$state"
-let hours="($now - $started) / 3600"
+killit=''
 
-# If it has been running less than 4 hours all is well.
-if [ "$hours" -lt 4 ]; then
+# Check for the common failures which cause hangs.
+last_msg=$( tail -1 "$HOME/logs/cod-worker.log" )
+
+if [ "$killit" = '' ]; then
+	case "$last_msg" in
+	'libfakeroot, when sending message: Interrupted system call')
+		killit="libfakeroot hang"
+		;;
+	esac
+fi
+
+# Check for excessive run times.
+if [ "$killit" = '' ]; then
+	now=$( date +%s )
+	read started <"$state"
+	let hours="($now - $started) / 3600"
+
+	# If it has been running less than 4 hours all is well.
+	if [ "$hours" -ge 4 ]; then
+		killit="running for more than 4 hours"
+	fi
+fi
+
+# No reason to euthanise.
+if [ "$killit" = '' ]; then
 	exit 0
 fi
 
-echo "$0: killing current runner after 4 hours"
+echo "$0: killing current runner -- $killit"
 
 mv "$state" "$state.killed"
-kill $(lsof /tmp/mainline-worker.lck  | awk '{print $2}')
+kill $( lsof -t /tmp/mainline-worker.lck )
 
 exit 0
