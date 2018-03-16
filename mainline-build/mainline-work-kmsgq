@@ -71,7 +71,7 @@ Workers: {0[consumer_count]}\
 """.format(state))
 
             else:
-                mq.publish(details['key'], details)
+                mq.publish(details['key'], details, priority=int(s.args.priority))
 
             retval = 0
 
@@ -100,6 +100,7 @@ examples:
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--priority', action='store', default=5, help='Queue priority for this message.')
     parser.add_argument('--to', action='store', default='mainline-todo', help='Target of this message.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('command', nargs='+')

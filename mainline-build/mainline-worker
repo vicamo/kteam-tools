@@ -14,6 +14,7 @@ exec ./mainline-worker-kmsgq \
 	--admin mainline-cleaner \
 	--admin mainline-flush \
 	--admin cod-static-analysis-collect \
+	--command mainline-test \
 	--command cod-source \
 	--command cod-ubuntu-config \
 	--command mainline-build \
