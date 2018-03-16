@@ -104,7 +104,7 @@ def __status_bite(bug):
             retval = __coloured('Ready to be cranked', '#bca136')
             break
         elif prep_status == 'In Progress':
-            retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), 'green')
+            retval = __coloured('Cranker: %s' % (__assignee(bug, 'prepare-package')), 'green')
             break
         elif prep_status == 'Fix Committed':
             retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), 'magenta')
