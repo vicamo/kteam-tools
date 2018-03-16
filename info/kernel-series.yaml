@@ -112,7 +112,7 @@
                     generic:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']
@@ -207,7 +207,7 @@
                     generic:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']
@@ -257,7 +257,7 @@
                     generic:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']
@@ -314,7 +314,7 @@
                     generic:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']
@@ -374,7 +374,7 @@
                     generic:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']
@@ -540,7 +540,7 @@
                     hwe:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal']
 
         linux-hwe-edge:
@@ -560,7 +560,7 @@
                     hwe-edge:
                         # arches as defined by the tesing system
                         #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's903x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal']
 
         linux-joule:
