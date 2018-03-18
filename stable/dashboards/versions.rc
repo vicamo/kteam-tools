@@ -1,0 +1,8 @@
+{
+    "template" : "web/templates/versions.mako",
+    "title"    : "Kernel Package Versions",
+    "data"     : {
+        "bugs" : "sru-data.json",
+        "releases" : "supported-releases.json"
+    }
+}

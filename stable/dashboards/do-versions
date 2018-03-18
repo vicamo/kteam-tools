@@ -1,0 +1,3 @@
+curl http://kernel.ubuntu.com/reports/sru-data.json --output sru-data.json
+./gather-releases > supported-releases.json
+./generate-dashboard versions.rc > versions.tmp && mv versions.tmp web/versions.html
