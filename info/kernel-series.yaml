@@ -126,8 +126,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
             supported: true
-            derived-from: [ '17.10', 'linux-raspi2' ]
-            copy-forward: true
+            derived-from: [ '18.04', 'linux' ]
 
         linux-snapdragon:
             packages:
