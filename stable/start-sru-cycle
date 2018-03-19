@@ -23,8 +23,10 @@ class Crankers():
         s.args = args
 
     def series_wanted(s, series):
-        return (not series.development and
-                (len(s.args.series) == 0 or series.codename in s.args.series))
+        if len(s.args.series) == 0:
+            return (not series.development)
+        else:
+            return (series.codename in s.args.series)
 
     def source_wanted(s, source):
         return (len(s.args.source) == 0 or source.name in s.args.source)
@@ -43,8 +45,17 @@ class Crankers():
         retval = {}
         kernel_series = KernelSeries()
         for series in sorted(kernel_series.series, key=lambda s: s.codename):
-            if not series.supported or series.development:
-                continue
+            #
+            # Without supplying a list of series, skip any unsupported or
+            # development series. If a list was given, then only skip those
+            # which are unsupported and not in development.
+            #
+            if len(s.args.series) == 0:
+                if series.development or not series.supported:
+                    continue
+            else:
+                if not series.development and not series.supported:
+                   continue
 #            if len(s.args.series) != 0 and series.name not in s.args.series:
 #                continue
 
