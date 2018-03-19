@@ -200,6 +200,23 @@
                         arches: ['amd64']
                         clouds: ['gcp']
 
+        linux-kvm:
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/bionic']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/bionic']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['kvm']
+
 # 17.10 (artful)
 '17.10':
     codename: artful
