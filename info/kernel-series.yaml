@@ -538,7 +538,7 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
-            supported: true
+            supported: false
             derived-from: [ '16.04', 'linux' ]
             testing:
                 flavours:
