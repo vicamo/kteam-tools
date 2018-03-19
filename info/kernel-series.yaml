@@ -140,6 +140,23 @@
             derived-from: [ '16.04', 'linux-snapdragon' ]
             copy-forward: true
 
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
+
         linux-azure:
             packages:
                 linux-azure:
