@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave
+from wfl.log                                    import center, cleave, cinfo
 from .base                                      import TaskHandler
 
 class SecuritySignoff(TaskHandler):
@@ -45,12 +45,15 @@ class SecuritySignoff(TaskHandler):
 
             if s.bug.is_derivative_package:
                 master = s.bug.master_bug
-                if s.task.status != master.tasks_by_name['security-signoff'].status:
-                    if 'New' != master.tasks_by_name['verification-testing'].status:
-                        s.task.status = master.tasks_by_name['security-signoff'].status
-                        retval = True
-                        break
-                break
+                try:
+                    if s.task.status != master.tasks_by_name['security-signoff'].status:
+                        if 'New' != master.tasks_by_name['verification-testing'].status:
+                            s.task.status = master.tasks_by_name['security-signoff'].status
+                            retval = True
+                            break
+                    break
+                except KeyError:
+                    cinfo('    master bug does not contain either security-signoff or verification-testing tasks', 'yellow')
 
             s.task.status = 'Confirmed'
             retval = True
@@ -67,10 +70,13 @@ class SecuritySignoff(TaskHandler):
 
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
-            if s.task.status != master.tasks_by_name['security-signoff'].status:
-                if 'New' != master.tasks_by_name['verification-testing'].status:
-                    s.task.status = master.tasks_by_name['security-signoff'].status
-                    retval = True
+            try:
+                if s.task.status != master.tasks_by_name['security-signoff'].status:
+                    if 'New' != master.tasks_by_name['verification-testing'].status:
+                        s.task.status = master.tasks_by_name['security-signoff'].status
+                        retval = True
+            except KeyError:
+                cinfo('    master bug does not contain either security-signoff or verification-testing tasks', 'yellow')
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval

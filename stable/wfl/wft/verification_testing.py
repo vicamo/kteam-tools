@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave
+from wfl.log                                    import center, cleave, cinfo
 from .base                                      import TaskHandler
 
 class VerificationTesting(TaskHandler):
@@ -36,10 +36,13 @@ class VerificationTesting(TaskHandler):
         retval = False
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
-            if s.task.status != master.tasks_by_name['verification-testing'].status:
-                if 'New' != master.tasks_by_name['verification-testing'].status:
-                    s.task.status = master.tasks_by_name['verification-testing'].status
-                    retval = True
+            try:
+                if s.task.status != master.tasks_by_name['verification-testing'].status:
+                    if 'New' != master.tasks_by_name['verification-testing'].status:
+                        s.task.status = master.tasks_by_name['verification-testing'].status
+                        retval = True
+            except KeyError:
+                cinfo('    master bug does not contain a verification-testing task', 'yellow')
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
