@@ -342,7 +342,7 @@ class Sru2Html(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
-            print SruReport(sru)
+            print unicode(SruReport(sru)).encode("utf-8")
 
         # Handle the user presses <ctrl-C>.
         #
