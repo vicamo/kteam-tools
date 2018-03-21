@@ -449,6 +449,15 @@
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial']
+            snaps:
+                azure-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'azure']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
