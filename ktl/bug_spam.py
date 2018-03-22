@@ -11,9 +11,13 @@ from ktl.log                            import cinfo, cwarn
 class BugSpam:
     # __init__
     #
-    def __init__(self, cfg):
+    def __init__(self, cfg, lp_service=None):
         self.cfg = cfg
-        self.service = LaunchpadService(self.cfg)
+
+        if lp_service is not None:
+            self.lp_service = lp_service
+        else:
+            self.lp_service = LaunchpadService(self.cfg)
 
         log_format = "%(levelname)s - %(message)s"
         if 'verbose' in self.cfg:
@@ -62,7 +66,7 @@ class BugSpam:
             self.verbose("%s/%s:" % (series, package))
 
             for bug_id in bugs:
-                bug = self.service.get_bug(bug_id)
+                bug = self.lp_service.get_bug(bug_id)
                 self.print_bug_info(bug_id, bug)
                 should_be_spammed = False
                 is_tracker_bug = True
