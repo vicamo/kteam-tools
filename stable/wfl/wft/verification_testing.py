@@ -32,7 +32,7 @@ class VerificationTesting(TaskHandler):
     # _confirmed
     #
     def _confirmed(s):
-        center(s.__class__.__name__ + '._new')
+        center(s.__class__.__name__ + '._confirmed')
         retval = False
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
@@ -43,7 +43,7 @@ class VerificationTesting(TaskHandler):
                         retval = True
             except KeyError:
                 cinfo('    master bug does not contain a verification-testing task', 'yellow')
-        cleave(s.__class__.__name__ + '._new (%s)' % retval)
+        cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
