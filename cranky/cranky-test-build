@@ -1,0 +1,119 @@
+#!/bin/bash -eu
+#
+# Perform a test build on a remote builder using Kamal's git-build-kernel
+# post-receive git hook
+#
+# Juerg Haefliger <juergh@canonical.com>
+#
+
+function usage()
+{
+	cat <<EOF
+usage: cranky-test-build [-h] host [arch [arch ...]]
+
+Build kernel binary packages using Kamal's git-build-kernel build script.
+
+positional arguments:
+  host  build host (kathleen, gloin, tangerine, ...)
+  arch  kernel architecture to build. If not specified, build all architecures
+        as listed under debian.master/config/.
+
+optional arguments:
+  -h, --help  show this help message and exit
+EOF
+	exit 2
+}
+
+host=
+arches=
+while [ "${#}" -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			;;
+		*)
+			if [ -z "${host}" ] ; then
+				host=${1}
+			else
+				arches=${*}
+				break
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ -z "${host}" ] ; then
+	usage
+fi
+
+if ! [ -d .git ] ; then
+	echo "Error: Current directory doesn't seem to be a git repo"
+	exit 1
+fi
+
+changelog=debian.master/changelog
+if ! [ -e "${changelog}" ] ; then
+	echo "Error: No such file ${changelog}"
+	exit 1
+fi
+
+if [ -z "${arches}" ] ; then
+	# shellcheck disable=SC2012
+	arches=$(ls -d debian.master/config/*/ | sed -e 's,/$,,' -e 's,.*/,,' | \
+				 tr '\n' ' ')
+else
+	# Verify that the specified arch(es) is/are valid
+	for arch in ${arches} ; do
+		if ! [ -d "debian.master/config/${arch}" ] ; then
+			echo "Error: Unsupported arch ${arch}"
+			exit 1
+		fi
+	done
+fi
+
+# Get the series from the changelog
+series=$(dpkg-parsechangelog -l "${changelog}" -S Distribution)
+if [ "${series}" = "UNRELEASED" ] ; then
+	series=$(dpkg-parsechangelog -l "${changelog}" -S Distribution -o 1 -c 1)
+fi
+
+echo "Build host:   ${host}"
+echo "Build series: ${series}"
+echo "Build arches: ${arches}"
+
+# Verify we can talk to the host
+if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
+	echo "Error: Unable to ssh to ${host}"
+	exit 1
+fi
+
+git_dir=$(pwd)
+
+# Add the remote, if necessary
+if ! git remote -v | grep -qP "^${host}\t" ; then
+	echo "Info: ${host} is not a git remote, adding it..."
+	git remote add "${host}" "ssh://${host}${git_dir}"
+fi
+
+# Check if the git-build-kernel git hook exists
+# shellcheck disable=SC2029
+if ! ssh "${host}" "test -e ${git_dir}/.git/hooks/post-receive" ; then
+
+	# Create the repo on the remote, if necessary
+	if ! ssh "${host}" "test -d ${git_dir}" ; then
+		echo "Info: Repo doesn't exist on ${host}, creating it..."
+		ssh "${host}" "git clone /usr3/ubuntu/ubuntu-${series} ${git_dir}"
+	fi
+
+	# Create the git-build-kernel post-commit hook
+	echo "Info: git-build-kernel hook doesn't exist on ${host}, creating it..."
+	ssh "${host}" "ln -s /usr3/ubuntu/kteam-tools/git-build-kernel/post-receive ${git_dir}/.git/hooks/post-receive"
+fi
+
+# Finally cycle through the arches and do the builds
+for arch in ${arches} ; do
+	echo "Info: Doing a test build for ${arch}"
+	git push --force "${host}" \
+		"$(git rev-parse --abbrev-ref HEAD):${arch}-binary"
+done
