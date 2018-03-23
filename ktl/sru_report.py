@@ -231,7 +231,11 @@ class SruReport:
                 if rls not in results['releases']:
                     results['releases'][rls] = {}
                 if rls in pending:
-                    pkgs = pending[rls].keys()
+                    if 'pkgs' in self.cfg:
+                        pkgs = self.cfg['pkgs']
+                    else:
+                        pkgs = pending[rls].keys()
+
                     for pkg in pkgs:
                         lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
                         (vrel, vprop, vupd, vsec) = pending[rls][pkg]
