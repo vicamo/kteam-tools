@@ -57,7 +57,7 @@ do
 	#      KernelSeries, and that could use Announce directly.
 	case "$commit" in
 	v4.4.*|v4.10.*|v4.13.*)
-		"$here/../ktl/announce.py" upstream-stable "Apply Upstream Stable $commit" \
+		"$here/../ktl/announce.py" upstream-stable "Prepare Upstream Stable $commit" \
 			"Upstream Stable $commit has been released."
 		;;
 	esac
