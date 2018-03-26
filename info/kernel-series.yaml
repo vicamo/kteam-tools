@@ -128,17 +128,6 @@
             supported: true
             derived-from: [ '18.04', 'linux' ]
 
-        linux-snapdragon:
-            packages:
-                linux-snapdragon:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'snapdragon']
-                linux-meta-snapdragon:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'snapdragon']
-            supported: true
-            derived-from: [ '16.04', 'linux-snapdragon' ]
-            copy-forward: true
-
         linux-aws:
             packages:
                 linux-aws:
