@@ -307,6 +307,7 @@
       meta: linux-meta-aws
     linux-azure:
       meta: linux-meta-azure
+      signed: linux-signed-azure
     linux-azure-edge:
       meta: linux-meta-azure-edge
     linux-euclid:
@@ -356,6 +357,14 @@
       qa: false
       snap: aws-kernel
       stable: false
+    linux-azure:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: azure-kernel
+      stable: false
     linux-gcp:
       arches:
       - amd64
@@ -395,7 +404,6 @@
     - linux-raspi2
     - linux-euclid
     - linux-kvm
-    - linux-gke
   derivative-snaps:
     linux:
     - stlouis-kernel
@@ -407,6 +415,7 @@
   lts: true
   name: xenial
   packages:
+  - linux-signed-azure
   - linux-meta-azure
   - linux-azure
   - linux-meta-snapdragon
@@ -427,8 +436,6 @@
   - linux-euclid
   - linux-meta-kvm
   - linux-kvm
-  - linux-meta-gke
-  - linux-gke
   - linux-hwe
   - linux-meta-hwe
   - linux-signed-hwe
@@ -484,7 +491,7 @@
   - linux-meta
   - linux-signed
   series_version: '17.04'
-  supported: true
+  supported: false
 '17.10':
   dependent-packages:
     linux:
@@ -517,14 +524,16 @@
     linux:
       meta: linux-meta
       signed: linux-signed
+    linux-aws:
+      meta: linux-meta-aws
     linux-azure:
       meta: linux-meta-azure
     linux-gcp:
       meta: linux-meta-gcp
+    linux-kvm:
+      meta: linux-meta-kvm
     linux-raspi2:
       meta: linux-meta-raspi2
-    linux-snapdragon:
-      meta: linux-meta-snapdragon
   dependent-snaps:
     linux-gcp:
       arches:
@@ -536,8 +545,11 @@
       stable: false
   derivative-packages:
     linux:
+    - linux-raspi2
     - linux-gcp
     - linux-azure
+    - linux-kvm
+    - linux-aws
   development: true
   kernel: 4.15.0
   kernels:
@@ -546,13 +558,19 @@
   - 4.15.0
   name: bionic
   packages:
-  - linux-gcp
-  - linux-meta-gcp
+  - linux-raspi2
+  - linux-meta-raspi2
   - linux
   - linux-meta
   - linux-signed
+  - linux-gcp
+  - linux-meta-gcp
   - linux-meta-azure
   - linux-azure
+  - linux-meta-kvm
+  - linux-kvm
+  - linux-meta-aws
+  - linux-aws
   series_version: '18.04'
   supported: false
 '6.06':
