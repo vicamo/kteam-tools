@@ -112,19 +112,13 @@ class SRUCardsCreator:
         with open(self.config_file, 'r') as cfd:
             self.config = yaml.safe_load(cfd)
 
-    def get_crankturn_cards(self):
-        cardlist = []
+    def get_supported_series_sources(self):
+        series_sources = []
         kernel_series = KernelSeries()
-
-        esm_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
 
         for master_series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
             if master_series.supported:
                 for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
-                    desc = None
-                    if series.esm:
-                        desc = 'ESM mode: Note different git location and build PPA'
-
                     for source in sorted(series.sources, key=lambda x: x.name):
                         if not source.supported:
                             continue
@@ -132,19 +126,13 @@ class SRUCardsCreator:
                             continue
                         derived_from = source.derived_from
                         if derived_from:
-                            #print("DERIVED", source.name, derived_from.series.name, master_series.name)
                             if derived_from.series != master_series:
                                 continue
                         else:
-                            #print("NON-DERIVED", source.name, series.name, master_series.name)
                             if series != master_series:
-                                #print("NON-DERIVED", source.name, series.name, master_series.name, "NOT-SAME")
                                 continue
-
-                        my_desc = esm_desc if source.name == 'linux-euclid' else desc
-                        cardlist.append(('%s/%s' % (series.codename, source.name), my_desc))
-
-        return cardlist
+                        series_sources.append((series, source))
+        return series_sources
 
     def create(self, dryrun):
         """
@@ -160,16 +148,50 @@ class SRUCardsCreator:
             board.create(self.config['board']['trello_organization'])
             board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
 
+        # Cache the tuples (series, source) of supported sources
+        series_sources_list = self.get_supported_series_sources()
+
         # add the cards to the board, under the default list
         for card in self.config['cards']:
             if card['name'] == 'Turn the crank':
-                for (card_name, card_desc) in self.get_crankturn_cards():
+                for (series, source) in series_sources_list:
+                    card_name = 'Crank %s/%s' % (series.codename, source.name)
+                    card_desc = None
+                    if series.esm:
+                        card_desc = 'ESM mode: Note different git location and build PPA'
+                    if source.name == 'linux-euclid':
+                        card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
                     if dryrun:
                         print('Adding card: %s' % (card_name))
                         if card_desc:
                             print('             %s' % (card_desc))
                     else:
                         board.add_card(card_name, card_desc)
+                continue
+            if card['name'] == 'Produce kernel snaps':
+                for (series, source) in series_sources_list:
+                    for snap in sorted(source.snaps, key=lambda x: x.name):
+                        if not snap.repo:
+                            continue
+                        card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
+                        card_desc = 'Update version in %s and push' % (snap.repo)
+                        if dryrun:
+                            print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
+                        else:
+                            board.add_card(card_name, card_desc)
+                continue
+            if card['name'] == 'Release kernel snaps':
+                for (series, source) in series_sources_list:
+                    for snap in sorted(source.snaps, key=lambda x: x.name):
+                        if not snap.stable:
+                            continue
+                        card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
+                        card_desc = None
+                        if dryrun:
+                            print('Adding card: %s' % (card_name))
+                        else:
+                            board.add_card(card_name, card_desc)
                 continue
 
             card_names = []
