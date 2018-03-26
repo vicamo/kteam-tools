@@ -2,8 +2,9 @@
 # .git/hooks/post-receive --> git-build-kernel automatic push builder
 # Kamal Mostafa <kamal@canonical.com>
 
-### directory containing the git-build-kernel script
-GBK_DIR=/usr3/ubuntu/kteam-tools/git-build-kernel
+### directory containing the git-build-kernel script (the same directory where
+### the post-receive hook is located)
+GBK_DIR="$(dirname "$(readlink -e "${BASH_SOURCE[0]}")")"
 
 option_only_build_refs_build=0
 option_only_build_predefined_refs=1
