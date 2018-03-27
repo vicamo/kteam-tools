@@ -525,14 +525,19 @@ class AutoPackageTest(object):
             dirty = False
 
 
+    # XXX: There should only be one hint type, the hint_status ones with
+    # a test version which defaults to 'all'.  But the incoming syntax will
+    # become a total mess.
     def hint_match(self, version, pkg, arch):
-        if (version, pkg, arch) in self.hint_status:
-            return self.hint_status[(version, pkg, arch)]
-
-        # Allow hinting of all primary package versions.
         vall = 'all ' + self.source
-        if (vall, pkg, arch) in self.hint_status:
-            return self.hint_status[(vall, pkg, arch)]
+        for hint in [
+                (version, pkg, arch),
+                (vall, pkg, arch),
+                (version, pkg, 'all'),
+                (vall, pkg, 'all'),
+            ]:
+            if hint in self.hint_status:
+                return self.hint_status[hint]
 
         return None
 
