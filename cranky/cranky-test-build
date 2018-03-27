@@ -9,7 +9,7 @@
 function usage()
 {
 	cat <<EOF
-usage: cranky-test-build [-h] host [arch [arch ...]]
+usage: cranky-test-build [-h] [-c COMMIT] host [arch [arch ...]]
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
@@ -19,15 +19,22 @@ positional arguments:
         as listed under debian.master/config/.
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -c, --commit COMMIT  build from commit COMMIT instead of HEAD
+  -h, --help           show this help message and exit
 EOF
 	exit 2
 }
 
 host=
 arches=
+commit=HEAD
+
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
+		-c|--commit)
+			shift
+			commit=${1}
+			;;
 		-h|--help)
 			usage
 			;;
@@ -48,13 +55,19 @@ if [ -z "${host}" ] ; then
 fi
 
 if ! [ -d .git ] ; then
-	echo "Error: Current directory doesn't seem to be a git repo"
+	echo "Error: No such directory '.git'"
+	exit 1
+fi
+
+# Check if the commit exists
+if ! git rev-parse "${commit}" >/dev/null 2>&1 ; then
+	echo "Error: No such git reference '${commit}'"
 	exit 1
 fi
 
 changelog=debian.master/changelog
 if ! [ -e "${changelog}" ] ; then
-	echo "Error: No such file ${changelog}"
+	echo "Error: No such file '${changelog}'"
 	exit 1
 fi
 
@@ -66,7 +79,7 @@ else
 	# Verify that the specified arch(es) is/are valid
 	for arch in ${arches} ; do
 		if ! [ -d "debian.master/config/${arch}" ] ; then
-			echo "Error: Unsupported arch ${arch}"
+			echo "Error: Unsupported arch '${arch}'"
 			exit 1
 		fi
 	done
@@ -81,10 +94,11 @@ fi
 echo "Build host:   ${host}"
 echo "Build series: ${series}"
 echo "Build arches: ${arches}"
+echo "Build commit: $(git log --format='%h ("%s")' ${commit} -1)"
 
 # Verify we can talk to the host
 if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
-	echo "Error: Unable to ssh to ${host}"
+	echo "Error: Unable to ssh to host '${host}'"
 	exit 1
 fi
 
@@ -111,9 +125,18 @@ if ! ssh "${host}" "test -e ${git_dir}/.git/hooks/post-receive" ; then
 	ssh "${host}" "ln -s /usr3/ubuntu/kteam-tools/git-build-kernel/post-receive ${git_dir}/.git/hooks/post-receive"
 fi
 
+# Create a tmp branch that we push for the build. This ensures that we build
+# the different arches from the same commit in case someone mucks around with
+# the local repo in the meantime.
+tmp_branch="tmp-$(git rev-parse --short "${commit}")"
+echo "Info: Creating a temporary branch ${tmp_branch}"
+git branch "${tmp_branch}" "${commit}"
+# shellcheck disable=SC2064
+trap "trap "" EXIT INT TERM HUP ; git branch -D ${tmp_branch}" \
+	 EXIT INT TERM HUP
+
 # Finally cycle through the arches and do the builds
 for arch in ${arches} ; do
-	echo "Info: Doing a test build for ${arch}"
-	git push --force "${host}" \
-		"$(git rev-parse --abbrev-ref HEAD):${arch}-binary"
+	echo "Info: Doing a test build for arch '${arch}'"
+	git push --force "${host}" "${tmp_branch}:${arch}-binary" || true
 done
