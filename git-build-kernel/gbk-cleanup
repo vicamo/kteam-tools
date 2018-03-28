@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# git-build-kernel cleanup script
+#
+# Removes gbk working directories (/tmp/kernel-<user>-<hash>-<random>) that are
+# older than x days.
+#
+
+# Directories older than AGE days will be deleted.
+AGE=30
+
+find /tmp -mindepth 1 -maxdepth 1 -type d -mtime "+${AGE}" -name 'kernel-*-*-*' | \
+	while IFS= read -r dir ; do
+		# Paranoia: Verify that the directory name starts with /tmp/
+		if [ "${dir#/tmp/}" = "${dir}" ] ; then
+			continue
+		fi
+
+		# Extract the username from the directory name
+		user=${dir#/tmp/kernel-}
+		user=${user%%-*}
+
+		# Delete the directory only if the user owns it
+		if [ "$(stat --format='%U' "${dir}")" = "${user}" ] ; then
+			rm -rf "${dir}"
+		fi
+	done
