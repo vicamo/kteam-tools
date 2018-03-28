@@ -1,7 +1,0 @@
-#!/bin/sh -x
-set -e
-./update-iso-testing-bugs-db iso-testing-open.json
-./update-iso-testing-bugs-db iso-testing-closed.json
-../scripts/reporter --title="Open - Iso Testing Bugs" --template=iso-testing-report.mako iso-testing-open.json > iso-testing.html
-../scripts/reporter --title="Closed - Iso Testing Bugs" --template=iso-testing-report.mako iso-testing-closed.json > iso-testing-closed.html
-scp iso-testing.html iso-testing-closed.html cranberry.canonical.com:/srv/qa.ubuntu.com/reports/kernel-bugs/reports/
