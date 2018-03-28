@@ -6,6 +6,7 @@
 #
 
 import argparse
+import logging
 import os
 import sys
 
@@ -15,8 +16,8 @@ from subprocess import call
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                                  os.pardir, os.pardir)))
 
-from cranky.utils import cerror, cinfo
 from ktl.kernel_series import KernelSeries
+from ktl.log import cerror, cinfo
 
 
 def clone_repos(args):
@@ -25,24 +26,26 @@ def clone_repos(args):
     else:
         source = "linux-%s" % args.variant
 
-    cinfo("Codename: %s" % args.codename)
-    cinfo("Variant:  %s" % args.variant)
-    cinfo("Source:   %s" % source)
+    cinfo("Codename: %s" % args.codename, 'yellow')
+    cinfo("Variant:  %s" % args.variant, 'yellow')
+    cinfo("Source:   %s" % source, 'yellow')
 
     # Parse kernel series info
     ks = KernelSeries()
     ks_series = ks.lookup_series(codename=args.codename)
     if ks_series is None:
-        cerror("Kernel series '%s' not found" % args.codename, die=False)
+        cerror("Kernel series '%s' not found" % args.codename)
         cinfo("Available series: %s" % ", ".join(sorted([s.codename for s in
-                                                         ks.series])))
+                                                         ks.series])),
+              'yellow')
         sys.exit(1)
 
     ks_source = ks_series.lookup_source(source)
     if ks_source is None:
-        cerror("Kernel source '%s' not found" % source, die=False)
+        cerror("Kernel source '%s' not found" % source)
         cinfo("Available sources: %s" % ", ".join(sorted([s.name for s in
-                                                          ks_series.sources])))
+                                                          ks_series.sources])),
+              'yellow')
         sys.exit(1)
 
     if len(ks_source.packages) == 0:
@@ -75,9 +78,9 @@ def clone_repos(args):
 
         # Clone the repo
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            cinfo("Directory '%s' exists already" % repo_dir)
+            cinfo("Directory '%s' exists already" % repo_dir, 'yellow')
         else:
-            cinfo("Cloning '%s' into %s" % (pkg.name, repo_dir))
+            cinfo("Cloning '%s' into %s" % (pkg.name, repo_dir), 'yellow')
             cmd = ["git", "clone", "--branch", branch]
             if pkg.type is None:
                 if args.reference is not None:
@@ -86,14 +89,14 @@ def clone_repos(args):
                     cmd.extend(["--dissociate"])
             cmd.extend([repo.url, repo_dir])
             if args.verbose:
-                cinfo("Calling: %s" % " ".join(cmd))
+                cinfo("Calling: %s" % " ".join(cmd), 'yellow')
             call(cmd)
 
     # Print the summary
-    cinfo("Summary:")
+    cinfo("Summary:", 'yellow')
     for s in summary:
         cinfo("  Repo '%(name)s' in directory '%(dir)s' "
-              "(branch '%(branch)s')" % s)
+              "(branch '%(branch)s')" % s, 'yellow')
 
 
 if __name__ == '__main__':
@@ -117,4 +120,5 @@ set of Ubuntu kernel packages.
                         "repository only to reduce network transfer (git "
                         "option)")
 
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     clone_repos(parser.parse_args())
