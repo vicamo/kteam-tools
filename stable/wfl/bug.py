@@ -1037,7 +1037,7 @@ class WorkflowBug():
         # here.
         #
         if not s.ready_for_testing:
-            center(s.__class__.__name__ + '.check_component_in_pocket (False)')
+            cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
             return False
 
         check_component = CheckComponent(s.lp, s.__package)
