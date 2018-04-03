@@ -20,14 +20,33 @@ usage: cranky-test-build [-h] [-c COMMIT] host [arch [arch ...]]
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
-positional arguments:
+Positional arguments:
   host  build host (kathleen, gloin, tangerine, ...)
   arch  kernel architecture to build. If not specified, build all architecures
         as listed under debian.master/config/.
 
-optional arguments:
+Optional arguments:
   -c, --commit COMMIT  build from commit COMMIT instead of HEAD
   -h, --help           show this help message and exit
+
+Examples:
+  Build packages for a single architecture from the current commit:
+    $ cranky-test-build kathleen amd64
+
+  Build packages for all supported architectures:
+    $ cranky-test-build kathleen
+
+Current limitations:
+  1) The username on the build host must be identical to the username on the
+     machine where the script is run.
+  2) The build host must be accessible using password-less SSH.
+  3) Only binary packages are built (<arch>-binary).
+
+Notes:
+  The script should perform all the necessary steps to setup the build host
+  when it is run for the first time. Specifcally, it clones the kernel repo
+  into the user's home directory on the builder, installs the git hook that
+  triggers the actual build and adds a git remote to the local repo.
 EOF
 	exit 2
 }
