@@ -17,6 +17,8 @@ class Git:
     buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
     sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
     ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+    subject_rc = compile("^UBUNTU: (Ubuntu-.*)$")
+    tag_rc     = compile("^Ubuntu-([a-z][^-]*-){0-2}(.*)$")
     log_results = {}
 
     @classmethod
@@ -103,6 +105,49 @@ class Git:
         if status != 0:
             raise GitError("no current branch")
         return result[0].replace("refs/heads/", "")
+
+    @classmethod
+    def ubuntu_commit(cls, branch):
+        """
+        Return the SHA1 for the last commit that touched debian.master/ whose
+        message matched the pattern 'UBUNTU: Ubuntu-[0-9]', given a branch.
+        """
+        (status, output) = cls.sh('git log --pretty=%%H -1 --grep="UBUNTU: Ubuntu-[0-9]" %s debian.master/' % (branch))
+        if status == 0 and len(output) == 1:
+            return output[0]
+        return None
+
+    @classmethod
+    def subject(cls, commit):
+        """
+        Return message summary/subject from given commit.
+        """
+        (status, output) = cls.sh('git show --pretty=%%s -s %s' % (commit))
+        if status == 0 and len(output) == 1:
+            return output[0]
+        return None
+
+    @classmethod
+    def tag_from_subject(cls, commit):
+        """
+        Given an Ubuntu closing commit, extract the matching tag from its subject.
+        """
+        subject = cls.subject(commit)
+        match = cls.subject_rc.match(subject)
+        if match:
+            return match.group(1).replace("~", "_")
+        return None
+
+    @classmethod
+    def version_from_subject(cls, commit):
+        """
+        Given an Ubuntu closing commit, extract the version from its subject.
+        """
+        tag = cls.tag_from_subject(commit)
+        match = cls.tag_rc.match(tag)
+        if match:
+            tag = match.group(2)
+        return tag.replace("_", "~")
 
     # show
     #
