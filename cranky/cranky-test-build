@@ -109,12 +109,16 @@ if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
 	exit 1
 fi
 
-git_dir=$(pwd)
+# The remote URL
+remote_url=$(git config "remote.${host}.url" || true)
 
-# Add the remote, if necessary
-if ! git remote -v | grep -qP "^${host}\t" ; then
+# Get the git directory from the remote URL
+if [ -z "${remote_url}" ] ; then
+	git_dir=$(pwd)
 	echo "Info: ${host} is not a git remote, adding it..."
 	git remote add "${host}" "ssh://${host}${git_dir}"
+else
+	git_dir="/${remote_url#*/${host}/}"
 fi
 
 # Check if the git-build-kernel git hook exists
