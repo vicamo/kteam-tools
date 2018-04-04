@@ -21,21 +21,22 @@ from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cinfo
 
 
-def clone_repos(args):
-    if args.variant == "main":
+def clone_repos(codename='', variant='', reference=None, dissociate=False,
+                verbose=False):
+    if variant == "main":
         source = "linux"
     else:
-        source = "linux-%s" % args.variant
+        source = "linux-%s" % variant
 
-    cinfo("Codename: %s" % args.codename, 'yellow')
-    cinfo("Variant:  %s" % args.variant, 'yellow')
+    cinfo("Codename: %s" % codename, 'yellow')
+    cinfo("Variant:  %s" % variant, 'yellow')
     cinfo("Source:   %s" % source, 'yellow')
 
     # Parse kernel series info
     ks = KernelSeries()
-    ks_series = ks.lookup_series(codename=args.codename)
+    ks_series = ks.lookup_series(codename=codename)
     if ks_series is None:
-        cerror("Kernel series '%s' not found" % args.codename)
+        cerror("Kernel series '%s' not found" % codename)
         cinfo("Available series: %s" % ", ".join(sorted([s.codename for s in
                                                          ks.series])),
               'yellow')
@@ -62,7 +63,7 @@ def clone_repos(args):
             branch = repo.branch
 
         # The base repo dirname, i.e., bionic/linux
-        repo_dir = os.path.join(args.codename, "linux")
+        repo_dir = os.path.join(codename, "linux")
 
         # Append -meta or -signed to the repo dirname
         if pkg.type is not None:
@@ -71,8 +72,8 @@ def clone_repos(args):
         # It's a stand-alone repo if the package is not a main package and the
         # source is on the master branch, so append the variant's name to the
         # repo dirname
-        if args.variant != "main" and branch == "master":
-            repo_dir = "%s-%s" % (repo_dir, args.variant)
+        if variant != "main" and branch == "master":
+            repo_dir = "%s-%s" % (repo_dir, variant)
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": repo_dir, "branch": branch})
@@ -84,12 +85,12 @@ def clone_repos(args):
             cinfo("Cloning '%s' into %s" % (pkg.name, repo_dir), 'yellow')
             cmd = ["git", "clone", "--branch", branch]
             if pkg.type is None:
-                if args.reference is not None:
-                    cmd.extend(["--reference", args.reference])
-                if args.dissociate:
+                if reference is not None:
+                    cmd.extend(["--reference", reference])
+                if dissociate:
                     cmd.extend(["--dissociate"])
             cmd.extend([repo.url, repo_dir])
-            if args.verbose:
+            if verbose:
                 cinfo("Calling: %s" % " ".join(cmd), 'yellow')
             call(cmd)
 
@@ -130,4 +131,4 @@ set of Ubuntu kernel packages.
                         "repository only to reduce network transfer (git "
                         "option)")
 
-    clone_repos(parser.parse_args())
+    clone_repos(**vars(parser.parse_args()))
