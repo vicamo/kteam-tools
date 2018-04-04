@@ -16,6 +16,7 @@ from subprocess import call
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                                  os.pardir, os.pardir)))
 
+from cranky import utils
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cinfo
 
@@ -100,6 +101,11 @@ def clone_repos(args):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    # Get the config options from file
+    config = utils.get_config(tool='clone')
+
     desc = """
 Clone the repos (typically linux, linux-meta, and linux-signed) that make up a
 set of Ubuntu kernel packages.
@@ -112,13 +118,16 @@ set of Ubuntu kernel packages.
     parser.add_argument("variant", nargs="?", default="main", help="kernel "
                         "variant (main [default], raspi2 ...)")
     parser.add_argument("-v", "--verbose", action="store_true",
+                        default=config.get('verbose', False),
                         help="increase verbosity")
-    parser.add_argument("-r", "--reference", help="obtain objects from an "
-                        "existing local repository (git option)")
+    parser.add_argument("-r", "--reference",
+                        default=config.get('reference', None),
+                        help="obtain objects from an existing local "
+                        "repository (git option)")
     parser.add_argument("-d", "--dissociate", action="store_true",
+                        default=config.get('dissociate', False),
                         help="borrow the objects from the referenced local "
                         "repository only to reduce network transfer (git "
                         "option)")
 
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
     clone_repos(parser.parse_args())

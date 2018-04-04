@@ -1,0 +1,21 @@
+#
+# Configuration file for the cranky toolchain.
+#
+# Copy to ~/.cranky and modify as you like. Note that a configuration file
+# is not necessary since all options can also be specified using commandline
+# arguments. Commandline arguments take precedence over options specified in
+# this file.
+#
+# Juerg Haefliger <juergh@canonical.com>
+#
+
+# cranky-clone
+clone:
+  # A local reference kernel repo used for cloning the Ubuntu kernel repo.
+  # Using this speeds up the cloning process considerably. See
+  # 'git help clone', option --reference, for more details.
+  reference: /path/to/local/kernel/repo
+  # Borrow the objects from the above reference repo only during the cloning
+  # process to reduce network traffic. See 'git help clone', option
+  # --dissociate, for more details.
+  dissociate: True
