@@ -137,7 +137,9 @@ if [ -z "${remote_url}" ] ; then
 	echo "Info: ${host} is not a git remote, adding it..."
 	git remote add "${host}" "ssh://${host}${git_dir}"
 else
-	git_dir="/${remote_url#*/${host}/}"
+	# Purge ssh://host from the remote URL and prepend a /
+	git_dir="${remote_url#*://}"
+	git_dir="/${git_dir#*/}"
 fi
 
 # Check if the git-build-kernel git hook exists
