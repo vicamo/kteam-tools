@@ -108,27 +108,90 @@ if __name__ == '__main__':
     config = utils.get_config(tool='clone')
 
     desc = """
-Clone the repos (typically linux, linux-meta, and linux-signed) that make up a
-set of Ubuntu kernel packages.
+Clone the repos (typically 'linux', 'linux-meta', and 'linux-signed') that make
+up a set of Ubuntu kernel packages.
+"""
+
+    epilog = """
+Examples:
+  $ cranky-clone xenial [main]
+      The 'linux', 'linux-meta' and 'linux-signed' repositories for Xenial
+      are all cloned under a 'xenial' root directory:
+        ./xenial/
+          ├── linux
+          ├── linux-meta
+          └── linux-signed
+
+  $ cranky-clone --reference /home/work/linux-2.6 xenial main
+      Same as above but use a local clone of Linus' upstream repo as a git
+      reference.
+
+  $ cranky-clone xenial aws
+      The 'linux-aws', 'linux-meta-aws' and 'linux-signed-aws' repositories for
+      the Xenial AWS variant are cloned under a 'xenial' root directory:
+        ./xenial/
+          ├── linux-aws
+          ├── linux-meta-aws
+          └── linux-signed-aws
+
+  $ cranky-clone xenial raspi2
+      This variant doesn't have stand-alone repos but instead resides on
+      branches of the main 'linux', 'linux-meta' and 'linux-signed' repos. See
+      below for more details.
+
+Notes:
+  Some kernel variants have their own repos (like aws, for example) whereas
+  others simply reside on branches of the main repos (like raspi2). If a
+  stand-alone variant is cloned, the repos end up in their own subdirectories
+  (see the aws example above). Cloning a non stand-alone variant simply results
+  in cloning the main repos (if they aren't already locally present). At the
+  end of the operation, the tool will print out the directory and branch names
+  for the clones.
+
+Configuration file:
+  ~/.cranky is a yaml format configuration file where the optional commandline
+  options can be specified. Note that options specified via the commandline
+  take precedence over options from the configuration file.
+
+  Example ~/.cranky section:
+  ---
+    clone:
+      reference: '/home/repo/linux-2.6'
+      dissociate: true
+"""
+
+    help_variant = """
+Kernel variant (main, raspi2, aws, ...). If not specified, defaults to 'main',
+which is the main distro kernel for the specified series.
+"""
+
+    help_reference = """
+Obtain objects from an existing local repository to speed up the cloning
+process. This is a git clone option, check 'git help clone' for more details.
+Note that without using --dissociate, the referenced repo *must not* be deleted
+otherwise the cranky-cloned repo will get corrupted.
+"""
+
+    help_dissociate = """
+Borrow the objects from the referenced local repository only to reduce network
+traffic. This is a git clone option, check 'git help clone' for more details.
 """
 
     parser = argparse.ArgumentParser(description=desc, formatter_class=
-                                     argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("codename", help="kernel series codename (artful, "
+                                     argparse.RawDescriptionHelpFormatter,
+                                     epilog=epilog)
+    parser.add_argument("codename", help="Kernel series codename (artful, "
                         "bionic, ...)")
-    parser.add_argument("variant", nargs="?", default="main", help="kernel "
-                        "variant (main [default], raspi2 ...)")
+    parser.add_argument("variant", nargs="?", default="main",
+                        help=help_variant)
     parser.add_argument("-v", "--verbose", action="store_true",
                         default=config.get('verbose', False),
-                        help="increase verbosity")
+                        help="Increase verbosity")
     parser.add_argument("-r", "--reference",
                         default=config.get('reference', None),
-                        help="obtain objects from an existing local "
-                        "repository (git option)")
+                        help=help_reference)
     parser.add_argument("-d", "--dissociate", action="store_true",
                         default=config.get('dissociate', False),
-                        help="borrow the objects from the referenced local "
-                        "repository only to reduce network transfer (git "
-                        "option)")
+                        help=help_dissociate)
 
     clone_repos(**vars(parser.parse_args()))
