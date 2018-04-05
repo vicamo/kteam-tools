@@ -118,7 +118,7 @@ up a set of Ubuntu kernel packages.
 
     epilog = """
 Examples:
-  $ cranky-clone xenial [main]
+  $ cranky-clone xenial
       The 'linux', 'linux-meta' and 'linux-signed' repositories for Xenial
       are all cloned under a 'xenial' root directory:
         ./xenial/
