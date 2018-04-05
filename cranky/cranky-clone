@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 
 from cranky import utils
 from ktl.kernel_series import KernelSeries
-from ktl.log import cerror, cinfo
+from ktl.log import cerror, cinfo, cwarn
 
 
 def clone_repos(codename='', variant='', reference=None, dissociate=False,
@@ -86,9 +86,14 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
             cmd = ["git", "clone", "--branch", branch]
             if pkg.type is None:
                 if reference is not None:
-                    cmd.extend(["--reference", reference])
-                if dissociate:
-                    cmd.extend(["--dissociate"])
+                    if ((os.path.exists(reference) and
+                         os.path.exists(os.path.join(reference, '.git')))):
+                        cmd.extend(["--reference", reference])
+                        if dissociate:
+                            cmd.extend(["--dissociate"])
+                    else:
+                        cwarn('Warning: %s is not a directory or git repo' %
+                              reference, color='yellow')
             cmd.extend([repo.url, repo_dir])
             if verbose:
                 cinfo("Calling: %s" % " ".join(cmd), 'yellow')
