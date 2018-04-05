@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 
 from cranky import utils
 from ktl.kernel_series import KernelSeries
-from ktl.log import cerror, cinfo, cwarn
+from ktl.log import cerror, cnotice, cwarn
 
 
 def clone_repos(codename='', variant='', reference=None, dissociate=False,
@@ -28,26 +28,24 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
     else:
         source = "linux-%s" % variant
 
-    cinfo("Codename: %s" % codename, 'yellow')
-    cinfo("Variant:  %s" % variant, 'yellow')
-    cinfo("Source:   %s" % source, 'yellow')
+    cnotice("Codename: %s" % codename)
+    cnotice("Variant:  %s" % variant)
+    cnotice("Source:   %s" % source)
 
     # Parse kernel series info
     ks = KernelSeries()
     ks_series = ks.lookup_series(codename=codename)
     if ks_series is None:
         cerror("Kernel series '%s' not found" % codename)
-        cinfo("Available series: %s" % ", ".join(sorted([s.codename for s in
-                                                         ks.series])),
-              'yellow')
+        cnotice("Available series: %s" % ", ".join(sorted([s.codename for s in
+                                                         ks.series])))
         sys.exit(1)
 
     ks_source = ks_series.lookup_source(source)
     if ks_source is None:
         cerror("Kernel source '%s' not found" % source)
-        cinfo("Available sources: %s" % ", ".join(sorted([s.name for s in
-                                                          ks_series.sources])),
-              'yellow')
+        cnotice("Available sources: %s" % ", ".join(sorted([s.name for s in
+                                                          ks_series.sources])))
         sys.exit(1)
 
     if len(ks_source.packages) == 0:
@@ -80,9 +78,9 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
 
         # Clone the repo
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            cinfo("Directory '%s' exists already" % repo_dir, 'yellow')
+            cnotice("Directory '%s' exists already" % repo_dir)
         else:
-            cinfo("Cloning '%s' into %s" % (pkg.name, repo_dir), 'yellow')
+            cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
             cmd = ["git", "clone", "--branch", branch]
             if pkg.type is None:
                 if reference is not None:
@@ -93,17 +91,17 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
                             cmd.extend(["--dissociate"])
                     else:
                         cwarn('Warning: %s is not a directory or git repo' %
-                              reference, color='yellow')
+                              reference)
             cmd.extend([repo.url, repo_dir])
             if verbose:
-                cinfo("Calling: %s" % " ".join(cmd), 'yellow')
+                cnotice("Calling: %s" % " ".join(cmd))
             call(cmd)
 
     # Print the summary
-    cinfo("Summary:", 'yellow')
+    cnotice("Summary:")
     for s in summary:
-        cinfo("  Repo '%(name)s' in directory '%(dir)s' "
-              "(branch '%(branch)s')" % s, 'yellow')
+        cnotice("  Repo '%(name)s' in directory '%(dir)s' "
+              "(branch '%(branch)s')" % s)
 
 
 if __name__ == '__main__':
