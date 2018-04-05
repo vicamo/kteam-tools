@@ -128,6 +128,26 @@
             supported: true
             derived-from: [ '18.04', 'linux' ]
 
+        linux-oem:
+            packages:
+                linux-oem:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem']
+                linux-meta-oem:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/bionic', 'oem']
+                linux-signed-oem:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/bionic', 'oem']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oem:
+                        # arches as defined by the tesing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+
         linux-aws:
             packages:
                 linux-aws:
@@ -633,13 +653,13 @@
         linux-oem:
             packages:
                 linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/xenial', 'oem']
                 linux-meta-oem:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/xenial', 'oem']
                 linux-signed-oem:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/xenial', 'oem']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:

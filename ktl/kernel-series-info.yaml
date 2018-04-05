@@ -528,10 +528,14 @@
       meta: linux-meta-aws
     linux-azure:
       meta: linux-meta-azure
+      signed: linux-signed-azure
     linux-gcp:
       meta: linux-meta-gcp
     linux-kvm:
       meta: linux-meta-kvm
+    linux-oem:
+      meta: linux-meta-oem
+      signed: linux-signed-oem
     linux-raspi2:
       meta: linux-meta-raspi2
   dependent-snaps:
@@ -546,6 +550,7 @@
   derivative-packages:
     linux:
     - linux-raspi2
+    - linux-oem
     - linux-gcp
     - linux-azure
     - linux-kvm
@@ -563,8 +568,12 @@
   - linux
   - linux-meta
   - linux-signed
+  - linux-meta-oem
+  - linux-oem
+  - linux-signed-oem
   - linux-gcp
   - linux-meta-gcp
+  - linux-signed-azure
   - linux-meta-azure
   - linux-azure
   - linux-meta-kvm
