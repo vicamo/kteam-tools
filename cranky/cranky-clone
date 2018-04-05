@@ -12,11 +12,12 @@ import sys
 
 from subprocess import call
 
+from lib import utils
+
 # Add ../ to the Python search path
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                                  os.pardir, os.pardir)))
 
-from cranky import utils
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cnotice, cwarn
 
