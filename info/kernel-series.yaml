@@ -986,13 +986,13 @@
             versions: ['3.2.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise']
                 linux-backports-modules-3.2.0:
                     type: lbm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.2.0']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise-lbm']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-precise']
             supported: true
             testing:
                 flavours:
@@ -1060,13 +1060,13 @@
         linux-lts-trusty:
             packages:
                 linux-lts-trusty:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise', 'lts-backport-trusty']
                 linux-meta-lts-trusty:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-precise', 'lts-backport-trusty']
                 linux-signed-lts-trusty:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-precise', 'lts-backport-trusty']
             supported: true
             derived-from: [ '14.04', 'linux' ]
 
