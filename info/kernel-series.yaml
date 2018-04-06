@@ -484,10 +484,10 @@
         linux-azure-edge:
             packages:
                 linux-azure-edge:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure', 'azure-edge']
                 linux-meta-azure-edge:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure', 'azure-edge']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
