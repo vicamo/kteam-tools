@@ -1,7 +1,7 @@
 # kernel series information file (YAML format)
 #
 # after editing run the command below and commit the result with this file:
-#  (cd ../ktl && ./ksi-convert-v2-v1 >kernel-series-info.yaml)
+#  ./rebuild-ksi
 #
 # For each existing series this file contains a record.  That dictionary record
 # defines attributes of the series such as whether it is currently supported or
