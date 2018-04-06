@@ -580,13 +580,13 @@
         linux-hwe:
             packages:
                 linux-hwe:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'hwe']
                 linux-meta-hwe:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'hwe']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'hwe']
                 linux-signed-hwe:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
@@ -600,13 +600,13 @@
         linux-hwe-edge:
             packages:
                 linux-hwe-edge:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'hwe-edge']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'hwe-edge']
                 linux-meta-hwe-edge:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'hwe-edge']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'hwe-edge']
                 linux-signed-hwe-edge:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'hwe-edge']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe-edge']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -820,49 +820,49 @@
         linux-lts-utopic:
             packages:
                 linux-lts-utopic:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-utopic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-utopic']
                 linux-meta-lts-utopic:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-utopic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty', 'lts-backport-utopic']
                 linux-signed-lts-utopic:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-utopic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-utopic']
             derived-from: [ '14.10', 'linux' ]
 
         linux-lts-vivid:
             packages:
                 linux-lts-vivid:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-vivid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-vivid']
                 linux-meta-lts-vivid:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-vivid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty', 'lts-backport-vivid']
                 linux-signed-lts-vivid:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-vivid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-vivid']
             derived-from: [ '15.04', 'linux' ]
 
         linux-lts-wily:
             packages:
                 linux-lts-wily:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-wily']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-wily']
                 linux-meta-lts-wily:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-wily']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty', 'lts-backport-wily']
                 linux-signed-lts-wily:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-wily']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-wily']
             derived-from: [ '15.10', 'linux' ]
 
         linux-lts-xenial:
             packages:
                 linux-lts-xenial:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-xenial']
                 linux-meta-lts-xenial:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty', 'lts-backport-xenial']
                 linux-signed-lts-xenial:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-xenial']
             supported: true
             derived-from: [ '16.04', 'linux' ]
 
@@ -1027,35 +1027,35 @@
         linux-lts-quantal:
             packages:
                 linux-lts-quantal:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-quantal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-quantal']
                 linux-meta-lts-quantal:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-quantal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'lts-backport-quantal']
                 linux-signed-lts-quantal:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-quantal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-quantal']
 
         linux-lts-raring:
             packages:
                 linux-lts-raring:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-raring']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-raring']
                 linux-meta-lts-raring:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-raring']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'lts-backport-raring']
                 linux-signed-lts-raring:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-raring']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-raring']
 
         linux-lts-saucy:
             packages:
                 linux-lts-saucy:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux', 'lts-backport-saucy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-saucy']
                 linux-meta-lts-saucy:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta', 'lts-backport-saucy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'lts-backport-saucy']
                 linux-signed-lts-saucy:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed', 'lts-backport-saucy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-saucy']
 
         linux-lts-trusty:
             packages:
