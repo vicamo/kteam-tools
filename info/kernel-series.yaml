@@ -1007,6 +1007,7 @@
                 linux-armadaxp:
                 linux-meta-armadaxp:
                     type: meta
+            supported: false
 
         linux-flo:
             packages:
@@ -1015,6 +1016,7 @@
                 linux-meta-flo:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'flo']
+            supported: false
 
         linux-goldfish:
             packages:
@@ -1023,6 +1025,7 @@
                 linux-meta-goldfish:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'goldfish']
+            supported: false
 
         linux-lts-quantal:
             packages:
@@ -1034,6 +1037,7 @@
                 linux-signed-lts-quantal:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-quantal']
+            supported: false
 
         linux-lts-raring:
             packages:
@@ -1045,6 +1049,7 @@
                 linux-signed-lts-raring:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-raring']
+            supported: false
 
         linux-lts-saucy:
             packages:
@@ -1056,6 +1061,7 @@
                 linux-signed-lts-saucy:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/precise', 'lts-backport-saucy']
+            supported: false
 
         linux-lts-trusty:
             packages:
@@ -1067,8 +1073,8 @@
                 linux-signed-lts-trusty:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-precise', 'lts-backport-trusty']
-            supported: true
             derived-from: [ '14.04', 'linux' ]
+            supported: true
 
         linux-mako:
             packages:
@@ -1085,6 +1091,7 @@
                 linux-meta-manta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'manta']
+            supported: false
 
         linux-ti-omap4:
             packages:
@@ -1093,6 +1100,7 @@
                 linux-meta-ti-omap4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'ti-omap4']
+            supported: false
 
 # 11.10 (oneiric)
 '11.10':
