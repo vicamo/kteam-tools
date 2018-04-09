@@ -178,7 +178,17 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         cadence[b['series name']] = {}
     if package not in cadence[b['series name']]:
         cadence[b['series name']][package] = []
-    cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': __status_bite(b) })
+    status = __status_bite(b)
+
+    # Fixup the link to the regression testing if this is 'testing' status.
+    #
+    if 'regression' in status:
+        try:
+            status = status.replace('regression', '<a href="%s">regression</a>' % data['testing']['regression'][package])
+        except KeyError:
+            pass
+
+    cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
 
 if 'kernel-development-workflow' in data['workflow']['bug-collections']:
     for bid in data['workflow']['bug-collections']['kernel-development-workflow']['bugs']:
@@ -197,7 +207,8 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
             cadence[b['series name']] = {}
         if package not in cadence[b['series name']]:
             cadence[b['series name']][package] = []
-        cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': __status_bite(b) })
+        status = __status_bite(b)
+        cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
 
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">

@@ -1,0 +1,16 @@
+{
+    "regression" : {
+        "linux-azure"      : "http://10.246.72.46/trackers.html",
+        "linux-azure-edge" : "http://10.246.72.46/trackers.html",
+        "linux-aws"        : "http://10.246.72.46/trackers.html",
+        "linux-gcp"        : "http://10.246.72.7/trackers.html",
+        "linux-gke"        : "http://10.246.72.7/trackers.html",
+        "linux"            : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-kvm"        : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-oem"        : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-hwe"        : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-hwe-edge"   : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-lts-trusty" : "http://10.246.72.4/test-results/tracker-index.html",
+        "linux-lts-xenial" : "http://10.246.72.4/test-results/tracker-index.html"
+    }
+}
