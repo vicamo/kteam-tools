@@ -188,6 +188,11 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         except KeyError:
             pass
 
+    # Fixup the link to the automated testing results
+    #
+    if 'automated' in status:
+        status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (b['series name'], package.replace('linux', 'linux-meta')))
+
     cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
 
 if 'kernel-development-workflow' in data['workflow']['bug-collections']:
