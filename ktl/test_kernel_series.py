@@ -453,6 +453,44 @@ class TestKernelSourceEntry(unittest.TestCase):
         
         self.assertFalse(source.supported)
 
+    def test_severe_only_present_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    severe-only: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        
+        self.assertTrue(source.severe_only)
+
+    def test_severe_only_present_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    severe-only: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        
+        self.assertFalse(source.severe_only)
+
+    def test_severe_only_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        
+        self.assertFalse(source.severe_only)
+
     def test_copy_forward_present_true(self):
         data = """
         '18.04':

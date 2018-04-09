@@ -248,6 +248,10 @@ class KernelSourceEntry:
         return self._data.get('supported', False)
 
     @property
+    def severe_only(self):
+        return self._data.get('severe-only', False)
+
+    @property
     def stakeholder(self):
         return self._data.get('stakeholder', None)
 
