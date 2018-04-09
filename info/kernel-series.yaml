@@ -534,6 +534,13 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
+                gke-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gke']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '17.10', 'linux' ]
             testing:
@@ -551,15 +558,6 @@
                 linux-meta-gke:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke']
-            snaps:
-                gke-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gke']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
             supported: false
             derived-from: [ '16.04', 'linux' ]
             testing:
