@@ -5,7 +5,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '
 
 from lpltk.LaunchpadService             import LaunchpadService
 from logging                            import basicConfig, DEBUG, INFO
-from ktl.log                            import cinfo, cwarn
+from ktl.log                            import cwarn, cdebug
 
 
 class BugSpam:
@@ -20,13 +20,11 @@ class BugSpam:
             self.lp_service = LaunchpadService(self.cfg)
 
         log_format = "%(levelname)s - %(message)s"
-        if 'verbose' in self.cfg:
-            basicConfig(level=INFO, format=log_format)
-        elif 'debug' in self.cfg:
+        if 'debug' in self.cfg or 'verbose' in self.cfg:
             basicConfig(level=DEBUG, format=log_format)
 
     def verbose(self, msg):
-        cinfo("BugSpam: %s" % msg)
+        cdebug("BugSpam: %s" % msg)
 
     # modify_bug_status
     #
