@@ -22,8 +22,8 @@ __testing_status_colors = {
     'Confirmed'     : '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
-    'Fix Released'  : 'green',
-    'Fix Committed' : 'green',
+    'Fix Released'  : '#1496bb',
+    'Fix Committed' : '#1496bb',
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
@@ -64,27 +64,27 @@ def __status_bite(bug):
         proposed_status = __task_status(bug, 'promote-to-proposed')
         if updates_status == 'Confirmed':
             if security_status == 'Confirmed':
-                retval = __coloured('Ready for updates and security', 'green')
+                retval = __coloured('Ready for updates and security', '#1496bb')
             elif security_status == 'Invalid':
-                retval = __coloured('Ready for updates', 'green')
+                retval = __coloured('Ready for updates', '#1496bb')
             else:
                 retval = __coloured('Waiting for security review', '#bca136')
             break
         elif updates_status == 'Fix Committed':
             if security_status == 'Fix Committed':
-                retval = __coloured('Releasing to updates and security', 'green')
+                retval = __coloured('Releasing to updates and security', '#1496bb')
             elif security_status == 'Invalid':
-                retval = __coloured('Releasing to updates', 'green')
+                retval = __coloured('Releasing to updates', '#1496bb')
             else:
                 retval = __coloured('Unknown release state', '#bca136')
             break
         elif updates_status == 'Fix Released':
             if security_status == 'Fix Committed':
-                retval = __coloured('Releasing to updates and security', 'green')
+                retval = __coloured('Releasing to updates and security', '#1496bb')
             elif security_status == 'Invalid':
-                retval = __coloured('Released to updates', 'green')
+                retval = __coloured('Released to updates', '#1496bb')
             elif security_status == 'Fix Released':
-                retval = __coloured('Released to updates and security', 'green')
+                retval = __coloured('Released to updates and security', '#1496bb')
             break
         elif proposed_status == 'Confirmed':
             retval = __coloured('Waiting to be copied to -poposed', 'red')
@@ -104,7 +104,7 @@ def __status_bite(bug):
             retval = __coloured('Ready to be cranked', '#bca136')
             break
         elif prep_status == 'In Progress':
-            retval = __coloured('Cranker: %s' % (__assignee(bug, 'prepare-package')), 'green')
+            retval = __coloured('Cranker: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
             break
         elif prep_status == 'Fix Committed':
             retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), 'magenta')
@@ -116,7 +116,7 @@ def __status_bite(bug):
         # Not ready for promotion, where are we with testing?
         #
         retval = '<table width="100%" border="0"><tr>'
-        retval += '<td style="padding: 0 0">%s</td>' % __coloured('Testing', 'green')
+        retval += '<td style="padding: 0 0">%s</td>' % __coloured('Testing', '#1496bb')
 
         # automated-testing
         #
