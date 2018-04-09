@@ -36,6 +36,8 @@
 #	list of kernel versions that this source contains latest last
 #  * supported (bool)
 #	set to true if this source package is receiving SRU updates
+#  * severe_only (bool)
+#	set to true if this source package is high/critical fixes only
 #  * packages (dictionary)
 #	a named series of Package records (see below).  The name is the source
 #	package name for that element.
@@ -508,6 +510,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-euclid']
             supported: true
+            severe-only: true
             derived-from: [ '16.04', 'linux' ]
 
         linux-flo:
