@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "Rebuilding legacy kernel-series-info ..."
+(cd ../ktl && ./ksi-convert-v2-v1 >kernel-series-info.yaml)
+
+echo "Rebuilding CVE autotriage configuration ..."
+(cd ../cve-tools && ./cves-config primary >cves-autotriage.conf)
+
+echo "Done"
