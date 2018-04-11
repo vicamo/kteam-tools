@@ -16,7 +16,7 @@ function out()
 function usage()
 {
 	cat <<EOF
-usage: cranky-test-build [-h] [-c COMMIT] host [arch [arch ...]]
+usage: cranky-test-build [-h] [-c COMMIT] -t [TARGET] host [arch [arch ...]]
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
@@ -27,6 +27,7 @@ Positional arguments:
 
 Optional arguments:
   -c, --commit COMMIT  build from commit COMMIT instead of HEAD
+  -t, --target TARGET  build target TARGET instead of <arch>-binary
   -h, --help           show this help message and exit
 
 Examples:
@@ -36,11 +37,14 @@ Examples:
   Build packages for all supported architectures:
     $ cranky-test-build kathleen
 
+  Build binary packages of kernel flavor 'generic' from branch 'testing' for
+  architecture ppc64el:
+    $ cranky-test-build -c testing -t binary-generic kathleen ppc64el
+
 Current limitations:
   1) The username on the build host must be identical to the username on the
      machine where the script is run.
   2) The build host must be accessible using password-less SSH.
-  3) Only binary packages are built (<arch>-binary).
 
 Notes:
   The script should perform all the necessary steps to setup the build host
@@ -54,6 +58,7 @@ EOF
 host=
 arches=
 commit=HEAD
+target=binary
 
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
@@ -63,6 +68,10 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-h|--help)
 			usage
+			;;
+		-t|--target)
+			shift
+			target=${1}
 			;;
 		*)
 			if [ -z "${host}" ] ; then
@@ -170,6 +179,6 @@ trap out EXIT INT TERM HUP
 
 # Finally cycle through the arches and do the builds
 for arch in ${arches} ; do
-	echo "Info: Doing a test build for arch '${arch}'"
-	git push --force "${host}" "${BUILD_BRANCH}:${arch}-binary" || true
+	echo "Info: Doing a test build for arch '${arch}', target '${target}'"
+	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
 done
