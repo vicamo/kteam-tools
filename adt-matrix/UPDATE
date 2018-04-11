@@ -29,7 +29,7 @@ fi
 	>"$hints/primary.hints.d/devel--britney.conf"
 
 # Pull the primary configuration from kernel-series.
-"$here/adt-config" >"$hints/primary.conf" || exit 1
+"$here/adt-config" primary >"$hints/primary.conf" || exit 1
 
 mkdir -p "$html"
 (
