@@ -34,6 +34,7 @@ class TrackingBug:
             'promote-to-proposed',
             'promote-to-release',
             'regression-testing',
+            'stakeholder-signoff',
         ]
 
     # has_dependent_package
