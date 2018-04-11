@@ -28,6 +28,9 @@ fi
 (cd "$hints-britney" && egrep -h '^force-badtest' *) | sed -e 's/^/britney /' \
 	>"$hints/primary.hints.d/devel--britney.conf"
 
+# Pull the primary configuration from kernel-series.
+"$here/adt-config" >"$hints/primary.conf" || exit 1
+
 mkdir -p "$html"
 (
 	cd "$html" || exit 1

@@ -1,0 +1,29 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import sys
+
+from ktl.kernel_series import KernelSeries
+
+kernel_series = KernelSeries()
+
+# Commands: primary
+cmd = sys.argv[1]
+
+urls_seen = {}
+for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+    if not series.supported and not series.development:
+        continue
+    # ADT cannot see ESM binaries to test them.
+    if series.esm:
+        continue
+
+    for source in sorted(series.sources, key=lambda x: x.name):
+        if not source.supported:
+            continue
+
+        # Find the matching package for this source.
+        for package in source.packages:
+            flags = 'devel' if series.development else '-'
+            if cmd == 'primary' and package.type == 'meta':
+                print("{series} {package} - {flags}".format(series=series.codename, package=package.name, flags=flags))
