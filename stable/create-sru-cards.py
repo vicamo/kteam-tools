@@ -184,12 +184,22 @@ class SRUCardsCreator:
             if card['name'] == 'Release kernel snaps':
                 for (series, source) in series_sources_list:
                     for snap in sorted(source.snaps, key=lambda x: x.name):
-                        if not snap.stable:
-                            continue
-                        card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
-                        card_desc = None
+                        card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
+                        card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
                         if dryrun:
                             print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
+                        else:
+                            board.add_card(card_name, card_desc)
+
+                        if not snap.stable:
+                            continue
+
+                        card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
+                        card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
+                        if dryrun:
+                            print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
                         else:
                             board.add_card(card_name, card_desc)
                 continue
