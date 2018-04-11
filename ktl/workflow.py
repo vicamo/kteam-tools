@@ -227,7 +227,7 @@ class Workflow:
         '''
         '''
         retval = None
-        if packagename in ['stakeholder-signoff']:
+        if taskname in ['stakeholder-signoff']:
             ks = KernelSeries()
             cursor = ks.lookup_series(codename=series_codename)
             cursor = cursor.lookup_source(packagename)
