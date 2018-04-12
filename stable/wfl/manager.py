@@ -74,6 +74,7 @@ class WorkflowManager():
         '''
         center('WorkflowManager.buglist')
         retval = {}
+        cinfo('Starting run ' + str(datetime.now()))
         if s.args.bugs:
             for bugid in s.args.bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
