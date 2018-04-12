@@ -1,3 +1,4 @@
+import os
 from sys                                import stdout
 from subprocess                         import Popen, PIPE, STDOUT
 from threading                          import Thread
@@ -119,7 +120,8 @@ def shank_all(bot, trigger):
         # No bugs were specified so shank them all.
         #
         bot.say(trigger.nick + ', gimme some love boss')
-        cmd = '%s/stable/swm --logfile=/dev/null' % bot.config.wfm.kteam_root
+
+        cmd = 'flock -nx --verbose /tmp/shanky.lck -c "%s/stable/swm" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, os.environ['HOME'])
         (rc, output) = sh(cmd, quiet=True)
         if rc == 0:
             bot.say(trigger.nick + ', ' + 'I shanked them all')
@@ -136,7 +138,7 @@ def shank_all(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = '%s/stable/swm %s --logfile=/dev/null' % (bot.config.wfm.kteam_root, bug)
+            cmd = 'flock -nx --verbose /tmp/shanky.lck -c "%s/stable/swm %s" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, bug, os.environ['HOME'])
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
