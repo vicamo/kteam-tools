@@ -128,7 +128,7 @@ def shank_all(bot, trigger):
         elif rc == 254:
             cmd = 'pastebinit -f python /tmp/exceptions.log'
             (rc, output) = sh(cmd, quiet=True)
-            bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
+            bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
     else:
         # A list of bugs were specified on the command line. Shank each of them
         # in order.
@@ -145,7 +145,7 @@ def shank_all(bot, trigger):
             elif rc == 254:
                 cmd = 'pastebinit -f python /tmp/exceptions.log'
                 (rc, output) = sh(cmd, quiet=True)
-                bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
+                bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
 
 @sopel.module.nickname_commands('retest')
 def retest(bot, trigger):
