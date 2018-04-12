@@ -193,6 +193,11 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
     if 'automated' in status:
         status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (b['series name'], package.replace('linux', 'linux-meta')))
 
+    # Fixup the link to the sru-report with verification status
+    #
+    if 'verification' in status:
+        status = status.replace('verification', '<a href="%s">verification</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html')
+
     cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
 
 if 'kernel-development-workflow' in data['workflow']['bug-collections']:
