@@ -29,6 +29,9 @@ class PromoteToRelease(Promoter):
         retval = False
 
         while True:
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    break
 
             if not s._security_signoff_verified():
                 break
