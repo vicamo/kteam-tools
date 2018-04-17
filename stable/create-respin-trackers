@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+#
+import sys
+import os
+from argparse                           import ArgumentParser, RawTextHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+
+from ktl.log                            import center, cleave, Clog, cdebug
+
+# CreateRebaseTrackers
+#
+class CreateRebaseTrackers(object):
+
+    # main
+    #
+    def main(s, args):
+        center(s.__class__.__name__ + '.main')
+        retval = 0
+
+        # Find the existing tracking bugs for the series and package specified
+        # on the command line.
+        #
+
+        # Take the sru cycle tag from one of the existing tracking bugs and
+        # increment it's respin number.
+        #
+
+        # Create all the tracking bugs for the series and package specified.
+        #
+
+        # Dupe all of the existing tracking bugs to all of the newly created
+        # tracking bugs.
+        #
+
+        # Create trello cards on the SRU cycle board for all the kernels packages
+        # that need to be respun.
+        #
+
+        cleave(s.__class__.__name__ + '.main (%s)' % retval)
+        return retval
+
+
+if __name__ == '__main__':
+    retval = -1
+
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+  Create all relevant tracking bugs for a given series and kernel package. These
+  new tracking bugs are to replace existing tracking bugs for the same series and
+  kernel package and it's derivatives.
+
+  Existing bugs that are to be replaced are dupe'd against these newly created
+  tracking bugs.
+    '''
+    app_epilog = '''
+Examples:
+  create-respin-trackers xenial linux
+
+               New tracking bugs will be created for the master linux
+               package and all of it's derivatives for Xenial. All
+               existing tracking bugs for those packages will be dup'd
+               against these new ones.
+
+  create-respin-trackers xenial linux-kvm
+
+               Since linux-kvm doesn't have any derivatives only a single
+               tracking bug will be created and the one this is to replace
+               will be dup'd against this new one.
+
+  create-respin-trackers --no-derivs xenial linux
+
+               This will create a single tracking bug for the linux package
+               and not for any of it's derivatives. This can be used when
+               it's desired to only respin the master kernel and select
+               derivatives.
+    '''
+
+    debug_help = '''Prints out a lot of information while running giving detailed information
+about what exactly is happening. This is used for debugging the tool.
+    '''
+    no_derivs_help = '''Do not create tracking bugs for any of the derivative kernel
+packages for the kernel package specified.
+    '''
+    series_help = '''The Ubuntu series codename indicating which kernel package
+is to be the baseis of the new tracking bugs. The linux package in one Ubuntu
+series will have a different set of derivatives than another.
+    '''
+    package_help = '''Which kernel package, and all of it's derivatives, is to
+have new tracking bugs produced.
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawTextHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help=debug_help)
+    parser.add_argument('--no-derivs', action='store_true', default=False, help=no_derivs_help)
+    parser.add_argument('series',    type=str, help=series_help)
+    parser.add_argument('package',   type=str, help=package_help)
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    Clog.color = True
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+        Clog.color = not args.nc
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=WARNING, format=log_format)
+
+    center('__main__')
+    app = CreateRebaseTrackers()
+    retval = app.main(args)
+    cleave('__main__ (%s)' % (retval))
+    exit(retval)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
