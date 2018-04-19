@@ -184,6 +184,9 @@ class SRUCardsCreator:
             if card['name'] == 'Release kernel snaps':
                 for (series, source) in series_sources_list:
                     for snap in sorted(source.snaps, key=lambda x: x.name):
+                        if not snap.repo:
+                            continue
+
                         card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
                         card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
                         if dryrun:
