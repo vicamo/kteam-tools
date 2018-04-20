@@ -52,6 +52,9 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read added series package package_ver ubuntu_ver mainline_ver
 do
+	# ESM kernels are represented without the /esm suffix in a chroot/lib-build
+	# context, strip it off.
+	series="${series%/esm}"
 	"$here/cod-enqueue" "cod-ubuntu-config" "$series" "$package" "$package_ver" "$ubuntu_ver"
 done <"$tags_list.added"
 
