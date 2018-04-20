@@ -318,8 +318,6 @@
       meta: linux-meta-gcp
     linux-gke:
       meta: linux-meta-gke
-    linux-goldfish:
-      meta: linux-meta-goldfish
     linux-hwe:
       meta: linux-meta-hwe
       signed: linux-signed-hwe
@@ -373,14 +371,6 @@
       qa: false
       snap: gcp-kernel
       stable: false
-    linux-gke:
-      arches:
-      - amd64
-      gated: false
-      hw-cert: false
-      qa: false
-      snap: gke-kernel
-      stable: false
     linux-raspi2:
       arches:
       - armhf
@@ -408,6 +398,8 @@
     linux:
     - stlouis-kernel
     - caracalla-kernel
+    linux-gcp:
+    - gke-kernel
   development: false
   kernel: 4.4.0
   kernels:
