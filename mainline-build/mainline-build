@@ -101,7 +101,7 @@ sha1=`git log -1 --pretty=%H "$commit" 2>/dev/null`
 echo "mainline-build '$remotes' '$commit'${abi:+ '$abi' '$base' '$date'}" >"$html/REBUILD"
 "$here/mainline-extract-logs" "$master_main/BUILD.LOG" "$html/BUILD.LOG" "$master_main/BUILT"
 mv "$master_main/BUILD.LOG" "$html"
-mv "$master_main/"linux-{headers,image}-*.deb "$html"
+mv "$master_main/"linux-{headers,image,modules}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
