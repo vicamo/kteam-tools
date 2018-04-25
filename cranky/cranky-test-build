@@ -16,30 +16,33 @@ function out()
 function usage()
 {
 	cat <<EOF
-usage: cranky-test-build [-h] [-c COMMIT] -t [TARGET] host [arch [arch ...]]
+usage: cranky-test-build [-h] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
 Positional arguments:
-  host  build host (kathleen, gloin, tangerine, ...)
-  arch  kernel architecture to build. If not specified, build all architecures
-        as listed under debian.master/config/.
+  HOST  Build host (kathleen, gloin, tangerine, ...).
 
 Optional arguments:
-  -c, --commit COMMIT  build from commit COMMIT instead of HEAD
-  -t, --target TARGET  build target TARGET instead of <arch>-binary
-  -h, --help           show this help message and exit
+  -a, --arch ARCH[,ARCH,...]  Comma-separated list of kernel architectures to
+                              build. If not specified, defaults to the host
+                              architecture. If the special architecture 'all'
+                              is used, build all architectures listed under
+                              debian.master/config/.
+  -c, --commit COMMIT         Build from commit COMMIT instead of 'HEAD'.
+  -t, --target TARGET         Build target TARGET instead of 'binary'.
+  -h, --help                  Show this help message and exit.
 
 Examples:
-  Build packages for a single architecture from the current commit:
-    $ cranky-test-build kathleen amd64
+  Build binary packages for the host architecture from the current commit:
+    $ cranky-test-build kathleen
 
   Build packages for all supported architectures:
-    $ cranky-test-build kathleen
+    $ cranky-test-build -a all kathleen
 
   Build binary packages of kernel flavor 'generic' from branch 'testing' for
   architecture ppc64el:
-    $ cranky-test-build -c testing -t binary-generic kathleen ppc64el
+    $ cranky-test-build -c testing -t binary-generic -a ppc64el kathleen
 
 Current limitations:
   1) The username on the build host must be identical to the username on the
@@ -56,12 +59,16 @@ EOF
 }
 
 host=
-arches=
+arches=($(dpkg-architecture -q DEB_HOST_ARCH))
 commit=HEAD
 target=binary
 
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
+		-a|--arch)
+			shift
+			IFS=',' read -r -a arches <<< "${1}"
+			;;
 		-c|--commit)
 			shift
 			commit=${1}
@@ -74,12 +81,10 @@ while [ "${#}" -gt 0 ] ; do
 			target=${1}
 			;;
 		*)
-			if [ -z "${host}" ] ; then
-				host=${1}
-			else
-				arches=${*}
-				break
+			if [ -n "${host}" ] ; then
+				usage
 			fi
+			host=${1}
 			;;
 	esac
 	shift
@@ -106,13 +111,13 @@ if ! [ -e "${changelog}" ] ; then
 	exit 1
 fi
 
-if [ -z "${arches}" ] ; then
+if [ "${arches[0]}" = "all" ] ; then
 	# shellcheck disable=SC2012
-	arches=$(ls -d debian.master/config/*/ | sed -e 's,/$,,' -e 's,.*/,,' | \
-				 tr '\n' ' ')
+	read -r -a arches <<< "$(ls -1d debian.master/config/*/ | \
+		sed -e 's,/$,,' -e 's,.*/,,' | tr '\n' ' ')"
 else
 	# Verify that the specified arch(es) is/are valid
-	for arch in ${arches} ; do
+	for arch in "${arches[@]}" ; do
 		if ! [ -d "debian.master/config/${arch}" ] ; then
 			echo "Error: Unsupported arch '${arch}'"
 			exit 1
@@ -128,7 +133,7 @@ fi
 
 echo "Build host:   ${host}"
 echo "Build series: ${series}"
-echo "Build arches: ${arches}"
+echo "Build arches: ${arches[*]}"
 echo "Build commit: $(git log --format='%h ("%s")' "${commit}" -1)"
 
 # Verify we can talk to the host
@@ -178,7 +183,7 @@ git branch "${BUILD_BRANCH}" "${commit}"
 trap out EXIT INT TERM HUP
 
 # Finally cycle through the arches and do the builds
-for arch in ${arches} ; do
+for arch in "${arches[@]}" ; do
 	echo "Info: Doing a test build for arch '${arch}', target '${target}'"
 	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
 done
