@@ -15,8 +15,6 @@
         - name: 'Turn the crank'
         - name: 'SRU -proposed announcement'
           description: 'Send the SRU announcement to the ML'
-        - name: 'SRU bug spamming'
-          description: 'Run spam-proposed-release-bugs for the series on -proposed'
         - name: 'Review regression tests results'
         - name: 'Review automated (ADT) tests results'
         - name: 'Produce kernel snaps'
