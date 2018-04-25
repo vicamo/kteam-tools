@@ -76,26 +76,47 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": repo_dir, "branch": branch})
 
-        # Clone the repo
+        # Skip the cloning if the target directory exists
         if os.path.exists(os.path.join(repo_dir, '.git')):
             cnotice("Directory '%s' exists already" % repo_dir)
+            continue
+
+        # Clone the repo
+        cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
+        cmd = ["git", "clone", "--branch", branch]
+        if pkg.type is None:
+            if reference is not None:
+                if ((os.path.exists(reference) and
+                     os.path.exists(os.path.join(reference, '.git')))):
+                    cmd.extend(["--reference", reference])
+                    if dissociate:
+                        cmd.extend(["--dissociate"])
+                else:
+                    cwarn('Warning: %s is not a directory or git repo' %
+                          reference)
+        cmd.extend([repo.url, repo_dir])
+        if verbose:
+            cnotice("Calling: %s" % " ".join(cmd))
+        call(cmd)
+
+        # Set some sensible config defaults for git send-email:
+        #   - Add the Ubuntu kernel mailing list as the default 'to' email
+        #     address
+        #   - Don't cc the patch author and signers (we don't want to
+        #     spam upstream people)
+        call(["git", "config", "--local", "sendemail.to",
+              "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
+        call(["git", "config", "--local", "sendemail.suppresscc", "all"],
+             cwd=repo_dir)
+
+        # Add a remote for the (private) security repo
+        if pkg.type is None:
+            security_repo = "linux-%s" % codename
         else:
-            cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
-            cmd = ["git", "clone", "--branch", branch]
-            if pkg.type is None:
-                if reference is not None:
-                    if ((os.path.exists(reference) and
-                         os.path.exists(os.path.join(reference, '.git')))):
-                        cmd.extend(["--reference", reference])
-                        if dissociate:
-                            cmd.extend(["--dissociate"])
-                    else:
-                        cwarn('Warning: %s is not a directory or git repo' %
-                              reference)
-            cmd.extend([repo.url, repo_dir])
-            if verbose:
-                cnotice("Calling: %s" % " ".join(cmd))
-            call(cmd)
+            security_repo = "linux-%s-%s" % (pkg.type, codename)
+        call(["git", "remote", "add", "security",
+              "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/%s" % security_repo],
+             cwd=repo_dir)
 
     # Print the summary
     cnotice("Summary:")
