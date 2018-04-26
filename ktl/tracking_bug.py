@@ -210,6 +210,15 @@ class TrackingBug:
     def reset_tasks(self, bug):
         center(self.__class__.__name__ + '.reset_tasks')
 
+        # Get package's invalid_tasks list
+        #
+        try:
+            series = self.kernel_series.lookup_series(codename=self.targeted_series_name)
+            source = series.lookup_source(self.package)
+            invalid_tasks = source.invalid_tasks
+        except:
+            invalid_tasks = []
+
         # Set task assignments and importance. Main project task must be
         # set to In Progress for the bot to do its processing.
         #
@@ -282,6 +291,12 @@ class TrackingBug:
                             task.status = "Invalid"
                             cdebug('        status: Invalid')
                             continue
+
+                if task_name in invalid_tasks:
+                    task.status = "Invalid"
+                    cdebug('        status: Invalid')
+                    continue
+
                 if not self.new_abi and task_name.startswith('prepare-package-') and task_name != 'prepare-package-signed':
                     task.status = "Invalid"
                     cdebug('        status: Invalid')

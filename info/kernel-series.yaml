@@ -54,6 +54,9 @@
 #	indicates that this kernel is copied forward from another kernel;
 #	a Dependency record (see below).  This indicates that we are
 #	updating this kernel via binary copies.
+#  * invalid-tasks (list)
+#   list of task names which should be marked as 'Invalid' on the Launchpad
+#   tracking bug at the moment of its creation.
 #
 # Package record fields:
 #  * type (string)
