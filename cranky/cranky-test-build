@@ -16,7 +16,7 @@ function out()
 function usage()
 {
 	cat <<EOF
-usage: cranky-test-build [-h] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
+usage: cranky-test-build [-h] [-d] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
@@ -30,6 +30,8 @@ Optional arguments:
                               is used, build all architectures listed under
                               debian.master/config/.
   -c, --commit COMMIT         Build from commit COMMIT instead of 'HEAD'.
+  -d, --dry-run               Do everything except push to the builder, i.e.,
+                              don't trigger the build(s).
   -t, --target TARGET         Build target TARGET instead of 'binary'.
   -h, --help                  Show this help message and exit.
 
@@ -61,6 +63,7 @@ EOF
 host=
 arches=($(dpkg-architecture -q DEB_HOST_ARCH))
 commit=HEAD
+dry_run=0
 target=binary
 
 while [ "${#}" -gt 0 ] ; do
@@ -72,6 +75,9 @@ while [ "${#}" -gt 0 ] ; do
 		-c|--commit)
 			shift
 			commit=${1}
+			;;
+		-d|--dry-run)
+			dry_run=1
 			;;
 		-h|--help)
 			usage
@@ -185,5 +191,9 @@ trap out EXIT INT TERM HUP
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
 	echo "Info: Doing a test build for arch '${arch}', target '${target}'"
-	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
+	if [ ${dry_run} -eq 1 ] ; then
+		echo "Info: Skipping the build (dry-run)"
+	else
+		git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
+	fi
 done
