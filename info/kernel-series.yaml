@@ -286,6 +286,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
             supported: true
             derived-from: [ '18.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-oem:
             packages:
@@ -323,6 +324,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
             packages:
@@ -343,6 +345,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'jrp'
 
         linux-gcp:
@@ -370,6 +373,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
             packages:
@@ -387,6 +391,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
 
 # 17.10 (artful)
 '17.10':
@@ -426,6 +431,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'raspi2']
             supported: true
             derived-from: [ '17.10', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-snapdragon:
             packages:
@@ -606,6 +612,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
             packages:
@@ -635,6 +642,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'jrp'
 
         linux-azure-edge:
@@ -653,6 +661,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'jrp'
 
         linux-euclid:
@@ -665,6 +674,7 @@
             supported: true
             severe-only: true
             derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-flo:
             packages:
@@ -706,6 +716,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-gke:
             packages:
@@ -796,6 +807,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-mako:
             packages:
@@ -843,6 +855,7 @@
                     arches: ['armhf']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-snapdragon:
             packages:
@@ -862,6 +875,7 @@
                     arches: ['arm64']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
 # 15.10 (wily)
 '15.10':
@@ -965,6 +979,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/trusty']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-keystone:
             packages:
@@ -1156,6 +1171,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-armadaxp:
             packages:
@@ -1230,6 +1246,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-precise', 'lts-backport-trusty']
             derived-from: [ '14.04', 'linux' ]
             supported: true
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-mako:
             packages:
