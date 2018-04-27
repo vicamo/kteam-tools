@@ -95,8 +95,8 @@
 # 18.04 (bionic)
 '18.04':
     codename: bionic
-    development: true
-    supported: false
+    development: false
+    supported: true
     sources:
         linux:
             versions: ['4.13.0', '4.14.0', '4.15.0']
