@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import sys
+import textwrap
 
 from ktl.kernel_series import KernelSeries
 
@@ -30,6 +31,81 @@ if mode == 'lib-build':
                     if source.name == 'linux' and package.name == source.name:
                         print("repo_remote_url_set '{}' '{}';".format(series.codename, repo.url))
                     print("repo_remote_url_set '{}--{}' '{}';".format(series.codename, package.name, repo.url))
+
+    version_hint = None
+    version_map = {}
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if series.opening:
+            continue
+        for source in series.sources:
+            if source.name != 'linux' or not source.versions:
+                continue
+
+            version = source.versions[-1]
+            if version.endswith('.0'):
+                version = version[:-2]
+
+            version_hint = version
+            version_map[version] = series.codename
+
+    supported_map = {}
+    supported = None
+    series_latest = None
+    series_first = None
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+            if series.opening:
+                continue
+            if series.supported or series.development:
+                supported = series.codename
+            supported_map[series.codename] = supported
+            if not series_latest:
+                series_latest = supported
+            series_first = supported
+
+    # Build a wider list of versions so we can enumerate them for
+    # the validators.
+    version_cursor = [2, 6, 1]
+    version_list = []
+    while True:
+        version = ".".join(map(str, version_cursor))
+        version_list.append(version)
+        version_cursor[-1] = version_cursor[-1] + 1
+        if version_cursor == [2, 6, 40]:
+            version_cursor = [3, 0]
+        elif len(version_cursor) == 2 and version_cursor[-1] == 20:
+            version_cursor = [version_cursor[0] + 1, 0]
+        if version == version_hint:
+            break
+
+    # Emit a shell mapping from version to series.
+    print(textwrap.dedent("""
+        map_version_to_series()
+        {
+            case $1 in
+        """).strip())
+    series = 'unstable'
+    version_list.reverse()
+    for version in version_list:
+        series = version_map.get(version, series)
+        print("    {version}|{version}.*)\tRET='{series}' ;;".format(version=version, series=series))
+    print(textwrap.dedent("""\
+            *)\tRET='unstable' ;;
+            esac;
+        };
+        """).rstrip())
+
+    print(textwrap.dedent("""
+        map_series_to_build_series()
+        {
+            case "$1" in
+        """).strip())
+    for (series, supported) in supported_map.items():
+        print("    {series})\tRET='{supported}' ;;".format(series=series, supported=supported))
+    print("    {series})\tRET='{supported}' ;;".format(series='*', supported=series_latest))
+    print(textwrap.dedent("""\
+            esac;
+        };
+        """).strip())
 
 elif mode == 'changeset':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
