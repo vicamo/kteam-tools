@@ -92,6 +92,14 @@
 #  * 1 (string)
 #	source package name of the depeneded on source
 
+# 18.10 (Cc: unnamed atm)
+'18.10':
+    codename: chaotic
+    development: true
+    supported: false
+    opening: true
+    sources:
+
 # 18.04 (bionic)
 '18.04':
     codename: bionic
