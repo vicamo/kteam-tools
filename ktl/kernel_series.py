@@ -24,7 +24,7 @@ def convert_v2_to_v1(data):
             if series.get(key, False):
                 series_v1[key] = series[key]
 
-        if 'sources' not in series:
+        if 'sources' not in series or not series['sources']:
             continue
 
         for source_key, source in series['sources'].items():

@@ -547,7 +547,7 @@
     - linux-azure
     - linux-kvm
     - linux-aws
-  development: true
+  development: false
   kernel: 4.15.0
   kernels:
   - 4.13.0
@@ -573,6 +573,11 @@
   - linux-meta-aws
   - linux-aws
   series_version: '18.04'
+  supported: true
+'18.10':
+  development: true
+  name: chaotic
+  series_version: '18.10'
   supported: false
 '6.06':
   dependent-packages:
