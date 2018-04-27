@@ -13,30 +13,14 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+. "$here/lib-build"
+
 commit="$1"
 series="$2"
 abinum="$3"
 
-# Previous LTS.
-#case "$series" in
-#hardy)					build_release="hardy" ;;
-#lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
-#precise|quantal|raring|saucy)		build_release="precise" ;;
-#trusty|*)				build_release="trusty" ;;
-#esac
-
-# We cannot use the previous LTS as we are tied somewhat to compiler
-# versions and features in later releases.
-case "$series" in
-hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric|precise|quantal|raring|saucy)
-	build_release="precise" ;;
-trusty|utopic)
-	build_release="trusty" ;;
-unstable)
-	build_release="artful" ;;
-*)
-	build_release="$series" ;;
-esac
+map_series_to_build_series "$series"
+build_release="$RET"
 
 # Arches to build
 case "$series" in
