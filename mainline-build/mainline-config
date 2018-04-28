@@ -34,6 +34,7 @@ if mode == 'lib-build':
 
     version_hint = None
     version_map = {}
+    version_supported = {}
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if series.opening:
             continue
@@ -47,6 +48,8 @@ if mode == 'lib-build':
 
             version_hint = version
             version_map[version] = series.codename
+            if series.supported or series.development:
+                version_supported[version] = True
 
     supported_map = {}
     supported = None
@@ -106,6 +109,13 @@ if mode == 'lib-build':
             esac;
         };
         """).strip())
+
+    print(textwrap.dedent("""
+        live_version_tags_pattern()
+        {{
+            RET="{tags}"
+        }};
+        """).strip().format(tags="v" + ".*|v".join(version_supported.keys()) + '.*'))
 
 elif mode == 'changeset':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):

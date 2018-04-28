@@ -43,6 +43,9 @@ diff "$tags_list" "$tags_list.new" | \
 # Commit the list.
 mv "$tags_list.new" "$tags_list"
 
+live_version_tags_pattern
+pattern="$RET"
+
 # Run the list.
 while read commit
 do
@@ -56,7 +59,7 @@ do
 	# XXX: this should be some python stub to validate the versions via
 	#      KernelSeries, and that could use Announce directly.
 	case "$commit" in
-	v4.4.*|v4.10.*|v4.13.*)
+	$pattern)
 		"$here/../ktl/announce.py" upstream-stable "Prepare Upstream Stable $commit" \
 			"Upstream Stable $commit has been released."
 		;;
