@@ -7,10 +7,6 @@ from launchpadlib.launchpad import Launchpad
 from datetime import datetime
 import sys
 
-def no_credential():
-        print("Can't proceed without Launchpad credential.")
-        sys.exit()
-
 def get_published_sources(release_pocket, publishing_status, series, date):
         published_sources = []
         src = archive.getPublishedSources(exact_match=True, source_name="linux", distro_series=series, pocket=release_pocket, status=publishing_status, created_since_date=date)
@@ -25,7 +21,7 @@ def date_to_influx_ts(date):
         timestamp = int((dt - epoch).total_seconds() * 1000000000.0)
         return timestamp
 
-launchpad = Launchpad.login_with('UCT', 'production', credential_save_failed=no_credential, version='devel')
+launchpad = Launchpad.login_anonymously('UCT', 'production', version='devel')
 
 ubuntu = launchpad.distributions["ubuntu"]
 archive = ubuntu.main_archive
