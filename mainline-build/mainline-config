@@ -113,7 +113,7 @@ if mode == 'lib-build':
     print(textwrap.dedent("""
         live_version_tags_pattern()
         {{
-            RET="{tags}"
+            RET="{tags}";
         }};
         """).strip().format(tags="v" + ".*|v".join(version_supported.keys()) + '.*'))
 
