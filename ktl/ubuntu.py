@@ -300,7 +300,7 @@ class Ubuntu:
                             retval = entry['name']
                             series_version = entry['series_version']
                             break
-                else:
+                elif 'kernel' in entry:
                     if version.startswith(entry['kernel']):
                         retval = entry['name']
                         series_version = entry['series_version']
