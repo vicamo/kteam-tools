@@ -179,7 +179,7 @@
         linux-azure:
             packages:
                 linux-azure:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'master-next']
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic']
