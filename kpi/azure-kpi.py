@@ -3,11 +3,7 @@ import urllib2, re, datetime
 from datetime import datetime
 from launchpadlib.launchpad import Launchpad
 
-def no_credential():
-        print("Can't proceed without Launchpad credential.")
-        sys.exit()
-
-launchpad = Launchpad.login_with('UCT', 'production', credential_save_failed=no_credential, version='devel')
+launchpad = Launchpad.login_anonymously('UCT', 'production', version='devel')
 date_format = "%Y-%m-%d"
 total_bugs = 0
 total_days = 0
