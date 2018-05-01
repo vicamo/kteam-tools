@@ -51,7 +51,7 @@ class Ubuntu:
             for version in db[v]['kernels']:
                 index_by_kernel_version[version] = db[v]
             db[v]['kernel'] = db[v]['kernels'][-1]
-        else:
+        elif 'kernel' in db[v]:
             index_by_kernel_version[db[v]['kernel']] = db[v]
 
     index_by_series_name = {}
