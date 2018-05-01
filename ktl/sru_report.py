@@ -34,7 +34,7 @@ class SruReport:
         self.components   = ['main', 'universe']
 
         kernel_series = KernelSeries()
-        self.all_series = [series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if series.supported or series.development]
+        self.all_series = [series.codename for series in sorted(kernel_series.series, key=KernelSeries.key_series_name) if (series.supported or series.development) and not series.opening]
         self.requested_series = []
 
         self.tempdir = None
