@@ -13,6 +13,21 @@ function out()
 	git branch -D "${BUILD_BRANCH}"
 }
 
+function pr_error()
+{
+    echo -e "\e[31m${*}\e[0m"
+}
+
+function pr_note()
+{
+    echo -e "\e[32m${*}\e[0m"
+}
+
+function pr_info()
+{
+    echo -e "\e[33m${*}\e[0m"
+}
+
 function usage()
 {
 	cat <<EOF
@@ -101,19 +116,19 @@ if [ -z "${host}" ] ; then
 fi
 
 if ! [ -d .git ] ; then
-	echo "Error: No such directory '.git'"
+	pr_error "No such directory '.git'"
 	exit 1
 fi
 
 # Check if the commit exists
 if ! git rev-parse "${commit}" >/dev/null 2>&1 ; then
-	echo "Error: No such git reference '${commit}'"
+	pr_error "No such git reference '${commit}'"
 	exit 1
 fi
 
 changelog=debian.master/changelog
 if ! [ -e "${changelog}" ] ; then
-	echo "Error: No such file '${changelog}'"
+	pr_error "No such file '${changelog}'"
 	exit 1
 fi
 
@@ -125,7 +140,7 @@ else
 	# Verify that the specified arch(es) is/are valid
 	for arch in "${arches[@]}" ; do
 		if ! [ -d "debian.master/config/${arch}" ] ; then
-			echo "Error: Unsupported arch '${arch}'"
+			pr_error "Unsupported arch '${arch}'"
 			exit 1
 		fi
 	done
@@ -137,14 +152,14 @@ if [ "${series}" = "UNRELEASED" ] ; then
 	series=$(dpkg-parsechangelog -l "${changelog}" -S Distribution -o 1 -c 1)
 fi
 
-echo "Build host:   ${host}"
-echo "Build series: ${series}"
-echo "Build arches: ${arches[*]}"
-echo "Build commit: $(git log --format='%h ("%s")' "${commit}" -1)"
+pr_note "Build host:   ${host}"
+pr_note "Build series: ${series}"
+pr_note "Build arches: ${arches[*]}"
+pr_note "Build commit: $(git log --format='%h ("%s")' "${commit}" -1)"
 
 # Verify we can talk to the host
 if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
-	echo "Error: Unable to ssh to host '${host}'"
+	pr_error "Unable to ssh to host '${host}'"
 	exit 1
 fi
 
@@ -154,7 +169,7 @@ remote_url=$(git config "remote.${host}.url" || true)
 # Get the git directory from the remote URL
 if [ -z "${remote_url}" ] ; then
 	git_dir=$(pwd)
-	echo "Info: ${host} is not a git remote, adding it..."
+	pr_info "${host} is not a git remote, adding it..."
 	git remote add "${host}" "ssh://${host}${git_dir}"
 else
 	# Purge ssh://host from the remote URL and prepend a /
@@ -168,12 +183,12 @@ if ! ssh "${host}" "test -e ${git_dir}/.git/hooks/post-receive" ; then
 
 	# Create the repo on the remote, if necessary
 	if ! ssh "${host}" "test -d ${git_dir}" ; then
-		echo "Info: Repo doesn't exist on ${host}, creating it..."
+		pr_info "Repo doesn't exist on ${host}, creating it..."
 		ssh "${host}" "git clone /usr3/ubuntu/ubuntu-${series} ${git_dir}"
 	fi
 
 	# Create the git-build-kernel post-commit hook
-	echo "Info: git-build-kernel hook doesn't exist on ${host}, creating it..."
+	pr_info "git-build-kernel hook doesn't exist on ${host}, creating it..."
 	ssh "${host}" "ln -s /usr3/ubuntu/kteam-tools/git-build-kernel/post-receive ${git_dir}/.git/hooks/post-receive"
 fi
 
@@ -181,7 +196,7 @@ fi
 # we build the different arches from the same commit in case someone mucks
 # around with the local repo in the meantime.
 BUILD_BRANCH="tmp-$(git rev-parse --short "${commit}")"
-echo "Info: Creating a temporary build branch ${BUILD_BRANCH}"
+pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
 git branch "${BUILD_BRANCH}" "${commit}"
 
 # Install an exit handler
@@ -190,9 +205,9 @@ trap out EXIT INT TERM HUP
 
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
-	echo "Info: Doing a test build for arch '${arch}', target '${target}'"
+	pr_info "Doing a test build for arch '${arch}', target '${target}'"
 	if [ ${dry_run} -eq 1 ] ; then
-		echo "Info: Skipping the build (dry-run)"
+		pr_info "Skipping the build (dry-run)"
 	else
 		git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
 	fi
