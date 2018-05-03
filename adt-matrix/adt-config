@@ -5,13 +5,15 @@ import sys
 
 from ktl.kernel_series import KernelSeries
 
-kernel_series = KernelSeries()
+kernel_series = KernelSeries(use_local=True)
 
 # Commands: primary
 cmd = sys.argv[1]
 
 urls_seen = {}
 for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+    if not series.opening_allow('adt-matrix'):
+        continue
     if not series.supported and not series.development:
         continue
     # ADT cannot see ESM binaries to test them.
