@@ -479,7 +479,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         series = ks.lookup_series('18.04')
         source1 = series.lookup_source('linux')
         source2 = series.lookup_source('linux-raspi2')
-        
+
         self.assertEqual(source1.name, 'linux')
         self.assertEqual(source2.name, 'linux-raspi2')
 
@@ -493,7 +493,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertItemsEqual(source.versions, [ 1 ])
         self.assertEqual(source.version, 1)
 
@@ -534,7 +534,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertEqual(source.versions, None)
 
     def test_supported_present_true(self):
@@ -547,7 +547,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertTrue(source.supported)
 
     def test_supported_present_false(self):
@@ -560,7 +560,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.supported)
 
     def test_supported_absent(self):
@@ -572,7 +572,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.supported)
 
     def test_severe_only_present_true(self):
@@ -585,7 +585,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertTrue(source.severe_only)
 
     def test_severe_only_present_false(self):
@@ -598,7 +598,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.severe_only)
 
     def test_severe_only_absent(self):
@@ -610,7 +610,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.severe_only)
 
     def test_copy_forward_present_true(self):
@@ -623,7 +623,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertTrue(source.copy_forward)
 
     def test_copy_forward_present_false(self):
@@ -636,7 +636,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.copy_forward)
 
     def test_copy_forward_present_true_with_derived_from(self):
@@ -666,7 +666,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
-        
+
         self.assertFalse(source.copy_forward)
 
     def test_packages_no_packages(self):
@@ -1007,7 +1007,7 @@ class TestKernelPackageEntry(unittest.TestCase):
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
         package = source.lookup_package('linux-meta')
-        
+
         self.assertTrue(isinstance(package.repo, KernelRepoEntry))
 
     def test_repo_absent(self):
@@ -1022,7 +1022,7 @@ class TestKernelPackageEntry(unittest.TestCase):
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
         package = source.lookup_package('linux-meta')
-        
+
         self.assertEqual(package.repo, None)
 
 
@@ -1110,7 +1110,7 @@ class TestKernelSnapEntry(unittest.TestCase):
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
         snap = source.lookup_snap('pc-kernel')
-        
+
         self.assertTrue(isinstance(snap.repo, KernelRepoEntry))
 
     def test_repo_absent(self):
@@ -1125,7 +1125,7 @@ class TestKernelSnapEntry(unittest.TestCase):
         series = ks.lookup_series('18.04')
         source = series.lookup_source('linux')
         snap = source.lookup_snap('pc-kernel')
-        
+
         self.assertEqual(snap.repo, None)
 
     def test_primary_present_true(self):
