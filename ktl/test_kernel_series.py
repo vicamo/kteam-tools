@@ -517,6 +517,24 @@ class TestKernelSourceEntry(unittest.TestCase):
         
         self.assertFalse(source.copy_forward)
 
+    def test_copy_forward_present_true_with_derived_from(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                linux-foo:
+                    derived-from: ['18.04', 'linux']
+                    copy-forward: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux-foo')
+
+        copy = source.copy_forward
+        self.assertTrue(isinstance(copy, KernelSourceEntry))
+        self.assertEqual(copy.series.name, '18.04')
+        self.assertEqual(copy.name, 'linux')
+
     def test_copy_forward_absent(self):
         data = """
         '18.04':
