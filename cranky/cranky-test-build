@@ -31,7 +31,7 @@ function pr_info()
 function usage()
 {
 	cat <<EOF
-usage: cranky-test-build [-h] [-d] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
+Usage: cranky-test-build [-h] [-d] [-f] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
@@ -47,8 +47,12 @@ Optional arguments:
   -c, --commit COMMIT         Build from commit COMMIT instead of 'HEAD'.
   -d, --dry-run               Do everything except push to the builder, i.e.,
                               don't trigger the build(s).
-  -t, --target TARGET         Build target TARGET instead of 'binary'.
+  -f, --fail                  Fail the build after the first error. If
+                              specified, the script will terminate immediately
+                              after the first build error rather than continue
+                              building the remaining architectures.
   -h, --help                  Show this help message and exit.
+  -t, --target TARGET         Build target TARGET instead of 'binary'.
 
 Examples:
   Build binary packages for the host architecture from the current commit:
@@ -79,6 +83,7 @@ host=
 arches=($(dpkg-architecture -q DEB_HOST_ARCH))
 commit=HEAD
 dry_run=0
+fail=0
 target=binary
 
 while [ "${#}" -gt 0 ] ; do
@@ -93,6 +98,9 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-d|--dry-run)
 			dry_run=1
+			;;
+		-f|--fail)
+			fail=1
 			;;
 		-h|--help)
 			usage
@@ -203,8 +211,16 @@ git branch "${BUILD_BRANCH}" "${commit}"
 # shellcheck disable=SC2064
 trap out EXIT INT TERM HUP
 
+# Possible build results
+build_passed=0
+build_failed=1
+build_skipped=2
+
 # The results array for the build summary
 declare -A result
+for arch in "${arches[@]}" ; do
+	result[${arch}]=${build_skipped}
+done
 
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
@@ -215,7 +231,6 @@ for arch in "${arches[@]}" ; do
 
 	if [ ${dry_run} -eq 1 ] ; then
 		pr_info "Build SKIPPED"
-		result[${arch}]=2
 		continue
 	fi
 
@@ -226,10 +241,10 @@ for arch in "${arches[@]}" ; do
 	# Print the build result
 	if grep -q 'build completed OK' "${logfile}" 2>/dev/null ; then
 		pr_note "Build PASSED"
-		result[${arch}]=0
+		result[${arch}]=${build_passed}
 	else
 		pr_error "Build FAILED"
-		result[${arch}]=1
+		result[${arch}]=${build_failed}
 
 		# Pull the remote logfile
 		rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
@@ -238,6 +253,11 @@ for arch in "${arches[@]}" ; do
 			echo >> "${logfile}"
 			# shellcheck disable=SC2029
 			ssh "${host}" cat "${rlogfile}" >> "${logfile}"
+		fi
+
+		# Bail out if -f, --fail is specified
+		if [ ${fail} -eq 1 ] ; then
+			break
 		fi
 	fi
 done
@@ -251,10 +271,10 @@ for arch in "${arches[@]}" ; do
 	arch_target="${arch}-${target}:${pad:1}"
 
 	case "${result[${arch}]}" in
-		0)
+		${build_passed})
 			pr_note "  ${arch_target} PASSED"
 			;;
-		2)
+		${build_skipped})
 			pr_info "  ${arch_target} SKIPPED"
 			;;
 		*)
