@@ -214,6 +214,35 @@ class TestKernelSeriesEntry(unittest.TestCase):
 
         self.assertEqual(series.esm, False)
 
+    def test_opening_present_true(self):
+        data = """
+        '18.04':
+            opening: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.opening, True)
+
+    def test_opening_present_false(self):
+        data = """
+        '18.04':
+            opening: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.opening, False)
+
+    def test_opening_absent_false(self):
+        data = """
+        '18.04':
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.opening, False)
+
     def test_sources_no_sources(self):
         data = """
         '18.04':
