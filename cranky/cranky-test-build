@@ -195,7 +195,7 @@ fi
 # Create a temporary build branch that we push for the build. This ensures that
 # we build the different arches from the same commit in case someone mucks
 # around with the local repo in the meantime.
-BUILD_BRANCH="tmp-$(git rev-parse --short "${commit}")"
+BUILD_BRANCH="gbk-$(git rev-parse --short "${commit}")"
 pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
 git branch "${BUILD_BRANCH}" "${commit}"
 
@@ -203,12 +203,62 @@ git branch "${BUILD_BRANCH}" "${commit}"
 # shellcheck disable=SC2064
 trap out EXIT INT TERM HUP
 
+# The results array for the build summary
+declare -A result
+
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
-	pr_info "Doing a test build for arch '${arch}', target '${target}'"
+	logfile=gbk-${arch}.log
+
+	pr_info "Doing a test build for arch '${arch}', target '${target}'," \
+			"logfile '${logfile}'"
+
 	if [ ${dry_run} -eq 1 ] ; then
-		pr_info "Skipping the build (dry-run)"
-	else
-		git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" || true
+		pr_info "Build SKIPPED"
+		result[${arch}]=2
+		continue
 	fi
+
+	# Trigger the remote build
+	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
+		tee /dev/stderr 2> "${logfile}" || true
+
+	# Print the build result
+	if grep -q 'build completed OK' "${logfile}" 2>/dev/null ; then
+		pr_note "Build PASSED"
+		result[${arch}]=0
+	else
+		pr_error "Build FAILED"
+		result[${arch}]=1
+
+		# Pull the remote logfile
+		rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
+					   sed -e 's,.*:,,' -e 's, ,,g' || echo)
+		if [ -n "${rlogfile}" ] ; then
+			echo >> "${logfile}"
+			# shellcheck disable=SC2029
+			ssh "${host}" cat "${rlogfile}" >> "${logfile}"
+		fi
+	fi
+done
+
+# Print the build summary
+echo
+pr_info "Build summary:"
+for arch in "${arches[@]}" ; do
+	logfile=gbk-${arch}.log
+	pad=$(printf " %.0s" $(seq ${#arch} 7))
+	arch_target="${arch}-${target}:${pad:1}"
+
+	case "${result[${arch}]}" in
+		0)
+			pr_note "  ${arch_target} PASSED"
+			;;
+		2)
+			pr_info "  ${arch_target} SKIPPED"
+			;;
+		*)
+			pr_error "  ${arch_target} FAILED    (see ${logfile})"
+			;;
+	esac
 done
