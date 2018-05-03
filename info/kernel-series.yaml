@@ -428,8 +428,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'snapdragon']
             supported: true
-            derived-from: [ '16.04', 'linux-snapdragon' ]
-            copy-forward: true
+            copy-forward: [ '16.04', 'linux-snapdragon' ]
 
 # 17.04 (zesty)
 '17.04':
@@ -486,8 +485,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
             supported: true
-            derived-from: [ '16.04', 'linux-snapdragon' ]
-            copy-forward: true
+            copy-forward: [ '16.04', 'linux-snapdragon' ]
 
 # 16.10 (yakkety)
 '16.10':
@@ -533,8 +531,7 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
-            derived-from: [ '16.04', 'linux-snapdragon' ]
-            copy-forward: true
+            copy-forward: [ '16.04', 'linux-snapdragon' ]
 
 # 16.04 (xenial)
 '16.04':
