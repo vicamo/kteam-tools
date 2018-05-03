@@ -44,13 +44,14 @@
 #  * snaps (dictionary)
 #	a named series of Snap records (see below).  The name is the snap
 #	package name for that element.
-#  * derives-from (Dependency)
+#  * derived-from (Dependency)
 #	indicates that this kernel derives from another kernel; a Dependency
 #	record (see below).  Normally this indicates that this source is
 #	derivative of and rebased onto the indicated source.
-#  * copy-forward (bool)
-#	set to true if this source package updated by copy from its
-#	derived-from source.
+#  * copy-forward (Dependency)
+#	indicates that this kernel is copied forward from another kernel;
+#	a Dependency record (see below).  This indicates that we are
+#	updating this kernel via binary copies.
 #
 # Package record fields:
 #  * type (string)
@@ -121,8 +122,7 @@
                     lowlatency:
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            derived-from: [ '18.04', 'linux' ]
-            copy-forward: true
+            copy-forward: [ '18.04', 'linux' ]
 
         linux-raspi2:
             packages:
@@ -132,8 +132,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/cosmic', 'raspi2']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
-            copy-forward: true
+            copy-forward: [ '18.04', 'linux' ]
 
         linux-oem:
             packages:
@@ -154,8 +153,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['metal']
-            derived-from: [ '18.04', 'linux-oem' ]
-            copy-forward: true
+            copy-forward: [ '18.04', 'linux-oem' ]
 
         linux-aws:
             packages:
@@ -173,8 +171,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
-            derived-from: [ '18.04', 'linux-aws' ]
-            copy-forward: true
+            copy-forward: [ '18.04', 'linux-aws' ]
 
         linux-azure:
             packages:
@@ -188,7 +185,6 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/cosmic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            copy-forward: true
             testing:
                 flavours:
                     azure:
@@ -197,6 +193,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             stakeholder: 'jrp'
+            copy-forward: [ '18.04', 'linux-azure' ]
 
         linux-gcp:
             packages:
@@ -216,7 +213,6 @@
                     arches: ['amd64']
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            copy-forward: true
             testing:
                 flavours:
                     gcp:
@@ -224,6 +220,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
+            copy-forward: [ '18.04', 'linux-gcp' ]
 
         linux-kvm:
             packages:
@@ -234,7 +231,6 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/cosmic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            copy-forward: true
             testing:
                 flavours:
                     kvm:
@@ -242,6 +238,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
+            copy-forward: [ '18.04', 'linux-kvm' ]
 
 
 # 18.04 (bionic)
