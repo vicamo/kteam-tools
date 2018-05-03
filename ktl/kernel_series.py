@@ -312,7 +312,20 @@ class KernelSeriesEntry:
 
     @property
     def opening(self):
+        if 'opening-allow' in self._data:
+            return True
         return self._data.get('opening', False)
+
+    def opening_allow(self, flag):
+        if 'opening-allow' not in self._data:
+            return not self.opening
+        allow = self._data['opening-allow']
+        if allow == None:
+            return False
+        flag_allow = allow.get(flag, False)
+        if flag_allow == None:
+            return False
+        return flag_allow
 
     @property
     def development(self):

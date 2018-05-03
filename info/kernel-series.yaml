@@ -17,8 +17,10 @@
 # Series record fields:
 #  * codename (string)
 #	the short code name for this series (artful, bionic etc)
-#  * opening (bool)
-#	set to true if this series is currently being opened
+#  * opening_allow (dictionary)
+#	create this if this series is currently being opened.  Elements within
+#	represent opening sensitive processing flags such as cve-autotriage.
+#         cve-autotriage: true
 #  * development (bool)
 #	set to true if this is the current development release
 #  * supported (bool)
