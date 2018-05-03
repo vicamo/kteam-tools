@@ -250,6 +250,9 @@ class KernelSourceEntry:
         if self._data['copy-forward'] == False:
             return None
         if self._data['copy-forward'] == True:
+            derived_from = self.derived_from
+            if derived_from == None:
+                return True
             return self.derived_from
 
         (series_key, source_key) = self._data['copy-forward']
