@@ -840,6 +840,57 @@ class TestKernelSourceEntry(unittest.TestCase):
 
         self.assertEqual(source.derived_from, None)
 
+    def test_invalid_tasks_present_single(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    invalid-tasks: [ 'task1' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.invalid_tasks, ['task1'])
+
+    def test_invalid_tasks_present_multiple(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    invalid-tasks: [ 'task1', 'task2' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.invalid_tasks, ['task1', 'task2'])
+
+    def test_invalid_tasks_present_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    invalid-tasks:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.invalid_tasks, [])
+
+    def test_supported_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.invalid_tasks, [])
+
 
 class TestKernelPackageEntry(unittest.TestCase):
 
