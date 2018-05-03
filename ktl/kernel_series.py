@@ -30,7 +30,9 @@ class KernelRepoEntry:
     # XXX: should this object have a name ?
 
     def __eq__(self, other):
-        return self.url == other.url and self.branch == other.branch
+        if isinstance(self, other.__class__):
+            return self.url == other.url and self.branch == other.branch
+        return False
 
     @property
     def url(self):
@@ -52,7 +54,9 @@ class KernelSnapEntry:
         self._data = data if data else {}
 
     def __eq__(self, other):
-        return self._name == other._name
+        if isinstance(self, other.__class__):
+            return self._name == other._name
+        return False
 
     @property
     def series(self):
@@ -110,7 +114,9 @@ class KernelPackageEntry:
         self._data = data if data else {}
 
     def __eq__(self, other):
-        return self._name == other._name
+        if isinstance(self, other.__class__):
+            return self._name == other._name
+        return False
 
     @property
     def series(self):
@@ -147,7 +153,9 @@ class KernelSourceEntry:
         self._data = data if data else {}
 
     def __eq__(self, other):
-        return self.name == other.name
+        if isinstance(self, other.__class__):
+            return self.name == other.name
+        return False
 
     @property
     def name(self):
@@ -290,7 +298,9 @@ class KernelSeriesEntry:
         self._data = data if data else {}
 
     def __eq__(self, other):
-        return self._name == other._name
+        if isinstance(self, other.__class__):
+            return self._name == other._name
+        return False
 
     @property
     def name(self):
