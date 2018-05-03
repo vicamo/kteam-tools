@@ -243,7 +243,21 @@ class KernelSourceEntry:
 
     @property
     def copy_forward(self):
-        return self._data.get('copy-forward', False)
+        if 'copy-forward' not in self._data:
+            return None
+
+        # XXX: backwards compatibility.
+        if self._data['copy-forward'] == False:
+            return None
+        if self._data['copy-forward'] == True:
+            return self.derived_from
+
+        (series_key, source_key) = self._data['copy-forward']
+
+        series = self._ks.lookup_series(series_key)
+        source = series.lookup_source(source_key)
+
+        return source
 
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
