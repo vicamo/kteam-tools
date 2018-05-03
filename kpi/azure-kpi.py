@@ -90,8 +90,8 @@ for x in sources_list:
         avg_bugs_per_upload = float(total_bugs)/total_uploads
 
 #    print ("%s %s %d %s" % (x.source_package_version,"{:%Y-%m-%d}".format(x.date_published), len(days_per_bug), avg))
-    print (("linux-azure-stats,series=%s " \
-            + "version=%s," \
+    print (("linux_azure_stats,series=%s " \
+            + "version=\"%s\"," \
             + "days_between_uploads=%d," \
             + "bugs_per_upload=%d," \
             + "avg_days_per_bug_per_upload=%.2f," \
