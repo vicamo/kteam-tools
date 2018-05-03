@@ -251,10 +251,10 @@ class KernelSourceEntry:
 
     @property
     def invalid_tasks(self):
-        if 'invalid-tasks' in self._data:
-            return self._data['invalid-tasks']
-        else:
-            return []
+        retval = self._data.get('invalid-tasks', [])
+        if retval == None:
+            retval = []
+        return retval
 
     @property
     def copy_forward(self):
