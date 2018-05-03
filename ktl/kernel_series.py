@@ -243,10 +243,19 @@ class KernelSourceEntry:
     @property
     def testable_flavours(self):
         retval = []
-        if 'testing' in self._data:
+        if (self._data.get('testing') != None and
+            self._data['testing'].get('flavours') != None
+           ):
             for flavour in self._data['testing']['flavours'].keys():
                 f = self._data['testing']['flavours'][flavour]
-                retval.append(KernelSourceTestingFlavourEntry(flavour, f['arches'], f['clouds']))
+                # If we have neither arches nor clouds we represent a noop
+                if not f:
+                    continue
+                arches = f.get('arches')
+                arches = arches if arches != None else []
+                clouds = f.get('clouds')
+                clouds = clouds if clouds != None else []
+                retval.append(KernelSourceTestingFlavourEntry(flavour, arches, clouds))
         return retval
 
     @property
