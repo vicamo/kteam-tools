@@ -4,6 +4,7 @@ from testfixtures       import TempDirectory
 from kernel_series      import (KernelSeries,
                                 KernelSeriesEntry,
                                 KernelSourceEntry,
+                                KernelSourceTestingFlavourEntry,
                                 KernelPackageEntry,
                                 KernelSnapEntry,
                                 KernelRepoEntry,
@@ -915,6 +916,318 @@ class TestKernelSourceEntry(unittest.TestCase):
         source = series.lookup_source('linux')
 
         self.assertEqual(source.invalid_tasks, [])
+
+    def test_testable_flavours_absent(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.testable_flavours, [])
+
+    def test_testable_flavours_testing_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.testable_flavours, [])
+
+    def test_testable_flavours_testing_flavours_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.testable_flavours, [])
+
+    def test_testable_flavours_testing_flavours_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                            lowlatency:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.testable_flavours, [])
+
+    def test_testable_flavours_testing_flavours_arches_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches:
+                            lowlatency:
+                                arches:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        flavours = []
+        count = 0
+        for testable in source.testable_flavours:
+            self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+            flavours.append(testable.name)
+            count += 1
+        self.assertEqual(count, 2)
+        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+
+    def test_testable_flavours_testing_flavours_arches_present_valid(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches: ['arch1', 'arch2']
+                            lowlatency:
+                                arches: ['arch1', 'arch3']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        flavours = []
+        count = 0
+        for testable in source.testable_flavours:
+            self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+            flavours.append(testable.name)
+            count += 1
+        self.assertEqual(count, 2)
+        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+
+    def test_testable_flavours_testing_flavours_arches_clouds_present_valid(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches: ['arch1', 'arch2']
+                                clouds: ['cloud1', 'cloud2']
+                            lowlatency:
+                                arches: ['arch1', 'arch3']
+                                clouds: ['cloud1', 'cloud3']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        flavours = []
+        count = 0
+        for testable in source.testable_flavours:
+            self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+            flavours.append(testable.name)
+            count += 1
+        self.assertEqual(count, 2)
+        self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
+
+class TestKernelSourceTestingFlavourEntry(unittest.TestCase):
+
+    def test_name(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.name, 'generic')
+
+    def test_arches_absent(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                clouds:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.arches, [])
+
+    def test_arches_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.arches, [])
+
+    def test_arches_present_short(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches: [ 'arch1' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.arches, ['arch1'])
+
+    def test_arches_present_many(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches: [ 'arch1', 'arch2', 'arch3' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.arches, ['arch1', 'arch2', 'arch3'])
+
+    def test_clouds_absent(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                arches:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.clouds, [])
+
+    def test_clouds_present_empty(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                clouds:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.clouds, [])
+
+    def test_clouds_present_short(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                clouds: [ 'cloud1' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.clouds, ['cloud1'])
+
+    def test_cloud_present_long(self):
+        data = """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    testing:
+                        flavours:
+                            generic:
+                                clouds: [ 'cloud1', 'cloud2', 'cloud3' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        testable = source.testable_flavours[0]
+
+        self.assertTrue(isinstance(testable, KernelSourceTestingFlavourEntry))
+        self.assertEqual(testable.clouds, ['cloud1', 'cloud2', 'cloud3'])
 
 
 class TestKernelPackageEntry(unittest.TestCase):
