@@ -3,17 +3,35 @@ import urllib2, re, datetime
 from datetime import datetime
 from launchpadlib.launchpad import Launchpad
 
+def date_to_influx_ts(date):
+        epoch = datetime.utcfromtimestamp(0)
+        dt = date.replace(tzinfo=None)
+        timestamp = int((dt - epoch).total_seconds() * 1000000000.0)
+        return timestamp
+
 launchpad = Launchpad.login_anonymously('UCT', 'production', version='devel')
 date_format = "%Y-%m-%d"
 total_bugs = 0
 total_days = 0
+total_uploads = 0
+days_per_upload = 0
+bugs_per_upload = 0
 days_per_bug = []
 ubuntu = launchpad.distributions["ubuntu"]
 archive = ubuntu.main_archive
 series = ubuntu.getSeries(name_or_version="xenial")
 output = ""
-print ("| Release | Date Published to -proposed | Total # Bugs | Avg Days to Publish Per Bug |")
-for x in archive.getPublishedSources(exact_match=True,source_name="linux-azure",distro_series=series,pocket="Proposed"):
+#print ("| Release | Date Published to -proposed | Total # Bugs | Avg Days to Publish Per Bug |")
+sources_list = []
+prev_date = 0
+days_between_uploads = 0
+total_days_between_uploads = 0
+
+sources = archive.getPublishedSources(exact_match=True,source_name="linux-azure",order_by_date=True,distro_series=series,pocket="Proposed")
+for x in sources:
+    sources_list.insert(0, x)
+
+for x in sources_list:
 #    print ("=== %s Published %s ===" % (x.source_package_version, "{:%Y-%m-%d}".format(x.date_published)))
     file = urllib2.urlopen(x.changesFileUrl())
     for line in file:
@@ -21,29 +39,82 @@ for x in archive.getPublishedSources(exact_match=True,source_name="linux-azure",
             for bug_num in re.findall('\d+', line):
                 lpbug = launchpad.bugs[bug_num]
                 for bug_task in lpbug.bug_tasks_collection:
-                    if "linux-azure" in bug_task.bug_target_name:
-
+                    if ("-proposed tracker" in lpbug.title):
+                        break
+                    if ("linux-azure" in bug_task.bug_target_name):
 #                        print("LP%s: %s" % (bug_num, lpbug.title))
 #                        print("Bug Created: %s" % ("{:%Y-%m-%d}".format(lpbug.date_created)))
 #                        print("linux-azure Created: %s" % ("{:%Y-%m-%d}".format(bug_task.date_created)))
-                        date_created = datetime.strptime("{:%Y-%m-%d}".format(bug_task.date_created), date_format)
-                        date_closed = datetime.strptime("{:%Y-%m-%d}".format(x.date_published), date_format)
-                        days = date_closed - date_created
+                        bug_date_created = datetime.strptime("{:%Y-%m-%d}".format(bug_task.date_created), date_format)
+                        bug_date_closed = datetime.strptime("{:%Y-%m-%d}".format(x.date_published), date_format)
+                        days = bug_date_closed - bug_date_created
                         days_per_bug.append(float(days.days))
                         total_days += float(days.days)
+                        days_per_upload += float(days.days)
+                        bugs_per_upload += 1
 #                        print ("Days to close: %s" % days_per_bug[-1])
                         total_bugs += 1
 #                        print("Created %s | Open %s days" % (("{:%Y-%m-%d}".format(bug_task.date_created)), days_per_bug[-1]))
                         break
+#                    else:
+#                        print("Skipping - LP%s: %s" % (bug_num, lpbug.title))
 
 #    print "-------------------------------"
 #    print ("Total # bugs: %d" % len(days_per_bug))
 #    print ("Total days: %s" % sum(days_per_bug))
 #    print ("Avg days to publish: %s" % (sum(days_per_bug) / len(days_per_bug)))
-    print ("%s %s %d %s" % (x.source_package_version,"{:%Y-%m-%d}".format(x.date_published), len(days_per_bug), (sum(days_per_bug) / len(days_per_bug))))
-    days_per_bug = []
-#    print ("__________________________________________")
+    timestamp = date_to_influx_ts(x.date_published)
+    total_uploads += 1
 
-print ("Total Days: %s" % total_days)
-print ("Total Bugs: %s" % total_bugs)
-print ("Avg Days/Bug: %s" % (total_days/total_bugs))
+    close_date = datetime.strptime("{:%Y-%m-%d}".format(x.date_published), date_format)
+    if (prev_date):
+        days_between_uploads = close_date - prev_date
+        days_between_uploads = days_between_uploads.days
+
+    prev_date = datetime.strptime("{:%Y-%m-%d}".format(x.date_published), date_format)
+
+    total_days_between_uploads += days_between_uploads
+
+    avg_days_per_bug_per_upload = 0
+    if (bugs_per_upload):
+        avg_days_per_bug_per_upload = float(days_per_upload)/bugs_per_upload
+
+    avg_days_per_bug = 0
+    if (total_bugs):
+        avg_days_per_bug = float(total_days)/total_bugs
+
+    avg_days_per_upload = 0
+    avg_bugs_per_uplaod = 0
+    if (total_uploads):
+        avg_days_per_upload = float(total_days_between_uploads)/total_uploads
+        avg_bugs_per_upload = float(total_bugs)/total_uploads
+
+#    print ("%s %s %d %s" % (x.source_package_version,"{:%Y-%m-%d}".format(x.date_published), len(days_per_bug), avg))
+    print (("linux-azure-stats,series=%s " \
+            + "version=%s," \
+            + "days_between_uploads=%d," \
+            + "bugs_per_upload=%d," \
+            + "avg_days_per_bug_per_upload=%.2f," \
+            + "total_days=%d," \
+            + "total_bugs=%d," \
+            + "total_uploads=%d," \
+            + "avg_days_per_bug=%.2f," \
+            + "avg_days_per_upload=%.2f," \
+            + "avg_bugs_per_upload=%.2f " \
+            + "%s") % \
+            (series.name, \
+            x.source_package_version, \
+            days_between_uploads, \
+            bugs_per_upload, \
+            avg_days_per_bug_per_upload, \
+            total_days, \
+            total_bugs, \
+            total_uploads, \
+            avg_days_per_bug, \
+            avg_days_per_upload, \
+            avg_bugs_per_upload, \
+            timestamp))
+
+    days_per_bug = []
+    days_per_upload = 0
+    bugs_per_upload = 0
