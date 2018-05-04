@@ -274,7 +274,7 @@ git checkout "$configs" -- debian.master/config || git checkout "$series/$fbranc
 	[ -f "$here/config.$series" ] && cat "$here/config.$series"
 } >"$debian/config/OVERRIDES"
 try=0
-while :
+while [ "$try" -lt 20 ]
 do
 	let try="$try + 1"
 	echo "fix-configs: iteration $try ..."
@@ -282,7 +282,7 @@ do
 	# Take the defaults, if nothing changes we are done.
 	do_chroot "$build_release-amd64" \
 		fakeroot debian/rules clean defaultconfigs
-	git diff --exit-code && break
+	git diff --exit-code debian.master/config && break
 
 	# Attempt to enable any tri-state options.
 	{
