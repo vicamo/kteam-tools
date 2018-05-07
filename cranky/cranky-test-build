@@ -6,11 +6,17 @@
 # Juerg Haefliger <juergh@canonical.com>
 #
 
-function out()
+function cleanup()
 {
 	trap "" EXIT INT TERM HUP
 
-	git branch -D "${BUILD_BRANCH}"
+	if [ -n "${TEMP_FILE:-}" ] ; then
+		rm -f  "${TEMP_FILE:-}"
+	fi
+
+	if [ -n "${BUILD_BRANCH:-}" ] ; then
+		git branch -D "${BUILD_BRANCH}"
+	fi
 }
 
 function pr_error()
@@ -129,38 +135,53 @@ if ! [ -d .git ] ; then
 fi
 
 # Check if the commit exists
-if ! git rev-parse "${commit}" >/dev/null 2>&1 ; then
-	pr_error "No such git reference '${commit}'"
+if ! git rev-parse "${commit}" >/dev/null ; then
+	pr_error "No such git revision '${commit}'"
 	exit 1
 fi
 
-changelog=debian.master/changelog
-if ! [ -e "${changelog}" ] ; then
-	pr_error "No such file '${changelog}'"
+# Install an exit handler to clean up temporary files and branches
+# shellcheck disable=SC2064
+trap cleanup EXIT INT TERM HUP
+
+# Check if the debian.<variant> directory should be used
+debian_d=$(git show "${commit}:debian/debian.env" 2>/dev/null | \
+			   sed -e 's,DEBIAN=,,')
+debian_d=${debian_d:-debian.master}
+
+# Get the correct changelog
+TEMP_FILE=$(mktemp)
+if ! git show "${commit}:${debian_d}/changelog" > "${TEMP_FILE}" ; then
+	pr_error "Failed to get '${commit}:${debian_d}/changelog'"
 	exit 1
 fi
+
+# Get the source and series from the changelog
+source=$(dpkg-parsechangelog -l "${TEMP_FILE}" -S Source)
+series=$(dpkg-parsechangelog -l "${TEMP_FILE}" -S Distribution)
+if [ "${series}" = "UNRELEASED" ] ; then
+	series=$(dpkg-parsechangelog -l "${TEMP_FILE}" -S Distribution -o 1 -c 1)
+fi
+
+# Get the list of supported architectures
+readarray -t all_arches < <(git ls-tree "${commit}" "${debian_d}/config/" | \
+								grep ' tree ' | sed -e 's,.*/,,')
 
 if [ "${arches[0]}" = "all" ] ; then
 	# shellcheck disable=SC2012
-	read -r -a arches <<< "$(ls -1d debian.master/config/*/ | \
-		sed -e 's,/$,,' -e 's,.*/,,' | tr '\n' ' ')"
+	arches=("${all_arches[@]}")
 else
 	# Verify that the specified arch(es) is/are valid
 	for arch in "${arches[@]}" ; do
-		if ! [ -d "debian.master/config/${arch}" ] ; then
-			pr_error "Unsupported arch '${arch}'"
+		if ! printf "%s\n" "${all_arches[@]}" | grep -q "^${arch}$" ; then
+			pr_error "Unsupported arch '${arch}' (supported: ${all_arches[*]})"
 			exit 1
 		fi
 	done
 fi
 
-# Get the series from the changelog
-series=$(dpkg-parsechangelog -l "${changelog}" -S Distribution)
-if [ "${series}" = "UNRELEASED" ] ; then
-	series=$(dpkg-parsechangelog -l "${changelog}" -S Distribution -o 1 -c 1)
-fi
-
 pr_note "Build host:   ${host}"
+pr_note "Build source: ${source}"
 pr_note "Build series: ${series}"
 pr_note "Build arches: ${arches[*]}"
 pr_note "Build commit: $(git log --format='%h ("%s")' "${commit}" -1)"
@@ -206,10 +227,6 @@ fi
 BUILD_BRANCH="gbk-$(git rev-parse --short "${commit}")"
 pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
 git branch "${BUILD_BRANCH}" "${commit}"
-
-# Install an exit handler
-# shellcheck disable=SC2064
-trap out EXIT INT TERM HUP
 
 # Possible build results
 build_passed=0
