@@ -9,6 +9,6 @@ if [ "$#" -ne 1 ]; then
 	echo "Usage: $0 <retry-url>" 1>&2
 	exit 1
 fi
-url="$1"
+url=$(echo "$1" | sed -e 's/\.html$/.retry/')
 
 curl -s "$url" | awk '($1 == "MISS") { print $2 }' | xargs -n 1 xdg-open
