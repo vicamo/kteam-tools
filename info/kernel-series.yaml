@@ -140,7 +140,8 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/cosmic', 'raspi2']
             supported: true
-            copy-forward: [ '18.04', 'linux' ]
+            derived-from: [ '18.04', 'linux' ]
+            copy-forward: [ '18.04', 'linux-raspi2' ]
 
         linux-oem:
             packages:
