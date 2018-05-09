@@ -98,7 +98,7 @@
 #  * 1 (string)
 #	source package name of the depeneded on source
 
-# 18.10 (Cc: unnamed atm)
+# 18.10 (Cosmic Cuttlefish)
 '18.10':
     codename: cosmic
     development: true
