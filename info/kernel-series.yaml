@@ -103,10 +103,6 @@
     codename: cosmic
     development: true
     supported: false
-    opening: true # XXX: for non-upgraded instances -- remove soon
-    opening-allow:
-        cve-autotriage: true
-        adt-matrix: true
     sources:
         linux:
             versions: ['4.15.0']
