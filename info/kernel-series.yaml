@@ -207,7 +207,7 @@
         linux-gcp:
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/cosmic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/cosmic', 'master-next']
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/cosmic']
@@ -353,7 +353,7 @@
         linux-gcp:
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'master-next']
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic']
