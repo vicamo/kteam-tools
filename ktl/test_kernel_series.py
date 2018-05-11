@@ -238,6 +238,30 @@ class TestKernelSeriesEntry(unittest.TestCase):
         self.assertEqual(series.opening_allow('thing'), False)
         self.assertEqual(series.opening_allow('thing2'), False)
 
+    def test_opening_allow_present_true(self):
+        data = """
+        '18.04':
+            opening: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.opening, True)
+        self.assertEqual(series.opening_allow('thing'), False)
+        self.assertEqual(series.opening_allow('thing2'), False)
+
+    def test_opening_allow_present_false(self):
+        data = """
+        '18.04':
+            opening: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.opening, False)
+        self.assertEqual(series.opening_allow('thing'), True)
+        self.assertEqual(series.opening_allow('thing2'), True)
+
     def test_opening_allow_present_mixed_true(self):
         data = """
         '18.04':
