@@ -36,7 +36,7 @@ rc=0
 mkdir -p "$html"
 (
 	cd "$html" || exit 1
-	echo
+	echo "*** primary ..."
 	"$here/adt-update" "$hints/primary.conf" "$hints/primary.hints" - "$britney"
 ) || { rc=1; echo "FAILED"; }
 
@@ -44,6 +44,8 @@ for conf in "$hints/"/*.conf
 do
 	handle=$( basename "$conf" .conf )
 	[ "$handle" = "primary" ] && continue
+
+	echo "*** $handle ..."
 	archive=$( echo "$handle" | sed -e 's@--@/@g' )
 	(
 		mkdir -p "$html/$handle"
