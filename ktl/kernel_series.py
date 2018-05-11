@@ -346,6 +346,20 @@ class KernelSeriesEntry:
             return False
         return flag_allow
 
+    def opening_ready(self, *flags):
+        if 'opening' not in self._data:
+            return True
+        allow = self._data['opening']
+        if allow == None:
+            return False
+        elif allow in (True, False):
+            return not allow
+        for flag in flags:
+            flag_allow = allow.get(flag, False)
+            if flag_allow == None or flag_allow == False:
+                return False
+        return True
+
     @property
     def development(self):
         return self._data.get('development', False)
