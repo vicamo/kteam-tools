@@ -12,7 +12,7 @@ cmd = sys.argv[1]
 
 urls_seen = {}
 for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-    if not series.opening_allow('adt-matrix'):
+    if not series.opening_ready('autopkgtest', 'britney'):
         continue
     if not series.supported and not series.development:
         continue
