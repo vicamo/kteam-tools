@@ -24,6 +24,8 @@ kernel_series = KernelSeries()
 
 if mode == 'lib-build':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.opening_ready('repositories'):
+            continue
         for source in sorted(series.sources, key=lambda x: x.name):
             for package in sorted(source.packages, key=lambda x: x.name):
                 repo = package.repo
@@ -36,7 +38,7 @@ if mode == 'lib-build':
     version_map = {}
     version_supported = {}
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-        if series.opening:
+        if not series.opening_ready('repositories', 'chroots'):
             continue
         for source in series.sources:
             if source.name != 'linux' or not source.versions:
@@ -56,7 +58,7 @@ if mode == 'lib-build':
     series_latest = None
     series_first = None
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
-            if series.opening:
+            if not series.opening_ready('repositories', 'chroots'):
                 continue
             if series.supported or series.development:
                 supported = series.codename
@@ -119,7 +121,9 @@ if mode == 'lib-build':
 
 elif mode == 'changeset':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-        if series.opening or (not series.supported and not series.development):
+        if not series.opening_ready('repositories', 'chroots'):
+            continue
+        if not series.supported and not series.development:
             continue
         # The bot cannot currently get these sources.
         if series.esm:
