@@ -7,7 +7,7 @@ from ktl3.bugs                          import DeltaTime
 from ktl3.utils                         import debug as dout
 from ktl3.dbg                           import Dbg
 from ktl3.termcolor                     import colored
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 from datetime                           import datetime
 import re
 
@@ -76,7 +76,7 @@ class KernelBug(Bug):
         for file_regex in self.file_regexes:
             file_regex['rc'] = re.compile(file_regex['re'], re.IGNORECASE)
 
-        self.ubuntu = Ubuntu()
+        self.kernel_series = KernelSeries()
         return
 
     # dbg
@@ -195,10 +195,15 @@ class KernelBug(Bug):
             m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', version)
             if m is not None:
                 kver = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
-                if kver in self.ubuntu.index_by_kernel_version:
-                    series_name    = self.ubuntu.index_by_kernel_version[kver]['name']
-                    series_version = self.ubuntu.index_by_kernel_version[kver]['series_version']
-                    self.dbg('    - found kernel version in the db\n')
+                for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+                    source = series.lookup_source('linux')
+                    if not source or not source.versions:
+                        continue
+                    if kver in source.versions:
+                        series_name    = series.codename
+                        series_version = series.name
+                        self.dbg('    - found kernel version in the db\n')
+                        break
             else:
                 self.dbg('    - didn\'t match kernel version pattern\n')
 
@@ -206,22 +211,29 @@ class KernelBug(Bug):
             m = re.search('([0-9]+\.[0-9]+)', version)
             if m is not None:
                 dnum = m.group(1)
-                if dnum in self.ubuntu.db:
-                    series_name   = self.ubuntu.db[dnum]['name']
-                    series_version = dnum
-                    self.dbg('    - found series version in the db\n')
+                for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+                    if series.name == dnum:
+                        series_name    = series.codename
+                        series_version = series.name
+                        self.dbg('    - found series version in the db\n')
             else:
                 self.dbg('    - didn\'t match series version pattern\n')
 
         if series_name == '':
-            try:
-                rec = self.ubuntu.lookup(version)
-                series_name = rec['name']
-                series_version = rec['series_version']
-            except KeyError:
-                pass
+            for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+                if series.name == version or series.codename == version:
+                    series_name    = series.codename
+                    series_version = series.name
+                    self.dbg('    - found full version in the db\n')
+                source = series.lookup_source('linux')
+                if source and source.versions and version in source.versions:
+                        series_name    = series.codename
+                        series_version = series.name
+                        self.dbg('    - found full version in the db\n')
+                        break
 
         self.dbg('    - returning (%s)\n' % series_name)
+
         return (series_name, series_version)
 
     # _ubuntu_series_version_lookup
@@ -229,10 +241,12 @@ class KernelBug(Bug):
     def _ubuntu_series_version_lookup(self, series_name):
         self.dbg(' . Looking up the series version for (%s)\n' % series_name)
         retval = ''
-        for version in self.ubuntu.index_by_kernel_version:
-            if series_name == self.ubuntu.index_by_kernel_version[version]['name']:
-                retval = version
-                break
+        for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+            if series.codename == series_name:
+                source = series.lookup_source('linux')
+                if source and source.versions:
+                    retval = series.versions[-1]
+                    break
         return retval
 
     # problem_type
@@ -456,11 +470,14 @@ class KernelBug(Bug):
         self.dbg(' . Looking for the series in the title\n')
         series_name = ''
         series_version = ''
-        for rel_num, rel in self.ubuntu.db.items():
-            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(rel['name'], rel_num.replace(".", "\."))
+        for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+            rel_num = series.name
+            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(series.codename, rel_num.replace(".", "\."))
             regex = re.compile(pat, re.IGNORECASE)
             if regex.search(bug.title):
-                (series_name, series_version) = self._ubuntu_series_lookup(rel['name'])
+                series_name    = series.codename
+                series_version = series.name
+                break
         return (series_name, series_version)
 
     # _find_series_in_tags
@@ -474,11 +491,11 @@ class KernelBug(Bug):
         series_name = ''
         series_version = ''
 
-        for series in Ubuntu.index_by_series_name:
-            if series in bug.tags:
-                (series_name, series_version) = self._ubuntu_series_lookup(series)
-                if series_name != '':
-                    break
+        for series in sorted(self.kernel_series.series, key=KernelSeries.key_series_name):
+            if series.codename in bug.tags:
+                series_name    = series.codename
+                series_version = series.name
+                break
 
         return (series_name, series_version)
 
