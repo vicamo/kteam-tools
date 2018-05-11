@@ -13,7 +13,7 @@ from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
-from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 import json
 
 # CmdlineError
@@ -253,13 +253,17 @@ class CollectRegressionsData(StdApp):
             bugs_db_packages = bugs_db['packages']
 
             # All source projects the kernel team are interesed in.
-            #
             interested_source_packages = []
-            ubuntu = Ubuntu
-            for release in ubuntu.db:
-                for package_name in ubuntu.db[release]['packages']:
-                    if package_name not in interested_source_packages:
-                        interested_source_packages.append(package_name)
+            ks = KernelSeries()
+            for series in ks.series:
+                if not series.supported and not series.development:
+                    continue
+                for source in series.sources:
+                    if not source.supported:
+                        continue
+                    for package in source.packages:
+                        if package.name not in interested_source_packages:
+                            interested_source_packages.append(package.name)
 
             for package_name in interested_source_packages:
                 self.verbose('%s\n' % package_name)
