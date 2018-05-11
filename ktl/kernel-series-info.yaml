@@ -553,6 +553,7 @@
   - 4.13.0
   - 4.14.0
   - 4.15.0
+  lts: true
   name: bionic
   packages:
   - linux-raspi2
@@ -575,8 +576,41 @@
   series_version: '18.04'
   supported: true
 '18.10':
+  dependent-packages:
+    linux:
+      meta: linux-meta
+      signed: linux-signed
+    linux-aws:
+      meta: linux-meta-aws
+    linux-azure:
+      meta: linux-meta-azure
+      signed: linux-signed-azure
+    linux-gcp:
+      meta: linux-meta-gcp
+    linux-kvm:
+      meta: linux-meta-kvm
+    linux-oem:
+      meta: linux-meta-oem
+      signed: linux-signed-oem
+    linux-raspi2:
+      meta: linux-meta-raspi2
+  dependent-snaps:
+    linux-gcp:
+      arches:
+      - amd64
+      gated: false
+      hw-cert: false
+      qa: false
+      snap: gcp-kernel
+      stable: false
+  derivative-packages:
+    linux: []
   development: true
-  name: chaotic
+  kernel: 4.15.0
+  kernels:
+  - 4.15.0
+  name: cosmic
+  packages: []
   series_version: '18.10'
   supported: false
 '6.06':
