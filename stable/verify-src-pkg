@@ -6,7 +6,6 @@ from os                                 import path, _exit
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
-from ktl.ubuntu                         import Ubuntu
 
 # CmdlineError
 #
@@ -123,27 +122,12 @@ class CheckPackage(StdApp):
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
 
-            ubuntu = Ubuntu()
             for cf in self.cfg['changes']:
                 state = ''
                 checked = 0
                 with open(cf, 'r') as f:
                     for line in f:
                         line = line.rstrip()
-
-                        # There is a version line in the changes file. We use that to determine
-                        # which checksum values to compare against.
-                        #
-                        # Ex: 'Version: 2.6.24-28.84'
-                        #
-                        if 'Version: 2.6' in line:
-                            (key, val) = line.split()
-                            (ver, abi) = val.split('-')
-                            record = ubuntu.lookup(ver)
-                            if record == None:
-                                error("Failed to find the matching version (%s) in the kernel-version to ubuntu-release map dictionary." % ver)
-                                _exit(-1)
-                            continue
 
                         # Detect the section containing the sha1 checksum for the orig.tar.gz
                         #
