@@ -74,7 +74,7 @@ do
 	esac
 	echo "$series $package $parent $migration $triggers"
 done <"versions.info" | \
-	"$here/adt-matrix" "$archive" "$hints"
+	"$here/adt-matrix" "$archive" "$hints" || exit 1
 
 # Build the commands after the adt-matrix completes as we rely no its missing
 # test information to be up to date.

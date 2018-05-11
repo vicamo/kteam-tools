@@ -31,12 +31,14 @@ fi
 # Pull the primary configuration from kernel-series.
 "$here/adt-config" primary >"$hints/primary.conf" || exit 1
 
+rc=0
+
 mkdir -p "$html"
 (
 	cd "$html" || exit 1
 	echo
 	"$here/adt-update" "$hints/primary.conf" "$hints/primary.hints" - "$britney"
-)
+) || { rc=1; echo "FAILED"; }
 
 for conf in "$hints/"/*.conf
 do
@@ -53,7 +55,10 @@ do
 			"$hints/$handle.conf" \
 			"$hints/$handle.hints" \
 			"$archive" -
-	)
+	) || { rc=1; echo "FAILED"; }
 done
 
 "$here/adt-cleanup"
+
+[ "$rc" != 0 ] && echo "ADT run failed -- rc=$rc"
+exit "$rc"
