@@ -226,35 +226,6 @@ class TestKernelSeriesEntry(unittest.TestCase):
 
         self.assertEqual(series.esm, False)
 
-    def test_opening_present_true(self):
-        data = """
-        '18.04':
-            opening: true
-        """
-        ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-
-        self.assertEqual(series.opening, True)
-
-    def test_opening_present_false(self):
-        data = """
-        '18.04':
-            opening: false
-        """
-        ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-
-        self.assertEqual(series.opening, False)
-
-    def test_opening_absent(self):
-        data = """
-        '18.04':
-        """
-        ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-
-        self.assertEqual(series.opening, False)
-
     def test_opening_allow_present_empty(self):
         data = """
         '18.04':
@@ -263,6 +234,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
+        self.assertEqual(series.opening, True)
         self.assertEqual(series.opening_allow('thing'), False)
         self.assertEqual(series.opening_allow('thing2'), False)
 
@@ -275,6 +247,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
+        self.assertEqual(series.opening, True)
         self.assertEqual(series.opening_allow('thing'), True)
         self.assertEqual(series.opening_allow('thing2'), False)
 
@@ -287,6 +260,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
+        self.assertEqual(series.opening, True)
         self.assertEqual(series.opening_allow('thing'), False)
         self.assertEqual(series.opening_allow('thing2'), False)
 
@@ -300,6 +274,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
+        self.assertEqual(series.opening, True)
         self.assertEqual(series.opening_allow('thing'), False)
         self.assertEqual(series.opening_allow('thing2'), True)
 
@@ -312,32 +287,8 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
-        self.assertEqual(series.opening_allow('thing'), False)
-
-    def test_opening_allow_absent_opening_present(self):
-        data = """
-        '18.04':
-            opening: true
-        """
-        ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-
         self.assertEqual(series.opening, True)
         self.assertEqual(series.opening_allow('thing'), False)
-        self.assertEqual(series.opening_allow('thing2'), False)
-
-    def test_opening_allow_present_opening_absent(self):
-        data = """
-        '18.04':
-            opening-allow:
-                thing: true
-        """
-        ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-
-        self.assertEqual(series.opening, True)
-        self.assertEqual(series.opening_allow('thing'), True)
-        self.assertEqual(series.opening_allow('thing2'), False)
 
     def test_opening_allow_absent(self):
         data = """
@@ -346,6 +297,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
 
+        self.assertEqual(series.opening, False)
         self.assertEqual(series.opening_allow('thing'), True)
 
     def test_sources_no_sources(self):
