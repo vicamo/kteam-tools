@@ -23,7 +23,7 @@ kernel_series = KernelSeries()
 
 if mode == 'britney':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-        if series.opening:
+        if not series.opening_allow('dashboard'):
             continue
         if not series.supported and not series.development:
             continue
