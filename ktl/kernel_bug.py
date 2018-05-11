@@ -203,7 +203,7 @@ class KernelBug(Bug):
                 self.dbg('    - didn\'t match kernel version pattern\n')
 
         if series_name == '':
-            m = re.search('([0-9+)\.([0-9]+)', version)
+            m = re.search('([0-9]+\.[0-9]+)', version)
             if m is not None:
                 dnum = m.group(1)
                 if dnum in self.ubuntu.db:
