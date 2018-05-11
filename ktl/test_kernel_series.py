@@ -229,7 +229,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
     def test_opening_allow_present_empty(self):
         data = """
         '18.04':
-            opening-allow:
+            opening:
         """
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
@@ -241,7 +241,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
     def test_opening_allow_present_mixed_true(self):
         data = """
         '18.04':
-            opening-allow:
+            opening:
                 thing: true
         """
         ks = KernelSeries(data=data)
@@ -254,7 +254,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
     def test_opening_allow_present_mixed_false(self):
         data = """
         '18.04':
-            opening-allow:
+            opening:
                 thing: false
         """
         ks = KernelSeries(data=data)
@@ -267,7 +267,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
     def test_opening_allow_present_mixed_mixed(self):
         data = """
         '18.04':
-            opening-allow:
+            opening:
                 thing: false
                 thing2: true
         """
@@ -281,7 +281,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
     def test_opening_allow_present_empty(self):
         data = """
         '18.04':
-            opening-allow:
+            opening:
                 thing:
         """
         ks = KernelSeries(data=data)

@@ -328,13 +328,13 @@ class KernelSeriesEntry:
 
     @property
     def opening(self):
-        if 'opening-allow' in self._data:
+        if 'opening' in self._data:
             return True
         else:
             return False
 
     def opening_allow(self, flag):
-        allow = self._data.get('opening-allow', True)
+        allow = self._data.get('opening', True)
         if allow == True:
             return True
         flag_allow = allow.get(flag, False)
