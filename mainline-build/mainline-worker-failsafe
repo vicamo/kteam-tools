@@ -31,8 +31,8 @@ if [ "$killit" = '' ]; then
 	last_update=$( stat --format=%Z ~/logs/cod-worker.log )
 	let minutes="($now - $last_update) / 60"
 
-	if [ "$minutes" -ge 15 ]; then
-		killit="log silent for more than 15 minutes"
+	if [ "$minutes" -ge 30 ]; then
+		killit="log silent for more than 30 minutes"
 	fi
 fi
 
