@@ -15,16 +15,20 @@ check()
 	local which="$1"
 	local msg="$2"
 
+	echo "$P: $which ..."
+
 	# Generate the old/new combination.
 	touch "$dir/$which"
 	"$here/$which" >"$dir/$which.new"
 
-	changes=$(diff -u "$dir/$which" "$dir/$which.new" | grep -c '/^\+[^\+]/')
-	if [ "$changes" != 0 ]; then
+	changes=$(diff -u "$dir/$which" "$dir/$which.new" | grep -c '^\+[^\+]')
+	echo "$P: $which ... changes=$changes"
+	if [ "$changes" -ne 0 ]; then
 		"$here/../ktl/announce.py" "$which" "$msg" "http://kernel.ubuntu.com/~kernel-ppa/status/broken/$which"
 	fi
 
 	# Commit this version.
+	ln "$dir/$which" "$dir/$which.old"
 	mv "$dir/$which.new" "$dir/$which"
 }
 
