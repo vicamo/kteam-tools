@@ -7,12 +7,26 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-tmp="/tmp/$P.$$"
+dir="public_html/status/broken"
+mkdir -p "$dir"
 
-"$here/cod-mainline-broken" >"$tmp"
-[ -s "$tmp" ] && "$here/../ktl/announce.py" --body-file "$tmp" cod-mainline-broken "mainline-builds: published results broken"
+check()
+{
+	local which="$1"
+	local msg="$2"
 
-"$here/cod-changeset-broken" >"$tmp"
-[ -s "$tmp" ] && "$here/../ktl/announce.py" --body-file "$tmp" cod-changeset-broken "changeset: published results broken"
+	# Generate the old/new combination.
+	touch "$dir/$which"
+	"$here/$which" >"$dir/$which.new"
 
-rm -f "$tmp"
+	changes=$(diff -u "$dir/$which" "$dir/$which.new" | grep -c '/^\+[^\+]/')
+	if [ "$changes" != 0 ]; then
+		"$here/../ktl/announce.py" "$which" "$msg" "http://kernel.ubuntu.com/~kernel-ppa/status/broken/$which"
+	fi
+
+	# Commit this version.
+	mv "$dir/$which.new" "$dir/$which"
+}
+
+check cod-mainline-broken "mainline-builds: published results broken"
+check cod-changeset-broken "changeset: published results broken"
