@@ -10,11 +10,9 @@ esac
 tmp="/tmp/$P.$$"
 
 "$here/cod-mainline-broken" >"$tmp"
-[ -s "$tmp" ] && "$here/../ktl/announce.py" cod-mainline-broken "mainline-builds: published results broken" \
-	"$(cat "$tmp")"
+[ -s "$tmp" ] && "$here/../ktl/announce.py" --body-file "$tmp" cod-mainline-broken "mainline-builds: published results broken"
 
 "$here/cod-changeset-broken" >"$tmp"
-[ -s "$tmp" ] && "$here/../ktl/announce.py" cod-changeset-broken "changeset: published results broken" \
-	"$(cat "$tmp")"
+[ -s "$tmp" ] && "$here/../ktl/announce.py" --body-file "$tmp" cod-changeset-broken "changeset: published results broken"
 
 rm -f "$tmp"
