@@ -1,0 +1,20 @@
+#!/bin/bash
+P="cod-broken"
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+tmp="/tmp/$P.$$"
+
+"$here/cod-mainline-broken" >"$tmp"
+[ -s "$tmp" ] && "$here/../ktl/announce.py" cod-mainline-broken "mainline-builds: published results broken" \
+	"$(cat "$tmp")"
+
+"$here/cod-changeset-broken" >"$tmp"
+[ -s "$tmp" ] && "$here/../ktl/announce.py" cod-changeset-broken "changeset: published results broken" \
+	"$(cat "$tmp")"
+
+rm -f "$tmp"
