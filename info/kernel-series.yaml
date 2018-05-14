@@ -781,6 +781,7 @@
                         #
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-joule:
             packages:
