@@ -85,9 +85,10 @@ examples:
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have ssh tunnel setup to the MQ server.')
+    parser.add_argument('--body-file', action='store', default=False, help='File containing body text.')
     parser.add_argument('routing', help='routing key')
     parser.add_argument('subject', help='subject for the message')
-    parser.add_argument('body', help='body of the message')
+    parser.add_argument('body', nargs='?', help='body for the message')
 
     args = parser.parse_args()
 
@@ -103,7 +104,13 @@ examples:
 
         announce = Announce()
 
-        announce.send(args.routing, args.subject, args.body)
+        body = ''
+        if args.body:
+            body = args.body
+        elif args.body_file:
+            with open(args.body_file) as bfd:
+                body = ''.join(bfd.readlines())
+        announce.send(args.routing, args.subject, body)
 
     # Handle the user presses <ctrl-C>.
     #
