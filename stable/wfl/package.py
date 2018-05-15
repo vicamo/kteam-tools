@@ -522,14 +522,14 @@ class Package():
         cleave('Package::fully_built (%s : %s)' % (pkg, retval))
         return retval
 
-    # any_in_pocket
+    # all_in_pocket
     #
-    def any_in_pocket(s, pocket='Proposed'):
+    def all_in_pocket(s, pocket='Proposed'):
         '''
-        Any dependent packages are in the pocket 'pocket'.
+        All dependent packages are in the pocket 'pocket'.
         '''
-        center(s.__class__.__name__ + '.any_in_pocket')
-        retval = False
+        center(s.__class__.__name__ + '.all_in_pocket')
+        retval = True
 
         for pkg in s.srcs:
             try:
@@ -539,9 +539,9 @@ class Package():
 
             if pkg_seen:
                 cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
-                retval = True
             else:
                 cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
+                retval = False
 
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval

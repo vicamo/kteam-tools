@@ -43,7 +43,7 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while not retval:
-            if not s.bug.any_in_pocket('Proposed'):
+            if not s.bug.all_in_pocket('Proposed'):
                 break
 
             s.task.status = 'Fix Committed'
@@ -96,7 +96,7 @@ class PromoteToProposed(Promoter):
             if s.task.status in ('Fix Committed', 'Incomplete'):
                 break
 
-            if not s.bug.any_in_pocket('Proposed'):
+            if not s.bug.all_in_pocket('Proposed'):
                 break
 
             s.task.status = 'Fix Committed'
