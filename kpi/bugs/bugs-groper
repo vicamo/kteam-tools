@@ -17,7 +17,7 @@ import yaml
 import json
 import sqlite3
 
-from ktl.ubuntu import Ubuntu
+from ktl.kernel_series                  import KernelSeries
 
 # LP
 #
@@ -164,7 +164,7 @@ class UbuntuError(Exception):
 # KernelTools
 #
 class KernelTools():
-    ubuntu = Ubuntu()
+    kernel_series = KernelSeries()
 
     # _ubuntu_series_lookup
     #
@@ -177,39 +177,51 @@ class KernelTools():
         This method returns a (series_name, series_version) tuple.
         """
         debug(' . Looking up the series name for (%s)' % version)
-        series_name = None
-        series_version = None
-        if series_name is None:
+        series_name = ''
+        series_version = ''
+        if series_name == '':
             m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', version)
             if m is not None:
                 kver = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
-                if kver in cls.ubuntu.index_by_kernel_version:
-                    series_name    = cls.ubuntu.index_by_kernel_version[kver]['name']
-                    series_version = cls.ubuntu.index_by_kernel_version[kver]['series_version']
-                    debug('    - found kernel version in the db')
+                for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+                    source = series.lookup_source('linux')
+                    if not source or not source.versions:
+                        continue
+                    if kver in source.versions:
+                        series_name    = series.codename
+                        series_version = series.name
+                        debug('    - found kernel version in the db')
+                        break
             else:
                 debug('    - didn\'t match kernel version pattern')
 
-        if series_name is None:
-            m = re.search('([0-9+)\.([0-9]+)', version)
+        if series_name == '':
+            m = re.search('([0-9]+\.[0-9]+)', version)
             if m is not None:
                 dnum = m.group(1)
-                if dnum in cls.ubuntu.db:
-                    series_name    = cls.ubuntu.db[dnum]['name']
-                    series_version = cls.ubuntu.db[dnum]['series_version']
-                    debug('    - found series version in the db')
+                for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+                    if series.name == dnum:
+                        series_name    = series.codename
+                        series_version = series.name
+                        debug('    - found series version in the db')
             else:
                 debug('    - didn\'t match series version pattern')
 
-        if series_name is None:
-            try:
-                rec = cls.ubuntu.lookup(version)
-                series_name = rec['name']
-                series_version = rec['series_version']
-            except KeyError:
-                pass
+        if series_name == '':
+            for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+                if series.name == version or series.codename == version:
+                    series_name    = series.codename
+                    series_version = series.name
+                    debug('    - found full version in the db')
+                source = series.lookup_source('linux')
+                if source and source.versions and version in source.versions:
+                        series_name    = series.codename
+                        series_version = series.name
+                        debug('    - found full version in the db')
+                        break
 
         debug('    - returning (%s)' % series_name)
+
         return (series_name, series_version)
 
     @classmethod
@@ -281,10 +293,12 @@ class KernelTools():
     def _ubuntu_series_version_lookup(cls, series_name):
         debug(' . Looking up the series version for (%s)\n' % series_name)
         retval = ''
-        for version in cls.ubuntu.index_by_kernel_version:
-            if series_name == cls.ubuntu.index_by_kernel_version[version]['name']:
-                retval = version
-                break
+        for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+            if series.codename == series_name:
+                source = series.lookup_source('linux')
+                if source and source.versions:
+                    retval = series.versions[-1]
+                    break
         return retval
 
     # _find_series_in_tags
@@ -315,24 +329,22 @@ class KernelTools():
 
     # _find_series_in_title
     #
+    # Scan title for a pattern that looks like a distro name or version, and
+    # return the newest release version found.
+    #
     @classmethod
-    def _find_series_in_title(cls, lp_bug):
-        """
-        Scan title for a pattern that looks like a distro name or version, and
-        return the newest release version found.
-        """
-        debug(' . Looking for the series in the title')
-        series_name = None
-        series_version = None
-        for rel_num, rel in cls.ubuntu.db.items():
-            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" % (rel['name'], rel_num.replace(".", "\."))
+    def _find_series_in_title(cls, bug):
+        debugg(' . Looking for the series in the title')
+        series_name = ''
+        series_version = ''
+        for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+            rel_num = series.name
+            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(series.codename, rel_num.replace(".", "\."))
             regex = re.compile(pat, re.IGNORECASE)
-            if regex.search(lp_bug['title']):
-                (series_name, series_version) = cls._ubuntu_series_lookup(rel['name'])
-
-        if series_name is None:
-            debug('     - Not found')
-
+            if regex.search(bug.title):
+                series_name    = series.codename
+                series_version = series.name
+                break
         return (series_name, series_version)
 
     @classmethod
