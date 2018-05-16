@@ -25,6 +25,16 @@ class Launchpad(_Launchpad):
             os.makedirs(cache_path, 0o700)
         return service_root, launchpadlib_dir, cache_path, service_root_dir
 
+def get_flavor_from_linux_image(package):
+    if package.endswith('-dbgsym'):
+        return None
+    if package.startswith('linux-image-') and \
+       package[12].isdigit():
+        return package.split('-', 4)[4]
+    if package.startswith('linux-image-unsigned-') and \
+       package[21].isdigit():
+        return package.split('-', 5)[5]
+    return None
 
 class KernelPackages:
     def __init__(s, launchpad=None, cache='package-binaries.json', ppa=None):
@@ -122,11 +132,9 @@ class KernelPackages:
                 flavours = {}
                 for binary in pub.getPublishedBinaries():
                     binary_package_name = binary.binary_package_name
-                    if binary_package_name.startswith('linux-image-') and \
-                       binary_package_name[12].isdigit() and \
-                       not binary_package_name.endswith('-dbgsym'):
-                        a = binary_package_name.split('-', 4)
-                        flavours[a[4]] = True
+                    flavour = get_flavor_from_linux_image(binary_package_name)
+                    if flavour != None:
+                        flavours[flavour] = True
 
                         arch = binary.distro_arch_series_link.split('/')[-1]
                         acache = s.map_archs.setdefault(key2, [])
