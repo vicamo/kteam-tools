@@ -304,26 +304,20 @@ class KernelTools():
     # _find_series_in_tags
     #
     @classmethod
-    def _find_series_in_tags(cls, lp_bug):
+    def _find_series_in_tags(cls, bug):
         """
         Search through all the tags on a bug to see if we can find the series that the
         bug was filed against.
         """
-        debug(' . Looking for the series in the tags')
-        series_name = None
-        series_version = None
+        debug(' . Looking for the series in the tags\n')
+        series_name = ''
+        series_version = ''
 
-        if 'breezy' in lp_bug['tags']:
-            return ('breezy', '5.10')
-
-        for series in Ubuntu.index_by_series_name:
-            if series in lp_bug['tags']:
-                (series_name, series_version) = cls._ubuntu_series_lookup(series)
-                if series_name is not None:
-                    break
-
-        if series_name is None:
-            debug('     - Not found')
+        for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
+            if series.codename in bug.tags:
+                series_name    = series.codename
+                series_version = series.name
+                break
 
         return (series_name, series_version)
 
