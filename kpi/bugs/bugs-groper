@@ -314,10 +314,13 @@ class KernelTools():
         series_version = ''
 
         for series in sorted(cls.kernel_series.series, key=KernelSeries.key_series_name):
-            if series.codename in bug.tags:
+            if series.codename in bug['tags']:
                 series_name    = series.codename
                 series_version = series.name
                 break
+
+        if series_name is None:
+            debug('     - Not found')
 
         return (series_name, series_version)
 
