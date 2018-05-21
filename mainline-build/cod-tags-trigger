@@ -56,14 +56,12 @@ do
 
 	"$here/cod-enqueue" "mainline-build" "crack" "$commit"
 
-	# XXX: this should be some python stub to validate the versions via
-	#      KernelSeries, and that could use Announce directly.
-	case "$commit" in
-	$pattern)
+	# Check this against the live versions, announce if new in those series.
+	eval 'case "$commit" in '"$pattern"') match=1;; *) match=0;; esac'
+	if [ "$match" -eq 1 ]; then
 		"$here/../ktl/announce.py" upstream-stable "Prepare Upstream Stable $commit" \
 			"Upstream Stable $commit has been released."
-		;;
-	esac
+	fi
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
