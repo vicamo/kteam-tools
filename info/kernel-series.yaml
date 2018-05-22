@@ -633,7 +633,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            derived-from: [ '17.10', 'linux' ]
+            derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
                     azure:
@@ -652,7 +652,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial', 'azure-edge']
             supported: true
-            derived-from: [ '17.10', 'linux' ]
+            derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
                     azure-edge:
