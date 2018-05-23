@@ -58,7 +58,7 @@ class KernelSnapEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name
+            return self._name == other._name and self._source == other._source
         return False
 
     def __ne__(self, other):
@@ -121,7 +121,7 @@ class KernelPackageEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name
+            return self._name == other._name and self._source == other._source
         return False
 
     def __ne__(self, other):
@@ -163,7 +163,7 @@ class KernelSourceEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self.name == other.name
+            return self.name == other.name and self._series == other._series
         return False
 
     def __ne__(self, other):

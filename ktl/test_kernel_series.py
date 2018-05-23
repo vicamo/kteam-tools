@@ -587,10 +587,15 @@ class TestKernelSourceEntry(unittest.TestCase):
         '18.04':
             sources:
                 linux:
+        '16.04':
+            sources:
+                linux:
         """
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
         source1 = series.lookup_source('linux')
+        series2 = ks.lookup_series('18.04')
+
         source2 = series.lookup_source('linux')
 
         self.assertEqual(source1, source2)
@@ -601,13 +606,19 @@ class TestKernelSourceEntry(unittest.TestCase):
             sources:
                 linux:
                 linux-raspi2:
+        '16.04':
+            sources:
+                linux:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source1 = series.lookup_source('linux')
-        source2 = series.lookup_source('linux-raspi2')
+        series1 = ks.lookup_series('18.04')
+        source1 = series1.lookup_source('linux')
+        source2 = series1.lookup_source('linux-raspi2')
+        series2 = ks.lookup_series('16.04')
+        source3 = series2.lookup_source('linux')
 
         self.assertNotEqual(source1, source2)
+        self.assertNotEqual(source1, source3)
 
     def test_equal_none(self):
         data = """
@@ -1403,14 +1414,23 @@ class TestKernelPackageEntry(unittest.TestCase):
                     packages:
                         linux-meta:
                         linux-signed:
+        '16.04':
+            sources:
+                linux:
+                    packages:
+                        linux-meta:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        package1 = source.lookup_package('linux-meta')
-        package2 = source.lookup_package('linux-signed')
+        series1 = ks.lookup_series('18.04')
+        source1 = series1.lookup_source('linux')
+        package1 = source1.lookup_package('linux-meta')
+        package2 = source1.lookup_package('linux-signed')
+        series2 = ks.lookup_series('16.04')
+        source2 = series2.lookup_source('linux')
+        package3 = source2.lookup_package('linux-meta')
 
         self.assertNotEqual(package1, package2)
+        self.assertNotEqual(package1, package3)
 
     def test_equal_none(self):
         data = """
@@ -1554,14 +1574,23 @@ class TestKernelSnapEntry(unittest.TestCase):
                     snaps:
                         pc-kernel:
                         euclid-kernel:
+        '16.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
         """
         ks = KernelSeries(data=data)
-        series = ks.lookup_series('18.04')
-        source = series.lookup_source('linux')
-        snap1 = source.lookup_snap('pc-kernel')
-        snap2 = source.lookup_snap('euclid-kernel')
+        series1 = ks.lookup_series('18.04')
+        source1 = series1.lookup_source('linux')
+        snap1 = source1.lookup_snap('pc-kernel')
+        snap2 = source1.lookup_snap('euclid-kernel')
+        series2 = ks.lookup_series('16.04')
+        source2 = series2.lookup_source('linux')
+        snap3 = source2.lookup_snap('pc-kernel')
 
         self.assertNotEqual(snap1, snap2)
+        self.assertNotEqual(snap1, snap3)
 
     def test_equal_none(self):
         data = """
@@ -1971,7 +2000,7 @@ class TestKernelRepoEntry(unittest.TestCase):
                             repo: [ 'url-string' ]
                     snaps:
                         pc-kernel:
-                            repo: [ 'url-string' ]
+                            repo: [ 'url-string2' ]
         """
         ks = KernelSeries(data=data)
         series = ks.lookup_series('18.04')
