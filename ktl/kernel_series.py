@@ -34,6 +34,9 @@ class KernelRepoEntry:
             return self.url == other.url and self.branch == other.branch
         return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @property
     def url(self):
         return self._data['url']
@@ -57,6 +60,9 @@ class KernelSnapEntry:
         if isinstance(self, other.__class__):
             return self._name == other._name
         return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @property
     def series(self):
@@ -118,6 +124,9 @@ class KernelPackageEntry:
             return self._name == other._name
         return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @property
     def series(self):
         return self._source.series
@@ -156,6 +165,9 @@ class KernelSourceEntry:
         if isinstance(self, other.__class__):
             return self.name == other.name
         return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @property
     def name(self):
@@ -317,6 +329,9 @@ class KernelSeriesEntry:
         if isinstance(self, other.__class__):
             return self._name == other._name
         return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @property
     def name(self):
