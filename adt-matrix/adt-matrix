@@ -424,7 +424,8 @@ class AutoPackageTest(object):
                 #    kernel_ver = ver
 
                 # If we are running on real meta, use the actual version the kit advertises.
-                if testinfo and 'virt_server' in testinfo and testinfo['virt_server'].startswith('adt-virt-ssh'):
+                if testinfo and 'virt_server' in testinfo and \
+                   testinfo['virt_server'].startswith(('adt-virt-ssh', 'autopkgtest-virt-ssh')):
                     if 'kernel_version' in testinfo:
                         match = self.testinfo_kernel_version_pat.match(testinfo['kernel_version'])
                         if match:
