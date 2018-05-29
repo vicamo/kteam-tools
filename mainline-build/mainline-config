@@ -132,7 +132,7 @@ elif mode == 'changeset':
             if not source.supported:
                 continue
 
-            if source.derived_from:
+            if source.derived_from or source.copy_forward:
                 continue
 
             for package in sorted(source.packages, key=lambda x: x.name):
