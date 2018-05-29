@@ -651,6 +651,9 @@
                 linux-meta-azure-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial', 'azure-edge']
+                linux-signed-azure-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial', 'azure-edge']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
