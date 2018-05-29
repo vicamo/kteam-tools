@@ -230,7 +230,7 @@
         linux-kvm:
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/cosmic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/cosmic', 'master-next']
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/cosmic']
@@ -290,7 +290,7 @@
         linux-oem:
             packages:
                 linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem-next']
                 linux-meta-oem:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/bionic', 'oem']
@@ -377,7 +377,7 @@
         linux-kvm:
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/bionic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/bionic', 'master-next']
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/bionic']
@@ -647,7 +647,7 @@
         linux-azure-edge:
             packages:
                 linux-azure-edge:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/xenial', 'azure-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/xenial', 'azure-edge-next']
                 linux-meta-azure-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial', 'azure-edge']
@@ -666,7 +666,7 @@
         linux-euclid:
             packages:
                 linux-euclid:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-euclid']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-euclid', 'master-next']
                 linux-meta-euclid:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-euclid']
