@@ -215,6 +215,9 @@ class VerifyReleaseReady():
         elif pkg.startswith('linux-hwe'):
             tag_prefix = 'Ubuntu-hwe'
             v = cl1['version']
+        elif Debian.is_backport():
+            tag_prefix = pkg.replace('linux', 'Ubuntu')
+            v = cl1['version']
         else:
             tag_prefix = pkg.replace('linux', 'Ubuntu')
             v = version
