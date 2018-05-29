@@ -68,9 +68,10 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
             repo_dir = "%s-%s" % (repo_dir, pkg.type)
 
         # It's a stand-alone repo if the package is not a main package and the
-        # source is on the master branch, so append the variant's name to the
-        # repo dirname
-        if variant != "main" and branch == "master":
+        # source is either on the master or master-next branch, so append the
+        # variant's name to the repo dirname
+        if variant != "main" and (branch == "master" or
+                                  branch == "master-next"):
             repo_dir = "%s-%s" % (repo_dir, variant)
 
         # Add info for the summary
