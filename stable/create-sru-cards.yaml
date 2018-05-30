@@ -8,6 +8,8 @@
           - 'Done'
         default_list: 'On Deck'
     cards:
+        - name: 'Cleanup old PPAs content'
+          description: 'Run the ppa-package-cleaner for the primary ppas (ppa-package-cleaner ppa-package-cleaner-primary.conf)'
         - name: 'Review CVE matrix'
         - name: 'Apply upstream stable updates'
         - name: 'Apply patches from the ML'
