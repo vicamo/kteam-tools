@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ "$#" -lt 3 ]; then
+	echo "Usage: $0 <age> <lockfile> <cmd> ..." 1>&2
+	exit 1
+fi
+age="$1"
+lock="$2"
+
+mkdir -p $(dirname "$lock")
+
+[ "${FLOCKER}" != "$lock" ] && exec env FLOCKER="$lock" flock -en "$lock" "$0" "$@" || :
+shift 2
+
+if [ -f "$lock-done" ]; then
+	[ "$age" = 'once' ] && exit 0
+
+	now=$(date +%s)
+	modified=$(stat --format %Y "$lock-done")
+	let modified="$now-$modified"
+
+	[ "$modified" -lt "$age" ] && exit 0
+fi
+
+"$@" || exit 1
+
+touch "$lock-done"
+exit 0
