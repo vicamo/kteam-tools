@@ -11,7 +11,7 @@ locks="/run/lock/cod-status"
 locker="$here/../sbin/lock-record"
 if [ "$1" = "" ]; then
 	"$locker"  15 "$locks/machine-check"		"$0" machine-check
-	"$locker" 240 "$locks/kteam-tools"		"$0" kteam-tools
+	"$locker"  60 "$locks/kteam-tools"		"$0" kteam-tools
 	[ -f "$locks/chroots-done" ] && \
 	[ -f "$locks/machine-check-done" ] && \
 	"$locker"   5 "$locks/mainline-worker"		"$0" mainline-worker
