@@ -1,0 +1,25 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+locks="/run/lock/cod-status"
+
+locker="$here/../sbin/lock-record"
+if [ "$1" = "" ]; then
+	[ ! -d "$locks" ] && exit 0
+	"$locker" 480 "$locks/chroots" "$0" chroots
+	exit 0
+fi
+
+case "$1" in
+chroots)
+	/usr3/ubuntu/kteam-tools/chroot-setup/make_all >/root/log.txt 2>&1 && \
+		su -c '"$HOME/bin/dashboard-status" "update-chroots" "Host: `hostname`" "Update Chroots" 25h 26h' kernel
+	;;
+esac
+
+exit 0

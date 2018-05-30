@@ -17,7 +17,7 @@ if [ -f "$lock-done" ]; then
 
 	now=$(date +%s)
 	modified=$(stat --format %Y "$lock-done")
-	let modified="$now-$modified"
+	let modified="($now-$modified)/60"
 
 	[ "$modified" -lt "$age" ] && exit 0
 fi
