@@ -14,7 +14,7 @@ if [ "$1" = "" ]; then
 	"$locker"  60 "$locks/kteam-tools"		"$0" kteam-tools
 	[ -f "$locks/chroots-done" ] && \
 	[ -f "$locks/machine-check-done" ] && \
-	"$locker"   5 "$locks/mainline-worker"		"$0" mainline-worker
+							"$0" mainline-worker
 	"$locker"  30 "$locks/mainline-failsafe"	"$0" mainline-worker-failsafe
 	exit 0
 fi
