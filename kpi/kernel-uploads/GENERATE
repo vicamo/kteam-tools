@@ -1,0 +1,9 @@
+#!/bin/bash
+
+case "$1" in
+kernel-uploads)
+    (cd /srv/kernel.ubuntu.com/www/kpi/kernel-uploads  &&
+    "python $HOME/kteam-tools/kpi/kernel-uploads/kernel-uploads.py" >kernel-uploads.txt &&
+    curl -i -XPOST 'http://influxdb.cloud.kpi.internal:8086/write?db=kernel' --data-binary '@kernel-kernel-uploads.txt' --netrc-file $HOME/.influx-kernel.auth)
+    ;;
+esac
