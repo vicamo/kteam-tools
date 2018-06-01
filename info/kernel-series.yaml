@@ -108,7 +108,7 @@
             versions: ['4.15.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/cosmic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/cosmic', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/cosmic']
@@ -257,7 +257,7 @@
             versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic']
@@ -402,7 +402,7 @@
             versions: ['4.11.0', '4.12.0', '4.13.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/artful', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful']
@@ -452,7 +452,7 @@
             versions: ['4.10.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/zesty', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty']
@@ -509,7 +509,7 @@
             versions: ['4.8.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/yakkety', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/yakkety']
@@ -556,7 +556,7 @@
             versions: ['4.4.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial']
@@ -890,7 +890,7 @@
             versions: ['4.2.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/wily', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/wily']
@@ -917,7 +917,7 @@
             versions: ['3.19.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/vivid', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/vivid']
@@ -935,7 +935,7 @@
             versions: ['3.16.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/utopic', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/utopic']
@@ -954,7 +954,7 @@
             versions: ['3.13.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty']
@@ -1049,7 +1049,7 @@
             versions: ['3.11.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/saucy', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/saucy']
@@ -1081,7 +1081,7 @@
             versions: ['3.8.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/raring', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/raring']
@@ -1113,7 +1113,7 @@
             versions: ['3.5.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/quantal', 'master-next']
                 linux-backports-modules-3.5.0:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.5.0']
@@ -1159,7 +1159,7 @@
             versions: ['3.2.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise', 'master-next']
                 linux-backports-modules-3.2.0:
                     type: lbm
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-lbm-precise']
@@ -1287,7 +1287,7 @@
             versions: ['3.0.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/oneiric', 'master-next']
                 linux-backports-modules-3.0.0:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-3.0.0']
@@ -1314,7 +1314,7 @@
             versions: ['2.6.38']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/natty', 'master-next']
                 linux-backports-modules-2.6.38:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.38']
@@ -1341,7 +1341,7 @@
             versions: ['2.6.35']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/maverick', 'master-next']
                 linux-backports-modules-2.6.35:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.35']
@@ -1380,7 +1380,7 @@
             versions: ['2.6.32']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid', 'master-next']
                 linux-backports-modules-2.6.32:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32']
@@ -1410,7 +1410,7 @@
             versions: ['2.6.31']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/karmic', 'master-next']
                 linux-backports-modules-2.6.31:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.31']
@@ -1458,7 +1458,7 @@
             versions: ['2.6.28']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jaunty', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jaunty']
@@ -1473,7 +1473,7 @@
             versions: ['2.6.27']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/intrepid', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/intrepid']
@@ -1488,7 +1488,7 @@
             versions: ['2.6.24']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hardy', 'master-next']
                 linux-backports-modules-2.6.24:
                     type: lbm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.24']
@@ -1512,7 +1512,7 @@
             versions: ['2.6.22']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/gutsy']
@@ -1527,7 +1527,7 @@
             versions: ['2.6.20']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/feisty']
