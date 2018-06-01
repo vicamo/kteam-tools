@@ -12,6 +12,7 @@ locker="$here/../sbin/lock-record"
 if [ "$1" = "" ]; then
 	"$locker"  15 "$locks/machine-check"		"$0" machine-check
 	"$locker"  60 "$locks/kteam-tools"		"$0" kteam-tools
+	"$locker" 240 "$locks/update-repos"		"$0" update-repos
 	[ -f "$locks/chroots-done" ] && \
 	[ -f "$locks/machine-check-done" ] && \
 							"$0" mainline-worker
@@ -25,6 +26,9 @@ machine-check)
 	;;
 kteam-tools)
 	(cd "$HOME/kteam-tools" && git pull >update.log 2>&1 && "$HOME/bin/dashboard-status" "machine-kteam-tools" "Host: `hostname`" "Update Tools" 60m 65m)
+	;;
+update-repos)
+	$HOME/kteam-tools/kernel-team-accounts/update-repos2.sh >/usr3/ubuntu/log.txt 2>&1 && "$HOME/bin/dashboard-status" "update-repos" "Host: `hostname`" "Update Repos" 25h 26h
 	;;
 mainline-worker)
 	$HOME/kteam-tools/sbin/cron-start $HOME/kteam-tools/mainline-build/mainline-worker -- 'Mainline Builds' 'Mainline Worker' 30m 45m >>$HOME/logs/cod-worker.log 2>&1
