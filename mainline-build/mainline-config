@@ -142,13 +142,7 @@ elif mode == 'changeset':
                 repo = package.repo
                 if not repo:
                     continue
-
                 branch = repo.branch
-                if not branch:
-                    if package.name == 'linux':
-                        branch = 'master-next'
-                    else:
-                        branch = 'master'
 
                 print(series.codename, source.name, branch)
 else:
