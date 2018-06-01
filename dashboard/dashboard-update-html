@@ -161,6 +161,8 @@ for line in sys.stdin:
         state[section] = mode
     elif mode == 'good' and state.get(section, '') not in ('alert', 'warn'):
         state[section] = mode
+    else:
+        state[section] = "BROKEN-" + mode
     entries.append((gorder, section, order, title, host, delta, mode, message))
 
 
