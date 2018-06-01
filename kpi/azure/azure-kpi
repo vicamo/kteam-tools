@@ -35,9 +35,8 @@ for x in sources:
 for x in sources_list:
 #    print ("=== %s Published %s ===" % (x.source_package_version, "{:%Y-%m-%d}".format(x.date_published)))
     url = urllib.request.urlopen(x.changesFileUrl())
-    data = url.read()
-    text = data.decode('utf-8')
-    for line in text:
+    for line in url.readlines():
+        line = str(line, 'utf-8')
         if "Launchpad-Bugs-Fixed" in line:
             for bug_num in re.findall('\d+', line):
                 lpbug = launchpad.bugs[bug_num]
