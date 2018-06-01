@@ -15,7 +15,9 @@ class KernelRepoEntry:
     def __init__(self, ks, owner, data):
         if isinstance(data, list):
             new_data = { 'url': data[0] }
-            if len(data) == 2:
+            if len(data) == 1:
+                new_data['branch'] = 'master'
+            elif len(data) == 2:
                 new_data['branch'] = data[1]
             data = new_data
 

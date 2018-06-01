@@ -2081,7 +2081,7 @@ class TestKernelRepoEntry(unittest.TestCase):
         snap = source.lookup_snap('pc-kernel')
 
         self.assertEqual(snap.repo.url, 'url-string')
-        self.assertEqual(snap.repo.branch, None)
+        self.assertEqual(snap.repo.branch, 'master')
 
     def test_repo_url_branch(self):
         data = """
