@@ -355,7 +355,7 @@ for arch in $arches; do
 	fi
 	echo "-+++- begin $arch -+++-"
 	do_chroot "$build_release-$carch" \
-		fakeroot debian/rules clean
+		$cross_prefix fakeroot debian/rules $cross_overrides clean
 	{
 	        build_common
 		# fakeroot is very slow, only use for packaging as per
