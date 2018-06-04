@@ -797,7 +797,7 @@
         linux-kvm:
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/xenial', 'master-next']
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/xenial']
