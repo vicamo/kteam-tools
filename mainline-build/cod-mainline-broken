@@ -15,6 +15,7 @@ do
             -e "debian/rules: No such file or directory" \
             -e "/lib-build: eval: line 89: syntax error: unexpected end of file" \
             -e "No rule to make target 'syncconfig'.  Stop." \
+            -e "dh_prep: Requested unknown package linux-image-" \
         "$log" | head -1
     )
     case "$which" in
@@ -34,6 +35,8 @@ do
         which='lib-build fookage' ;;
     *"No rule to make target 'syncconfig'.  Stop"*)
         which='syncconfig compatibility' ;;
+    *"dh_prep: Requested unknown package linux-image-"*)
+        which='cleaned in the wrong architecture' ;;
     esac
 
     # Check for unsigned and no modules.
@@ -55,7 +58,7 @@ do
     # If we have a reason, report it and generate the rebuild command.
     if [ "$which" != '' ]; then
         dir=$( dirname "$log" )
-        echo "# $dir ... $which ($count)"
+        echo "# $dir ... $which"
         if [ -f "$dir/REBUILD" ]; then
             echo "$queue $( cat "$dir/REBUILD" )"
             continue;
