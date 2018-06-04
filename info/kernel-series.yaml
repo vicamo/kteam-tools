@@ -142,7 +142,7 @@
         linux-oem:
             packages:
                 linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/cosmic', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/cosmic', 'oem-next']
                 linux-meta-oem:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/cosmic', 'oem']
