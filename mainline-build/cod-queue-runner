@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# cod-queue-runner -- run the job
+#
+P="cod-queue-runner"
+
+echo "$P: starting job ($@) ..."
+cmd="$1"
+shift 1
+
+echo "$P: running job ($cmd $@) ..."
+"$cmd" "$@"
+
+echo "$P: job complete"
