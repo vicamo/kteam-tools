@@ -51,6 +51,7 @@ class Debian:
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
+    ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
 
     @classmethod
     def debian_env(cls):
@@ -207,6 +208,9 @@ class Debian:
                 for bug_line_match in finditer(cls.bug_rc, line):
                     bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
                     bugs.extend(bug_matches)
+                m = cls.ubuntu_master_re.match(line)
+                if m is not None and not section.get("master"):
+                    section['master'] = m.group(1)
 
                 content.append(line)
 
