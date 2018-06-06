@@ -207,7 +207,7 @@ class ModifyPatch(StdApp):
         self.defaults['list-aliases']     = False
         self.defaults['modify-operation'] = False
         self.defaults['dry-run']          = False
-        self.defaults['buglink_base_url'] = "http://bugs.launchpad.net/bugs/"
+        self.defaults['buglink_base_url'] = "https://bugs.launchpad.net/bugs/"
 
         self.cp_rc = compile('\(cherry picked from commit ([0-9a-zA-Z]+)\)')
         self.bp_rc = compile('\(backported from commit ([0-9a-zA-Z]+) upstream\)')
