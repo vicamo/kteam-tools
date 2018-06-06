@@ -14,7 +14,7 @@ case "$SSH_ORIGINAL_COMMAND" in
 esac
 
 case "$SSH_ORIGINAL_COMMAND" in
-"rsync --server -vlogDtpre.iLsfx . incoming/"|"rsync --server -vlogDtpre.iLsf . incoming/")
+"rsync --server -vlogDtpre.iLsfx . incoming/"|"rsync --server -vlogDtpre.iLsf . incoming/"|"rsync --server -vlogDtpre.iLsfx --remove-source-files . incoming/")
 	incoming="$HOME/incoming"
 	lock_tmp="$incoming/.LOCK-$$"
 	lock="$incoming/.LOCK"
