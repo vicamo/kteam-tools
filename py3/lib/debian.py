@@ -9,6 +9,9 @@ from sys                                import stdout
 from .git                               import Git, GitError
 from re                                 import compile, findall, finditer
 from os                                 import path, listdir, system
+from debian.changelog                   import Changelog
+from datetime                           import datetime, timezone, timedelta
+from time                               import localtime
 
 # stdo
 #
@@ -59,6 +62,16 @@ class Debian:
         Execute fakeroot debian/rules cmd
         """
         system('fakeroot debian/rules %s' % (cmd))
+
+    @classmethod
+    def dch(cls, release):
+        fname = "%s/changelog" % (cls.debian_env())
+        changelog = Changelog(open(fname))
+        tz = timezone(timedelta(seconds=localtime().tm_gmtoff))
+        dt = datetime.now(tz).strftime("%a, %d %b %Y %T %z")
+        changelog.set_distributions(release)
+        changelog.set_date(dt)
+        changelog.write_to_open_file(open(fname, "w"))
 
     @classmethod
     def debian_env(cls):
