@@ -52,21 +52,22 @@ class TheApp():
             # title stamp warn alert note
 
             bulk = []
-            for line in sys.stdin:
-                # title stamp warn alert note
-                entry = {}
-                a = [ x.replace('%s', ' ').replace('%p', '%') for x in line.strip().split() ]
+            if not self.args.delete:
+                for line in sys.stdin:
+                    # title stamp warn alert note
+                    entry = {}
+                    a = [ x.replace('%s', ' ').replace('%p', '%') for x in line.strip().split() ]
 
-                if a[0] == 'V2':
-                    for kv in a[1:]:
-                        (k, v) = kv.split('=', 1)
-                        entry[k] = v
-                else:
-                    (entry['section'],entry['host'],entry['title'], \
-                     entry['stamp'], entry['warn'], entry['alert']) = a[0:6]
-                    if len(a) == 7:
-                        entry['note'] = a[6]
-                bulk.append(entry)
+                    if a[0] == 'V2':
+                        for kv in a[1:]:
+                            (k, v) = kv.split('=', 1)
+                            entry[k] = v
+                    else:
+                        (entry['section'],entry['host'],entry['title'], \
+                         entry['stamp'], entry['warn'], entry['alert']) = a[0:6]
+                        if len(a) == 7:
+                            entry['note'] = a[6]
+                    bulk.append(entry)
 
             details['op']  = 'update'
             details['rhost'] = s.args.rhost
@@ -112,6 +113,7 @@ examples:
     parser.add_argument("groupid")
     parser.add_argument("rhost", nargs='?', default=os.uname()[1])
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--delete', action='store_true', default=False, help='Delete the result set presented.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
 
     args = parser.parse_args()
