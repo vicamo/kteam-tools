@@ -52,7 +52,7 @@ class TheApp():
             # title stamp warn alert note
 
             bulk = []
-            if not self.args.delete:
+            if not s.args.delete:
                 for line in sys.stdin:
                     # title stamp warn alert note
                     entry = {}
