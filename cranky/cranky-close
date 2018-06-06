@@ -1,0 +1,130 @@
+#!/usr/bin/python3
+
+import os
+import sys
+
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO, WARNING
+from ktl.log                            import Clog
+from lib.git                            import Git
+from lib.shell                          import ShellError
+from lib.debian                         import Debian
+
+class Close():
+    def __init__(s, dryrun=False, master_branch="master-next", config=False):
+        s.master_branch = master_branch
+        s.dryrun = dryrun
+        s.config = config
+
+    def is_config_changed(s):
+        """
+        Check if debian.{master,derivative}/config/ has changed from HEAD.
+        """
+        (status, output) = Git.sh('git diff HEAD %s/config/' % (s.debiandir))
+        if len(output) > 0:
+            return 1
+        return status
+
+    def master_version_from_changelog(s):
+        for c in s.changelog:
+            if c.get('master'):
+                return (c['master'], c['series'])
+        return (None, None)
+
+    def commit(s):
+        (_tmp, s.branch) = s.debiandir.split(".", 1)
+        if s.branch == "master":
+            s.prefix = "Ubuntu-"
+        else:
+            s.prefix = "Ubuntu-{}-".format(s.branch)
+        s.version = s.changelog[0]['version']
+        cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix+s.version)
+        if s.dryrun:
+            print(cmd)
+        else:
+            Git.sh(cmd)
+
+    def link_to_tracker(s):
+        # TODO: should be implemented, challenge: allow for a rerun
+        print("You should call link-to-tracker and ammend\n")
+
+    def tag(s):
+        s.version2 = s.version.replace("~", "_")
+        print("git tag -sm '{}' '{}'".format(s.prefix+s.version, s.prefix+s.version2))
+
+    def main(s):
+        retval = 1
+        s.debiandir = Debian.debian_env()
+        s.changelog = Debian.changelog()
+        master_commit = Git.ubuntu_commit(s.master_branch)
+        master_version = Git.version_from_subject(master_commit)
+        (base_version, series) = s.master_version_from_changelog()
+        if not base_version:
+            print("No base_version found on {}/changelog".format(s.debiadir))
+            return 1
+        if not s.dryrun:
+            Debian.fdr("clean")
+            Debian.fdr("updateconfigs")
+        if not s.config and s.is_config_changed():
+            print("config has changed! please, review it and commit\n")
+            raise AppError("config has changed! please, review it and commit\n")
+        cmd = './debian/scripts/misc/insert-ubuntu-changes {}/changelog {} {}'.format(s.debiandir, base_version, master_version)
+        if s.dryrun:
+            print(cmd)
+        else:
+            os.system(cmd)
+        if not s.dryrun:
+            Debian.fdr("insertchanges")
+            Debian.dch(series)
+        s.link_to_tracker()
+        s.commit()
+        s.tag()
+        retval = 0
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+    '''
+
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--info',  action='store_true', default=False, help='output info level logs')
+    parser.add_argument('--debug', action='store_true', default=False, help='output debug level logs')
+    parser.add_argument('--dry-run', action='store_true', default=False, help='do not execute, just tell what would be done')
+    parser.add_argument('--master-branch', action='store', required=False, default='master-next', help='use a different master branch to rebase to')
+    parser.add_argument('--config', action='store_true', required=False, help='include config changes in the closing commit')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    Clog.color = True
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    elif args.info:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=WARNING, format=log_format)
+
+    retval = 1
+    try:
+        retval = Close(dryrun=args.dry_run, master_branch=args.master_branch, config=args.config).main()
+    except KeyboardInterrupt:
+        print("Aborting ...")
+
+    if retval > 0:
+        print("")
+        print("Due to the above error(s), this script is unable to continue and is terminating.")
+        print("")
+
+    exit(retval)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
