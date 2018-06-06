@@ -161,8 +161,6 @@ for line in sys.stdin:
         state[section] = mode
     elif mode == 'good' and state.get(section, '') not in ('alert', 'warn'):
         state[section] = mode
-    else:
-        state[section] = "BROKEN-" + mode
     entries.append((gorder, section, order, title, host, delta, mode, message))
 
 
@@ -181,7 +179,7 @@ for (gorder, section, order, title, host, delta, mode, message) in entries:
             print("<tr class=\"gap\"><td></tr>")
         last_section = section
 
-        print("<tr id=\"" + genid('section', section) + "\" class=\"" + state[section] + "\"><th class=\"twist-trigger\" twist=\"" + genid('twist', section) + "\" colspan=4>" + section + "</tr>")
+        print("<tr id=\"" + genid('section', section) + "\" class=\"" + state.get(section, 'unknown') + "\"><th class=\"twist-trigger\" twist=\"" + genid('twist', section) + "\" colspan=4>" + section + "</tr>")
         classes = "twist " + state[section]
         if state[section] == 'good':
             classes += " hidden"
