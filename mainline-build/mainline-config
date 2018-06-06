@@ -50,7 +50,7 @@ if mode == 'lib-build':
 
             version_hint = version
             version_map[version] = series.codename
-            if series.supported or series.development:
+            if (series.supported or series.development) and not series.esm:
                 version_supported[version] = True
 
     supported_map = {}
