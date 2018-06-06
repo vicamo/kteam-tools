@@ -16,7 +16,6 @@ lock_tmp="$incoming/.LOCK-$$"
 lock="$incoming/.LOCK"
 
 out="$HOME/public_html"
-outgoing="$HOME/public_html/mainline"
 
 # One at a time please...
 mkdir -p "$incoming"
@@ -30,44 +29,97 @@ done
 rm -f "$lock_tmp"
 
 # Pull out any published images ...
-(cd "$incoming/mainline" && find . -name COMMIT) | \
-while read commit
-do
-	build=`dirname "$commit"`
-	build=${build#./}
+if [ -d "$incoming/mainline" ]; then
+	echo "Scanning mainline ..."
+	outgoing="$HOME/public_html/mainline"
+	(cd "$incoming/mainline" && find . -name COMMIT) | \
+	while read commit
+	do
+		build=`dirname "$commit"`
+		build=${build#./}
 
-	echo "$P: $build: mainline publishing ..."
-	announce='build'
-	if [ -d "$outgoing/$build" ]; then
-		echo "$P: $build: result already published, removing previous ..."
-		rm -rf "$outgoing/$build"
-		announce='rebuild'
-	fi
-	mkdir -p "$outgoing/`dirname "$build"`"
-	mv "$incoming/mainline/$build" "$outgoing/$build" && \
-	{
-		# Sign the publication.
-		rm -f "$outgoing/$build/CHECKSUMS.gpg"
-		gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
+		echo "$P: $build: mainline publishing ..."
+		announce='build'
+		if [ -d "$outgoing/$build" ]; then
+			echo "$P: $build: result already published, removing previous ..."
+			rm -rf "$outgoing/$build"
+			announce='rebuild'
+		fi
+		mkdir -p "$outgoing/`dirname "$build"`"
+		mv "$incoming/mainline/$build" "$outgoing/$build" && \
+		{
+			# Sign the publication.
+			rm -f "$outgoing/$build/CHECKSUMS.gpg"
+			gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
 
-		# Only announce top level results.
-		case "$build" in
-		*/*)	announce='' ;;
-		esac
-	}
-	if [ "$announce" != '' ]; then
-		echo "$P: $build: announcing ..."
-		"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce" "$outgoing/$build/BUILT"
-	fi
-done
+			# Only announce top level results.
+			case "$build" in
+			*/*)	announce='' ;;
+			esac
+		}
+		if [ "$announce" != '' ]; then
+			echo "$P: $build: announcing ..."
+			"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce" "$outgoing/$build/BUILT"
+		fi
+	done
+	find "$incoming/mainline" -empty -type d -delete
 
-# Look for any uploads for various PPAs.
-for ppa in 'test-devel' 'pre-proposed'
-do
+	# Re-evaluate any 'current' links.
 	(
-		[ ! -d "$incoming/upload/$ppa" ] && exit 0
-		cd "$incoming/upload/$ppa" || exit 1
-		mkdir -p failed
+		cd "$outgoing" || exit 1
+
+		find . -name current | \
+		while read current
+		do
+			dir=`dirname "$current"`
+			latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
+
+			is=`readlink "$current"`
+			if [ "$is" != "$latest" ]; then
+				echo "$P: $dir: updating current to $latest"
+				rm -f "$current"
+				ln -s "$latest" "$current"
+			fi
+		done
+	)
+fi
+
+if [ -d "$incoming/upload" ]; then
+	echo "Scanning upload ..."
+	# Look for any uploads for various PPAs.
+	for ppa in 'test-devel' 'pre-proposed'
+	do
+		(
+			[ ! -d "$incoming/upload/$ppa" ] && exit 0
+			cd "$incoming/upload/$ppa" || exit 1
+			mkdir -p failed
+
+			for package in *_source.changes
+			do
+				package=${package%_source.changes}
+				if [ "$package" = "*" ]; then
+					continue
+				fi
+
+				echo "$P: $package: uploading ..."
+
+				# Sign the package we are meant to be uploading.
+				echo "n" | debsign -kkernel-ppa "${package}_source.changes"
+
+				# And upload it.
+				dput "$ppa" ${package}_source.changes && \
+					rm -f "${package}"* || mv "${package}"* failed
+			done
+		)
+	done
+	find "$incoming/upload" -empty -type d -delete
+fi
+
+if [ -d "$incoming/native" ]; then
+	echo "Scanning native ..."
+	# Look for any source packages for the native PPA builders.
+	(
+		cd "$incoming/native/source" || exit 1
 
 		for package in *_source.changes
 		do
@@ -76,86 +128,67 @@ do
 				continue
 			fi
 
-			echo "$P: $package: uploading ..."
+			echo "$P: $package: mainline-native job queueing ..."
 
 			# Sign the package we are meant to be uploading.
 			echo "n" | debsign -kkernel-ppa "${package}_source.changes"
 
-			# And upload it.
-			dput "$ppa" ${package}_source.changes && \
-				rm -f "${package}"* || mv "${package}"* failed
+			# Move it to the queue directory so we only queue it once.
+			mkdir -p "$incoming/native/queue"
+			mv -f "${package}"* "$incoming/native/queue"
+
+			# Queue it up.
+			"$here/cod-enqueue" --to mainline-native "cod-mainline-native-build" "${package}"
 		done
 	)
-done
+	# Look for any completed native builds.
+	(
+		outgoing="$outgoing/native"
 
-# Look for any source packages for the native PPA builders.
-(
-	cd "$incoming/native/source" || exit 1
-
-	for package in *_source.changes
-	do
-		package=${package%_source.changes}
-		if [ "$package" = "*" ]; then
-			continue
-		fi
-
-		echo "$P: $package: mainline-native job queueing ..."
-
-		# Sign the package we are meant to be uploading.
-		echo "n" | debsign -kkernel-ppa "${package}_source.changes"
-
-		# Move it to the queue directory so we only queue it once.
-		mkdir -p "$incoming/native/queue"
-		mv -f "${package}"* "$incoming/native/queue"
-
-		# Queue it up.
-		"$here/cod-enqueue" --to mainline-native "cod-mainline-native-build" "${package}"
-	done
-)
-# Look for any completed native builds.
-(
-	outgoing="$outgoing/native"
-
-	[ ! -d "$incoming/native/publish" ] && exit 0
-	mkdir -p "$incoming/native/publish"
-	cd "$incoming/native/publish" || exit 1
-	for prefix in *
-	do
-		if [ "$prefix" = "*" ]; then
-			continue
-		fi
-		# Identify the build.
-		{
-			read commit
-			read sha1
-		} <"$prefix/COMMIT"
-		build="$commit"
-		
-		echo "$P: $build: native build publishing ..."
-
+		[ ! -d "$incoming/native/publish" ] && exit 0
 		mkdir -p "$outgoing"
-		if [ -d "$outgoing/$build" ]; then
-			echo "$P: $build: result already published, removing previous ..."
-			rm -rf "$outgoing/$build"
-		fi
-		mv "$prefix" "$outgoing/$build" && \
-		{
-			# Sign the publication.
-			rm -f "$outgoing/$build/CHECKSUMS.gpg"
-			gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
-		}
-	done
-)
+		cd "$incoming/native/publish" || exit 1
+		for prefix in *
+		do
+			if [ "$prefix" = "*" ]; then
+				continue
+			fi
+			# Identify the build.
+			{
+				read commit
+				read sha1
+			} <"$prefix/COMMIT"
+			build="$commit"
+
+			echo "$P: $build: native build publishing ..."
+
+			mkdir -p "$outgoing"
+			if [ -d "$outgoing/$build" ]; then
+				echo "$P: $build: result already published, removing previous ..."
+				rm -rf "$outgoing/$build"
+			fi
+			mv "$prefix" "$outgoing/$build" && \
+			{
+				# Sign the publication.
+				rm -f "$outgoing/$build/CHECKSUMS.gpg"
+				gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
+			}
+		done
+	)
+	find "$incoming/native" -empty -type d -delete
+fi
 
 # Copy in incoming configuration dumps.
-mkdir -p "$HOME/public_html/config"
-if [ -d "$HOME/incoming/config" ]; then
-	rsync -v -a --remove-source-files "$HOME/incoming/config/" "$HOME/public_html/config/"
-	find "$HOME/incoming/config" -empty -type d -delete
+mkdir -p "$out/config"
+if [ -d "$incoming/config" ]; then
+	echo "Scanning config ..."
+	rsync -v -a --remove-source-files "$incoming/config/" "$out/config/"
+	find "$incoming/config" -empty -type d -delete
 fi
 
 
-if [ -d "$HOME/incoming/test-build" ]; then
+if [ -d "$incoming/test-build" ]; then
+	echo "Scanning test-build ..."
 	(cd "$incoming/test-build" && find . -name SUMMARY) | \
 	while read summary
 	do
@@ -174,7 +207,7 @@ if [ -d "$HOME/incoming/test-build" ]; then
 		echo "$P: $build: announcing ..."
 		"$here/cod-changeset-announce" "$out/test-build/$build" "$announce"
 	done
-	find "$HOME/incoming/test-build" -empty -type d -delete
+	find "$incoming/test-build" -empty -type d -delete
 
 	# Rebuild the summaries.
 	(
@@ -194,29 +227,12 @@ if [ -d "$HOME/incoming/test-build" ]; then
 	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
 fi
 
-if [ -d "$HOME/incoming/static-analysis" ]; then
-	rsync -v -a --remove-source-files "$HOME/incoming/static-analysis/" "$HOME/public_html/static-analysis/"
-	find "$HOME/incoming/static-analysis" -empty -type d -delete
+if [ -d "$incoming/static-analysis" ]; then
+	echo "Scanning static-analysis ..."
+	rsync -v -a --remove-source-files "$incoming/static-analysis/" "$out/static-analysis/"
+	find "$incoming/static-analysis" -empty -type d -delete
 fi
 
-# Finally re-evaluate any 'current' links.
-(
-	cd "$outgoing" || exit 1
-
-	find . -name current | \
-	while read current
-	do
-		dir=`dirname "$current"`
-		latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
-
-		is=`readlink "$current"`
-		if [ "$is" != "$latest" ]; then
-			echo "$P: $dir: updating current to $latest"
-			rm -f "$current"
-			ln -s "$latest" "$current"
-		fi
-	done
-)
 # We are done.
 rm -f "$lock"
 
