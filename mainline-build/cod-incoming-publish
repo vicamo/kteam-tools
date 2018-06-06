@@ -196,7 +196,7 @@ fi
 
 if [ -d "$HOME/incoming/static-analysis" ]; then
 	rsync -v -a --remove-source-files "$HOME/incoming/static-analysis/" "$HOME/public_html/static-analysis/"
-	find "$HOME/incoming/static-anaylysis" -empty -type d -delete
+	find "$HOME/incoming/static-analysis" -empty -type d -delete
 fi
 
 # Finally re-evaluate any 'current' links.
