@@ -8,7 +8,7 @@
 from sys                                import stdout
 from .git                               import Git, GitError
 from re                                 import compile, findall, finditer
-from os                                 import path, listdir
+from os                                 import path, listdir, system
 
 # stdo
 #
@@ -52,6 +52,13 @@ class Debian:
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
     ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
+
+    @classmethod
+    def fdr(cls, cmd):
+        """
+        Execute fakeroot debian/rules cmd
+        """
+        system('fakeroot debian/rules %s' % (cmd))
 
     @classmethod
     def debian_env(cls):
