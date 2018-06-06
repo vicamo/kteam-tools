@@ -3,10 +3,12 @@
         prefix_name: 'SRU Cycle '
         trello_organization: 'kernelteam2'
         lists:
+          - 'Notice'
+          - 'Backlog'
           - 'On Deck'
           - 'In Progress'
           - 'Done'
-        default_list: 'On Deck'
+        default_list: 'Backlog'
     cards:
         - name: 'Cleanup old PPAs content'
           description: 'Run the ppa-package-cleaner for the primary ppas (ppa-package-cleaner ppa-package-cleaner-primary.conf)'
