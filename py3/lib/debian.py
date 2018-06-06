@@ -52,18 +52,16 @@ class Debian:
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
 
-    # debian_directories
-    #
     @classmethod
-    def debian_directories(cls):
+    def debian_env(cls):
         # Find the correct debian directory for this branch of this repository.
         #
         current_branch = Git.current_branch()
+        debenv = None
 
         # If we have a debian/debian.env then open and extract the DEBIAN=...
         # location.
         debug("Checking debian/debian.env", cls.debug)
-        debdirs = []
         try:
             debian_env = Git.show("debian/debian.env", branch=current_branch)
             for line in debian_env:
@@ -72,10 +70,24 @@ class Debian:
                     val = val.rstrip()
 
                     if var == 'DEBIAN':
-                        debdirs.append(val)
+                        debenv = val
                         break
             debug("SUCCEEDED\n", cls.debug, False)
         except GitError:
+            pass
+        return debenv
+
+    # debian_directories
+    #
+    @classmethod
+    def debian_directories(cls):
+        debdirs = []
+        debenv = None
+        debenv = cls.debian_env()
+        if debenv:
+            debdirs.append(debenv)
+            debug("SUCCEEDED\n", cls.debug, False)
+        else:
             debug("FAILED\n", cls.debug, False)
             debdirs += ['debian', 'meta-source/debian']
 
