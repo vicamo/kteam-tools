@@ -39,6 +39,7 @@ class Debian:
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
+    ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
 
     parent_bug_section_rc = compile("^\s*\[ Ubuntu: .*\]")
     endsection_line_rc = compile("^ -- ")
@@ -239,6 +240,11 @@ class Debian:
                 bugs.extend(bug_matches)
                 if parsing_own_bugs:
                     own_bugs.extend(bug_matches)
+
+            m = cls.ubuntu_master_re.match(line)
+            if m is not None and not section.get("master"):
+                section['master'] = m.group(1)
+                continue
 
             m = cls.endsection_line_rc.match(line)
             if m is not None:
