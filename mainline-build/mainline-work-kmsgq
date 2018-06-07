@@ -58,12 +58,7 @@ class TheApp():
                 mq = MsgQueue(exchange='kernel-mainline-todo')
 
             if s.args.command[0] == 'queue-status':
-                if len(s.args.command) == 2:
-                    queue = s.args.command[1]
-                else:
-                    queue = 'mainline-todo'
-
-                state = mq.queue_info(queue)
+                state = mq.queue_info(s.args.to)
                 print("""\
 Queue:   {0[queue]}
 Pending: {0[message_count]}
