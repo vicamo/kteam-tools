@@ -3,14 +3,15 @@
 import os
 import sys
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', 'py3')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..')))
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
-from ktl.log                            import Clog
 from lib.git                            import Git
 from lib.shell                          import ShellError
 from lib.debian                         import Debian
+from ktl.log                            import Clog
 
 class Close():
     def __init__(s, dryrun=False, master_branch="master-next", config=False):
