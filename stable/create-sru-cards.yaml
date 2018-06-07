@@ -21,6 +21,8 @@
           description: 'Send the SRU announcement to the ML'
         - name: 'Review regression tests results'
         - name: 'Review automated (ADT) tests results'
+        - name: 'Review verification tests'
+          description: 'Nag bug reporters if needed'
         - name: 'Produce kernel snaps'
         - name: 'Update master branches after promotion to -updates'
         - name: 'Sync copy-forward kernels across git trees'
