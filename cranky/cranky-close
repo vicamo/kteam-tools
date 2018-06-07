@@ -63,7 +63,7 @@ class Close():
         master_version = Git.version_from_subject(master_commit)
         (base_version, series) = s.master_version_from_changelog()
         if not base_version:
-            print("No base_version found on {}/changelog".format(s.debiadir))
+            print("No base_version found on {}/changelog".format(s.debiandir))
             return 1
         if not s.dryrun:
             Debian.fdr("clean")
