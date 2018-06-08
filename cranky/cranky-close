@@ -40,7 +40,7 @@ class Close():
         else:
             s.prefix = "Ubuntu-{}-".format(s.branch)
         s.version = s.changelog[0]['version']
-        cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix+s.version)
+        cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix + s.version)
         if s.dryrun:
             print(cmd)
         else:
@@ -52,7 +52,7 @@ class Close():
 
     def tag(s):
         s.version2 = s.version.replace("~", "_")
-        print("git tag -sm '{}' '{}'".format(s.prefix+s.version, s.prefix+s.version2))
+        print("git tag -sm '{}' '{}'".format(s.prefix + s.version, s.prefix + s.version2))
 
     def main(s):
         retval = 1
