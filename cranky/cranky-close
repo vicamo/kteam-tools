@@ -12,6 +12,16 @@ from lib.git                            import Git
 from lib.debian                         import Debian
 from ktl.log                            import Clog
 
+# AppError
+#
+# A general exception that can be raised when an error is encountered in the app.
+#
+class AppError(Exception):
+    # __init__
+    #
+    def __init__(self, error=''):
+        self.msg = error
+
 class Close():
     def __init__(s, dryrun=False, master_branch="master-next", config=False):
         s.master_branch = master_branch
