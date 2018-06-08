@@ -40,11 +40,16 @@ class Close():
     def master_version_from_changelog(s):
         for c in s.changelog:
             if c.get('master'):
-                return (c['master'], c['series'])
-        return (None, None)
+                return c['master']
+        return None
+
+    def series_from_changelog(s):
+        for c in s.changelog:
+            if c.get('series') and c['series'] != 'UNRELEASED':
+                return c['series']
+        return None
 
     def commit(s):
-        (_tmp, s.branch) = s.debiandir.split(".", 1)
         if s.branch == "master":
             s.prefix = "Ubuntu-"
         else:
@@ -67,24 +72,31 @@ class Close():
     def main(s):
         retval = 1
         s.debiandir = Debian.debian_env()
+        (_tmp, s.branch) = s.debiandir.split(".", 1)
         s.changelog = Debian.changelog()
         master_commit = Git.ubuntu_commit(s.master_branch)
         master_version = Git.version_from_subject(master_commit)
-        (base_version, series) = s.master_version_from_changelog()
-        if not base_version:
-            print("No base_version found on {}/changelog".format(s.debiandir))
-            return 1
+        series = s.series_from_changelog()
+
         if not s.dryrun:
             Debian.fdr("clean")
             Debian.fdr("updateconfigs")
         if not s.config and s.is_config_changed():
             print("config has changed! please, review it and commit\n")
             raise AppError("config has changed! please, review it and commit\n")
-        cmd = './debian/scripts/misc/insert-ubuntu-changes {}/changelog {} {}'.format(s.debiandir, base_version, master_version)
-        if s.dryrun:
-            print(cmd)
-        else:
-            os.system(cmd)
+
+        if s.branch != "master":
+            base_version = s.master_version_from_changelog()
+            if not base_version:
+                print("No base_version found on {}/changelog".format(s.debiandir))
+                return 1
+
+            cmd = './debian/scripts/misc/insert-ubuntu-changes {}/changelog {} {}'.format(s.debiandir, base_version, master_version)
+            if s.dryrun:
+                print(cmd)
+            else:
+                os.system(cmd)
+
         if not s.dryrun:
             Debian.fdr("insertchanges")
             Debian.dch(series)
