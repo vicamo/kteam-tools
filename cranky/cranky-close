@@ -9,7 +9,6 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..'
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
 from lib.git                            import Git
-from lib.shell                          import ShellError
 from lib.debian                         import Debian
 from ktl.log                            import Clog
 
@@ -60,8 +59,11 @@ class Close():
         s.debiandir = Debian.debian_env()
         s.changelog = Debian.changelog()
         master_commit = Git.ubuntu_commit(s.master_branch)
+        print(master_commit)
         master_version = Git.version_from_subject(master_commit)
+        print(master_version)
         (base_version, series) = s.master_version_from_changelog()
+        print(base_version)
         if not base_version:
             print("No base_version found on {}/changelog".format(s.debiandir))
             return 1
