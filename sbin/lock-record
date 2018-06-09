@@ -12,18 +12,29 @@ mkdir -p $(dirname "$lock")
 [ "${FLOCKER}" != "$lock" ] && exec env FLOCKER="$lock" flock -en "$lock" "$0" "$@" || :
 shift 2
 
+stamp="now"
 if [ -f "$lock-done" ]; then
 	[ "$age" = 'once' ] && exit 0
 
 	now=$(date +%s)
 	modified=$(stat --format %Y "$lock-done")
-	# Granularity is a minute, add 30s to round to nearest minute.
-	let modified="($now-($modified+30))/60"
 
-	[ "$modified" -lt "$age" ] && exit 0
+	# Granularity is a minute, add 30s to round to nearest minute.
+	let current_age="($now-($modified+30))/60"
+	[ "$current_age" -lt "$age" ] && exit 0
+
+	# If we fall within the normal period for this job, bump the next
+	# run time along by one period.  Do this by checking if we are in
+	# the first half of the run.
+	let age2="$age * 3 / 2"
+	if [ "$current_age" -lt "$age2" ]; then
+		stamp="@$(( $modified + ($age * 60) ))"
+	fi
+
+	##echo "$(date) $lock current_age=$current_age age=$age age2=$age2 now=$now modified=$modified stamp=$stamp" >>~/logs/DEBUG
 fi
 
 "$@" || exit 1
 
-touch "$lock-done"
+touch -d "$stamp" "$lock-done"
 exit 0
