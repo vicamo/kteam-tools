@@ -15,7 +15,7 @@
 #       the release date of this SRU cycle; YYYY-MM-DD format
 
 '2018.06.11':
-    release-date: '2018-07-04'
+    release-date: '2018-07-02'
 
 '2018.05.21':
     release-date: '2018-06-11'
