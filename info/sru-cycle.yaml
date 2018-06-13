@@ -1,0 +1,21 @@
+# kernel SRU Cycle information file (YAML format)
+#
+# For all live SRU cycles this file contains a record.  That dictionary record
+# defines attributed of the SRU cycle such as its current release-data.
+#
+# File format:
+# The file en-toto is an unnamed dictionary containing a named series of Cycle
+# records (see below).  The name for a record is the official cycle name without
+# its respin number, for example 2018.05.21.
+#
+# Cycle record fields:
+#  * name (string)
+#       the name of this SRU Cycle
+#  * release-date (string)
+#       the release date of this SRU cycle; YYYY-MM-DD format
+
+'2018.06.11':
+    release-date: '2018-07-04'
+
+'2018.05.21':
+    release-date: '2018-06-11'
