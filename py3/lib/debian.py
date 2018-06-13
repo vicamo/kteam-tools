@@ -9,7 +9,7 @@ from sys                                import stdout
 from .git                               import Git, GitError
 from re                                 import compile, findall, finditer
 from os                                 import path, listdir, system
-from debian.changelog                   import Changelog
+from debian.changelog                   import Changelog, get_maintainer
 from datetime                           import datetime, timezone, timedelta
 from time                               import localtime
 
@@ -69,7 +69,9 @@ class Debian:
         changelog = Changelog(open(fname))
         tz = timezone(timedelta(seconds=localtime().tm_gmtoff))
         dt = datetime.now(tz).strftime("%a, %d %b %Y %T %z")
+        (maintainer, email) = get_maintainer()
         changelog.set_distributions(release)
+        changelog.set_author("%s <%s>" % (maintainer, email))
         changelog.set_date(dt)
         changelog.write_to_open_file(open(fname, "w"))
 
