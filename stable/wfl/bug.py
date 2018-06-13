@@ -824,6 +824,18 @@ class WorkflowBug():
         subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + where
         s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com')
 
+    # sru_cycle
+    #
+    @property
+    def sru_cycle(s):
+        cycle = None
+        for t in s.tags:
+            if t.startswith('kernel-sru-cycle-'):
+                cycle = t.replace('kernel-sru-cycle-', '')
+        if cycle is None:
+            cycle = '1962.11.02-00'
+        return cycle
+
     # send_testing_message
     #
     def send_testing_message(s, op="sru", ppa=False, flavour="generic"):
@@ -844,13 +856,7 @@ class WorkflowBug():
 
         # Add the kernel-sru-cycle identifier to the message
         #
-        cycle = None
-        for t in s.tags:
-            if t.startswith('kernel-sru-cycle-'):
-                cycle = t.replace('kernel-sru-cycle-', '')
-        if cycle is None:
-            cycle = '1962.11.02-00'
-        msg['sru-cycle'] = cycle
+        msg['sru-cycle'] = s.sru_cycle
 
         # At this time only 2 arches have the lowlatency flavour
         #
