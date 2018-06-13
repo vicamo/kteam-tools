@@ -1,5 +1,6 @@
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
+from ktl.sru_cycle                              import SruCycle
 from .base                                      import TaskHandler
 
 class Promoter(TaskHandler):
@@ -9,6 +10,15 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(Promoter, s).__init__(lp, task, bug)
         cleave(s.__class__.__name__ + '.__init__')
+
+    def _cycle_ready(s):
+        cycle_name = s.bug.sru_cycle
+        cycle_base = cycle_name.split('-')[0]
+        cycle = SruCycle().lookup_cycle(cycle_base)
+
+        if not cycle:
+            return False
+        return cycle.ready_to_release
 
     def _kernel_block(s):
         '''

@@ -58,6 +58,10 @@ class PromoteToUpdates(Promoter):
                 cinfo('            A kernel-block tag exists on this tracking bug', 'yellow')
                 break
 
+            if not s._cycle_ready():
+                cinfo('            The cycle is not yet ready to release', 'yellow')
+                break
+
             s.task.status = 'Confirmed'
             retval = True
             break
