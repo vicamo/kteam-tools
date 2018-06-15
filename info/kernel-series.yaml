@@ -664,7 +664,6 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
 
         linux-euclid:
             packages:
