@@ -55,6 +55,7 @@ class Debian:
     bug_rc = compile("LP:\s*#[0-9]+(?:\s*,\s*#[0-9]+)*")
     bug_nr_rc = compile("#([0-9]+)")
     ubuntu_master_re = compile(r'^\s.*\[ Ubuntu: ([0-9.-]*) \]$')
+    endsection_line_rc = compile("^ -- ")
 
     @classmethod
     def fdr(cls, cmd):
@@ -210,9 +211,7 @@ class Debian:
                 section['release'] = release
                 section['series']  = release
                 section['pocket']  = pocket
-                section['content'] = content
                 section['package'] = package
-                section['bugs'] = set(bugs)
 
                 m = cls.version_rc.match(version)
                 if m is not None:
@@ -222,19 +221,27 @@ class Debian:
                 else:
                     debug('The version (%s) failed to match the regular expression.\n' % version, cls.debug)
 
-                retval.append(section)
                 content = []
                 bugs = []
-            else:
-                # find bug numbers and append them to the list
-                for bug_line_match in finditer(cls.bug_rc, line):
-                    bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
-                    bugs.extend(bug_matches)
-                m = cls.ubuntu_master_re.match(line)
-                if m is not None and not section.get("master"):
-                    section['master'] = m.group(1)
+                continue
 
-                content.append(line)
+            content.append(line)
+
+            # find bug numbers and append them to the list
+            for bug_line_match in finditer(cls.bug_rc, line):
+                bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
+                bugs.extend(bug_matches)
+
+            m = cls.ubuntu_master_re.match(line)
+            if m is not None and not section.get("master"):
+                section['master'] = m.group(1)
+                continue
+
+            m = cls.endsection_line_rc.match(line)
+            if m is not None:
+                section['content'] = content
+                section['bugs'] = set(bugs)
+                retval.append(section)
 
         return retval
 

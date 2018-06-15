@@ -53,6 +53,7 @@ class Debian:
     bug_nr_rc = compile("#([0-9]+)")
 
     parent_bug_section_rc = compile("^\s*\[ Ubuntu: .*\]")
+    endsection_line_rc = compile("^ -- ")
 
     # debian_directories
     #
@@ -180,11 +181,7 @@ class Debian:
                 section['release'] = release
                 section['series']  = release
                 section['pocket']  = pocket
-                section['content'] = content
-                section['own-content'] = own_content
                 section['package'] = package
-                section['bugs'] = set(bugs)
-                section['own-bugs'] = set(own_bugs)
 
                 m = cls.version_rc.match(version)
                 if m is not None:
@@ -194,26 +191,34 @@ class Debian:
                 else:
                     debug('The version (%s) failed to match the regular expression.\n' % version, cls.debug)
 
-                retval.append(section)
                 content = []
                 own_content = []
                 bugs = []
                 own_bugs = []
                 parsing_own_bugs = True
-            else:
-                if cls.parent_bug_section_rc.match(line):
-                    parsing_own_bugs = False
+                continue
 
-                # find bug numbers and append them to the list
-                for bug_line_match in finditer(cls.bug_rc, line):
-                    bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
-                    bugs.extend(bug_matches)
-                    if parsing_own_bugs:
-                        own_bugs.extend(bug_matches)
+            content.append(line)
+            if parsing_own_bugs:
+                own_content.append(line)
 
-                content.append(line)
+            if cls.parent_bug_section_rc.match(line):
+                parsing_own_bugs = False
+
+            # find bug numbers and append them to the list
+            for bug_line_match in finditer(cls.bug_rc, line):
+                bug_matches = findall(cls.bug_nr_rc, bug_line_match.group(0))
+                bugs.extend(bug_matches)
                 if parsing_own_bugs:
-                    own_content.append(line)
+                    own_bugs.extend(bug_matches)
+
+            m = cls.endsection_line_rc.match(line)
+            if m is not None:
+                section['content'] = content
+                section['own-content'] = own_content
+                section['bugs'] = set(bugs)
+                section['own-bugs'] = set(own_bugs)
+                retval.append(section)
 
         return retval
 

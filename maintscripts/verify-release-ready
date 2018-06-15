@@ -227,7 +227,7 @@ class VerifyReleaseReady():
         # Look to see if a tracking bug has been added to the changelog
         #
         found_tracker = False
-        for line in changelog[1]['content']:
+        for line in changelog[0]['content']:
             if '-proposed tracker' in line:
                 found_tracker = True
                 try:
@@ -252,7 +252,7 @@ class VerifyReleaseReady():
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
                 master_tracker_id = 'NOT-FOUND'
-                for line in master_changelog[1]['content']:
+                for line in master_changelog[0]['content']:
                     if '-proposed tracker' in line:
                         try:
                             (junk, master_tracker_id) = line.split('#')
@@ -344,7 +344,7 @@ class VerifyReleaseReady():
         # entries were inserted by debian/scripts/misc/git-ubuntu-log
         msg = 'no "Miscellaneous" entries'
         changelog = Debian.changelog()
-        content = changelog[1]['own-content']
+        content = changelog[0]['own-content']
         for line in content:
             m = re.match("\* Miscellaneous .* changes$", line.strip())
             if m:
@@ -355,9 +355,9 @@ class VerifyReleaseReady():
 
     def verify_changelog_bugs(s):
         changelog = Debian.changelog()
-        changelog_bugs = changelog[1]['own-bugs']
-        changelog_series = changelog[1]['series']
-        changelog_source_package = changelog[1]['package']
+        changelog_bugs = changelog[0]['own-bugs']
+        changelog_series = changelog[0]['series']
+        changelog_source_package = changelog[0]['package']
 
         tracker = None
 
@@ -409,7 +409,7 @@ class VerifyReleaseReady():
 
     def verify_content(s):
         changelog = Debian.changelog()
-        content = changelog[1]['content']
+        content = changelog[0]['content']
 
         # It's important that there be a single blank line at the beginning of
         # the content. (after the package/version/pocket line)
