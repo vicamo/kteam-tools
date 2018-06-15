@@ -676,7 +676,7 @@ class WorkflowBug():
     #
     def _has_prep_task(s, taskname):
         if taskname in s.tasks_by_name:
-            if s.tasks_by_name[taskname].status == "Fix Released":
+            if s.tasks_by_name[taskname].status != "Invalid":
                 return True
         return False
 
@@ -708,7 +708,9 @@ class WorkflowBug():
         }
         ver_split = s.pkg_version.split('-')
         main_version = ver_split[0]
-        package_list = [s.pkg_name]
+        package_list = []
+        if s._has_prep_task('prepare-package'):
+            package_list.append(s.pkg_name)
         for name in iter(name_map):
             if s._has_prep_task(name):
                 if 'lbm' in name:
