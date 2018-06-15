@@ -74,75 +74,75 @@ class VerifyReleaseReady():
         if s.args.verbose:
             stdo(colored(msg + '\n', 'blue'))
 
-    def verify_linux(s, cl1, cl2):
-        if '-' not in cl1['version']:
+    def verify_linux(s, cl0, cl1):
+        if '-' not in cl0['version']:
             raise AppError("The version string is not well formed (missing '-').")
 
-        (cl1_version, abi_build) = cl1['version'].split('-')  # Current version line
+        (cl0_version, abi_build) = cl0['version'].split('-')  # Current version line
+        cl0_abi   = cl0['ABI']
+        cl0_build = cl0['upload-number']
+
+        (cl1_version, abi_build) = cl1['version'].split('-')  # Previous version line
         cl1_abi   = cl1['ABI']
         cl1_build = cl1['upload-number']
-
-        (cl2_version, abi_build) = cl2['version'].split('-')  # Previous version line
-        cl2_abi   = cl2['ABI']
-        cl2_build = cl2['upload-number']
 
         # Verify the version information in the changelog
         #
         while True:
             # Check: That the release information is correct.
             #
-            msg = 'release (%s)' % (cl1['release'])
+            msg = 'release (%s)' % (cl0['release'])
             kernel_series = KernelSeries()
-            series = kernel_series.lookup_series(codename=cl1['release'])
+            series = kernel_series.lookup_series(codename=cl0['release'])
             if not series:
                 s.status(msg, False)
-                s.verbose("invalid series specified '%s'" % (cl1['release'],))
+                s.verbose("invalid series specified '%s'" % (cl0['release'],))
             else:
                 s.status(msg, True)
 
-            msg = 'package (%s)' % (cl1['package'])
+            msg = 'package (%s)' % (cl0['package'])
             source = None
             if series:
-                source = series.lookup_source(cl1['package'])
+                source = series.lookup_source(cl0['package'])
                 if not source:
                     s.status(msg, False)
-                    s.verbose("invalid source specified '%s' not found in series '%s'" % (cl1['package'], cl1['release']))
+                    s.verbose("invalid source specified '%s' not found in series '%s'" % (cl0['package'], cl0['release']))
                 else:
                     s.status(msg, True)
 
-            msg = 'version (%s)' % (cl1['version'])
+            msg = 'version (%s)' % (cl0['version'])
             if source:
                 found = False
                 for version in source.versions:
-                    if cl1['version'].startswith(version + '-'):
+                    if cl0['version'].startswith(version + '-'):
                         found = True
                         break
                 if not found:
                     s.status(msg, False)
-                    s.verbose("invalid version specified '%s' not found in series '%s' source '%s'" % (cl1['version'], cl1['package'], cl1['release']))
+                    s.verbose("invalid version specified '%s' not found in series '%s' source '%s'" % (cl0['version'], cl0['package'], cl0['release']))
                 else:
                     s.status(msg, True)
 
             # Check: Make sure the ABI is *always* incremented
             #
-            msg = 'ABI bump (%d)' % (int(cl1_abi))
-            if int(cl1_abi) <= int(cl2_abi):
+            msg = 'ABI bump (%d)' % (int(cl0_abi))
+            if int(cl0_abi) <= int(cl1_abi):
                 s.status(msg, False)
-                s.verbose("No ABI bump: %d <= %d" % (int(cl1_abi), int(cl2_abi)))
+                s.verbose("No ABI bump: %d <= %d" % (int(cl0_abi), int(cl1_abi)))
             else:
                 s.status(msg, True)
 
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
-            msg = 'build number (%d)' % (int(cl2_build) + 1)
-            if int(cl1_build) != int(cl2_build) + 1:
+            msg = 'build number (%d)' % (int(cl1_build) + 1)
+            if int(cl0_build) != int(cl1_build) + 1:
                 s.status(msg, False)
-                s.verbose("expected %d but got: %d" % (int(cl2_build), int(cl1_build)))
+                s.verbose("expected %d but got: %d" % (int(cl1_build), int(cl0_build)))
             else:
                 s.status(msg, True)
 
             # Check: Make sure that the abi directory has the previous version
-            v = cl2['version']
+            v = cl1['version']
             if '~' in v:
                 v = v.split('~', 1)[0]
             msg = 'previous abi present (%s)' % (v)
@@ -201,23 +201,23 @@ class VerifyReleaseReady():
                 if 'Signed-off-by' not in line:
                     commit.append(line)
 
-        version = '%s-%s.%s' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
+        version = '%s-%s.%s' % (cl0['linux-version'], cl0['ABI'], cl0['upload-number'])
 
-        (closed, expected_re) = s.verify_closing_commit(cl1, commit, version)
+        (closed, expected_re) = s.verify_closing_commit(cl0, commit, version)
 
         # Construct the expected tag, and verify that it matches the
         # latest commit tag
         #
-        pkg = cl1['package']
+        pkg = cl0['package']
         if pkg.startswith('linux-lts'):
             tag_prefix = 'Ubuntu-lts'
-            v = cl1['version']
+            v = cl0['version']
         elif pkg.startswith('linux-hwe'):
             tag_prefix = 'Ubuntu-hwe'
-            v = cl1['version']
+            v = cl0['version']
         elif Debian.is_backport():
             tag_prefix = pkg.replace('linux', 'Ubuntu')
-            v = cl1['version']
+            v = cl0['version']
         else:
             tag_prefix = pkg.replace('linux', 'Ubuntu')
             v = version
@@ -280,13 +280,13 @@ class VerifyReleaseReady():
 
         s.verify_content()
 
-    def verify_closing_commit(s, cl1, commit, version):
+    def verify_closing_commit(s, cl0, commit, version):
         # **NOTE: Because we are inconsistent with the exact text used in the last commit
         #         I'm loosing up the matching a bit but making sure that what is in the
         #         last commit matches the tag
         #
         closed = True
-        expected = '^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$' % (version, cl1['version'])
+        expected = '^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$' % (version, cl0['version'])
         m = re.match(expected, commit[0])
         msg = 'closing release commit'
         if len(commit) != 1:        # There should only be a single line in the commit
@@ -473,18 +473,18 @@ class VerifyReleaseReady():
         else:
             s.status('final commit content', True)
 
-    def verify_linux_meta(s, cl1, cl2):
-        cl1_build = cl1['upload-number']
+    def verify_linux_meta(s, cl0, cl1):
+        cl0_build = cl0['upload-number']
 
-        cl2_build = cl2['upload-number']
+        cl1_build = cl1['upload-number']
 
         while True:
             # Check: Make sure the current version is correctly incremented from the previous one.
             #
-            msg = 'build number (%d)' % (int(cl2_build) + 1)
-            if int(cl1_build) != int(cl2_build) + 1:
+            msg = 'build number (%d)' % (int(cl1_build) + 1)
+            if int(cl0_build) != int(cl1_build) + 1:
                 s.status(msg, False)
-                s.verbose("expected %d but got: %d" % (int(cl2_build) + 1, int(cl1_build)))
+                s.verbose("expected %d but got: %d" % (int(cl1_build) + 1, int(cl0_build)))
                 break
             s.status(msg, True)
 
@@ -501,8 +501,8 @@ class VerifyReleaseReady():
                 if 'Signed-off-by' not in line:
                     commit.append(line)
 
-        version = '%s.%s.%s' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
-        (closed, expected) = s.verify_closing_commit(cl1, commit, version)
+        version = '%s.%s.%s' % (cl0['linux-version'], cl0['ABI'], cl0['upload-number'])
+        (closed, expected) = s.verify_closing_commit(cl0, commit, version)
 
         if closed:
             s.verify_tag(log, expected)
@@ -574,29 +574,29 @@ class VerifyReleaseReady():
 
             changelog = Debian.changelog()
 
-            cl1 = changelog[0]
+            cl0 = changelog[0]
             if s.args.verbose:
                 s.verbose('\n')
                 s.verbose('New version information:')
-                for k in cl1:
-                    s.verbose('%15s : %s' % (k, cl1[k]))
+                for k in cl0:
+                    s.verbose('%15s : %s' % (k, cl0[k]))
 
-            cl2 = changelog[1]
+            cl1 = changelog[1]
             if s.args.verbose:
                 s.verbose('\n')
                 s.verbose('Previous version information:')
-                for k in cl2:
-                    s.verbose('%15s : %s' % (k, cl2[k]))
-            if cl1['package'] in kernel_packages:
-                s.verify_linux(cl1, cl2)
-            elif cl1['package'] in non_kernel_packages:
-                s.verify_linux_meta(cl1, cl2)
+                for k in cl1:
+                    s.verbose('%15s : %s' % (k, cl1[k]))
+            if cl0['package'] in kernel_packages:
+                s.verify_linux(cl0, cl1)
+            elif cl0['package'] in non_kernel_packages:
+                s.verify_linux_meta(cl0, cl1)
             else:
-                stdo(colored('Unrecognised package: %s\n' % cl1['package'], 'yellow'))
+                stdo(colored('Unrecognised package: %s\n' % cl0['package'], 'yellow'))
                 stdo(colored('    Trying non-kernel package verification...\n', 'yellow'))
-                s.verify_linux_meta(cl1, cl2)
+                s.verify_linux_meta(cl0, cl1)
                 stdo(colored('    Trying kernel package verification...\n', 'yellow'))
-                s.verify_linux(cl1, cl2)
+                s.verify_linux(cl0, cl1)
 
         # Handle the user presses <ctrl-C>.
         #
