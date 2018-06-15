@@ -164,8 +164,9 @@ if [ "${series}" = "UNRELEASED" ] ; then
 fi
 
 # Get the list of supported architectures
-readarray -t all_arches < <(git ls-tree "${commit}" "${debian_d}/config/" | \
-								grep ' tree ' | sed -e 's,.*/,,')
+abi=$(git ls-tree -d "${commit}" "${debian_d}/abi/" | sed -e 's,.*/,,')
+readarray -t all_arches < <(git ls-tree -d "${commit}" \
+								"${debian_d}/abi/${abi}/" | sed -e 's,.*/,,')
 
 if [ "${arches[0]}" = "all" ] ; then
 	# shellcheck disable=SC2012
