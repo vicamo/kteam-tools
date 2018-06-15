@@ -27,7 +27,7 @@
           description: 'Nag bug reporters if needed'
         - name: 'Produce kernel snaps'
         - name: 'Update master branches after promotion to -updates'
-        - name: 'Sync copy-forward kernels across git trees'
+        - name: 'Sync copy-forward kernels (archive and git trees)'
           description: 'Copy linux-snapdragon etc forward to later releases'
         - name: 'Release copy-forward kernels'
           description: 'Once primary kernels are released also release the copy forward kernels'
