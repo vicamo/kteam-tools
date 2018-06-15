@@ -4,6 +4,7 @@
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, eout, run_command
+from datetime                           import datetime
 from ktl.std_app                        import StdApp
 from ktl.debian                         import Debian
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
@@ -49,11 +50,12 @@ class Cmdline:
         stdo("        --staging        Use the staging LP server to create the bug. This is just for       \n")
         stdo("                         testing and will go away when the database is reset.                \n")
         stdo("                                                                                             \n")
-        stdo("        --version        What is the version number of the stable release. This is used      \n")
-        stdo("                         for the bug title, to determine the series, etcl.                   \n")
+        stdo("        --version        Version number of the upstream stable release,                      \n")
+        stdo("                         or 'patchset' for an arbitrary set of patches.                      \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --staging                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --staging --version v4.15.8                                                       \n" % self.cfg['app_name'])
+        stdo("        %s --staging --version patchset                                                      \n" % self.cfg['app_name'])
 
     # process
     #
@@ -135,8 +137,12 @@ class CreateTrackingBug(StdApp):
 
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
-            print("version: %s" % self.cfg['version'])
             version = self.cfg['version']
+            if version == 'patchset':
+                datestr = datetime.now().strftime("%Y-%m-%d")
+                update_desc = "upstream stable patchset %s" % datestr
+            else:
+                update_desc = "%s upstream stable release" % version
             changelog = Debian.changelog(local=True)
             series_name = changelog[0]['release']
             if series_name == 'UNRELEASED':
@@ -155,7 +161,9 @@ class CreateTrackingBug(StdApp):
                 log = ""
 
             # Title:
-            title = "%s update to %s stable release" % (series_name.title(), self.cfg['version'])
+            title = "%s update: %s" % (series_name.title(), update_desc)
+
+            print(title)
 
             # Repository - see if it's a tree we maintain
             if "-ckt" in version:
@@ -172,17 +180,13 @@ class CreateTrackingBug(StdApp):
        in scope to the Ubuntu SRU process, e.g., each patch has to
        demonstrably fix a bug, and each patch is vetted by upstream
        by originating either directly from a mainline/stable Linux tree or
-       a minimally backported form of that patch. The %s upstream stable
-       patch set is now available. It should be included in the Ubuntu
-       kernel as well.
+       a minimally backported form of that patch. The following upstream
+       stable patches should be included in the Ubuntu kernel:
 
        %s
+       from %s
 
-    TEST CASE: TBD
-
-       The following patches from the %s stable release shall be applied:
-
-            """ % (version, repository, version)
+            """ % (update_desc, repository)
 
             description = description + "\n" + log
             bug = self.lp.create_bug(project='ubuntu', package=changelog[0]['package'], title=title, description=description)
