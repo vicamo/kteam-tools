@@ -91,7 +91,7 @@ class PromoteToSecurity(Promoter):
 
             if s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
-            if s._cycle_ready():
+            if not s._cycle_ready():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
 
             s.task.status = 'New'
