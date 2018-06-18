@@ -75,8 +75,23 @@ class PromoteToUpdates(Promoter):
         center(s.__class__.__name__ + '._verify_promotion')
         retval = False
 
-        while True:
+        while not retval:
+            if s.task.status not in ('Confirmed'):
+                break
+            if not s._kernel_block() and s._cycle_ready():
+                break
 
+            if s._kernel_block():
+                cinfo('            A kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
+            if s._cycle_ready():
+                cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
+
+            s.task.status = 'New'
+
+            retval = True
+            break
+
+        while not retval:
             # Check if packages were copied to the right pocket->component
             #
             if s._block_proposed():
