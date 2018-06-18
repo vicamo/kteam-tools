@@ -755,7 +755,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe']
             supported: true
-            derived-from: [ '17.10', 'linux' ]
+            derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
                     hwe:
