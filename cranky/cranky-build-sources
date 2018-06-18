@@ -105,7 +105,7 @@ fi
 series="$1"
 package="$2"
 
-sources=$( "$here/lib/config" 'source-packages-path' "$series" "$package" )
+sources=$( "$here/crl/config" 'source-packages-path' "$series" "$package" )
 
 # Ensure we have the updated session -- use amd64/linux for all packages as that
 # is a superset.

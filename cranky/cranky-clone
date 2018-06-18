@@ -16,7 +16,7 @@ from subprocess import call
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
                                                  os.pardir, os.pardir)))
 
-from cranky.lib import utils
+from crl import utils
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cnotice, cwarn
 
