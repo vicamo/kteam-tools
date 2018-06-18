@@ -20,6 +20,19 @@ class Promoter(TaskHandler):
             return False
         return cycle.ready_to_release
 
+    def _cycle_hold(s):
+        cycle_name = s.bug.sru_cycle
+        cycle_base = cycle_name.split('-')[0]
+        cycle = SruCycle().lookup_cycle(cycle_base)
+
+        # We will not hold the cycle here if it is not
+        # defined.  This ultimatly will allow things to
+        # get to proposed before being blocked for lack
+        # of a release date.
+        if not cycle:
+            return False
+        return cycle.hold
+
     def _kernel_block(s):
         '''
         If a 'kernel-block' tag exist return True.
