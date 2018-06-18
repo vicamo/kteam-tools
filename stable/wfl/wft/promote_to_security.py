@@ -63,7 +63,7 @@ class PromoteToSecurity(Promoter):
                 break
 
             if s._kernel_block():
-                cinfo('            A kernel-block-proposed tag exists on this tracking bug', 'yellow')
+                cinfo('            A kernel-block/kernel-block-proposed tag exists on this tracking bug', 'yellow')
                 break
 
             if not s._cycle_ready():
@@ -90,7 +90,7 @@ class PromoteToSecurity(Promoter):
                 break
 
             if s._kernel_block():
-                cinfo('            A kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
+                cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
             if s._cycle_ready():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
 

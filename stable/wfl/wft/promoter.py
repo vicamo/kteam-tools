@@ -40,7 +40,7 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '._kernel_block_ppa')
         retval = False
 
-        if 'kernel-block-ppa' in s.bug.tags:
+        if 'kernel-block' in s.bug.tags or 'kernel-block-ppa' in s.bug.tags:
             retval = True
 
         cleave(s.__class__.__name__ + '._kernel_block_ppa (%s)' % retval)
