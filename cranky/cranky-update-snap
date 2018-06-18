@@ -1,0 +1,176 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import yaml
+import subprocess
+import re
+import logging
+
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+
+from ktl.kernel_series import KernelSeries
+from ktl.log import cerror, cinfo
+
+class UpdateSnap():
+    def __init__(self, updates=False, no_tag=False, dry_run=False):
+        self.ks = KernelSeries()
+        self.scy_file_name = "snapcraft.yaml"
+        self.no_tag = no_tag
+        self.dry_run = dry_run
+        self.scy = None
+
+        if updates:
+            self.pocket = "updates"
+        else:
+            self.pocket = "proposed"
+
+    @property
+    def series(self):
+        return self.scy['parts']['kernel']['source'].rpartition('/')[2]
+
+    def lookup_source_package(self):
+        '''
+        Lookup on the kernel series object for the source package of the kernel
+        snap by its name.
+        '''
+        series = self.ks.lookup_series(codename=self.series)
+        for source in series.sources:
+            snap = source.lookup_snap(self.scy['name'])
+            if snap is not None:
+                return source.name
+        return None
+
+    def get_published_ver(self, pkg_name, series, pocket):
+        '''
+        Use 'rmadison' to get the package version published for the given
+        series/pocket.
+        '''
+        component = "%s-%s" % (series, pocket)
+        ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', component, pkg_name])
+        return ret.decode().strip().split('|')[1].strip()
+
+    def update_snap_ver(self, version):
+        '''
+        Update the snapcraft yaml file with the new version.
+        '''
+        with open(self.scy_file_name, 'r') as scy_file:
+            scy_content = scy_file.read()
+
+        if not self.dry_run:
+            scy_content = re.sub(r'version: .*', 'version: %s' % version, scy_content)
+            with open(self.scy_file_name, 'w') as scy_file:
+                scy_file.write(scy_content)
+        else:
+            match = re.search(r'version: (.*)', scy_content)
+            curr_version = match.group(1)
+            cinfo("INFO: Dry run: would update %s from version '%s' to version '%s'" %
+                  (self.scy_file_name, curr_version, version))
+
+    def get_commit_subject(self, version):
+        '''
+        Return a string with the subject to be used for the commit,
+        based on the previous commit messages.
+        '''
+        cmd = "git log --pretty=%%s -1 --grep='UBUNTU: Ubuntu-.*[0-9]'  -- %s" % self.scy_file_name
+        last_commit = subprocess.check_output(cmd, shell=True).decode()
+
+        match = re.match(r'(UBUNTU: Ubuntu-)(.*?)[0-9].*', last_commit)
+        prefix = match.group(1)
+        flavour = match.group(2)
+
+        return "%s%s%s" % (prefix, flavour, version)
+
+    def get_tag_from_commit(self, subject):
+        '''
+        Given a commit subject, return a tuple with the tag name and tag msg to
+        be used for that commit.
+        '''
+        tag_msg = re.sub(r'^UBUNTU: ', '', subject)
+        tag_name = tag_msg.replace('~', '_')
+
+        return (tag_name, tag_msg)
+
+    def main(self):
+        '''
+        main method.
+        '''
+        # open and parse the local snapcraft.yaml file
+        try:
+            with open(self.scy_file_name, 'r') as scy_file:
+                self.scy = yaml.load(scy_file)
+        except:
+            cerror("ERROR: Could not open and parse file %s" % self.scy_file_name)
+            sys.exit(1)
+
+        source_package = self.lookup_source_package()
+        if source_package is None:
+            cerror("ERROR: Could not find source package for snap '%s'" % self.scy['name'])
+            sys.exit(1)
+
+        proposed_ver = self.get_published_ver(source_package, self.series, self.pocket)
+        if self.scy['version'] == proposed_ver:
+            cerror("ERROR: No new version available in -%s" % self.pocket)
+            sys.exit(1)
+
+        self.update_snap_ver(proposed_ver)
+        commit_msg = self.get_commit_subject(proposed_ver)
+        (tag_name, tag_msg) = self.get_tag_from_commit(commit_msg)
+        commit_cmd = "git commit -s -m '%s' -- %s" % (commit_msg, self.scy_file_name)
+        tag_cmd = "git tag -sm '%s' '%s'" % (tag_msg, tag_name)
+        if not self.dry_run:
+            ret = subprocess.call(commit_cmd, shell=True)
+            if ret != 0:
+                cerror("ERROR: Failed to commit. Return code: %d", ret)
+                sys.exit(1)
+
+            if self.no_tag:
+                cinfo("Please review and tag:")
+                cinfo(tag_cmd)
+            else:
+                cinfo("INFO: Running: %s" % tag_cmd)
+                ret = subprocess.call(tag_cmd, shell=True)
+                if ret != 0:
+                    cerror("ERROR: Failed to tag commit. Return code: %d" % ret)
+                    sys.exit(1)
+        else:
+            cinfo("INFO: Dry run: would run:")
+            cinfo("%s" % commit_cmd)
+            cinfo("%s" % tag_cmd)
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    desc = """
+Update the kernel snap snapcrat.yaml file with the source package version
+published on the specified pocket (default from -proposed).
+"""
+
+    epilog = """
+Examples:
+    $ cranky-update-snap
+        Get source package version from -proposed and automatically tag.
+
+    $ cranky-update-snap --updates
+        Get source package version from -updates and automatically tag.
+
+    $ cranky-update-snap --no-tag
+        Get source package version from -proposed and don't tag, showing only
+        the 'git tag' command to be run.
+"""
+
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--dry-run", action="store_true", default=False,
+                        help="do not make any changes, just show what would be done")
+    parser.add_argument("-u", "--updates", action="store_true", default=False,
+                        help="get version from -updates instead of -proposed")
+    parser.add_argument("-t", "--no-tag", action="store_true", default=False,
+                        help="do not automatically tag the commit")
+    args = parser.parse_args()
+
+    update_snap = UpdateSnap(args.updates, args.no_tag, args.dry_run)
+    update_snap.main()
