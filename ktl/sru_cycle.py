@@ -37,7 +37,13 @@ class SruCycleEntry:
         return datetime.strptime(rdate, '%Y-%m-%d').date()
 
     @property
+    def hold(self):
+        return self._data.get('hold', False)
+
+    @property
     def ready_to_release(self):
+        if self.hold:
+            return False
         return datetime.now().date() >= self.release_date
 
     def __str__(self):

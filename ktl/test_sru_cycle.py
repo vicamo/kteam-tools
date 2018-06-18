@@ -127,6 +127,45 @@ class TestSruCycleEntry(unittest.TestCase):
 
         self.assertEqual(cycle.release_date, None)
 
+    def test_hold_present_true(self):
+        data = """
+        '2018.01.02':
+            hold: true
+        """
+        sc = SruCycle(data=data)
+        cycle = sc.lookup_cycle('2018.01.02')
+
+        self.assertTrue(cycle.hold)
+
+    def test_hold_present_false(self):
+        data = """
+        '2018.01.02':
+            hold: false
+        """
+        sc = SruCycle(data=data)
+        cycle = sc.lookup_cycle('2018.01.02')
+
+        self.assertFalse(cycle.hold)
+
+    def test_hold_present_empty(self):
+        data = """
+        '2018.01.02':
+            hold:
+        """
+        sc = SruCycle(data=data)
+        cycle = sc.lookup_cycle('2018.01.02')
+
+        self.assertFalse(cycle.hold)
+
+    def test_hold_absent(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        cycle = sc.lookup_cycle('2018.01.02')
+
+        self.assertFalse(cycle.hold)
+
     def test_ready_to_release_before(self):
         data = """
         '2018.01.02':
@@ -159,6 +198,18 @@ class TestSruCycleEntry(unittest.TestCase):
 
         with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
             self.assertEqual(cycle.ready_to_release, True)
+
+    def test_ready_to_release_hold(self):
+        data = """
+        '2018.01.02':
+            release-date: '2018-02-03'
+            hold: true
+        """
+        sc = SruCycle(data=data)
+        cycle = sc.lookup_cycle('2018.01.02')
+
+        with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
+            self.assertEqual(cycle.ready_to_release, False)
 
 
 if __name__ == '__main__':
