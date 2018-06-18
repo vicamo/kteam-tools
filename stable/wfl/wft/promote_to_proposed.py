@@ -93,6 +93,17 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while not retval:
+            if s.task.status not in ('Confirmed') or not s._kernel_block_ppa():
+                break
+
+            cinfo('            A kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+
+            s.task.status = 'New'
+
+            retval = True
+            break
+
+        while not retval:
             if s.task.status in ('Fix Committed', 'Incomplete'):
                 break
 
