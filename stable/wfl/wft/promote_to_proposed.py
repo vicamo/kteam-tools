@@ -95,7 +95,7 @@ class PromoteToProposed(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-             if not s._kernel_block_ppa() and not s._cycle_hold()::
+            if not s._kernel_block_ppa() and not s._cycle_hold():
                 break
 
             if s._kernel_block_ppa():

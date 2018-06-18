@@ -13,6 +13,8 @@
 #       the name of this SRU Cycle
 #  * release-date (string)
 #       the release date of this SRU cycle; YYYY-MM-DD format
+#  * hold (bool)
+#       the cycle is on hold; infer kernel-block on all active packages
 
 '2018.06.11':
     release-date: '2018-07-02'
