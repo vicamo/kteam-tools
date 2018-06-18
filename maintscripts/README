@@ -30,9 +30,6 @@ maint-make-bug-branch:
 maint-modify-patch:
 	Can be used to mass modify patch files (add bug links, acks and
 	signing)
-maint-upload-mail
-	Will send out an automatically created mail announcing a new kernel
-        upload. Detects ABI bumps automatically when uploading into proposed.
 maint-verify-changelog
 	Will do some very basic checks on the changelog to make sure it is
 	prepared for release. Also allows to open all buglinks to do final
