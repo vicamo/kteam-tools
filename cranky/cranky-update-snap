@@ -77,7 +77,7 @@ class UpdateSnap():
         cmd = "git log --pretty=%%s -1 --grep='UBUNTU: Ubuntu-.*[0-9]'  -- %s" % self.scy_file_name
         last_commit = subprocess.check_output(cmd, shell=True).decode()
 
-        match = re.match(r'(UBUNTU: Ubuntu-)(.*?)[0-9].*', last_commit)
+        match = re.match(r'(UBUNTU: Ubuntu-)(([a-z][^-]*-)*)[0-9].*', last_commit)
         prefix = match.group(1)
         flavour = match.group(2)
 
