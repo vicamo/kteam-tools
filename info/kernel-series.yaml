@@ -263,6 +263,22 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
+            snaps:
+                pc-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64', 'i386']
+                dragonboard-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'snapdragon']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['arm64']
             supported: true
             testing:
                 flavours:
@@ -282,6 +298,15 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
+            snaps:
+                pi2-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'raspi2']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['armhf']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
@@ -313,6 +338,15 @@
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic']
+            snaps:
+                aws-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'aws']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -334,6 +368,15 @@
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic']
+            snaps:
+                azure-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'azure']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -357,6 +400,13 @@
                 gcp-kernel:
                     primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                gke-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke']
                     gated: false
                     stable: false
                     qa: false
