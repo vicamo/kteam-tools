@@ -11,7 +11,7 @@ locks="/run/lock/cod-status"
 locker="$here/../sbin/lock-record"
 if [ "$1" = "" ]; then
 	[ ! -d "$locks" ] && exit 0
-	"$locker" 480 "$locks/chroots" "$0" chroots
+	"$locker" 480 "$locks/chroots" "$0" chroots &
 	exit 0
 fi
 
