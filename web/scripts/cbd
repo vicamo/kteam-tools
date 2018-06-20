@@ -321,6 +321,13 @@ class CollectRegressionsData(StdApp):
             development_series = kernel_series.lookup_series(development=True)
             bugs_db['info'] = {}
             bugs_db['info']['dev series'] = development_series.codename
+
+            # Add a list of ESM series
+            bugs_db['info']['esm series'] = []
+            for series in kernel_series.series:
+                if series.esm:
+                    bugs_db['info']['esm series'].append(series.codename)
+
             if bugs_db != None:
                 with open(self.cfg['database'], 'w') as f:
                     f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
