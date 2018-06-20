@@ -66,7 +66,7 @@ class TheApp(object):
         s.print_cycle(sd)
 
         print('')
-        cmd = path.join(path.dirname(__file__), 'sru-cycle-kernel-versions')
+        cmd = "%s --no-devel --no-esm" % path.join(path.dirname(__file__), 'sru-cycle-kernel-versions')
         try:
             for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
                 print(line.rstrip().decode())
