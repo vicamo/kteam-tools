@@ -20,12 +20,19 @@ for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
     if series.esm:
         continue
 
+    flags = 'devel' if series.development else '-'
     for source in sorted(series.sources, key=lambda x: x.name):
         if not source.supported:
             continue
 
         # Find the matching package for this source.
+        primary = None
+        meta = None
         for package in source.packages:
-            flags = 'devel' if series.development else '-'
-            if cmd == 'primary' and package.type == 'meta':
-                print("{series} {package} - {flags}".format(series=series.codename, package=package.name, flags=flags))
+            if not package.type:
+                primary = package
+            elif package.type == 'meta':
+                meta = package
+
+        if cmd == 'primary' and primary and meta:
+            print("{series} {package} - {flags}".format(series=series.codename, package=meta.name, flags=flags))
