@@ -785,13 +785,14 @@
                         arches: ['amd64']
                         clouds: ['gke']
 
-#        linux-goldfish:
-#            packages:
-#                linux-goldfish:
-#                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'goldfish']
-#                linux-meta-goldfish:
-#                    type: meta
-#                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'goldfish']
+        linux-goldfish:
+            packages:
+                linux-goldfish:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'goldfish']
+                linux-meta-goldfish:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'goldfish']
+            supported: false
 
         linux-hwe:
             packages:
