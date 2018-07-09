@@ -61,7 +61,7 @@ class TheApp(object):
         retval = 0
 
         sd = s.sd(args.date)
-        print('To: Kernel SRU Announcements <kernel-sru-announce@lists.canonical.com>')
+        print('To: Kernel SRU Announcements <kernel-sru-announce@lists.canonical.com>, Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
         print('Subject: A new SRU cycle started...')
         s.print_cycle(sd)
 
