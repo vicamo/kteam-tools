@@ -357,6 +357,10 @@ class TrackingBug:
         s.reset_tasks(bug)
         return bug
 
+    def get_bug(self, bug_id):
+        bug = self.lp.get_bug(bug_id)
+        return bug
+
     def open(self, package, version, new_abi, master_bug, series_specified, private=False):
         center(self.__class__.__name__ + '.open')
         cdebug('    package: %s' % package)

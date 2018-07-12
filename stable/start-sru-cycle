@@ -130,7 +130,12 @@ class Crankers():
 
                 print('        %s:%s' % (series, master_package))
                 if not s.args.dryrun:
-                    master_bug = s.tb.open(master_package, '<version to be filled>', True, None, series)
+                    if s.args.usemasterbug:
+                        master_bug = s.tb.get_bug(s.args.usemasterbug[0])
+                        print("Using pre-existing master-bug: %s" %(master_bug.id))
+                    else:
+                        master_bug = s.tb.open(master_package, '<version to be filled>', True, None, series)
+
                     for task in master_bug.tasks:
                         # Move the primary package to Confirmed, link-to-tracker and
                         # shanky will keep on top of the others and move them as needed.
@@ -196,6 +201,7 @@ Examples:
     parser.add_argument('--source', action='append', default=[], metavar='source', help='Only create tracking bugs for the specified source package(s). Requiers exactly one series argument to be given. This option can be used multiple times.')
     parser.add_argument('--staging', action='store_true', default=False, help='Use the staging LP server to create the bug. This is just for testing and will go away when the staging database is reset.')
     parser.add_argument('--dry-run', '--dryrun', action='store_true', default=False, help='Make no permanent changes.', dest='dryrun')
+    parser.add_argument('--usemasterbug', type=int, nargs=1, help='Use pre-existing master-bug instead of creating a new one')
 
     args = parser.parse_args()
 
