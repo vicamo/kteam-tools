@@ -131,10 +131,11 @@ trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 ###     run the standard debian/rules invocations like a pkgbuilder would
 ###
 
-echo "git-build-kernel ($CHROOT)"
-echo "      version: $DISTRO ($VERSION)"
+echo "git-build-kernel"
+echo "      package: $SRCPKG ($VERSION) $DISTRO"
 echo "      targets: $TARGETS"
 echo "         arch: $ARCH"
+echo "       chroot: $CHROOT"
 echo "  starting build in $HOSTNAME:$WORKDIR ..."
 
 function show_elapsed
@@ -214,10 +215,17 @@ echo "      $HOSTNAME:$LOG"
 
 # cat $LOG
 
-if [ $STATUS = 0 ]
+[ $STATUS != 0 ] && exit $STATUS
+
+if [ $do_source_pkg = 1 ]
 then
+    changesfile=$(ls "$WORKDIR"/*_source.changes)
+    echo "  source package files:"
+    echo "      $HOSTNAME:${WORKDIR}"
+    echo "  ready for debsign and upload:"
+    echo "      debsign -r $HOSTNAME ${changesfile}"
+else
     echo "  binary packages:"
     echo "      $HOSTNAME:$WORKDIR/"
 fi
 
-exit $STATUS
