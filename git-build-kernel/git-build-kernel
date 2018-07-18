@@ -83,6 +83,10 @@ DISTRO=$(
 SRCPKG=$(git show $GITBRANCH:$DEBIAN/changelog | sed 's/^\(.*\) (.*/\1/;q')
 CHROOT="$DISTRO"
 CHROOT="${CHROOT%-proposed}"
+[ $do_source_pkg = 1 ] && {
+    eval `git show $GITBRANCH:debian/debian.env | grep SOURCE_PACKAGE_CHROOT=`
+    [ -z "$SOURCE_PACKAGE_CHROOT" ] || CHROOT="$SOURCE_PACKAGE_CHROOT"
+}
 if [ "$CHROOT" = "UNRELEASED" -o -z "$CHROOT" ]
 then
     GITREPOBASE="${GITREPO%/*}"	# e.g. /home/kamal/src/linux
