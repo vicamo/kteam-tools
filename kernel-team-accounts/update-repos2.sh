@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CWD=/usr3/ubuntu
+CWD=/usr3/ubuntu/APW
 LOCK=/tmp/update-repos.lock
 
 here=`dirname $0`
@@ -22,26 +22,32 @@ then
 fi
 echo 1 > $LOCK
 
+base_url="http://archive.ubuntu.com/ubuntu/pool"
 
 # Get our current orig files.
-while read url
+"$here/kta-config" origs | \
+while read supported version url
 do
 	file=`basename "$url"`
 
-	if [ ! -f "$file" ]; then
-		echo Getting "$url"
-		wget -q "$url"
+	if [ "$supported" = 'True' ]; then
+		if [ ! -f "$file" ]; then
+			echo Getting "$url"
+			
+			wget -q "$base_url/main/$url" || \
+			wget -q "$base_url/universe/$url"
+		fi
+
+		if [ -f "linux_${version}.orig.tar.gz" -a -f "$file" ]; then
+			if cmp "linux_${version}.orig.tar.gz" "$file"; then
+				ln -f "linux_${version}.orig.tar.gz" "$file"
+			fi
+		fi
+
+	else
+		rm -f "$file"
 	fi
-done <<EOL
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.2.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.13.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_3.19.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux_4.2.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-trusty/linux-lts-trusty_3.13.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-utopic/linux-lts-utopic_3.16.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-vivid/linux-lts-vivid_3.19.0.orig.tar.gz
-http://archive.ubuntu.com/ubuntu/pool/main/l/linux-lts-wily/linux-lts-wily_4.2.0.orig.tar.gz
-EOL
+done
 
 # Get a couple of special repos first
 while read repo url ref

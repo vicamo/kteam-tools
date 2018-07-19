@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+from __future__ import print_function
+
+import os
+import sys
+import textwrap
+
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', 'libs')))
+
+from ktl.kernel_series import KernelSeries
+
+def usage():
+    print("""
+Usage: kta-config <mode>
+       mode:
+         origs      -- orig tarball data
+          """.strip(), file=sys.stderr)
+    sys.exit(1)
+
+if len(sys.argv) != 2:
+    usage()
+
+mode = sys.argv[1]
+
+kernel_series = KernelSeries()
+
+if mode == 'origs':
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.opening_ready('repositories'):
+            continue
+        for source in sorted(series.sources, key=lambda x: x.name):
+            if source.versions:
+                print("{supported} {version} {short}/{long}/{long}_{version}.orig.tar.gz".format(supported=source.supported, short=source.name[0], long=source.name, version=source.versions[-1]))
