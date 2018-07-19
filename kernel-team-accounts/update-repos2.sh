@@ -38,9 +38,11 @@ do
 			wget -q "$base_url/universe/$url"
 		fi
 
-		if [ -f "linux_${version}.orig.tar.gz" -a -f "$file" ]; then
-			if cmp "linux_${version}.orig.tar.gz" "$file"; then
-				ln -f "linux_${version}.orig.tar.gz" "$file"
+		if [ "linux_${version}.orig.tar.gz" != "$file" ]; then
+			if [ -f "linux_${version}.orig.tar.gz" -a -f "$file" ]; then
+				if cmp "linux_${version}.orig.tar.gz" "$file"; then
+					ln -f "linux_${version}.orig.tar.gz" "$file"
+				fi
 			fi
 		fi
 
