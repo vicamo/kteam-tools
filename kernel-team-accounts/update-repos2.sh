@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CWD=/usr3/ubuntu/APW
+CWD=/usr3/ubuntu
 LOCK=/tmp/update-repos.lock
 
 here=`dirname $0`
