@@ -41,6 +41,7 @@ do
 		if [ "linux_${version}.orig.tar.gz" != "$file" ]; then
 			if [ -f "linux_${version}.orig.tar.gz" -a -f "$file" ]; then
 				if cmp "linux_${version}.orig.tar.gz" "$file"; then
+					echo "Linking linux_${version}.orig.tar.gz $file"
 					ln -f "linux_${version}.orig.tar.gz" "$file"
 				fi
 			fi
