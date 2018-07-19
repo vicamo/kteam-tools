@@ -95,6 +95,31 @@ then
     CHROOT="${CHROOT%.git}"
 fi
 
+### Get the source package version number
+chg="`git show $GITBRANCH:$DEBIAN/changelog | head -1`"
+VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
+
+### Find the appropriate -v{version} value for dpkg-genchanges
+[ $do_source_pkg = 1 ] && {
+    updates_version=$(rmadison -s ${DISTRO}-updates $SRCPKG | grep 'source$' | awk '{print $3}')
+    if [ -n "$updates_version" ]
+    then
+	dpkg --compare-versions "$updates_version" ge $VERSION && {
+	    echo "WARNING: ${DISTRO}-updates version ($updates_version) >= this version; skipping -v!" 1>&2
+	    updates_version=""
+	}
+    else
+	echo "WARNING: cannot determine ${DISTRO}-updates version for $SRCPKG" 1>&2
+    fi
+    if [ -n "$updates_version" ]
+    then
+	### Special case for backport kernel versions: strip the e.g. "~16.04.1"
+	### suffix from the updates_version
+	updates_version="${updates_version%~*}"
+	srcpkg_debopts="-v$updates_version $srcpkg_debopts"
+    fi
+}
+
 ### Compile amd64 and i386 in a native chroot.
 ### Cross-compile ARM in an amd64 chroot (for dramatically better performance).
 if [ "$ARCH" = "amd64" -o "$ARCH" = "i386" ]
@@ -103,10 +128,6 @@ then
 else
 	CHROOT="$CHROOT-amd64"
 fi
-
-### Get the version number - we need it to locate the orig tarball
-chg="`git show $GITBRANCH:$DEBIAN/changelog | head -1`"
-VERSION=`echo "$chg" | sed -n -e '1s/^.*(\([^)]*\)).*$/\1/p'`
 
 
 ### Set up the /tmp work directory
@@ -138,7 +159,12 @@ trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 echo "git-build-kernel"
 echo "      package: $SRCPKG ($VERSION) $DISTRO"
 echo "      targets: $TARGETS"
-echo "         arch: $ARCH"
+if [ $do_source_pkg = 1 ]
+then
+    echo "    changes-v: $updates_version"
+else
+    echo "         arch: $ARCH"
+fi
 echo "       chroot: $CHROOT"
 echo "  starting build in $HOSTNAME:$WORKDIR ..."
 
@@ -180,7 +206,7 @@ show_elapsed &
 			fakeroot debian/rules clean
 			if [ $do_source_pkg = 1 ]
 			then
-			    debuild -S -I -i -uc -us
+			    debuild $srcpkg_debopts -S -I -i -uc -us
 			else
 			    debian/rules build
 			    fakeroot debian/rules $TARGETS
@@ -194,7 +220,7 @@ XXEOFXX
 		fakeroot debian/rules clean
 		if [ $do_source_pkg = 1 ]
 		then
-		    debuild -S -I -i -uc -us
+		    debuild $srcpkg_debopts -S -I -i -uc -us
 		else
 		    debian/rules build
 		    fakeroot debian/rules $TARGETS
