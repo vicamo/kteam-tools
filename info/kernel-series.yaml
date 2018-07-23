@@ -445,7 +445,7 @@
 '17.10':
     codename: artful
     development: false
-    supported: true
+    supported: false
     sources:
         linux:
             versions: ['4.11.0', '4.12.0', '4.13.0']
