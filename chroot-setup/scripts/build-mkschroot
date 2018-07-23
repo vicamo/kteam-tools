@@ -131,12 +131,12 @@ do
 			;;
 	esac
 done <<EOL
-armel		gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
-armhf		gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
-powerpc		gcc-powerpc-linux-gnu g++-powerpc-linux-gnu
-arm64		gcc-aarch64-linux-gnu
-ppc64el		gcc-powerpc64le-linux-gnu
-s390x		gcc-s390x-linux-gnu
+armel		gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc6-dev-armel-cross
+armhf		gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross
+powerpc		gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
+arm64		gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+ppc64el		gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+s390x		gcc-s390x-linux-gnu libc6-dev-s390x-cross
 EOL
 
 case $SUITE in
