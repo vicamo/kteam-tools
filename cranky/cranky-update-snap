@@ -50,6 +50,10 @@ class UpdateSnap():
         '''
         component = "%s-%s" % (series, pocket)
         ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', component, pkg_name])
+        if not ret:
+            cerror("ERROR: No version available in -%s" % self.pocket)
+            sys.exit(1)
+
         return ret.decode().strip().split('|')[1].strip()
 
     def update_snap_ver(self, version):
