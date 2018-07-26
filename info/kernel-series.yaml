@@ -274,6 +274,7 @@
                     qa: false
                     hw-cert: true
                     arches: ['amd64', 'i386']
+                    track: '18'
                 dragonboard-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'snapdragon']
                     gated: false
@@ -281,6 +282,7 @@
                     qa: false
                     hw-cert: true
                     arches: ['arm64']
+                    track: '18'
             supported: true
             testing:
                 flavours:
@@ -309,6 +311,7 @@
                     qa: false
                     hw-cert: true
                     arches: ['armhf']
+                    track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
@@ -349,6 +352,7 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
+                    track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -379,6 +383,7 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
+                    track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -407,6 +412,7 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
+                    track: '18'
                 gke-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke']
                     gated: false
@@ -414,6 +420,7 @@
                     qa: false
                     hw-cert: false
                     arches: ['amd64']
+                    track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
