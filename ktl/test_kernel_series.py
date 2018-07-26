@@ -1987,6 +1987,52 @@ class TestKernelSnapEntry(unittest.TestCase):
 
         self.assertEqual(snap.arches, None)
 
+    def test_track_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertEqual(snap.track, None)
+
+    def test_track_present_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            track:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertEqual(snap.track, None)
+
+    def test_track_present_valid(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            track: "18"
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertEqual(snap.track, '18')
 
 class TestKernelRepoEntry(unittest.TestCase):
 

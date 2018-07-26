@@ -110,6 +110,10 @@ class KernelSnapEntry:
         # XXX: should this be []
         return self._data.get('arches', None)
 
+    @property
+    def track(self):
+        return self._data.get('track', None)
+
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)
 

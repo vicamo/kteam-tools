@@ -85,6 +85,8 @@
 #       (snap-certification-testing).
 #  * arches (list)
 #       list of architectures which the snap is built for.
+#  * track (string)
+#       store track this is published into.
 #
 # Repository record elements:
 #  * 0 (string)
