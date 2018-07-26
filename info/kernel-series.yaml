@@ -190,7 +190,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/cosmic']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '18.10', 'linux' ]
             testing:
                 flavours:
                     azure:
@@ -199,7 +199,6 @@
                         arches: ['amd64']
                         clouds: ['azure']
             stakeholder: 'jrp'
-            copy-forward: [ '18.04', 'linux-azure' ]
 
         linux-gcp:
             packages:
