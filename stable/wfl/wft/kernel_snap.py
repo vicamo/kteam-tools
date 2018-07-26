@@ -19,6 +19,28 @@ class KernelSnapBase(TaskHandler):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    def do_verify_release(s, risk):
+        center(s.__class__.__name__ + '.do_verify_release')
+        retval = False
+
+        if s.snap_info.track is not None:
+            channel = "%s/%s" % (s.snap_info.track, risk)
+        else:
+            channel = risk
+
+        try:
+            if s.snap_store.match_version(channel):
+                s.task.status = 'Fix Released'
+                s.task.timestamp('finished')
+                retval = True
+            else:
+                cinfo('    snap not in %s channel' % channel, 'yellow')
+        except SnapStoreError as e:
+            cerror('    failed to query snap store (%s)' % str(e))
+
+        cleave(s.__class__.__name__ + '.do_verify_release')
+        return retval
+
     @property
     def snap_info(s):
         '''
@@ -85,18 +107,7 @@ class SnapReleaseToEdge(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        try:
-            if s.snap_store.match_version('edge'):
-                s.task.status = 'Fix Released'
-                s.task.timestamp('finished')
-                retval = True
-            else:
-                cinfo('    snap not in edge channel', 'yellow')
-        except SnapStoreError as e:
-            cerror('    failed to query snap store (%s)' % str(e))
-
+        retval = s.do_verify_release('edge')
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
@@ -141,18 +152,7 @@ class SnapReleaseToBeta(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        try:
-            if s.snap_store.match_version('beta'):
-                s.task.status = 'Fix Released'
-                s.task.timestamp('finished')
-                retval = True
-            else:
-                cinfo('    snap not in beta channel', 'yellow')
-        except SnapStoreError as e:
-            cerror('    failed to query snap store (%s)' % str(e))
-
+        retval = s.do_verify_release('beta')
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
@@ -206,18 +206,7 @@ class SnapReleaseToCandidate(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        try:
-            if s.snap_store.match_version('candidate'):
-                s.task.status = 'Fix Released'
-                s.task.timestamp('finished')
-                retval = True
-            else:
-                cinfo('    snap not in candidate channel', 'yellow')
-        except SnapStoreError as e:
-            cerror('    failed to query snap store (%s)' % str(e))
-
+        retval = s.do_verify_release('candidate')
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
@@ -288,18 +277,7 @@ class SnapReleaseToStable(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = False
-
-        try:
-            if s.snap_store.match_version('stable'):
-                s.task.status = 'Fix Released'
-                s.task.timestamp('finished')
-                retval = True
-            else:
-                cinfo('    snap not in stable channel', 'yellow')
-        except SnapStoreError as e:
-            cerror('    failed to query snap store (%s)' % str(e))
-
+        retval = s.do_verify_release('stable')
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
