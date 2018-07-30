@@ -37,6 +37,7 @@ if mode == 'lib-build':
     version_hint = None
     version_map = {}
     version_supported = {}
+    version_development = {}
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if not series.opening_ready('repositories', 'chroots'):
             continue
@@ -50,8 +51,10 @@ if mode == 'lib-build':
 
             version_hint = version
             version_map[version] = series.codename
-            if (series.supported or series.development) and not series.esm:
+            if series.supported and not series.esm:
                 version_supported[version] = True
+            if series.development:
+                version_development[version] = True
 
     supported_map = {}
     supported = None
@@ -118,6 +121,13 @@ if mode == 'lib-build':
             RET="{tags}";
         }};
         """).strip().format(tags="v" + ".*|v".join(version_supported.keys()) + '.*'))
+
+    print(textwrap.dedent("""
+        dev_version_tags_pattern()
+        {{
+            RET="{tags}";
+        }};
+        """).strip().format(tags="v" + ".*|v".join(version_development.keys()) + '.*'))
 
 elif mode == 'changeset':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
