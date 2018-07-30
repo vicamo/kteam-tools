@@ -207,6 +207,9 @@
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/cosmic']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/cosmic']
             snaps:
                 gcp-kernel:
                     primary: true
@@ -402,6 +405,9 @@
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic']
             snaps:
                 gcp-kernel:
                     primary: true
@@ -749,6 +755,9 @@
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/xenial']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/xenial']
             snaps:
                 gcp-kernel:
                     primary: true
