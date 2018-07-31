@@ -3,7 +3,7 @@
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, eout
+from ktl.utils                          import stdo, eout, run_command
 from ktl.std_app                        import StdApp
 from ktl.debian                         import Debian
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
@@ -142,6 +142,18 @@ class CreateTrackingBug(StdApp):
             if series_name == 'UNRELEASED':
                 series_name = changelog[1]['release']
 
+            try:
+                pversion_ = version.split(".")
+                pversion_[-1] = str(int(pversion_[-1]) - 1)
+                pversion = ".".join(pversion_)
+                (status, output) = run_command("git log --format='%%s' %s..%s" % ("v" + pversion, "v" + version))
+                if status:
+                    log = ""
+                else:
+                    log = "\n".join(output)
+            except:
+                log = ""
+
             # Title:
             title = "%s update to %s stable release" % (series_name.title(), self.cfg['version'])
 
@@ -172,6 +184,7 @@ class CreateTrackingBug(StdApp):
 
             """ % (version, repository, version)
 
+            description = description + "\n" + log
             bug = self.lp.create_bug(project='ubuntu', package=changelog[0]['package'], title=title, description=description)
 
             # Tags:
