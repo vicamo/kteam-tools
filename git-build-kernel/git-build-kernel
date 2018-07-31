@@ -142,10 +142,23 @@ touch "$WORKDIR/building"
 trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 
 [ $do_source_pkg = 1 ] && {
-    orig_tarball="${SRCPKG}_${VERSION%%-*}.orig.tar.gz"
-    # Careful: $ORIG_TARBALLS_DIR must be accessible from within the chroot.
-    # (Alternately, use "cp -p" instead of "ln -s" if that's not an option)
-    ln -s $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
+    ### Special case for linux-signed and linux-meta packages, which
+    ### have no .orig tarball
+    [ ${SRCPKG/-signed} != $SRCPKG ] && no_orig_tarball=1
+    [ ${SRCPKG/-meta} != $SRCPKG ] && no_orig_tarball=1
+    if [ "$no_orig_tarball" = 1 ]
+    then
+	srcpkg_debopts="--no-tgz-check $srcpkg_debopts"
+    else
+	orig_tarball="${SRCPKG}_${VERSION%%-*}.orig.tar.gz"
+	# Careful: $ORIG_TARBALLS_DIR must be accessible from within the chroot.
+	# (Alternately, use "cp -p" instead of "ln -s" if that's not an option)
+	[ -e "$ORIG_TARBALLS_DIR/$orig_tarball" ] || {
+	    echo "fatal: missing $ORIG_TARBALLS_DIR/$orig_tarball" 1>&2
+	    exit 1
+	}
+	ln -s $ORIG_TARBALLS_DIR/$orig_tarball $WORKDIR/
+    fi
 }
 
 ###
