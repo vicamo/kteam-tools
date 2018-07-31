@@ -68,7 +68,7 @@ GITSHASHORT="`git log -1 --pretty=%h ${GITBRANCH%%refs/heads/} --`"
 }
 
 ### Get the var "DEBIAN=debian.master" from debian/debian.env
-eval `git show $GITBRANCH:debian/debian.env | grep DEBIAN=`
+eval `git show $GITBRANCH:debian/debian.env 2>/dev/null | grep DEBIAN=`
 [ -z "$DEBIAN" ] && DEBIAN=debian
 
 
@@ -84,7 +84,7 @@ SRCPKG=$(git show $GITBRANCH:$DEBIAN/changelog | sed 's/^\(.*\) (.*/\1/;q')
 CHROOT="$DISTRO"
 CHROOT="${CHROOT%-proposed}"
 [ $do_source_pkg = 1 ] && {
-    eval `git show $GITBRANCH:debian/debian.env | grep SOURCE_PACKAGE_CHROOT=`
+    eval `git show $GITBRANCH:debian/debian.env 2>/dev/null | grep SOURCE_PACKAGE_CHROOT=`
     [ -z "$SOURCE_PACKAGE_CHROOT" ] || CHROOT="$SOURCE_PACKAGE_CHROOT"
 }
 if [ "$CHROOT" = "UNRELEASED" -o -z "$CHROOT" ]
