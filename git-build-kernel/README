@@ -85,6 +85,10 @@ To set up your git push auto-builder
    (Do that for each ubuntu-* repo that you'll want to push to).
    (Works fine for repo dir's named "ubuntu-something.git" also).
 
+   For the small repos like -meta or -signed, you need not bother setting
+   up a specific builder repo at all.  For each of those, just add a remote
+   (as below) to the main kernel repo on your build server.
+
 2. On your local machine, if you haven't already, set up a git remote
    to point to your repo on the build server, e.g:
 
