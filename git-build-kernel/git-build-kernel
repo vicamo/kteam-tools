@@ -142,11 +142,10 @@ touch "$WORKDIR/building"
 trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 
 [ $do_source_pkg = 1 ] && {
-    ### Special case for linux-signed and linux-meta packages, which
-    ### have no .orig tarball
-    [ ${SRCPKG/-signed} != $SRCPKG ] && no_orig_tarball=1
-    [ ${SRCPKG/-meta} != $SRCPKG ] && no_orig_tarball=1
-    if [ "$no_orig_tarball" = 1 ]
+    deb_format="$(git show $GITBRANCH:debian/source/format 2>/dev/null)"
+    [ -z "$deb_format" ] && no_orig_tarball=1
+    [ "${deb_format/native/}" != "$deb_format" ] && no_orig_tarball=1
+    if [ "$no_orig_tarball" == 1 ]
     then
 	srcpkg_debopts="--no-tgz-check $srcpkg_debopts"
     else
