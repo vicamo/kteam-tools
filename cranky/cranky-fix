@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# cranky-fix -- identify the current repository and attempt to apply fixes to
+#               it against the primary copies of repositories.
+#
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+# identify the current tree type.
+source=$(dpkg-parsechangelog -S Source)
+type=""
+debian=""
+if [ "$type" = "" ]; then
+	case "$source" in
+	*-signed*)			type="signed" ;;
+	*-meta*)			type="meta" ;;
+	*-restricted-modules*)		type="lrm" ;;
+	esac
+fi
+if [ "$type" = "" ]; then
+	if [ -f "debian/debian.env" ]; then
+		type="main"
+		debian=$(awk -F= '($1 == "DEBIAN") { print $2 }' <debian/debian.env) 
+	fi
+fi
+if [ "$type" = "" ]; then
+	echo "$0: unable to identify repository type" 1>&2
+	exit 1
+fi
+
+FIX_VERBOSE="1" \
+FIX_BUG="1786013" \
+FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$FIX_BUG" \
+FIX_DEVEL="cosmic" \
+FIX_DEBIAN="$debian" \
+FIX_TYPE="$type" \
+	run-parts --regex '\.fix$' --exit-on-error --verbose "$here/fixes.d"
