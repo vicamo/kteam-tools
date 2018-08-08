@@ -1113,8 +1113,9 @@ class WorkflowBug():
             cdebug('mis_lst is set')
 
             task_name = 'promote-to-%s' % (pocket,)
-            if s.tasks_by_name[task_name] != 'Incomplete':
-                s.tasks_by_name['promote-to-%s' % (pocket)].status = 'Incomplete'
+            cinfo('        checking %s task status is %s' % (task_name, s.tasks_by_name[task_name].status))
+            if s.tasks_by_name[task_name].status != 'Incomplete':
+                s.tasks_by_name[task_name].status = 'Incomplete'
 
                 body  = "The following packages ended up in the wrong"
                 body += " component in the -%s pocket:\n" % (pocket)
@@ -1125,6 +1126,7 @@ class WorkflowBug():
                 subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
                 to_address  = "kernel-team@lists.ubuntu.com"
                 to_address += ", ubuntu-installer@lists.ubuntu.com"
+                cinfo('        sending email alert')
                 s.send_email(subject, body, to_address)
 
                 body += "\n\nOnce this is fixed, set the "
