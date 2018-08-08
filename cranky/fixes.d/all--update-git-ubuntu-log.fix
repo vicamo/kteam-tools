@@ -1,0 +1,13 @@
+#!/bin/bash
+. $(dirname "$0")/lib.sh
+
+# update git-ubuntu-log
+url="https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$FIX_DEVEL/plain/debian/scripts/misc/git-ubuntu-log"
+out='debian/scripts/misc/git-ubuntu-log'
+msg="UBUNTU: [Packaging] resync git-ubuntu-log with development"
+if [ -f "$out" ]; then
+	curl -s "$url" >"$out" || exit 1
+fi
+commit "$msg" "$out"
+
+exit 0
