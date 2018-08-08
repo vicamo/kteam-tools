@@ -1,0 +1,20 @@
+#!/bin/bash
+. $(dirname "$0")/lib.sh
+
+if [ ! -d "debian/templates" ]; then
+	fix_verbose "debian/templates not present"
+	exit 0
+fi
+
+url_base="https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$FIX_DEVEL/plain"
+
+# Update any template that is present in this package.
+for template in debian/templates/*
+do
+	curl -s "$url_base/$template" >"$template"
+done
+
+msg="UBUNTU: [Packaging] resync present debian/templates"
+commit "$msg" debian/templates/*
+
+exit 0
