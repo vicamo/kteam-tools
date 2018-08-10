@@ -1,5 +1,10 @@
 #!/bin/bash
 
+fix_error()
+{
+	echo "ERROR: $*" 1>&2
+}
+
 fix_verbose()
 {
 	[ "$FIX_VERBOSE" -ge 1 ] && echo "  $*"
