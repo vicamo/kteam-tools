@@ -32,10 +32,18 @@ if [ "$type" = "" ]; then
 	exit 1
 fi
 
+# identify the current series
+series=$( LC_ALL=C dpkg-parsechangelog -S Distribution )
+if [ "$series" = "UNRELEASED" ]; then
+	series=$( LC_ALL=C dpkg-parsechangelog -c 1 -S Distribution )
+fi
+
 FIX_VERBOSE="1" \
 FIX_BUG="1786013" \
 FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$FIX_BUG" \
 FIX_DEVEL="cosmic" \
 FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
+FIX_SERIES="$series" \
+FIX_SOURCE="$source" \
 	run-parts --regex '\.fix$' --exit-on-error --verbose "$here/fixes.d"
