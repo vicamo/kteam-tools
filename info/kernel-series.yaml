@@ -1051,6 +1051,28 @@
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/trusty', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/trusty']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/trusty']
+            supported: true
+            derived-from: [ '18.04', 'linux-azure' ]
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'jrp'
+
         linux-keystone:
             packages:
                 linux-keystone:
