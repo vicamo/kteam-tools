@@ -28,6 +28,7 @@ check()
 	fi
 
 	# Commit this version.
+	test -f "$dir/$which.old" && rm "$dir/$which.old"
 	ln "$dir/$which" "$dir/$which.old"
 	mv "$dir/$which.new" "$dir/$which"
 }
