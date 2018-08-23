@@ -1,0 +1,72 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# Update the main web page (index.html) SRU dates section with the output from
+# gen-sru-announce --html and commit the changes if successful.
+#
+# Arguments: <date>
+#   <date>	: This is the YYYY.MM.DD date of the Monday which starts the
+#		  new cycle.
+#------------------------------------------------------------------------------
+set -e
+if [ -L "$0" ]; then
+	BINDIR=$(dirname $(readlink $0))
+else
+	BINDIR=$(dirname "$0")
+fi
+if [ "$BINDIR" = "." ]; then
+	BINDIR=$(pwd)
+fi
+
+SRC="$BINDIR/../kernel.ubuntu.com/index.html"
+if [ ! -r $SRC ]; then
+	echo "EE: $SRC cannot be read!" >&2
+	exit 1
+fi
+
+if [ "$1" = "" ]; then
+	echo "Usage: $(basename $0) <date:YYYY.MM.DD>" >&2
+	exit 1
+fi
+
+TMP=$(mktemp '/tmp/update-sru-XXXXX')
+trap 'test -f "$TMP" && rm "$TMP"' EXIT
+
+gen-sru-announce --html "$1" >>$TMP || (
+	echo "EE: Error calling gen-sru-announce:" >&2
+	cat $TMP >&2
+	exit 1
+)
+
+awk -v DATA=$TMP '
+	match($0, /<!-- Start-SRU-Dates -->/){
+		skip=1
+		indent=RSTART-1
+		print $0
+		while (getline < DATA) {
+			printf("%*s%s\n", indent, " ", $0)
+		}
+		next
+	}
+	/<!-- End-SRU-Dates -->/{
+		skip=0
+	}
+	skip == 0{
+		print $0
+	}
+' $SRC >$SRC.new && mv $SRC.new $SRC
+
+MSG=$(cat <<EOD
+kernel.ubuntu.com/index.html: Update for $1 SRU cycle
+
+Update the dates shown on the main web page to the new SRU cycle
+dates.
+
+EOD
+)
+
+if [ "$(git diff $SRC 2>/dev/null)" != "" ]; then
+	git add $SRC && git commit -s -m"$MSG"
+fi
+
+exit 0
+
