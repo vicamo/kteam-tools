@@ -727,6 +727,8 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
+            # Internally sign-off azure-edge while it's just a meta package.
+            stakeholder: 'canonical-kernel-distro-team'
 
         linux-euclid:
             packages:
