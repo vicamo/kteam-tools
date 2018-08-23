@@ -21,6 +21,8 @@
         - name: 'Turn the crank'
         - name: 'SRU -proposed announcement'
           description: 'Send the SRU announcement to the ML'
+        - name: 'Update SRU dates on kernel.ubuntu.com'
+          description: 'Update kteam-tools/kernel.ubuntu.com/index.html. Then update the copy of kernel-ppa@wani.canonical.com to make it visible'
         - name: 'Review regression tests results'
         - name: 'Review automated (ADT) tests results'
         - name: 'Review verification tests'
