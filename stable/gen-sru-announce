@@ -56,17 +56,26 @@ class TheApp(object):
         print('         %s   Release to -updates.' % ((sd + timedelta(days=24)).strftime('%d-%b')))
         print('')
 
-    # main
+    # Print the cycle dates as HTML table
     #
-    def main(s, args):
-        retval = 0
+    def print_cycle_html(s, sd):
+        sd = sd - timedelta(days=3)
+        pd = sd - timedelta(days=2)
+        ed = sd + timedelta(days=22)
 
-        sd = s.sd(args.date)
-        print('To: Kernel SRU Announcements <kernel-sru-announce@lists.canonical.com>, Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
-        print('Subject: A new SRU cycle started...')
-        s.print_cycle(sd)
+        print('        <td width="50%">')
+        print('            <table width="100%"> <!-- -->')
+        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (sd.strftime('%d-%b'), ed.strftime('%d-%b')))
+        print('                <tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (pd.strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % ((sd + timedelta(days=3)).strftime('%d-%b'), (sd + timedelta(days=8)).strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % ((sd + timedelta(days=9)).strftime('%d-%b'), (sd + timedelta(days=21)).strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % ((sd + timedelta(days=24)).strftime('%d-%b')))
+        print('            </table>')
+        print('        </td>')
 
-        print('')
+    # Print kernel versions
+    #
+    def print_kernel_versions(s):
         cmd = "%s --no-devel --no-esm" % path.join(path.dirname(__file__), 'sru-cycle-kernel-versions')
         try:
             for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
@@ -74,8 +83,29 @@ class TheApp(object):
         except:
             raise ErrorExit('Failed calling %s for kernel versions.' % (cmd))
 
-        print('')
-        s.print_cycle(sd + timedelta(days=21))
+    # main
+    #
+    def main(s, args):
+        retval = 0
+
+        sd = s.sd(args.date)
+
+        if args.html:
+            print('<table border="0" width="100%"> <!-- -->')
+            print('    <tr>')
+            s.print_cycle_html(sd)
+            s.print_cycle_html(sd + timedelta(days=21))
+            print('    </tr>')
+            print('</table>')
+        else:
+            print('To: Kernel SRU Announcements <kernel-sru-announce@lists.canonical.com>, '
+                  'Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
+            print('Subject: A new SRU cycle started...')
+            s.print_cycle(sd)
+            print('')
+            s.print_kernel_versions()
+            print('')
+            s.print_cycle(sd + timedelta(days=21))
 
         return retval
 
@@ -85,12 +115,16 @@ if __name__ == '__main__':
     # Command line argument setup and initial processing
     #
     app_description = '''
-    Generate the text for the email announcing the new SRU cycle dates amd kernel
-    versions. The date which has to be given is the Monday which start the new cycle.
+    Generates the text for the email announcing the new SRU cycle dates and kernel
+    versions. Using the alternate HTML mode will produce an HTML table which only
+    contains the cycle dates in the format used on kernel.ubuntu.com
+
+    The date which has to be given is the Monday which starts the new cycle.
     '''
     app_epilog = '''
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--html', action='store_true', default=False, help='Generate output suitable to be embedded into a web page (table)')
     parser.add_argument('date', metavar='<SRU cycle start date>', type=str, help='Date format: YYYY.MM.DD)')
     args = parser.parse_args()
 
