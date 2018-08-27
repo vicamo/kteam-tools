@@ -208,7 +208,7 @@ class CreateTrackingBug(StdApp):
             ubuntu = lp.distributions["ubuntu"]
             sc = ubuntu.series_collection
             for s in sc:
-                if s.name == series_name.title():
+                if s.name == series_name:
                     nomination = bug.lpbug.addNomination(target=s)
                     if nomination.canApprove():
                         nomination.approve()
