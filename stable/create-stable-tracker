@@ -214,7 +214,7 @@ class CreateTrackingBug(StdApp):
                         nomination.approve()
 
             if 'staging' in self.cfg:
-                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (bug.id))
+                print("https://bugs.%s.launchpad.net/bugs/%s" % (self.defaults['launchpad_services_root'], bug.id))
             else:
                 print("https://bugs.launchpad.net/bugs/%s" % (bug.id))
 
