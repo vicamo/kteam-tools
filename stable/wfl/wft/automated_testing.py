@@ -28,6 +28,9 @@ class AutomatedTesting(TaskHandler):
         center(s.__class__.__name__ + '._new')
         retval = False
 
+        if s.bug.tasks_by_name['prepare-package'].status == 'Invalid':
+            s.task.status = 'Invalid'
+
         if s.bug.ready_for_testing:
             s.task.status = 'Confirmed'
 
