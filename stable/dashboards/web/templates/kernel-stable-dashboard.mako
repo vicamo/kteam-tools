@@ -97,6 +97,11 @@ def __status_bite(bug):
             break
 
         prep_status = __task_status(bug, 'prepare-package')
+
+        if prep_status == 'Invalid':
+            # For -meta only packages, consider prepare-package-meta status
+            prep_status = __task_status(bug, 'prepare-package-meta')
+
         if prep_status == 'New':
             retval = __coloured('Not ready to be cranked', 'grey')
             break
