@@ -107,7 +107,7 @@
     supported: false
     sources:
         linux:
-            versions: ['4.17.0']
+            versions: ['4.18.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/cosmic', 'master-next']
