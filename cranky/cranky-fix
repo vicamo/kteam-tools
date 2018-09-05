@@ -4,6 +4,12 @@
 #               it against the primary copies of repositories.
 #
 
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <master directory>" 1>&2
+	exit 1
+fi
+master="$1"
+
 here=`dirname $0`
 case "$here" in
 /*) ;;
@@ -28,8 +34,8 @@ if [ "$type" = "" ]; then
 	fi
 fi
 if [ "$type" = "" ]; then
-	echo "$0: unable to identify repository type" 1>&2
-	exit 1
+	echo "$0: unable to identify repository type -- assuming other" 1>&2
+	type='other'
 fi
 
 # identify the current series
@@ -41,7 +47,7 @@ fi
 FIX_VERBOSE="1" \
 FIX_BUG="1786013" \
 FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$FIX_BUG" \
-FIX_DEVEL="cosmic" \
+FIX_MASTER="$master" \
 FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
 FIX_SERIES="$series" \

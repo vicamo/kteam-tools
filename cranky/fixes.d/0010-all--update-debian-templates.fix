@@ -6,15 +6,15 @@ if [ ! -d "debian/templates" ]; then
 	exit 0
 fi
 
-url_base="https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$FIX_DEVEL/plain"
+master="$FIX_MASTER"
 
 # Update any template that is present in this package.
 for template in debian/templates/*
 do
-	curl -s "$url_base/$template" >"$template"
+	cp -p "$master/$template" "$template"
 done
 
-msg="UBUNTU: [Packaging] resync present debian/templates"
+msg="UBUNTU: [Packaging] resync debian/templates"
 commit "$msg" debian/templates/*
 
 exit 0

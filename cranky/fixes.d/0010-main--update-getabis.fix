@@ -15,12 +15,13 @@ precise:linux)	fix_verbose "precise is pre-retpoline"; exit 0 ;;
 esac
 
 # update getabits
-url="https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$FIX_DEVEL/plain/debian/scripts/misc/getabis"
-out='debian/scripts/misc/getabis'
+files='debian/scripts/misc/getabis'
+for file in $files
+do
+»·······cp -p "$master/$file" "$file"
+done
+
 msg="UBUNTU: [Packaging] resync getabis with development"
-if [ -f "$out" ]; then
-	curl -s "$url" >"$out" || exit 1
-fi
-commit "$msg" "$out"
+commit "$msg" $files
 
 exit 0
