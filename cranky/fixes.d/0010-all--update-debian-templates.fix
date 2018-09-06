@@ -11,7 +11,7 @@ master="$FIX_MASTER"
 # Update any template that is present in this package.
 for template in debian/templates/*
 do
-	cp -p "$master/$template" "$template"
+	[ -f "$master/$template" ] && cp -p "$master/$template" "$template"
 done
 
 msg="UBUNTU: [Packaging] resync debian/templates"
