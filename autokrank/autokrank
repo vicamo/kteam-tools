@@ -1,0 +1,650 @@
+#!/bin/bash
+
+FDR="run_in_chroot fakeroot debian/rules"
+
+source ~/.autokrankrc
+KRANK_TAGNAME=autokrank-newest-master-tag
+LOGFILE=/tmp/autokrank.log
+
+
+function usage {
+	echo "autokrank: Automatically crank a kernel based on a .krank file"
+	echo ""
+	echo "Usage: autokrank [OPTIONS] [KRANK_FILE]"
+	echo ""
+	echo "Options:"
+	echo "--sru-cycle <cycle-name>"
+	echo -e "\tName of SRU cycle to be passed to link-to-tracker for tracking-bug lookup"
+	echo "--purge"
+	echo -e "\tClear *ALL* non-cache branches as well as *ALL* tags from the 3 autokrank repos"
+	echo -e "\tAny local uncommitted changes will be lost from those repos"
+	echo -e "\tIn addition, all debuild-related files will be removed from the parent"
+	echo -e "\tdirectory of each of the autokrank repos"
+	echo -e "\t(Linux source .orig files will NOT be deleted)"
+	echo -e "\tProceed with caution!"
+	echo "--clearcache"
+	echo -e "\tautokrank automatically saves branches it fetches so that future git fetches are fast. Use this option to clear all autokrank cache branches and exit"
+	echo "--tasks"
+	echo -e "\tSpecify which tasks you want autokrank to do using an array of 6 binary digits. The order of the flags are:"
+	echo -e "\t\tcrank_linux"
+	echo -e "\t\tbuild_linux"
+	echo -e "\t\tcrank_signed"
+	echo -e "\t\tbuild_signed"
+	echo -e "\t\tcrank_meta"
+	echo -e "\t\tbuild_meta"
+	echo -e "\tSo for example, 101010 will crank all trees (master, signed and meta) but will not construct any source packages"
+	echo "--master-tag"
+	echo -e "\t(derivatives only) specify a master tag on which the derivative should be rebased"
+	echo -e "\tif no master tag is specified, the derivative will be rebased on the 'most recently autokranked master'"
+	echo -e "\tSo make sure your kernel order is correct"
+	echo "--no-link-to-tracker"
+	echo -e "\tSkips calling link-to-tracker so the tracking bug will not get updated (useful for \"safe\" testing)"
+	echo "--help"
+	echo -e "\tDisplay this message and exit"
+}
+
+function clear_cache {
+	for i in $LINUX_DIR $SIGNED_DIR $META_DIR; do
+		cd $i
+		git cherry-pick --abort  &> /dev/null
+		git rebase --abort  &> /dev/null
+		git reset HEAD .
+		git checkout -- .
+		git clean -fxd
+		git checkout master
+                for j in `git branch|grep autokrank|grep cache`; do
+			echo deleting cache branch $j
+                        git branch -D $j
+                done;
+	done
+}
+
+function purge_trees_and_directories {
+	for i in $LINUX_DIR $SIGNED_DIR $META_DIR; do
+		cd $i
+		git cherry-pick --abort  &> /dev/null
+		git rebase --abort  &> /dev/null
+		git reset HEAD .
+		git checkout -- .
+		git clean -fxd
+		git checkout master
+                for j in `git branch|grep -v autokrank-cache|grep -v "* master"`; do
+			echo deleting branch $j
+                        git branch -D $j
+                done;
+                for j in `git tag`; do
+                        git tag -d $j
+                done;
+	done
+	for i in $LINUX_DIR $SIGNED_DIR $META_DIR; do
+		cd "$(dirname "$i")"
+		echo "Clearing build files from $PWD"
+		for j in `ls -1 | grep -v orig`; do
+			if [ -f $j ] ; then
+				echo "Deleting $j"
+				rm $j &> /dev/null
+			fi
+		done
+	done
+}
+
+function prepare_directory {
+	if [ $1 = 'linux' ] ; then
+		FETCH_SOURCE=$LINUX_FETCH_SOURCE
+		ORIGIN=$LINUX_ORIGIN
+	elif [ $1 = 'signed' ] ; then
+		FETCH_SOURCE=$SIGNED_FETCH_SOURCE
+		ORIGIN=$SIGNED_ORIGIN
+	elif [ $1 = 'meta' ] ; then
+		FETCH_SOURCE=$META_FETCH_SOURCE
+		ORIGIN=$META_ORIGIN
+	fi
+
+	git cherry-pick --abort  &> /dev/null
+	git rebase --abort  &> /dev/null
+	git reset HEAD .
+	git checkout -- .
+	git clean -fxd
+	git branch $TEMPBRANCH
+	git checkout $TEMPBRANCH
+	LOG "Resetting branch from: $FETCH_SOURCE"
+	git fetch --tags $ORIGIN
+	git fetch $FETCH_SOURCE
+
+
+	git reset --hard FETCH_HEAD
+
+	# Save the branch somewhere to speed up future fetches
+	if [ $TYPE = 'master' ] ; then
+		git branch -D autokrank-cache-$SERIES-master &> /dev/null
+		git branch autokrank-cache-$SERIES-master
+
+	elif [ $TYPE = 'derivative' ] ; then
+		git branch -D autokrank-cache-$SERIES-$VARIANT &> /dev/null
+		git branch autokrank-cache-$SERIES-$VARIANT
+	elif [ $TYPE = 'backport' ] ; then
+		git branch -D autokrank-cache-$SERIES-$VARIANT &> /dev/null
+		git branch autokrank-cache-$SERIES-$VARIANT
+	fi
+	
+}
+
+
+function run_in_chroot {
+#	echo "source ~/.zshrc; $@" | schroot -c $CHROOT
+	schroot --preserve-environment -c $CHROOT -- $@
+}
+
+function need_startnewrelease {
+	git describe --exact-match HEAD  &> /dev/null
+
+	if [[ $? -eq 0 ]]; then
+		TOPMOST_COMMIT_IS_TAGGED=1
+	fi
+
+	if [[ $TOPMOST_COMMIT_IS_TAGGED -eq 1 ]] ; then
+		if [ $TYPE = 'master' ] ; then
+			return 0
+		fi
+		if [ $TYPE = 'derivative' ] ; then
+			return 1
+		fi
+	else
+		LASTTAG=$(git describe --abbrev=0 HEAD~1)
+		LOG "Last tag is; $LASTTAG"
+		git log --oneline $LASTTAG..HEAD|tail -n 1|grep "Start new release"
+		if [[ $? -eq 0 ]]; then
+			return 0
+		else
+			return 1
+		fi
+	fi
+}
+
+function add_startnewrelease_after_last_tag {
+
+	add_startnewrelease_on_top 
+
+	LASTTAG=$(git describe --abbrev=0 HEAD~1)
+	LOG "Last tag is $LASTTAG"
+
+	# We want to move the 'start new release' to just after
+	# the last tag.
+
+	REBASE_SCRIPT=/tmp/autokrank-rebase-script
+	TMPFILE1=/tmp/autokrank-rebase-tmpfile-1
+	TMPFILE2=/tmp/autokrank-rebase-tmpfile-2
+	cat <<EOF > $REBASE_SCRIPT
+#!/bin/bash
+cat \$@ |grep ^pick  > $TMPFILE1
+NUMLINES=\$(cat $TMPFILE1 | wc -l)
+# subtract 1
+NUMLINES=\$((\$NUMLINES - 1))
+tail -n 1 $TMPFILE1 > $TMPFILE2
+head -n \$NUMLINES $TMPFILE1 >> $TMPFILE2
+
+cp $TMPFILE2 .git/rebase-merge/git-rebase-todo
+
+EOF
+
+	chmod +x $REBASE_SCRIPT
+	export EDITOR=$REBASE_SCRIPT
+
+	LOG "Rebasing on tag '$LASTTAG' to move startnewrelease right after it"
+
+	# The script above will be called when we rebase -i
+	git rebase -i $LASTTAG
+	rm $REBASE_SCRIPT
+	rm $TMPFILE1
+	rm $TMPFILE2
+	LOG "Done rebasing"
+}
+
+function add_startnewrelease_on_top {
+	git clean -fxd
+	git checkout -- .
+	$FDR clean
+	run_in_chroot $KTEAMTOOLS/maintscripts/maint-startnewrelease
+	git clean -fxd
+}
+
+function add_startnewrelease {
+	git describe --exact-match HEAD  &> /dev/null
+
+	if [[ $? -eq 0 ]]; then
+		TOPMOST_COMMIT_IS_TAGGED=1
+	fi
+
+	if [[ $TOPMOST_COMMIT_IS_TAGGED -eq 1 ]] ; then
+		CURRENTTAG=$(git describe)
+		LOG "Topmost commit is tagged ($CURRENTTAG) - assuming this is a release"
+		LOG "adding startnewrelease after it"
+		add_startnewrelease_on_top
+	else
+		LOG "Topmost commit is not tagged - will add startnewrelease then rebase it to the right location"
+		add_startnewrelease_after_last_tag
+	fi
+}
+
+function LOG {
+	echo $@ >> $LOGFILE
+}
+
+
+
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+	-p|--purge)
+		PURGE=1
+		shift # past argument
+	;;
+	-s|--sru-cycle)
+		SRUCYCLE="$2"
+		shift # past argument
+		shift # past value
+	;;
+	-t|--tasks)
+		TASKS="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--master-tag)
+		REBASE_TAG="$2"
+		shift # past argument
+		shift # past value
+	;;
+	-c|--clearcache)
+		CLEARCACHE=1
+		shift # past argument
+	;;
+	--no-link-to-tracker)
+		NO_LINKTOTRACKER=1
+		shift # past argument
+	;;
+	-h|--help|-u|--usage)
+		usage
+		exit 0
+	;;
+	*)    # unknown option
+		POSITIONAL+=("$1") # save it in an array for later
+		shift # past argument
+	;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+KRANKFILE=$1
+
+if [ x"$CLEARCACHE" != x'' ] ; then
+	echo "About to clear autokrank cache branches from:"
+	echo "  $LINUX_DIR"
+	echo "  $SIGNED_DIR"
+	echo "  $META_DIR"
+	read -r -p "Are you sure you want to continue? [y/N] " response
+	case "$response" in
+	    [yY][eE][sS]|[yY]) 
+		clear_cache
+		exit 0
+		;;
+	    *)
+		exit 0
+		;;
+	esac
+	exit 0
+fi
+
+
+if [ x"$PURGE" != x'' ] ; then
+	echo "About to purge all autokrank branches and *ALL* tags"
+	echo "from your repos: "
+	echo "  $LINUX_DIR"
+	echo "  $SIGNED_DIR"
+	echo "  $META_DIR"
+	echo "As well as all debuild-related files from: "
+	echo "   $(dirname "$LINUX_DIR")"
+	echo "   $(dirname "$SIGNED_DIR")"
+	echo "   $(dirname "$META_DIR")"
+	read -r -p "Are you sure you want to continue? [y/N] " response
+	case "$response" in
+	    [yY][eE][sS]|[yY]) 
+		purge_trees_and_directories
+		exit 0
+		;;
+	    *)
+		exit 0
+		;;
+	esac
+fi
+
+echo logfile is $LOGFILE
+
+LOG ""
+LOG ""
+LOG ""
+LOG ""
+LOG ""
+LOG ""
+LOG ""
+LOG ""
+
+
+
+
+LOG "-- autokranking $KRANKFILE --"
+source $KRANKFILE
+
+DATE_S=$(date +%s)
+if [ $TYPE = 'master' ] ; then
+	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$TYPE
+elif [ $TYPE = 'derivative' -o $TYPE = 'backport' ] ; then
+	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$VARIANT
+fi
+LOG "Using branch name: $TEMPBRANCH"
+
+if [ $TYPE = 'master' ] ; then
+	MASTER_PKGNAME=linux
+elif [ $TYPE = 'derivative' ] ; then
+	MASTER_PKGNAME=linux-$VARIANT
+elif [ $TYPE = 'backport' ] ; then
+	MASTER_PKGNAME=linux-$VARIANT
+else
+	LOG "cannot determine PKGNAME - exiting"
+	exit 1
+fi
+
+
+if [ x$TASKS = 'x' ] ; then
+	# If no tasks were specified, then do everything
+	TASKS='111111'
+fi
+
+
+LOG "Tasks are: $TASKS"
+
+TASK_CRANK_LINUX=$(echo $TASKS | grep -o .|head -n 1)
+TASK_BUILD_LINUX=$(echo $TASKS | grep -o .|head -n 2|tail -n 1)
+TASK_CRANK_SIGNED=$(echo $TASKS | grep -o .|head -n 3|tail -n 1)
+TASK_BUILD_SIGNED=$(echo $TASKS | grep -o .|head -n 4|tail -n 1)
+TASK_CRANK_META=$(echo $TASKS | grep -o .|head -n 5|tail -n 1)
+TASK_BUILD_META=$(echo $TASKS | grep -o .|head -n 6|tail -n 1)
+
+if [ $NO_LINKTOTRACKER = '1' ] ; then
+	LOG "Will NOT run link-to-tracker (testing)"
+fi
+
+
+##################
+#
+# LINUX
+#
+##################
+if [ $TASK_CRANK_LINUX = '1' -o $TASK_BUILD_LINUX = '1' ] ; then
+	LOG ""
+	LOG "LINUX"
+	LOG "-----"
+	LOG "Switching to $LINUX_DIR"
+	cd $LINUX_DIR
+	prepare_directory linux
+fi
+
+if [ $TASK_CRANK_LINUX = '1' ] ; then
+	if [ $TYPE = 'backport' ] ; then
+		# Run update-from-bionic-master etc.
+		# The last 2 lines that the script outputs are the commit
+		# commit and tag commands - save them for later.
+		LOG "Updating backport from: $BACKPORT_UPDATE_SCRIPT"
+		SCRIPT_OUTPUT=$(run_in_chroot $BACKPORT_UPDATE_SCRIPT)
+		COMMANDS=$(echo $SCRIPT_OUTPUT|tail -n 2)
+
+		# The following 2 lines are a hack basically because COMMANDS
+		# isn't really the last 2 lines of the output - it's the whole output
+		# (not sure why that happens)
+
+		# Remove the 'tag' command from after the 'commit' command
+		COMMIT_CMD=$(echo $COMMANDS| head -n 1 |sed -e 's/git tag.*//g')
+
+		# Remve everything before the 'commit' command from the output
+		COMMIT_CMD=$(echo $COMMIT_CMD|sed -e 's/.*git commit /git commit /g')
+
+		# Remove everything before the 'tag' command from the output
+		TAG_CMD=$(echo $COMMANDS| tail -n 1 |sed -e 's/.*git tag/git tag/g')
+	else
+		# For masters and derivatives,
+		# see if we need a startnewrelease
+		need_startnewrelease
+		if [[ $? -eq 1 ]] ; then
+			LOG "startnewrelease needed -- adding"
+			add_startnewrelease
+			LOG "Done adding startnewrelease"
+		else
+			LOG "startnewrelease not needed"
+		fi
+	fi
+
+	if [ $TYPE = 'derivative' ] ; then
+		# For derivatives, use the 'master-tag' as the master commit
+		# for rebasing if it is given
+		# Otherwise, use the last saved autokrank tag
+		if [ x$REBASE_TAG = x'' ] ; then
+			LOG "No master-tag specified for derivative"
+			LOG "Rebasing on latest autokrank tag ('$KRANK_TAGNAME' a.k.a '$(git describe $KRANK_TAGNAME)')"
+			git rebase $KRANK_TAGNAME
+		else
+			LOG "master-tag specified ($REBASE_TAG) - using that as new base"
+			git rebase $REBASE_TAG
+		fi
+	fi
+
+	if [ $TYPE = 'derivative' -o $TYPE = 'master' ] ; then
+		git clean -fxd
+		$FDR clean
+
+		LOG "Running fdr updateconfigs"
+		$FDR updateconfigs
+		#
+		# TODO Find a way to commit the updated configs properly
+		# Or warn the user to pre-commit them then re-run autokrank?
+		#
+	fi
+
+
+
+
+	# CHANGELOG_FILE is already set for backports in the 
+	# .krank file
+	if [ $TYPE = 'master' ] ; then
+		CHANGELOG_FILE=debian.$TYPE/changelog
+	elif [ $TYPE = 'derivative' ] ; then
+		CHANGELOG_FILE=debian.$VARIANT/changelog
+	fi
+
+	LOG "Changelog file to be used: $CHANGELOG_FILE"
+
+	if [ $TYPE = 'derivative' ] ; then
+		CHANGELOG_BASE=$(cat $CHANGELOG_FILE|grep Ubuntu:|head -n 1 |sed -e 's/.*Ubuntu..//g'|sed -e 's/ .*//g')
+		CHANGELOG_HEAD=$(head -n 1 debian.master/changelog|sed -e 's/.*(//g'|sed -e 's/).*//g')
+		LOG "Calling insert-ubuntu-changes with args: $CHANGELOG_FILE $CHANGELOG_BASE $CHANGELOG_HEAD"
+		./debian/scripts/misc/insert-ubuntu-changes $CHANGELOG_FILE $CHANGELOG_BASE $CHANGELOG_HEAD
+	fi
+
+	if [ $TYPE = 'derivative' -o $TYPE = 'master' ] ; then
+		LOG "Running fdr insertchanges"
+		$FDR insertchanges
+	fi
+
+
+	dch --force-distribution --nomultimaint -c $CHANGELOG_FILE -r "" -D $SERIES
+
+	if [ x"$SRUCYCLE" != x'' ] ; then
+		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run --sru-cycle $SRUCYCLE"
+	else
+		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run"
+	fi
+	if [ $NO_LINKTOTRACKER != '1' ] ; then
+		LOG "link-to-tracker command:"
+		LOG "   $LINK_TO_TRACKER_CMD"
+		LOG "Running link-to-tracker:"
+		BUG_ID=$($LINK_TO_TRACKER_CMD|tail -n 1 )
+		LOG "Bug ID:         $BUG_ID"
+	else
+		LOG "Skipping link-to-tracker!!"
+	fi;
+
+	if [ $TYPE = 'master' ] ; then
+		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
+		NEWTAG=Ubuntu-$VER
+		COMMIT_CMD="git commit -s -m \"UBUNTU: $NEWTAG\""
+		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
+	elif [ $TYPE = 'derivative' ] ; then
+		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
+		NEWTAG=Ubuntu-$VARIANT-$VER
+		COMMIT_CMD="git commit -s -m \"UBUNTU: $NEWTAG\""
+		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
+
+	# No need to save VER or NEWTAG for 'backport' - we already saved the COMMIT_CMD and TAG_CMD
+	fi
+
+	git clean -fxd
+	git add .
+	LOG "Committing changes"
+	LOG "Commit command is: $COMMIT_CMD"
+	echo $COMMIT_CMD | bash
+	LOG "Tag command is: $TAG_CMD"
+	echo $TAG_CMD | bash
+
+	if [ $TYPE = 'master' ] ; then
+		# if this is master, tag our new commit so that
+		# the derivatives have something on which to rebase
+		git tag -d $KRANK_TAGNAME
+		git tag $KRANK_TAGNAME
+		LOG "Generated new autokrank master tag ('$KRANK_TAGNAME' a.k.a '$(git describe $KRANK_TAGNAME)')"
+	fi
+fi
+
+
+if [ $TASK_BUILD_LINUX = '1' ] ; then
+	git clean -fxd
+	$FDR clean
+	PKGNAME=$MASTER_PKGNAME
+	LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
+
+	LOG "Last linux version in rmadison: $LASTVER"
+
+	if [ $TYPE = 'backport' ] ; then
+		# Remove the ~ from LASTVER for backports:
+		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+		LOG "Version that will be used with debuild: $LASTVER"
+	fi
+	LOG "Constructing source pkg for linux"
+	run_in_chroot 'debuild -S -i -I -us -uc -v'$LASTVER
+	LOG "Done constructing linux pkgs"
+fi
+
+
+##################
+#
+# SIGNED
+#
+##################
+
+if [ $TYPE = 'master' -o $TYPE = 'backport' -o x$HAS_SIGNED = x'1' ] ; then
+	if [ $TASK_CRANK_SIGNED = '1' -o $TASK_BUILD_SIGNED = '1' ] ; then
+		LOG ""
+		LOG "SIGNED"
+		LOG "------"
+		LOG "Switching to $SIGNED_DIR"
+		cd $SIGNED_DIR
+		prepare_directory signed
+	fi
+
+	if [ $TASK_CRANK_SIGNED = '1' ] ; then
+
+		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
+		COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
+		TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+		LOG "Commit command is: $COMMIT_CMD"
+		echo $COMMIT_CMD | bash
+		LOG "Tag command is: $TAG_CMD"
+		echo $TAG_CMD | bash
+	fi
+
+	if [ $TASK_BUILD_SIGNED = '1' ] ; then
+		if [ $TYPE = 'master' ] ; then
+			PKGNAME=linux-signed
+		elif [ $TYPE = 'backport' -o $TYPE = 'derivative' ] ; then
+			PKGNAME=linux-signed-$VARIANT
+		fi
+		LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
+		LOG "Last linux-signed version in rmadison: $LASTVER"
+		git clean -fxd
+		$FDR clean
+		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+		LOG "Version that will be used with debuild: $LASTVER"
+		LOG "Constructing source pkg for signed"
+		run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc -v$LASTVER
+		LOG "Done constructing linux-signed pkgs"
+	fi
+fi
+
+
+
+
+
+
+
+
+##################
+#
+# META
+#
+##################
+
+if [ $TASK_CRANK_META = '1' -o $TASK_BUILD_META = '1' ] ; then
+	LOG ""
+	LOG "META"
+	LOG "----"
+	LOG "Switching to $META_DIR"
+	cd $META_DIR
+	prepare_directory meta
+fi
+
+
+if [ $TASK_CRANK_META = '1' ] ; then
+
+	COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
+	COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
+	TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+	LOG "Commit command is: $COMMIT_CMD"
+	echo $COMMIT_CMD | bash
+	LOG "Tag command is: $TAG_CMD"
+	echo $TAG_CMD | bash
+fi
+
+if [ $TASK_BUILD_META = '1' ] ; then
+	if [ $TYPE = 'master' ] ; then
+		PKGNAME=$MASTER_PKGNAME-meta
+	elif [ $TYPE = 'derivative' -o $TYPE = 'backport' ] ; then
+		PKGNAME=linux-meta-$VARIANT
+	fi
+	LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
+	LOG "Last linux-meta version in rmadison: $LASTVER"
+	git clean -fxd
+	$FDR clean
+	LOG "Constructing source pkg for meta"
+	run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
+	LOG "Done constructing linux-meta pkgs"
+fi
+
+
+
+
+
+
+LOG ""
+LOG "done autokranking $KRANKFILE"
+LOG "-------------------------"

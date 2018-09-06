@@ -1,0 +1,6 @@
+source xenial--master.krank
+TYPE=derivative
+VARIANT=snapdragon
+
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN $VARIANT"
+META_FETCH_SOURCE="$META_ORIGIN $VARIANT"

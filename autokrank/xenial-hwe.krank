@@ -1,0 +1,15 @@
+source xenial--master.krank
+TYPE=backport
+
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN hwe"
+META_FETCH_SOURCE="$META_ORIGIN hwe"
+SIGNED_FETCH_SOURCE="$SIGNED_ORIGIN hwe"
+
+
+# vars for backports only:
+
+# VARIANT is the part that comes after "linux-" 
+# (or "linux-meta-" or "linux-signed-") in the package name
+VARIANT=hwe
+CHANGELOG_FILE=./debian.hwe/changelog
+BACKPORT_UPDATE_SCRIPT=./debian.hwe/etc/update-from-bionic-master
