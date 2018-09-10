@@ -180,8 +180,8 @@ for (gorder, section, order, title, host, delta, mode, message) in entries:
         last_section = section
 
         print("<tr id=\"" + genid('section', section) + "\" class=\"" + state.get(section, 'unknown') + "\"><th class=\"twist-trigger\" twist=\"" + genid('twist', section) + "\" colspan=4>" + section + "</tr>")
-        classes = "twist " + state[section]
-        if state[section] == 'good':
+        classes = "twist " + state.get(section, 'unknown')
+        if state.get(section, 'unknown') == 'good':
             classes += " hidden"
         print("<tbody id=\"" + genid('twist', section) + "\" class=\"" + classes + "\">")
         print("<tr class=\"good\"><th>Tool<th>Host<th>Last<th>Notes</tr>")
