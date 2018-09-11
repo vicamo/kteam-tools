@@ -124,9 +124,11 @@ class Tracking():
         changelog = Debian.changelog(local=True)
 
         if changelog[0]['series'] == 'UNRELEASED':
-            raise AppError('You must set the changelog series to something other than UNRELEASED.')
+            series = changelog[1]['series']
+        else:
+            series = changelog[0]['series']
 
-        return changelog[0]['package'],  changelog[0]['series']
+        return changelog[0]['package'], series
 
     # create_tasks_by_name_mapping
     #
