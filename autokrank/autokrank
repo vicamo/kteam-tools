@@ -15,6 +15,9 @@ function usage {
 	echo "Options:"
 	echo "--sru-cycle <cycle-name>"
 	echo -e "\tName of SRU cycle to be passed to link-to-tracker for tracking-bug lookup"
+	echo -e "\tNOTE: This _WILL_ modify the launchpad tracking bugs."
+	echo -e "\tIf this option is not specified, link-to-tracker will NOT be run at all (and "
+	echo -e "\ttherefore no bug number will appear in the changelog)"
 	echo "--purge"
 	echo -e "\tClear *ALL* non-cache branches as well as *ALL* tags from the 3 autokrank repos"
 	echo -e "\tAny local uncommitted changes will be lost from those repos"
@@ -37,8 +40,6 @@ function usage {
 	echo -e "\t(derivatives only) specify a master tag on which the derivative should be rebased"
 	echo -e "\tif no master tag is specified, the derivative will be rebased on the 'most recently autokranked master'"
 	echo -e "\tSo make sure your kernel order is correct"
-	echo "--no-link-to-tracker"
-	echo -e "\tSkips calling link-to-tracker so the tracking bug will not get updated (useful for \"safe\" testing)"
 	echo "--help"
 	echo -e "\tDisplay this message and exit"
 }
@@ -232,6 +233,7 @@ function LOG {
 
 
 
+NO_LINKTOTRACKER=1
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -245,6 +247,7 @@ case $key in
 	;;
 	-s|--sru-cycle)
 		SRUCYCLE="$2"
+		NO_LINKTOTRACKER=0
 		shift # past argument
 		shift # past value
 	;;
@@ -260,10 +263,6 @@ case $key in
 	;;
 	-c|--clearcache)
 		CLEARCACHE=1
-		shift # past argument
-	;;
-	--no-link-to-tracker)
-		NO_LINKTOTRACKER=1
 		shift # past argument
 	;;
 	-h|--help|-u|--usage)
@@ -374,7 +373,7 @@ TASK_CRANK_META=$(echo $TASKS | grep -o .|head -n 5|tail -n 1)
 TASK_BUILD_META=$(echo $TASKS | grep -o .|head -n 6|tail -n 1)
 
 if [ $NO_LINKTOTRACKER = '1' ] ; then
-	LOG "Will NOT run link-to-tracker (testing)"
+	LOG "Will NOT run link-to-tracker (no bug number will appear in the changelog)"
 fi
 
 
@@ -438,6 +437,15 @@ if [ $TASK_CRANK_LINUX = '1' ] ; then
 			LOG "master-tag specified ($REBASE_TAG) - using that as new base"
 			git rebase $REBASE_TAG
 		fi
+		if [[ $? -ne 0 ]]; then
+			LOG "==============================================================="
+			LOG "FATAL: Error when rebasing the tree - cannot crank this kernel!"
+			LOG "You may consider cranking it manually then re-running autokrank"
+			LOG "with --tasks 011111"
+			LOG "...exiting"
+			LOG "==============================================================="
+			exit 1
+		fi
 	fi
 
 	if [ $TYPE = 'derivative' -o $TYPE = 'master' ] ; then
@@ -480,12 +488,8 @@ if [ $TASK_CRANK_LINUX = '1' ] ; then
 
 	dch --force-distribution --nomultimaint -c $CHANGELOG_FILE -r "" -D $SERIES
 
-	if [ x"$SRUCYCLE" != x'' ] ; then
-		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run --sru-cycle $SRUCYCLE"
-	else
-		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run"
-	fi
 	if [ $NO_LINKTOTRACKER != '1' ] ; then
+		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run --sru-cycle $SRUCYCLE"
 		LOG "link-to-tracker command:"
 		LOG "   $LINK_TO_TRACKER_CMD"
 		LOG "Running link-to-tracker:"
