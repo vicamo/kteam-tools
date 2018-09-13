@@ -1,0 +1,28 @@
+#!/bin/bash
+. $(dirname "$0")/lib.sh
+
+# update getabis engine
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+# Do not fix precise/linux, it is tooooo old.
+case "$FIX_SERIES:$FIX_SOURCE" in
+precise:linux)	fix_verbose "precise is pre-retpoline"; exit 0 ;;
+esac
+
+master="$FIX_MASTER"
+
+files='debian/scripts/retpoline-extract-one debian/scripts/retpoline-extract'
+for file in $files
+do
+	[ -f "$master/$file" ] && cp -p "$master/$file" "$file"
+done
+
+msg="UBUNTU: [Packaging] resync retpoline extraction"
+commit "$msg" $files
+
+exit 0
