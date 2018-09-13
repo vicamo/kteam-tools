@@ -1,16 +1,8 @@
 #!/bin/bash
 . $(dirname "$0")/lib.sh
 
-master="$FIX_MASTER"
-
 # update dkms-build components
-files='debian/scripts/dkms-build debian/scripts/dkms-build--nvidia-390 debian/scripts/fix-filenames.c'
-for file in $files
-do
-	[ -f "$master/$file" ] && cp -p "$master/$file" "$file"
-done
-
 msg="UBUNTU: [Packaging] resync dkms-build"
-commit "$msg" $files
+resync_master "$msg" debian/scripts/dkms-build debian/scripts/dkms-build--nvidia-390 debian/scripts/fix-filenames.c
 
 exit 0

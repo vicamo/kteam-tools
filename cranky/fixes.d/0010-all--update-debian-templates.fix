@@ -6,15 +6,8 @@ if [ ! -d "debian/templates" ]; then
 	exit 0
 fi
 
-master="$FIX_MASTER"
-
 # Update any template that is present in this package.
-for template in debian/templates/*
-do
-	[ -f "$master/$template" ] && cp -p "$master/$template" "$template"
-done
-
 msg="UBUNTU: [Packaging] resync debian/templates"
-commit "$msg" debian/templates/*
+resync_master "$msg" debian/templates/*
 
 exit 0

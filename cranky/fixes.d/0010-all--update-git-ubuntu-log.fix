@@ -1,16 +1,8 @@
 #!/bin/bash
 . $(dirname "$0")/lib.sh
 
-master="$FIX_MASTER"
-
 # update git-ubuntu-log
-files='debian/scripts/misc/git-ubuntu-log'
-for file in $files
-do
-	[ -f "$master/$file" ] && cp -p "$master/$file" "$file"
-done
-
 msg="UBUNTU: [Packaging] resync git-ubuntu-log"
-commit "$msg" $files
+resync_master "$msg" debian/scripts/misc/git-ubuntu-log
 
 exit 0

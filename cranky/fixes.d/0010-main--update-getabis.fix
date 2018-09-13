@@ -14,16 +14,8 @@ case "$FIX_SERIES:$FIX_SOURCE" in
 precise:linux)	fix_verbose "precise is pre-retpoline"; exit 0 ;;
 esac
 
-master="$FIX_MASTER"
-
 # update getabits
-files='debian/scripts/misc/getabis'
-for file in $files
-do
-	[ -f "$master/$file" ] && cp -p "$master/$file" "$file"
-done
-
 msg="UBUNTU: [Packaging] resync getabis"
-commit "$msg" $files
+resync_master "$msg" debian/scripts/misc/getabis
 
 exit 0
