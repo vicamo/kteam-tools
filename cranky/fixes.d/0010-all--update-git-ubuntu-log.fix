@@ -7,7 +7,7 @@ master="$FIX_MASTER"
 files='debian/scripts/misc/git-ubuntu-log'
 for file in $files
 do
-	cp -p "$master/$file" "$file"
+	[ -f "$master/$file" ] && cp -p "$master/$file" "$file"
 done
 
 msg="UBUNTU: [Packaging] resync git-ubuntu-log"
