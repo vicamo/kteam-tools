@@ -1,0 +1,6 @@
+source xenial--master.krank
+TYPE=meta-only
+VARIANT=hwe-edge
+
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN hwe"
+META_FETCH_SOURCE="$META_ORIGIN hwe-edge"

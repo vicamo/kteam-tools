@@ -340,7 +340,7 @@ source $KRANKFILE
 DATE_S=$(date +%s)
 if [ $TYPE = 'master' ] ; then
 	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$TYPE
-elif [ $TYPE = 'derivative' -o $TYPE = 'backport' ] ; then
+else
 	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$VARIANT
 fi
 LOG "Using branch name: $TEMPBRANCH"
@@ -350,6 +350,8 @@ if [ $TYPE = 'master' ] ; then
 elif [ $TYPE = 'derivative' ] ; then
 	MASTER_PKGNAME=linux-$VARIANT
 elif [ $TYPE = 'backport' ] ; then
+	MASTER_PKGNAME=linux-$VARIANT
+elif [ $TYPE = 'meta-only' ] ; then
 	MASTER_PKGNAME=linux-$VARIANT
 else
 	LOG "cannot determine PKGNAME - exiting"
@@ -382,7 +384,7 @@ fi
 # LINUX
 #
 ##################
-if [ $TASK_CRANK_LINUX = '1' -o $TASK_BUILD_LINUX = '1' ] ; then
+if [ $TASK_CRANK_LINUX = '1' -o $TASK_BUILD_LINUX = '1' -o $TYPE = 'meta-only' ] ; then
 	LOG ""
 	LOG "LINUX"
 	LOG "-----"
@@ -391,7 +393,12 @@ if [ $TASK_CRANK_LINUX = '1' -o $TASK_BUILD_LINUX = '1' ] ; then
 	prepare_directory linux
 fi
 
-if [ $TASK_CRANK_LINUX = '1' ] ; then
+if [ $TYPE = 'meta-only' ]; then
+	TASK_CRANK_LINUX=0;
+	TASK_BUILD_LINUX=0;
+fi
+
+if [ $TASK_CRANK_LINUX = '1'  ] ; then
 	if [ $TYPE = 'backport' ] ; then
 		# Run update-from-bionic-master etc.
 		# The last 2 lines that the script outputs are the commit
@@ -632,7 +639,7 @@ fi
 if [ $TASK_BUILD_META = '1' ] ; then
 	if [ $TYPE = 'master' ] ; then
 		PKGNAME=$MASTER_PKGNAME-meta
-	elif [ $TYPE = 'derivative' -o $TYPE = 'backport' ] ; then
+	elif [ $TYPE = 'derivative' -o $TYPE = 'backport' -o $TYPE = 'meta-only' ] ; then
 		PKGNAME=linux-meta-$VARIANT
 	fi
 	LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
