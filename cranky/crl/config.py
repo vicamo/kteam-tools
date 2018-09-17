@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from copy import deepcopy
 import os
 import sys
 import yaml
@@ -12,6 +13,22 @@ from ktl.kernel_series              import KernelSeries
 def abort(msg):
     print(msg, file=sys.stderr)
     sys.exit(1)
+
+def _expanduser(d):
+    """
+    Recursively cycle through a dict and expand all strings that start
+    with '~/', but only if the resulting path exists.
+    """
+    _d = deepcopy(d)
+    for k, v in _d.items():
+        if isinstance(v, dict):
+            _d[k] = _expanduser(v)
+        elif isinstance(v, str) and v.startswith('~/'):
+            # Only expand the user if the resulting directory exists
+            expanded = os.path.expanduser(v)
+            if os.path.exists(expanded):
+                _d[k] = expanded
+    return _d
 
 
 class Config:
@@ -26,7 +43,7 @@ class Config:
                     break
 
         with open(filename) as yfd:
-            self.config = yaml.load(yfd)
+            self.config = _expanduser(yaml.load(yfd))
 
 
     def lookup(self, element, default=None):
@@ -40,6 +57,7 @@ class Config:
 
 
 if __name__ == "__main__":
+
     if len(sys.argv) < 2:
         abort("Usage: {} <cmd> ...".format(sys.argv[0]))
 
