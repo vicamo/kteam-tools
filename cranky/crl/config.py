@@ -39,34 +39,35 @@ class Config:
         return config
 
 
-if len(sys.argv) < 2:
-    abort("Usage: {} <cmd> ...".format(sys.argv[0]))
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        abort("Usage: {} <cmd> ...".format(sys.argv[0]))
 
-# Load up the kernel-series information.
-ks = KernelSeries(use_local=True)
+    # Load up the kernel-series information.
+    ks = KernelSeries(use_local=True)
 
-# Load up the application config.
-config = Config()
+    # Load up the application config.
+    config = Config()
 
-if sys.argv[1] == 'source-packages-path':
-    if len(sys.argv) != 4:
-        abort("Usage: {0} {1} <series> <source>".format(*sys.argv))
+    if sys.argv[1] == 'source-packages-path':
+        if len(sys.argv) != 4:
+            abort("Usage: {0} {1} <series> <source>".format(*sys.argv))
 
-    (series_codename, source_name) = sys.argv[2:]
+        (series_codename, source_name) = sys.argv[2:]
 
-    series = ks.lookup_series(codename=series_codename)
-    if not series:
-        abort("{}: {}: series not found".format(sys.argv[0], series_codename))
-    source = series.lookup_source(source_name)
-    if not source:
-        abort("{}: {}: source not found in {}".format(sys.argv[0], source_name, series_codename))
+        series = ks.lookup_series(codename=series_codename)
+        if not series:
+            abort("{}: {}: series not found".format(sys.argv[0], series_codename))
+        source = series.lookup_source(source_name)
+        if not source:
+            abort("{}: {}: source not found in {}".format(sys.argv[0], source_name, series_codename))
 
-    for package in source.packages:
-        which = package.type if package.type else 'main'
-        which_suffix = '-' + package.type if package.type else ''
+        for package in source.packages:
+            which = package.type if package.type else 'main'
+            which_suffix = '-' + package.type if package.type else ''
 
-        package_path = config.lookup(['package-path', which])
-        if not package_path:
-            package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
+            package_path = config.lookup(['package-path', which])
+            if not package_path:
+                package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
 
-        print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix)))
+            print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix)))
