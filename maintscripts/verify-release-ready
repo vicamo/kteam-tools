@@ -530,6 +530,7 @@ class VerifyReleaseReady():
             'linux-kvm',
             'linux-oem',
             'linux-euclid',
+            'linux-ibm-gt',
         ]
 
         non_kernel_packages = [
@@ -551,6 +552,7 @@ class VerifyReleaseReady():
             'linux-meta-kvm',
             'linux-meta-oem',
             'linux-meta-euclid',
+            'linux-meta-ibm-gt',
             'linux-signed-lts-trusty',
             'linux-signed-lts-xenial',
             'linux-signed-hwe',
