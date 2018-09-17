@@ -14,13 +14,30 @@ def abort(msg):
     sys.exit(1)
 
 
-def config_lookup(config, element, default=None):
-    while len(element) > 0:
-        if not config:
-            return default
-        config = config.get(element.pop(0))
-    return config
-    
+class Config:
+    def __init__(self, filename=None):
+        if not filename:
+            for path in (
+                os.path.join(os.environ['HOME'], '.cranky.yaml'),
+                os.path.join(os.environ['HOME'], '.cranky'),
+                ):
+                if os.path.exists(path):
+                    filename = path
+                    break
+
+        with open(filename) as yfd:
+            self.config = yaml.load(yfd)
+
+
+    def lookup(self, element, default=None):
+        config = self.config
+
+        while len(element) > 0:
+            if not config:
+                return default
+            config = config.get(element.pop(0))
+        return config
+
 
 if len(sys.argv) < 2:
     abort("Usage: {} <cmd> ...".format(sys.argv[0]))
@@ -29,8 +46,7 @@ if len(sys.argv) < 2:
 ks = KernelSeries(use_local=True)
 
 # Load up the application config.
-with open(os.path.join(os.environ['HOME'], '.cranky.yaml')) as yfd:
-    config = yaml.load(yfd)
+config = Config()
 
 if sys.argv[1] == 'source-packages-path':
     if len(sys.argv) != 4:
@@ -49,8 +65,8 @@ if sys.argv[1] == 'source-packages-path':
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
 
-        package_path = config_lookup(config, ['package-path', which])
+        package_path = config.lookup(['package-path', which])
         if not package_path:
-            package_path = config_lookup(config, ['package-path', 'default'], '{series}{type_suffix}')
+            package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
 
         print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix)))
