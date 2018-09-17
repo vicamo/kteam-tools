@@ -2,13 +2,17 @@
 #
 
 from sys                    import stdout, stderr
-from commands               import getstatusoutput
+try:
+    from commands               import getstatusoutput
+except:
+    from subprocess             import getstatusoutput
 from decimal                import Decimal
 import json
 from os.path                import exists, getmtime
 from time                   import time
 from datetime               import datetime
-from dbg                    import Dbg
+
+from ktl.dbg                import Dbg
 
 # o2ascii
 #
