@@ -15,13 +15,16 @@ from subprocess import call
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
-from crl import utils
+from crl.config import Config
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cnotice, cwarn
 
 
 def clone_repos(codename='', variant='', reference=None, dissociate=False,
                 verbose=False):
+
+    print(codename, variant, reference, dissociate, verbose)
+    sys.exit(1)
     if variant == "main":
         source = "linux"
     else:
@@ -129,7 +132,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     # Get the config options from file
-    config = utils.get_config(tool='clone')
+    config = Config()
+    config_cmd = config.lookup(['clone'])
 
     desc = """
 Clone the repos (typically 'linux', 'linux-meta', and 'linux-signed') that make
@@ -209,13 +213,13 @@ traffic. This is a git clone option, check 'git help clone' for more details.
     parser.add_argument("variant", nargs="?", default="main",
                         help=help_variant)
     parser.add_argument("-v", "--verbose", action="store_true",
-                        default=config.get('verbose', False),
+                        default=config_cmd.get('verbose', False),
                         help="Increase verbosity")
     parser.add_argument("-r", "--reference",
-                        default=config.get('reference', None),
+                        default=config_cmd.get('reference', None),
                         help=help_reference)
     parser.add_argument("-d", "--dissociate", action="store_true",
-                        default=config.get('dissociate', False),
+                        default=config_cmd.get('dissociate', False),
                         help=help_dissociate)
 
     clone_repos(**vars(parser.parse_args()))
