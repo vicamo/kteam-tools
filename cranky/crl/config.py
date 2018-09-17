@@ -10,10 +10,6 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.kernel_series              import KernelSeries
 
 
-def abort(msg):
-    print(msg, file=sys.stderr)
-    sys.exit(1)
-
 def _expanduser(d):
     """
     Recursively cycle through a dict and expand all strings that start
@@ -57,6 +53,9 @@ class Config:
 
 
 if __name__ == "__main__":
+    def abort(msg):
+        print(msg, file=sys.stderr)
+        sys.exit(1)
 
     if len(sys.argv) < 2:
         abort("Usage: {} <cmd> ...".format(sys.argv[0]))
