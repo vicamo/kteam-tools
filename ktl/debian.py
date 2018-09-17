@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 #
+from __future__                         import absolute_import
 
 # Note: It would be nice to not tie the debian class to the git class but
 #       be able to handle projects that are under bzr as well. But for
 #       now, we need to be practical for now.
 
-from sys                                import stdout
-from ktl.git                            import Git, GitError
+from debian.changelog                   import Changelog, get_maintainer, format_date
+from os                                 import path, listdir, system
 from re                                 import compile, findall, finditer
-from os                                 import path, listdir
+from sys                                import stdout
+from time                               import localtime
+
+from ktl.git                            import Git, GitError
 
 # stdo
 #
@@ -55,18 +59,35 @@ class Debian:
     parent_bug_section_rc = compile("^\s*\[ Ubuntu: .*\]")
     endsection_line_rc = compile("^ -- ")
 
-    # debian_directories
+    @classmethod
+    def fdr(cls, cmd):
+        """
+        Execute fakeroot debian/rules cmd
+        """
+        system('fakeroot debian/rules %s' % (cmd))
+
+    @classmethod
+    def dch(cls, release):
+        fname = "%s/changelog" % (cls.debian_env())
+        changelog = Changelog(open(fname))
+        (maintainer, email) = get_maintainer()
+        changelog.set_distributions(release)
+        changelog.set_author("%s <%s>" % (maintainer, email))
+        changelog.set_date(format_date())
+        changelog.write_to_open_file(open(fname, "w"))
+
+    # debian_env
     #
     @classmethod
-    def debian_directories(cls):
+    def debian_env(cls):
         # Find the correct debian directory for this branch of this repository.
         #
         current_branch = Git.current_branch()
+        debenv = None
 
         # If we have a debian/debian.env then open and extract the DEBIAN=...
         # location.
         debug("Checking debian/debian.env", cls.debug)
-        debdirs = []
         try:
             debian_env = Git.show("debian/debian.env", branch=current_branch)
             for line in debian_env:
@@ -75,10 +96,24 @@ class Debian:
                     val = val.rstrip()
 
                     if var == 'DEBIAN':
-                        debdirs.append(val)
+                        debenv = val
                         break
             debug("SUCCEEDED\n", cls.debug, False)
         except GitError:
+            pass
+        return debenv
+
+    # debian_directories
+    #
+    @classmethod
+    def debian_directories(cls):
+        debdirs = []
+        debenv = None
+        debenv = cls.debian_env()
+        if debenv:
+            debdirs.append(debenv)
+            debug("SUCCEEDED\n", cls.debug, False)
+        else:
             debug("FAILED\n", cls.debug, False)
             debdirs += ['debian', 'meta-source/debian']
 
