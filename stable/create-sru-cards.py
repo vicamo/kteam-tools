@@ -94,14 +94,14 @@ class SRUBoard:
 
 
 class SRUCardsCreator:
-    def __init__(self, config_file, cycle):
+    def __init__(self, args):
         """
-        :param config_file: yaml config file name
-        :param cycle: cycle tag (e.g. '2017.07.01-1')
+        :param args: argparse args object
         """
 
-        self.cycle = cycle
-        self.config_file = config_file
+        self.args = args
+        self.cycle = args.cycle
+        self.config_file = args.config
         self.config = {}
         self.config_load()
 
@@ -134,14 +134,14 @@ class SRUCardsCreator:
                         series_sources.append((series, source))
         return series_sources
 
-    def create(self, dryrun):
+    def create(self):
         """
         Create the board, the lists and the cards form the config file
 
         :return: None
         """
         # create the board with the lists on the organization
-        if dryrun:
+        if self.args.dry_run:
             print('Create board: %s' % (self.config['board']['prefix_name'] + self.cycle))
         else:
             board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
@@ -154,19 +154,20 @@ class SRUCardsCreator:
         # add the cards to the board, under the default list
         for card in self.config['cards']:
             if card['name'] == 'Turn the crank':
-                for (series, source) in series_sources_list:
-                    card_name = 'Crank %s/%s' % (series.codename, source.name)
-                    card_desc = None
-                    if series.esm:
-                        card_desc = 'ESM mode: Note different git location and build PPA'
-                    if source.name == 'linux-euclid':
-                        card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
-                    if dryrun:
-                        print('Adding card: %s' % (card_name))
-                        if card_desc:
-                            print('             %s' % (card_desc))
-                    else:
-                        board.add_card(card_name, card_desc)
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        card_name = 'Crank %s/%s' % (series.codename, source.name)
+                        card_desc = None
+                        if series.esm:
+                            card_desc = 'ESM mode: Note different git location and build PPA'
+                        if source.name == 'linux-euclid':
+                            card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
+                        if self.args.dry_run:
+                            print('Adding card: %s' % (card_name))
+                            if card_desc:
+                                print('             %s' % (card_desc))
+                        else:
+                            board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Produce kernel snaps':
                 for (series, source) in series_sources_list:
@@ -175,7 +176,7 @@ class SRUCardsCreator:
                             continue
                         card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
                         card_desc = 'Update version in %s and push' % (snap.repo)
-                        if dryrun:
+                        if self.args.dry_run:
                             print('Adding card: %s' % (card_name))
                             print('             %s' % (card_desc))
                         else:
@@ -189,7 +190,7 @@ class SRUCardsCreator:
 
                         card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
                         card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
-                        if dryrun:
+                        if self.args.dry_run:
                             print('Adding card: %s' % (card_name))
                             print('             %s' % (card_desc))
                         else:
@@ -200,7 +201,7 @@ class SRUCardsCreator:
 
                         card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
                         card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
-                        if dryrun:
+                        if self.args.dry_run:
                             print('Adding card: %s' % (card_name))
                             print('             %s' % (card_desc))
                         else:
@@ -219,14 +220,14 @@ class SRUCardsCreator:
                 card_desc = card['description']
 
             for card_name in card_names:
-                if dryrun:
+                if self.args.dry_run:
                     print('Adding card: %s' % (card_name))
                     if card_desc:
                         print('             %s' % (card_desc))
                 else:
                     board.add_card(card_name, card_desc)
 
-        if not dryrun:
+        if not self.args.dry_run:
             print("Board '%s' created: %s" % (board.name, board.url))
 
 if __name__ == '__main__':
@@ -234,8 +235,10 @@ if __name__ == '__main__':
     parser.add_argument('cycle', metavar='CYCLE', help='cycle tag', action='store')
     parser.add_argument('--config', metavar='CONFIG', help='config yaml file', required=False, action='store',
                         default='%s/create-sru-cards.yaml' % os.path.dirname(__file__))
+    parser.add_argument('--crank-turn', help='create the \'Turn the crank\' cards (defaul: False)',
+                        required=False, action='store_true', default=False)
     parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
                         action='store_true', default=False)
 
     args = parser.parse_args()
-    SRUCardsCreator(args.config, args.cycle).create(args.dry_run)
+    SRUCardsCreator(args).create()
