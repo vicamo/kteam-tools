@@ -1,10 +1,10 @@
 #
 # Configuration file for the cranky toolchain.
 #
-# Copy to ~/.cranky and modify as you like. Note that a configuration file
-# is not necessary since all options can also be specified using commandline
-# arguments. Commandline arguments take precedence over options specified in
-# this file.
+# Copy to ~/.cranky or ~/.cranky.yaml and modify as you like. Note that a
+# configuration file is not necessary since all options can also be specified
+# using commandline arguments. Commandline arguments take precedence over
+# options specified in this file.
 #
 # Juerg Haefliger <juergh@canonical.com>
 #
@@ -19,3 +19,25 @@ clone:
   # process to reduce network traffic. See 'git help clone', option
   # --dissociate, for more details.
   dissociate: True
+
+# Paths to source code directories
+package-path:
+  # Where to find the git repos for the different packages. The paths can be
+  # specified per package type (main, meta, signed) or via a 'default' entry
+  # which is used as a fallback. The following formatter keywords are
+  # recognized:
+  #   {series}:      The distro series codename (bionic, ...)
+  #   {type}:        The type of the package (main, meta, signed, ...)
+  #   {type_suffix}: The suffix of dependent packages (-meta, -signed, ...)
+  #   {name}:        The package name (linux, linux-aws, linux-meta-gcp, ...)
+  #
+  # A default example would be something like the following:
+  #   default: ~/git/ubuntu/{series}/{name}
+  # Which - for bionic linux - expands to:
+  #   ${HOME}/git/ubuntu/bionic/linux
+  #   ${HOME}/git/ubuntu/bionic/linux-meta
+  #   ${HOME}/git/ubuntu/bionic/linux-signed
+  main :/path/to/local/main/repos
+  meta: /path/to/local/meta/repos
+  signed: /path/to/local/signed/repos
+  default: /path/to/local/repos
