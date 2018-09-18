@@ -2,7 +2,6 @@
 #
 
 import re
-from .kernel_versions                   import KernelVersions
 from .log                               import cdebug, cerror
 
 #
