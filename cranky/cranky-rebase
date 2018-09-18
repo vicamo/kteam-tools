@@ -4,6 +4,7 @@ import os
 import sys
 
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
