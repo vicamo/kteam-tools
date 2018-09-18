@@ -1,4 +1,0 @@
-#!/bin/sh
-bzr update
-bzr pull http://people.canonical.com/~kernel/cve-tracker
-bzr vis

@@ -1,2 +1,0 @@
-#!/bin/sh
-bzr push lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
