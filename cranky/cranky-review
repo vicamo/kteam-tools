@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+#
+# Perform checks on source packages and generate diffs for review
+#
+
+import argparse
+import logging
+import subprocess
+import os
+import sys
+import signal
+from glob import glob
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import cerror
+
+def dpkg_compare_versions(v1, op, v2):
+    cmd = ["dpkg", "--compare-versions", v1, op, v2]
+    ret = subprocess.run(cmd)
+    return ret.returncode == 0
+
+def subprocess_setup():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+def runcmd(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=None, shell=False):
+    try:
+        sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, shell=shell, preexec_fn=subprocess_setup)
+    except OSError as e:
+        return [127, str(e)]
+
+    out = sp.communicate(input)[0]
+    if out:
+        out = out.decode()
+    return [sp.returncode, out]
+
+def review(previous='', changes_files=[]):
+    prev_dscs = glob("%s/*.dsc" % previous)
+
+    for changes_file in changes_files:
+        if not os.path.exists(changes_file):
+            cerror("%s does not exist" % changes_file)
+            sys.exit(1)
+
+        basename = os.path.basename(changes_file)
+        (source_pkg, version) = basename.split('_')[0:2]
+
+        prev_version = None
+        for dsc_file in prev_dscs:
+            basename = os.path.basename(dsc_file)
+            basename = os.path.splitext(basename)[0]
+            (dsc_source, dsc_version) = basename.split('_')[0:2]
+
+            # Don't consider files for other source packages ...
+            if dsc_source != source_pkg:
+                continue
+            # ... or files with the same or a newer version
+            if dpkg_compare_versions(version, "le", dsc_version):
+                continue
+
+            if not prev_version or dpkg_compare_versions(dsc_version, "gt", prev_version):
+                prev_version = dsc_version
+
+        if not prev_version:
+            cerror("Previous dsc file not found for %s" % changes_file)
+            sys.exit(1)
+
+        prev_dsc_file = "%s/%s_%s.dsc" % (previous, source_pkg, prev_version)
+        cmd = ["dcmd", "--dsc", changes_file]
+        dsc_file = subprocess.check_output(cmd).decode().strip()
+
+        diff_dir = os.path.dirname(os.path.realpath(changes_file))
+        diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
+        outfile = open(diff_path, "w")
+
+        print("Generating %s" % diff_path)
+
+        cmd = ["debdiff", "--diffstat", prev_dsc_file, dsc_file]
+        (ret, output) = runcmd(cmd, stdout=outfile, stderr=subprocess.DEVNULL)
+        outfile.close()
+
+        if ret != 0 and ret != 1:
+            cerror("Failed to diff source packages")
+            try:
+                os.remove(diff_path)
+            except OSError:
+                pass
+            sys.exit(1)
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    desc = """
+Run final checks on a source package set, and generate a set of diffs from the
+previous package versions for review.
+"""
+
+    epilog = """
+Examples:
+  $ cranky review *.changes
+      Run final checks against the specified .changes files. Debdiffs will be
+      generated in the current directory for reviewing changes made since the
+      previous package version. The source packages for previous package
+      versions are expected to be in the current directory.
+
+  $ cranky review --previous=/path/to/prev *.changes
+      Same as the above, but looks for previous source package versions in the
+      specified path.
+"""
+
+    parser = argparse.ArgumentParser(description=desc, formatter_class=
+                                     argparse.RawDescriptionHelpFormatter,
+                                     epilog=epilog)
+    parser.add_argument("changes_files", nargs="+",
+                        help=".changes files for the package set")
+    parser.add_argument("-p", "--previous", default=".",
+                        help="Path to previous source packages")
+
+    review(**vars(parser.parse_args()))
