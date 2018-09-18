@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     # Get the config options from file
     config = Config()
-    config_cmd = config.lookup(['clone'])
+    config_cmd = config.lookup('clone')
 
     desc = """
 Clone the repos (typically 'linux', 'linux-meta', and 'linux-signed') that make
