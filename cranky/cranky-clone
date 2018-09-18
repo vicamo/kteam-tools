@@ -22,9 +22,6 @@ from ktl.log import cerror, cnotice, cwarn
 
 def clone_repos(codename='', variant='', reference=None, dissociate=False,
                 verbose=False):
-
-    print(codename, variant, reference, dissociate, verbose)
-    sys.exit(1)
     if variant == "main":
         source = "linux"
     else:
