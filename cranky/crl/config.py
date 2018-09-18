@@ -90,4 +90,4 @@ if __name__ == "__main__":
             if not package_path:
                 package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
 
-            print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix)))
+            print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix, name=package.name)))
