@@ -231,14 +231,30 @@ class SRUCardsCreator:
             print("Board '%s' created: %s" % (board.name, board.url))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='cli tool to create trello cards for SRU cycles')
-    parser.add_argument('cycle', metavar='CYCLE', help='cycle tag', action='store')
+    default_config = '%s/create-sru-cards.yaml' % os.path.dirname(__file__)
+    description = 'Create a Trello board with cards for SRU cycles'
+    epilog = '''
+The script reads the configuration from a yaml file (default {0}),
+creates a new Trello board and adds cards to it.
+
+Examples:
+    Run with the default options:
+    $ create-sru-cards.py 2018.09.10
+
+    Do not create anything, just print what would be done:
+    $ create-sru-cards.py --dry-run 2018.09.10
+
+    Create also the 'Turn the crank' cards:
+    $ create-sru-cards.py --crank-turn 2018.09.10
+'''.format(default_config)
+    parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('cycle', metavar='CYCLE', help='cycle tag (expected format: YYYY.MM.DD', action='store')
     parser.add_argument('--config', metavar='CONFIG', help='config yaml file', required=False, action='store',
-                        default='%s/create-sru-cards.yaml' % os.path.dirname(__file__))
+                        default=default_config)
     parser.add_argument('--crank-turn', help='create the \'Turn the crank\' cards (defaul: False)',
                         required=False, action='store_true', default=False)
     parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
                         action='store_true', default=False)
-
     args = parser.parse_args()
     SRUCardsCreator(args).create()
