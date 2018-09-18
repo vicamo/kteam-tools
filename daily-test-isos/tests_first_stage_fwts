@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# Assume that this is the first time and we are running
-# off of a flash drive.
-#
-sudo gnome-terminal --full-screen -e /home/ubuntu/tests_fwts
