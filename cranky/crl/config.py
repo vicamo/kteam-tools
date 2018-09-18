@@ -28,10 +28,13 @@ def _expanduser(d):
 
 
 class Config:
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, data=None):
         self.config = None
 
-        if not filename:
+        if filename and data:
+            raise ValueError("supply only one of filename and data")
+
+        if not data and not filename:
             for path in (
                 os.path.join(os.environ['HOME'], '.cranky.yaml'),
                 os.path.join(os.environ['HOME'], '.cranky'),
@@ -40,10 +43,16 @@ class Config:
                     filename = path
                     break
 
-        if filename and os.path.exists(filename):
+        if not data and filename and os.path.exists(filename):
             with open(filename) as yfd:
-                self.config = _expanduser(yaml.load(yfd))
+                data = yfd.read()
 
+        if data:
+            data = _expanduser(yaml.load(data))
+        else:
+            data = {}
+
+        self.config = data
 
     def lookup(self, element, default=None):
         config = self.config
