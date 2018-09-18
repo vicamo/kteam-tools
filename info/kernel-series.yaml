@@ -476,6 +476,24 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm-gt:
+            packages:
+                linux-ibm-gt:
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'master-next']
+                linux-meta-ibm-gt:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-bionic']
+            supported: true
+            derived-from: ['18.04', 'linux']
+            testing:
+                flavours:
+                    ibm-gt:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'ppc64el', 's390x.LPAR']
+                        clouds: ['metal']
+            invalid-tasks: ['certification-testing']
+
 # 17.10 (artful)
 '17.10':
     codename: artful
