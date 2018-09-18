@@ -25,22 +25,51 @@ class TestConfig(unittest.TestCase):
         config = Config(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
-        data = config.lookup(['simple'])
+        data = config.lookup('simple')
         self.assertEqual(data, 'data')
 
     def test_config_data_paths_default_present(self):
         config = Config(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
+        data = config.lookup('paths.default')
+        self.assertEqual(data, 'something')
+
+    def test_config_data_list_simple2_absent(self):
+        config = Config(data=self.data_yaml)
+        self.assertNotEqual(config, None)
+
+        data = config.lookup('simple2')
+        self.assertIsNone(data)
+
+    def test_config_data_list_simple_present(self):
+        config = Config(data=self.data_yaml)
+        self.assertNotEqual(config, None)
+
+        data = config.lookup(['simple'])
+        self.assertEqual(data, 'data')
+
+    def test_config_data_list_paths_default_present(self):
+        config = Config(data=self.data_yaml)
+        self.assertNotEqual(config, None)
+
         data = config.lookup(['paths', 'default'])
         self.assertEqual(data, 'something')
 
-    def test_config_data_simple2_absent(self):
+    def test_config_data_list_simple2_absent(self):
         config = Config(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         data = config.lookup(['simple2'])
         self.assertIsNone(data)
+
+    def test_config_data_dict_value_error(self):
+        config = Config(data=self.data_yaml)
+        self.assertNotEqual(config, None)
+
+        with self.assertRaises(ValueError):
+            data = config.lookup({})
+
 
     def test_config_filename_present(self):
         with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': '/non-existant'}):
@@ -49,7 +78,7 @@ class TestConfig(unittest.TestCase):
             config = Config(filename=d.getpath('cranky.conf'))
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
     def test_config_filename_absent(self):
@@ -57,7 +86,7 @@ class TestConfig(unittest.TestCase):
             config = Config(filename=d.getpath('cranky.conf'))
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertIsNone(data)
 
     def test_config_home_cranky(self):
@@ -67,7 +96,7 @@ class TestConfig(unittest.TestCase):
             config = Config()
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
     def test_config_home_cranky_dot_yaml(self):
@@ -77,7 +106,7 @@ class TestConfig(unittest.TestCase):
             config = Config()
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
     def test_config_home_cranky(self):
@@ -87,7 +116,7 @@ class TestConfig(unittest.TestCase):
             config = Config()
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
     def test_config_home_cranky_dot_yaml(self):
@@ -97,7 +126,7 @@ class TestConfig(unittest.TestCase):
             config = Config()
             self.assertNotEqual(config, None)
 
-            data = config.lookup(['simple'])
+            data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
 
