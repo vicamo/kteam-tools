@@ -108,6 +108,9 @@ class Close():
 
 if __name__ == '__main__':
     app_description = '''
+Finalizes a tree, creating the top commit that updates the changelog and any other files needed.
+Besides updating the changelog, it verifies there are no needed config changes that need to be reviewed.
+Use --config if you have reviewed the changes are safe to be included in the closing commit with no other explanation.
     '''
 
     app_epilog = '''
