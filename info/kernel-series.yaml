@@ -419,6 +419,28 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'jrp'
 
+        linux-azure-edge:
+            packages:
+                linux-azure-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
+                linux-meta-azure-edge:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic', 'azure-edge']
+                linux-signed-azure-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-edge']
+            supported: true
+            derived-from: [ '18.10', 'linux-azure' ]
+            testing:
+                flavours:
+                    azure-edge:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'jrp'
+
         linux-gcp:
             packages:
                 linux-gcp:
