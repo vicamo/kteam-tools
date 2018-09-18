@@ -37,7 +37,7 @@ package-path:
   #   ${HOME}/git/ubuntu/bionic/linux
   #   ${HOME}/git/ubuntu/bionic/linux-meta
   #   ${HOME}/git/ubuntu/bionic/linux-signed
-  main :/path/to/local/main/repos
+  main: /path/to/local/main/repos
   meta: /path/to/local/meta/repos
   signed: /path/to/local/signed/repos
   default: /path/to/local/repos
