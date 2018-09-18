@@ -29,6 +29,8 @@ def _expanduser(d):
 
 class Config:
     def __init__(self, filename=None):
+        self.config = None
+
         if not filename:
             for path in (
                 os.path.join(os.environ['HOME'], '.cranky.yaml'),
@@ -38,8 +40,9 @@ class Config:
                     filename = path
                     break
 
-        with open(filename) as yfd:
-            self.config = _expanduser(yaml.load(yfd))
+        if filename and os.path.exists(filename):
+            with open(filename) as yfd:
+                self.config = _expanduser(yaml.load(yfd))
 
 
     def lookup(self, element, default=None):
