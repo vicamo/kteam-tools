@@ -11,6 +11,7 @@ import sys
 import signal
 from glob import glob
 import tempfile
+import re
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
@@ -53,6 +54,14 @@ def review(prev_dsc_dir='', changes_files=[]):
             cerror("Previous dsc file not found for %s" % changes_file)
             sys.exit(1)
 
+        verabi_re = re.compile("([0-9]+\.[0-9]+\.0)[-.]([0-9]+)\.([0-9])+")
+        m = verabi_re.match(version)
+        verabi = m.group(1) + '-' + m.group(2)
+        fullver = verabi + '.' + m.group(3)
+        m = verabi_re.match(prev_version)
+        prev_verabi = m.group(1) + '-' + m.group(2)
+        prev_fullver = prev_verabi + '.' + m.group(3)
+
         prev_dsc_file = "%s/%s_%s.dsc" % (prev_dsc_dir, source_pkg, prev_version)
         cmd = ["dcmd", "--dsc", changes_file]
         dsc_file = subprocess.check_output(cmd).decode().strip()
@@ -78,6 +87,14 @@ def review(prev_dsc_dir='', changes_files=[]):
                 print(stderr, end='')
                 sys.exit(1)
 
+            # Normalize package versions in debian/control
+            with open(os.path.join(prev_path, "debian", "control"), "r") as cfile:
+                cfile_data = cfile.read()
+            cfile_data = cfile_data.replace(prev_fullver, "FULLVER")
+            cfile_data = cfile_data.replace(prev_verabi, "VERABI")
+            with open(os.path.join(prev_path, "debian", "control"), "w") as cfile:
+                cfile.write(cfile_data)
+
             cmd = ["dpkg-source", "-x", dsc_file, new_path]
             sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
             stderr = sp.communicate()[1].decode()
@@ -86,6 +103,14 @@ def review(prev_dsc_dir='', changes_files=[]):
                 cerror("Output from dpkg-source:")
                 print(stderr, end='')
                 sys.exit(1)
+
+            # Normalize package versions in debian/control
+            with open(os.path.join(new_path, "debian", "control"), "r") as cfile:
+                cfile_data = cfile.read()
+            cfile_data = cfile_data.replace(fullver, "FULLVER")
+            cfile_data = cfile_data.replace(verabi, "VERABI")
+            with open(os.path.join(new_path, "debian", "control"), "w") as cfile:
+                cfile.write(cfile_data)
 
             cwd = os.getcwd()
             os.chdir(tmpdir)
