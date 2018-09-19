@@ -2,10 +2,13 @@
 import yaml
 import argparse
 import os
+import re
+from datetime   import datetime, timedelta
 
 # the so-trello root dir needs to be on PYTHONPATH
 from trellotool.trellotool              import TrelloTool
 from ktl.kernel_series                  import KernelSeries
+from ktl.utils                          import run_command
 
 class TrelloError(Exception):
     pass
@@ -230,12 +233,67 @@ class SRUCardsCreator:
         if not self.args.dry_run:
             print("Board '%s' created: %s" % (board.name, board.url))
 
+
+def update_cycle_info(args):
+    """
+    Add a new entry on the sru-cycle info file for the given cycle.
+
+    :param args: ArgumentParser Namespace object
+    """
+    file_name = args.cycle_info
+    cycle = args.cycle
+    # sanity check the cycle date (must be on the right format and be a monday)
+    date_re = re.compile("^\d\d\d\d\.\d\d\.\d\d$")
+    match = date_re.match(cycle)
+    if match is not None:
+        date = datetime.strptime(cycle, '%Y.%m.%d')
+        if date.isoweekday() != 1:
+            raise TrelloError('Date provided is not a Monday')
+
+        release_date = date + timedelta(days=21)
+        new_entry = "\'{0}\':\n    release-date: \'{1}\'".format(cycle,
+                                                                 release_date.strftime('%Y-%m-%d'))
+
+        with open(file_name, "r") as f:
+            new_file = ""
+            entry_added = False
+            for line in f:
+                if not entry_added and line[0] != "#":
+                    # this should be the first non commented line of the file
+                    new_file += "\n{0}\n".format(new_entry)
+                    entry_added = True
+                elif line.partition('\n')[0] == new_entry.partition('\n')[0]:
+                    raise TrelloError('SRU cycle entry already present on the info file')
+                new_file += line
+        if not entry_added:
+            raise('Could not find a place on the file for the new entry')
+
+        print("Adding following entry to {0}".format(file_name))
+        print("-----")
+        print(new_entry)
+        print("-----")
+        if not args.dry_run:
+            with open(file_name, "w") as f:
+                f.write(new_file)
+
+        # commit the file change
+        commit_subject = "sru-cycle: Add {0} cycle info".format(cycle)
+        if not args.dry_run:
+            cmd = "git commit -sm '{0}' {1}".format(commit_subject, file_name)
+            run_command(cmd)
+        print("Added commit '{0}' to {1}".format(commit_subject, file_name))
+    else:
+        raise TrelloError('Wrong date format')
+
+
 if __name__ == '__main__':
+    retval = 0
     default_config = '%s/create-sru-cards.yaml' % os.path.dirname(__file__)
+    default_cycle_info = '%s/../info/sru-cycle.yaml' % os.path.dirname(__file__)
     description = 'Create a Trello board with cards for SRU cycles'
     epilog = '''
-The script reads the configuration from a yaml file (default {0}),
-creates a new Trello board and adds cards to it.
+The script reads the configuration from a yaml file, updates the sru-cycle info
+yaml and creates a new Trello board and adds cards to it.
 
 Examples:
     Run with the default options:
@@ -246,15 +304,33 @@ Examples:
 
     Create also the 'Turn the crank' cards:
     $ create-sru-cards.py --crank-turn 2018.09.10
+
+    Do not add the new cycle entry to the cycle info file
+    $ create-sru-cards.py --no-cycle-info 2018.09.10
 '''.format(default_config)
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('cycle', metavar='CYCLE', help='cycle tag (expected format: YYYY.MM.DD', action='store')
-    parser.add_argument('--config', metavar='CONFIG', help='config yaml file', required=False, action='store',
-                        default=default_config)
+    parser.add_argument('cycle', metavar='CYCLE', help='cycle tag (expected format: YYYY.MM.DD)',
+                        action='store')
+    parser.add_argument('--config', metavar='CONFIG',
+                        help='config yaml file (default: {0})'.format(default_config),
+                        required=False, action='store', default=default_config)
+    parser.add_argument('--cycle-info', metavar='CYCLE_INFO',
+                        help='sru cycle info yaml file (default: {0})'.format(default_cycle_info),
+                        required=False, action='store', default=default_cycle_info)
+    parser.add_argument('--no-cycle-info', help='do not add an entry to the cycle info yaml file',
+                        required=False, action='store_true', default=False)
     parser.add_argument('--crank-turn', help='create the \'Turn the crank\' cards (defaul: False)',
                         required=False, action='store_true', default=False)
     parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
                         action='store_true', default=False)
     args = parser.parse_args()
-    SRUCardsCreator(args).create()
+    try:
+        if not args.no_cycle_info:
+            update_cycle_info(args)
+        SRUCardsCreator(args).create()
+    except TrelloError as e:
+        retval = 1
+        print('Error: {}'.format(e))
+
+    exit(retval)
