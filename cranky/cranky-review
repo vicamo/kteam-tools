@@ -10,6 +10,7 @@ import os
 import sys
 import signal
 from glob import glob
+import tempfile
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
@@ -20,20 +21,6 @@ def dpkg_compare_versions(v1, op, v2):
     cmd = ["dpkg", "--compare-versions", v1, op, v2]
     ret = subprocess.run(cmd)
     return ret.returncode == 0
-
-def subprocess_setup():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-def runcmd(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, stdin=None, shell=False):
-    try:
-        sp = subprocess.Popen(command, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=True, shell=shell, preexec_fn=subprocess_setup)
-    except OSError as e:
-        return [127, str(e)]
-
-    out = sp.communicate(input)[0]
-    if out:
-        out = out.decode()
-    return [sp.returncode, out]
 
 def review(previous='', changes_files=[]):
     prev_dscs = glob("%s/*.dsc" % previous)
@@ -76,17 +63,42 @@ def review(previous='', changes_files=[]):
 
         print("Generating %s" % diff_path)
 
-        cmd = ["debdiff", "--diffstat", prev_dsc_file, dsc_file]
-        (ret, output) = runcmd(cmd, stdout=outfile, stderr=subprocess.DEVNULL)
-        outfile.close()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prev_dir = source_pkg + '_' + prev_version
+            new_dir = source_pkg + '_' + version
+            prev_path = os.path.join(tmpdir, prev_dir)
+            new_path = os.path.join(tmpdir, new_dir)
 
-        if ret != 0 and ret != 1:
-            cerror("Failed to diff source packages")
-            try:
-                os.remove(diff_path)
-            except OSError:
-                pass
-            sys.exit(1)
+            cmd = ["dpkg-source", "-x", prev_dsc_file, prev_path]
+            sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            stderr = sp.communicate()[1].decode()
+            if sp.returncode != 0:
+                cerror("Failed to extract %s." % prev_dsc_file)
+                cerror("Output from dpkg-source:")
+                print(stderr, end='')
+                sys.exit(1)
+
+            cmd = ["dpkg-source", "-x", dsc_file, new_path]
+            sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            stderr = sp.communicate()[1].decode()
+            if sp.returncode != 0:
+                cerror("Failed to extract %s." % dsc_file)
+                cerror("Output from dpkg-source:")
+                print(stderr, end='')
+                sys.exit(1)
+
+            cwd = os.getcwd()
+            os.chdir(tmpdir)
+            cmd = ["git", "diff", "--no-index", "--no-prefix", "--stat", "-p",  prev_dir, new_dir]
+            sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE)
+            stderr = sp.communicate()[1].decode()
+            os.chdir(cwd)
+            if sp.returncode != 0 and sp.returncode != 1:
+                cerror("Failed to diff trees. Output from 'git diff':")
+                print(stderr, end='')
+                sys.exit(1)
+
+        outfile.close()
 
 
 if __name__ == '__main__':
