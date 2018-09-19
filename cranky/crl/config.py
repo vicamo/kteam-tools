@@ -10,23 +10,6 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.kernel_series              import KernelSeries
 
 
-def _expanduser(d):
-    """
-    Recursively cycle through a dict and expand all strings that start
-    with '~/', but only if the resulting path exists.
-    """
-    _d = deepcopy(d)
-    for k, v in _d.items():
-        if isinstance(v, dict):
-            _d[k] = _expanduser(v)
-        elif isinstance(v, str) and v.startswith('~/'):
-            # Only expand the user if the resulting directory exists
-            expanded = os.path.expanduser(v)
-            if os.path.exists(expanded):
-                _d[k] = expanded
-    return _d
-
-
 class Config:
     def __init__(self, filename=None, data=None):
         self.config = None
@@ -48,7 +31,7 @@ class Config:
                 data = yfd.read()
 
         if data:
-            data = _expanduser(yaml.load(data))
+            data = yaml.load(data)
         else:
             data = {}
 
