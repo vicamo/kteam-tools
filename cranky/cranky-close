@@ -24,8 +24,9 @@ class AppError(Exception):
         self.msg = error
 
 class Close():
-    def __init__(s, dryrun=False, master_branch="master-next", config=False):
+    def __init__(s, dryrun=False, master_branch="master-next", base_version=None, config=False):
         s.master_branch = master_branch
+        s.base_version = base_version
         s.dryrun = dryrun
         s.config = config
 
@@ -85,7 +86,10 @@ class Close():
             raise AppError("config has changed! please, review it and commit\n")
 
         if s.branch != "master":
-            base_version = s.master_version_from_changelog()
+            if s.base_version:
+                base_version = s.base_version
+            else:
+                base_version = s.master_version_from_changelog()
             if not base_version:
                 print("No base_version found on {}/changelog".format(s.debiandir))
                 return 1
@@ -95,6 +99,10 @@ class Close():
                 print(cmd)
             else:
                 os.system(cmd)
+        else:
+            if s.base_version:
+                print("This is a master branch, there should not be a base version")
+                return 1
 
         if not s.dryrun:
             Debian.fdr("insertchanges")
@@ -121,6 +129,7 @@ Use --config if you have reviewed the changes are safe to be included in the clo
     parser.add_argument('--dry-run', action='store_true', default=False, help='do not execute, just tell what would be done')
     parser.add_argument('--master-branch', action='store', required=False, default='master-next', help='use a different master branch to rebase to')
     parser.add_argument('--config', action='store_true', required=False, help='include config changes in the closing commit')
+    parser.add_argument('--base-version', action='store', required=False, default=None, help='use this version as the last master version this was based on, instead of looking for it in the changelogs')
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
@@ -140,7 +149,7 @@ Use --config if you have reviewed the changes are safe to be included in the clo
 
     retval = 1
     try:
-        retval = Close(dryrun=args.dry_run, master_branch=args.master_branch, config=args.config).main()
+        retval = Close(dryrun=args.dry_run, master_branch=args.master_branch, base_version=args.base_version, config=args.config).main()
     except KeyboardInterrupt:
         print("Aborting ...")
 
