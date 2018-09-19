@@ -124,6 +124,10 @@ def clone_repos(codename='', variant='', reference=None, dissociate=False,
         cnotice("  Repo '%(name)s' in directory '%(dir)s' "
               "(branch '%(branch)s')" % s)
 
+def expanduser(path):
+    if path:
+        path = os.path.expanduser(path)
+    return path
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -213,7 +217,7 @@ traffic. This is a git clone option, check 'git help clone' for more details.
                         default=config_cmd.get('verbose', False),
                         help="Increase verbosity")
     parser.add_argument("-r", "--reference",
-                        default=config_cmd.get('reference', None),
+                        default=expanduser(config_cmd.get('reference', None)),
                         help=help_reference)
     parser.add_argument("-d", "--dissociate", action="store_true",
                         default=config_cmd.get('dissociate', False),
