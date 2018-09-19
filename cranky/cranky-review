@@ -23,6 +23,24 @@ def dpkg_compare_versions(v1, op, v2):
     ret = subprocess.run(cmd)
     return ret.returncode == 0
 
+def dpkg_extract(dsc_path, dest_path):
+    cmd = ["dpkg-source", "-x", dsc_path, dest_path]
+    sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    stderr = sp.communicate()[1].decode()
+    return (sp.returncode, stderr)
+
+def normalize_control_file(src_path, ver, abi, upload):
+    path = os.path.join(src_path, "debian", "control")
+    verabi = ver + '-' + abi
+    fullver = verabi + '.' + upload
+
+    with open(path, "r") as cfile:
+        cfile_data = cfile.read()
+    cfile_data = cfile_data.replace(fullver, "FULLVER")
+    cfile_data = cfile_data.replace(verabi, "VERABI")
+    with open(path, "w") as cfile:
+        cfile.write(cfile_data)
+
 def review(prev_dsc_dir='', changes_files=[]):
     prev_dscs = glob("%s/*.dsc" % prev_dsc_dir)
 
@@ -55,12 +73,16 @@ def review(prev_dsc_dir='', changes_files=[]):
             sys.exit(1)
 
         verabi_re = re.compile("([0-9]+\.[0-9]+\.0)[-.]([0-9]+)\.([0-9])+")
+
         m = verabi_re.match(version)
-        verabi = m.group(1) + '-' + m.group(2)
-        fullver = verabi + '.' + m.group(3)
+        ver = m.group(1)
+        abi = m.group(2)
+        upload = m.group(3)
+
         m = verabi_re.match(prev_version)
-        prev_verabi = m.group(1) + '-' + m.group(2)
-        prev_fullver = prev_verabi + '.' + m.group(3)
+        prev_ver = m.group(1)
+        prev_abi = m.group(2)
+        prev_upload = m.group(3)
 
         prev_dsc_file = "%s/%s_%s.dsc" % (prev_dsc_dir, source_pkg, prev_version)
         cmd = ["dcmd", "--dsc", changes_file]
@@ -78,39 +100,21 @@ def review(prev_dsc_dir='', changes_files=[]):
             prev_path = os.path.join(tmpdir, prev_dir)
             new_path = os.path.join(tmpdir, new_dir)
 
-            cmd = ["dpkg-source", "-x", prev_dsc_file, prev_path]
-            sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-            stderr = sp.communicate()[1].decode()
-            if sp.returncode != 0:
+            (ret, stderr) = dpkg_extract(prev_dsc_file, prev_path)
+            if ret != 0:
                 cerror("Failed to extract %s." % prev_dsc_file)
                 cerror("Output from dpkg-source:")
                 print(stderr, end='')
                 sys.exit(1)
+            normalize_control_file(prev_path, prev_ver, prev_abi, prev_upload)
 
-            # Normalize package versions in debian/control
-            with open(os.path.join(prev_path, "debian", "control"), "r") as cfile:
-                cfile_data = cfile.read()
-            cfile_data = cfile_data.replace(prev_fullver, "FULLVER")
-            cfile_data = cfile_data.replace(prev_verabi, "VERABI")
-            with open(os.path.join(prev_path, "debian", "control"), "w") as cfile:
-                cfile.write(cfile_data)
-
-            cmd = ["dpkg-source", "-x", dsc_file, new_path]
-            sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-            stderr = sp.communicate()[1].decode()
-            if sp.returncode != 0:
+            (ret, stderr) = dpkg_extract(dsc_file, new_path)
+            if ret != 0:
                 cerror("Failed to extract %s." % dsc_file)
                 cerror("Output from dpkg-source:")
                 print(stderr, end='')
                 sys.exit(1)
-
-            # Normalize package versions in debian/control
-            with open(os.path.join(new_path, "debian", "control"), "r") as cfile:
-                cfile_data = cfile.read()
-            cfile_data = cfile_data.replace(fullver, "FULLVER")
-            cfile_data = cfile_data.replace(verabi, "VERABI")
-            with open(os.path.join(new_path, "debian", "control"), "w") as cfile:
-                cfile.write(cfile_data)
+            normalize_control_file(new_path, ver, abi, upload)
 
             cwd = os.getcwd()
             os.chdir(tmpdir)
