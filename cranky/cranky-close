@@ -24,8 +24,7 @@ class AppError(Exception):
         self.msg = error
 
 class Close():
-    def __init__(s, dryrun=False, master_branch="master-next", base_version=None, config=False):
-        s.master_branch = master_branch
+    def __init__(s, dryrun=False, base_version=None, config=False):
         s.base_version = base_version
         s.dryrun = dryrun
         s.config = config
@@ -90,8 +89,7 @@ class Close():
         (_tmp, s.branch) = s.debiandir.split(".", 1)
         s.changelog = Debian.changelog()
         s.set_version()
-        master_commit = Git.ubuntu_commit(s.master_branch)
-        master_version = Git.version_from_subject(master_commit)
+        master_version = Debian.master_changelog()[0]['version']
         series = s.series_from_changelog()
 
         if not s.dryrun:
@@ -156,7 +154,6 @@ Use --config if you have reviewed the changes are safe to be included in the clo
     parser.add_argument('--info',  action='store_true', default=False, help='output info level logs')
     parser.add_argument('--debug', action='store_true', default=False, help='output debug level logs')
     parser.add_argument('--dry-run', action='store_true', default=False, help='do not execute, just tell what would be done')
-    parser.add_argument('--master-branch', action='store', required=False, default='master-next', help='use a different master branch to rebase to')
     parser.add_argument('--config', action='store_true', required=False, help='include config changes in the closing commit')
     parser.add_argument('--base-version', action='store', required=False, default=None, help='use this version as the last master version this was based on, instead of looking for it in the changelogs')
     args = parser.parse_args()
@@ -178,7 +175,7 @@ Use --config if you have reviewed the changes are safe to be included in the clo
 
     retval = 1
     try:
-        retval = Close(dryrun=args.dry_run, master_branch=args.master_branch, base_version=args.base_version, config=args.config).main()
+        retval = Close(dryrun=args.dry_run, base_version=args.base_version, config=args.config).main()
     except KeyboardInterrupt:
         print("Aborting ...")
 
