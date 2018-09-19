@@ -22,8 +22,8 @@ def dpkg_compare_versions(v1, op, v2):
     ret = subprocess.run(cmd)
     return ret.returncode == 0
 
-def review(previous='', changes_files=[]):
-    prev_dscs = glob("%s/*.dsc" % previous)
+def review(prev_dsc_dir='', changes_files=[]):
+    prev_dscs = glob("%s/*.dsc" % prev_dsc_dir)
 
     for changes_file in changes_files:
         if not os.path.exists(changes_file):
@@ -53,7 +53,7 @@ def review(previous='', changes_files=[]):
             cerror("Previous dsc file not found for %s" % changes_file)
             sys.exit(1)
 
-        prev_dsc_file = "%s/%s_%s.dsc" % (previous, source_pkg, prev_version)
+        prev_dsc_file = "%s/%s_%s.dsc" % (prev_dsc_dir, source_pkg, prev_version)
         cmd = ["dcmd", "--dsc", changes_file]
         dsc_file = subprocess.check_output(cmd).decode().strip()
 
@@ -117,7 +117,7 @@ Examples:
       previous package version. The source packages for previous package
       versions are expected to be in the current directory.
 
-  $ cranky review --previous=/path/to/prev *.changes
+  $ cranky review --prev-dsc-dir=/path/to/prev *.changes
       Same as the above, but looks for previous source package versions in the
       specified path.
 """
@@ -127,7 +127,7 @@ Examples:
                                      epilog=epilog)
     parser.add_argument("changes_files", nargs="+",
                         help=".changes files for the package set")
-    parser.add_argument("-p", "--previous", default=".",
+    parser.add_argument("-p", "--prev-dsc-dir", default=".",
                         help="Path to previous source packages")
 
     review(**vars(parser.parse_args()))
