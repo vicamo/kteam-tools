@@ -30,6 +30,15 @@ class Close():
         s.dryrun = dryrun
         s.config = config
 
+    def is_tree_changed(s):
+        """
+        Check if tree has any changes, compared to HEAD.
+        """
+        (status, output) = Git.sh('git diff HEAD')
+        if len(output) > 0:
+            return 1
+        return status
+
     def is_config_changed(s):
         """
         Check if debian.{master,derivative}/config/ has changed from HEAD.
@@ -52,12 +61,14 @@ class Close():
                 return c['series']
         return None
 
-    def commit(s):
+    def set_version(s):
         if s.branch == "master":
             s.prefix = "Ubuntu-"
         else:
             s.prefix = "Ubuntu-{}-".format(s.branch)
         s.version = s.changelog[0]['version']
+
+    def commit(s):
         cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix + s.version)
         run_command(cmd, s.dryrun)
 
@@ -66,6 +77,10 @@ class Close():
         print("You should call link-to-tracker and ammend\n")
 
     def tag(s):
+        # This should only show the tag. If it starts tagging, we might revisit
+        # where it is called, or not fail if it points to the same thing, and
+        # warns/errors out if the tag exists, but do not point to the same
+        # thing.
         s.version2 = s.version.replace("~", "_")
         print("git tag -sm '{}' '{}'".format(s.prefix + s.version, s.prefix + s.version2))
 
@@ -74,6 +89,7 @@ class Close():
         s.debiandir = Debian.debian_env()
         (_tmp, s.branch) = s.debiandir.split(".", 1)
         s.changelog = Debian.changelog()
+        s.set_version()
         master_commit = Git.ubuntu_commit(s.master_branch)
         master_version = Git.version_from_subject(master_commit)
         series = s.series_from_changelog()
@@ -106,10 +122,23 @@ class Close():
 
         if not s.dryrun:
             Debian.fdr("insertchanges")
-            Debian.dch(series)
-        s.link_to_tracker()
-        s.commit()
+
+        #
+        # This should be the last step. If there were no changes to the
+        # changelog, there is nothing to release, so nothing to commit.
+        #
+        if s.is_tree_changed():
+            if not s.dryrun:
+                Debian.dch(series)
+            s.link_to_tracker()
+            s.commit()
+
+        #
+        # This is only showing the tag, which we want to do even if there are
+        # no changes.
+        #
         s.tag()
+
         retval = 0
         return retval
 
