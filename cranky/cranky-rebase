@@ -21,6 +21,9 @@ class Rebase():
         retval = 1
         master_commit = Git.ubuntu_commit(s.master_branch)
         base_commit = Git.ubuntu_commit("HEAD")
+        if base_commit == None:
+            print("base Ubuntu commit not found, is this an Ubuntu tree?")
+            return retval
         master_version = Git.version_from_subject(master_commit)
         base_version = Git.version_from_subject(base_commit)
 
