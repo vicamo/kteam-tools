@@ -93,9 +93,8 @@ class Close():
         master_version = Debian.master_changelog()[0]['version']
         series = s.series_from_changelog()
 
-        if not s.dryrun:
-            Debian.fdr("clean")
-            Debian.fdr("updateconfigs")
+        Debian.fdr("clean", dry_run=s.dryrun)
+        Debian.fdr("updateconfigs", dry_run=s.dryrun)
         if not s.config and s.is_config_changed():
             print("config has changed! please, review it and commit\n")
             raise AppError("config has changed! please, review it and commit\n")
@@ -116,8 +115,7 @@ class Close():
                 print("This is a master branch, there should not be a base version")
                 return 1
 
-        if not s.dryrun:
-            Debian.fdr("insertchanges")
+        Debian.fdr("insertchanges", dry_run=s.dryrun)
 
         #
         # This should be the last step. If there were no changes to the
