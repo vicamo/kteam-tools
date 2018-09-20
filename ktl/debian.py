@@ -6,11 +6,12 @@ from __future__                         import absolute_import
 #       be able to handle projects that are under bzr as well. But for
 #       now, we need to be practical for now.
 
-from debian.changelog                   import Changelog, get_maintainer, format_date
+from debian.changelog                   import Changelog, get_maintainer
 from os                                 import path, listdir, system
 from re                                 import compile, findall, finditer
 from sys                                import stdout
 from time                               import localtime
+from datetime                           import datetime, timezone, timedelta
 
 from ktl.git                            import Git, GitError
 
@@ -70,10 +71,12 @@ class Debian:
     def dch(cls, release):
         fname = "%s/changelog" % (cls.debian_env())
         changelog = Changelog(open(fname))
+        tz = timezone(timedelta(seconds=localtime().tm_gmtoff))
+        dt = datetime.now(tz).strftime("%a, %d %b %Y %T %z")
         (maintainer, email) = get_maintainer()
         changelog.set_distributions(release)
         changelog.set_author("%s <%s>" % (maintainer, email))
-        changelog.set_date(format_date())
+        changelog.set_date(dt)
         changelog.write_to_open_file(open(fname, "w"))
 
     # debian_env
