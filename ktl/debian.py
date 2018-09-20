@@ -15,6 +15,8 @@ from datetime                           import datetime, timezone, timedelta
 
 from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, run_command
+from ktl.kernel_series                  import KernelSeries
+
 
 # DebianError
 #
@@ -311,6 +313,44 @@ class Debian:
 
         # Not there anywhere, barf
         raise DebianError('Failed to find the abi files.')
+
+    # get_source_from_kernel_series
+    #
+    @classmethod
+    def get_source_from_kernel_series(cls):
+        """
+        Return a ktl.kernel_series.KernelSourceEntry object representing
+        the kernel on the current directory.  The changelog
+        information is used for the series and source package lookup.
+        """
+        # Get the changelog
+        changelog = cls.changelog()
+        if not changelog and len(changelog) < 1:
+            raise DebianError("No changelog entries.")
+        # Find the first valid entry
+        series = package = None
+        for centry in changelog:
+            if centry['series'] != 'UNRELEASED':
+                series = centry['series']
+                package = centry['package']
+                break
+        # Check if the entry is valid
+        if not series:
+            raise DebianError("Can't find a valid series in the changelog.")
+        if not package:
+            raise DebianError("Can't find a valid package name in the changelog.")
+        # Get the kernel series info
+        info_series = KernelSeries().lookup_series(codename=series)
+        if not info_series:
+            raise DebianError("Unknown series: %s. Please check the " +
+                              "info/kernel-series.yaml file." %
+                              series)
+        info_package = info_series.lookup_source(package)
+        if not info_package:
+            raise DebianError("Unknown package: %s. Please check the " +
+                              "info/kernel-series.yaml file." %
+                              package)
+        return info_package
 
     # is_backport
     #
