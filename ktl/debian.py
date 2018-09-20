@@ -14,26 +14,7 @@ from time                               import localtime
 from datetime                           import datetime, timezone, timedelta
 
 from ktl.git                            import Git, GitError
-
-# stdo
-#
-# My own version of print but won't automatically add a linefeed to the end. And
-# does a flush after every write.
-#
-def stdo(ostr):
-    stdout.write(ostr)
-    stdout.flush()
-    return
-
-# debug
-#
-# Print strings to standard out preceeded by "debug:".
-#
-def debug(out, dbg=False, prefix=True):
-    if dbg:
-        if prefix:
-            stdo("debug: ")
-        stdo(out)
+from ktl.utils                          import debug
 
 # DebianError
 #
