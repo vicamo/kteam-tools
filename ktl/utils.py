@@ -56,7 +56,7 @@ def run_command(cmd, dbg=False, dry_run=False):
             debug("  status: '%d'" % status, dbg)
             debug("  result: '%s'" % result, dbg)
         else:
-            debug("run_command: '%s'" % (cmd))
+            debug("run_command: '%s'\n" % (cmd), True)
 
         return status, result.split('\n')
 
