@@ -82,7 +82,7 @@ class Close():
         # warns/errors out if the tag exists, but do not point to the same
         # thing.
         s.version2 = s.version.replace("~", "_")
-        print("git tag -sm '{}' '{}'".format(s.prefix + s.version, s.prefix + s.version2))
+        print("git tag -sm '{}' '{}' {}".format(s.prefix + s.version, s.prefix + s.version2, Git.current_commit()))
 
     def main(s):
         retval = 1
