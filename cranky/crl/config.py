@@ -51,6 +51,8 @@ class Config:
             if not config:
                 return default
             config = config.get(element.pop(0))
+        if not config:
+            return default
         return config
 
 
