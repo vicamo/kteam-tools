@@ -14,7 +14,7 @@ from time                               import localtime
 from datetime                           import datetime, timezone, timedelta
 
 from ktl.git                            import Git, GitError
-from ktl.utils                          import debug
+from ktl.utils                          import debug, run_command
 
 # DebianError
 #
@@ -42,11 +42,16 @@ class Debian:
     endsection_line_rc = compile("^ -- ")
 
     @classmethod
-    def fdr(cls, cmd):
+    def fdr(cls, cmd, dry_run=False):
         """
-        Execute fakeroot debian/rules cmd
+        Execute fakeroot debian/rules cmd.
+        Print its output when it fails, and returns its exit status.
+        The dry_run option may be used to just print the command that would be run.
         """
-        system('fakeroot debian/rules %s' % (cmd))
+        (status, output) = run_command('fakeroot debian/rules %s' % (cmd), dry_run=dry_run)
+        if status:
+            print("\n".join(output))
+        return status
 
     @classmethod
     def dch(cls, release):
