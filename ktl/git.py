@@ -103,6 +103,21 @@ class Git:
             raise GitError("no current branch")
         return result[0].replace("refs/heads/", "")
 
+    # current_commit
+    #
+    # Return a string that is the commit sha1 of the current HEAD.
+    #
+    @classmethod
+    def current_commit(cls):
+        """
+        Return a string that is the commit sha1 of the current HEAD.
+        Will raise an exception if it fails.
+        """
+        status, result = run_command("git rev-parse HEAD", cls.debug)
+        if status != 0:
+            raise GitError("no current commit")
+        return result[0]
+
     # remote
     #
     # Return a string that is the remote this branch tracks or origin.
