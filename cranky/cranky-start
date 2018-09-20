@@ -1,0 +1,136 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import subprocess
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
+
+from ktl.debian import Debian
+from ktl.log import Clog, cerror, cinfo, cdebug
+
+
+class CrankyStart():
+
+    def __init__(self, dry_run=False, ignore_abi_errors=False):
+        # TODO: actually use dry_run
+        self.dry_run = dry_run
+        self.ignore_abi_errors = ignore_abi_errors
+
+    def main(self):
+        """
+        Main method.
+        """
+        # Get the kernel series information for the current kernel.
+        # That should be the first step because it will throw an error
+        # if the current directory is not a valid kernel.
+        kernel_source = Debian.get_source_from_kernel_series()
+        cdebug("DEBUG: Target kernel: %s" % kernel_source)
+
+        # Abort if the last changelog entry is still open (ie UNRELEASED).
+        series = Debian.changelog()[0]["series"]
+        if series == series.upper():
+            cerror("ERROR: Invalid series: %s" % series)
+            sys.exit(1)
+
+        # Create the start new release commit. That should be
+        # performed to all kinds of kernels.
+        self.start_new_release()
+
+        # TODO: re-order commits if it's necessary.
+
+        # Derivative and master kernels are ready at this point.
+        if not kernel_source.is_backport:
+            cinfo("INFO: master/derivative kernel done")
+            return
+
+        self.update_backport()
+
+    def start_new_release(self):
+        """
+        TODO: re-implement maint-startnewrelease here
+        """
+        # Start clean
+        cmd = "fakeroot debian/rules clean"
+        cinfo("Running: %s" % cmd)
+        ret = subprocess.call(cmd, shell=True)
+        if ret:
+            cerror("ERROR: failed to run \"%s\"." % cmd)
+            sys.exit(1)
+
+        # Call maint-startnewrelease
+        cmd = os.path.realpath(
+            os.path.join(os.path.dirname(__file__),
+                         "..", "maintscripts",
+                         "maint-startnewrelease"))
+        cinfo("Running: %s" % cmd)
+        ret = subprocess.call(cmd, shell=True)
+        if ret:
+            cerror("ERROR: failed to run \"%s\"." % cmd)
+            sys.exit(1)
+
+        # Check for the ABI existence
+        self.check_abi()
+
+    def check_abi(self):
+        """
+        Abort if ABI is missing.
+        """
+        if self.ignore_abi_errors:
+            cinfo("Skipping ABI check")
+            return
+        # Check for the ABI existence
+        cinfo("Checking ABI")
+        version = Debian.changelog()[0]["version"]
+        (arch_abis, _) = Debian.abi_arch()
+        for arch, contents in arch_abis.items():
+            if not contents:
+                cerror("No architecture-specific ABI directory found. " +
+                       "Please check \"debian.*/etc/getabis\" or " +
+                       "run with \"--ignore-abi-errors\".")
+                sys.exit(1)
+        cinfo("No ABI issues")
+
+    def update_backport(self):
+        # TODO call debian.*/etc/update-* here.
+        pass
+
+
+if __name__ == "__main__":
+
+    desc = """
+Create a start new release commit, adding a new changelog entry, updating the
+latest ABI files and performing sanity checks.
+"""
+
+    epilog = """
+"""
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument("--dry-run", action="store_true", default=False,
+                        help="do not make any changes, " +
+                        "just show what would be done")
+    parser.add_argument("--debug", action="store_true", default=False,
+                        help="output debug level logs")
+    parser.add_argument("--ignore-abi-errors", action="store_true",
+                        default=False, help="ignore missing ABI files")
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(levelname)s - %(message)s")
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    cranky_start = CrankyStart(dry_run=args.dry_run,
+                               ignore_abi_errors=args.ignore_abi_errors)
+    cranky_start.main()
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
