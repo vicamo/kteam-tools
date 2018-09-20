@@ -3,14 +3,15 @@
 import os
 import sys
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
 from ktl.log                            import Clog
-from lib.git                            import Git
-from lib.shell                          import ShellError
+from ktl.git                            import Git
+from ktl.shell                          import ShellError
+from ktl.utils                          import run_command
 
 class Rebase():
     def __init__(s, dryrun=False, master_branch="master-next"):
@@ -26,17 +27,10 @@ class Rebase():
         if master_commit != base_commit:
             cmd = "git rebase --onto %s %s" % (master_commit, base_commit)
             print("Rebase still needed between %s and %s." % (base_version, master_version))
-            if s.dryrun:
-                print("Run:\n\t" + cmd)
-                retval = 0
-            else:
-                print("Running:\n\t" + cmd)
-                try:
-                    (retval, output) = Git.sh(cmd)
-                except ShellError as e:
-                    print("Failed to rebase.")
-                    print("".join(e.output))
-                    retval = e.returncode
+            (retval, output) = run_command(cmd, dry_run=s.dryrun)
+            if retval:
+                print("Failed to rebase.")
+                print("\n".join(output))
         else:
             print("tree is already based on top of %s (%s)" % (master_version, master_commit))
             retval = 0
@@ -100,7 +94,7 @@ o---o---o Ubuntu-4.4.0-100.100
     except KeyboardInterrupt:
         print("Aborting ...")
 
-    if retval > 0:
+    if retval:
         print("")
         print("Due to the above error(s), this script is unable to continue and is terminating.")
         print("")
