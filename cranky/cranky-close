@@ -33,7 +33,8 @@ class Close():
         """
         Check if tree has any changes, compared to HEAD.
         """
-        (status, output) = Git.sh('git diff HEAD')
+        (status, output) = run_command('git diff HEAD')
+        output = "\n".join(output)
         if len(output) > 0:
             return 1
         return status
@@ -43,7 +44,7 @@ class Close():
         Check if debian.{master,derivative}/config/ has changed from HEAD.
         """
         (status, output) = run_command('git diff HEAD %s/config/' % (s.debiandir))
-        output = list(filter(None, output))
+        output = "\n".join(output)
         if len(output) > 0:
             return 1
         return status
