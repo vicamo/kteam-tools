@@ -144,10 +144,9 @@ class SRUCardsCreator:
         :return: None
         """
         # create the board with the lists on the organization
-        if self.args.dry_run:
-            print('Create board: %s' % (self.config['board']['prefix_name'] + self.cycle))
-        else:
-            board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
+        board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
+        print('Create board: %s' % (self.config['board']['prefix_name'] + self.cycle))
+        if not self.args.dry_run:
             board.create(self.config['board']['trello_organization'])
             board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
 
@@ -165,11 +164,10 @@ class SRUCardsCreator:
                             card_desc = 'ESM mode: Note different git location and build PPA'
                         if source.name == 'linux-euclid':
                             card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
-                        if self.args.dry_run:
-                            print('Adding card: %s' % (card_name))
-                            if card_desc:
-                                print('             %s' % (card_desc))
-                        else:
+                        print('Adding card: %s' % (card_name))
+                        if card_desc:
+                            print('             %s' % (card_desc))
+                        if not self.args.dry_run:
                             board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Produce kernel snaps':
@@ -179,10 +177,9 @@ class SRUCardsCreator:
                             continue
                         card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
                         card_desc = 'Update version in %s and push' % (snap.repo)
-                        if self.args.dry_run:
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                        else:
+                        print('Adding card: %s' % (card_name))
+                        print('             %s' % (card_desc))
+                        if not self.args.dry_run:
                             board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Release kernel snaps':
@@ -193,10 +190,9 @@ class SRUCardsCreator:
 
                         card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
                         card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
-                        if self.args.dry_run:
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                        else:
+                        print('Adding card: %s' % (card_name))
+                        print('             %s' % (card_desc))
+                        if not self.args.dry_run:
                             board.add_card(card_name, card_desc)
 
                         if not snap.stable:
@@ -204,10 +200,9 @@ class SRUCardsCreator:
 
                         card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
                         card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
-                        if self.args.dry_run:
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                        else:
+                        print('Adding card: %s' % (card_name))
+                        print('             %s' % (card_desc))
+                        if not self.args.dry_run:
                             board.add_card(card_name, card_desc)
                 continue
 
@@ -223,14 +218,15 @@ class SRUCardsCreator:
                 card_desc = card['description']
 
             for card_name in card_names:
-                if self.args.dry_run:
-                    print('Adding card: %s' % (card_name))
-                    if card_desc:
-                        print('             %s' % (card_desc))
-                else:
+                print('Adding card: %s' % (card_name))
+                if card_desc:
+                    print('             %s' % (card_desc))
+                if not self.args.dry_run:
                     board.add_card(card_name, card_desc)
 
-        if not self.args.dry_run:
+        if self.args.dry_run:
+            print("This was a dry-run - board was NOT created")
+        else:
             print("Board '%s' created: %s" % (board.name, board.url))
 
 
