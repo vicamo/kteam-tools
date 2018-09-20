@@ -70,7 +70,7 @@ class Close():
 
     def commit(s):
         cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix + s.version)
-        run_command(cmd, s.dryrun)
+        run_command(cmd, dry_run=s.dryrun)
 
     def link_to_tracker(s):
         # TODO: should be implemented, challenge: allow for a rerun
@@ -110,10 +110,7 @@ class Close():
                 return 1
 
             cmd = './debian/scripts/misc/insert-ubuntu-changes {}/changelog {} {}'.format(s.debiandir, base_version, master_version)
-            if s.dryrun:
-                print(cmd)
-            else:
-                os.system(cmd)
+            run_command(cmd, dry_run=s.dryrun)
         else:
             if s.base_version:
                 print("This is a master branch, there should not be a base version")
