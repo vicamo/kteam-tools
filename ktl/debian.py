@@ -63,7 +63,7 @@ class Debian:
         # Date and time library compatibility between python 2 and 3
         # is a real pain. Use the good and old date command instead:
         dt = subprocess.check_output(["date", "-R"],
-                                     env={"LC_ALL": "C"}).strip()
+                                     env={"LC_ALL": "C"}).strip().decode()
         (maintainer, email) = get_maintainer()
         changelog.set_distributions(release)
         changelog.set_author("%s <%s>" % (maintainer, email))
