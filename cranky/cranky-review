@@ -72,17 +72,20 @@ def review(prev_dsc_dir='', changes_files=[]):
             cerror("Previous dsc file not found for %s" % changes_file)
             sys.exit(1)
 
+        # Matches a kernel version string in the format of
+        # VERSION-ABI.UPLOAD. The string 4.15.0-34.37 would match as
+        # follows:
+        #
+        #  VERSION = 4.15.0
+        #  ABI = 34
+        #  UPLOAD = 37
         verabi_re = re.compile("([0-9]+\.[0-9]+\.0)[-.]([0-9]+)\.([0-9])+")
 
         m = verabi_re.match(version)
-        ver = m.group(1)
-        abi = m.group(2)
-        upload = m.group(3)
+        (ver, abi, upload) = m.group(1, 2, 3)
 
         m = verabi_re.match(prev_version)
-        prev_ver = m.group(1)
-        prev_abi = m.group(2)
-        prev_upload = m.group(3)
+        (prev_ver, prev_abi, prev_upload) = m.group(1, 2, 3)
 
         prev_dsc_file = "%s/%s_%s.dsc" % (prev_dsc_dir, source_pkg, prev_version)
         cmd = ["dcmd", "--dsc", changes_file]
