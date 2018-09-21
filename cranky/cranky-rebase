@@ -12,13 +12,26 @@ from ktl.log                            import Clog
 from ktl.git                            import Git
 from ktl.shell                          import ShellError
 from ktl.utils                          import run_command
+from ktl.debian                         import Debian
 
 class Rebase():
-    def __init__(s, dryrun=False, master_branch="master-next"):
+    def __init__(s, dryrun=False, master_branch=None):
         s.master_branch = master_branch
         s.dryrun = dryrun
+        source = Debian.get_source_from_kernel_series()
+        source = source.derived_from
+        if not source:
+            s.repo = None
+        s.repo = str(source.packages[0].repo)
+
     def main(s):
         retval = 1
+        if not s.master_branch:
+            if not s.repo:
+                print("not a derived kernel, no rebase needed")
+                return 0
+            run_command("git fetch " + s.repo)
+            s.master_branch = "FETCH_HEAD"
         master_commit = Git.ubuntu_commit(s.master_branch)
         base_commit = Git.ubuntu_commit("HEAD")
         if base_commit == None:
@@ -73,7 +86,7 @@ o---o---o Ubuntu-4.4.0-100.100
     parser.add_argument('--info',  action='store_true', default=False, help='output info level logs')
     parser.add_argument('--debug', action='store_true', default=False, help='output debug level logs')
     parser.add_argument('--dry-run', action='store_true', default=False, help='do not execute, just tell what would be done')
-    parser.add_argument('--master-branch', action='store', required=False, default='master-next', help='use a different master branch to rebase to')
+    parser.add_argument('--master-branch', action='store', required=False, default=None, help='use a different master branch to rebase to')
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
