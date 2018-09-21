@@ -75,6 +75,7 @@ if not os.path.isdir(debian_dir):
 	sys.exit(1)
 
 (srcpkg, version, pocket, flags) = GetPackageInfo()
+lts_version = None
 if '~' in version:
     lts_version = version.split('~')[1]
 version = version.split("~")[0]
@@ -110,7 +111,7 @@ if not os.path.isfile("debian/control"):
 #------------------------------------------------------------------------------
 # Only need to take care of the ABI files for the linux-kernel package.
 #------------------------------------------------------------------------------
-if os.path.isdir(os.path.join(debian_dir, "abi")):
+if not lts_version and os.path.isdir(os.path.join(debian_dir, "abi")):
 	#----------------------------------------------------------------------
 	# Try to get the new ABI files (note that version is not incremented,
 	# yet).
