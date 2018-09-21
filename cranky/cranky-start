@@ -38,18 +38,14 @@ class CrankyStart():
             cerror("ERROR: Invalid series: %s" % series)
             sys.exit(1)
 
+        # Call update-from-*master script as first thing.
+        self.update_backport()
+
         # Create the start new release commit. That should be
         # performed to all kinds of kernels.
         self.start_new_release()
 
         # TODO: re-order commits if it's necessary.
-
-        # Derivative and master kernels are ready at this point.
-        if not kernel_source.is_backport:
-            cinfo("INFO: master/derivative kernel done")
-            return
-
-        self.update_backport()
 
     def start_new_release(self):
         """
@@ -90,9 +86,11 @@ class CrankyStart():
         cinfo("No ABI issues")
 
     def update_backport(self):
-        # TODO call debian.*/etc/update-* here.
-        pass
-
+        os.putenv("SKIP_REBASE_IF_UPTODATE", "1")
+        Debian.update_from_master(dry_run=self.dry_run)
+        # Unstage the changelog, cause that's gonna be changed in a different way
+        changelog = Debian.debian_env() + "/changelog"
+        run_command("git checkout HEAD " + changelog, dry_run=self.dry_run)
 
 if __name__ == "__main__":
 
