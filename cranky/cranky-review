@@ -16,7 +16,7 @@ import re
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
-from ktl.log import cerror
+from ktl.log import cerror, cnotice
 
 def dpkg_compare_versions(v1, op, v2):
     cmd = ["dpkg", "--compare-versions", v1, op, v2]
@@ -92,7 +92,7 @@ def review(prev_dsc_dir='', changes_files=[]):
         diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
         outfile = open(diff_path, "w")
 
-        print("Generating %s" % diff_path)
+        cnotice("Generating %s" % diff_path)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             prev_dir = source_pkg + '_' + prev_version
