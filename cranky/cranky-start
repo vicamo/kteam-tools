@@ -11,12 +11,12 @@ sys.path.append(os.path.realpath(
 
 from ktl.debian import Debian
 from ktl.log import Clog, cerror, cinfo, cdebug
+from ktl.utils import run_command
 
 
 class CrankyStart():
 
     def __init__(self, dry_run=False, ignore_abi_errors=False):
-        # TODO: actually use dry_run
         self.dry_run = dry_run
         self.ignore_abi_errors = ignore_abi_errors
 
@@ -27,10 +27,12 @@ class CrankyStart():
         # Get the kernel series information for the current kernel.
         # That should be the first step because it will throw an error
         # if the current directory is not a valid kernel.
+        cinfo("Checking kernel series info")
         kernel_source = Debian.get_source_from_kernel_series()
         cdebug("DEBUG: Target kernel: %s" % kernel_source)
 
         # Abort if the last changelog entry is still open (ie UNRELEASED).
+        cinfo("Checking changelog")
         series = Debian.changelog()[0]["series"]
         if series == series.upper():
             cerror("ERROR: Invalid series: %s" % series)
@@ -54,23 +56,16 @@ class CrankyStart():
         TODO: re-implement maint-startnewrelease here
         """
         # Start clean
-        cmd = "fakeroot debian/rules clean"
-        cinfo("Running: %s" % cmd)
-        ret = subprocess.call(cmd, shell=True)
-        if ret:
-            cerror("ERROR: failed to run \"%s\"." % cmd)
-            sys.exit(1)
+        cinfo("Running fdr clean")
+        Debian.fdr("clean", dry_run=self.dry_run)
 
         # Call maint-startnewrelease
+        cinfo("Running maint-startnewrelease")
         cmd = os.path.realpath(
             os.path.join(os.path.dirname(__file__),
                          "..", "maintscripts",
                          "maint-startnewrelease"))
-        cinfo("Running: %s" % cmd)
-        ret = subprocess.call(cmd, shell=True)
-        if ret:
-            cerror("ERROR: failed to run \"%s\"." % cmd)
-            sys.exit(1)
+        run_command(cmd, dry_run=self.dry_run)
 
         # Check for the ABI existence
         self.check_abi()
