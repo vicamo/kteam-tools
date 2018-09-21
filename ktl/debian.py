@@ -11,6 +11,7 @@ from debian.changelog                   import Changelog, get_maintainer
 from os                                 import path, listdir, system
 from re                                 import compile, findall, finditer
 from sys                                import stdout
+from glob                               import glob
 
 from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, run_command
@@ -352,6 +353,22 @@ class Debian:
                               "info/kernel-series.yaml file." %
                               package)
         return info_package
+
+    @classmethod
+    def update_from_master(cls, dry_run=False):
+        """
+        Call the debian.<branch>/etc/update-from-*master script.
+        Print its output when it fails, and returns its exit status.
+        The dry_run option may be used to just print the command that would be run.
+        """
+        debiandir = Debian.debian_env()
+        scripts = glob(debiandir + "/etc/update-from-*master")
+        for script in scripts:
+            (status, output) = run_command(script, dry_run=dry_run)
+            if status:
+                print("\n".join(output))
+                return status
+        return 0
 
     # is_backport
     #
