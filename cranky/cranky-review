@@ -79,7 +79,7 @@ def review(prev_dsc_dir='', changes_files=[]):
         #  VERSION = 4.15.0
         #  ABI = 34
         #  UPLOAD = 37
-        verabi_re = re.compile("([0-9]+\.[0-9]+\.0)[-.]([0-9]+)\.([0-9])+")
+        verabi_re = re.compile("([0-9]+\.[0-9]+\.0)[-.]([0-9]+)\.([0-9]+)")
 
         m = verabi_re.match(version)
         (ver, abi, upload) = m.group(1, 2, 3)
