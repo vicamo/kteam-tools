@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+from crl.handle         import Handle
+
+def series_codename(args):
+    handle = Handle().lookup_set(args.handle)
+    print(handle.series.codename)
+
+def source_packages_path(args):
+    handle = Handle().lookup_set(args.handle)
+    for tree in handle.trees:
+        print(tree.directory)
+
+
+if __name__ == "__main__":
+    desc = """
+Helper program for getting cranky config and handle data from shell scripts.
+"""
+    parser = argparse.ArgumentParser(description=desc, formatter_class=
+                                     argparse.RawDescriptionHelpFormatter)
+    subparsers = parser.add_subparsers(help="commands", dest="command")
+    subparsers.required = True
+
+    # series-codename subparser
+    sc_subparser = subparsers.add_parser("series-codename",
+                                           help="Print series codename for the given handle")
+    sc_subparser.add_argument("handle",
+                               help="<series>:<package> handle, or path to source tree.")
+    sc_subparser.set_defaults(func=series_codename)
+
+    # source-packages-path subparser
+    spp_subparser = subparsers.add_parser("source-packages-path",
+                                          help="Print source packages' paths")
+    spp_subparser.add_argument("handle",
+                               help="<series>:<package> handle, or path to source tree.")
+    spp_subparser.set_defaults(func=source_packages_path)
+
+    args = parser.parse_args()
+    args.func(args)
