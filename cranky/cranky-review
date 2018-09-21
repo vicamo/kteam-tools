@@ -116,12 +116,9 @@ def review(prev_dsc_dir='', changes_files=[]):
                 sys.exit(1)
             normalize_control_file(new_path, ver, abi, upload)
 
-            cwd = os.getcwd()
-            os.chdir(tmpdir)
             cmd = ["git", "diff", "--no-index", "--no-prefix", "--stat", "-p",  prev_dir, new_dir]
-            sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE)
+            sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE, cwd=tmpdir)
             stderr = sp.communicate()[1].decode()
-            os.chdir(cwd)
             if sp.returncode != 0 and sp.returncode != 1:
                 cerror("Failed to diff trees. Output from 'git diff':")
                 print(stderr, end='')
