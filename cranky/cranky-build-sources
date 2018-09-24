@@ -96,16 +96,59 @@ build_src()
 	)
 }
 
+usage()
+{
+	cat <<EOF
+Usage: cranky build-sources [handle]
+
+Build all source packages for the specified series and source as specified in
+kernel-series.yaml.
+
+positional arguments:
+  handle                Handle to a kernel source tree, either a path to a
+                        kernel source tree or a handle in <series>:<package>
+                        format. If not given the current working directory is
+                        used.
+
+Examples:
+  $ cranky build-sources
+      Build all source packages for the kernel source tree in the current
+      working directory.
+  $ cranky build-sources bionic:linux
+      Build all source packages defined under the bionic:linux source in
+      ktl/kernel-series.yaml. Finds the source trees based on 'package-path'
+      from the cranky config file.
+EOF
+
+	exit 2
+}
+
 # MAIN:
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $P <series> <source>" 1>&2
-	exit 1
-fi
+for opt in "$@"; do
+	case $opt in
+	-*)
+		usage
+		;;
+	*)
+		break;
+	esac
+	shift
+done
 
-series="$1"
-package="$2"
+case "$#" in
+0)
+	handle="$PWD"
+	;;
+1)
+	handle="$1"
+	;;
+*)
+	usage
+	;;
+esac
 
-sources=$( "$here/crl/config.py" 'source-packages-path' "$series" "$package" )
+sources=$( "$here/cranky-shell-helper" "source-packages-path" "$handle" )
+series=$( "$here/cranky-shell-helper" "series-codename" "$handle" )
 
 # Ensure we have the updated session -- use amd64/linux for all packages as that
 # is a superset.
