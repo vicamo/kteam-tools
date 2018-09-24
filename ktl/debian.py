@@ -6,8 +6,8 @@ from __future__                         import absolute_import
 #       be able to handle projects that are under bzr as well. But for
 #       now, we need to be practical for now.
 
-import subprocess
 from debian.changelog                   import Changelog, get_maintainer
+from email.utils                        import formatdate
 from os                                 import path, listdir, system
 from re                                 import compile, findall, finditer
 from sys                                import stdout
@@ -60,10 +60,7 @@ class Debian:
     def dch(cls, release):
         fname = "%s/changelog" % (cls.debian_env())
         changelog = Changelog(open(fname))
-        # Date and time library compatibility between python 2 and 3
-        # is a real pain. Use the good and old date command instead:
-        dt = subprocess.check_output(["date", "-R"],
-                                     env={"LC_ALL": "C"}).strip().decode()
+        dt = formatdate(localtime=True)
         (maintainer, email) = get_maintainer()
         changelog.set_distributions(release)
         changelog.set_author("%s <%s>" % (maintainer, email))
