@@ -102,6 +102,7 @@ class HandleTree(HandleCore):
             directory = self.encode_directory(package)
 
         if os.path.exists(directory):
+            directory = os.path.abspath(directory)
             (series_name, package_name) = self.identify_directory(directory)
             if (series_name != series.codename or package_name != package.name):
                 raise ValueError("{}: tree inconsistent, is for {}:{}".format(
