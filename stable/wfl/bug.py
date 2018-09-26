@@ -572,15 +572,15 @@ class WorkflowBug():
                         if date_available is None or bi[d][p]['most_recent_build'] > date_available:
                             date_available = bi[d][p]['most_recent_build']
             now = datetime.utcnow()
-            comp_date = date_available + timedelta(hours=2)
+            comp_date = date_available + timedelta(hours=1)
             if comp_date < now:
                 # It has been at least 2 hours since the package was either published or fully built
                 # in proposed.
                 #
                 retval = True
             else:
-                cinfo('It has been less than 2 hrs since the last package was either published or built.')
-                cinfo('    build time + 2 hrs: %s' % comp_date)
+                cinfo('It has been less than 1 hr since the last package was either published or built.')
+                cinfo('    build time + 1 hrs: %s' % comp_date)
                 cinfo('                   now: %s' % now)
 
         cinfo('        Ready for testing: %s' % (retval), 'yellow')
