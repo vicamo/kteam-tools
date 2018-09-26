@@ -41,6 +41,11 @@ def normalize_control_file(src_path, ver, abi, upload):
     with open(path, "w") as cfile:
         cfile.write(cfile_data)
 
+def dsc_source_version(dsc_file):
+    basename = os.path.basename(dsc_file)
+    basename = os.path.splitext(basename)[0]
+    return basename.split('_')[0:2]
+
 def review(prev_dsc_dir='', changes_files=[]):
     prev_dscs = glob("%s/*.dsc" % prev_dsc_dir)
 
@@ -49,14 +54,11 @@ def review(prev_dsc_dir='', changes_files=[]):
             cerror("%s does not exist" % changes_file)
             sys.exit(1)
 
-        basename = os.path.basename(changes_file)
-        (source_pkg, version) = basename.split('_')[0:2]
+        (source_pkg, version) = dsc_source_version(changes_file)
 
         prev_version = None
         for dsc_file in prev_dscs:
-            basename = os.path.basename(dsc_file)
-            basename = os.path.splitext(basename)[0]
-            (dsc_source, dsc_version) = basename.split('_')[0:2]
+            (dsc_source, dsc_version) = dsc_source_version(dsc_file)
 
             # Don't consider files for other source packages ...
             if dsc_source != source_pkg:
