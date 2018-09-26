@@ -53,7 +53,9 @@ def normalize_unsorted_file(path):
 def normalize_tree(path, ver, abi, upload):
     normalize_control_file(os.path.join(path, "debian", "control"), ver, abi, upload)
     for control_file in (
+            glob("{}/debian/control.stub".format(path)) +
             glob("{}/debian.*/control.stub".format(path)) +
+            glob("{}/debian/d-i/kernel-versions".format(path)) +
             glob("{}/debian.*/d-i/kernel-versions".format(path))
         ):
         normalize_control_file(control_file, ver, abi, upload)
