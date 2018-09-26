@@ -95,11 +95,10 @@ def review(prev_dsc_dir='', changes_files=[]):
 
         diff_dir = os.path.dirname(os.path.realpath(changes_file))
         diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
-        outfile = open(diff_path, "w")
 
         cnotice("Generating %s" % diff_path)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory() as tmpdir, open(diff_path, "w") as outfile:
             prev_dir = source_pkg + '_' + prev_version
             new_dir = source_pkg + '_' + version
             prev_path = os.path.join(tmpdir, prev_dir)
@@ -128,8 +127,6 @@ def review(prev_dsc_dir='', changes_files=[]):
                 cerror("Failed to diff trees. Output from 'git diff':")
                 print(stderr, end='')
                 sys.exit(1)
-
-        outfile.close()
 
 
 if __name__ == '__main__':
