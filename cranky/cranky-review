@@ -70,7 +70,7 @@ def dsc_source_version(dsc_file):
     basename = os.path.splitext(basename)[0]
     return basename.split('_')[0:2]
 
-def review_dscs(prev_dsc_file, dsc_file):
+def review_dscs(prev_dsc_file, dsc_file, output=None):
     (prev_source_pkg, prev_version) = dsc_source_version(prev_dsc_file)
     (source_pkg, version) = dsc_source_version(dsc_file)
 
@@ -89,8 +89,11 @@ def review_dscs(prev_dsc_file, dsc_file):
     m = verabi_re.match(prev_version)
     (prev_ver, prev_abi, prev_upload) = m.group(1, 2, 3)
 
-    diff_dir = os.path.dirname(os.path.realpath(dsc_file))
-    diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
+    if output:
+        diff_path = output
+    else:
+        diff_dir = os.path.dirname(os.path.realpath(dsc_file))
+        diff_path = os.path.join(diff_dir, "%s_%s.debdiff" % (source_pkg, version))
 
     cnotice("Generating %s" % diff_path)
 
@@ -124,10 +127,12 @@ def review_dscs(prev_dsc_file, dsc_file):
             print(stderr, end='')
             sys.exit(1)
 
-def review(prev_dsc_dir='', changes_files=[]):
+def review(prev_dsc_dir='', changes_files=[], output=None):
     prev_dscs = glob("%s/*.dsc" % prev_dsc_dir)
 
+    count = 0
     for changes_file in changes_files:
+        count += 1
         if not os.path.exists(changes_file):
             cerror("%s does not exist" % changes_file)
             sys.exit(1)
@@ -155,7 +160,11 @@ def review(prev_dsc_dir='', changes_files=[]):
         cmd = ["dcmd", "--dsc", changes_file]
         dsc_file = subprocess.check_output(cmd).decode().strip()
 
-        review_dscs(prev_dsc_file, dsc_file)
+        if output:
+            output_i = output.format(count=count, N='-' + count if count > 1 else '')
+        else:
+            output_i = None
+        review_dscs(prev_dsc_file, dsc_file, output=output_i)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -185,12 +194,13 @@ Examples:
                         help=".changes files for the package set")
     parser.add_argument("-p", "--prev-dsc-dir", default=".",
                         help="Path to previous source packages")
-
+    parser.add_argument("-o", "--output", default=None,
+                        help="Control the output filename")
     args = parser.parse_args()
     if (len(args.changes_files) == 2 and
         args.changes_files[0].endswith(".dsc") and
         args.changes_files[1].endswith(".dsc")
         ):
-        review_dscs(args.changes_files[0], args.changes_files[1])
+        review_dscs(args.changes_files[0], args.changes_files[1], args.output)
     else:
         review(**vars(args))
