@@ -43,10 +43,22 @@ def normalize_control_file(path, ver, abi, upload):
     with open(path, "w") as cfile:
         cfile.write(cfile_data)
 
+def normalize_unsorted_file(path):
+    with open(path, "r") as ufile:
+        ufile_data = ufile.readlines()
+    ufile_data.sort()
+    with open(path, "w") as ufile:
+        ufile.write(''.join(ufile_data))
+
 def normalize_tree(path, ver, abi, upload):
     normalize_control_file(os.path.join(path, "debian", "control"), ver, abi, upload)
     for control_file in glob("{}/debian.*/control.stub".format(path)):
         normalize_control_file(control_file, ver, abi, upload)
+    for unsorted_file in (
+            glob("{}/debian.*/abi/*/*/*.modules".format(path)) +
+            glob("{}/debian.*/abi/*/fwinfo".format(path))
+        ):
+        normalize_unsorted_file(unsorted_file)
 
 def dsc_source_version(dsc_file):
     basename = os.path.basename(dsc_file)
