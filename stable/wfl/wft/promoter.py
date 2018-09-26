@@ -251,7 +251,7 @@ class Promoter(TaskHandler):
         retval = False
 
         required_sru_tasks = {
-            'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
+            'promote-to-proposed'        : ['Confirmed', 'In Progress', 'Fix Committed', 'Fix Released'],
         }
 
         master = s.bug.master_bug
