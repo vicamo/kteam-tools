@@ -40,6 +40,7 @@ def normalize_control_file(path, ver, abi, upload):
         cfile_data = cfile.read()
     cfile_data = cfile_data.replace(fullver, "FULLVER")
     cfile_data = cfile_data.replace(verabi, "VERABI")
+    cfile_data = cfile_data.replace(ver, "VERSION")
     with open(path, "w") as cfile:
         cfile.write(cfile_data)
 
