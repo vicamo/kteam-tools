@@ -238,7 +238,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/cosmic']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '18.10', 'linux' ]
             testing:
                 flavours:
                     kvm:
@@ -246,7 +246,6 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
-            copy-forward: [ '18.04', 'linux-kvm' ]
 
 
 # 18.04 (bionic)
