@@ -17,7 +17,6 @@ if [ "$1" = "" ]; then
 	[ -f "$locks/chroots-done" ] && \
 	[ -f "$locks/machine-check-done" ] && \
 							"$0" mainline-worker &
-	"$locker" 240 "$locks/gkp-cleanup"		"$0" gkp-cleanup &
 	exit 0
 fi
 
