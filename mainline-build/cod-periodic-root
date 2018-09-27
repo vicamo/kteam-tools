@@ -10,15 +10,21 @@ locks="/run/lock/cod-status"
 
 locker="$here/../sbin/lock-record"
 if [ "$1" = "" ]; then
-	[ ! -d "$locks" ] && exit 0
-	"$locker" 480 "$locks/chroots" "$0" chroots &
+	[ ! -f "$locks/logs-done" ] && exit 0
+	"$locker" 480 "$locks/chroots"		"$0" chroots &
+	"$locker" 240 "$locks/gkp-cleanup"	"$0" gkp-cleanup &
+
 	exit 0
 fi
 
 case "$1" in
 chroots)
-	/usr3/ubuntu/kteam-tools/chroot-setup/make_all >/root/log.txt 2>&1 && \
+	/usr3/ubuntu/kteam-tools/chroot-setup/make_all >>/home/kernel/logs/root-chroots.log 2>&1 && \
 		su -c '"$HOME/bin/dashboard-status" "update-chroots" "Host: `hostname`" "Update Chroots" 25h 26h' kernel
+	;;
+gkp-cleanup)
+	$HOME/kteam-tools/git-build-kernel/gbk-cleanup >>/home/kernel/logs/root-gbk-cleanup.log 2>&1 && \
+		su -c '"$HOME/bin/dashboard-status" "gbk-cleanup" "Host: `hostname`" "git-build-kernel cleanup" 5h 9h' kernel
 	;;
 esac
 
