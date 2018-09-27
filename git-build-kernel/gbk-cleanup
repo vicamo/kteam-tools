@@ -56,7 +56,6 @@ while [ $# -gt 0 ] ; do
 			USER=${1}
 			;;
 		--timestamp)
-			shift
 			TIMESTAMP=1
 			;;
 		*)
@@ -67,7 +66,7 @@ while [ $# -gt 0 ] ; do
 	shift
 done
 
-[ "$TIMESTAMP" -eq 1 ] && echo "gbk-cleanup: start $(date)"
+[ "$TIMESTAMP" -eq 1 ] && echo "gbk-cleanup: start $(date)" || true
 
 while IFS= read -r dir ; do
 	# Paranoia: Verify that the directory name starts with /tmp/
@@ -92,4 +91,4 @@ while IFS= read -r dir ; do
 done < <(find /tmp -mindepth 1 -maxdepth 1 -type d -mtime "+${AGE}" \
 			  -name 'kernel-*-*-*')
 
-[ "$TIMESTAMP" -eq 1 ] && echo "gbk-cleanup: end $(date)"
+[ "$TIMESTAMP" -eq 1 ] && echo "gbk-cleanup: end $(date)" || true
