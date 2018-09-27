@@ -25,7 +25,7 @@ chroots)
 		su -c '"$HOME/bin/dashboard-status" "update-chroots" "Host: `hostname`" "Update Chroots" 25h 26h' kernel
 	;;
 gkp-cleanup)
-	"$tools/git-build-kernel/gbk-cleanup" >>/home/kernel/logs/root-gbk-cleanup.log 2>&1 && \
+	"$tools/git-build-kernel/gbk-cleanup" --timestamp >>/home/kernel/logs/root-gbk-cleanup.log 2>&1 && \
 		su -c '"$HOME/bin/dashboard-status" "gbk-cleanup" "Host: `hostname`" "git-build-kernel cleanup" 5h 9h' kernel
 	;;
 esac
