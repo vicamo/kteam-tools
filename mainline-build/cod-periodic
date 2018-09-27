@@ -17,6 +17,7 @@ if [ "$1" = "" ]; then
 	[ -f "$locks/chroots-done" ] && \
 	[ -f "$locks/machine-check-done" ] && \
 							"$0" mainline-worker &
+	"$locker"  30 "$locks/mainline-failsafe"        "$0" mainline-worker-failsafe &
 	exit 0
 fi
 
