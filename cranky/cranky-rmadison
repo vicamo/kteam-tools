@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+#
+# cranky-rmadison: An rmadison-like script for querying the Ubuntu archives
+#                  and private PPAs.
+#
+# Copyright (C) 2018, Canonical Ltd.
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+
+import argparse
+import logging
+import os
+import subprocess
+import sys
+
+from launchpadlib.launchpad import Launchpad
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                              os.pardir, 'libs')))
+
+from crl.handle import Handle
+from ktl.debian import DebianError
+from ktl.git import GitError
+from ktl.log import cerror
+
+
+PPAS = {
+    "precise": {
+        "default": [
+            ["", "ubuntu"],
+            ["-esm", "~ubuntu-esm/ubuntu/esm"],
+            ["-esm-proposed", "~canonical-kernel-esm/ubuntu/proposed"],
+        ]
+    },
+    "bionic": {
+        "linux-ibm-gt": [
+            ["-ibm-test", "~ibm-cloud/ubuntu/test"],
+        ],
+    },
+}
+
+
+def decode_handle_set(handle_set):
+    """
+    Decode a HandleSet class and return data relevant to this script
+    """
+    series = handle_set.series.codename
+    source = handle_set.source.name
+    packages = [package.name for package in handle_set.source.packages]
+
+    ppas = []
+    if series in PPAS:
+        for key in (source, "default"):
+            if key in PPAS[series]:
+                ppas = PPAS[series][key]
+                break
+
+    return (series, source, packages, ppas)
+
+
+def has_ppa(handle_set):
+    """
+    Return true if there are Launchpad PPAs for this handle_set
+    """
+    _, _, _, ppas = decode_handle_set(handle_set)
+    return True if ppas else False
+
+
+def rmadison_ppa(handle_set):
+    """
+    Query Launchpad PPAs
+    """
+    series, _, packages, ppas = decode_handle_set(handle_set)
+
+    # Temporarily disable logging of level INFO to silence launchpadlib
+    logging.disable(logging.INFO)
+
+    lp = Launchpad.login_with("cranky", "production", version="devel")
+
+    # Reeneable logging
+    logging.disable(logging.NOTSET)
+
+    lp_series = lp.distributions["ubuntu"].getSeries(name_or_version=series)
+
+    result = []
+    for ppa in ppas:
+        lp_archive = lp.archives.getByReference(reference=ppa[1])
+        for package in packages:
+            lp_sources = lp_archive.getPublishedSources(source_name=package,
+                                                        distro_series=lp_series,
+                                                        exact_match=True,
+                                                        order_by_date=True,
+                                                        status="Published")
+            if lp_sources:
+                result.append([package, lp_sources[0].source_package_version,
+                               "%s%s" % (series, ppa[0]), "source"])
+    return result
+
+
+def rmadison(handle_set):
+    """
+    Call the standard rmadison tool and filter the output
+    """
+    series, _, packages, _ = decode_handle_set(handle_set)
+
+    cmd = ["rmadison", "-a", "source"] + packages
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    (stdout, _) = p.communicate()
+
+    result = []
+    for line in stdout.decode("utf-8").splitlines():
+        comps = [l.strip() for l in line.split('|')]
+        if comps[2] == series or comps[2].startswith("%s-" % series):
+            result.append(comps)
+    return result
+
+
+def print_table(data):
+    """
+    Print the package list
+    """
+    # Determine the max width of each column
+    widths = [len(max(col, key=len)) for col in zip(*data)]
+
+    # Print the formatted data
+    for row in data:
+        print('|'.join((" {:%d} " % w).format(r) for w, r in zip(widths, row)))
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    desc = """
+Query the Ubuntu archives and private PPAs for kernel source package
+information and print the data in an 'rmadison'-like format.
+
+For regular distribution packages, the standard rmadison tool is called. For
+special kernel packages like ESM or private packages, the relevant Launchpad
+PPAs are queried.
+
+Note: That the user who runs this script needs to have sufficient Launchpad
+privileges to query the various private PPAs.
+"""
+
+    epilog = """
+Examples:
+  $ cranky-rmadison bionic:linux
+      Print information for the source packages that make up the set of Bionic
+      linux kernel packages.
+"""
+
+    parser = argparse.ArgumentParser(description=desc, formatter_class=
+                                     argparse.RawDescriptionHelpFormatter,
+                                     epilog=epilog)
+    parser.add_argument("handle", nargs='?', help="A kernel package handle "
+                        "in the form of <series>:<source>. If not specified, "
+                        "the information is retrieved from the current git "
+                        "repo.")
+    args = parser.parse_args()
+
+    try:
+        handle_set = Handle().lookup_set(args.handle if args.handle else
+                                         os.getcwd())
+    except (ValueError, GitError, DebianError) as e:
+        cerror(e)
+        sys.exit(1)
+
+    if has_ppa(handle_set):
+        result = rmadison_ppa(handle_set)
+    else:
+        result = rmadison(handle_set)
+
+    print_table(result)
