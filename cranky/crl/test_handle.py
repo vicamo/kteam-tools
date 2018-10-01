@@ -9,7 +9,7 @@ from subprocess                 import getstatusoutput
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 sys.path.append(os.pardir)
 
-from handle                     import Handle, change_directory
+from handle                     import Handle, change_directory, HandleError
 from ktl.kernel_series          import KernelSeries
 from config                     import Config
 
@@ -439,7 +439,7 @@ class TestHandleDirectory(TestHandle):
 
             config = Config(data=self.path_config_yaml)
 
-            with self.assertRaises(ValueError):
+            with self.assertRaises(HandleError):
                 hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
 
     def test_trees_directory_source_config_bionic_linux_dot(self):

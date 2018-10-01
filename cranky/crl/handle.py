@@ -8,9 +8,14 @@ import yaml
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 
 from ktl.kernel_series              import KernelSeries
-from ktl.debian                     import Debian
+from ktl.debian                     import Debian, DebianError
+from ktl.git                        import GitError
 
 from crl.config                     import Config
+
+
+class HandleError(ValueError):
+    pass
 
 
 @contextlib.contextmanager
@@ -76,14 +81,17 @@ class HandleCore:
         return (longest, paths)
 
     def identify_directory(self, directory):
-        with change_directory(directory):
-            changelog = Debian.changelog()
+        try:
+            with change_directory(directory):
+                changelog = Debian.changelog()
+        except (DebianError, GitError) as e:
+            raise HandleError("{}: bad directory handle -- {}".format(directory, e))
 
         if len(changelog) > 0 and changelog[0]['series'] == 'UNRELEASED':
             changelog.pop(0)
 
         if len(changelog) == 0:
-            raise ValueError("Unable to identify directory handle")
+            raise HandleError("{}: Unable to identify directory handle".format(directory))
 
         return (changelog[0]['series'], changelog[0]['package'])
 
@@ -105,7 +113,7 @@ class HandleTree(HandleCore):
             directory = os.path.abspath(directory)
             (series_name, package_name) = self.identify_directory(directory)
             if (series_name != series.codename or package_name != package.name):
-                raise ValueError("{}: tree inconsistent, is for {}:{}".format(
+                raise HandleError("{}: tree inconsistent, is for {}:{}".format(
                     directory, series_name, package_name))
 
         self.series = series
@@ -144,7 +152,7 @@ class HandleSet(HandleCore):
                     break
 
             if prefix is None:
-                raise ValueError("{}: directory handle does not match set forms", handle)
+                raise HandleError("{}: directory handle does not match set forms".format(handle))
 
             for package_entry in source.packages:
                 if package_entry == sample.package:
@@ -182,13 +190,13 @@ class Handle(HandleCore):
         else:
             bits = handle.split(':')
             if len(bits) != 2:
-                raise ValueError("{}: handle format unknown".format(handle))
+                raise HandleError("{}: handle format unknown".format(handle))
 
             (series_name, package_name) = bits
 
         series = self.ks.lookup_series(codename=series_name)
         if series is None:
-            raise ValueError("{}: handle directory contains unknown series".format(handle))
+            raise HandleError("{}: handle directory contains unknown series".format(handle))
 
         for source_entry in series.sources:
             for package_entry in source_entry.packages:
@@ -199,7 +207,7 @@ class Handle(HandleCore):
                 break
 
         if package is None:
-            raise ValueError("{}: handle directory contains unknown package".format(handle))
+            raise HandleError("{}: handle directory contains unknown package".format(handle))
 
         return HandleTree(series, package, directory, ks=self.ks, config=self.config)
 
@@ -216,16 +224,16 @@ class Handle(HandleCore):
         else:
             bits = handle.split(':')
             if len(bits) != 2:
-                raise ValueError("{}: handle format unknown".format(handle))
+                raise HandleError("{}: handle format unknown".format(handle))
 
             (series_name, source_name) = bits
 
             series = self.ks.lookup_series(codename=series_name)
             if series is None:
-                raise ValueError("{}: handle contains unknown series".format(series_name))
+                raise HandleError("{}: handle contains unknown series".format(series_name))
 
             source = series.lookup_source(source_name)
             if source is None:
-                raise ValueError("{}: handle contains unknown source".format(source_name))
+                raise HandleError("{}: handle contains unknown source".format(source_name))
 
             return HandleSet(series, source, ks=self.ks, config=self.config)
