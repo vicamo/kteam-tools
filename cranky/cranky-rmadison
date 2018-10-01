@@ -12,7 +12,6 @@
 import argparse
 import logging
 import os
-import subprocess
 import sys
 
 from launchpadlib.launchpad import Launchpad
@@ -29,92 +28,84 @@ from ktl.log import cerror
 
 PPAS = {
     "precise": {
-        "default": [
-            ["", "ubuntu"],
-            ["-esm", "~ubuntu-esm/ubuntu/esm"],
-            ["-esm-proposed", "~canonical-kernel-esm/ubuntu/proposed"],
+        "any_source": [
+            ["esm", "~ubuntu-esm/ubuntu/esm"],
+            ["esm-proposed", "~canonical-kernel-esm/ubuntu/proposed"],
         ]
     },
     "bionic": {
         "linux-ibm-gt": [
-            ["-ibm-test", "~ibm-cloud/ubuntu/test"],
+            ["ibm-test", "~ibm-cloud/ubuntu/test"],
         ],
     },
 }
 
 
-def decode_handle_set(handle_set):
+def pocket_weight(val):
     """
-    Decode a HandleSet class and return data relevant to this script
+    Return a weight based on the pocket name for sorting lists
+    """
+    if "-proposed" in val[2]:
+        return 3
+    if "-updates" in val[2]:
+        return 2
+    if "-security" in val[2]:
+        return 1
+    return 0
+
+
+def rmadison_ppa(handle_set):
+    """
+    Query Launchpad for source package information
     """
     series = handle_set.series.codename
     source = handle_set.source.name
     packages = [package.name for package in handle_set.source.packages]
 
-    ppas = []
+    # Get the PPA(s) for this series/source
+    ppas = [["", "ubuntu"]]   # The default is the distro archive
     if series in PPAS:
-        for key in (source, "default"):
+        for key in (source, "any_source"):
             if key in PPAS[series]:
                 ppas = PPAS[series][key]
                 break
 
-    return (series, source, packages, ppas)
-
-
-def has_ppa(handle_set):
-    """
-    Return true if there are Launchpad PPAs for this handle_set
-    """
-    _, _, _, ppas = decode_handle_set(handle_set)
-    return True if ppas else False
-
-
-def rmadison_ppa(handle_set):
-    """
-    Query Launchpad PPAs
-    """
-    series, _, packages, ppas = decode_handle_set(handle_set)
-
-    # Temporarily disable logging of level INFO to silence launchpadlib
+    # Temporarily disable logging of level INFO to silence launchpadlib and
+    # then reenable logging again
     logging.disable(logging.INFO)
-
     lp = Launchpad.login_with("cranky", "production", version="devel")
-
-    # Reeneable logging
     logging.disable(logging.NOTSET)
 
     lp_series = lp.distributions["ubuntu"].getSeries(name_or_version=series)
 
     result = []
-    for ppa in ppas:
-        lp_archive = lp.archives.getByReference(reference=ppa[1])
-        for package in packages:
+    for package in sorted(packages):
+        unsorted = []
+        for ppa in ppas:
+            lp_archive = lp.archives.getByReference(reference=ppa[1])
             lp_sources = lp_archive.getPublishedSources(source_name=package,
                                                         distro_series=lp_series,
                                                         exact_match=True,
                                                         order_by_date=True,
                                                         status="Published")
-            if lp_sources:
-                result.append([package, lp_sources[0].source_package_version,
-                               "%s%s" % (series, ppa[0]), "source"])
-    return result
 
+            for lp_source in lp_sources:
+                if ppa[0] == "":
+                    # This is a distro archive
+                    if lp_source.pocket.lower() == "release":
+                        pocket = series
+                    else:
+                        pocket = "%s-%s" % (series, lp_source.pocket.lower())
+                else:
+                    # This is a private PPA
+                    pocket = "%s-%s" % (series, ppa[0])
 
-def rmadison(handle_set):
-    """
-    Call the standard rmadison tool and filter the output
-    """
-    series, _, packages, _ = decode_handle_set(handle_set)
+                unsorted.append([package, lp_source.source_package_version,
+                                 pocket, "source"])
 
-    cmd = ["rmadison", "-a", "source"] + packages
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    (stdout, _) = p.communicate()
+        # Sort the temporary list by pocket names and add it to the result
+        result.extend(sorted(unsorted, key=pocket_weight))
 
-    result = []
-    for line in stdout.decode("utf-8").splitlines():
-        comps = [l.strip() for l in line.split('|')]
-        if comps[2] == series or comps[2].startswith("%s-" % series):
-            result.append(comps)
     return result
 
 
@@ -137,9 +128,9 @@ if __name__ == "__main__":
 Query the Ubuntu archives and private PPAs for kernel source package
 information and print the data in an 'rmadison'-like format.
 
-For regular distribution packages, the standard rmadison tool is called. For
-special kernel packages like ESM or private packages, the relevant Launchpad
-PPAs are queried.
+For regular distribution packages, the standard Ubuntu archive is queried. For
+special kernel packages like ESM or private packages, the relevant private PPAs
+are queried.
 
 Note: That the user who runs this script needs to have sufficient Launchpad
 privileges to query the various private PPAs.
@@ -168,9 +159,6 @@ Examples:
         cerror(e)
         sys.exit(1)
 
-    if has_ppa(handle_set):
-        result = rmadison_ppa(handle_set)
-    else:
-        result = rmadison(handle_set)
-
-    print_table(result)
+    # Query the Launchpsd PPAs for the packages referenced by the provided
+    # handle and print the result in an 'rmadison'-like table
+    print_table(rmadison_ppa(handle_set))
