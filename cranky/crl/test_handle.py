@@ -508,6 +508,284 @@ class TestHandleSuffixes(TestHandle):
         self.assertEqual(add, add_match)
 
 
+class TestHandleTreeRemote(TestHandle):
+    data_yaml = """
+    '18.04':
+        codename: bionic
+        sources:
+            linux:
+                packages:
+                    linux:
+                        repo: [ 'A' ]
+                    linux-meta:
+                        type: meta
+            linux-raspi2:
+                packages:
+                    linux-raspi2:
+                        repo: [ 'A', 'raspi2' ]
+                    linux-meta-raspi2:
+                        type: meta
+            linux-kvm:
+                packages:
+                    linux-kvm:
+                    linux-meta-kvm:
+                        type: meta
+    '16.04':
+        codename: xenial
+        sources:
+            linux:
+                packages:
+                    linux:
+                        repo: [ 'B' ]
+                    linux-meta:
+                        type: meta
+            linux-kvm:
+                packages:
+                    linux-kvm:
+                    linux-meta-kvm:
+                        type: meta
+    """
+
+    path_config_one_yaml = """
+    package-path:
+        default:                    ubuntu
+    """
+    def test_remote_one_xenial_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux')
+
+        self.assertEqual('xenial', hdl.remote)
+
+    def test_remote_one_xenial_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta')
+
+        self.assertEqual('xenial-meta', hdl.remote)
+
+    def test_remote_one_xenial_kvm_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-kvm')
+
+        self.assertEqual('xenial-kvm', hdl.remote)
+
+    def test_remote_one_xenial_kvm_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta-kvm')
+
+        self.assertEqual('xenial-kvm-meta', hdl.remote)
+
+    def test_remote_one_bionic_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux')
+
+        self.assertEqual('bionic', hdl.remote)
+
+    def test_remote_one_bionic_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-meta')
+
+        self.assertEqual('bionic-meta', hdl.remote)
+
+    def test_remote_one_bionic_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_one_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-raspi2')
+
+        self.assertEqual('bionic', hdl.remote)
+
+    path_config_crossseries_yaml = """
+    package-path:
+        default:                    '{package}'
+    """
+    def test_remote_crossseries_xenial_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux')
+
+        self.assertEqual('xenial', hdl.remote)
+
+    def test_remote_crossseries_xenial_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta')
+
+        self.assertEqual('xenial', hdl.remote)
+
+    def test_remote_crossseries_xenial_kvm_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-kvm')
+
+        self.assertEqual('xenial-kvm', hdl.remote)
+
+    def test_remote_crossseries_xenial_kvm_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta-kvm')
+
+        self.assertEqual('xenial-kvm', hdl.remote)
+
+    def test_remote_crossseries_bionic_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux')
+
+        self.assertEqual('bionic', hdl.remote)
+
+    def test_remote_crossseries_bionic_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-meta')
+
+        self.assertEqual('bionic', hdl.remote)
+
+    def test_remote_crossseries_bionic_raspi2(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crossseries_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-raspi2')
+
+        self.assertEqual('origin', hdl.remote)
+
+    path_config_crosspackage_yaml = """
+    package-path:
+        default:                    '{series}'
+    """
+    def test_remote_crosspackage_xenial_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_crosspackage_xenial_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta')
+
+        self.assertEqual('meta', hdl.remote)
+
+    def test_remote_crosspackage_xenial_kvm_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-kvm')
+
+        self.assertEqual('kvm', hdl.remote)
+
+    def test_remote_crosspackage_xenial_kvm_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta-kvm')
+
+        self.assertEqual('kvm-meta', hdl.remote)
+
+    def test_remote_crosspackage_bionic_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_crosspackage_bionic_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-meta')
+
+        self.assertEqual('meta', hdl.remote)
+
+    def test_remote_crosspackage_bionic_raspi2(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_crosspackage_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-raspi2')
+
+        self.assertEqual('origin', hdl.remote)
+
+    path_config_separate_yaml = """
+    package-path:
+        default:                    '{series}/{source}{type_suffix}'
+    """
+    def test_remote_separate_xenial_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_xenial_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_xenial_kvm_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-kvm')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_xenial_kvm_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('xenial:linux-meta-kvm')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_bionic_main(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_bionic_meta(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-meta')
+
+        self.assertEqual('origin', hdl.remote)
+
+    def test_remote_separate_bionic_raspi2(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_separate_yaml)
+
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-raspi2')
+
+        self.assertEqual('origin', hdl.remote)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -120,6 +120,44 @@ class HandleTree(HandleCore):
         self.package = package
         self.directory = directory
 
+    @property
+    def remote(self):
+        cross_series = False
+        cross_source = False
+        cross_type = False
+        primary_package = None
+        for series in self.ks.series:
+            for source in series.sources:
+                for package in source.packages:
+                    # We work against the remote name for the first package
+                    # which references our repository.
+                    if primary_package is None and self.package.repo and package.repo:
+                        if self.package.repo.url == package.repo.url:
+                            primary_package = package
+                    if self.package == package:
+                        continue
+                    directory = self.encode_directory(package)
+                    if self.directory == directory:
+                        if self.series != series:
+                            cross_series = True
+                        if self.package.source != source:
+                            cross_source = True
+                        if self.package.type != package.type:
+                            cross_type = True
+
+        if primary_package is None:
+            primary_package = self.package
+        bits = []
+        if cross_series:
+            bits.append(primary_package.series.codename)
+        if cross_source and primary_package.source.name != 'linux':
+            bits.append(primary_package.source.name.replace('linux-', ''))
+        if cross_type and primary_package.type:
+            bits.append(primary_package.type)
+
+        remote = '-'.join(bits)
+        return remote if remote != '' else 'origin'
+
 
 class HandleSet(HandleCore):
     def __init__(self, series, source, validate=True, trees=None, sample=None, ks=None, config=None):
