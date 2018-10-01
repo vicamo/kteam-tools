@@ -8,16 +8,15 @@
 import argparse
 import logging
 import os
+from subprocess             import call
 import sys
-
-from subprocess import call
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
-from crl.config import Config
-from ktl.kernel_series import KernelSeries
-from ktl.log import cerror, cnotice, cwarn
+from crl.config             import Config
+from ktl.kernel_series      import KernelSeries
+from ktl.log                import cerror, cnotice, cwarn
 
 
 def clone_repos(codename='', variant='', reference=None, dissociate=False,
