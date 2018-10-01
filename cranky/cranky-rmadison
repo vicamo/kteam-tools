@@ -20,9 +20,7 @@ from launchpadlib.launchpad import Launchpad
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                               os.pardir, 'libs')))
 
-from crl.handle import Handle
-from ktl.debian import DebianError
-from ktl.git import GitError
+from crl.handle import Handle, HandleError
 from ktl.log import cerror
 
 
@@ -155,7 +153,7 @@ Examples:
     try:
         handle_set = Handle().lookup_set(args.handle if args.handle else
                                          os.getcwd())
-    except (ValueError, GitError, DebianError) as e:
+    except HandleError as e:
         cerror(e)
         sys.exit(1)
 
