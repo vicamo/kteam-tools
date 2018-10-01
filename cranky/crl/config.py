@@ -14,10 +14,10 @@ class Config:
     def __init__(self, filename=None, data=None):
         self.config = None
 
-        if filename and data:
+        if filename is not None and data is not None:
             raise ValueError("supply only one of filename and data")
 
-        if not data and not filename:
+        if data is None and filename is None:
             for path in (
                 os.path.join(os.environ['HOME'], '.cranky.yaml'),
                 os.path.join(os.environ['HOME'], '.cranky'),
@@ -26,11 +26,11 @@ class Config:
                     filename = path
                     break
 
-        if not data and filename and os.path.exists(filename):
+        if data is None and filename is not None and os.path.exists(filename):
             with open(filename) as yfd:
                 data = yfd.read()
 
-        if data:
+        if data is not None:
             data = yaml.load(data)
         else:
             data = {}

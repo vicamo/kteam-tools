@@ -129,6 +129,16 @@ class TestConfig(unittest.TestCase):
             data = config.lookup('simple')
             self.assertEqual(data, 'data')
 
+    def test_config_home_override_empty(self):
+        with TempDirectory() as d, unittest.mock.patch.dict(os.environ, {'HOME': d.path}):
+            d.write('.cranky', self.data_yaml.encode('utf-8'))
+
+            config = Config(data='')
+            self.assertNotEqual(config, None)
+
+            data = config.lookup('simple')
+            self.assertIsNone(data)
+
 
 if __name__ == '__main__':
     unittest.main()
