@@ -8,125 +8,152 @@
 import argparse
 import logging
 import os
-from subprocess             import call
+from subprocess             import run, PIPE
 import sys
 
 # Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                              os.pardir, 'libs')))
 
 from crl.config             import Config
-from ktl.kernel_series      import KernelSeries
+from crl.handle             import Handle, HandleError
 from ktl.log                import cerror, cnotice, cwarn
 
 
-def clone_repos(codename='', variant='', reference=None, dissociate=False,
-                verbose=False):
-    if variant == "main":
-        source = "linux"
+def git_remote_update(repo_dir, remote, url):
+    result = run(["git", "config", "remote.{}.url".format(remote)],
+                 cwd=repo_dir, stdout=PIPE)
+    if result.returncode == 0:
+        current_url = result.stdout.decode('utf-8').strip()
+        if current_url != url:
+            cnotice("Updating remote {} in {}".format(remote, repo_dir))
+            result = run(["git", "config", "remote.{}.url".format(remote),
+                          url], cwd=repo_dir, stdout=PIPE)
+            if result.returncode != 0:
+                cerror("failed to update remote {} url to {} "
+                       "rc={}".format(remote, url, result.returncode))
+                sys.exit(1)
     else:
-        source = "linux-%s" % variant
+        cnotice("Adding remote {} in {}".format(remote, repo_dir))
+        result = run(["git", "remote", "add", remote, url], cwd=repo_dir)
+        if result.returncode != 0:
+            cerror("failed to add remote {} "
+                   "rc={}".format(remote, result.returncode))
+            sys.exit(1)
 
-    cnotice("Codename: %s" % codename)
-    cnotice("Variant:  %s" % variant)
-    cnotice("Source:   %s" % source)
-
-    # Parse kernel series info
-    ks = KernelSeries()
-    ks_series = ks.lookup_series(codename=codename)
-    if ks_series is None:
-        cerror("Kernel series '%s' not found" % codename)
-        cnotice("Available series: %s" % ", ".join(sorted([s.codename for s in
-                                                         ks.series])))
+    cnotice("Fetching remote {} in {}".format(remote, repo_dir))
+    result = run(["git", "fetch", remote], cwd=repo_dir)
+    if result.returncode != 0:
+        cerror("failed to fetch remote {} "
+               "rc={}".format(remote, result.returncode))
         sys.exit(1)
 
-    ks_source = ks_series.lookup_source(source)
-    if ks_source is None:
-        cerror("Kernel source '%s' not found" % source)
-        cnotice("Available sources: %s" % ", ".join(sorted([s.name for s in
-                                                          ks_series.sources])))
+
+def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
+    """
+    Clone a single repo
+    """
+    cmd = ["git", "clone", "--origin", remote, "--branch", branch]
+    if pkg.type is None:
+        if reference is not None:
+            if ((os.path.exists(reference) and
+                 (os.path.exists(os.path.join(reference, '.git')) or
+                  os.path.exists(os.path.join(reference, 'objects'))))):
+                cmd.extend(["--reference", reference])
+                if dissociate:
+                    cmd.extend(["--dissociate"])
+            else:
+                cwarn('Warning: %s is not a directory or git repo' %
+                      reference)
+    cmd.extend([url, repo_dir])
+
+    cnotice("Calling: %s" % ' '.join(cmd))
+    result = run(cmd)
+    if result.returncode != 0:
+        cerror("git clone failed rc={}".format(result.returncode))
         sys.exit(1)
 
-    if len(ks_source.packages) == 0:
-        cerror("No kernel packages found")
 
-    # Cycle through the packages and clone the repos
+def clone_repos(handle, reference=None, dissociate=False):
+    """
+    Clone the repos that make up the set of kernel packages
+    """
+    try:
+        hdl = Handle()
+        handle_set = hdl.lookup_set(handle, validate=False)
+    except HandleError as e:
+        cerror(e)
+        sys.exit(1)
+
+    codename = handle_set.series.codename
+    cnotice("Codename: {}".format(codename))
+    cnotice("Source:   {}".format(handle_set.source.name))
+
+    # Cycle through the trees and clone the repos
     summary = []
-    for pkg in ks_source.packages:
+    for handle_tree in handle_set.trees:
+        pkg = handle_tree.package
+        # XXX: we should be checking for there being a repo ...
         repo = pkg.repo
-        if repo.branch is None:
-            branch = "master"
-        else:
-            branch = repo.branch
+        repo_dir = handle_tree.directory
 
-        # The base repo dirname, i.e., bionic/linux
-        repo_dir = os.path.join(codename, "linux")
-
-        # Append -meta or -signed to the repo dirname
-        if pkg.type is not None:
-            repo_dir = "%s-%s" % (repo_dir, pkg.type)
-
-        # It's a stand-alone repo if the package is not a main package and the
-        # source is either on the master or master-next branch, so append the
-        # variant's name to the repo dirname
-        if variant != "main" and (branch == "master" or
-                                  branch == "master-next"):
-            repo_dir = "%s-%s" % (repo_dir, variant)
+        remote = handle_tree.remote
+        branch = repo.branch if repo.branch else 'master'
 
         # Add info for the summary
-        summary.append({"name": pkg.name, "dir": repo_dir, "branch": branch})
+        summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
+                        "branch": branch})
 
-        # Skip the cloning if the target directory exists
+        # Make the parental directories.
+        if not os.path.exists(os.path.dirname(repo_dir)):
+            os.makedirs(os.path.dirname(repo_dir))
+
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            cnotice("Directory '%s' exists already" % repo_dir)
-            continue
+            cnotice("Repository '%s' exists already" % repo_dir)
+            git_remote_update(repo_dir, remote, repo.url)
+        else:
+            cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
+            git_clone(pkg, repo_dir, remote, repo.url, branch, reference,
+                      dissociate)
 
-        # Clone the repo
-        cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
-        cmd = ["git", "clone", "--branch", branch]
-        if pkg.type is None:
-            if reference is not None:
-                if ((os.path.exists(reference) and
-                     os.path.exists(os.path.join(reference, '.git')))):
-                    cmd.extend(["--reference", reference])
-                    if dissociate:
-                        cmd.extend(["--dissociate"])
-                else:
-                    cwarn('Warning: %s is not a directory or git repo' %
-                          reference)
-        cmd.extend([repo.url, repo_dir])
-        if verbose:
-            cnotice("Calling: %s" % " ".join(cmd))
-        call(cmd)
+        # Validate whether the right branch is checked out.
+        handle_validate = hdl.lookup_tree(repo_dir)
+        if handle_tree.package != handle_validate.package:
+            cwarn("Repository '%s' has the wrong package checked out %s:%s" %
+                  (repo_dir, handle_validate.package.series.codename,
+                   handle_validate.package.name))
 
         # Set some sensible config defaults for git send-email:
         #   - Add the Ubuntu kernel mailing list as the default 'to' email
         #     address
         #   - Don't cc the patch author and signers (we don't want to
         #     spam upstream people)
-        call(["git", "config", "--local", "sendemail.to",
-              "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
-        call(["git", "config", "--local", "sendemail.suppresscc", "all"],
-             cwd=repo_dir)
+        run(["git", "config", "--local", "sendemail.to",
+             "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
+        run(["git", "config", "--local", "sendemail.suppresscc", "all"],
+            cwd=repo_dir)
 
         # Add a remote for the (private) security repo
         if pkg.type is None:
-            security_repo = "linux-%s" % codename
+            security_repo = "linux-{}".format(codename)
         else:
-            security_repo = "linux-%s-%s" % (pkg.type, codename)
-        call(["git", "remote", "add", "security",
-              "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/%s" % security_repo],
-             cwd=repo_dir)
+            security_repo = "linux-{}-{}".format(pkg.type, codename)
+        security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
+
+        git_remote_update(repo_dir, "security", security_url)
 
     # Print the summary
     cnotice("Summary:")
     for s in summary:
         cnotice("  Repo '%(name)s' in directory '%(dir)s' "
-              "(branch '%(branch)s')" % s)
+                "(branch '%(remote)s/%(branch)s')" % s)
+
 
 def expanduser(path):
     if path:
         path = os.path.expanduser(path)
     return path
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -208,13 +235,8 @@ traffic. This is a git clone option, check 'git help clone' for more details.
     parser = argparse.ArgumentParser(description=desc, formatter_class=
                                      argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
-    parser.add_argument("codename", help="Kernel series codename (artful, "
-                        "bionic, ...)")
-    parser.add_argument("variant", nargs="?", default="main",
-                        help=help_variant)
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        default=config_cmd.get('verbose', False),
-                        help="Increase verbosity")
+    parser.add_argument("handle", help="Kernel source set handle (bionic:linux,"
+                        " xenial:linux-aws)")
     parser.add_argument("-r", "--reference",
                         default=expanduser(config_cmd.get('reference', None)),
                         help=help_reference)
