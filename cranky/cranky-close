@@ -72,10 +72,6 @@ class Close():
         cmd = "git commit -sam 'UBUNTU: {}'".format(s.prefix + s.version)
         run_command(cmd, dry_run=s.dryrun)
 
-    def link_to_tracker(s):
-        # TODO: should be implemented, challenge: allow for a rerun
-        print("You should call link-to-tracker and ammend\n")
-
     def tag(s):
         # This should only show the tag. If it starts tagging, we might revisit
         # where it is called, or not fail if it points to the same thing, and
@@ -124,7 +120,6 @@ class Close():
         if s.is_tree_changed():
             if not s.dryrun:
                 Debian.dch(series)
-            s.link_to_tracker()
             s.commit()
 
         #
