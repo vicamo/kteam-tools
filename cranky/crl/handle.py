@@ -196,7 +196,7 @@ class Handle(HandleCore):
 
         series = self.ks.lookup_series(codename=series_name)
         if series is None:
-            raise HandleError("{}: handle directory contains unknown series".format(handle))
+            raise HandleError("{}: handle directory contains unknown series {}".format(handle, series_name))
 
         for source_entry in series.sources:
             for package_entry in source_entry.packages:
@@ -207,7 +207,7 @@ class Handle(HandleCore):
                 break
 
         if package is None:
-            raise HandleError("{}: handle directory contains unknown package".format(handle))
+            raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
         return HandleTree(series, package, directory, ks=self.ks, config=self.config)
 
