@@ -220,7 +220,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '18.10', 'linux' ]
             testing:
                 flavours:
                     gcp:
@@ -228,7 +228,6 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
-            copy-forward: [ '18.04', 'linux-gcp' ]
 
         linux-kvm:
             packages:
