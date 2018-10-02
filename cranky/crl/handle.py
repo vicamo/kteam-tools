@@ -97,7 +97,7 @@ class HandleCore:
 
 
 class HandleTree(HandleCore):
-    def __init__(self, series, package, directory=None, config=None, ks=None):
+    def __init__(self, series, package, directory=None, validate=True, config=None, ks=None):
         if ks is None:
             ks = KernelSeries()
         self.ks = ks
@@ -109,7 +109,7 @@ class HandleTree(HandleCore):
         if directory is None:
             directory = self.encode_directory(package)
 
-        if os.path.exists(directory):
+        if validate and os.path.exists(directory):
             directory = os.path.abspath(directory)
             (series_name, package_name) = self.identify_directory(directory)
             if (series_name != series.codename or package_name != package.name):
@@ -122,7 +122,7 @@ class HandleTree(HandleCore):
 
 
 class HandleSet(HandleCore):
-    def __init__(self, series, source, trees=None, sample=None, ks=None, config=None):
+    def __init__(self, series, source, validate=True, trees=None, sample=None, ks=None, config=None):
         if ks is None:
             ks = KernelSeries()
         self.ks = ks
@@ -159,12 +159,13 @@ class HandleSet(HandleCore):
                     continue
                 directory = prefix + add[package_entry.type if package_entry.type else 'main']
                 self.trees.append(HandleTree(series, package_entry, directory,
-                     ks=self.ks, config=self.config))
+                     validate=validate, ks=self.ks, config=self.config))
 
         else:
             self.trees = []
             for package_entry in source.packages:
-                self.trees.append(HandleTree(series, package_entry, ks=self.ks, config=self.config))
+                self.trees.append(HandleTree(series, package_entry,
+                    validate=validate, ks=self.ks, config=self.config))
 
 
 class Handle(HandleCore):
@@ -177,7 +178,7 @@ class Handle(HandleCore):
             config = Config()
         self.config = config
 
-    def lookup_tree(self, handle):
+    def lookup_tree(self, handle, validate=True):
         series = None
         package = None
         directory = None
@@ -209,16 +210,16 @@ class Handle(HandleCore):
         if package is None:
             raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
-        return HandleTree(series, package, directory, ks=self.ks, config=self.config)
+        return HandleTree(series, package, directory, validate=validate, ks=self.ks, config=self.config)
 
-    def lookup_set(self, handle):
+    def lookup_set(self, handle, validate=True):
         series = None
         source = None
 
         # A directory passed as a handle.
         if os.path.exists(handle):
-            tree = self.lookup_tree(handle)
-            return HandleSet(tree.series, tree.package.source, sample=tree, ks=self.ks, config=self.config)
+            tree = self.lookup_tree(handle, validate=validate)
+            return HandleSet(tree.series, tree.package.source, validate=validate, sample=tree, ks=self.ks, config=self.config)
 
         # Validate this as a series/package handle.
         else:
@@ -236,4 +237,4 @@ class Handle(HandleCore):
             if source is None:
                 raise HandleError("{}: handle contains unknown source".format(source_name))
 
-            return HandleSet(series, source, ks=self.ks, config=self.config)
+            return HandleSet(series, source, validate=validate, ks=self.ks, config=self.config)
