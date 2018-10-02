@@ -71,28 +71,32 @@ class TestHandleSeries(TestHandle):
 
     def test_series_source(self):
         ks = KernelSeries(data=self.data_yaml)
-        hdl = Handle(ks=ks).lookup_set('bionic:linux')
+        config = Config(data=self.path_config_yaml)
+        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
 
         self.assertEqual(hdl.source.series.codename, 'bionic')
         self.assertEqual(hdl.source.name, 'linux')
 
     def test_series_source_main_missmatch(self):
         ks = KernelSeries(data=self.data_yaml)
-        hdl = Handle(ks=ks).lookup_set('bionic:linux2')
+        config = Config(data=self.path_config_yaml)
+        hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux2')
 
         self.assertEqual(hdl.source.series.codename, 'bionic')
         self.assertEqual(hdl.source.name, 'linux2')
 
     def test_series_package(self):
         ks = KernelSeries(data=self.data_yaml)
-        hdl = Handle(ks=ks).lookup_tree('bionic:linux-meta')
+        config = Config(data=self.path_config_yaml)
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux-meta')
 
         self.assertEqual(hdl.package.series.codename, 'bionic')
         self.assertEqual(hdl.package.name, 'linux-meta')
 
     def test_series_package_main_missmatch(self):
         ks = KernelSeries(data=self.data_yaml)
-        hdl = Handle(ks=ks).lookup_tree('bionic:linux2-main')
+        config = Config(data=self.path_config_yaml)
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux2-main')
 
         self.assertEqual(hdl.package.series.codename, 'bionic')
         self.assertEqual(hdl.package.name, 'linux2-main')
