@@ -72,9 +72,7 @@ Examples:
     $ cranky-test-build -c testing -t binary-generic -a ppc64el kathleen
 
 Current limitations:
-  1) The username on the build host must be identical to the username on the
-     machine where the script is run.
-  2) The build host must be accessible using password-less SSH.
+  1) The build host must be accessible using password-less SSH.
 
 Notes:
   The script should perform all the necessary steps to setup the build host
@@ -124,6 +122,8 @@ while [ "${#}" -gt 0 ] ; do
 	esac
 	shift
 done
+
+remote="${host}"
 
 if [ -z "${host}" ] ; then
 	usage
@@ -181,7 +181,25 @@ else
 	done
 fi
 
+# The remote URL
+remote_url=$(git remote get-url --push "${host}" || true)
+
+# Get the git directory from the remote URL
+if [ -z "${remote_url}" ] ; then
+	git_dir=$(pwd)
+	pr_info "${host} is not a git remote, adding it..."
+	git remote add "${host}" "ssh://${host}${git_dir}"
+
+	remote_url=$(git remote get-url --push "${host}" || true)
+fi
+
+# Purge ssh://host from the remote URL and prepend a /
+git_dir="${remote_url#*://}"
+host="${git_dir%%/*}"
+git_dir="/${git_dir#*/}"
+
 pr_note "Build host:   ${host}"
+pr_note "Build remote: ${remote}"
 pr_note "Build source: ${source}"
 pr_note "Build series: ${series}"
 pr_note "Build arches: ${arches[*]}"
@@ -191,20 +209,6 @@ pr_note "Build commit: $(git log --format='%h ("%s")' "${commit}" -1)"
 if ! ssh -o ConnectTimeout=5 "${host}" whoami >/dev/null ; then
 	pr_error "Unable to ssh to host '${host}'"
 	exit 1
-fi
-
-# The remote URL
-remote_url=$(git config "remote.${host}.url" || true)
-
-# Get the git directory from the remote URL
-if [ -z "${remote_url}" ] ; then
-	git_dir=$(pwd)
-	pr_info "${host} is not a git remote, adding it..."
-	git remote add "${host}" "ssh://${host}${git_dir}"
-else
-	# Purge ssh://host from the remote URL and prepend a /
-	git_dir="${remote_url#*://}"
-	git_dir="/${git_dir#*/}"
 fi
 
 # Check if the git-build-kernel git hook exists
@@ -261,7 +265,7 @@ for arch in "${arches[@]}" ; do
 	fi
 
 	# Trigger the remote build
-	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
+	git push --force "${remote}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
 		tee /dev/stderr 2> >(tr '\r' '\n' | \
 		sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
 
