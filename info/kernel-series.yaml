@@ -385,6 +385,24 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-aws-edge:
+            packages:
+                linux-aws-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-edge']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-edge']
+            supported: true
+            derived-from: [ '18.10', 'linux-aws' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-azure:
             packages:
                 linux-azure:
