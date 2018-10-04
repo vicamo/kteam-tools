@@ -112,6 +112,13 @@ class KernelSnapEntry:
         self._name = name
         self._data = data if data else {}
 
+        if 'publish-to' not in self._data:
+            if 'arches' in self._data:
+                publish_to = {}
+                for arch in self._data['arches']:
+                    publish_to[arch] = [self._data.get('track', 'latest')]
+                self._data['publish-to'] = publish_to
+
     def __eq__(self, other):
         if isinstance(self, other.__class__):
             return self.name == other.name and self.source == other.source
@@ -167,6 +174,10 @@ class KernelSnapEntry:
     @property
     def track(self):
         return self._data.get('track', None)
+
+    @property
+    def publish_to(self):
+        return self._data.get('publish-to', None)
 
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)

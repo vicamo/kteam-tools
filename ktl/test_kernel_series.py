@@ -2242,6 +2242,123 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
 
         self.assertEqual(snap.track, '18')
 
+    def test_publish_to_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertEqual(snap.publish_to, None)
+
+    def test_publish_to_present_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            publish-to:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertIsNone(snap.publish_to)
+
+    def test_publish_to_present_valid(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            publish-to:
+                                amd64: [ '18' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = {
+            'amd64': ['18']
+            }
+        self.assertEqual(match, snap.publish_to)
+
+    def test_publish_to_present_multiple(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            publish-to:
+                                armhf: [ "18-pi2", "18-pi3" ]
+                                arm64: [ "18-pi3", "18-cm3" ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = {
+            "armhf": [ "18-pi2", "18-pi3" ],
+            "arm64": [ "18-pi3", "18-cm3" ],
+            }
+        self.assertEqual(match, snap.publish_to)
+
+    def test_publish_to_compat_track_arches_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            track: 18-pi2
+                            arches: [ 'armhf', 'arm64' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = {
+            'armhf': [ '18-pi2' ],
+            'arm64': [ '18-pi2' ],
+            }
+        self.assertEqual(snap.track, '18-pi2')
+        self.assertEqual(match, snap.publish_to)
+
+    def test_publish_to_compat_arches_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            arches: [ 'armhf', 'arm64' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = {
+            'armhf': [ 'latest' ],
+            'arm64': [ 'latest' ],
+            }
+        self.assertIsNone(snap.track)
+        self.assertEqual(match, snap.publish_to)
+
+
 class TestKernelRepoEntry(TestKernelSeriesCore):
 
     def test_owner_linkage(self):
