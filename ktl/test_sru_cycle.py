@@ -1,3 +1,4 @@
+import sys
 import unittest
 from testfixtures       import (TempDirectory,
                                 Replace,
@@ -10,7 +11,13 @@ from sru_cycle          import (SruCycle,
                                 SruCycleEntry,
                                )
 
-class TestSruCycle(unittest.TestCase):
+class TestSruCycleCore(unittest.TestCase):
+
+    if sys.version_info[:3] > (3, 0):
+        def assertItemsEqual(self, a, b):
+            return self.assertCountEqual(a, b)
+
+class TestSruCycle(TestSruCycleCore):
 
     data_yaml = """
     '2018.05.21':
@@ -31,7 +38,7 @@ class TestSruCycle(unittest.TestCase):
 
     def test_initialisation_url(self):
         with TempDirectory() as d:
-            d.write('sru-cycle.yaml', self.data_yaml)
+            d.write('sru-cycle.yaml', self.data_yaml.encode('utf-8'))
 
             ks = SruCycle(url='file://' + d.getpath('sru-cycle.yaml'))
 
@@ -46,7 +53,7 @@ class TestSruCycle(unittest.TestCase):
         cycle = sc.lookup_cycle('2018.05.21')
 
         self.assertEqual(cycle.name, '2018.05.21')
-        self.assertEqual(cycle.release_date, date(2018, 06, 11))
+        self.assertEqual(cycle.release_date, date(2018, 6, 11))
 
     def test_cycles(self):
         sc = SruCycle(data=self.data_yaml)
@@ -55,7 +62,7 @@ class TestSruCycle(unittest.TestCase):
         self.assertItemsEqual(cycle_names, self.data_cycle_names)
 
 
-class TestSruCycleEntry(unittest.TestCase):
+class TestSruCycleEntry(TestSruCycleCore):
 
     def test_equal_true(self):
         data = """
