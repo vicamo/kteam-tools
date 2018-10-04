@@ -1,3 +1,4 @@
+import sys
 import unittest
 from testfixtures       import TempDirectory
 
@@ -10,7 +11,15 @@ from kernel_series      import (KernelSeries,
                                 KernelRepoEntry,
                                )
 
-class TestKernelSeries(unittest.TestCase):
+
+class TestKernelSeriesCore(unittest.TestCase):
+
+    if sys.version_info[:3] > (3, 0):
+        def assertItemsEqual(self, a, b):
+            return self.assertCountEqual(a, b)
+
+
+class TestKernelSeries(TestKernelSeriesCore):
 
     data_yaml = """
     '18.04':
@@ -32,7 +41,7 @@ class TestKernelSeries(unittest.TestCase):
 
     def test_initialisation_url(self):
         with TempDirectory() as d:
-            d.write('kernel-series.yaml', self.data_yaml)
+            d.write('kernel-series.yaml', self.data_yaml.encode('utf-8'))
 
             ks = KernelSeries(url='file://' + d.getpath('kernel-series.yaml'))
 
@@ -76,7 +85,7 @@ class TestKernelSeries(unittest.TestCase):
         self.assertItemsEqual(series_names, self.data_series_names)
 
 
-class TestKernelSeriesEntry(unittest.TestCase):
+class TestKernelSeriesEntry(TestKernelSeriesCore):
 
     def test_equal_true(self):
         data = """
@@ -567,7 +576,7 @@ class TestKernelSeriesEntry(unittest.TestCase):
         self.assertEqual(source2.name, 'linux-raspi2')
         self.assertEqual(source3.name, 'linux-snapdragon')
 
-class TestKernelSourceEntry(unittest.TestCase):
+class TestKernelSourceEntry(TestKernelSeriesCore):
 
     def test_series_linkage(self):
         data = """
@@ -1196,7 +1205,7 @@ class TestKernelSourceEntry(unittest.TestCase):
         self.assertEqual(count, 2)
         self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
 
-class TestKernelSourceTestingFlavourEntry(unittest.TestCase):
+class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
 
     def test_name(self):
         data = """
@@ -1370,7 +1379,7 @@ class TestKernelSourceTestingFlavourEntry(unittest.TestCase):
         self.assertEqual(testable.clouds, ['cloud1', 'cloud2', 'cloud3'])
 
 
-class TestKernelPackageEntry(unittest.TestCase):
+class TestKernelPackageEntry(TestKernelSeriesCore):
 
     def test_source_linkage(self):
         data = """
@@ -1530,7 +1539,7 @@ class TestKernelPackageEntry(unittest.TestCase):
         self.assertEqual(package.repo, None)
 
 
-class TestKernelSnapEntry(unittest.TestCase):
+class TestKernelSnapEntry(TestKernelSeriesCore):
 
     def test_source_linkage(self):
         data = """
@@ -2034,7 +2043,7 @@ class TestKernelSnapEntry(unittest.TestCase):
 
         self.assertEqual(snap.track, '18')
 
-class TestKernelRepoEntry(unittest.TestCase):
+class TestKernelRepoEntry(TestKernelSeriesCore):
 
     def test_owner_linkage(self):
         data = """
