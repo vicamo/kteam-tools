@@ -64,6 +64,8 @@ class Close():
     def set_version(s):
         if s.branch == "master":
             s.prefix = "Ubuntu-"
+        elif "lts" in s.changelog[0]['package']:
+            s.prefix = "Ubuntu-lts-"
         else:
             s.prefix = "Ubuntu-{}-".format(s.branch)
         s.version = s.changelog[0]['version']
