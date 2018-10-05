@@ -16,8 +16,9 @@ from ktl.utils import run_command
 
 class CrankyStart():
 
-    def __init__(self, dry_run=False, ignore_abi_errors=False):
+    def __init__(self, dry_run=False, debug=False, ignore_abi_errors=False):
         self.dry_run = dry_run
+        self.debug = debug
         self.ignore_abi_errors = ignore_abi_errors
 
     def main(self):
@@ -45,7 +46,8 @@ class CrankyStart():
         # performed to all kinds of kernels.
         self.start_new_release()
 
-        # TODO: re-order commits if it's necessary.
+        # Re-order commits.
+        self.reorder_start_commit()
 
     def start_new_release(self):
         """
@@ -61,7 +63,11 @@ class CrankyStart():
             os.path.join(os.path.dirname(__file__),
                          "..", "maintscripts",
                          "maint-startnewrelease"))
-        run_command(cmd, dry_run=self.dry_run)
+        (rc, output) = run_command(cmd, dry_run=self.dry_run, dbg=self.debug)
+        if rc != 0:
+            cerror("Failed to create the start new release commit.")
+            cerror("\n".join(output))
+            sys.exit(1)
 
         # Check for the ABI existence
         self.check_abi()
@@ -91,6 +97,36 @@ class CrankyStart():
         # Unstage the changelog, cause that's gonna be changed in a different way
         changelog = Debian.debian_env() + "/changelog"
         run_command("git checkout HEAD " + changelog, dry_run=self.dry_run)
+
+    def reorder_start_commit(self):
+        # Get last closing commit. The start new release needs to be placed
+        # after it.
+        (rc, output) = run_command(
+            "git log --oneline --pretty='%h %s' | " +
+	    "awk '/^[^ ]+ UBUNTU:\s+Ubuntu-/ { print $1; exit; }'")
+        if rc != 0 or not output:
+            cwarn("Failed to get last closing commit. " +
+                  "Skipping commit re-ordering...")
+            return
+        # Rebase the commits after the closing commit
+        cinfo("Re-ordering start new release commit")
+        result = subprocess.run(
+            "git rebase -i \"%s\"" % output[0],
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env={
+                # Use ex(vi) to re-order the commits:
+                # 1. Remote blank lines and comments
+                # 2. Delete the last line
+                # 3. Paste at the beginning of the file
+                # 4. Save it and exit
+                "GIT_SEQUENCE_EDITOR": "ex -s +'g!/^p/d' +'-0d' '+0pu' +'wq'"
+            })
+        if result.returncode != 0:
+            cerror("Failed to re-order commits:")
+            cerror(result.stdout.decode())
+
 
 if __name__ == "__main__":
 
@@ -122,7 +158,7 @@ latest ABI files and performing sanity checks.
     else:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    cranky_start = CrankyStart(dry_run=args.dry_run,
+    cranky_start = CrankyStart(dry_run=args.dry_run, debug=args.debug,
                                ignore_abi_errors=args.ignore_abi_errors)
     cranky_start.main()
 
