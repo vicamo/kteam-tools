@@ -144,8 +144,6 @@ class VerifyReleaseReady():
 
             # Check: Make sure that the abi directory has the previous version
             v = cl1['version']
-            if '~' in v:
-                v = v.split('~', 1)[0]
             msg = 'previous abi present (%s)' % (v)
             abi = Debian.abi()
             if v not in abi:
