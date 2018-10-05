@@ -31,16 +31,21 @@ def change_directory(new_dir):
 class HandleCore:
     def encode_directory(self, package):
         base_path = self.config.lookup(['package-path', 'base-path'], '')
+        which = package.type if package.type else 'main'
+        which_suffix = '-' + package.type if package.type else ''
+
         for key in (
             "{series}--{source}--{package}",
             "{series}--{source}",
             "{series}",
+            "{type}",
             "default",
             ):
             key = key.format(
                 series=package.series.codename,
                 source=package.source.name,
                 package=package.name,
+                type=which,
                 )
 
             package_path = self.config.lookup(['package-path', key])
@@ -48,9 +53,6 @@ class HandleCore:
                 break
         if package_path is None:
             package_path = '{series}/{package}'
-
-        which = package.type if package.type else 'main'
-        which_suffix = '-' + package.type if package.type else ''
 
         package_path = package_path.format(
             series=package.series.codename,
