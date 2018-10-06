@@ -131,12 +131,23 @@ class Git:
         return result[0]
 
     @classmethod
-    def ubuntu_commit(cls, branch):
+    def ubuntu_commit(cls, branch, include_derivatives=False,
+                      debian_dir="debian.master/"):
         """
-        Return the SHA1 for the last commit that touched debian.master/ whose
-        message matched the pattern 'UBUNTU: Ubuntu-[0-9]', given a branch.
+        Return the SHA1 for the last commit that touched debian_dir
+        ("debian.master/" by default) whose message matched the pattern
+        'UBUNTU: Ubuntu-[0-9]', given a branch.
+
+        If include_derivatives is True, algo include derivative release
+        commits.
         """
-        (status, output) = run_command('git log --pretty=%%H -1 --grep="UBUNTU: Ubuntu-[0-9]" %s debian.master/' % (branch), cls.debug)
+        prefix=""
+        if include_derivatives:
+            # Also match derivatives, ie "Ubuntu-azure-4.18.0-1001.1".
+            prefix="\([^0-9\s]*-\)\?"
+        cmd = "git log --pretty=%%H -1 --grep='UBUNTU: Ubuntu-%s[0-9]' '%s' '%s'" % \
+            (prefix, branch, debian_dir)
+        (status, output) = run_command(cmd, cls.debug)
         if status == 0 and len(output) == 1:
             return output[0]
         return None
