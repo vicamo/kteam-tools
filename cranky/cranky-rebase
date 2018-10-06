@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
@@ -19,38 +20,52 @@ class Rebase():
         s.master_branch = master_branch
         s.dryrun = dryrun
         source = Debian.get_source_from_kernel_series()
-        source = source.derived_from
-        if not source:
-            s.repo = None
-        s.repo = str(source.packages[0].repo)
+        s.base_source = source.derived_from
 
     def main(s):
-        retval = 1
+        # Get the current release commit which this kernel is based on
+        if not s.base_source:
+            print("Base kernel is unknown. Please check the kernel-series.yaml file.")
+            return 1
+        base_name = re.sub("^linux-?", "", s.base_source.name)
+        if not base_name:
+            base_name = "master"
+        debian_dir = "debian.%s/" % base_name
+        base_commit = Git.ubuntu_commit("HEAD",
+                                        include_derivatives=True,
+                                        debian_dir=debian_dir)
+
+        # Get the latest release commit of the base kernel
         if not s.master_branch:
-            if not s.repo:
+            repo = str(s.base_source.packages[0].repo)
+            if not repo:
                 print("not a derived kernel, no rebase needed")
                 return 0
-            run_command("git fetch " + s.repo)
+            run_command("git fetch " + repo)
             s.master_branch = "FETCH_HEAD"
-        master_commit = Git.ubuntu_commit(s.master_branch)
-        base_commit = Git.ubuntu_commit("HEAD")
+        master_commit = Git.ubuntu_commit(s.master_branch,
+                                          include_derivatives=True,
+                                          debian_dir=debian_dir)
         if base_commit == None:
             print("base Ubuntu commit not found, is this an Ubuntu tree?")
-            return retval
+            return 1
+
+        # Check if it's up to date
         master_version = Git.version_from_subject(master_commit)
         base_version = Git.version_from_subject(base_commit)
-
-        if master_commit != base_commit:
-            cmd = "git rebase --onto %s %s" % (master_commit, base_commit)
-            print("Rebase still needed between %s and %s." % (base_version, master_version))
-            (retval, output) = run_command(cmd, dry_run=s.dryrun)
-            if retval:
-                print("Failed to rebase.")
-                print("\n".join(output))
-        else:
+        if master_commit == base_commit:
             print("tree is already based on top of %s (%s)" % (master_version, master_commit))
-            retval = 0
+            return 0
+
+        # Rebase
+        cmd = "git rebase --onto %s %s" % (master_commit, base_commit)
+        print("Rebase still needed between %s and %s." % (base_version, master_version))
+        (retval, output) = run_command(cmd, dry_run=s.dryrun)
+        if retval:
+            print("Failed to rebase.")
+            print("\n".join(output))
         return retval
+
 
 if __name__ == '__main__':
     app_description = '''
