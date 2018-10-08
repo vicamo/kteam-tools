@@ -12,6 +12,8 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.__init__')
 
     def _cycle_ready(s):
+        if s.bug.is_development_series or (s.bug.master_bug is not None and s.bug.master_bug.is_development_series):
+            return True
         cycle_name = s.bug.sru_cycle
         cycle_base = cycle_name.split('-')[0]
         cycle = SruCycle().lookup_cycle(cycle_base)
