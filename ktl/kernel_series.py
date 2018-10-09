@@ -344,7 +344,10 @@ class KernelSeriesEntry:
     def __init__(self, ks, name, data):
         self._ks = ks
         self._name = name
-        self._data = data if data else {}
+        self._data = {}
+        self._data.update(ks._defaults_series)
+        if data:
+            self._data.update(data)
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -457,6 +460,12 @@ class KernelSeries:
                 self._development_series = series_key
             if 'codename' in series:
                 self._codename_to_series[series['codename']] = series_key
+
+        # Pull out the defaults.
+        self._defaults_series = {}
+        if 'defaults' in self._data:
+            self._defaults_series = self._data['defaults']
+            del self._data['defaults']
 
     @staticmethod
     def key_series_name(series):
