@@ -10,6 +10,52 @@ import os
 import sys
 import yaml
 
+class KernelRoutingEntry:
+    def __init__(self, ks, source, data):
+        if isinstance(data, str):
+            rt = source.series.routing_table
+            if rt is None:
+                raise ValueError("unable to map routing alias {}, no series routing table".format(data))
+            if data not in rt:
+                raise ValueError("unable to map routing alias {}, not listed in series routing table".format(data))
+            data = rt[data]
+
+        # Clear out any entries that have been overriden to None.
+        for entry in dict(data):
+            if data[entry] is None:
+                del data[entry]
+
+        self._ks = ks
+        self._source = source
+        self._data = data if data else {}
+
+    @property
+    def source(self):
+        return self._source
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self._data == other._data
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __iter__(self):
+        return iter(self._data.items())
+
+    def __getitem__(self, which):
+        return self._data[which]
+
+    def lookup_destination(self, dest, primary=False):
+        data = self._data.get(dest, None)
+        if primary == False or data is None:
+            return data
+        return data[0]
+
+    def __str__(self):
+        return str(self._data)
+
 
 class KernelRepoEntry:
     def __init__(self, ks, owner, data):
@@ -319,6 +365,18 @@ class KernelSourceEntry:
             return False
         return self.series != base.series
 
+    @property
+    def routing(self):
+        default = 'default'
+        if self.series.development:
+            default = 'devel'
+        if self.series.esm:
+            default = 'esm'
+        data = self._data.get('routing', default)
+        if data is None:
+            return data
+        return KernelRoutingEntry(self._ks, self, data)
+
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
 
@@ -414,6 +472,10 @@ class KernelSeriesEntry:
             for source_key, source in sources.items():
                 result.append(KernelSourceEntry(self._ks, self, source_key, source))
         return result
+
+    @property
+    def routing_table(self):
+        return self._data.get('routing-table', None)
 
     def lookup_source(self, source_key):
         sources = self._data.get('sources')

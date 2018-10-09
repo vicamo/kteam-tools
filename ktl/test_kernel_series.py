@@ -2156,5 +2156,160 @@ class TestKernelRepoEntry(TestKernelSeriesCore):
         self.assertEqual(snap.repo.branch, 'branch-name')
 
 
+class TestKernelRoutingEntry(TestKernelSeriesCore):
+
+    routing_data = """
+        defaults:
+            routing-table:
+                default:
+                    build:
+                        - ['default-build', 'Release' ]
+                        - ['default-build2', 'Release' ]
+                devel:
+                    build:
+                        - ['default-devel-build', 'Release' ]
+                esm:
+                    build:
+                        - ['default-esm-build', 'Release' ]
+    """
+
+    def test_source_linkage(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+
+        self.assertEqual(routing.source, source)
+
+    def test_equal_true(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing1 = source.routing
+        routing2 = source.routing
+
+        self.assertEqual(routing1, routing2)
+
+    def test_equal_none(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+                    routing:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing1 = source.routing
+
+        self.assertEqual(routing1, None)
+
+    def test_routing_default(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build')
+
+        match = [['default-build', 'Release'], ['default-build2', 'Release']]
+        self.assertEqual(destination, match)
+
+    def test_routing_default_primary(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build', primary=True)
+
+        match = ['default-build', 'Release']
+        self.assertEqual(destination, match)
+
+    def test_routing_devel(self):
+        data = self.routing_data + """
+        '18.04':
+            development: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build')
+
+        match = [['default-devel-build', 'Release']]
+        self.assertEqual(destination, match)
+
+    def test_routing_esm(self):
+        data = self.routing_data + """
+        '18.04':
+            esm: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build')
+
+        match = [['default-esm-build', 'Release']]
+        self.assertEqual(destination, match)
+
+    def test_routing_override_devel(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+                    routing: esm
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build')
+
+        match = [['default-esm-build', 'Release']]
+        self.assertEqual(destination, match)
+
+    def test_routing_override_local(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+                    routing:
+                        build:
+                            - [ 'local-build', 'Release' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+        destination = routing.lookup_destination('build')
+
+        match = [['local-build', 'Release']]
+        self.assertEqual(destination, match)
+
+
 if __name__ == '__main__':
     unittest.main()
