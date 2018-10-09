@@ -32,6 +32,11 @@
 #  * sources (dictionary)
 #       a named series of Source records (see below).  The name is the primary
 #       source package name for example linux-aws.
+#  * routing-table (dictionary)
+#       a named series of RoutingTable records.  The name is a simple textual
+#       handle referred to per source routing references.  'default', 'devel',
+#       and 'esm' are special cases, automatically selected for a source in a
+#       series where no routing is specified.
 #
 # Source record fields:
 #  * versions (list)
@@ -57,6 +62,10 @@
 #  * invalid-tasks (list)
 #       list of task names which should be marked as 'Invalid' on the Launchpad
 #       tracking bug at the moment of its creation.
+#  * routing (string/RoutingTable)
+#       either a text string which is the name of a routing-table entry
+#       for this series, or a RoutingTable entry directly expressed
+#       against this source package.
 #
 # Package record fields:
 #  * type (string)
@@ -99,6 +108,60 @@
 #       official series name containing the depended on source
 #  * 1 (string)
 #       source package name of the depeneded on source
+#
+# RoutingTable record (dict):
+#       a named series of RoutingSet records.  The name is a simple textual
+#       handle referring to a destination.  These are typically human
+#       consumable names for PPAs or archive pockets.
+#
+# RoutingSet record (list):
+#       a list of Routing records.  For builds these will typically be in
+#       preferred order.  For later phases they are in overlay order.
+#
+# Routing record elements:
+#  * 0 (string)
+#       archive handle
+#  * 1 (string)
+#       archive pocket
+#
+defaults:
+    routing-table:
+        default: &routing-table-default
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+            proposed:
+                - ['ubuntu', 'Proposed']
+            updates:
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
+            security:
+                - ['ubuntu', 'Security']
+        devel:
+            <<:             *routing-table-default
+            security-build:
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+        esm:
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+                - ['ubuntu', 'Updates']
+            security:
+                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+                - ['ubuntu', 'Security']
+            release:
+                - ['ubuntu', 'Release']
 
 # 18.10 (Cosmic Cuttlefish)
 '18.10':
