@@ -169,7 +169,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/cosmic']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '18.10', 'linux' ]
             testing:
                 flavours:
                     aws:
