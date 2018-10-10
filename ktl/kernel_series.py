@@ -491,16 +491,17 @@ class KernelSeries:
     _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'info', 'kernel-series.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
-    _data = None
+    _data_txt = {}
 
     @classmethod
     def __load_once(cls, url):
-        if not cls._data:
+        if url not in cls._data_txt:
             response = urlopen(url)
             data = response.read()
             if type(data) != str:
                 data = data.decode('utf-8')
-            cls._data = yaml.load(data)
+            cls._data_txt[url] = data
+        return cls._data_txt[url]
 
     def __init__(self, url=None, data=None, use_local=False):
         if data or url:
@@ -509,9 +510,9 @@ class KernelSeries:
                 data = response.read()
             if type(data) != str:
                 data = data.decode('utf-8')
-            self._data = yaml.load(data)
         else:
-            self.__load_once(self._url_local if use_local else self._url)
+            data = self.__load_once(self._url_local if use_local else self._url)
+        self._data = yaml.load(data)
 
         self._development_series = None
         self._codename_to_series = {}
