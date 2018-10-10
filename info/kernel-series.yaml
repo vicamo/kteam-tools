@@ -124,8 +124,13 @@
 #  * 1 (string)
 #       archive pocket
 #
-defaults:
-    routing-table:
+
+# 18.10 (Cosmic Cuttlefish)
+'18.10':
+    codename: cosmic
+    development: true
+    supported: false
+    routing-table: &routing-table
         default: &routing-table-default
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
@@ -162,12 +167,6 @@ defaults:
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
-
-# 18.10 (Cosmic Cuttlefish)
-'18.10':
-    codename: cosmic
-    development: true
-    supported: false
     sources:
         linux:
             versions: ['4.18.0']
@@ -316,6 +315,7 @@ defaults:
     development: false
     supported: true
     lts: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.13.0', '4.14.0', '4.15.0']
@@ -622,6 +622,7 @@ defaults:
     codename: artful
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.11.0', '4.12.0', '4.13.0']
@@ -672,6 +673,7 @@ defaults:
     codename: zesty
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.10.0']
@@ -729,6 +731,7 @@ defaults:
     codename: yakkety
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.8.0']
@@ -776,6 +779,7 @@ defaults:
     development: false
     supported: true
     lts: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.4.0']
@@ -1116,6 +1120,7 @@ defaults:
     codename: wily
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.2.0']
@@ -1143,6 +1148,7 @@ defaults:
     codename: vivid
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.19.0']
@@ -1161,6 +1167,7 @@ defaults:
     codename: utopic
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.16.0']
@@ -1180,6 +1187,7 @@ defaults:
     development: false
     supported: true
     lts: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.13.0']
@@ -1297,6 +1305,7 @@ defaults:
     codename: saucy
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.11.0']
@@ -1329,6 +1338,7 @@ defaults:
     codename: raring
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.8.0']
@@ -1361,6 +1371,7 @@ defaults:
     codename: quantal
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.5.0']
@@ -1407,6 +1418,7 @@ defaults:
     supported: true
     lts: true
     esm: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.2.0']
@@ -1535,6 +1547,7 @@ defaults:
     codename: oneiric
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['3.0.0']
@@ -1562,6 +1575,7 @@ defaults:
     codename: natty
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.38']
@@ -1589,6 +1603,7 @@ defaults:
     codename: maverick
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.35']
@@ -1628,6 +1643,7 @@ defaults:
     codename: lucid
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.32']
@@ -1658,6 +1674,7 @@ defaults:
     codename: karmic
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.31']
@@ -1706,6 +1723,7 @@ defaults:
     codename: jaunty
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.28']
@@ -1721,6 +1739,7 @@ defaults:
     codename: intrepid
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.27']
@@ -1736,6 +1755,7 @@ defaults:
     codename: hardy
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.24']
@@ -1760,6 +1780,7 @@ defaults:
     codename: gutsy
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.22']
@@ -1775,6 +1796,7 @@ defaults:
     codename: feisty
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['2.6.20']
@@ -1790,6 +1812,7 @@ defaults:
     codename: dapper
     development: false
     supported: false
+    routing-table: *routing-table
     sources:
         linux-source-2.6.15:
             versions: ['2.6.15']
