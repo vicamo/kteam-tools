@@ -254,7 +254,8 @@ for arch in "${arches[@]}" ; do
 
 	# Trigger the remote build
 	git push --force "${host}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
-		tee /dev/stderr 2> "${logfile}" || true
+		tee /dev/stderr 2> >(tr '\r' '\n' | \
+		sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
 
 	# Print the build result
 	if grep -q 'build completed OK' "${logfile}" 2>/dev/null ; then
