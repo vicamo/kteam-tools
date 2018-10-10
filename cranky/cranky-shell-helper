@@ -3,7 +3,9 @@
 import os
 import sys
 import argparse
-from crl.handle         import Handle
+
+from crl.config import Config
+from crl.handle import Handle
 
 def series_codename(args):
     handle = Handle().lookup_set(args.handle)
@@ -13,6 +15,18 @@ def source_packages_path(args):
     handle = Handle().lookup_set(args.handle)
     for tree in handle.trees:
         print(tree.directory)
+
+def print_configs(args):
+    # Lookup the config options for the given command
+    config = Config().lookup(args.command, {})
+    if args.key:
+        # Print the specified config key
+        if args.key in config:
+            print(config[args.key])
+    else:
+        # Print all configs
+        for key in sorted(config):
+            print("{}: {}".format(key, config[key]))
 
 
 if __name__ == "__main__":
@@ -37,6 +51,13 @@ Helper program for getting cranky config and handle data from shell scripts.
     spp_subparser.add_argument("handle",
                                help="<series>:<package> handle, or path to source tree.")
     spp_subparser.set_defaults(func=source_packages_path)
+
+    # cranky-<foo> config options subparser
+    for command in ("clone",):
+        spp_subparser = subparsers.add_parser(command,
+                                              help="Print config options for cranky-%s" % command)
+        spp_subparser.add_argument("key", nargs='?', help="Print only the specified config key")
+        spp_subparser.set_defaults(func=print_configs)
 
     args = parser.parse_args()
     args.func(args)
