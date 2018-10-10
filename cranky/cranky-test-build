@@ -242,7 +242,7 @@ done
 
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
-	logfile=gbk-${arch}.log
+	logfile=gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 
 	pr_info "Doing a test build for arch '${arch}', target '${target}'," \
 			"logfile '${logfile}'"
@@ -285,7 +285,7 @@ done
 echo
 pr_info "Build summary:"
 for arch in "${arches[@]}" ; do
-	logfile=gbk-${arch}.log
+	logfile=gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 	pad=$(printf " %.0s" $(seq ${#arch} 7))
 	arch_target="${arch}-${target}:${pad:1}"
 
