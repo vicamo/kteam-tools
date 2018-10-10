@@ -53,7 +53,7 @@ Helper program for getting cranky config and handle data from shell scripts.
     spp_subparser.set_defaults(func=source_packages_path)
 
     # cranky-<foo> config options subparser
-    for command in ("clone",):
+    for command in ("clone", "test-build"):
         spp_subparser = subparsers.add_parser(command,
                                               help="Print config options for cranky-%s" % command)
         spp_subparser.add_argument("key", nargs='?', help="Print only the specified config key")

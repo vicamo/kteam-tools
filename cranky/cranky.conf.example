@@ -20,6 +20,11 @@ clone:
   # --dissociate, for more details.
   dissociate: True
 
+# cranky-test-build
+test-build:
+  # The directory where the logfiles are written to
+  logdir: /path/to/logdir
+
 # Paths to source code directories
 package-path:
   # Where to find the git repos for the different packages. The paths can be

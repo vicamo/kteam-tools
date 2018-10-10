@@ -240,9 +240,16 @@ for arch in "${arches[@]}" ; do
 	result[${arch}]=${build_skipped}
 done
 
+# Get the logdir from the config file and create it if it doesn't exist
+logdir=$(cranky-shell-helper test-build logdir)
+logdir=${logdir:-.}
+if ! [ -d "${logdir}" ] ; then
+	mkdir -p "${logdir}"
+fi
+
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
-	logfile=gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
+	logfile=${logdir}/gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 
 	pr_info "Doing a test build for arch '${arch}', target '${target}'," \
 			"logfile '${logfile}'"
@@ -285,7 +292,7 @@ done
 echo
 pr_info "Build summary:"
 for arch in "${arches[@]}" ; do
-	logfile=gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
+	logfile=${logdir}/gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 	pad=$(printf " %.0s" $(seq ${#arch} 7))
 	arch_target="${arch}-${target}:${pad:1}"
 
