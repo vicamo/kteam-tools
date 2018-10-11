@@ -27,8 +27,9 @@ class TestKernelSeries(TestKernelSeriesCore):
         development: true
     '16.04':
         codename: xenial
+    '14.04':
     """
-    data_series_names = [ '18.04', '16.04' ]
+    data_series_names = [ '18.04', '16.04', '14.04' ]
 
     def test_initialisation_data(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -37,7 +38,7 @@ class TestKernelSeries(TestKernelSeriesCore):
         for series in ks.series:
             self.assertTrue(isinstance(series, KernelSeriesEntry))
             count += 1
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 3)
 
     def test_initialisation_url(self):
         with TempDirectory() as d:
@@ -49,7 +50,7 @@ class TestKernelSeries(TestKernelSeriesCore):
         for series in ks.series:
             self.assertTrue(isinstance(series, KernelSeriesEntry))
             count += 1
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 3)
 
     def test_lookup_series(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -118,6 +119,35 @@ class TestKernelSeriesEntry(TestKernelSeriesCore):
 
         self.assertNotEqual(series1, None)
         self.assertNotEqual(None, series1)
+
+    def test_codename_present(self):
+        data = """
+        '18.04':
+            codename: bionic
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertEqual(series.codename, 'bionic')
+
+    def test_codename_present_empty(self):
+        data = """
+        '18.04':
+            codename:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertIsNone(series.codename)
+
+    def test_codename_absent(self):
+        data = """
+        '18.04':
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+
+        self.assertIsNone(series.codename)
 
     def test_development_present_true(self):
         data = """

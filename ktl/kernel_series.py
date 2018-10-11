@@ -421,7 +421,7 @@ class KernelSeriesEntry:
 
     @property
     def codename(self):
-        return self._data['codename']
+        return self._data.get('codename', None)
 
     @property
     def opening(self):
