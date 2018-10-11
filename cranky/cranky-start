@@ -121,7 +121,8 @@ class CrankyStart():
                 # 2. Delete the last line
                 # 3. Paste at the beginning of the file
                 # 4. Save it and exit
-                "GIT_SEQUENCE_EDITOR": "ex -s +'g!/^p/d' +'-0d' '+0pu' +'wq'"
+                "GIT_SEQUENCE_EDITOR": "ex -s +'g!/^p/d' +'-0d' '+0pu' +'wq'",
+                "HOME": os.environ['HOME']
             })
         if result.returncode != 0:
             cerror("Failed to re-order commits:")
