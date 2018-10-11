@@ -1065,7 +1065,7 @@
                 linux-signed-oem:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/xenial', 'oem']
-            supported: true
+            supported: false
             derived-from: [ '17.10', 'linux' ]
             testing:
                 flavours:
