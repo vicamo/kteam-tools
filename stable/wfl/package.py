@@ -49,6 +49,25 @@ class Package():
         if not s.__title_decode(s.bug.lpbug):
             raise PackageError(['Unable to determine series/package for this bug.'])
 
+        # Look the package routing destinations up in kernel-series, convert the
+        # archives to real archive objects.
+        s._routing2 = {}
+        if s.source.routing:
+            for (key, destination) in (
+                ('ppa', 'build'),
+                ('Proposed', 'proposed'),
+                ('Updates', 'updates'),
+                ('Security', 'security'),
+                ('Release', 'release'),
+                ):
+                route = s.source.routing.lookup_destination(destination, primary=True)
+                if route is None:
+                    continue
+                archive = s.lp.launchpad.archives.getByReference(reference=route[0])
+                if archive is None:
+                    continue
+                s._routing2[key] = (archive, route[1])
+
         ubuntu_primary = s.lp.launchpad.archives.getByReference(reference='ubuntu')
         if s.series == 'precise':
             s.routing_mode = 'ESM'
@@ -73,6 +92,31 @@ class Package():
                 'Security': (ubuntu_primary, 'Security'),
                 'Release':  (ubuntu_primary, 'Release'),
             }
+            if s.series == 'cosmic':
+                unstable_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-team/ubuntu/unstable')
+                s._routing['ppa'] = (unstable_ppa, 'Release')
+
+        match = True
+        for key in s._routing:
+            if key not in s._routing2:
+                cinfo("ROUTING: {} key not found in new table".format(key))
+                match = False
+                continue
+
+            if s._routing[key][0].self_link != s._routing2[key][0].self_link:
+                cinfo("ROUTING: {} key archive url missmatch".format(key))
+                match = False
+                continue
+            if s._routing[key][1] != s._routing2[key][1]:
+                cinfo("ROUTING: {} key archive pocket missmatch".format(key))
+                match = False
+                continue
+        if match:
+            cinfo("ROUTING: CMP matches");
+        else:
+            cinfo("ROUTING: CMP missmatch");
+        cinfo("ROUTING: TABLE-OLD " + str(s._routing))
+        cinfo("ROUTING: TABLE-NEW " + str(s._routing2))
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
