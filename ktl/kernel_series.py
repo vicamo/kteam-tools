@@ -12,7 +12,9 @@ import yaml
 
 class KernelRoutingEntry:
     def __init__(self, ks, source, data):
+        name = "{}:{}".format(source.series.codename, source.name)
         if isinstance(data, str):
+            name = data
             rt = source.series.routing_table
             if rt is None:
                 raise ValueError("unable to map routing alias {}, no series routing table".format(data))
@@ -27,11 +29,16 @@ class KernelRoutingEntry:
 
         self._ks = ks
         self._source = source
+        self._name = name
         self._data = data if data else {}
 
     @property
     def source(self):
         return self._source
+
+    @property
+    def name(self):
+        return self._name
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):

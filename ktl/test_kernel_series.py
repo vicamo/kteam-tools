@@ -2340,6 +2340,64 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
         match = [['local-build', 'Release']]
         self.assertEqual(destination, match)
 
+    def test_name_default(self):
+        data = self.routing_data + """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+
+        self.assertEqual(routing.name, 'default')
+
+    def test_name_devel(self):
+        data = self.routing_data + """
+        '18.04':
+            development: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+
+        self.assertEqual(routing.name, 'devel')
+
+    def test_name_esm(self):
+        data = self.routing_data + """
+        '18.04':
+            esm: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+
+        self.assertEqual(routing.name, 'esm')
+
+    def test_name_override_local(self):
+        data = self.routing_data + """
+        '18.04':
+            codename: bionic
+            sources:
+                linux:
+                    routing:
+                        build:
+                            - [ 'local-build', 'Release' ]
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        routing = source.routing
+
+        self.assertEqual(routing.name, 'bionic:linux')
+
 
 if __name__ == '__main__':
     unittest.main()
