@@ -239,7 +239,6 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
-            copy-forward: [ '18.04', 'linux-aws' ]
 
         linux-azure:
             packages:
