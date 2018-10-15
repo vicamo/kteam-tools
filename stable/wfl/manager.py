@@ -82,7 +82,7 @@ class WorkflowManager():
         else:
             for project in WorkflowBug.projects_tracked:
                 cinfo('project: %s' % project, 'magenta')
-                search_tags            = ['kernel-release-tracking-bug']
+                search_tags            = ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live']
                 search_tags_combinator = "All"
                 search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
                 search_since           = datetime(year=2013, month=1, day=1)
