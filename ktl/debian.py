@@ -352,8 +352,9 @@ class Debian:
                               series)
         info_package = info_series.lookup_source(package)
         if not info_package:
-            raise DebianError("Unknown package: %s. Please check the " +
-                              "info/kernel-series.yaml file." %
+            print(package)
+            raise DebianError(("Unknown package: %s. Please check the " +
+                              "info/kernel-series.yaml file.") %
                               package)
         return info_package
 
