@@ -242,6 +242,7 @@ done
 
 # Get the logdir from the config file and create it if it doesn't exist
 logdir=$(cranky-shell-helper test-build logdir)
+logdir=${logdir/#\~\//${HOME}/}   # Replace ~/ with ${HOME}/
 logdir=${logdir:-.}
 if ! [ -d "${logdir}" ] ; then
 	mkdir -p "${logdir}"
