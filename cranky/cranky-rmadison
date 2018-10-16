@@ -24,24 +24,9 @@ from crl.handle import Handle, HandleError
 from ktl.log import cerror
 
 
-PPAS = {
-    "precise": {
-        "any_source": [
-            ["esm", "~ubuntu-esm/ubuntu/esm"],
-            ["esm-proposed", "~canonical-kernel-esm/ubuntu/proposed"],
-        ]
-    },
-    "bionic": {
-        "linux-ibm-gt": [
-            ["ibm-test", "~ibm-cloud/ubuntu/test"],
-        ],
-    },
-}
-
-
-def pocket_weight(val):
+def pocket_order(val):
     """
-    Return a weight based on the pocket name for sorting lists
+    Return a sort order number based on the pocket name
     """
     if "-proposed" in val[2]:
         return 3
@@ -52,21 +37,13 @@ def pocket_weight(val):
     return 0
 
 
-def rmadison_ppa(handle_set):
+def rmadison_lp(handle_set, show_all=False):
     """
     Query Launchpad for source package information
     """
     series = handle_set.series.codename
-    source = handle_set.source.name
+    routing = handle_set.source.routing
     packages = [package.name for package in handle_set.source.packages]
-
-    # Get the PPA(s) for this series/source
-    ppas = [["", "ubuntu"]]   # The default is the distro archive
-    if series in PPAS:
-        for key in (source, "any_source"):
-            if key in PPAS[series]:
-                ppas = PPAS[series][key]
-                break
 
     # Temporarily disable logging of level INFO to silence launchpadlib and
     # then reenable logging again
@@ -78,31 +55,43 @@ def rmadison_ppa(handle_set):
 
     result = []
     for package in sorted(packages):
-        unsorted = []
-        for ppa in ppas:
-            lp_archive = lp.archives.getByReference(reference=ppa[1])
+        tmp = []
+        for route in routing:
+            dest = route[0]
+            ppa, pocket = route[1][0]
+
+            if dest == "build" or dest.endswith("-build"):
+                # This is a builder PPA, not a publishing PPA, so skip it
+                continue
+
+            if ((dest not in ("release", "security", "updates", "proposed") and
+                 not show_all)):
+                # This is a non-standard PPA and we didn't ask for it, so skip it
+                continue
+
+            lp_archive = lp.archives.getByReference(reference=ppa)
             lp_sources = lp_archive.getPublishedSources(source_name=package,
                                                         distro_series=lp_series,
+                                                        pocket=pocket,
                                                         exact_match=True,
                                                         order_by_date=True,
                                                         status="Published")
+            if not lp_sources:
+                # Nothing found in this PPA/pocket
+                continue
 
-            for lp_source in lp_sources:
-                if ppa[0] == "":
-                    # This is a distro archive
-                    if lp_source.pocket.lower() == "release":
-                        pocket = series
-                    else:
-                        pocket = "%s-%s" % (series, lp_source.pocket.lower())
-                else:
-                    # This is a private PPA
-                    pocket = "%s-%s" % (series, ppa[0])
+            if dest == "release":
+                pocket_name = series
+            elif dest in ("security", "updates", "proposed"):
+                pocket_name = "%s-%s" % (series, dest)
+            else:
+                pocket_name = "%s (ppa:%s)" % (series, dest)
 
-                unsorted.append([package, lp_source.source_package_version,
-                                 pocket, "source"])
+            tmp.append([package, lp_sources[0].source_package_version,
+                        pocket_name, "source"])
 
         # Sort the temporary list by pocket names and add it to the result
-        result.extend(sorted(unsorted, key=pocket_weight))
+        result.extend(sorted(tmp, key=pocket_order))
 
     return result
 
@@ -148,6 +137,9 @@ Examples:
                         "in the form of <series>:<source>. If not specified, "
                         "the information is retrieved from the current git "
                         "repo.")
+    parser.add_argument("-a", "--show-all", action="store_true",
+                        help="Show source package information from all "
+                        "routing destinations.")
     args = parser.parse_args()
 
     try:
@@ -159,4 +151,4 @@ Examples:
 
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
-    print_table(rmadison_ppa(handle_set))
+    print_table(rmadison_lp(handle_set, show_all=args.show_all))
