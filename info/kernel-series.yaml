@@ -617,6 +617,9 @@
                     stable: true
                     qa: false
                     hw-cert: true
+                    publish-to:
+                        armhf: [ '18-pi3', '18-cm3', '18-pi2' ]
+                        arm64: [ '18-pi3' ]
                     arches: ['armhf', 'arm64']
                     track: '18-pi3'
             supported: true
