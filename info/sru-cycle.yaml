@@ -16,6 +16,9 @@
 #  * hold (bool)
 #       the cycle is on hold; infer kernel-block on all active packages
 
+'2018.10.22':
+    release-date: '2018-11-12'
+
 '2018.10.01':
     release-date: '2018-10-22'
 
