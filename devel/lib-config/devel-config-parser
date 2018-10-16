@@ -113,10 +113,19 @@ def add_deps_list(a, deps_list):
         add_deps(a, deps)
 
 
+var_ref_re = re.compile(r'\$(?:\(([^\)]+)\)|([\w\-]+))')
+def expand_vars(filename, arch):
+    vars = {'SRCARCH': arch}
+    new_filename = var_ref_re.sub(
+			lambda match: vars[match.group(1) or match.group(2)],
+			filename)
+    return new_filename
+
+
 root = {'prompt': 'ROOT', 'menu': True, 'deps': '', 'children': list()}
 menu = [ root ]
 ifs = list()
-def read_kconfig(base, filename):
+def read_kconfig(arch, base, filename):
     global menu
     global ifs
 
@@ -169,7 +178,8 @@ def read_kconfig(base, filename):
                 A = None
                 menu_keep = list(menu)
                 ifs_keep = list(ifs)
-                read_kconfig(base, a[1])
+                fname = expand_vars(a[1], arch)
+                read_kconfig(arch, base, fname)
                 ifs = ifs_keep
                 menu = menu_keep
 
@@ -240,14 +250,13 @@ def read_kconfig(base, filename):
                 A['default'] = a[1];
     emit(A)
 
-(directory, filename, cache) = sys.argv[1:4]
-arch = filename.split('/')[1]
+(arch, directory, filename, cache) = sys.argv[1:5]
 
 root['file'] = filename
 #root_arch['file'] = filename
 #root_arch['prompt'] = arch
 
-read_kconfig(directory, filename)
+read_kconfig(arch, directory, filename)
 
 #def flatten(parent):
 #    new_children = []

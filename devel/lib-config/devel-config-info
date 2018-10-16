@@ -22,7 +22,7 @@ fi
 rm -f "$base/CONFIGS-parser-"*
 for arch in $archs
 do
-	"$here/devel-config-parser" "$base" arch/$arch/Kconfig "$base/CONFIGS-parser-$arch"
+	"$here/devel-config-parser" "$arch" "$base" Kconfig "$base/CONFIGS-parser-$arch"
 done
 
 {
