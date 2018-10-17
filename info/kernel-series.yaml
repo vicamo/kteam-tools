@@ -125,10 +125,12 @@
 #       archive pocket
 #
 
-# 18.10 (Cosmic Cuttlefish)
-'18.10':
-    codename: cosmic
-    supported: true
+# 19.04 (Dunkin Doughnut)
+'19.04':
+    codename: dunkin
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
@@ -166,6 +168,157 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
+    sources:
+        linux:
+            versions: ['4.18.0']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dunkin', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/dunkin']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/dunkin']
+            supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.zKVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            copy-forward: [ '18.10', 'linux' ]
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dunkin', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/dunkin', 'raspi2']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+            copy-forward: [ '18.10', 'linux-raspi2' ]
+
+        linux-oem:
+            packages:
+                linux-oem:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/dunkin', 'oem-next']
+                linux-meta-oem:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/dunkin', 'oem']
+                linux-signed-oem:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/dunkin', 'oem']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oem:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem' ]
+
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/dunkin']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/dunkin']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
+            copy-forward: [ '18.10', 'linux-aws' ]
+
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/dunkin', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/dunkin']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/dunkin']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+            stakeholder: 'jrp'
+            copy-forward: [ '18.10', 'linux-azure' ]
+
+        linux-gcp:
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/dunkin', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/dunkin']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/dunkin']
+            snaps:
+                gcp-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/dunkin', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gcp']
+            copy-forward: [ '18.10', 'linux-gcp' ]
+
+        linux-kvm:
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/dunkin', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/dunkin']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['kvm']
+            copy-forward: [ '18.10', 'linux-kvm' ]
+
+# 18.10 (Cosmic Cuttlefish)
+'18.10':
+    codename: cosmic
+    supported: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['4.18.0']
