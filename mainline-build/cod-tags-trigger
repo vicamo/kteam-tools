@@ -62,10 +62,10 @@ do
 	eval 'case "$commit" in '"$pattern"') match=1;; *) match=0;; esac'
 	eval 'case "$commit" in '"$pattern_dev"') match_dev=1;; *) match_dev=0;; esac'
 	if [ "$match" -eq 1 ]; then
-		"$here/../ktl/announce.py" upstream-stable "Prepare Upstream Stable $commit" \
+		"$here/../bin/announce" upstream-stable "Prepare Upstream Stable $commit" \
 			"Upstream Stable $commit has been released."
 	elif [ "$match_dev" -eq 1 ]; then
-		"$here/../ktl/announce.py" upstream-devel "Prepare Upstream Stable $commit" \
+		"$here/../bin/announce" upstream-devel "Prepare Upstream Stable $commit" \
 			"Upstream Stable $commit has been released."
 	fi
 done <"$tags_list.added"

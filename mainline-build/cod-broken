@@ -24,7 +24,7 @@ check()
 	changes=$(diff -u "$dir/$which" "$dir/$which.new" | grep -c '^\+[^\+]')
 	echo "$P: $which ... changes=$changes"
 	if [ "$changes" -ne 0 ]; then
-		"$here/../ktl/announce.py" "$which" "$msg" "http://kernel.ubuntu.com/~kernel-ppa/status/broken/$which"
+		"$here/../bin/announce" "$which" "$msg" "http://kernel.ubuntu.com/~kernel-ppa/status/broken/$which"
 	fi
 
 	# Commit this version.

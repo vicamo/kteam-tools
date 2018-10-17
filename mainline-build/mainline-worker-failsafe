@@ -58,7 +58,7 @@ echo "$0: killing current runner -- $killit"
 mv "$state" "$state.killed"
 kill $( lsof -t /tmp/mainline-worker.lck )
 
-"$here/../ktl/announce.py" cod-mainline-failsafe "cod-job-failsafe $(uname -n) failsafe triggered -- $killit" \
+"$here/../bin/announce" cod-mainline-failsafe "cod-job-failsafe $(uname -n) failsafe triggered -- $killit" \
 	"Mainline Build on $(uname -n) has triggered failsafe abort:\n\n    $killit\n\nMainline Builders"
 
 exit 0

@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-#
-
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO, DEBUG, info, warning
 import os
-import sys
 
 from msgq                           import MsgQueue
 from messaging                      import Email
@@ -71,50 +65,3 @@ class Announce:
                 self.__email(key, subject, body, route)
             elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
-
-
-if __name__ == '__main__':
-    # Command line argument setup and initial processing
-    #
-    app_description = '''
-    '''
-    app_epilog = '''
-examples:
-    listen --help
-    '''
-    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
-    parser.add_argument('--local', action='store_true', default=False, help='Assume we have ssh tunnel setup to the MQ server.')
-    parser.add_argument('--body-file', action='store', default=False, help='File containing body text.')
-    parser.add_argument('routing', help='routing key')
-    parser.add_argument('subject', help='subject for the message')
-    parser.add_argument('body', nargs='?', help='body for the message')
-
-    args = parser.parse_args()
-
-    try:
-        # If logging parameters were set on the command line, handle them
-        # here.
-        #
-        log_format = "%(levelname)s - %(message)s"
-        if args.debug:
-            basicConfig(level=DEBUG, format=log_format)
-        else:
-            basicConfig(level=INFO, format=log_format)
-
-        announce = Announce()
-
-        body = ''
-        if args.body:
-            body = args.body
-        elif args.body_file:
-            with open(args.body_file) as bfd:
-                body = ''.join(bfd.readlines())
-        announce.send(args.routing, args.subject, body)
-
-    # Handle the user presses <ctrl-C>.
-    #
-    except KeyboardInterrupt:
-        warning("Aborting ...")
-
-    # vi:set ts=4 sw=4 expandtab:
