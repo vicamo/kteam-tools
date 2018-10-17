@@ -7,7 +7,6 @@ card()
 
 	echo "*** $name ..."
 
-	return
 	so-trello list-addcard \
 		--board "$trello_board" \
 		--list "$trello_list" \
