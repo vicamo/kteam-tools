@@ -7,6 +7,7 @@ card()
 
 	echo "*** $name ..."
 
+	return
 	so-trello list-addcard \
 		--board "$trello_board" \
 		--list "$trello_list" \
@@ -20,14 +21,15 @@ card2()
 	echo "body<$2>"
 }
 
-if [ "$#" -ne 4 ]; then
-	echo "Usage: $0 <board> <list> <proceedure text> <section title>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <board> <list> <section title>" 1>&2
 	exit 1
 fi
 trello_board="$1"
 trello_list="$2"
-text="$3"
-title="$4"
+title="$3"
+
+text="CHECKLIST"
 
 sed \
 	-e 's///g' \
@@ -37,13 +39,13 @@ sed \
 	-e 's/”/"/g' \
  <"$text" | \
 awk '
-	BEGIN			{ emit=0 }
-	/^'"$title"'$/		{ emit=1; next }
-	/^$/			{ next }
-	/^[^ 1]/		{ emit=0; next }
-	(/^1./ && emit)		{ print "EOC" }
-	(emit == 1)		{ print $0 }
-	END			{ print "EOC" }
+	BEGIN				{ emit=0 }
+	/^== '"$title"' ==$/		{ emit=1; next }
+	/^$/				{ next }
+	/^[^ -]/			{ emit=0; next }
+	(/^ -/ && emit)			{ print "EOC" }
+	(emit == 1)			{ print $0 }
+	END				{ print "EOC" }
 ' | {
 	title=""
 	body=""
@@ -57,7 +59,7 @@ awk '
 			title=''
 			body=''
 			;;
-		'1. '*)
+		' - '*)
 			title=$( echo "$line" | sed -e 's/^1\. //' )
 			;;
 		*)

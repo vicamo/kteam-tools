@@ -1,0 +1,128 @@
+﻿ = Base Procedures For Opening/Closing =
+
+Each section below represents the procedures and files needing
+update on Opening/Closing of a new series or point release.  These
+can be converted to trello cards using scripting in kteam-tools.
+Export this as text and use that as input.
+
+
+== Development Becomes Stable ==
+ - Switch development series to stable
+    - In kteam-tools/info/kernel-series.yaml
+       - Mark the series as “supported: true”, “development: false”
+
+
+== New Series Opening ==
+ - Add new series to Ubuntu KTL
+    - In kteam-tools/info/kernel-series.yaml:
+       - New section for the new series.
+       - Mark the new series as “supported : false”; “development: true”; “opening:”
+       - CHECK: confirm that we have derived kernels specified correctly in the previous series.
+ - Create new primary repositories
+    - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel
+    - push up new repositories to LP (commands to run locally):
+    - Push previous linus base version to seeds repository
+       - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/version-seeds tag v4.10
+       - Reset master and push that also
+    - linux-XXX
+       - In the previous series, push up the current master, the linus base tag, and the version tag for the bionic release pocket:
+          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic master
+          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic tag v4.13
+          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic tag Ubuntu-4.13.0-16.19
+    - Same for linux-signed:
+       - In the previous series, push up the current master, and the version tag for the bionic release pocket:
+          - git push lp:~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic master
+          - git push lp:~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic tag Ubuntu-4.13.0-16.19
+    - Same for linux-meta:
+       - git push lp:~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic master
+       - git push lp:~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic tag Ubuntu-4.13.-16.17
+    - Repeat the above for each derivative kernel in this series
+    - update description
+       - currently no descriptions
+    - copy hooks
+       - currently no hooks, waiting on the fine-grained permissions bits
+    - OPENING: repositories ready (opening: repositories: true)
+ - Add repositories to wani mirroring
+    - NEEDS: repos
+    - Add to repository.txt list in kteam-tools/info and push to wani
+    - Wait for mirroring to create repos
+    - add symlinks to ubuntu directory to expose them for legacy user
+ - Create new security git repositories
+    - NEEDS: launchpad group admin for canonical-kernel-security-team
+    - git remote add security lp-private:...
+    - git push security master
+    - Repeat for linux-signed and linux-meta
+ - Create new linux-snap git repository
+    - NEEDS: launchpad admin for ubuntu-kernel
+    - git fetch origin
+    - git push lp:lp:~ubuntu-kernel/ubuntu/+source/linux-snap/+git/<series> origin/master:heads/refs/master
+ - Create snap build recipies
+    - NEEDS: linux-snap git repository created
+    - NEEDS: collaborator on the snaps to be added
+    - Create recipies (Producing snaps documentation)
+ - Prime builder-extras for the new series
+    - NEEDS: series open in launchpad and launchpad builders valid
+    - Copy any valid packages in old series to new series
+ - Add series to chroot creation
+    - NEEDS: debootstrap updated for new series and installed on the builders
+    - NEEDS: builder-extras primed
+    - kteam-tools/chroot-setup
+    - chroot-setup/scripts/chroot-defs.conf
+       - add new release to top of script
+    - chroot-setup/scripts/build-mkschroot
+       - add new release where previous appears
+    - OPENING: repositories ready (opening: chroots: true)
+ - Add series to ADT matrix
+    - NEEDS: dashboard updated
+    - Adt-matrix configuration:
+    - Add a sensible version seed to the primary-hints.d and push
+       - kteam-tools/adt-matrix/adt-gen-seed bionic linux http://people.canonical.com/~kernel/status/adt-matrix/artful-linux-meta.latest.json
+ - Request Britney blocks for all copy-forward kernels
+    - NEEDS: britney running
+    - Each copy forward kernel needs blocking to prevent them escaping when the primary kernel is released
+    - OPENING: repositories ready (opening: britney: true)
+ - Confirm ADT running for series
+    - NEEDS: ADT running tests successfully in series
+    - OPENING: repositories ready (opening: autopkgtest: true in kernel-series)
+ - Remove opening tag
+    - NEEDS: repositories initialise
+    - NEEDS: chroots created
+    - NEEDS: britney running
+    - NEEDS: autopkgtest running in series
+    - remove “opening” from series stanza
+
+
+== Point Release ==
+ - Pick point release SRU cycle and announce
+    - Pick a likely last SRU cycle to hit the point release image
+ - Add/Update HWE backport in Ubuntu KTL
+    - NEEDS REVIEW
+    - XXX: new point release
+    - kteam-tools/ktl/ubuntu.py
+ - Update HWE-edge backport to point to the next series
+ - Add linux-hwe/linux-hwe-edge to CVE autotriage/matrix if necessary
+    - kteam-tools/cve-tools/cves-autotriage.conf
+    - kteam-tools/cve-tools/cve-matrix/
+
+
+== Old Series End ==
+ - Pick last SRU cycle and announce
+    - Pick a likely last SRU cycle announce this via email
+ - Review CVEs for must haves
+    - Review open CVEs for must have fixes to hit before the last SRU cycle is committed
+ - Mark series as unsupported in Ubuntu KTL
+    - NEEDS: EOL date formally past
+    - kteam-tools/info/kernel-series.yaml
+ - Drop series from CVE autotriage
+    - NEEDS REVIEW (kernel-series changes may moot this)
+    - cve-matrix/Makefile.combo
+       - Remove from relevant matrix definitions
+ - Disable chroots
+    - kteam-tools/chroot-setup
+    - Add series to expired_releases list in scripts/chroots-defs.conf
+    - Remove chroots from builders
+ - Drop series from ADT matrix
+    - drop series specific hints
+ - Close series nominations Won’t Fix
+    - NEEDS: EOL date formally past
+    - kteam-tools/bugs/close-eol-nominations <series>
