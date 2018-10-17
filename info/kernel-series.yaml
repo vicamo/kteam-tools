@@ -128,8 +128,7 @@
 # 18.10 (Cosmic Cuttlefish)
 '18.10':
     codename: cosmic
-    development: true
-    supported: false
+    supported: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
