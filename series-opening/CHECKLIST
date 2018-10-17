@@ -71,7 +71,7 @@ Export this as text and use that as input.
        - add new release to top of script
     - chroot-setup/scripts/build-mkschroot
        - add new release where previous appears
-    - OPENING: repositories ready (opening: chroots: true)
+    - OPENING: chroots ready (opening: chroots: true)
  - Add series to ADT matrix
     - NEEDS: dashboard updated
     - Adt-matrix configuration:
@@ -80,10 +80,10 @@ Export this as text and use that as input.
  - Request Britney blocks for all copy-forward kernels
     - NEEDS: britney running
     - Each copy forward kernel needs blocking to prevent them escaping when the primary kernel is released
-    - OPENING: repositories ready (opening: britney: true)
+    - OPENING: britney ready (opening: britney: true)
  - Confirm ADT running for series
     - NEEDS: ADT running tests successfully in series
-    - OPENING: repositories ready (opening: autopkgtest: true in kernel-series)
+    - OPENING: ADT ready (opening: autopkgtest: true in kernel-series)
  - Remove opening tag
     - NEEDS: repositories initialise
     - NEEDS: chroots created
