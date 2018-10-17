@@ -59,7 +59,7 @@ awk '
 			body=''
 			;;
 		' - '*)
-			title=$( echo "$line" | sed -e 's/^1\. //' )
+			title=$( echo "$line" | sed -e 's/^ - //' )
 			;;
 		*)
 			if [ "$body" = '' ]; then
