@@ -7,7 +7,6 @@ except ImportError:
     from urllib2 import urlopen
 
 import os
-import sys
 import yaml
 
 class KernelRoutingEntry:
@@ -15,12 +14,14 @@ class KernelRoutingEntry:
         name = "{}:{}".format(source.series.codename, source.name)
         if isinstance(data, str):
             name = data
-            rt = source.series.routing_table
-            if rt is None:
-                raise ValueError("unable to map routing alias {}, no series routing table".format(data))
-            if data not in rt:
-                raise ValueError("unable to map routing alias {}, not listed in series routing table".format(data))
-            data = rt[data]
+            table = source.series.routing_table
+            if table is None:
+                raise ValueError("unable to map routing alias {}, "
+                                 "no series routing table".format(data))
+            if data not in table:
+                raise ValueError("unable to map routing alias {}, "
+                                 "not listed in series routing table".format(data))
+            data = table[data]
 
         # Clear out any entries that have been overriden to None.
         for entry in dict(data):
@@ -42,7 +43,7 @@ class KernelRoutingEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._data == other._data
+            return list(self) == list(other)
         return False
 
     def __ne__(self, other):
@@ -56,7 +57,7 @@ class KernelRoutingEntry:
 
     def lookup_destination(self, dest, primary=False):
         data = self._data.get(dest, None)
-        if primary == False or data is None:
+        if primary is False or data is None:
             return data
         return data[0]
 
@@ -67,7 +68,7 @@ class KernelRoutingEntry:
 class KernelRepoEntry:
     def __init__(self, ks, owner, data):
         if isinstance(data, list):
-            new_data = { 'url': data[0] }
+            new_data = {'url': data[0]}
             if len(data) == 1:
                 new_data['branch'] = 'master'
             elif len(data) == 2:
@@ -113,7 +114,7 @@ class KernelSnapEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name and self._source == other._source
+            return self.name == other.name and self.source == other.source
         return False
 
     def __ne__(self, other):
@@ -180,7 +181,7 @@ class KernelPackageEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name and self._source == other._source
+            return self.name == other.name and self.source == other.source
         return False
 
     def __ne__(self, other):
@@ -222,7 +223,7 @@ class KernelSourceEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self.name == other.name and self._series == other._series
+            return self.name == other.name and self.series == other.series
         return False
 
     def __ne__(self, other):
@@ -251,7 +252,7 @@ class KernelSourceEntry:
     @property
     def version(self):
         versions = self.versions
-        if not versions or len(versions) < 1:
+        if not versions:
             return None
         return versions[-1]
 
@@ -314,25 +315,25 @@ class KernelSourceEntry:
     @property
     def testable_flavours(self):
         retval = []
-        if (self._data.get('testing') != None and
-            self._data['testing'].get('flavours') != None
+        if (self._data.get('testing') is not None and
+                self._data['testing'].get('flavours') is not None
            ):
             for flavour in self._data['testing']['flavours'].keys():
-                f = self._data['testing']['flavours'][flavour]
+                fdata = self._data['testing']['flavours'][flavour]
                 # If we have neither arches nor clouds we represent a noop
-                if not f:
+                if not fdata:
                     continue
-                arches = f.get('arches')
-                arches = arches if arches != None else []
-                clouds = f.get('clouds')
-                clouds = clouds if clouds != None else []
+                arches = fdata.get('arches', None)
+                arches = arches if arches is not None else []
+                clouds = fdata.get('clouds', None)
+                clouds = clouds if clouds is not None else []
                 retval.append(KernelSourceTestingFlavourEntry(flavour, arches, clouds))
         return retval
 
     @property
     def invalid_tasks(self):
         retval = self._data.get('invalid-tasks', [])
-        if retval == None:
+        if retval is None:
             retval = []
         return retval
 
@@ -342,11 +343,11 @@ class KernelSourceEntry:
             return None
 
         # XXX: backwards compatibility.
-        if self._data['copy-forward'] == False:
+        if self._data['copy-forward'] is False:
             return None
-        if self._data['copy-forward'] == True:
+        if self._data['copy-forward'] is True:
             derived_from = self.derived_from
-            if derived_from == None:
+            if derived_from is None:
                 return True
             return self.derived_from
 
@@ -406,17 +407,18 @@ class KernelSourceTestingFlavourEntry:
         return self._clouds
 
 class KernelSeriesEntry:
-    def __init__(self, ks, name, data):
+    def __init__(self, ks, name, data, defaults=None):
         self._ks = ks
         self._name = name
         self._data = {}
-        self._data.update(ks._defaults_series)
-        if data:
+        if defaults is not None:
+            self._data.update(defaults)
+        if data is not None:
             self._data.update(data)
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name
+            return self.name == other.name
         return False
 
     def __ne__(self, other):
@@ -433,7 +435,7 @@ class KernelSeriesEntry:
     @property
     def opening(self):
         if 'opening' in self._data:
-            if self._data['opening'] != False:
+            if self._data['opening'] is not False:
                 return True
         return False
 
@@ -441,13 +443,13 @@ class KernelSeriesEntry:
         if 'opening' not in self._data:
             return True
         allow = self._data['opening']
-        if allow == None:
+        if allow is None:
             return False
-        elif allow in (True, False):
+        if allow in (True, False):
             return not allow
         for flag in flags:
             flag_allow = allow.get(flag, False)
-            if flag_allow == None or flag_allow == False:
+            if flag_allow is None or flag_allow is False:
                 return False
         return True
     opening_allow = opening_ready
@@ -477,7 +479,8 @@ class KernelSeriesEntry:
         sources = self._data.get('sources')
         if sources:
             for source_key, source in sources.items():
-                result.append(KernelSourceEntry(self._ks, self, source_key, source))
+                result.append(KernelSourceEntry(
+                    self._ks, self, source_key, source))
         return result
 
     @property
@@ -494,8 +497,10 @@ class KernelSeriesEntry:
 # KernelSeries
 #
 class KernelSeries:
-    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/kernel-series.yaml'
-    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'info', 'kernel-series.yaml'))
+    _url = 'https://git.launchpad.net/~canonical-kernel/' \
+        '+git/kteam-tools/plain/info/kernel-series.yaml'
+    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                           '..', 'info', 'kernel-series.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
     _data_txt = {}
@@ -505,7 +510,7 @@ class KernelSeries:
         if url not in cls._data_txt:
             response = urlopen(url)
             data = response.read()
-            if type(data) != str:
+            if not isinstance(data, str):
                 data = data.decode('utf-8')
             cls._data_txt[url] = data
         return cls._data_txt[url]
@@ -515,7 +520,7 @@ class KernelSeries:
             if url:
                 response = urlopen(url)
                 data = response.read()
-            if type(data) != str:
+            if not isinstance(data, str):
                 data = data.decode('utf-8')
         else:
             data = self.__load_once(self._url_local if use_local else self._url)
@@ -539,12 +544,13 @@ class KernelSeries:
 
     @staticmethod
     def key_series_name(series):
-        return [ int(x) for x in series.name.split('.') ]
+        return [int(x) for x in series.name.split('.')]
 
     @property
     def series(self):
-        return [ KernelSeriesEntry(self, series_key, series)
-                 for series_key, series in self._data.items() ]
+        return [KernelSeriesEntry(self, series_key, series,
+                defaults=self._defaults_series)
+                for series_key, series in self._data.items()]
 
     def lookup_series(self, series=None, codename=None, development=False):
         if not series and not codename and not development:
@@ -559,7 +565,8 @@ class KernelSeries:
             series = self._development_series
         if series and series not in self._data:
             return None
-        return KernelSeriesEntry(self, series, self._data[series])
+        return KernelSeriesEntry(self, series, self._data[series],
+                                 defaults=self._defaults_series)
 
 
 if __name__ == '__main__':
