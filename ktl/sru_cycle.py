@@ -6,9 +6,8 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
-from datetime       import (date, datetime)
+from datetime       import datetime
 import os
-import sys
 import yaml
 
 class SruCycleEntry:
@@ -19,7 +18,7 @@ class SruCycleEntry:
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return self._name == other._name
+            return self.name == other.name
         return False
 
     def __ne__(self, other):
@@ -54,7 +53,8 @@ class SruCycleEntry:
 #
 class SruCycle:
     _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/sru-cycle.yaml'
-    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'info', 'sru-cycle.yaml'))
+    _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                           '..', 'info', 'sru-cycle.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
     #_url = 'file:///home/work/kteam-tools/info/kernel-series.yaml'
     _data = None
@@ -64,7 +64,7 @@ class SruCycle:
         if not cls._data:
             response = urlopen(url)
             data = response.read()
-            if type(data) != str:
+            if not isinstance(data, str):
                 data = data.decode('utf-8')
             cls._data = yaml.load(data)
 
@@ -73,7 +73,7 @@ class SruCycle:
             if url:
                 response = urlopen(url)
                 data = response.read()
-            if type(data) != str:
+            if not isinstance(data, str):
                 data = data.decode('utf-8')
             self._data = yaml.load(data)
         else:
@@ -81,8 +81,8 @@ class SruCycle:
 
     @property
     def cycles(self):
-        return [ SruCycleEntry(self, cycle_key, cycle)
-                 for cycle_key, cycle in self._data.items() ]
+        return [SruCycleEntry(self, cycle_key, cycle)
+                for cycle_key, cycle in self._data.items()]
 
     def lookup_cycle(self, cycle=None):
         if not cycle:
