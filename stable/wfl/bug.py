@@ -264,7 +264,10 @@ class WorkflowBug():
         '''
         Find the 'master' bug of which this is a derivative and return that bug.
         '''
-        return WorkflowBug(s.lp, s.master_bug_id)
+        if s.is_derivative_package:
+            return WorkflowBug(s.lp, s.master_bug_id)
+        else:
+            return None
 
     # is_proposed_only
     #
