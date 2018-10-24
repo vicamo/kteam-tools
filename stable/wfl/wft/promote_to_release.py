@@ -31,16 +31,19 @@ class PromoteToRelease(Promoter):
         while True:
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():
+                    s.task.reason = 'Master bug not ready for release'
                     break
 
             if not s._security_signoff_verified():
+                s.task.reason = 'Security signoff not verified'
                 break
 
             if not s._testing_completed():
+                s.task.reason = 'Testing not complete'
                 break
 
             if s._kernel_block():
-                cinfo('            A kernel-block tag exists on this tracking bug', 'yellow')
+                s.task.reason = 'A kernel-block/kernel-block-proposed tag present'
                 break
 
             s.task.status = 'Confirmed'
@@ -67,7 +70,7 @@ class PromoteToRelease(Promoter):
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.packages_released:
-                cinfo('            packages have not been released', 'yellow')
+                s.task.reason = 'Packages not yet published'
                 break
 
             cinfo('    All components are now in -release', 'magenta')
@@ -93,8 +96,7 @@ class PromoteToRelease(Promoter):
             s.bug.phase = 'Released'
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
             s.bug.add_comment('Package Released!', msgbody)
-            retval = True
-
+            retval = True 
         cleave(s.__class__.__name__ + '._fix_released (%s)' % retval)
         return retval
 

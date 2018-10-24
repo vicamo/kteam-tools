@@ -24,8 +24,10 @@ class SecuritySignoff(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(SecuritySignoff, s).__init__(lp, task, bug)
 
-        s.jumper['New']          = s._new
-        s.jumper['Confirmed']    = s._confirmed
+        s.jumper['New']            = s._new
+        s.jumper['Confirmed']      = s._confirmed
+        s.jumper['In Progress']    = s._confirmed
+        s.jumper['Fix Committed']  = s._confirmed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -40,7 +42,6 @@ class SecuritySignoff(TaskHandler):
                 # It doesn't matter if this is a derivative package or not, if the
                 # package isn't ready for testing (promoted to -proposed) then it
                 # can't be set to 'Confirmed'.
-                #
                 break
 
             if s.bug.is_derivative_package:
@@ -67,6 +68,8 @@ class SecuritySignoff(TaskHandler):
     def _confirmed(s):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
+
+        s.task.reason = 'Waiting for signoff'
 
         if s.bug.is_derivative_package:
             master = s.bug.master_bug

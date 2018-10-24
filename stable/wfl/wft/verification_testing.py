@@ -30,8 +30,11 @@ class VerificationTesting(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(VerificationTesting, s).__init__(lp, task, bug)
 
-        s.jumper['New']          = s._new
-        s.jumper['Confirmed']    = s._confirmed
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._status_check
+        s.jumper['In Progress']   = s._status_check
+        s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Incomplete']    = s._failed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -96,7 +99,7 @@ class VerificationTesting(TaskHandler):
 
     # _confirmed
     #
-    def _confirmed(s):
+    def _status_check(s):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
         if s.bug.is_derivative_package:
@@ -119,6 +122,17 @@ class VerificationTesting(TaskHandler):
                     cerror('            %s' % str(e))
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
+        return retval
+
+    # _failed
+    #
+    def _failed(s):
+        center(s.__class__.__name__ + '._failed')
+        retval = False
+
+        s.task.reason = 'Testing FAILED'
+
+        cleave(s.__class__.__name__ + '._failed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python

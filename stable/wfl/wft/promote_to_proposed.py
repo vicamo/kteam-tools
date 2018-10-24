@@ -56,6 +56,7 @@ class PromoteToProposed(Promoter):
 
         while not retval:
             if not s.bug.all_dependent_packages_fully_built:
+                s.task.reason = 'Builds not complete'
                 break
 
             if 'boot-testing-requested' not in s.bug.bprops:
@@ -64,15 +65,19 @@ class PromoteToProposed(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
+                    s.task.reason = 'Master bug not ready for proposed'
                     break
 
             if (not s.bug.proposed_pocket_clear and
                 not s._kernel_unblock_ppa()):
-                cinfo('            Another kernel is currently pending in -proposed', 'yellow')
+                s.task.reason = 'Another kernel is currently pending in proposed'
                 break
 
             if s._kernel_block_ppa():
-                cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug', 'yellow')
+                s.task.reason = 'Another kernel-block/kernel-block-ppa present'
+                break
+            if s._cycle_hold():
+                s.task.reason = 'Cycle on hold'
                 break
 
             s.task.status = 'Confirmed'
@@ -113,6 +118,7 @@ class PromoteToProposed(Promoter):
                 break
 
             if not s.bug.all_in_pocket('Proposed'):
+                s.task.reason = 'Packages not yet in -proposed'
                 break
 
             s.task.status = 'Fix Committed'
@@ -121,11 +127,15 @@ class PromoteToProposed(Promoter):
             break
 
         while True:
+            # Check if the packages are published completely yet.
+            if not s.bug.ready_for_testing:
+                s.task.reason = 'Packages copied but not yet published to -proposed'
+                break
 
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
-                cinfo('            packages are not in -proposed', 'yellow')
+                s.task.reason = 'Packages are in the wrong component'
                 break
 
             # If we've already been through here and already sent out the announcement

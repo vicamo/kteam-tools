@@ -68,6 +68,7 @@ class PreparePackageBase(TaskHandler):
             if s.bug.is_derivative_package:
                 master = s.bug.master_bug
                 if master.tasks_by_name['prepare-package'].status != 'Fix Released':
+                    s.task.reason = 'Waiting for master bug'
                     break
 
             # Confirm whether this package is actually valid.
@@ -82,6 +83,7 @@ class PreparePackageBase(TaskHandler):
             if (pkg != 'main' and s.bug.valid_package('main') and
                 s.bug.tasks_by_name['prepare-package'].status in ('New', 'Confirmed')
                ):
+                s.task.reason = 'Primary kernel package not uploaded'
                 retval = False
                 break
 
@@ -105,7 +107,9 @@ class PreparePackageBase(TaskHandler):
         retval = False
 
         while True:
+            # If we do not have a version then whine about that.
             if not s.bug.is_valid:
+                s.task.reason = 'Version not specified'
                 break
 
             # Since all the Prepare-package* packagestasks use this same method
@@ -121,6 +125,7 @@ class PreparePackageBase(TaskHandler):
 
             # Confirm that this package is uploaded.
             if not s.bug.uploaded(pkg):
+                s.task.reason = 'Package not yet uploaded'
                 break
 
             s.bug.phase = 'Uploaded'

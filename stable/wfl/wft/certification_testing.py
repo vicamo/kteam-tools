@@ -13,11 +13,11 @@ class CertificationTesting(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(CertificationTesting, s).__init__(lp, task, bug)
 
-        s.jumper['New']          = s._new
+        s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
-        s.jumper['Incomplete']    = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Incomplete']    = s._failed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -51,10 +51,22 @@ class CertificationTesting(TaskHandler):
             cdebug('Certification Testing tagged as PASSED', 'yellow')
             s.task.status = 'Fix Released'
         else:
+            s.task.reason = 'Testing in progress'
             cdebug('Certification Testing still running', 'yellow')
             pass
 
         cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
+        return retval
+
+    # _failed
+    #
+    def _failed(s):
+        center(s.__class__.__name__ + '._failed')
+        retval = False
+
+        s.task.reason = 'Testing FAILED'
+
+        cleave(s.__class__.__name__ + '._failed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python

@@ -14,9 +14,11 @@ class AutomatedTesting(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(AutomatedTesting, s).__init__(lp, task, bug)
 
-        s.jumper['New']          = s._new
-        s.jumper['Confirmed']    = s._confirmed
-        s.jumper['Incomplete']   = s._confirmed
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._status_check
+        s.jumper['In Progress']   = s._status_check
+        s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Incomplete']    = s._failed
 
         s.regressions_url = "http://people.canonical.com/~kernel/status/adt-matrix/overall.txt"
 
@@ -37,10 +39,10 @@ class AutomatedTesting(TaskHandler):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
-    # _confirmed
+    # _status_check
     #
-    def _confirmed(s):
-        center(s.__class__.__name__ + '._confirmed')
+    def _status_check(s):
+        center(s.__class__.__name__ + '._status_check')
         retval = False
 
         # Start by retrieving regression data
@@ -52,12 +54,26 @@ class AutomatedTesting(TaskHandler):
             state = s.check_testing_regression(s.bug.pkg_name, s.bug.pkg_version, data)
             if s.test_is_pass(state):
                 s.task.status = 'Fix Released'
-
                 retval = True
+            else:
+                s.task.reason = 'Testing in progress'
+
         except IOError:
+            s.task.reason = 'Testing results broken'
             cdebug('Failed to read from testing regressions data URL "%s"', s.regressions_url)
 
-        cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
+        cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
+        return retval
+
+    # _failed
+    #
+    def _failed(s):
+        center(s.__class__.__name__ + '._failed')
+        retval = False
+
+        s.task.reason = 'Testing FAILED'
+
+        cleave(s.__class__.__name__ + '._failed (%s)' % retval)
         return retval
 
     def test_is_regression(s, state):

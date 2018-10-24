@@ -41,25 +41,29 @@ class PromoteToUpdates(Promoter):
                 retval = True
                 break
 
-            if s.bug.is_derivative_package:
-                if not s.master_bug_ready():
-                    break
-
-            if not s._security_signoff_verified():
-                break
-
-            if not s._stakeholder_signoff_verified():
-                break
-
+            # If testing is not complete, we are not ready to release.
             if not s._testing_completed():
                 break
 
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    s.task.reason = 'Master bug not ready for release'
+                    break
+
+            if not s._security_signoff_verified():
+                s.task.reason = 'Security signoff not verified'
+                break
+
+            if not s._stakeholder_signoff_verified():
+                s.task.reason = 'Stakeholder signoff not verified'
+                break
+
             if s._kernel_block():
-                cinfo('            A kernel-block/kernel-block-proposed tag exists on this tracking bug', 'yellow')
+                s.task.reason = 'A kernel-block/kernel-block-proposed tag present'
                 break
 
             if not s._cycle_ready():
-                cinfo('            The cycle is not yet ready to release', 'yellow')
+                s.task.reason = 'Cycle not ready to release'
                 break
 
             s.task.status = 'Confirmed'
@@ -99,7 +103,7 @@ class PromoteToUpdates(Promoter):
                 cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
 
             if not s.bug.packages_released:
-                cinfo('            packages have not been released', 'yellow')
+                s.task.reason = 'Packages not yet published'
                 break
 
             cinfo('    All components are now in -updates', 'magenta')
@@ -126,10 +130,10 @@ class PromoteToUpdates(Promoter):
             #if promote_to_updates.status not in ['Invalid', 'Fix Released']:
             #    break
             if promote_to_updates.status == 'Invalid' and s.bug.packages_released:
-                cinfo('            packages have been released, but the task is set to "Invalid"', 'yellow')
+                s.task.reason = 'Packages have been released but the task set to Invalid'
                 break
             elif promote_to_updates.status == 'Fix Released' and not s.bug.packages_released:
-                cinfo('            packages have not been released, but the task is set to "Fix Released"', 'yellow')
+                s.task.reason = 'Packages have been released but the task set to Fix Released'
                 break
 
             # Since this is the one place where the master, project task is set Fix Released it needs to
@@ -138,36 +142,38 @@ class PromoteToUpdates(Promoter):
 
             # Confirm we have completed all testing.
             if not s._testing_completed():
+                s.task.reason = 'Testing not yet complete'
                 break
 
             # Confirm we have a valid security signoff.
             if not s._security_signoff_verified():
+                s.task.reason = 'Security signoff not verified'
                 break
 
             if not s.bug.is_development_series:
                 # Check that the promote-to-security status matches -security pocket.
                 promote_to_security = s.bug.tasks_by_name['promote-to-security']
                 if promote_to_security.status not in ['Invalid', 'Fix Released']:
-                    cinfo('            promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status), 'yellow')
+                    s.task.reason = 'promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status)
                     break
                 if promote_to_security.status == 'Invalid' and s.bug.packages_released_to_security:
-                    cinfo('            packages have been released to security, but the task is set to "Invalid"', 'yellow')
+                    s.task.reason = 'packages have been released to security, but the task is set to "Invalid"'
                     break
                 elif promote_to_security.status == 'Fix Released' and not s.bug.packages_released_to_security:
-                    cinfo('            packages have not been released to security, but the task is set to "Fix Released"', 'yellow')
+                    s.task.reason = 'packages have not been released to security, but the task is set to "Fix Released"'
                     break
 
                 # Check that the promote-to-security status matches that of the security-signoff.
                 security_signoff = s.bug.tasks_by_name['security-signoff']
                 if promote_to_security.status != security_signoff.status:
-                    cinfo('            package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status), 'yellow')
+                    s.task.reason = 'package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status)
                     break
 
                 # Check that all snap tasks are either "Invalid" or "Fix Released"
                 snap_done = True
                 for taskname in s.bug.tasks_by_name:
                     if taskname.startswith('snap-') and s.bug.tasks_by_name[taskname].status not in ['Invalid', 'Fix Released']:
-                        cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (taskname, s.bug.tasks_by_name[taskname].status), 'yellow')
+                        s.task.reason = '%s is neither "Fix Released" nor "Invalid" (%s)' % (taskname, s.bug.tasks_by_name[taskname].status)
                         snap_done = False
                 if not snap_done:
                     break

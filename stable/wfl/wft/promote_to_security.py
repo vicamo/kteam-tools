@@ -49,25 +49,29 @@ class PromoteToSecurity(Promoter):
                     retval = True
                     break
 
-            if s.bug.is_derivative_package:
-                if not s.master_bug_ready():
-                    break
-
-            if not s._security_signoff_verified():
-                break
-
-            if not s._stakeholder_signoff_verified():
-                break
-
+            # If testing is not complete, we are not ready to release.
             if not s._testing_completed():
                 break
 
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    s.task.reason = 'Master bug not ready for release'
+                    break
+
+            if not s._security_signoff_verified():
+                s.task.reason = 'Security signoff not verified'
+                break
+
+            if not s._stakeholder_signoff_verified():
+                s.task.reason = 'Stakeholder signoff not verified'
+                break
+
             if s._kernel_block():
-                cinfo('            A kernel-block/kernel-block-proposed tag exists on this tracking bug', 'yellow')
+                s.task.reason = 'A kernel-block/kernel-block-proposed tag present' 
                 break
 
             if not s._cycle_ready():
-                cinfo('            The cycle is not yet ready to release', 'yellow')
+                s.task.reason = 'Cycle not ready to release'
                 break
 
             s.task.status = 'Confirmed'
@@ -107,6 +111,7 @@ class PromoteToSecurity(Promoter):
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.packages_released_to_security:
+                s.task.reason = 'Packages not yet published'
                 break
 
             cinfo('    All components are now in -proposed', 'magenta')

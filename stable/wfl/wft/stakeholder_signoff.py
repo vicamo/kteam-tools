@@ -22,7 +22,10 @@ class StakeholderSignoff(TaskHandler):
         center(s.__class__.__name__ + '.__init__')
         super(StakeholderSignoff, s).__init__(lp, task, bug)
 
-        s.jumper['New']          = s._new
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._confirmed
+        s.jumper['In Progress']   = s._confirmed
+        s.jumper['Fix Committed'] = s._confirmed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -37,7 +40,6 @@ class StakeholderSignoff(TaskHandler):
                 # It doesn't matter if this is a derivative package or not, if the
                 # package isn't ready for testing (promoted to -proposed) then it
                 # can't be set to 'Confirmed'.
-                #
                 break
 
             s.task.status = 'Confirmed'
@@ -45,6 +47,17 @@ class StakeholderSignoff(TaskHandler):
             break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
+        return retval
+
+    # _confirmed
+    #
+    def _confirmed(s):
+        center(s.__class__.__name__ + '._confirmed')
+        retval = False
+
+        s.task.reason = 'Waiting for signoff'
+
+        cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
