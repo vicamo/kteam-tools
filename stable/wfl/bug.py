@@ -579,6 +579,12 @@ class WorkflowBug():
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval
 
+    # all_built_and_in_proposed
+    #
+    @property
+    def all_built_and_in_proposed(s):
+        return s.__package.all_built_and_in_proposed
+
     # ready_for_testing
     #
     @property
@@ -615,7 +621,7 @@ class WorkflowBug():
             now = datetime.utcnow()
             comp_date = date_available + timedelta(hours=1)
             if comp_date < now:
-                # It has been at least 2 hours since the package was either published or fully built
+                # It has been at least 1 hours since the package was either published or fully built
                 # in proposed.
                 #
                 retval = True

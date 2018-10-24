@@ -131,8 +131,11 @@ class PromoteToProposed(Promoter):
 
         while True:
             # Check if the packages are published completely yet.
-            if not s.bug.ready_for_testing:
+            if not s.bug.all_built_and_in_proposed:
                 s.task.reason = 'Packages copied but not yet published to -proposed'
+                break
+            if not s.bug.ready_for_testing:
+                s.task.reason = 'Packages waiting in -proposed for mirror sync'
                 break
 
             # Check if packages were copied to the right pocket->component
