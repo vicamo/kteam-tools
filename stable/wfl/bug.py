@@ -513,6 +513,35 @@ class WorkflowBug():
 
         return retval
 
+    # all_dependent_packages_uploaded
+    #
+    @property
+    def all_dependent_packages_uploaded(s):
+        '''
+        For the kernel package associated with this bug, the status of whether or
+        not all of the dependent packages (meta, signed, lbm, etc.) are uploaded
+        is returned.
+        '''
+        retval = True
+
+        bi = s.__package.build_info
+        for pkg in bi:
+            pkg_uploaded = False
+            try:
+                for pocket in bi[pkg]:
+                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+                        pkg_uploaded = True
+                        break
+            except KeyError:
+                pkg_uploaded = False
+
+            if not pkg_uploaded:
+                cinfo('        %s is not uploaded.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
     # valid_package
     #
     def valid_package(s, pkg):

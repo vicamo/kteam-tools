@@ -55,6 +55,9 @@ class PromoteToProposed(Promoter):
             break
 
         while not retval:
+            if not s.bug.all_dependent_packages_uploaded:
+                break
+
             if not s.bug.all_dependent_packages_fully_built:
                 s.task.reason = 'Builds not complete'
                 break
