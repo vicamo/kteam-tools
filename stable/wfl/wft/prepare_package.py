@@ -79,11 +79,11 @@ class PreparePackageBase(TaskHandler):
 
             # If we are not the primary-package and there is a primary package
             # hold us until the primary is handled, this keeps the todo list
-            # short and sweet.
+            # short and sweet.  The very first thing we need to do is to set
+            # the kernel version, so hold secondary packages pending that.
             if (pkg != 'main' and s.bug.valid_package('main') and
-                s.bug.tasks_by_name['prepare-package'].status in ('New', 'Confirmed')
+                not s.bug.is_valid
                ):
-                s.task.reason = 'Primary kernel package not uploaded'
                 retval = False
                 break
 
