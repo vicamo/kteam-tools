@@ -51,7 +51,8 @@ class Package():
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.
-        s._routing2 = {}
+        s._routing = {}
+        s.routing_mode = 'None'
         if s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
@@ -66,57 +67,9 @@ class Package():
                 archive = s.lp.launchpad.archives.getByReference(reference=route[0])
                 if archive is None:
                     continue
-                s._routing2[key] = (archive, route[1])
-
-        ubuntu_primary = s.lp.launchpad.archives.getByReference(reference='ubuntu')
-        if s.series == 'precise':
-            s.routing_mode = 'ESM'
-            ckt_esm_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-esm/ubuntu/ppa')
-            ckt_esm_proposed = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-esm/ubuntu/proposed')
-            esm_ppa = s.lp.launchpad.archives.getByReference(reference='~ubuntu-esm/ubuntu/esm')
-            s._routing = {
-                'ppa':      (ckt_esm_ppa, 'Release'),
-                'Proposed': (ckt_esm_proposed, 'Release'),
-                'Updates':  (esm_ppa, 'Release'),
-                'Security': (esm_ppa, 'Release'),
-                'Release':  (ubuntu_primary, 'Release'),
-            }
-
-        else:
-            s.routing_mode = 'ubuntu/primary'
-            ckt_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-team/ubuntu/ppa')
-            s._routing = {
-                'ppa':      (ckt_ppa, 'Release'),
-                'Proposed': (ubuntu_primary, 'Proposed'),
-                'Updates':  (ubuntu_primary, 'Updates'),
-                'Security': (ubuntu_primary, 'Security'),
-                'Release':  (ubuntu_primary, 'Release'),
-            }
-            if s.series == 'cosmic':
-                unstable_ppa = s.lp.launchpad.archives.getByReference(reference='~canonical-kernel-team/ubuntu/unstable')
-                s._routing['ppa'] = (unstable_ppa, 'Release')
-
-        match = True
-        for key in s._routing:
-            if key not in s._routing2:
-                cinfo("ROUTING: {} key not found in new table".format(key))
-                match = False
-                continue
-
-            if s._routing[key][0].self_link != s._routing2[key][0].self_link:
-                cinfo("ROUTING: {} key archive url missmatch".format(key))
-                match = False
-                continue
-            if s._routing[key][1] != s._routing2[key][1]:
-                cinfo("ROUTING: {} key archive pocket missmatch".format(key))
-                match = False
-                continue
-        if match:
-            cinfo("ROUTING: CMP matches");
-        else:
-            cinfo("ROUTING: CMP missmatch");
-        cinfo("ROUTING: TABLE-OLD " + str(s._routing))
-        cinfo("ROUTING: TABLE-NEW " + str(s._routing2))
+                s._routing[key] = (archive, route[1])
+            s.routing_mode = s.source.routing.name
+        cinfo("ROUTING: " + s.routing_mode + " " + str(s._routing))
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
