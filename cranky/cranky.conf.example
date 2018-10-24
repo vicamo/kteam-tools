@@ -34,10 +34,10 @@ package-path:
   #   {series}:      The distro series codename (bionic, ...)
   #   {type}:        The type of the package (main, meta, signed, ...)
   #   {type_suffix}: The suffix of dependent packages (-meta, -signed, ...)
-  #   {name}:        The package name (linux, linux-aws, linux-meta-gcp, ...)
+  #   {package}:     The package name (linux, linux-aws, linux-meta-gcp, ...)
   #
   # A default example would be something like the following:
-  #   default: ~/git/ubuntu/{series}/{name}
+  #   default: ~/git/ubuntu/{series}/{package}
   # Which - for bionic linux - expands to:
   #   ${HOME}/git/ubuntu/bionic/linux
   #   ${HOME}/git/ubuntu/bionic/linux-meta
