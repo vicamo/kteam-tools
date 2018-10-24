@@ -603,7 +603,7 @@
             packages:
                 linux-aws-edge:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-edge']
-                linux-meta-aws:
+                linux-meta-aws-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-edge']
             supported: true
@@ -736,10 +736,10 @@
             packages:
                 linux-gcp-edge:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-edge-next']
-                linux-meta-gcp:
+                linux-meta-gcp-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-edge']
-                linux-signed-gcp:
+                linux-signed-gcp-edge:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-edge']
             supported: true
