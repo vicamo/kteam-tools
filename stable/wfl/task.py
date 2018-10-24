@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-from .log                               import cdebug, center, cleave, cinfo
+from .log                               import cdebug, center, cleave, cinfo, cwarn
 
 
 # WorkflowBugTask
@@ -61,6 +61,23 @@ class WorkflowBugTask(object):
                 s.lp_task.status = val
                 s.__status = None
         cleave(s.__class__.__name__ + '.status')
+
+    # reason
+    #
+    @property
+    def reason(s):
+        '''
+        Property: Gets the current blocking reason.
+        '''
+        return s.bug.bprops.get('reason', {}).get(s.name, '')
+
+    @reason.setter
+    def reason(s, val):
+        '''
+        Property: Sets the current blocking reason.
+        '''
+        cwarn("    task-reason {} {}".format(s.name, val))
+        s.bug.bprops.setdefault('reason', {})[s.name] = val
 
     # assignee
     #

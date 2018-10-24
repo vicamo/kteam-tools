@@ -139,6 +139,7 @@ class WorkflowManager():
         modified = True
         try:
             bug = WorkflowBug(s.lp.default_service, bugid)
+            bug.reason_reset_all()
             while modified:
                 try:
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')

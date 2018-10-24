@@ -335,6 +335,15 @@ class WorkflowBug():
         cleave(s.__class__.__name__ + '.save_bug_properties')
         return retval
 
+    # reason_reset_all
+    #
+    def reason_reset_all(s):
+        '''
+        Reset all existing reasons for this bug.
+        '''
+        if 'reason' in s.bprops:
+            del s.bprops['reason']
+
     # check_is_valid
     #
     def check_is_valid(s, bug):
