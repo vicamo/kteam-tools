@@ -420,16 +420,8 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 		# Remove everything before the 'tag' command from the output
 		TAG_CMD=$(echo $COMMANDS| tail -n 1 |sed -e 's/.*git tag/git tag/g')
 	else
-		# For masters and derivatives,
-		# see if we need a startnewrelease
-		need_startnewrelease
-		if [[ $? -eq 1 ]] ; then
-			LOG "startnewrelease needed -- adding"
-			add_startnewrelease
-			LOG "Done adding startnewrelease"
-		else
-			LOG "startnewrelease not needed"
-		fi
+		LOG "Running cranky-start"
+		run_in_chroot $KTEAMTOOLS/cranky/cranky-start
 	fi
 
 	if [ $TYPE = 'derivative' ] ; then
@@ -455,18 +447,6 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 		fi
 	fi
 
-	if [ $TYPE = 'derivative' -o $TYPE = 'master' ] ; then
-		git clean -fxd
-		$FDR clean
-
-		LOG "Running fdr updateconfigs"
-		$FDR updateconfigs
-		#
-		# TODO Find a way to commit the updated configs properly
-		# Or warn the user to pre-commit them then re-run autokrank?
-		#
-	fi
-
 
 
 
@@ -480,20 +460,6 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 
 	LOG "Changelog file to be used: $CHANGELOG_FILE"
 
-	if [ $TYPE = 'derivative' ] ; then
-		CHANGELOG_BASE=$(cat $CHANGELOG_FILE|grep Ubuntu:|head -n 1 |sed -e 's/.*Ubuntu..//g'|sed -e 's/ .*//g')
-		CHANGELOG_HEAD=$(head -n 1 debian.master/changelog|sed -e 's/.*(//g'|sed -e 's/).*//g')
-		LOG "Calling insert-ubuntu-changes with args: $CHANGELOG_FILE $CHANGELOG_BASE $CHANGELOG_HEAD"
-		./debian/scripts/misc/insert-ubuntu-changes $CHANGELOG_FILE $CHANGELOG_BASE $CHANGELOG_HEAD
-	fi
-
-	if [ $TYPE = 'derivative' -o $TYPE = 'master' ] ; then
-		LOG "Running fdr insertchanges"
-		$FDR insertchanges
-	fi
-
-
-	dch --force-distribution --nomultimaint -c $CHANGELOG_FILE -r "" -D $SERIES
 
 	if [ $NO_LINKTOTRACKER != '1' ] ; then
 		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run --sru-cycle $SRUCYCLE"
@@ -506,15 +472,17 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 		LOG "Skipping link-to-tracker!!"
 	fi;
 
+
+	run_in_chroot $KTEAMTOOLS/cranky/cranky-close
+
+
 	if [ $TYPE = 'master' ] ; then
 		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
 		NEWTAG=Ubuntu-$VER
-		COMMIT_CMD="git commit -s -m \"UBUNTU: $NEWTAG\""
 		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
 	elif [ $TYPE = 'derivative' ] ; then
 		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
 		NEWTAG=Ubuntu-$VARIANT-$VER
-		COMMIT_CMD="git commit -s -m \"UBUNTU: $NEWTAG\""
 		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
 
 	# No need to save VER or NEWTAG for 'backport' - we already saved the COMMIT_CMD and TAG_CMD
@@ -523,8 +491,6 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 	git clean -fxd
 	git add .
 	LOG "Committing changes"
-	LOG "Commit command is: $COMMIT_CMD"
-	echo $COMMIT_CMD | bash
 	LOG "Tag command is: $TAG_CMD"
 	echo $TAG_CMD | bash
 
