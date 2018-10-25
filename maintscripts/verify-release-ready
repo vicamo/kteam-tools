@@ -532,6 +532,7 @@ class VerifyReleaseReady():
             'linux-oem',
             'linux-euclid',
             'linux-ibm-gt',
+            'linux-oracle',
         ]
 
         non_kernel_packages = [
@@ -555,6 +556,7 @@ class VerifyReleaseReady():
             'linux-meta-oem',
             'linux-meta-euclid',
             'linux-meta-ibm-gt',
+            'linux-meta-oracle',
             'linux-signed-lts-trusty',
             'linux-signed-lts-xenial',
             'linux-signed-hwe',
@@ -563,6 +565,7 @@ class VerifyReleaseReady():
             'linux-signed-azure',
             'linux-signed-azure-edge',
             'linux-signed-gcp',
+            'linux-signed-oracle',
             'linux-backports-modules-3.5.0',
             'linux-backports-modules-3.2.0',
             'linux-backports-modules-2.6.32',
