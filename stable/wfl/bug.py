@@ -762,38 +762,7 @@ class WorkflowBug():
 
         This method builds a list of the packages that are relevant to this particular bug.
         '''
-        center(s.__class__.__name__ + '.relevant_packages_list')
-        name_meta       = 'linux-meta'
-        name_ports_meta = 'linux-ports-meta'
-        name_signed     = 'linux-signed'
-        name_split = s.pkg_name.split('-', 1)
-        if len(name_split) > 1:
-            name_meta       = '%s-meta-%s'       % (name_split[0], name_split[1])
-            name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
-            name_signed     = '%s-signed-%s'     % (name_split[0], name_split[1])
-
-        name_map = {
-            'prepare-package-lbm'        : 'linux-backports-modules',
-            'prepare-package-meta'       : name_meta,
-            'prepare-package-ports-meta' : name_ports_meta,
-            'prepare-package-signed'     : name_signed
-        }
-        ver_split = s.pkg_version.split('-')
-        main_version = ver_split[0]
-        package_list = []
-        if s._has_prep_task('prepare-package'):
-            package_list.append(s.pkg_name)
-        for name in iter(name_map):
-            if s._has_prep_task(name):
-                if 'lbm' in name:
-                    package_list.append('%s-%s' % (name_map[name], main_version))
-                else:
-                    package_list.append(name_map[name])
-
-        for p in package_list:
-            cdebug('pkg: %s' % p)
-        cleave(s.__class__.__name__ + '.relevant_packages_list')
-        return package_list
+        return sorted(s.__package.pkgs.values())
 
     # phase_key
     #
