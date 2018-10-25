@@ -143,10 +143,10 @@
                 - ['ubuntu', 'Proposed']
             updates:
                 - ['ubuntu', 'Updates']
-            release:
-                - ['ubuntu', 'Release']
             security:
                 - ['ubuntu', 'Security']
+            release:
+                - ['ubuntu', 'Release']
         devel:
             <<:             *routing-table-default
             security-build:
