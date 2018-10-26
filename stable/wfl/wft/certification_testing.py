@@ -41,15 +41,17 @@ class CertificationTesting(TaskHandler):
 
         if 'certification-testing-failed' in s.bug.tags:
             cdebug('Certification Testing tagged as FAIL', 'yellow')
-            if s.task.status != 'Confirmed':
+            if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as certification-testing-failed\n'
                 s.bug.add_comment('Certification Testing FAILURE', msgbody)
                 s.task.status = 'Incomplete'
                 s.bug.phase = 'Testing Failed'
+                retval = True
 
         elif 'certification-testing-passed' in s.bug.tags:
-            cdebug('Certification Testing tagged as PASSED', 'yellow')
-            s.task.status = 'Fix Released'
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
 
         if s.task.status == 'Fix Released':
             pass

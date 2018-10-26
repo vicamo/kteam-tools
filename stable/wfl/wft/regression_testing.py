@@ -42,7 +42,7 @@ class RegressionTesting(TaskHandler):
 
         if 'qa-testing-failed' in s.bug.tags or 'regression-testing-failed' in s.bug.tags:
             cdebug('Regression Testing tagged as FAIL', 'yellow')
-            if s.task.status != 'Confirmed':
+            if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as qa-testing-failed\n'
                 s.bug.add_comment('Regression Testing FAILURE', msgbody)
                 s.task.status = 'Incomplete'
@@ -51,8 +51,9 @@ class RegressionTesting(TaskHandler):
 
         elif 'qa-testing-passed' in s.bug.tags or 'regression-testing-passed' in s.bug.tags:
             cdebug('Regression Testing tagged as PASSED', 'yellow')
-            s.task.status = 'Fix Released'
-            retval = True
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
 
         if s.task.status == 'Fix Released':
             pass

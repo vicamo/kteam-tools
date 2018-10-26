@@ -53,14 +53,13 @@ class AutomatedTesting(TaskHandler):
             # Check main package
             state = s.check_testing_regression(s.bug.pkg_name, s.bug.pkg_version, data)
             if s.test_is_regression(state):
-                s.task.status = 'Incomplete'
-                msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (s.bug.pkg_version, s.bug.pkg_name, s.bug.series)
-                msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
-                msgbody += "Please verify test results in %s\n" % s.regressions_url
-                # s.bug.add_comment('Automated-Testing regression', msgbody)
+                if s.task.status != 'Incomplete':
+                    s.task.status = 'Incomplete'
+                    retval = True
             elif s.test_is_pass(state):
-                s.task.status = 'Fix Released'
-                retval = True
+                if s.task.status != 'Fix Released':
+                    s.task.status = 'Fix Released'
+                    retval = True
 
             if s.task.status == 'Fix Released':
                 pass
@@ -93,6 +92,12 @@ class AutomatedTesting(TaskHandler):
                     state = res[3]
                     cdebug('            State for %s %s in %s: %s' % (package, version, s.bug.series, state))
 
+                    if s.test_is_regression(state):
+                        if s.task.status != 'Incomplete':
+                            msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (version, package, s.bug.series)
+                            msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
+                            msgbody += "Please verify test results in %s\n" % s.regressions_url
+                            # s.bug.add_comment('Automated-Testing regression', msgbody)
                     return state
         cdebug('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
         return None
