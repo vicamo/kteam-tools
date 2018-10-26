@@ -724,7 +724,7 @@ class AutoPackageTest(object):
         summary_str = ' '.join(summary)
 
         if len(verlist) == 0 or not verlist[0].startswith('0 '):
-            summary_str += 'SEED-AWOL'
+            summary_str += ' (SEED-AWOL)'
 
         if ver:
             (version, flavour) = ver.split()
