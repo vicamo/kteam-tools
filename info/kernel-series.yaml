@@ -79,6 +79,8 @@
 #       either a text string which is the name of a routing-table entry
 #       for this series, or a RoutingTable entry directly expressed
 #       against this source package.
+#  * private (bool)
+#       set to true if this source package is a private custom package
 #
 # Package record fields:
 #  * type (string)
@@ -851,6 +853,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-bionic']
             supported: true
+            private: true
             derived-from: ['18.04', 'linux']
             testing:
                 flavours:

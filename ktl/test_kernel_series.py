@@ -2477,6 +2477,44 @@ class TestKernelRoutingEntry(TestKernelSeriesCore):
 
         self.assertEqual(routing.name, 'bionic:linux')
 
+    def test_private_present_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    private: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertTrue(source.private)
+
+    def test_private_present_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    private: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertFalse(source.private)
+
+    def test_private_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertFalse(source.private)
+
 
 if __name__ == '__main__':
     unittest.main()

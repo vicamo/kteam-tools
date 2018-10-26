@@ -378,6 +378,10 @@ class KernelSourceEntry:
     def swm_data(self):
         return self._data.get('swm')
 
+    @property
+    def private(self):
+        return self._data.get('private', False)
+
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
 
