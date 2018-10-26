@@ -515,7 +515,7 @@ class KernelSeries:
             cls._data_txt[url] = data
         return cls._data_txt[url]
 
-    def __init__(self, url=None, data=None, use_local=False):
+    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False)):
         if data or url:
             if url:
                 response = urlopen(url)
