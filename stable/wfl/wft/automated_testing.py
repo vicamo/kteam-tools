@@ -54,7 +54,7 @@ class AutomatedTesting(TaskHandler):
             state = s.check_testing_regression(s.bug.pkg_name, s.bug.pkg_version, data)
             if s.test_is_regression(state):
                 s.task.status = 'Incomplete'
-                msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (version, package, s.bug.series)
+                msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (s.bug.pkg_version, s.bug.pkg_name, s.bug.series)
                 msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
                 msgbody += "Please verify test results in %s\n" % s.regressions_url
                 # s.bug.add_comment('Automated-Testing regression', msgbody)
