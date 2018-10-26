@@ -33,8 +33,8 @@ class VerificationTesting(TaskHandler):
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
         s.jumper['In Progress']   = s._status_check
+        s.jumper['Incomplete']    = s._status_check
         s.jumper['Fix Committed'] = s._status_check
-        s.jumper['Incomplete']    = s._failed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -121,18 +121,14 @@ class VerificationTesting(TaskHandler):
                 except BugSpamError as e:
                     cerror('            %s' % str(e))
 
+        if s.task.status == 'Fix Released':
+            pass
+        elif s.task.status == 'Incomplete':
+            s.task.reason = 'Testing FAILED'
+        else:
+            s.task.reason = 'Testing in progress'
+
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
-        return retval
-
-    # _failed
-    #
-    def _failed(s):
-        center(s.__class__.__name__ + '._failed')
-        retval = False
-
-        s.task.reason = 'Testing FAILED'
-
-        cleave(s.__class__.__name__ + '._failed (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
