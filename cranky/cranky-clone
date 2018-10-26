@@ -164,32 +164,26 @@ if __name__ == '__main__':
 
     desc = """
 Clone the repos (typically 'linux', 'linux-meta', and 'linux-signed') that make
-up a set of Ubuntu kernel packages.
+up a set of Ubuntu kernel packages. The local directories where the repos are
+cloned into is specified in the cranky config file (see 'package-path' in the
+'Configuration file' section below).
 """
 
     epilog = """
 Examples:
-  $ cranky-clone xenial
-      The 'linux', 'linux-meta' and 'linux-signed' repositories for Xenial
-      are all cloned under a 'xenial' root directory:
-        ./xenial/
-          ├── linux
-          ├── linux-meta
-          └── linux-signed
+  $ cranky-clone xenial:linux
+      Clone the 'linux', 'linux-meta' and 'linux-signed' repositories for
+      Xenial.
 
-  $ cranky-clone --reference /home/work/linux-2.6 xenial main
+  $ cranky-clone --reference /home/work/linux-2.6 xenial:linux
       Same as above but use a local clone of Linus' upstream repo as a git
       reference.
 
-  $ cranky-clone xenial aws
-      The 'linux-aws', 'linux-meta-aws' and 'linux-signed-aws' repositories for
-      the Xenial AWS variant are cloned under a 'xenial' root directory:
-        ./xenial/
-          ├── linux-aws
-          ├── linux-meta-aws
-          └── linux-signed-aws
+  $ cranky-clone xenial:linux-aws
+      Clone the 'linux-aws', 'linux-meta-aws' and 'linux-signed-aws'
+      repositories for the Xenial AWS variant.
 
-  $ cranky-clone xenial raspi2
+  $ cranky-clone xenial:linux-raspi2
       This variant doesn't have stand-alone repos but instead resides on
       branches of the main 'linux', 'linux-meta' and 'linux-signed' repos. See
       below for more details.
@@ -213,11 +207,12 @@ Configuration file:
     clone:
       reference: '/home/repo/linux-2.6'
       dissociate: true
+    package-path:
+      default: ~/git/ubuntu/{series}/{package}
 """
 
-    help_variant = """
-Kernel variant (main, raspi2, aws, ...). If not specified, defaults to 'main',
-which is the main distro kernel for the specified series.
+    help_handle = """
+Handle to a kernel source tree in <series>:<package> format.
 """
 
     help_reference = """
@@ -235,8 +230,7 @@ traffic. This is a git clone option, check 'git help clone' for more details.
     parser = argparse.ArgumentParser(description=desc, formatter_class=
                                      argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
-    parser.add_argument("handle", help="Kernel source set handle (bionic:linux,"
-                        " xenial:linux-aws)")
+    parser.add_argument("handle", help=help_handle)
     parser.add_argument("-r", "--reference",
                         default=expanduser(config_cmd.get('reference', None)),
                         help=help_reference)
