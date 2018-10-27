@@ -125,9 +125,9 @@
 #       archive pocket
 #
 
-# 19.04 (Dunkin Doughnut)
+# 19.04 (Disco Dingo)
 '19.04':
-    codename: dunkin
+    codename: disco
     development: true
     supported: false
     opening:
@@ -173,13 +173,13 @@
             versions: ['4.18.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dunkin', 'master-next']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco']
                 linux-signed:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/disco']
             supported: true
             testing:
                 flavours:
@@ -196,10 +196,10 @@
         linux-raspi2:
             packages:
                 linux-raspi2:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/dunkin', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'raspi2']
                 linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/dunkin', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'raspi2']
             supported: true
             derived-from: [ '18.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
@@ -208,13 +208,13 @@
         linux-oem:
             packages:
                 linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/dunkin', 'oem-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/disco', 'oem-next']
                 linux-meta-oem:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/dunkin', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/disco', 'oem']
                 linux-signed-oem:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/dunkin', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco', 'oem']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -229,10 +229,10 @@
         linux-aws:
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/disco']
                 linux-meta-aws:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/disco']
             supported: true
             derived-from: [ '18.10', 'linux' ]
             testing:
@@ -247,13 +247,13 @@
         linux-azure:
             packages:
                 linux-azure:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/dunkin', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/disco', 'master-next']
                 linux-meta-azure:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/disco']
                 linux-signed-azure:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/disco']
             supported: true
             derived-from: [ '18.10', 'linux' ]
             testing:
@@ -269,17 +269,17 @@
         linux-gcp:
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/dunkin', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/disco', 'master-next']
                 linux-meta-gcp:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/disco']
                 linux-signed-gcp:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/disco']
             snaps:
                 gcp-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/dunkin', 'gcp']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/disco', 'gcp']
                     gated: false
                     stable: false
                     qa: false
@@ -299,10 +299,10 @@
         linux-kvm:
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/dunkin', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/disco', 'master-next']
                 linux-meta-kvm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/dunkin']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/disco']
             supported: true
             derived-from: [ '18.10', 'linux' ]
             testing:
