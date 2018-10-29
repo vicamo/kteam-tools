@@ -146,16 +146,16 @@ class Package():
                 # Determine testing flavours.
                 s.test_flavours = None
 
-        if not matched:
-            cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
-            return False
-
         # Work out what series this package is published in...
         series_tag_entry = None
         for tag in lpbug.tags:
             series_tag_entry = s.kernel_series.lookup_series(codename=tag)
             if series_tag_entry:
                 break
+
+        if not matched:
+            cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
+            return False
 
         # Set the series attribute
         cdebug(' series: %s' % series_tag_entry.codename)
