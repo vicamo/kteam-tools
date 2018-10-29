@@ -103,7 +103,10 @@ class PromoteToUpdates(Promoter):
                 cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
 
             if not s.bug.packages_released:
-                s.task.reason = 'Packages not yet published'
+                if s.task.status == 'Confirmed':
+                    s.task.reason = 'Ready to copy'
+                else:
+                    s.task.reason = 'Packages not yet published'
                 break
 
             cinfo('    All components are now in -updates', 'magenta')

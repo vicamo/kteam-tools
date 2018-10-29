@@ -111,7 +111,10 @@ class PromoteToSecurity(Promoter):
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.packages_released_to_security:
-                s.task.reason = 'Packages not yet published'
+                if s.task.status == 'Confirmed':
+                    s.task.reason = 'Ready to copy'
+                else:
+                    s.task.reason = 'Packages not yet published'
                 break
 
             cinfo('    All components are now in -proposed', 'magenta')

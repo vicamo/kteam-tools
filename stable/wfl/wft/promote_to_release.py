@@ -15,6 +15,7 @@ class PromoteToRelease(Promoter):
 
         s.jumper['New']           = s._ready_for_release
         s.jumper['Confirmed']     = s._verify_promotion
+        s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
         s.jumper['Fix Released']  = s._fix_released
 
@@ -70,7 +71,14 @@ class PromoteToRelease(Promoter):
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.packages_released:
-                s.task.reason = 'Packages not yet published'
+                if s.task.status == 'Confirmed':
+                    s.task.reason = 'Ready to copy'
+                elif s.task.status == 'Incomplete':
+                    s.task.reason = 'Copy FAILED'
+                elif s.task.status == 'Fix Committed':
+                    s.task.reason = 'Packages not yet published'
+                else:
+                    s.task.reason = 'Copy in progress'
                 break
 
             cinfo('    All components are now in -release', 'magenta')

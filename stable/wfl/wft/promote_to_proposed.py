@@ -121,7 +121,6 @@ class PromoteToProposed(Promoter):
                 break
 
             if not s.bug.all_in_pocket('Proposed'):
-                s.task.reason = 'Packages not yet in -proposed'
                 break
 
             s.task.status = 'Fix Committed'
@@ -131,6 +130,16 @@ class PromoteToProposed(Promoter):
 
         while True:
             # Check if the packages are published completely yet.
+            if not s.bug.all_in_pocket('Proposed'):
+                if s.task.status == 'Confirmed':
+                    s.task.reason = 'Ready for review'
+                elif s.task.status == 'Incomplete':
+                    s.task.reason = 'Review FAILED'
+                elif s.task.status == 'Fix Committed':
+                    s.task.reason = 'Packages copies requested'
+                else:
+                    s.task.reason = 'Review in progress'
+                break
             if not s.bug.all_built_and_in_proposed:
                 s.task.reason = 'Packages copied but not yet published to -proposed'
                 break
