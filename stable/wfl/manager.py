@@ -92,7 +92,7 @@ class WorkflowManager():
                 for task in tasks:
                     bug = task.bug
                     cinfo('    LP: #%s - %s' % (bug.id, bug.title), 'magenta')
-                    retval[bug.id] = bug.title
+                    retval[str(bug.id)] = bug.title
 
         cleave('WorkflowManager.buglist')
         return retval
