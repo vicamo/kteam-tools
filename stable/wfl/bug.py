@@ -344,6 +344,28 @@ class WorkflowBug():
         if 'reason' in s.bprops:
             del s.bprops['reason']
 
+    def status_summary(s):
+        '''
+        Return the current reason set for this bug.
+        '''
+        status = s.bprops
+        try:
+            status['cycle'] = s.sru_cycle
+            status['series'] = s.series
+            status['package'] = s.pkg_name
+            if s.pkg_version is not None:
+                status['version'] = s.pkg_version
+        except:
+            pass
+
+        # Do not expose this API error.
+        master_bug = s.master_bug_property_name
+        if master_bug in status:
+            status['master-bug'] = status[master_bug]
+            del status[master_bug]
+
+        return status
+
     # check_is_valid
     #
     def check_is_valid(s, bug):

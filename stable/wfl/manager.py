@@ -2,6 +2,8 @@
 #
 
 from datetime                           import datetime
+import os
+import yaml
 
 from .log                               import center, cleave, cdebug, cinfo
 from .launchpad                         import Launchpad
@@ -56,7 +58,19 @@ class WorkflowManager():
         WorkflowBug.no_phase_changes  = s.args.no_phase_changes
         WorkflowBug.local_msgqueue_port = s.args.local_msgqueue_port
 
+        # Load up our current status set iff we do not have a limited bug set.
+        s.status_path = 'status.yaml'
+        s.status = {}
+        if s.args.bugs is not None and os.path.exists(s.status_path):
+            with open(s.status_path) as rfd:
+                s.status = yaml.safe_load(rfd)
+
         cleave('WorkflowManager.__init__')
+
+    def status_save(s):
+        with open(s.status_path + '.new', 'w') as rfd:
+            yaml.dump(s.status, rfd, default_flow_style=False)
+        os.rename(s.status_path + '.new', s.status_path)
 
     @property
     def lp(s):
@@ -149,6 +163,10 @@ class WorkflowManager():
                     for l in e.message:
                         cinfo(l, 'red')
             bug.save()
+
+            # Update the global status for this bug.
+            s.status[bugid] = bug.status_summary()
+            s.status_save()
 
         except WorkflowBugError:
             # Bug doesn't exist?
