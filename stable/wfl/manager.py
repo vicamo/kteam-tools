@@ -190,6 +190,7 @@ class WorkflowManager():
             task_name = therest
 
             if workflow_task_name not in s._task_map:
+                task.reason('unknown workflow task')
                 cinfo('        Unknown workflow task')
                 continue
 
@@ -197,6 +198,15 @@ class WorkflowManager():
             if cls.evaluate_status(task.status) and not s.args.dryrun:
                 retval = True
                 cinfo('        True')
+
+            # Insert a default reason for anything which is active and did not say why.
+            if task.reason == '':
+                if task.status == 'Confirmed':
+                    task.reason = 'Ready'
+                elif task.status in ('In Progress', 'Fix Committed'):
+                    task.reason = task.status
+                elif task.status == 'Incomplete':
+                    task.reason = 'FAILED'
 
         cleave('WorkflowManager.process_bug_tasks')
         return retval
