@@ -18,6 +18,9 @@ Export this as text and use that as input.
        - New section for the new series.
        - Mark the new series as “supported : false”; “development: true”; “opening:”
        - CHECK: confirm that we have derived kernels specified correctly in the previous series.
+ - Archive opening
+    - NEEDS: final name set and archive accepting uploads
+    - OPENING: opening: archive-open: true
  - Create new primary repositories
     - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel
     - push up new repositories to LP (commands to run locally):
@@ -41,7 +44,7 @@ Export this as text and use that as input.
        - currently no descriptions
     - copy hooks
        - currently no hooks, waiting on the fine-grained permissions bits
-    - OPENING: repositories ready (opening: repositories: true)
+    - OPENING: opening: repositories: true
  - Add repositories to wani mirroring
     - NEEDS: repos
     - Add to repository.txt list in kteam-tools/info and push to wani
@@ -71,7 +74,7 @@ Export this as text and use that as input.
        - add new release to top of script
     - chroot-setup/scripts/build-mkschroot
        - add new release where previous appears
-    - OPENING: chroots ready (opening: chroots: true)
+    - OPENING: opening: chroots: true
  - Add series to ADT matrix
     - NEEDS: dashboard updated
     - Adt-matrix configuration:
@@ -80,10 +83,10 @@ Export this as text and use that as input.
  - Request Britney blocks for all copy-forward kernels
     - NEEDS: britney running
     - Each copy forward kernel needs blocking to prevent them escaping when the primary kernel is released
-    - OPENING: britney ready (opening: britney: true)
+    - OPENING: opening: britney: true
  - Confirm ADT running for series
     - NEEDS: ADT running tests successfully in series
-    - OPENING: ADT ready (opening: autopkgtest: true in kernel-series)
+    - OPENING: opening: autopkgtest: true
  - Remove opening tag
     - NEEDS: repositories initialise
     - NEEDS: chroots created
