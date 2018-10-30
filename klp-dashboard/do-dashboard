@@ -1,5 +1,5 @@
 #!/bin/sh
 ./gather-releases > supported-releases.json
 ./find-klp-trackers > klp.json
-./generate-dashboard klp-dashboard.rc > klp-dashboard.tmp && mv klp-dashboard.tmp web/klp-dashboard.html
+./generate-dashboard klp-dashboard.rc > index.tmp && mv index.tmp web/index.html
 
