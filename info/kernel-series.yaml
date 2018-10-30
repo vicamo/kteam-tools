@@ -131,6 +131,7 @@
     development: true
     supported: false
     opening:
+        archive-readable: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
