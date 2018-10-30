@@ -1,0 +1,362 @@
+#!/usr/bin/env python3
+#
+
+from datetime                           import datetime, timedelta
+from argparse                           import ArgumentParser, RawTextHelpFormatter
+from logging                            import basicConfig, DEBUG, INFO
+from klog.log                           import center, cleave, cdebug, Clog
+from lib.launchpad                      import Launchpad
+from lib.package                        import Package
+import json
+
+# ErrorExit
+#
+class ErrorExit(Exception):
+    def __init__(s, emsg):
+        s.message = emsg
+
+# PackageError
+#
+class PackageError(Exception):
+    '''
+    Thrown when some basic information about the package that is associated with the
+    shankbug could not be determined.
+    '''
+    def __init__(s, emsg):
+        s.message = emsg
+
+# SeriesLookupFailure
+#
+class SeriesLookupFailure(Exception):
+    '''
+    Thrown when the series lookup throws a KeyError exception.
+    '''
+    def __init__(s, emsg):
+        s.message = emsg
+
+# WorkflowBugTask
+#
+class WorkflowBugTask(object):
+    dryrun = False
+    no_assignments    = False
+    no_status_changes = False
+
+    # __init__
+    #
+    def __init__(s, lp_task, task_name):
+        s.__status   = None
+        s.__assignee = None
+        setattr(s, 'name', task_name)
+        setattr(s, 'importance', lp_task.importance)
+        setattr(s, 'lp_task', lp_task)
+        s.__modified = False
+        s.bug = lp_task.bug
+
+    # status
+    #
+    @property
+    def status(s):
+        '''
+        Property: Gets the status for the task.
+        '''
+        if s.__status is None:
+            s.__status = s.lp_task.status
+        return s.__status
+
+    # assignee
+    #
+    @property
+    def assignee(s):
+        '''
+        Property: Gets the assignee for the task.
+        '''
+        if s.__assignee is None:
+            assignee = s.lp_task.assignee
+            if assignee is None:
+                s.__assignee = 'unassigned'
+            else:
+                s.__assignee = assignee.display_name
+        return s.__assignee
+
+    # modified
+    #
+    @property
+    def modified(s):
+        return s.__modified
+
+# Tracker
+#
+class Tracker():
+    '''
+    '''
+    # __init__
+    #
+    def __init__(s, lp, project, lpbug):
+        center(s.__class__.__name__ + '.__init__')
+        cdebug(s.__class__.__name__ + '      lpbug: %s' % lpbug)
+        cdebug(s.__class__.__name__ + '    project: %s' % project)
+        s.__project = None
+        s.launchpad = lp
+        s.lpbug = lpbug
+        s.package = Package(lp, lpbug)
+        s.tasks_by_name = s.create_tasks_by_name_mapping(lpbug, s.project)
+        s.properties = s.__decode_properties(lpbug)
+        s.project_tracked = s.project
+        cleave(s.__class__.__name__ + '.__init__')
+
+    @property
+    def project(s):
+        if s.__project is None:
+            s.__project = 'canonical-lkp-workflow'
+        return s.__project
+
+    # create_tasks_by_name_mapping
+    #
+    def create_tasks_by_name_mapping(s, lpbug, project):
+        '''
+        We are only interested in the tasks that are specific to the workflow project. Others
+        are ignored.
+        '''
+        center(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        cdebug(s.__class__.__name__ + '      lpbug: %s' % lpbug)
+        cdebug(s.__class__.__name__ + '    project: %s' % project)
+        tasks_by_name = {}
+
+        cdebug('    Scanning bug tasks:', 'cyan')
+
+        s.series = s.package.kernel_series
+        # for task in tracker.lpbug.bug_tasks_collection:
+        for task in lpbug.bug_tasks:
+            task_name = task.bug_target_name
+            try:
+                tasks_by_name[task_name] = WorkflowBugTask(task, task_name)
+            except:
+                print(' ** Error: Exception raised while scanning the bug tasks for LP: #%s' % lpbug.id)
+                print('           task: %s' % task_name)
+                raise
+
+        cleave(s.__class__.__name__ + '.create_tasks_by_name_mapping')
+        return tasks_by_name
+
+    def __decode_properties(s, lpbug):
+        retval = {}
+        description = lpbug.description
+        for line in description.split('\n'):
+            try:
+                if ':' in line:
+                    (key, value) = line.split(':', 1)
+                    value = value.strip()
+                    if len(value) > 0:
+                        retval[key] = value.strip()
+            except:
+                cdebug('Exception throw decoding properties')
+                cdebug('"%s"' % line)
+                pass # ignore any exception processing property lines
+        return retval
+
+    @property
+    def id(s):
+        return s.lpbug.id
+
+    @property
+    def title(s):
+        return s.lpbug.title
+
+    @property
+    def is_derivative(s):
+        return 'kernel-stable-master-bug' in s.properties
+
+# Trackers
+#
+class Trackers():
+    '''
+    '''
+    # __init__
+    #
+    def __init__(s, project, callback=None):
+        '''
+        Return a list of all the tracking bugs that need to be processed.
+        '''
+        center(s.__class__.__name__ + '.__init__')
+        s.launchpad = Launchpad('kernel-tracking-bugs-utility').service
+
+        cdebug('project: %s' % project)
+        search_tags = []
+        search_tags_combinator = "All"
+        # A list of the bug statuses that we care about
+        #
+        search_status = ["New", "In Progress", "Incomplete", "Fix Committed"]
+        # The tracking bugs that we are interested in should have been created recently (days).
+        #
+        search_since  = datetime.utcnow() - timedelta(days=60)
+        lp_project = s.launchpad.projects[project]
+        tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+
+        for task in tasks:
+            callback(s.launchpad, project, task.bug)
+
+        cleave(s.__class__.__name__ + '.__init__')
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        center(s.__class__.__name__ + '.__init__')
+        s.args = args
+        s.projects_tracked = [
+            'canonical-lkp-workflow',
+        ]
+        s.project_tracked = 'canonical-lkp-workflow'
+
+        s.__sorted = True
+        s.__trackers = []
+        s.__trackers_by_series = {}
+        s.__db = {}
+        cleave(s.__class__.__name__ + '.__init__')
+
+    def __task_status(s, bug, task_name):
+        try:
+            task = bug.tasks_by_name['%s/%s' % (s.project_tracked, task_name)]
+        except KeyError:
+            return 'Task missing'
+        return task.status
+
+    def __assignee(s, bug, task_name):
+        task = bug.tasks_by_name['%s/%s' % (s.project_tracked, task_name)]
+        return task.assignee
+
+    def __phase(s, bug):
+        retval = 'unknown'
+
+        while True:
+            status = s.__task_status(bug, 'payload-regression-testing')
+            if status == 'In Progress':
+                retval = 'Payload Testing'
+                break
+
+            status = s.__task_status(bug, 'promote-tarball-to-proposed')
+            if status == 'Confirmed':
+                retval = 'Ready to promote tarball to Proposed'
+                break
+            if status == 'In Progress':
+                retval = 'Promoting tarball to Proposed'
+                break
+
+            status = s.__task_status(bug, 'promote-tarball-to-release')
+            if status == 'Confirmed':
+                retval = 'Ready to promote tarball to Release'
+                break
+            if status == 'In Progress':
+                retval = 'Promoting tarball to Release'
+                break
+
+            status = s.__task_status(bug, 'promote-tarball-to-stable')
+            if status == 'Confirmed':
+                retval = 'Ready to promote tarball to Stable'
+                break
+            if status == 'In Progress':
+                retval = 'Promoting tarball to Stable'
+                break
+
+            status = s.__task_status(bug, 'promote-to-proposed')
+            if status == 'Confirmed':
+                retval = 'Ready to promote to Proposed'
+                break
+            if status == 'In Progress':
+                retval = 'Promoting to Proposed'
+                break
+
+            break
+
+        return retval
+
+    def __info(s, bug):
+        retval = {}
+        retval['id'] = bug.id
+        retval['title']    = bug.title
+        retval['package-name']  = bug.package.name
+        retval['package-version']  = bug.package.version
+        retval['series']   = bug.package.kernel_series_version
+        retval['codename'] = bug.package.kernel_series
+        retval['kernel']   = bug.package.kernel
+        retval['kernel-flavour']  = bug.package.kernel_flavour
+        retval['kernel-package'] = bug.package.kernel_package
+
+        cycle = 'unknown'
+        for t in bug.lpbug.tags:
+            if t.startswith('livepatch-cycle'):
+                cycle = t.replace('livepatch-cycle-', '')
+        retval['cycle'] = cycle
+        retval['phase'] = s.__phase(bug)
+
+        return retval
+
+    def __main_callback(s, lp, project, lpbug):
+        center(s.__class__.__name__ + '.__main_callback')
+
+        bug = Tracker(lp, project, lpbug)
+        if bug.package.kernel_series_version not in s.__db[project]:
+            s.__db[project][bug.package.kernel_series_version] = {}
+
+        if bug.package.kernel_package not in s.__db[project][bug.package.kernel_series_version]:
+            s.__db[project][bug.package.kernel_series_version][bug.package.kernel_package] = {}
+
+        s.__db[project][bug.package.kernel_series_version][bug.package.kernel_package][lpbug.id] = s.__info(bug)
+
+        cleave(s.__class__.__name__ + '.__main_callback')
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        center(s.__class__.__name__ + '.status')
+
+        for project in s.projects_tracked:
+            s.__db[project] = {}
+            Trackers(project, callback=s.__main_callback)
+
+        print(json.dumps(s.__db, sort_keys=True, indent=4))
+        cleave(s.__class__.__name__ + '.status')
+
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawTextHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+
+    app = TheApp(args)
+    try:
+        exit(app.main())
+    # except AttributeError:
+    #     parser.print_help()
+    except KeyboardInterrupt:
+        pass
+
+# vi:set ts=4 sw=4 expandtab:

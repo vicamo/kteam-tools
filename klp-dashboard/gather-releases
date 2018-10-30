@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO, DEBUG, warning
+import json
+from lib.kernel_series                  import KernelSeries
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+examples:
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=INFO, format=log_format)
+
+    try:
+        rls = {}
+        ks = KernelSeries()
+        for series in ks.series:
+            if series.development:
+                rls[series.name] = series.codename
+            if series.supported:
+                rls[series.name] = series.codename
+        print(json.dumps(rls, sort_keys=True, indent=4))
+        retval = 0
+
+    # Handle the user presses <ctrl-C>.
+    #
+    except KeyboardInterrupt:
+        warning("Aborting ...")
+
+# vi:set ts=4 sw=4 expandtab:

@@ -1,0 +1,8 @@
+{
+    "template" : "web/templates/klp-dashboard.mako",
+    "title"    : "Canonical LKP Workflow Dashboard",
+    "data"     : {
+        "workflow" : "klp.json",
+        "releases" : "supported-releases.json"
+    }
+}

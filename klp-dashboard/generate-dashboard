@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawTextHelpFormatter
+from datetime                           import datetime
+
+from lib.utils                          import json_load, file_load, FileDoesntExist
+from logging                            import basicConfig, DEBUG, INFO
+from klog.log                           import center, cleave, Clog
+
+from mako.template                      import Template
+from mako.exceptions                    import RichTraceback
+
+# Exit
+#
+class Exit(Exception):
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# GenerateDashboard
+#
+class GenerateDashboard():
+    """
+    This class/script builds a number of reports based on the data in a "report
+    configuration file" and the bug database.
+    """
+
+    # __init__
+    #
+    def __init__(self, args):
+        center("GenerateDashboard.__init__")
+        self.args = args
+        cleave("GenerateDashboard.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        center("GenerateDashboard.initialize")
+
+        try:
+            # Load the reports configuration file
+            #
+            self.dash = json_load(self.args.rc)
+            self.mako_template = Template(file_load(self.dash['template']))
+
+        except FileDoesntExist as e:
+            e.print_std_error()
+            raise Exit()
+
+        except KeyboardInterrupt:
+            raise Exit()
+
+        finally:
+            cleave("GenerateDashboard.initialize")
+
+        return
+
+    # main
+    #
+    def main(self):
+        center("GenerateDashboard.main")
+
+        try:
+            self.initialize()
+
+            data = {}
+            try:
+                for section in self.dash['data']:
+                    file_name = self.dash['data'][section]
+                    data[section] = json_load(file_name)
+            except FileDoesntExist as e:
+                e.print_std_error()
+                raise Exit()
+
+            try:
+                template = self.mako_template.render(config=self.dash, data=data, timestamp=datetime.utcnow().strftime('%Y-%m-%d %H:%M'))
+                print(template)
+            except:
+                traceback = RichTraceback()
+                for (filename, lineno, function, line) in traceback.traceback:
+                    print("File %s, line %s, in %s" % (filename, lineno, function))
+                    print(line, "\n")
+                print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        cleave("GenerateDashboard.main")
+        return
+
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+    '''
+    app_epilog = '''
+    '''
+
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawTextHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('rc',             type=str, help='')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    if args.debug:
+        log_format = "%(levelname)s - %(message)s"
+        basicConfig(level=DEBUG, format=log_format)
+        Clog.dbg = True
+    else:
+        log_format = "%(message)s"
+        basicConfig(level=INFO, format=log_format)
+
+    app = GenerateDashboard(args)
+    try:
+        exit(app.main())
+    # except AttributeError:
+    #     parser.print_help()
+    except KeyboardInterrupt:
+        pass
+
+# vi:set ts=4 sw=4 expandtab:
