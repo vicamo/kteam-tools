@@ -155,40 +155,6 @@ class Workflow:
                 'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
             }
         },
-        'linux-azure' :  {
-            'task_assignment' : {
-                'snap-release-to-beta'       : 'canonical-kernel-team',
-                'snap-release-to-candidate'  : 'canonical-kernel-team',
-                'snap-release-to-edge'       : 'canonical-kernel-team',
-                'snap-release-to-stable'     : 'canonical-kernel-team',
-                'snap-qa-testing'            : 'canonical-kernel-team',
-                'snap-publish'               : 'canonical-kernel-team',
-                'snap-certification-testing' : 'canonical-hw-cert',
-                'prepare-package'            : 'canonical-kernel-team',
-                'prepare-package-lbm'        : 'canonical-kernel-team',
-                'prepare-package-lrm'        : 'canonical-kernel-team',
-                'prepare-package-lum'        : 'canonical-kernel-team',
-                'prepare-package-meta'       : 'canonical-kernel-team',
-                'prepare-package-ports-meta' : 'canonical-kernel-team',
-                'prepare-package-signed'     : 'canonical-kernel-team',
-                'automated-testing'          : 'canonical-kernel-team',
-                'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'canonical-kernel-team',
-                'certification-testing'      : 'canonical-hw-cert',
-                'regression-testing'         : 'canonical-kernel-team',
-                'promote-to-updates'         : 'ubuntu-sru',
-                'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security',
-                'stakeholder-signoff'        : 'linux-azure-signoff',
-            },
-            'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
-            'subscribers' :
-                ["sru-verification", "ubuntu-sru", "hardware-certification"],
-            'invalidate_tasks' : {
-                'certification-testing' : ['3.5.0'] # Kernels that are supported but Cert. no longer tests
-            }
-        },
         'default' :  {
             'task_assignment' : {
                 'snap-release-to-beta'       : 'canonical-kernel-team',
