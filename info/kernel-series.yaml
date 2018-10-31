@@ -133,6 +133,8 @@
     opening:
         archive-closed: true
         repositories: true
+        britney: true
+        autopkgtest: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
