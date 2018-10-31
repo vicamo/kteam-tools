@@ -267,7 +267,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
             copy-forward: [ '18.10', 'linux-azure' ]
 
         linux-gcp:
@@ -415,7 +415,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
             packages:
@@ -651,7 +651,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
             packages:
@@ -673,7 +673,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
             packages:
@@ -695,7 +695,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
             packages:
@@ -1073,7 +1073,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
             packages:
@@ -1445,7 +1445,7 @@
                         arches: ['amd64']
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
-            stakeholder: 'jrp'
+            stakeholder: 'linux-azure-signoff'
 
         linux-keystone:
             packages:
