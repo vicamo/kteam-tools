@@ -131,7 +131,7 @@
     development: true
     supported: false
     opening:
-        archive-readable: true
+        archive-closed: true
         repositories: true
     routing-table: &routing-table
         default: &routing-table-default
