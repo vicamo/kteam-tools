@@ -292,8 +292,16 @@ class WorkflowBug():
                 started = True
 
         if started and buf is not None:
+            # Launchpad will convert leading spaces into utf-8 non-breaking spaces
+            # when you manually edit the description in the web interface.
+            sane = ''
+            for c in buf:
+                if ord(c) == 160:
+                    sane += ' '
+                else:
+                    sane += c
             try:
-                retval = yaml.safe_load(buf)
+                retval = yaml.safe_load(sane)
             except:
                 cinfo('Exception thrown trying to load bug properties', 'red')
                 retval = {}
