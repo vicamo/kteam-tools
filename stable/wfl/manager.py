@@ -61,11 +61,14 @@ class WorkflowManager():
         # Load up our current status set iff we do not have a limited bug set.
         s.status_path = 'status.yaml'
         s.status = {}
-        if s.args.bugs is not None and os.path.exists(s.status_path):
+        if s.args.bugs and os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
                 s.status = yaml.safe_load(rfd)
 
         cleave('WorkflowManager.__init__')
+
+    def status_set(s, bugid, summary):
+        s.status[bugid] = summary
 
     def status_save(s):
         with open(s.status_path + '.new', 'w') as rfd:
@@ -134,6 +137,8 @@ class WorkflowManager():
         except KeyboardInterrupt:
             pass
 
+        s.status_save()
+
         cleave('WorkflowManager.manage')
         return 0
 
@@ -168,8 +173,7 @@ class WorkflowManager():
             bug.save()
 
             # Update the global status for this bug.
-            s.status[bugid] = bug.status_summary()
-            s.status_save()
+            s.status_set(bugid, bug.status_summary())
 
         except WorkflowBugError:
             # Bug doesn't exist?
