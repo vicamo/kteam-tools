@@ -146,6 +146,7 @@
     opening:
         archive-closed: true
         repositories: true
+        debootstrap: true
         britney: true
         autopkgtest: true
     routing-table: &routing-table
