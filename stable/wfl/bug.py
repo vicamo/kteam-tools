@@ -313,7 +313,7 @@ class WorkflowBug():
         newd = ''
 
         if len(s.bprops) > 0:
-            new_props = yaml.dump(s.bprops, default_flow_style=False).strip()
+            new_props = yaml.safe_dump(s.bprops, default_flow_style=False).strip()
 
             description = s.lpbug.description
             for l in description.split('\n'):
