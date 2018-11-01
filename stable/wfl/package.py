@@ -378,7 +378,8 @@ class Package():
             cdebug('exact version match required')
             for p in ps:
                 src_ver = p.source_package_version
-                if src_ver == release:
+                # Exact match or exact prefix plus '+somethingN'
+                if src_ver == release or src_ver.startswith(release + '+'):
                     cdebug('adding: %s' % src_ver, 'green')
                     matches.append(p)
                     match = True
