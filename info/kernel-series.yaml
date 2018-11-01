@@ -21,6 +21,19 @@
 #       create this if this series is currently being opened.  Elements within
 #       represent opening sensitive processing flags such as cve-autotriage.
 #         cve-autotriage: true
+#     * archive-closed
+#         archive series initialised and publisher publishing archive uploads
+#         not permitted yet
+#     * archive-open
+#         archive open for copies etc
+#     * repositories
+#         the primary kernel repositories are initialised
+#     * debootstrap
+#         the builders have debootstrap for the new series installed
+#     * britney
+#         britney is up and producing update_excuses.yaml for the new series
+#     * autopkgtest
+#         autopkgtest is testing for the new series
 #  * development (bool)
 #       set to true if this is the current development release
 #  * supported (bool)
