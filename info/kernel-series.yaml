@@ -778,9 +778,15 @@
         linux-ibm-gt:
             routing:
                 test-build:
-                    - ['ppa:ibm-cloud/test', 'Release']
+                    - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+                build:
+                    - ['ppa:ibm-cloud/ubuntu/build', 'Release']
                 test:
                     - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+                proposed:
+                    - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
+                release:
+                    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
             packages:
                 linux-ibm-gt:
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'master-next']
