@@ -1,0 +1,25 @@
+#!/usr/bin/python
+from __future__ import print_function
+
+import os
+import sys
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "libs")))
+
+from ktl.kernel_series import KernelSeries
+
+kernel_series = KernelSeries()
+
+# Commands: primary
+cmd = sys.argv[1]
+
+if cmd == 'release':
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.opening_ready('archive-closed', 'debootstrap'):
+            continue
+        expired = ''
+        if not series.supported and not series.development:
+            expired=' expired'
+
+        print("release {series}{expired};".format(series=series.codename, expired=expired))
