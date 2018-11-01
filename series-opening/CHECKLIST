@@ -67,13 +67,10 @@ Export this as text and use that as input.
     - NEEDS: series open in launchpad and launchpad builders valid
     - Copy any valid packages in old series to new series
  - Add series to chroot creation
-    - NEEDS: debootstrap updated for new series and installed on the builders
     - NEEDS: builder-extras primed
-    - kteam-tools/chroot-setup
-    - chroot-setup/scripts/chroot-defs.conf
-       - add new release to top of script
-    - chroot-setup/scripts/build-mkschroot
-       - add new release where previous appears
+    - NEEDS: debootstrap updated for new series and installed on the builders
+    - once opening: debootstrap: true is present the chroots will be added to
+      the next automated run; once they are ready
     - OPENING: opening: chroots: true
  - Add series to ADT matrix
     - NEEDS: dashboard updated
