@@ -59,4 +59,22 @@ do
         git fetch "$alt_url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
 done <"$here/../info/repositories.txt"
 
+# MIRROR launchpad -> wani things in kernel-series
+"$here/mirror-config" repositories | \
+while read series package name url
+do
+    echo "*** $series $package $url -> $name"
+    repo="/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/$name"
+
+    if [ ! -d "$repo" ]; then
+	(
+	    mkdir "$repo" || exit 1
+	    git init --bare "$repo"
+	    cp "$repo/hooks/post-update.sample" "$repo/hooks/post-update"
+	)
+    fi
+    (cd "$repo" && \
+        git fetch "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*')
+done
+
 date
