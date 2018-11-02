@@ -17,7 +17,7 @@ cmd = sys.argv[1]
 url_seen = {}
 if cmd == 'repositories':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
-        if not series.opening_ready('respositories'):
+        if series.opening_ready('repositories') is False:
             continue
         if series.esm:
             continue
