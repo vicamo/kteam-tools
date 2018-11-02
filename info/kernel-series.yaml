@@ -1875,7 +1875,6 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lucid', 'master-next']
                 linux-backports-modules-2.6.32:
                     type: lbm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.32']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lucid']
@@ -2012,7 +2011,6 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/gutsy', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/gutsy']
 
 # 7.04 (feisty)
 '7.04':
@@ -2028,7 +2026,6 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/feisty', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/feisty']
 
 # 6.06 (dapper)
 '6.06':
@@ -2046,7 +2043,6 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-backports-modules-2.6.15']
                 linux-restricted-modules-2.6.15:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-2.6.15']
 
 # 5.10 (beezy)
 '5.10':
