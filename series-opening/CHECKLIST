@@ -56,8 +56,9 @@ Export this as text and use that as input.
     - Repeat for linux-signed and linux-meta
  - Create new linux-snap git repository
     - NEEDS: launchpad admin for ubuntu-kernel
+    - NOTE: Only needed on LTSs
     - git fetch origin
-    - git push lp:lp:~ubuntu-kernel/ubuntu/+source/linux-snap/+git/<series> origin/master:heads/refs/master
+    - git push lp:lp:~ubuntu-kernel/+git/linux-snap-<series> refs/remotes/origin/master:heads/refs/master
  - Create snap build recipies
     - NEEDS: linux-snap git repository created
     - NEEDS: collaborator on the snaps to be added
