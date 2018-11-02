@@ -725,6 +725,7 @@ class AutoPackageTest(object):
 
         if len(verlist) == 0 or not verlist[0].startswith('0 '):
             summary_str += ' (SEED-AWOL)'
+            primary_state = 'REGN'
 
         if ver:
             (version, flavour) = ver.split()
