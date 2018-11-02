@@ -23,6 +23,8 @@ if cmd == 'repositories':
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
+            if not source.supported:
+                continue
             if source.name == 'linux':
                 form = 'ubuntu-{series}{type}.git'
                 variant = ''
