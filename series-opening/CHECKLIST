@@ -47,7 +47,6 @@ Export this as text and use that as input.
     - OPENING: opening: repositories: true
  - Add repositories to wani mirroring
     - NEEDS: repos
-    - Add to repository.txt list in kteam-tools/info and push to wani
     - Wait for mirroring to create repos
     - add symlinks to ubuntu directory to expose them for legacy user
  - Create new security git repositories
