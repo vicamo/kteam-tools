@@ -11,6 +11,9 @@ import os
 from subprocess             import run, PIPE
 import sys
 
+# Add ../cranky to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                              os.pardir, 'cranky')))
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                               os.pardir, 'libs')))
@@ -62,7 +65,6 @@ def initialise_repositories(args):
     ks = KernelSeries()
     hdl = Handle()
 
-    print(args)
     old_series = ks.lookup_series(codename=args.old_series)
     if old_series is None:
         cerror("{}: old_series not known".format(args.old_series))
