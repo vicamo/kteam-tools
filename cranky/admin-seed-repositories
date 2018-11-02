@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+#
+# Seed new repositories with master from the previous series in order to create
+# them.
+#
+# Andy Whitcroft <apw@canonical.com>
+
+import argparse
+import logging
+import os
+from subprocess             import run, PIPE
+import sys
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                              os.pardir, 'libs')))
+
+from crl.handle             import Handle, HandleError
+from ktl.kernel_series      import KernelSeries
+from ktl.log                import cerror, cnotice, cwarn
+
+
+def git_remote_update(repo_dir, remote, url):
+    result = run(["git", "config", "remote.{}.url".format(remote)],
+                 cwd=repo_dir, stdout=PIPE)
+    if result.returncode == 0:
+        current_url = result.stdout.decode('utf-8').strip()
+        if current_url != url:
+            cnotice("Updating remote {} in {}".format(remote, repo_dir))
+            result = run(["git", "config", "remote.{}.url".format(remote),
+                          url], cwd=repo_dir, stdout=PIPE)
+            if result.returncode != 0:
+                cerror("failed to update remote {} url to {} "
+                       "rc={}".format(remote, url, result.returncode))
+                sys.exit(1)
+    else:
+        cnotice("Adding remote {} in {}".format(remote, repo_dir))
+        result = run(["git", "remote", "add", remote, url], cwd=repo_dir)
+        if result.returncode != 0:
+            cerror("failed to add remote {} "
+                   "rc={}".format(remote, result.returncode))
+            sys.exit(1)
+
+    cnotice("Fetching remote {} in {}".format(remote, repo_dir))
+    result = run(["git", "fetch", remote], cwd=repo_dir)
+    if result.returncode != 0:
+        cerror("failed to fetch remote {} "
+               "rc={}".format(remote, result.returncode))
+        sys.exit(1)
+
+
+def git_push(repo_dir, url, source, destination):
+    cnotice("Pushing {} to {}:{}".format(source, url, destination))
+    cmd = ["git", "push", url, "+" + source + ":" + destination]
+    result = run(cmd, cwd=repo_dir)
+    if result.returncode != 0:
+        cerror("git push failed rc={}".format(result.returncode))
+        sys.exit(1)
+
+
+def initialise_repositories(args):
+    ks = KernelSeries()
+    hdl = Handle()
+
+    print(args)
+    old_series = ks.lookup_series(codename=args.old_series)
+    if old_series is None:
+        cerror("{}: old_series not known".format(args.old_series))
+        sys.exit(1)
+    new_series = ks.lookup_series(codename=args.new_series)
+    if new_series is None:
+        cerror("{}: new_series not known".format(args.new_series))
+        sys.exit(1)
+
+    for source in new_series.sources:
+        for package in source.packages:
+            print(source.name, package.name)
+
+            tree = hdl.lookup_tree(old_series.codename + ':' + package.name, validate=False)
+
+            print(tree.directory, tree.remote)
+            remote = tree.remote
+
+            if not os.path.exists(tree.directory):
+                cwarn("{} does not exist, skipping".format(tree.directory))
+                continue
+
+            git_remote_update(tree.directory, remote, tree.package.repo.url)
+
+            if args.new_series not in package.repo.url:
+                cwarn("{} package url does not reference new series, skipping".format(package.repo.url))
+                continue
+            branch = package.repo.branch
+            git_push(tree.directory, package.repo.url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+            if branch.endswith('-next'):
+                branch = branch[:-5]
+                git_push(tree.directory, package.repo.url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+            if source.name == 'linux':
+                url = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/' + package.name + '-' + new_series.codename
+                git_push(tree.directory, url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    desc = """
+Initialise all of the repositories for an opening series.
+"""
+
+    parser = argparse.ArgumentParser(description=desc, formatter_class=
+                                     argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("old_series")
+    parser.add_argument("new_series")
+    args = parser.parse_args()
+
+    initialise_repositories(args)
