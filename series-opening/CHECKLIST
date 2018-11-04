@@ -23,27 +23,9 @@ Export this as text and use that as input.
     - OPENING: opening: archive-open: true
  - Create new primary repositories
     - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel
-    - push up new repositories to LP (commands to run locally):
-    - Push previous linus base version to seeds repository
-       - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/version-seeds tag v4.10
-       - Reset master and push that also
-    - linux-XXX
-       - In the previous series, push up the current master, the linus base tag, and the version tag for the bionic release pocket:
-          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic master
-          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic tag v4.13
-          - git push lp:~ubuntu-kernel/ubuntu/+source/linux/+git/bionic tag Ubuntu-4.13.0-16.19
-    - Same for linux-signed:
-       - In the previous series, push up the current master, and the version tag for the bionic release pocket:
-          - git push lp:~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic master
-          - git push lp:~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic tag Ubuntu-4.13.0-16.19
-    - Same for linux-meta:
-       - git push lp:~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic master
-       - git push lp:~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic tag Ubuntu-4.13.-16.17
-    - Repeat the above for each derivative kernel in this series
-    - update description
-       - currently no descriptions
-    - copy hooks
-       - currently no hooks, waiting on the fine-grained permissions bits
+    - run the admin/admin-seed-repositories script to initialise
+      the primary and security repositories
+    - XXX: permissions
     - OPENING: opening: repositories: true
  - Add repositories to wani mirroring
     - NEEDS: repos
