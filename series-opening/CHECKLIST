@@ -77,15 +77,15 @@ Export this as text and use that as input.
 == Point Release ==
  - Pick point release SRU cycle and announce
     - Pick a likely last SRU cycle to hit the point release image
- - Add/Update HWE backport in Ubuntu KTL
-    - NEEDS REVIEW
-    - XXX: new point release
-    - kteam-tools/ktl/ubuntu.py
- - Update HWE-edge backport to point to the next series
- - Add linux-hwe/linux-hwe-edge to CVE autotriage/matrix if necessary
-    - kteam-tools/cve-tools/cves-autotriage.conf
-    - kteam-tools/cve-tools/cve-matrix/
-
+    - announce to kernel-team@ mailing list etc
+ - Add/Update linux-hwe backport in Ubuntu kernel-series
+    - if necessary add linux-hwe to kernel-series ready for
+      release
+ - Review ADT testing for linux-hwe-edge in preparation for promotion
+ - Roll over linux-hwe-edge over to linux-hwe for point release SRU cycle
+    - pull the linux-hwe-edge kernel into linux-hwe repositories and upload
+      as linux-hwe et al.
+ - Update linux-hwe-edge backport to point to the next series
 
 == Old Series End ==
  - Pick last SRU cycle and announce
