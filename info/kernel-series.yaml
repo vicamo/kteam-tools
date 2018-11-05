@@ -548,15 +548,15 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
             snaps:
-                pi2-kernel:
+                pi-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi']
                     gated: false
                     stable: false
                     qa: false
-                    hw-cert: false
-                    arches: ['armhf']
-                    track: '18'
+                    hw-cert: true
+                    arches: ['armhf', 'arm64']
+                    track: '18-pi3'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
