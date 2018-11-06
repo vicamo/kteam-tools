@@ -1,0 +1,226 @@
+#!/bin/bash
+
+# TODO:
+#  - error handling
+#  - parameters
+#  - config for mapping 'bionic/main' -> git2/ubuntu-bionic
+#  - -v needs to be something ... sometimes
+#  - -sa too
+#  - unstable is not the series
+#  - --meta-option v=<sometihg>
+#  - --profile <override> in concert with series-linux as "overrides"
+
+C=${C-cranky}
+P=${P-$0}
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+base_chroot_available()
+{
+	local series="$1"
+	local arch="$2"
+
+	local chroot
+
+	for chroot in "$series-$arch-sbuild" "$series-$arch"
+	do
+		schroot --directory / -c "$chroot" /bin/true >/dev/null 2>&1 && {
+			#echo "II: $chroot base chroot available"
+			RET="$chroot"
+			return 0
+		}
+	done
+	RET=""
+	return 1
+}
+
+base_chroot_create()
+{
+	local series="$1"
+	local arch="$2"
+
+	local chroot="$series-$arch"
+
+	# Create the base chroot.
+	echo "$P: $chroot base chroot needed -- creating" 1>&2
+
+	if ! grep -s '^/home' '/etc/schroot/sbuild/fstab' >/dev/null; then
+		cat - <<'EOF' | sudo tee --append '/etc/schroot/sbuild/fstab' >/dev/null
+# Allow use of /home for use with cranky.
+/home           /home           none    rw,bind         0       0
+EOF
+	fi
+	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" </dev/null || exit 1
+
+	RET="$chroot"
+}
+
+session_chroot_available()
+{
+	local series="$1"
+	local arch="$2"
+	local package="$3"
+	local which="$4"
+
+	local session="session:cranky-$series-$arch-$which"
+
+	# Validate the session.
+	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
+		#echo "II: $session session available"
+		RET="$session"
+		return 0
+	}
+	RET=""
+	return 1
+}
+
+session_chroot_create()
+{
+	local series="$1"
+	local arch="$2"
+	local package="$3"
+	local which="$4"
+
+	local session="cranky-$series-$arch-$which"
+
+	if ! base_chroot_available "$series" "amd64"; then
+		echo "$P: base chroot not available -- run: $C chroot create-base \"$series:linux\""
+		return 1
+	fi
+	local chroot="$RET"
+
+	# Create the base session.
+	echo "$P: $session session needed -- creating" 1>&2
+
+	schroot -b -n "$session" -c "$chroot"
+	session="session:$session"
+
+	schroot -u root -r -c "$session" -- apt-get update
+	schroot -u root -r -c "$session" -- apt-get -y dist-upgrade
+
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true build-dep --no-install-recommends "$package"
+
+	# Cross Compilers
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-i686-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu gcc
+
+	# XXX: session specific in it ...
+	
+	RET="$session"
+}
+
+chroot_update() {
+	local chroot="$1"
+
+	local open
+	case "$chroot" in
+	session:*)	open="-r -c" ;;
+	*)		open="-c" ;;
+	esac
+
+	schroot -u root $open "$chroot" -- apt-get update
+	schroot -u root $open "$chroot" -- apt-get -y dist-upgrade
+}
+
+usage()
+{
+	cat <<EOF
+Usage: cranky chroot --base|--sources|--configs [handle]
+
+Build either base chroots or chroot sessions appropriate for building
+sources or updating configurations.
+
+positional arguments:
+  handle                Handle to a kernel source tree, either a path to a
+                        kernel source tree or a handle in <series>:<package>
+                        format. If not given the current working directory is
+                        used.
+
+Examples:
+  $ cranky chroot create-base bionic:linux
+      Build a clean sbuilder chroot for use in bionic build etc.
+  $ cranky chroot create-session sources bionic:linux
+      Build a chroot session with the appropriate build-depends to allow building
+      of a source package set for bionic:linux.
+  $ cranky chroot create-session configs bionic:linux
+      Build a chroot session with the appropriate build-depends and cross compilers
+      to allow update of configurations for bionic:linux.
+EOF
+
+	exit 2
+}
+
+# MAIN:
+[ "$#" -lt 1 ] && usage
+cmd="$1"
+case "$cmd" in
+create-base)
+	shift
+	;;
+create-session|map-session)
+	[ "$#" -lt 2 ] && usage
+	session="$2"
+	shift 2
+	;;
+*)
+	usage
+	;;
+esac
+case "$session" in
+''|sources|configs)	session='sources';;
+*)
+	usage
+	;;
+esac
+case "$#" in
+0)
+	handle="$PWD"
+	;;
+1)
+	handle="$1"
+	;;
+*)
+	usage
+	;;
+esac
+
+#echo "base<$base> session<$session> handle<$handle>"
+
+series_source=$( "$here/cranky-shell-helper" "handle-to-series-source" "$handle" )
+if [ "$series_source" = "" ]; then
+	echo "$0: $handle: unknown series/package" 1>&2
+	exit 1
+fi
+series=${series_source% *}
+src=${series_source#* }
+# NOTE: currently all trees are assume to be able to be built in the
+#       linux package.
+src='linux'
+
+case "$cmd" in
+create-base)
+	if base_chroot_available "$series" "amd64"; then
+		chroot_update "$RET"
+	else
+		base_chroot_create "$series" "amd64"
+	fi
+	;;
+create-session)
+	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+		chroot_update "$RET"
+	else
+		session_chroot_create "$series" "amd64" "$src" "$session"
+	fi
+	;;
+map-session)
+	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+		echo "$RET"
+		exit 0
+	else
+		exit 1
+	fi
+	;;
+esac
