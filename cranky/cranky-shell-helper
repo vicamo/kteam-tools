@@ -5,7 +5,16 @@ import sys
 import argparse
 
 from crl.config import Config
-from crl.handle import Handle
+from crl.handle import Handle, HandleError
+
+def handle_to_series_source(args):
+    try:
+        handle = Handle().lookup_set(args.handle, validate=False)
+    except HandleError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+
+    print(handle.series.codename, handle.source.name)
 
 def series_codename(args):
     handle = Handle().lookup_set(args.handle)
@@ -37,6 +46,13 @@ Helper program for getting cranky config and handle data from shell scripts.
                                      argparse.RawDescriptionHelpFormatter)
     subparsers = parser.add_subparsers(help="commands", dest="command")
     subparsers.required = True
+
+    # series-codename subparser
+    subparser = subparsers.add_parser("handle-to-series-source",
+                                      help="Print series codename and source name for the given handle")
+    subparser.add_argument("handle",
+                           help="<series>:<package> handle, or path to source tree.")
+    subparser.set_defaults(func=handle_to_series_source)
 
     # series-codename subparser
     sc_subparser = subparsers.add_parser("series-codename",
