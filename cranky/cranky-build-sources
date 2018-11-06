@@ -1,14 +1,7 @@
 #!/bin/bash
 
-# TODO:
-#  - error handling
-#  - parameters
-#  - config for mapping 'bionic/main' -> git2/ubuntu-bionic
-#  - -v needs to be something ... sometimes
-#  - -sa too
-#  - unstable is not the series
-#  - --meta-option v=<sometihg>
-#  - --profile <override> in concert with series-linux as "overrides"
+C=${C-cranky}
+P=${P-$0}
 
 here=`dirname $0`
 case "$here" in
@@ -16,77 +9,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-create_chroot()
-{
-	local series="$1"
-	local arch="$2"
-
-	local chroot="$series-$arch"
-
-	# Validate the chroot.
-	schroot --directory / -c "$chroot" /bin/true >/dev/null 2>&1 && {
-		echo "II: $chroot base chroot available"
-		RET="$chroot"
-		return
-	}
-
-	# Create the base chroot.
-	echo "II: $chroot base chroot needed -- creating"
-
-	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" </dev/null
-	sudo sed -i -e 's/^profile=sbuild/profile=default/g' "/etc/schroot/chroot.d/sbuild-$series-$arch"
-
-	RET="$chroot"
-}
-
-create_session()
-{
-	local series="$1"
-	local arch="$2"
-	local package="$3"
-
-	local session="srcpkg-$series-$arch-$package"
-
-	# Validate the session.
-	schroot --directory / -r -c "$session" /bin/true >/dev/null 2>&1 && {
-		echo "II: $session session available"
-		RET="$session"
-		return
-	}
-
-	# Validate the chroot.
-	create_chroot "$series" "$arch"
-	local chroot="$RET"
-
-	# Create the base session.
-	echo "II: $session sesssion needed -- creating"
-
-	schroot -b -n "$session" -c "$chroot"
-
-	schroot -u root -r -c "$session" -- apt-get update
-	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true build-dep --no-install-recommends "$package"
-	schroot -u root -r -c "$session" -- apt-get -y install fakeroot
-	
-	RET="$session"
-}
-
-update_session() {
-	local series="$1"
-	local arch="$2"
-	local package="$3"
-
-	create_session "$series" "$arch" "$package"
-	local session="$RET"
-
-	schroot -u root -r -c "$session" -- apt-get update
-	schroot -u root -r -c "$session" -- apt-get -y dist-upgrade
-}
-
 build_src()
 {
 	local dir="$1"
 	local session="$2"
-	
+
 	(
 		cd "$dir" || exit 1
 
@@ -124,8 +51,9 @@ EOF
 }
 
 # MAIN:
-for opt in "$@"; do
-	case $opt in
+while [ "$1" ]
+do
+	case "$1" in
 	-*)
 		usage
 		;;
@@ -148,12 +76,16 @@ case "$#" in
 esac
 
 sources=$( "$here/cranky-shell-helper" "source-packages-path" "$handle" )
+if [ "$sources" = '' ]; then
+	exit 1
+fi
 series=$( "$here/cranky-shell-helper" "series-codename" "$handle" )
 
-# Ensure we have the updated session -- use amd64/linux for all packages as that
-# is a superset.
-update_session "$series" "amd64" "linux"
-session="$RET"
+session=$("$here/cranky" chroot map-session sources "$handle")
+if [ "$session" = '' ]; then
+	echo "$P: sources session not available -- run: $C chroot create-session sources \"$handle\""
+	exit 1
+fi
 
 # Build the source.
 for source in $sources
