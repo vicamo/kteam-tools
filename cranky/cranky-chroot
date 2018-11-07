@@ -134,7 +134,7 @@ commands:
       Create a base sbuilder chroot for the series of the handle package.
   create-session configs|sources [<handle>]
       Create a session for the requested purpose.
-  map-session configs|sources <handle>
+  map-session configs|sources [<handle>]
       Emit the name of the required session if available.
 
 Build either base chroots or chroot sessions appropriate for building
