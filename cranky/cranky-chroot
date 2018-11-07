@@ -128,23 +128,27 @@ chroot_update() {
 usage()
 {
 	cat <<EOF
-Usage: cranky chroot --base|--sources|--configs [handle]
+Usage: cranky chroot <commands> <args>...
+commands:
+  create-base [<handle>]
+      Create a base sbuilder chroot for the series of the handle package.
+  create-session configs|sources [<handle>]
+      Create a session for the requested purpose.
+  map-session configs|sources <handle>
+      Emit the name of the required session if available.
 
 Build either base chroots or chroot sessions appropriate for building
 sources or updating configurations.
 
 positional arguments:
-  handle                Handle to a kernel source tree, either a path to a
-                        kernel source tree or a handle in <series>:<package>
-                        format. If not given the current working directory is
-                        used.
+  handle
+      Handle to a kernel source tree, either a path to a kernel
+      source tree or a handle in <series>:<package> format. If not
+      specified the current working directory is used.
 
 Examples:
   $ cranky chroot create-base bionic:linux
       Build a clean sbuilder chroot for use in bionic build etc.
-  $ cranky chroot create-session sources bionic:linux
-      Build a chroot session with the appropriate build-depends to allow building
-      of a source package set for bionic:linux.
   $ cranky chroot create-session configs bionic:linux
       Build a chroot session with the appropriate build-depends and cross compilers
       to allow update of configurations for bionic:linux.
@@ -161,7 +165,10 @@ create-base)
 	shift
 	;;
 create-session|map-session)
-	[ "$#" -lt 2 ] && usage
+	if [ "$#" -lt 2 ]; then
+		echo "Usage: $P $cmd <sources|configs>" 1>&2
+		exit 1
+	fi
 	session="$2"
 	shift 2
 	;;
@@ -172,7 +179,8 @@ esac
 case "$session" in
 ''|sources|configs)	session='sources';;
 *)
-	usage
+	echo "$P $cmd: $session -- invalid session requested (sources or configs only" 1>&2
+	exit 1
 	;;
 esac
 case "$#" in
@@ -183,7 +191,8 @@ case "$#" in
 	handle="$1"
 	;;
 *)
-	usage
+	echo "$P: $cmd: excess parameters" 1>&2
+	exit 1
 	;;
 esac
 
