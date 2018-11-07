@@ -1,0 +1,161 @@
+#!/usr/bin/python3
+from __future__ import print_function
+
+import json
+import os
+import sys
+
+from launchpadlib.launchpad             import Launchpad
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                              os.pardir, 'libs')))
+
+from ktl.kernel_series                  import KernelSeries
+
+
+lp = Launchpad.login_with('admin-lp-git-permissions', 'production', version='devel')
+
+cmd = sys.argv[1]
+
+def generate_grant(create=False, push=False, rewind=False, person=None):
+    grant = {}
+
+    if person == 'owner':
+        grant['grantee_type'] = "Repository owner"
+        grant['grantee_link'] = None
+    elif person:
+        grant['grantee_type'] = "Person"
+        grant['grantee_link'] = person
+    else:
+        raise ValueError("owner or person required")
+
+    grant['can_create'] = create
+    grant['can_push'] = push
+    grant['can_force_push'] = rewind
+
+    return grant
+
+if cmd == 'list-all':
+    me = lp.people(sys.argv[2])
+    for repo in lp.git_repositories.getRepositories(target=me):
+        print(repo, repo.getRules())
+
+elif cmd == 'sync-all':
+    #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
+    #    for repo in lp.git_repositories.getRepositories(target=person):
+    #        print(repo, repo.getRules())
+    #
+    # rules = generate_rules(owner_all=True, people=[
+    #     '/~canonical-kernel-committers',
+    #     '/~canonical-kernel-hwe-committers',
+    #     ])
+    #
+    #print(json.dumps(rules, sort_keys=True, indent=4))
+
+    kernel_series = KernelSeries()
+
+    url_seen = {}
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if series.opening_ready('repositories') is False:
+            continue
+
+        for source in sorted(series.sources, key=lambda x: x.name):
+            #if source.esm:
+            #    continue
+            #if source.supported:
+            #    continue
+
+            for package in source.packages:
+                if package.repo is None:
+                    continue
+                url = package.repo.url
+                if url in url_seen:
+                    continue
+                url_seen[url] = True
+
+                if 'git.launchpad.net' not in url:
+                    continue
+
+                bits = url.split('~', 1)
+                if len(bits) != 2:
+                    continue
+
+                path = '~' + bits[1]
+
+                #git_repo = lp.git_repositories.getByPath(path=path)
+                #print(git_repo.getRules())
+
+                rules = None
+                set_rules = False
+                if not source.supported:
+                    rules = [
+                        {
+                            'ref_pattern': "*",
+                            'grants': [
+                                generate_grant(person='owner')
+                                ]
+                        },
+                        ]
+                    set_rules = True
+                else:
+                    rules = [
+                        {
+                            'ref_pattern': "refs/heads/*-next",
+                            'grants': [],
+                        },
+                        {
+                            'ref_pattern': "refs/heads/*",
+                            'grants': [],
+                        },
+                        {
+                            'ref_pattern': "refs/tags/*",
+                            'grants': [],
+                        },
+                        {
+                            'ref_pattern': "*",
+                            'grants': [],
+                        },
+                        ]
+
+                    people = ['/~canonical-kernel-committers']
+                    if package.name.endswith('oem'):
+                        people.append('/~canonical-kernel-hwe-committers')
+                    admins = 'owner'
+                    if series.esm:
+                        admins = '/~canonical-kernel-repo-admins'
+                    master_rewind = series.development
+
+                    for person in people:
+                        rules[0]['grants'].append(generate_grant(person=person, push=True, rewind=master_rewind))
+
+                    for person in people:
+                        rules[1]['grants'].append(generate_grant(person=person, push=True, rewind=True))
+
+                    for person in people:
+                        rules[2]['grants'].append(generate_grant(person=person, create=True, rewind=master_rewind))
+
+                    # For the ESM repositories we have a badly formed admin
+                    # team.  Drop permissions for the owning team to none and
+                    # add a separate admin team.
+                    rules[3]['grants'].append(generate_grant(person=admins, create=True, push=True, rewind=True))
+                    if admins != 'owner':
+                        rules[3]['grants'].append(generate_grant(person='owner'))
+
+                    # If the *-next rule match those of * exactly then they can be elided.
+                    if rules[0]['grants'] == rules[1]['grants']:
+                        rules.pop(0)
+
+                if set_rules:
+                    git_repo = lp.git_repositories.getByPath(path=path)
+                    print(git_repo)
+                    current_rules = git_repo.getRules()
+                    #print(current_rules, current_rules != rules, rules)
+                    if current_rules != rules:
+                        print("setRules()")
+                        git_repo.setRules(rules=rules)
+                    #print(git_repo.getRules())
+
+
+                #print(rules)
+
