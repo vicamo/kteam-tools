@@ -166,7 +166,7 @@ create-base)
 	;;
 create-session|map-session)
 	if [ "$#" -lt 2 ]; then
-		echo "Usage: $P $cmd <sources|configs>" 1>&2
+		echo "Usage: $P $cmd <sources|configs> [<handle>]" 1>&2
 		exit 1
 	fi
 	session="$2"
@@ -179,7 +179,7 @@ esac
 case "$session" in
 ''|sources|configs)	session='sources';;
 *)
-	echo "$P $cmd: $session -- invalid session requested (sources or configs only" 1>&2
+	echo "$P $cmd: $session -- invalid session requested (sources or configs)" 1>&2
 	exit 1
 	;;
 esac
