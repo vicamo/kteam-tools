@@ -740,6 +740,8 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
+            swm:
+                gcp-nvidia-packages: true
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-edge:
