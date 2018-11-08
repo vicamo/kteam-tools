@@ -401,6 +401,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
             packages:
@@ -421,6 +422,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
@@ -451,6 +453,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
             packages:
@@ -468,6 +471,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
 
 
 # 18.04 (bionic)
