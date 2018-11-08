@@ -385,6 +385,10 @@ class KernelSourceEntry:
             return data
         return KernelRoutingEntry(self._ks, self, data)
 
+    @property
+    def swm_data(self):
+        return self._data.get('swm')
+
     def __str__(self):
         return "{} {}".format(self.series.name, self.name)
 

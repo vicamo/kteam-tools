@@ -1235,6 +1235,47 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         self.assertEqual(count, 2)
         self.assertEqual(sorted(flavours), sorted(['generic', 'lowlatency']))
 
+    def test_swm_data_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.swm_data)
+
+    def test_swm_data_present_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    swm:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.swm_data)
+
+    def test_swm_data_present_something(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    swm:
+                        something: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNotNone(source.swm_data)
+        self.assertTrue(source.swm_data['something'])
+
+
 class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
 
     def test_name(self):
