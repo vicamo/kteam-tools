@@ -14,6 +14,7 @@ from .errors                            import ShankError
 from .deltatime                         import DeltaTime
 from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
+from .swm_config                        import SwmConfig
 
 
 # WorkflowBugError
@@ -703,6 +704,13 @@ class WorkflowBug():
         with that kernel version is returned.
         '''
         return s.__package.source
+
+    @property
+    def swm_config(s):
+        '''
+        Flag information from kernel-series.
+        '''
+        return SwmConfig(s.__package.source.swm_data)
 
     @property
     def abi(s):
