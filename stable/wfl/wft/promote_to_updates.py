@@ -41,6 +41,10 @@ class PromoteToUpdates(Promoter):
                 retval = True
                 break
 
+            if not s._prerequisites_released():
+                # Note this will set an appropriate reason.
+                break
+
             # If testing is not complete, we are not ready to release.
             if not s._testing_completed():
                 break

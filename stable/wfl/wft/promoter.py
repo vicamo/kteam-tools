@@ -1,5 +1,6 @@
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
+from wfl.gcp_bucket                             import GcpBucketObject, GcpBucketError
 from ktl.sru_cycle                              import SruCycle
 from .base                                      import TaskHandler
 
@@ -203,6 +204,22 @@ class Promoter(TaskHandler):
             break
 
         cleave(s.__class__.__name__ + '._testing_completed (%s)' % retval)
+        return retval
+
+    # _prerequisites_released(s):
+    #
+    def _prerequisites_released(s):
+        center(s.__class__.__name__ + '._prerequisites_released')
+        retval = True
+
+        if s.bug.swm_config.gcp_nvidia_packages:
+            obj = 'current-driver-{}-{}-gcp-amd64'.format(s.bug.kernel_version, s.bug.abi)
+            gcp_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
+            if gcp_object.present is False:
+                s.task.reason = "Nvidia GCP object not found -- {}-{}".format(s.bug.kernel_version, s.bug.abi)
+                retval = False
+
+        cleave(s.__class__.__name__ + '._prerequisites_released (%s)' % retval)
         return retval
 
     # master_bug_ready
