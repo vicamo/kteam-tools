@@ -16,6 +16,7 @@ do
             -e "/lib-build: eval: line 89: syntax error: unexpected end of file" \
             -e "No rule to make target 'syncconfig'.  Stop." \
             -e "dh_prep: Requested unknown package linux-image-" \
+            -e "No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop." \
         "$log" | head -1
     )
     case "$which" in
@@ -37,6 +38,8 @@ do
         which='syncconfig compatibility' ;;
     *"dh_prep: Requested unknown package linux-image-"*)
         which='cleaned in the wrong architecture' ;;
+    *"No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop."*)
+        which='syncconfig form changed' ;;
     esac
 
     # Check for unsigned and no modules.
@@ -54,7 +57,7 @@ do
     if [ "$unsigned_found" = 1 -a "$modules_found" = 0 ]; then
         which="missing linux-modules-*"
     fi
-    
+
     # If we have a reason, report it and generate the rebuild command.
     if [ "$which" != '' ]; then
         dir=$( dirname "$log" )
@@ -78,7 +81,7 @@ do
             drm-tip)            abi=994 ;;
             *)                  abi=999 ;;
             esac
-    
+
             echo "$queue mainline-build crack $tag $abi $base $date # INTUITED"
             ;;
         esac
