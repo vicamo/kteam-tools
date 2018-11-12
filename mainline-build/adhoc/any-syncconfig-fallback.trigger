@@ -4,7 +4,7 @@ patch="${0%.trigger}"
 series="$1"
 build="$2"
 
-if ! egrep -q -s '^syncconfig:' scripts/kconfig/Makefile; then
+if ! egrep -q -s 'syncconfig' scripts/kconfig/Makefile; then
 	echo "*** from __future__ import syncconfig ... narf ..."
 	{
 		echo ""
