@@ -175,11 +175,8 @@ class WorkflowManager():
             # Update the global status for this bug.
             s.status_set(bugid, bug.status_summary())
 
-        except WorkflowBugError:
-            # Bug doesn't exist?
+        except (SeriesLookupFailure, WorkflowBugError) as e:
             modified = False
-
-        except SeriesLookupFailure as e:
             for l in e.message:
                 print(l)
 

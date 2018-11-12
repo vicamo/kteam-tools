@@ -266,7 +266,10 @@ class WorkflowBug():
         Find the 'master' bug of which this is a derivative and return that bug.
         '''
         if s.is_derivative_package:
-            return WorkflowBug(s.lp, s.master_bug_id)
+            try:
+                return WorkflowBug(s.lp, s.master_bug_id)
+            except:
+                raise WorkflowBugError("invalid master bug link")
         else:
             return None
 
