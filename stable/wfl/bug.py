@@ -845,21 +845,11 @@ class WorkflowBug():
         '''
         return sorted(s.__package.pkgs.values())
 
-    # phase_key
-    #
-    @property
-    def phase_key(s):
-        retval = 'kernel'
-        if not s.is_development_series:
-            retval += '-stable'
-        retval += '-phase'
-        return retval
-
     # phase
     #
     @property
     def phase(s):
-        return s.properties[s.phase_key]
+        return s.bprops.get('phase')
 
     @phase.setter
     def phase(s, phasetext):
@@ -871,27 +861,25 @@ class WorkflowBug():
 
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
-        if s.phase_key in s.properties:
-            if s.phase == phasetext:
-                # we already have this one
-                cdebug('Not overwriting identical phase property (%s)' % phasetext)
-                cleave(s.__class__.__name__ + '.set_phase')
-                return
+        if s.phase == phasetext:
+            # we already have this one
+            cdebug('Not overwriting identical phase property (%s)' % phasetext)
+            cleave(s.__class__.__name__ + '.set_phase')
+            return
         # Handle dryrun mode
         if s._dryrun or WorkflowBug.no_phase_changes:
             cinfo('    dryrun - Changing bug phase to <%s>' % phasetext, 'red')
             cleave(s.__class__.__name__ + '.set_phase')
             return
-        else:
-            cdebug('Changing bug phase to <%s>' % phasetext)
+
         # Add phase and time stamp
+        cdebug('Changing bug phase to <%s>' % phasetext)
         now = datetime.utcnow()
         now.replace(tzinfo=None)
         tstamp = date_to_string(now)
-        props = {s.phase_key: phasetext, bug_prop_chg: tstamp}
-        s.props.set(props)
 
         s.bprops['phase'] = phasetext
+        s.bprops['phase-changed'] = tstamp
         cleave(s.__class__.__name__ + '.set_phase')
 
     # has_new_abi
