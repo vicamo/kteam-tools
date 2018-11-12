@@ -145,6 +145,7 @@
     supported: false
     opening:
         archive-closed: true
+        archive-open: true
         repositories: true
         debootstrap: true
         britney: true
