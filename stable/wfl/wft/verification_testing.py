@@ -12,11 +12,7 @@ class BugSpamError(ShankError):
     '''
     A class to handle sru-report and bug spamming errors
     '''
-    def __init__(s, emsg):
-        super().__init__(emsg)
-
-    def __str__(s):
-        return s.message
+    pass
 
 
 class VerificationTesting(TaskHandler):

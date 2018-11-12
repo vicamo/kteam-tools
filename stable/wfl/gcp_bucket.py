@@ -18,11 +18,7 @@ class GcpBucketError(ShankError):
     """
     Thrown when something goes wrong with the GCP bucket.
     """
-    def __init__(self, emsg):
-        super(GcpBucketError, self).__init__(emsg)
-
-    def __str__(self):
-        return self.message
+    pass
 
 
 # GcpBucketObject

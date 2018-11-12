@@ -20,6 +20,10 @@ from .swm_config                        import SwmConfig
 # WorkflowBugError
 #
 class WorkflowBugError(ShankError):
+    '''
+    Thrown when some goes wrong with the WorkflowBug (e.g. when trying to
+    process a non-existing bug).
+    '''
     pass
 
 

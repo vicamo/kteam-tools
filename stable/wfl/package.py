@@ -17,8 +17,8 @@ class PackageError(ShankError):
     Thrown when some basic information about the package that is associated with the
     shankbug could not be determined.
     '''
-    def __init__(s, emsg):
-        super(PackageError, s).__init__(emsg)
+    pass
+
 
 # SeriesLookupFailure
 #
@@ -26,8 +26,7 @@ class SeriesLookupFailure(ShankError):
     '''
     Thrown when the series lookup throws a KeyError exception.
     '''
-    def __init__(s, emsg):
-        super(SeriesLookupFailure, s).__init__(emsg)
+    pass
 
 # Package
 #

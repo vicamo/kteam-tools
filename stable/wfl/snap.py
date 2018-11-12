@@ -19,11 +19,7 @@ class SnapStoreError(ShankError):
     """
     Thrown when something goes wrong with the snap store (e.g. snap not found).
     """
-    def __init__(s, emsg):
-        super(SnapStoreError, s).__init__(emsg)
-
-    def __str__(s):
-        return s.message
+    pass
 
 
 # SnapStore

@@ -18,10 +18,8 @@ class ShankConfigFileMissing(ShankError):
     # __init__
     #
     def __init__(s):
-        super(ShankError, s).__init__('Unable to find the file (~/.shank). This file is required for the SRU Workflow Manager to operate correctly.')
+        super(ShankConfigFileMissing, s).__init__('Unable to find the file (~/.shank). This file is required for the SRU Workflow Manager to operate correctly.')
 
-    def __str__(s):
-        return s.message
 
 # GeneralError
 #
@@ -34,6 +32,7 @@ class GeneralError(Exception):
     def __str__(s):
         return s.message
 
+
 # ErrorExit
 #
 class ErrorExit(ShankError):
@@ -41,6 +40,4 @@ class ErrorExit(ShankError):
     If an error message has already been displayed and we want to just exit the app, this
     exception is raised.
     '''
-    def __init__(s, emsg):
-        super(ShankError, s).__init__(emsg)
-
+    pass
