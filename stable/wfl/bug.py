@@ -190,7 +190,11 @@ class WorkflowBug():
                 cinfo('    Properties:', 'cyan')
                 for prop in s.properties:
                     cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
-
+            props_dump = yaml.safe_dump(s.bprops, default_flow_style=False).strip().split('\n')
+            if len(props_dump) > 0:
+                cinfo('    SWM Properties:', 'cyan')
+                for prop in props_dump:
+                    cinfo('        {}'.format(prop), 'magenta')
         except PackageError as e:
             # Report why we are not valid.
             for l in e.message:
