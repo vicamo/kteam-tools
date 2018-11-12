@@ -1055,38 +1055,6 @@ class WorkflowBug():
 
         cleave(s.__class__.__name__ + '.timestamp')
 
-    # _publishing_settle_time
-    #
-    def _publishing_settle_time(s, tstamp_prop, pocket):
-        '''
-        Determine if we have waited long enough for the archive to have published the packages. Usually
-        an archive admin sets the promote-to-<pocket> task to "Fix Released" right away after doing the copy.
-        However, actual publishing takes more time.
-
-        Someone said that the publishing could take at most 1 hour to complete. Therefore, we wait 1 hour
-        before we do the "final" processing which verifies all the components got copied to the right places
-        in the archive.
-        '''
-        center(s.__class__.__name__ + '._publishing_settle_time')
-        retval = False
-
-        if tstamp_prop in s.lpbug.properties:
-            date_str = s.lpbug.properties[tstamp_prop]
-            timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-            delta = DeltaTime(timestamp, datetime.utcnow())
-            if delta.hours < 1:
-                cinfo('    Waiting 1 hour after promote-to-%s was Fix Released (%d)' % (pocket, delta.hours), 'yellow')
-                cinfo('    timestamp : %s' % str(timestamp), 'yellow')
-                cinfo('          now : %s' % str(datetime.utcnow()), 'yellow')
-                cinfo('        delta : %s' % str(delta), 'yellow')
-            else:
-                retval = True
-        else:
-            cinfo('tstamp_prop (%s) not in bug.properties' % tstamp_prop, 'yellow')
-
-        cleave(s.__class__.__name__ + '._publishing_settle_time (%s)' % retval)
-        return True
-
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied
