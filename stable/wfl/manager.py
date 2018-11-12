@@ -5,7 +5,7 @@ from datetime                           import datetime
 import os
 import yaml
 
-from .log                               import center, cleave, cdebug, cinfo
+from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
 from .bug                               import WorkflowBug, WorkflowBugError
@@ -177,8 +177,8 @@ class WorkflowManager():
 
         except (SeriesLookupFailure, WorkflowBugError) as e:
             modified = False
-            for l in e.message:
-                print(l)
+            for l in e.args:
+                cerror(e.__class__.__name__ + ': ' + l)
 
         cleave('WorkflowManager.crank')
 

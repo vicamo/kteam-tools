@@ -8,8 +8,7 @@ class ShankError(Exception):
         s.message = emsg
 
     def __str__(s):
-        return s.__message
-
+        return s.message
 
 # ShankConfigFileMissing
 #
@@ -33,7 +32,7 @@ class GeneralError(Exception):
         s.message = emsg
 
     def __str__(s):
-        return s.__message
+        return s.message
 
 # ErrorExit
 #
