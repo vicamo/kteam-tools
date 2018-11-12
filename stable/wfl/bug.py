@@ -1016,27 +1016,6 @@ class WorkflowBug():
             s.lpbug.add_comment(body, subject)
         cleave(s.__class__.__name__ + '.add_comment')
 
-    # set_tagged_timestamp
-    #
-    def set_tagged_timestamp(s, keyvalue):
-        '''
-        Add the supplied key with a timestamp. We do not replace existing keys
-        '''
-        center(s.__class__.__name__ + '.set_tagged_timestamp')
-
-        # if s._dryrun or s.no_timestamps:
-        #     cinfo('    dryrun - Adding tagged timestamp <%s> to tracking bug' % keyvalue, 'red')
-        # else:
-        #     if keyvalue not in s.lpbug.properties:
-        #         cdebug('Adding tagged timestamp <%s> to tracking bug' % keyvalue)
-        #         now = datetime.utcnow()
-        #         now.replace(tzinfo=None)
-        #         tstamp = date_to_string(now)
-        #         props = {keyvalue : tstamp}
-        #         s.props.set(props)
-
-        cleave(s.__class__.__name__ + '.set_tagged_timestamp')
-
     # timestamp
     #
     def timestamp(s, keyvalue):
