@@ -39,6 +39,8 @@ class VerifyReleaseReady():
         s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
         s.lp_ubuntu = s.lp.distributions['ubuntu']
         s.lp_devel_series = s.lp_ubuntu.current_series
+        # Instantiate a KernelSeries for package lookups.
+        s.kernel_series = KernelSeries()
 
     # Are we currently in a git repository?
     #
@@ -92,8 +94,7 @@ class VerifyReleaseReady():
             # Check: That the release information is correct.
             #
             msg = 'release (%s)' % (cl0['release'])
-            kernel_series = KernelSeries()
-            series = kernel_series.lookup_series(codename=cl0['release'])
+            series = s.kernel_series.lookup_series(codename=cl0['release'])
             if not series:
                 s.status(msg, False)
                 s.verbose("invalid series specified '%s'" % (cl0['release'],))
@@ -512,68 +513,6 @@ class VerifyReleaseReady():
     # main
     #
     def main(s):
-        kernel_packages = [
-            'linux',
-            'linux-ec2',
-            'linux-lts-trusty',
-            'linux-lts-xenial',
-            'linux-aws',
-            'linux-aws-edge',
-            'linux-raspi2',
-            'linux-snapdragon',
-            'linux-hwe',
-            'linux-hwe-edge',
-            'linux-joule',
-            'linux-azure',
-            'linux-azure-edge',
-            'linux-gcp',
-            'linux-gcp-edge',
-            'linux-gke',
-            'linux-kvm',
-            'linux-oem',
-            'linux-euclid',
-            'linux-ibm-gt',
-            'linux-oracle',
-        ]
-
-        non_kernel_packages = [
-            'linux-ports-meta',
-            'linux-signed',
-            'linux-meta',
-            'linux-meta-lts-trusty',
-            'linux-meta-lts-xenial',
-            'linux-meta-aws',
-            'linux-meta-aws-edge',
-            'linux-meta-raspi2',
-            'linux-meta-snapdragon',
-            'linux-meta-hwe',
-            'linux-meta-hwe-edge',
-            'linux-meta-joule',
-            'linux-meta-azure',
-            'linux-meta-azure-edge',
-            'linux-meta-gcp',
-            'linux-meta-gcp-edge',
-            'linux-meta-gke',
-            'linux-meta-kvm',
-            'linux-meta-oem',
-            'linux-meta-euclid',
-            'linux-meta-ibm-gt',
-            'linux-meta-oracle',
-            'linux-signed-lts-trusty',
-            'linux-signed-lts-xenial',
-            'linux-signed-hwe',
-            'linux-signed-hwe-edge',
-            'linux-signed-oem',
-            'linux-signed-azure',
-            'linux-signed-azure-edge',
-            'linux-signed-gcp',
-            'linux-signed-gcp-edge',
-            'linux-signed-oracle',
-            'linux-backports-modules-3.5.0',
-            'linux-backports-modules-3.2.0',
-            'linux-backports-modules-2.6.32',
-        ]
-
         try:
             # Check: Are we currently in a git repository?
             #
@@ -599,9 +538,17 @@ class VerifyReleaseReady():
                 s.verbose('Previous version information:')
                 for k in cl1:
                     s.verbose('%15s : %s' % (k, cl1[k]))
-            if cl0['package'] in kernel_packages:
+
+            package_type = False
+            series = s.kernel_series.lookup_series(codename=cl0['release'])
+            if series is not None:
+                for source in series.sources:
+                    for package in source.packages:
+                        if package.name == cl0['package']:
+                            package_type = package.type
+            if package_type is None:
                 s.verify_linux(cl0, cl1)
-            elif cl0['package'] in non_kernel_packages:
+            elif package_type is not False:
                 s.verify_linux_meta(cl0, cl1)
             else:
                 stdo(colored('Unrecognised package: %s\n' % cl0['package'], 'yellow'))
