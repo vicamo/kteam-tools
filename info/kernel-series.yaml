@@ -143,14 +143,6 @@
     codename: disco
     development: true
     supported: false
-    opening:
-        archive-closed: true
-        archive-open: true
-        repositories: true
-        debootstrap: true
-        britney: true
-        autopkgtest: true
-        chroots: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
