@@ -246,17 +246,20 @@ class WorkflowBug():
     #
     @property
     def master_bug_property_name(s):
-        retval = 'kernel'
-        if not s.is_development_series:
-            retval += '-stable'
-        retval += '-master-bug'
-        return retval
+        for prop_name in (
+            'master-bug',
+            'kernel-stable-master-bug',
+            'kernel-master-bug',
+            ):
+            if prop_name in s.bprops:
+                return prop_name
+        return 'master-bug'
 
     # is_derivative_package
     #
     @property
     def is_derivative_package(s):
-        return s.master_bug_property_name in s.properties
+        return s.master_bug_property_name in s.bprops
 
     # master_bug
     #
@@ -264,7 +267,7 @@ class WorkflowBug():
     def master_bug_id(s):
         '''
         '''
-        return s.properties[s.master_bug_property_name]
+        return s.bprops[s.master_bug_property_name]
 
     # master_bug
     #
@@ -382,7 +385,7 @@ class WorkflowBug():
 
         # Do not expose this API error.
         master_bug = s.master_bug_property_name
-        if master_bug in status:
+        if master_bug != 'master-bug' and master_bug in status:
             status['master-bug'] = status[master_bug]
             del status[master_bug]
 
