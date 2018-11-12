@@ -68,7 +68,7 @@ class PreparePackageBase(TaskHandler):
             if s.bug.is_derivative_package:
                 master = s.bug.master_bug
                 if master.tasks_by_name['prepare-package'].status != 'Fix Released':
-                    if s.task.name == 'prepare-package':
+                    if pkg == 'main' or not s.bug.valid_package('main'):
                         s.task.reason = 'Waiting for master bug'
                     break
 
