@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+#
+from __future__             import print_function
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+import os
+import sys
+import yaml
+
+# SwmStatus
+#
+class SwmStatus:
+    _url = 'http://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
+
+    def __init__(self, url=None, data=None, use_local=False):
+        if data is None and url is None:
+            url = self._url
+        if data is None and url:
+            response = urlopen(url)
+            data = response.read()
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
+
+        self._data = yaml.load(data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def items(self):
+        return self._data.items()
+
+
+def bug_prefix(bugid):
+    if bugid != '':
+        bugid = 'LP: #' + str(bugid)
+    else:
+        bugid = '--  --'
+    return bugid
+
+
+if __name__ == '__main__':
+    status = SwmStatus()
+
+    results = []
+
+    sort = "{cycle} {series} {bugid_parent} {bugid}"
+    for (bug_id, bug_data) in status.items():
+        for key in bug_data.keys():
+            if ord(key[0]) == 160:
+                print(bug_id, bug_data)
+        if len(bug_data.get('reason', {}).keys()) == 0:
+            bug_data['reason'] = { 'lost-in-space': 'Unknown' }
+        if True:
+            for task in sorted(bug_data.get('reason', {}).keys()):
+                entry = {
+                    'bugid':            bug_prefix(bug_id),
+                    'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
+                    'cycle':            bug_data.get('cycle', ''),
+                    'series':           bug_data.get('series'),
+                    'package':          bug_data.get('package'),
+                    'version':          bug_data.get('version', '--not-specified--'),
+                    'phase':            task,
+                    'phase_status':     bug_data['reason'][task],
+                    }
+                results.append((sort.format(**entry), entry))
+        else:
+            entry = {
+                'bugid':            bug_prefix(bug_id),
+                'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
+                'cycle':            bug_data.get('cycle', ''),
+                'series':           bug_data.get('series'),
+                'package':          bug_data.get('package'),
+                'version':          bug_data.get('version', '--not-specified--'),
+                'phase':            'overall',
+                'phase_status':     bug_data.get('phase', 'Not Ready'),
+                }
+            results.append((sort.format(**entry), entry))
+
+    results.sort()
+
+    #fmt = "{bugid:13} {flags:4}  {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:25} {phase_status:20}"
+    fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:25} {phase_status:20}"
+    sort_prev = None
+    count = 0
+    for (sort, entry) in results:
+        row = fmt.format(**entry)
+
+        if sort != sort_prev:
+            sort_prev = sort
+            count += 1
+
+        if os.isatty(sys.stdout.fileno()) and False: # Blocked
+            (colour_on, colour_off) = ('\033[31m', '\033[0m')
+        elif os.isatty(sys.stdout.fileno()) and count % 2 == 0:
+            (colour_on, colour_off) = ('\033[33m', '\033[0m')
+        else:
+            (colour_on, colour_off) = ('', '')
+
+        print(colour_on + row + colour_off)
+# vi:set ts=4 sw=4 expandtab:
