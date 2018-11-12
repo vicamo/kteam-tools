@@ -28,83 +28,6 @@ class WorkflowBugError(ShankError):
     pass
 
 
-# WorkflowBugProperties
-#
-class WorkflowBugProperties:
-
-    # __init__
-    #
-    def __init__(self, bug):
-        # get the current properties and save them
-        self.bug = bug
-        self.oldprops = bug.properties
-        self.newprops = {}
-
-    # setBugProperties
-    #
-    # Note - this should perhaps be in lpltk
-    def set(self, newprops):
-        """
-        Set key:value pairs in the bug description. This follows a convention established in lpltk
-        Input: a lpltk bug object and a dictionary of key:value pairs
-        This function only stages the changes and does not write them to the
-        bug description, to avoid rewriting the description multiple times
-        """
-        self.newprops.update(newprops)
-
-    # flushBugProperties
-    #
-    # Note - this should perhaps be in lpltk
-    def flush(self):
-        """
-        If needed, rewrite the bug description including
-        changes staged by calls to setBugProperties
-        """
-        # See whether we really need to write anything new
-        rmlist = []
-        for keyname in self.newprops:
-            if keyname in self.oldprops:
-                if self.oldprops[keyname] == self.newprops[keyname]:
-                    rmlist.append(keyname)
-                    continue
-        for keyname in rmlist:
-            del self.newprops[keyname]
-        if len(self.newprops) == 0:
-            return
-
-        # Set a name:value pair in a bug description
-        olddescr = self.bug.description
-        newdscr = ''
-        re_kvp = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
-        last_key = {'': 'bar'}
-        # copy everything, removing an existing one with this name if it exists
-        foundProp = False
-        for line in olddescr.split("\n"):
-            # Skip empty lines after we start properties
-            if line == '' and foundProp:
-                continue
-            m = re_kvp.match(line)
-            if m:
-                foundProp = True
-                # There is a property on this line (assume only one per line)
-                # see if it matches the one we're adding
-                level = m.group(1)
-                item = m.group(2)
-                key = item
-                if len(level) > 0:
-                    key = "%s.%s" % (last_key[''], item)
-                last_key[level] = item
-                if key in self.newprops:
-                    # we're going to be adding this one, remove the existing one
-                    continue
-            newdscr = newdscr + line + '\n'
-
-        for k in self.newprops:
-            if self.newprops[k]:
-                newdscr = newdscr + '%s:%s\n' % (k, self.newprops[k])
-        self.bug.description = newdscr
-        return
-
 # WorkflowBug
 #
 class WorkflowBug():
@@ -146,7 +69,6 @@ class WorkflowBug():
 
         s.title = s.lpbug.title
         s._tags = None
-        s.props = WorkflowBugProperties(s.lpbug)
         s.bprops = {}
         s.bprops = s.load_bug_properties()
         s.overall_reason = None
@@ -189,10 +111,6 @@ class WorkflowBug():
             cinfo('    Targeted Project:', 'cyan')
             cinfo('        %s' % s.workflow_project, 'magenta')
             cinfo('')
-            if len(s.properties) > 0:
-                cinfo('    Properties:', 'cyan')
-                for prop in s.properties:
-                    cinfo('        %s: %s' % (prop, s.properties[prop]), 'magenta')
             props_dump = yaml.safe_dump(s.bprops, default_flow_style=False).strip().split('\n')
             if len(props_dump) > 0:
                 cinfo('    SWM Properties:', 'cyan')
@@ -226,7 +144,6 @@ class WorkflowBug():
     # save
     #
     def save(s):
-        s.props.flush()
         s.save_bug_properties()
         s._remove_live_tag()
 
@@ -1189,8 +1106,6 @@ class WorkflowBug():
                 body += "\n\nOnce this is fixed, set the "
                 body += "promote-to-%s to Fix Released again" % (pocket)
                 s.add_comment('Packages outside of proper component', body)
-                if not s._dryrun:
-                    s.props.set({tstamp_prop: None})
 
             cinfo('        packages ended up in the wrong pocket')
             cdebug('check_component_in_pocket leave (False)')
