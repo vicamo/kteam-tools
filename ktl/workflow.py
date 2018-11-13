@@ -231,8 +231,9 @@ class Workflow:
             ks = KernelSeries()
             cursor = ks.lookup_series(codename=series_codename)
             cursor = cursor.lookup_source(packagename)
-            retval = cursor.stakeholder
-        else:
+            if cursor is not None:
+                retval = cursor.stakeholder
+        if retval is None:
             retval = self.assignee(packagename, taskname, devel)
         return retval
 

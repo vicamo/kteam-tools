@@ -109,7 +109,7 @@ class TrackingBug:
             if lp_series.name == 'stakeholder-signoff':
                 cursor = self.kernel_series.lookup_series(codename=targeted_series_name)
                 cursor = cursor.lookup_source(package)
-                if cursor.stakeholder is None:
+                if cursor is not None and cursor.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
                     break
             if lp_series.name == 'promote-to-release' and not self.isdev:
