@@ -46,7 +46,7 @@ class Package():
         # bug title. This information is used further on.
         #
         if not s.__title_decode(s.bug.lpbug):
-            raise PackageError(['Unable to determine series/package for this bug.'])
+            raise PackageError('Unable to determine series/package for this bug.')
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.
@@ -72,7 +72,7 @@ class Package():
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
-            raise PackageError(['Unable to check package builds for this bug: the package/series combination is invalid'])
+            raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
         s._cache = None
         cleave('package::__init__')
