@@ -715,7 +715,7 @@ class WorkflowBug():
                         if date_available is None or bi[d][p]['most_recent_build'] > date_available:
                             date_available = bi[d][p]['most_recent_build']
             now = datetime.utcnow()
-            comp_date = date_available + timedelta(hours=1)
+            comp_date = date_available + timedelta(hours=1.5)
             if comp_date < now:
                 # It has been at least 1 hours since the package was either published or fully built
                 # in proposed.
