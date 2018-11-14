@@ -40,7 +40,9 @@ class PreparePackageBase(TaskHandler):
     # evaluate_state
     #
     def evaluate_status(s, state):
-        # We ARE aware of invalid bugs ...
+        # We ARE aware of invalid bugs ... but need a valid package.
+        if not s.bug.has_package:
+            return False
         return s.jumper[state]()
 
     # _package_name

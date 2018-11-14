@@ -46,7 +46,11 @@ class Package():
         # bug title. This information is used further on.
         #
         if not s.__title_decode(s.bug.lpbug):
-            raise PackageError('Unable to determine series/package for this bug.')
+            raise PackageError('Package not identified from title')
+        if s.series is None:
+            raise PackageError('Series not identified from tags')
+        if s.source is None:
+            raise PackageError('Source not found in kernel-series')
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.

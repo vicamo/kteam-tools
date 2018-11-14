@@ -149,6 +149,8 @@ class WorkflowBug():
         s.bprops = {}
         s.bprops = s.load_bug_properties()
 
+        s.is_development_series = False
+
         # If a bug isn't to be processed, detect this as early as possible.
         #
         (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
@@ -197,7 +199,7 @@ class WorkflowBug():
                     cinfo('        {}'.format(prop), 'magenta')
         except PackageError as e:
             # Report why we are not valid.
-            for l in e.message:
+            for l in e.args:
                 cinfo(l, 'red')
             s.is_valid = False
             s.__package = None
@@ -282,6 +284,11 @@ class WorkflowBug():
     def is_proposed_only(s):
         return s.__package.proposed_only
 
+    # has_package
+    #
+    @property
+    def has_package(s):
+        return s.__package is not None
 
     # load_bug_properties
     #
