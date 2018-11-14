@@ -216,10 +216,15 @@ class WorkflowManager():
                 cinfo('        Unknown workflow task')
                 continue
 
-            cls = s._task_map[workflow_task_name](s.lp, task, bug)
-            if cls.evaluate_status(task.status) and not s.args.dryrun:
-                retval = True
-                cinfo('        True')
+            try:
+                cls = s._task_map[workflow_task_name](s.lp, task, bug)
+                if cls.evaluate_status(task.status) and not s.args.dryrun:
+                    retval = True
+                    cinfo('        True')
+            except (PackageError, WorkflowBugError) as e:
+                for l in e.args:
+                    cerror(e.__class__.__name__ + ': ' + l)
+                task.reason = e.__class__.__name__ + ': ' + e.args[0]
 
             # Insert a default reason for anything which is active and did not say why.
             if task.reason == '':
