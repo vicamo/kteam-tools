@@ -15,6 +15,7 @@ from .deltatime                         import DeltaTime
 from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
 from .swm_config                        import SwmConfig
+from .git_tag                           import GitTag
 
 
 # WorkflowBugError
@@ -610,6 +611,58 @@ class WorkflowBug():
                 retval = True
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
+        return retval
+
+    def upload_version(s, pkg):
+        '''
+        '''
+        center(s.__class__.__name__ + '.upload_version')
+        retval = None
+
+        bi = s.__package.build_info
+        for pocket in bi[pkg]:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+                retval = bi[pkg][pocket]['version']
+                break
+
+        cleave(s.__class__.__name__ + '.upload_version (%s)' % (retval))
+        return retval
+
+    def published_tag(s, pkg):
+        published = True
+
+        package_package = None
+        for package in s.source.packages:
+            if (package.type == pkg or (
+                package.type is None and pkg == '')
+                ):
+                package_package = package
+                break
+        if package_package is not None:
+            git_tag = GitTag(package_package, s.upload_version(pkg))
+            if git_tag.verifiable and not git_tag.present:
+                published = False
+
+        return published
+
+    # all_dependent_packages_published_tag
+    #
+    @property
+    def all_dependent_packages_published_tag(s):
+        '''
+        For the kernel package associated with this bug, the status of whether or
+        not all of the dependent packages (meta, signed, lbm, etc.) have published
+        tags is returned.
+        '''
+        retval = True
+
+        bi = s.__package.build_info
+        for pkg in bi:
+            if not s.published_tag(pkg):
+                cinfo('        %s missing tag.' % (pkg), 'yellow')
+                retval = False
+                break
+
         return retval
 
     # all_in_pocket

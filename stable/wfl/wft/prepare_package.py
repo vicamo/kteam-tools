@@ -1,6 +1,8 @@
+from ktl.kernel_series                          import KernelSeries
 
 from wfl.log                                    import center, cleave, cdebug
 from .base                                      import TaskHandler
+
 
 class PreparePackageBase(TaskHandler):
     '''
@@ -129,6 +131,11 @@ class PreparePackageBase(TaskHandler):
             # Confirm that this package is uploaded.
             if not s.bug.uploaded(pkg):
                 s.task.reason = 'Package not yet uploaded'
+                break
+
+            # Check the package tag has been published.
+            if not s.bug.published_tag(pkg):
+                s.task.reason = 'Package tag not yet published'
                 break
 
             s.bug.phase = 'Uploaded'
