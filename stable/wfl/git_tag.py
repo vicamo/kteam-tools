@@ -34,6 +34,9 @@ class GitTag():
 
         if package.repo is not None and package.repo.url is not None:
             prefix = package.source.name.replace('linux', '')
+            version = version.replace('+', '%2b').replace('~', '_')
+            cdebug('pkg name: %s' % package.source.name)
+            cdebug('tag key: Ubuntu%s-%s' % (prefix, version))
 
             url = package.repo.url
             if url.startswith("git://git.launchpad.net"):
