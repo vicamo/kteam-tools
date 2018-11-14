@@ -148,7 +148,7 @@ class WorkflowBug():
         s.props = WorkflowBugProperties(s.lpbug)
         s.bprops = {}
         s.bprops = s.load_bug_properties()
-
+        s.overall_reason = None
         s.is_development_series = False
 
         # If a bug isn't to be processed, detect this as early as possible.
@@ -197,10 +197,12 @@ class WorkflowBug():
                 cinfo('    SWM Properties:', 'cyan')
                 for prop in props_dump:
                     cinfo('        {}'.format(prop), 'magenta')
+
         except PackageError as e:
             # Report why we are not valid.
             for l in e.args:
                 cinfo(l, 'red')
+            s.overall_reason = e.args[0]
             s.is_valid = False
             s.__package = None
 
@@ -360,6 +362,8 @@ class WorkflowBug():
         '''
         if 'reason' in s.bprops:
             del s.bprops['reason']
+        if s.overall_reason is not None:
+            s.bprops['reason'] = {'overall': s.overall_reason}
 
     def status_summary(s):
         '''
