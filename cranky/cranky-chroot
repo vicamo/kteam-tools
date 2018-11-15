@@ -136,6 +136,8 @@ commands:
       Create a session for the requested purpose.
   map-session configs|sources [<handle>]
       Emit the name of the required session if available.
+  run [<handle>] -- command
+      Run command under chroot.
 
 Build either base chroots or chroot sessions appropriate for building
 sources or updating configurations.
@@ -152,6 +154,8 @@ Examples:
   $ cranky chroot create-session configs bionic:linux
       Build a chroot session with the appropriate build-depends and cross compilers
       to allow update of configurations for bionic:linux.
+  $ cranky chroot run bionic:linux -- cranky close
+      Run cranky close under the chroot session.
 EOF
 
 	exit 2
@@ -187,6 +191,18 @@ create-session|map-session)
 		exit 1
 		;;
 	esac
+	;;
+run)
+	if [ "$1" = "--" ]; then
+		set - "$PWD" "$@"
+	fi
+	if [ "$2" != '--' ]; then
+		echo "Usage: $P $cmd [<handle>] -- <command ...>" 1>&2
+		exit 1
+	fi
+	session="configs" # XXX: this likely should be its own session type.
+	handle="$1"
+	shift 2
 	;;
 *)
 	usage
@@ -233,6 +249,13 @@ map-session)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		echo "$RET"
 		exit 0
+	else
+		exit 1
+	fi
+	;;
+run)
+	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+		schroot -r -c "$RET" -- "$@"
 	else
 		exit 1
 	fi
