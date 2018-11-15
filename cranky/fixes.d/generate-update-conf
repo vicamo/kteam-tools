@@ -10,14 +10,26 @@ import sys
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 
 from ktl.debian import Debian
+from ktl.shell import sh
 
-def repo():
+def get_repo():
+    """
+    Return where the repo for the kernel this one is derived from.
+    If no one is found, return None.
+    """
     source = Debian.get_source_from_kernel_series()
     source = source.derived_from
     if not source:
-        sys.exit(1)
-    print("RELEASE_REPO=" + source.packages[0].repo.url)
-    if source.packages[0].repo.branch:
-        print("SOURCE_RELEASE_BRANCH=" + source.packages[0].repo.branch)
+        return None
+    return source.packages[0].repo
 
-repo()
+REPO = get_repo()
+if REPO is None:
+    sys.exit(1)
+
+print("RELEASE_REPO=" + REPO.url)
+if REPO.branch:
+    print("SOURCE_RELEASE_BRANCH=" + REPO.branch)
+
+sh("git fetch " + str(REPO), quiet=True)
+print("DEBIAN_MASTER=" + Debian.debian_env(branch="FETCH_HEAD"))
