@@ -1,5 +1,10 @@
 #!/bin/bash
 
+here()
+{
+	dirname "$(realpath -e ${0})"
+}
+
 fix_error()
 {
 	echo "ERROR: $*" 1>&2
