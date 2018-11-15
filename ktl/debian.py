@@ -70,10 +70,13 @@ class Debian:
     # debian_env
     #
     @classmethod
-    def debian_env(cls):
+    def debian_env(cls, branch=None):
         # Find the correct debian directory for this branch of this repository.
         #
-        current_branch = Git.current_branch()
+        if branch:
+            current_branch = branch
+        else:
+            current_branch = Git.current_branch()
         debenv = None
 
         # If we have a debian/debian.env then open and extract the DEBIAN=...
