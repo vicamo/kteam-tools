@@ -1,0 +1,35 @@
+#!/bin/bash -eu
+# update update.conf
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -f debian/debian.env ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+source debian/debian.env
+CONF="$DEBIAN/etc/update.conf"
+
+TMP=$(mktemp "$CONF".XXX)
+$(here)/generate-update-conf > "$TMP"
+if [ -s "$TMP" ] ; then
+	# Touch and add so commit function will notice the diff
+	# caused by the move after the add.
+	touch "$CONF"
+	git add "$CONF"
+	mv "$TMP" "$CONF"
+else
+	rm "$TMP"
+fi
+
+msg="UBUNTU: [Packaging] update update.conf"
+commit "$msg" "$CONF"
+exit 0

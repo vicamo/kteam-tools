@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+
+# This script generates update.conf used by in-tree helper scripts used to
+# produce Ubuntu kernel commits.
+
+import os
+import sys
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
+
+from ktl.debian import Debian
+
+def repo():
+    source = Debian.get_source_from_kernel_series()
+    source = source.derived_from
+    if not source:
+        sys.exit(1)
+    print("RELEASE_REPO=" + source.packages[0].repo.url)
+    if source.packages[0].repo.branch:
+        print("SOURCE_RELEASE_BRANCH=" + source.packages[0].repo.branch)
+
+repo()
