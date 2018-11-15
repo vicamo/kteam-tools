@@ -31,7 +31,11 @@ if [ -f "${CONF}" ]; then
 	source "${CONF}"
 fi
 
-usage="$0 [-r RELEASE_REPO] [ -b REMOTE_BRANCH ] [-l LOCAL_BRANCH]"
+usage="$0 [-r RELEASE_REPO] [ -b REMOTE_BRANCH ] [-l LOCAL_BRANCH] [-d]"$'\n\n'
+usage+="-r RELEASE_REPO		Git repository to fetch the reference branch from."$'\n'
+usage+="-b REMOTE_BRANCH	Remote branch to fetch from."$'\n'
+usage+="-l LOCAL_BRANCH		Use LOCAL_BRANCH as the reference branch."$'\n'
+usage+="-d 			Dry run (do not rebase)."
 
 #
 # command line options:
@@ -39,11 +43,12 @@ usage="$0 [-r RELEASE_REPO] [ -b REMOTE_BRANCH ] [-l LOCAL_BRANCH]"
 # [-b REMOTE_BRANCH] - override default remote branch.
 # [-l LOCAL_BRANCH]  - do not fetch from remote repo, use a local branch.
 
-while getopts "r:b:l:" opt; do
+while getopts "r:b:l:d" opt; do
 	case $opt in
 	r ) RELEASE_REPO="$OPTARG" ;;
 	b ) SOURCE_RELEASE_BRANCH="$OPTARG" ;;
 	l ) LOCAL_BRANCH="$OPTARG" ;;
+	d ) DRY_RUN=1 ;;
 	\? ) echo "usage: ${usage}"; exit ;;
 	esac
 done
@@ -92,6 +97,10 @@ BASE_COMMIT=$(git log --pretty=one | \
 )
 if [ "${MASTER_COMMIT}" = "${BASE_COMMIT}" ]; then
 	echo Already up to date.
+	exit 0
+fi
+if [ "${DRY_RUN}" ]; then
+	echo "DRY RUN: git rebase --onto ${MASTER_COMMIT} ${BASE_COMMIT}"
 	exit 0
 fi
 
