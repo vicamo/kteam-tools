@@ -21,7 +21,7 @@ mkdir -p "$HDIR"
 HERE=$(here)
 HELPERS=""
 # shellcheck disable=SC1083
-for file in $HERE/../master-helpers/{rebase,}; do
+for file in $HERE/../master-helpers/{rebase,close,}; do
 	if [ -f "$file" ] ; then
 		script=$(basename "$file")
 		# Touch and add so commit function will notice the diff
