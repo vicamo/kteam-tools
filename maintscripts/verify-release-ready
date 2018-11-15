@@ -451,7 +451,7 @@ class VerifyReleaseReady():
         m = re.match('^ -- (.*) <(.*)@(.*)> .*$', content[cl - 2])
         if m:
             if 'canonical.com' not in m.group(3):
-                error_text = "The email address on the signature line does not contail 'canonical.com'."
+                error_text = "The email address on the signature line does not contain 'canonical.com'."
                 s.status('final commit content [%d]' % ei, False)
                 ei += 1
                 et.append(error_text)
