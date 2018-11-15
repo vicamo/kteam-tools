@@ -67,15 +67,25 @@ if [ -z "${LOCAL_BRANCH}" ]; then
 	LOCAL_BRANCH=FETCH_HEAD
 fi
 
+if [ "$DEBIAN" = "debian.master" ]; then
+	echo "This is a master kernel, no rebase should be needed, please report if otherwise"
+	exit 0
+fi
+
+if [ "$DEBIAN_MASTER" = "" ]; then
+	echo "DEBIAN_MASTER should be defined either in ${DEBIAN}/etc/update.conf or the environment"
+	exit 1
+fi
+
 #
 # Find the most recent tag on given upstream branch, then
 # rebase against it. This avoids the case where there have been some
 # commits since the last official tag.
 #
-MASTER_COMMIT=$(git log --pretty=one "${LOCAL_BRANCH}" | \
+MASTER_COMMIT=$(git log --pretty=one "${LOCAL_BRANCH}" "${DEBIAN_MASTER}" | \
     awk '
 	/Ubuntu-/ {
-		if (match($0, /UBUNTU: Ubuntu-[0-9]/)) {
+		if (match($0, /UBUNTU: Ubuntu-/)) {
 				print $1
 				exit
                         }
@@ -85,10 +95,10 @@ MASTER_COMMIT=$(git log --pretty=one "${LOCAL_BRANCH}" | \
 #
 # Find the current merge point where current branch was based.
 #
-BASE_COMMIT=$(git log --pretty=one | \
+BASE_COMMIT=$(git log --pretty=one "${DEBIAN_MASTER}" | \
     awk '
 	/Ubuntu-/ {
-		if (match($0, /UBUNTU: Ubuntu-[0-9]/)) {
+		if (match($0, /UBUNTU: Ubuntu-/)) {
 				print $1
 				exit
                         }
