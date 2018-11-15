@@ -99,6 +99,11 @@ if [ "${MASTER_COMMIT}" = "${BASE_COMMIT}" ]; then
 	echo Already up to date.
 	exit 0
 fi
+
+MASTER_VERSION=$(git show --format=%s -s "$MASTER_COMMIT" | sed 's/^UBUNTU: //')
+BASE_VERSION=$(git show --format=%s -s "$BASE_COMMIT" | sed 's/^UBUNTU: //')
+echo "Rebase still needed between $BASE_VERSION and $MASTER_VERSION."
+
 if [ "${DRY_RUN}" ]; then
 	echo "DRY RUN: git rebase --onto ${MASTER_COMMIT} ${BASE_COMMIT}"
 	exit 0
