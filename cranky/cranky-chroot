@@ -160,43 +160,48 @@ EOF
 # MAIN:
 [ "$#" -lt 1 ] && usage
 cmd="$1"
+shift
 case "$cmd" in
 create-base)
-	shift
+	if [ "$#" -eq 0 ]; then
+		set - "$@" "$PWD"
+	elif [ "$#" -ne 1 ]; then
+		echo "Usage: $P $cmd [<handle>]" 1>&2
+		exit 1
+	fi
+	handle="$1"
 	;;
 create-session|map-session)
-	if [ "$#" -lt 2 ]; then
+	if [ "$#" -eq 1 ]; then
+		set - "$@" "$PWD"
+	elif [ "$#" -ne 2 ]; then
 		echo "Usage: $P $cmd <sources|configs> [<handle>]" 1>&2
 		exit 1
 	fi
-	session="$2"
-	shift 2
+	session="$1"
+	handle="$2"
+	case "$session" in
+	sources|configs)	;;
+	*)
+		echo "$P $cmd: $session -- invalid session requested (sources or configs)" 1>&2
+		exit 1
+		;;
+	esac
 	;;
 *)
 	usage
 	;;
 esac
-case "$session" in
-''|sources|configs)	session='sources';;
-*)
-	echo "$P $cmd: $session -- invalid session requested (sources or configs)" 1>&2
-	exit 1
-	;;
-esac
-case "$#" in
-0)
-	handle="$PWD"
-	;;
-1)
-	handle="$1"
-	;;
-*)
-	echo "$P: $cmd: excess parameters" 1>&2
-	exit 1
-	;;
-esac
 
-#echo "base<$base> session<$session> handle<$handle>"
+# NOTE: we require the user to tell us which session type they are needing
+#       but in the short term we are assuming we can make do with just the
+#       one shared session.  If that should change, then we already have
+#       the user supplying the required information so at least the UI will
+#       not change underneath them.  Map all the known sessions to a shared
+#       session.
+case "$session" in
+sources|configs)	session="sources" ;;
+esac
 
 series_source=$( "$here/cranky-shell-helper" "handle-to-series-source" "$handle" )
 if [ "$series_source" = "" ]; then
