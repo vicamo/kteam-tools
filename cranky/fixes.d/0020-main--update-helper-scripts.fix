@@ -1,0 +1,39 @@
+#!/bin/bash -eu
+# update in-tree helper scripts at debian/scripts/helper/
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+if [ ! -d debian/scripts/ ] ; then
+	echo "${PWD} does not look like a kernel directory"
+	exit 1
+fi
+
+HDIR=debian/scripts/helpers/
+mkdir -p "$HDIR"
+
+HERE=$(here)
+HELPERS=""
+# shellcheck disable=SC1083
+for file in $HERE/../master-helpers/{rebase,}; do
+	if [ -f "$file" ] ; then
+		script=$(basename "$file")
+		# Touch and add so commit function will notice the diff
+		# caused by the copy after the add.
+		touch "$HDIR/$script"
+		git add "$HDIR/$script"
+		cp -p "$file" "$HDIR/$script"
+		HELPERS="$HELPERS $HDIR/$script"
+	fi
+done
+
+msg="UBUNTU: [Packaging] update helper scripts"
+# shellcheck disable=SC2086
+commit "$msg" $HELPERS
+exit 0
