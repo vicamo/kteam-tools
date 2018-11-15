@@ -1,0 +1,98 @@
+#!/bin/bash -e
+#
+# This script is intended as a helper when rebasing from its master branch.
+#
+
+LOCAL_BRANCH=
+RELEASE_REPO=
+SOURCE_RELEASE_BRANCH=
+
+function out()
+{
+	local rc="${?}"
+	trap - EXIT INT TERM HUP
+	[ "${rc}" -eq 0 ] || echo "Error: Script failed"
+	exit "${rc}"
+}
+
+trap out EXIT INT TERM HUP
+
+if [ -f debian/debian.env ]; then
+	source debian/debian.env
+fi
+
+if [ ! -d "${DEBIAN}" ]; then
+	echo You must run this script from the top directory of this repository.
+	exit 1
+fi
+
+CONF="${DEBIAN}"/etc/update.conf
+if [ -f "${CONF}" ]; then
+	source "${CONF}"
+fi
+
+usage="$0 [-r RELEASE_REPO] [ -b REMOTE_BRANCH ] [-l LOCAL_BRANCH]"
+
+#
+# command line options:
+# [-r RELEASE_REPO]  - override default git repository.
+# [-b REMOTE_BRANCH] - override default remote branch.
+# [-l LOCAL_BRANCH]  - do not fetch from remote repo, use a local branch.
+
+while getopts "r:b:l:" opt; do
+	case $opt in
+	r ) RELEASE_REPO="$OPTARG" ;;
+	b ) SOURCE_RELEASE_BRANCH="$OPTARG" ;;
+	l ) LOCAL_BRANCH="$OPTARG" ;;
+	\? ) echo "usage: ${usage}"; exit ;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ -z "${LOCAL_BRANCH}" ]; then
+	if [ -z "${RELEASE_REPO}" ] || [ -z "${SOURCE_RELEASE_BRANCH}" ]; then
+		echo Missing update.conf or missing parameters for remote repo and branch.
+		exit 1
+	fi
+	#
+	# Fetch the upstream branch.
+	#
+	git fetch "${RELEASE_REPO}"
+	git fetch "${RELEASE_REPO}" "${SOURCE_RELEASE_BRANCH}"
+	LOCAL_BRANCH=FETCH_HEAD
+fi
+
+#
+# Find the most recent tag on given upstream branch, then
+# rebase against it. This avoids the case where there have been some
+# commits since the last official tag.
+#
+MASTER_COMMIT=$(git log --pretty=one "${LOCAL_BRANCH}" | \
+    awk '
+	/Ubuntu-/ {
+		if (match($0, /UBUNTU: Ubuntu-[0-9]/)) {
+				print $1
+				exit
+                        }
+                }
+        '
+)
+#
+# Find the current merge point where current branch was based.
+#
+BASE_COMMIT=$(git log --pretty=one | \
+    awk '
+	/Ubuntu-/ {
+		if (match($0, /UBUNTU: Ubuntu-[0-9]/)) {
+				print $1
+				exit
+                        }
+                }
+        '
+)
+if [ "${MASTER_COMMIT}" = "${BASE_COMMIT}" ]; then
+	echo Already up to date.
+	exit 0
+fi
+
+git rebase --onto "${MASTER_COMMIT}" "${BASE_COMMIT}"
