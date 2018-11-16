@@ -41,6 +41,11 @@ class PromoteToUpdates(Promoter):
                 retval = True
                 break
 
+            # There is no point in considering prerequisites before we are
+            # at least in proposed.
+            if not s.bug.all_in_pocket('Proposed'):
+                break
+
             if not s._prerequisites_released():
                 # Note this will set an appropriate reason.
                 break
