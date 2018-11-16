@@ -39,7 +39,9 @@ class GitTag():
             if url.startswith("git://git.launchpad.net"):
                 self.verifiable = True
 
-                url = url.replace('git:', 'https:') + "/tag/?id=Ubuntu{}-{}".format(prefix, version)
+                url = url.replace('git:', 'https:')
+                url += "/tag/?id=Ubuntu{}-{}".format(prefix, version)
+                url = url.replace('~', '_')
                 self.dbg_url = url
                 try:
                     # XXX: this should be a separate function which returns an opener
