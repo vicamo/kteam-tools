@@ -60,19 +60,23 @@ class WorkflowManager():
 
         # Load up our current status set iff we do not have a limited bug set.
         s.status_path = 'status.yaml'
-        s.status = {}
-        if s.args.bugs and os.path.exists(s.status_path):
+        s.status_incremental = {}
+        s.status_clean = {}
+        if os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
-                s.status = yaml.safe_load(rfd)
+                s.status_incremental = yaml.safe_load(rfd)
 
         cleave('WorkflowManager.__init__')
 
     def status_set(s, bugid, summary):
-        s.status[bugid] = summary
+        s.status_incremental[bugid] = summary
+        s.status_clean[bugid] = summary
 
-    def status_save(s):
+        s.status_save(s.status_incremental)
+
+    def status_save(s, status):
         with open(s.status_path + '.new', 'w') as rfd:
-            yaml.dump(s.status, rfd, default_flow_style=False)
+            yaml.dump(status, rfd, default_flow_style=False)
         os.rename(s.status_path + '.new', s.status_path)
 
     @property
@@ -137,7 +141,8 @@ class WorkflowManager():
         except KeyboardInterrupt:
             pass
 
-        s.status_save()
+        if not s.args.bugs:
+            s.status_save(s.status_clean)
 
         cleave('WorkflowManager.manage')
         return 0
