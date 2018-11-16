@@ -68,6 +68,14 @@ class WorkflowManager():
 
         cleave('WorkflowManager.__init__')
 
+    def status_clear(s, bugid):
+        if bugid in s.status_incremental:
+            del s.status_incremental[bugid]
+        if bugid in s.status_clean:
+            del s.status_clean[bugid]
+
+        s.status_save(s.status_incremental)
+
     def status_set(s, bugid, summary):
         s.status_incremental[bugid] = summary
         s.status_clean[bugid] = summary
@@ -99,6 +107,11 @@ class WorkflowManager():
         if s.args.bugs:
             for bugid in s.args.bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
+                if lpbug.duplicate_of is not None:
+                    cinfo('    LP: #%s - %s (DUPLICATE)' % (lpbug.id, lpbug.title), 'magenta')
+                    s.status_clear(bugid)
+                    continue
+                cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
         else:
             for project in WorkflowBug.projects_tracked:
