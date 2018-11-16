@@ -573,7 +573,7 @@ class WorkflowBug():
             pkg_uploaded = False
             try:
                 for pocket in bi[pkg]:
-                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
                         pkg_uploaded = True
                         break
             except KeyError:
