@@ -125,13 +125,13 @@ done <"$here/../info/repositories.txt"
 
 # disco linux-signed-oem ubuntu-oem-disco-signed.git git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco
 "$here/kta-config" repositories | \
-while read series source repo url
+while read series source repo url type
 do
 	echo "Syncing kernel-series $repo ($url) ..."
 
 	# If this is +source/linux then we should reference linux.git.
-	case "$url" in
-	*/+source/linux/*)	ref="linux-linus.git" ;;
+	case "$type" in
+	main)			ref="linux-linus.git" ;;
 	*)			ref="-" ;;
 	esac
 
@@ -143,7 +143,11 @@ do
 
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
-			git clone $bare --reference "$ref" "$url" "$repo"
+			#git clone $bare --reference "$ref" "$url" "$repo"
+			git clone $bare --reference "$ref" "$ref" "$repo"
+			(cd "$repo" && 
+				git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+				[ -d .git ] && git checkout -qf)
 		else
 			git clone $bare "$url" "$repo"
 		fi

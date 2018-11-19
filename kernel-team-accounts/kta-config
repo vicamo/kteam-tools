@@ -64,9 +64,10 @@ elif mode == 'repositories':
                     variant=variant,
                     type=type,
                     )
-                print("{series} {pacakge} {name} {url}".format(
+                print("{series} {pacakge} {name} {url} {which}".format(
                     series=series.codename,
                     pacakge=package.name,
                     name=name,
                     url=url,
+                    which=package.type if package.type is not None else "main",
                     ))
