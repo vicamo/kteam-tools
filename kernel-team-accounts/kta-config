@@ -3,9 +3,9 @@ from __future__ import print_function
 
 import os
 import sys
-import textwrap
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(sys.argv[0]), '..', 'libs')))
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
 
 from ktl.kernel_series import KernelSeries
 
@@ -13,7 +13,8 @@ def usage():
     print("""
 Usage: kta-config <mode>
        mode:
-         origs      -- orig tarball data
+         origs            -- orig tarball data
+         repositories     -- repository URL list
           """.strip(), file=sys.stderr)
     sys.exit(1)
 
@@ -31,3 +32,41 @@ if mode == 'origs':
         for source in sorted(series.sources, key=lambda x: x.name):
             if source.versions:
                 print("{supported} {version} {short}/{long}/{long}_{version}.orig.tar.gz".format(supported=source.supported, short=source.name[0], long=source.name, version=source.versions[-1]))
+
+elif mode == 'repositories':
+    url_seen = {}
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if series.opening_ready('repositories') is False:
+            continue
+        if series.esm:
+            continue
+
+        for source in sorted(series.sources, key=lambda x: x.name):
+            if not source.supported:
+                continue
+            if source.name == 'linux':
+                form = 'ubuntu-{series}{type}.git'
+                variant = ''
+            elif source.name.startswith('linux-'):
+                form = 'ubuntu-{variant}-{series}{type}.git'
+                variant = source.name.replace('linux-', '')
+            for package in sorted(source.packages, key=lambda x: x.name):
+                if package.repo is None:
+                    continue
+                url = package.repo.url
+                if url in url_seen:
+                    continue
+                url_seen[url] = True
+
+                type = '-' + package.type if package.type is not None else ''
+                name = form.format(
+                    series=series.codename,
+                    variant=variant,
+                    type=type,
+                    )
+                print("{series} {pacakge} {name} {url}".format(
+                    series=series.codename,
+                    pacakge=package.name,
+                    name=name,
+                    url=url,
+                    ))

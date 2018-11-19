@@ -60,7 +60,7 @@ do
 done <"$here/../info/repositories.txt"
 
 # MIRROR launchpad -> wani things in kernel-series
-"$here/mirror-config" repositories | \
+"$here/kta-config" repositories | \
 while read series package name url
 do
     echo "*** $series $package $url -> $name"

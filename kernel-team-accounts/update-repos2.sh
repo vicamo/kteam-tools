@@ -124,7 +124,7 @@ do
 done <"$here/../info/repositories.txt" 
 
 # disco linux-signed-oem ubuntu-oem-disco-signed.git git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco
-"$here/mirror-config" repositories | \
+"$here/kta-config" repositories | \
 while read series source repo url
 do
 	echo "Syncing kernel-series $repo ($url) ..."
