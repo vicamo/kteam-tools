@@ -1,8 +1,9 @@
 try:
     from urllib.request         import urlopen, Request, ProxyHandler, build_opener, install_opener
     from urllib.error           import URLError, HTTPError
+    from urllib.parse           import quote_plus
 except ImportError:
-    from urllib2                import urlopen, Request, URLError, HTTPError, ProxyHandler, build_opener, install_opener
+    from urllib2                import urlopen, Request, URLError, HTTPError, ProxyHandler, build_opener, install_opener, quote_plus
 
 from wfl.errors                 import ShankError
 from wfl.log                    import center, cleave, cinfo, cdebug
@@ -33,18 +34,18 @@ class GitTag():
         self._present = False
 
         if package.repo is not None and package.repo.url is not None:
-            prefix = package.source.name.replace('linux', '')
-            version = version.replace('+', '%2b').replace('~', '_')
-            cdebug('pkg name: %s' % package.source.name)
-            cdebug('tag key: Ubuntu%s-%s' % (prefix, version))
+            tag = 'Ubuntu{}-{}'.format(
+                package.source.name.replace('linux', ''),
+                version.replace('~', '_'))
+            cdebug('pkg name: {}'.format(package.source.name))
+            cdebug('versions: {}'.format(version))
+            cdebug('tag key : {}'.format(tag))
 
             url = package.repo.url
             if url.startswith("git://git.launchpad.net"):
                 self.verifiable = True
 
-                url = url.replace('git:', 'https:')
-                url += "/tag/?id=Ubuntu{}-{}".format(prefix, version)
-                url = url.replace('~', '_')
+                url = url.replace('git:', 'https:') + "/tag/?id={}".format(quote_plus(tag))
                 self.dbg_url = url
                 try:
                     # XXX: this should be a separate function which returns an opener
