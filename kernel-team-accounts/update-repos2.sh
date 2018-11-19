@@ -109,6 +109,7 @@ do
 	*)		bare='' ;;
 	esac
 
+	echo "Syncing info/repositories.txt $repo ($url) ..."
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
 			git clone $bare --reference "$ref" "$url" "$repo"
@@ -121,5 +122,36 @@ do
 			[ -d .git ] && git checkout -qf)
 	fi
 done <"$here/../info/repositories.txt" 
+
+# disco linux-signed-oem ubuntu-oem-disco-signed.git git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco
+"$here/mirror-config" repositories | \
+while read series source repo url
+do
+	echo "Syncing kernel-series $repo ($url) ..."
+
+	# If this is +source/linux then we should reference linux.git.
+	case "$url" in
+	*/+source/linux/*)	ref="linux-linus.git" ;;
+	*)			ref="-" ;;
+	esac
+
+	# If this ends .git we want it bare -- (currently always)
+	case "$repo" in
+	*.git)		bare='--bare' ;;
+	*)		bare='' ;;
+	esac
+
+	if [ ! -d "$repo" ]; then
+		if [ "$ref" != "-" ]; then
+			git clone $bare --reference "$ref" "$url" "$repo"
+		else
+			git clone $bare "$url" "$repo"
+		fi
+	else
+		(cd "$repo" && 
+			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+			[ -d .git ] && git checkout -qf)
+	fi
+done
 
 rm -f $LOCK
