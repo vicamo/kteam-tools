@@ -41,35 +41,29 @@ class TheApp(object):
     # print_cycle
     #
     def print_cycle(s, sd):
-        sd = sd - timedelta(days=3)
-        pd = sd - timedelta(days=2)
-        ed = sd + timedelta(days=22)
+        pd = sd - timedelta(days=5)
 
         print('')
-        print('cycle: %s through %s' % (sd.strftime('%d-%b'), ed.strftime('%d-%b')))
+        print('cycle: %s through %s' % (sd.strftime('%d-%b'), (sd + timedelta(days=20)).strftime('%d-%b')))
         print('====================================================================')
         print('         %s   Last day for kernel commits for this cycle.' % (pd.strftime('%d-%b')))
         print('%s - %s   Kernel prep week.' %
-                ((sd + timedelta(days=3)).strftime('%d-%b'), (sd + timedelta(days=8)).strftime('%d-%b')))
+                (sd.strftime('%d-%b'), (sd + timedelta(days=4)).strftime('%d-%b')))
         print('%s - %s   Bug verification & Regression testing.' %
-                ((sd + timedelta(days=9)).strftime('%d-%b'), (sd + timedelta(days=21)).strftime('%d-%b')))
-        print('         %s   Release to -updates.' % ((sd + timedelta(days=24)).strftime('%d-%b')))
+                ((sd + timedelta(days=7)).strftime('%d-%b'), (sd + timedelta(days=18)).strftime('%d-%b')))
+        print('         %s   Release to -updates.' % ((sd + timedelta(days=21)).strftime('%d-%b')))
         print('')
 
     # Print the cycle dates as HTML table
     #
     def print_cycle_html(s, sd):
-        sd = sd - timedelta(days=3)
-        pd = sd - timedelta(days=2)
-        ed = sd + timedelta(days=22)
-
         print('        <td width="50%">')
         print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (sd.strftime('%d-%b'), ed.strftime('%d-%b')))
-        print('                <tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (pd.strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % ((sd + timedelta(days=3)).strftime('%d-%b'), (sd + timedelta(days=8)).strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % ((sd + timedelta(days=9)).strftime('%d-%b'), (sd + timedelta(days=21)).strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % ((sd + timedelta(days=24)).strftime('%d-%b')))
+        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (sd.strftime('%d-%b'), (sd + timedelta(days=20)).strftime('%d-%b')))
+        print('                <tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % ((sd - timedelta(days=5)).strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (sd.strftime('%d-%b'), (sd + timedelta(days=4)).strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % ((sd + timedelta(days=7)).strftime('%d-%b'), (sd + timedelta(days=18)).strftime('%d-%b')))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % ((sd + timedelta(days=21)).strftime('%d-%b')))
         print('            </table>')
         print('        </td>')
 
