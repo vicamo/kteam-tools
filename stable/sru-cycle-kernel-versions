@@ -2,6 +2,7 @@
 #
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from ktl.kernel_series                  import KernelSeries
 import json
 import requests
 import re
@@ -16,6 +17,7 @@ class TheApp(object):
     #
     def main(s, args):
         retval = 0
+        ks     = KernelSeries()
 
         #                              .- package name (group(1))
         #                             /           .- kernel version (group(2))
@@ -52,24 +54,19 @@ class TheApp(object):
 
                     version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
 
-                    versions[version] = {
-                        'series': bug['series name'],
-                        'pkg' : m.group(1),
-                    }
-
-                    if m.group(1) not in y:
-                        y[m.group(1)] = []
-                    y[m.group(1)].append(version)
+                    if bug['series name'] not in y:
+                        y[bug['series name']] = {}
+                    y[bug['series name']][m.group(1)] = version
 
         print('Kernel Versions')
         print('====================================================================')
-        for p in sorted(y):
-            if p == 'linux':
-                for v in sorted(y[p]):
-                    print('%16s  %s' % (versions[v]['series'], v))
-                print('')
-            else:
-                print('%16s  %s' % (p, y[p][0]))
+        for series in sorted(ks.series, key=ks.key_series_name, reverse=True):
+            cn = series.codename
+            if cn not in y:
+                continue
+            print('%s:' % cn)
+            for p in sorted(y[cn]):
+                print('    %-20s %s' % (p + ':', y[cn][p]))
 
         return retval
 
