@@ -37,28 +37,42 @@ class GitTag():
             tag = 'Ubuntu{}-{}'.format(
                 package.source.name.replace('linux', ''),
                 version.replace('~', '_'))
-            cdebug('pkg name: {}'.format(package.source.name))
-            cdebug('versions: {}'.format(version))
-            cdebug('tag key : {}'.format(tag))
-
             url = package.repo.url
-            if url.startswith("git://git.launchpad.net"):
-                self.verifiable = True
 
-                url = url.replace('git:', 'https:') + "/tag/?id={}".format(quote_plus(tag))
-                self.dbg_url = url
-                try:
-                    # XXX: this should be a separate function which returns an opener
-                    #      with proxy if the object is _external_.
-                    opener = build_opener(ProxyHandler())
-                    req = Request(url)
-                    with opener.open(req) as resp:
-                        self._data = resp.read().decode('utf-8')
+            cdebug('pkg name: {}'.format(package.source.name))
+            cdebug('version : {}'.format(version))
 
-                    self._present = not "<div class='error'>" in self._data
+            self.lookup_tag(url, tag)
+            if not self.present and '-edge' in tag:
+                tag = tag.replace('-edge', '')
+                self.lookup_tag(url, tag)
 
-                except (HTTPError, URLError) as e:
-                    raise GitTagError(str(e))
+        cleave(self.__class__.__name__ + '.__init__')
+
+    def lookup_tag(self, url, tag):
+        center(self.__class__.__name__ + '.lookup_tag')
+        cdebug('url     : {}'.format(url))
+        cdebug('tag     : {}'.format(tag))
+
+        if url.startswith("git://git.launchpad.net"):
+            self.verifiable = True
+
+            url = url.replace('git:', 'https:') + "/tag/?id={}".format(quote_plus(tag))
+            self.dbg_url = url
+            try:
+                # XXX: this should be a separate function which returns an opener
+                #      with proxy if the object is _external_.
+                opener = build_opener(ProxyHandler())
+                req = Request(url)
+                with opener.open(req) as resp:
+                    self._data = resp.read().decode('utf-8')
+
+                self._present = not "<div class='error'>" in self._data
+
+            except (HTTPError, URLError) as e:
+                raise GitTagError(str(e))
+
+        cleave(self.__class__.__name__ + '.lookup_tag')
 
     @property
     def present(self):
