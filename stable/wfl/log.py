@@ -33,41 +33,32 @@ class Clog:
     indent = 0
 
     @classmethod
+    def colored(c, msg, color):
+        if c.color:
+            return colored(msg, color)
+        return msg
+
+    @classmethod
     def info(c, msg, color='white'):
         msg = ' ' * c.indent + str(msg)
-        if c.color:
-            info(colored(msg, color))
-        else:
-            info(msg)
+        info(c.colored(msg, color))
 
     @classmethod
     def debug(c, msg, color='magenta'):
         msg = ' ' * c.indent + str(msg)
-        if c.color:
-            debug(colored(msg, color))
-        else:
-            debug(msg)
+        debug(c.colored(msg, color))
 
     @classmethod
     def warn(c, msg, color='red'):
-        if c.color:
-            c.info(colored(msg, color))
-        else:
-            c.info(msg)
+        c.info(c.colored(msg, color))
 
     @classmethod
     def notice(c, msg, color='yellow'):
-        if c.color:
-            c.info(colored(msg, color))
-        else:
-            c.info(msg)
+        c.info(c.colored(msg, color))
 
     @classmethod
     def enter(c, msg):
-        if c.color:
-            c.debug(colored(msg, 'green'))
-        else:
-            c.debug(msg)
+        c.debug(c.colored(msg, 'green'))
         if c.dbg:
             c.indent += 4
 
@@ -75,9 +66,6 @@ class Clog:
     def leave(c, msg):
         if c.dbg:
             c.indent -= 4
-        if c.color:
-            c.debug(colored(msg, 'green'))
-        else:
-            c.debug(msg)
+        c.debug(c.colored(msg, 'green'))
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
