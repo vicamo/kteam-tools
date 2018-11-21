@@ -50,15 +50,15 @@ class Clog:
 
     @classmethod
     def warn(c, msg, color='red'):
-        c.info(c.colored(msg, color))
+        c.info(msg, color)
 
     @classmethod
     def notice(c, msg, color='yellow'):
-        c.info(c.colored(msg, color))
+        c.info(msg, color)
 
     @classmethod
     def enter(c, msg):
-        c.debug(c.colored(msg, 'green'))
+        c.debug(msg, 'green')
         if c.dbg:
             c.indent += 4
 
@@ -66,6 +66,6 @@ class Clog:
     def leave(c, msg):
         if c.dbg:
             c.indent -= 4
-        c.debug(c.colored(msg, 'green'))
+        c.debug(msg, 'green')
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
