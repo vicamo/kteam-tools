@@ -45,7 +45,7 @@ examples:
     # here.
     #
     if args.debug:
-        log_format = "%(levelname)s - %(message)s"
+        log_format = "%(levelname)05s - %(message)s"
         basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
         Clog.dbg = True
     else:

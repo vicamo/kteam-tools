@@ -35,20 +35,10 @@ class Clog:
     @classmethod
     def info(c, msg, color='white'):
         msg = ' ' * c.indent + str(msg)
-        if c.dbg:
-            # I do this becaus i'm weird and like things lined up in my log output
-            # and "INFO -" is fewer chars then "DEBUG -" and so things don't line
-            # up.
-            #
-            if c.color:
-                debug(colored(msg, color))
-            else:
-                debug(msg)
+        if c.color:
+            info(colored(msg, color))
         else:
-            if c.color:
-                info(colored(msg, color))
-            else:
-                info(msg)
+            info(msg)
 
     @classmethod
     def debug(c, msg, color='magenta'):
