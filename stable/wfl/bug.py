@@ -197,6 +197,12 @@ class WorkflowBug():
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
 
+        if s.debs is not None:
+            old_flavours = sorted(s.debs.test_flavours())
+            new_flavours = sorted([ x.name for x in s.source.testable_flavours ])
+            if old_flavours != new_flavours:
+                cinfo("APW-TEST-FLAVOURS: {} {} {} {}".format(s.series, s.name, str(old_flavours), str(new_flavours)))
+
     @property
     def tasks_by_name(s):
         if s._tasks_by_name is False:
