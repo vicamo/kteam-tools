@@ -24,6 +24,28 @@ def center(msg):
 def cleave(msg):
     Clog.leave('Leave ' + msg)
 
+def centerleaveargs(func):
+    def payload(*params, **kwargs):
+        args = " ".join(
+            [repr(v) for v in params] +
+            ["%s=%s" % (n, repr(v)) for n, v in kwargs.items()]
+            )
+        if len(args) > 100:
+            args = args[:100] + '...'
+        center(func.__qualname__ + ': ' + args)
+        retval = func(*params,**kwargs)
+        cleave(func.__qualname__ + ': ' + repr(retval))
+        return retval
+    return payload
+
+def centerleave(func):
+    def payload(*params, **kwargs):
+        center(func.__qualname__)
+        retval = func(*params,**kwargs)
+        cleave(func.__qualname__ + ': ' + repr(retval))
+        return retval
+    return payload
+
 @contextmanager
 def cinstance(instance):
     try:
