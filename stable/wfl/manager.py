@@ -16,7 +16,7 @@ from ktl.sru_cycle                      import SruCycle
 
 from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
-from .log                               import center, cleave, cdebug, cinfo, cerror, cinstance
+from .log                               import center, cleave, cdebug, cinfo, cerror, centerleave, cinstance
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
 from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
@@ -133,6 +133,7 @@ class WorkflowManager():
         with s.lock_bug(3, block=False):
             yield
 
+    @centerleave
     def status_get(s, bugid, summary=False, modified=None):
         with s.lock_status():
             status = s.status_load()
@@ -191,6 +192,7 @@ class WorkflowManager():
                 raise ValueError("isoformat: {} invalid format".format(isoformat))
         return obj
 
+    @centerleave
     def status_load(s):
         status = {}
         if os.path.exists(s.status_path):
@@ -211,6 +213,7 @@ class WorkflowManager():
             return { '_isoformat': obj.isoformat() }
         raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
 
+    @centerleave
     def status_save(s, status):
         # Use a top-level trackers collection to allow us to extend with
         # non-tracker information later.
