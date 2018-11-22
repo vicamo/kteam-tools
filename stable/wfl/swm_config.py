@@ -32,10 +32,12 @@ class SwmConfig:
 
         if isinstance(data, str):
             data = yaml.safe_load(data)
+        if data == None:
+            data = {}
         self._data = data
 
         cleave(self.__class__.__name__ + '.__init__')
 
     @property
     def gcp_nvidia_packages(self):
-        return self._data is not None and self._data.get('gcp-nvidia-packages', False)
+        return self._data.get('gcp-nvidia-packages', False)
