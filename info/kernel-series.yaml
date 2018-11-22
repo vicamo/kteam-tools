@@ -516,7 +516,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe']
                 linux-signed-hwe:
                     type: signed
-                    ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
             supported: true
             derived-from: [ '18.10', 'linux' ]
             testing:
