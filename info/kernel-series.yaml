@@ -267,6 +267,11 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/disco']
             supported: true
             derived-from: [ '18.10', 'linux' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2018-11-20 00:01', '2018-11-27 10:00']
+                    - ['2018-12-21 00:01', '2019-01-02 10:00']
+                    - ['2019-02-03 16:00', '2019-02-06 16:00']
             testing:
                 flavours:
                     azure:
@@ -407,6 +412,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/cosmic']
             supported: true
             derived-from: [ '18.10', 'linux' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
@@ -657,6 +664,8 @@
                     track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
@@ -1132,6 +1141,8 @@
                     arches: ['amd64']
             supported: true
             derived-from: [ '18.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
@@ -1527,6 +1538,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/trusty']
             supported: true
             derived-from: [ '18.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
