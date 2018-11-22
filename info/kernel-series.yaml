@@ -507,18 +507,39 @@
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-hwe:
+            packages:
+                linux-hwe:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe']
+                linux-meta-hwe:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe']
+                linux-signed-hwe:
+                    type: signed
+                    ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
+            supported: true
+            derived-from: [ '18.10', 'linux' ]
+            testing:
+                flavours:
+                    hwe:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal']
+
         linux-hwe-edge:
             packages:
-                linux-hwe-edge:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
+                #linux-hwe-edge:
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
                 linux-meta-hwe-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe-edge']
-                linux-signed-hwe-edge:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-edge']
+                #linux-signed-hwe-edge:
+                #    type: signed
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-edge']
             supported: true
-            derived-from: [ '18.10', 'linux' ]
+            #derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     hwe-edge:
