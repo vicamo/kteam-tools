@@ -1,3 +1,4 @@
+from datetime                                   import datetime
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
 from wfl.gcp_bucket                             import GcpBucketObject, GcpBucketError
@@ -35,6 +36,12 @@ class Promoter(TaskHandler):
         if not cycle:
             return False
         return cycle.hold
+
+    def _in_blackout(s):
+        '''
+        If a package is under a development blackout return True.
+        '''
+        return s.bug.swm_config.in_blackout(datetime.now())
 
     def _kernel_block(s):
         '''

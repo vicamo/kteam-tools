@@ -58,6 +58,10 @@ class PromoteToUpdates(Promoter):
                 s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
                 break
 
+            if s._in_blackout():
+                s.task.reason = 'Holding -- package in development blackout'
+                break
+
             if not s._stakeholder_signoff_verified():
                 s.task.reason = 'Holding -- stakeholder signoff not verified'
                 break
@@ -91,11 +95,13 @@ class PromoteToUpdates(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-            if not s._kernel_block() and s._cycle_ready():
+            if not s._kernel_block() and not s._in_blackout() and s._cycle_ready():
                 break
 
             if s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
+            if s._in_blackout():
+                cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
             if not s._cycle_ready():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
 
