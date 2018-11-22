@@ -1,6 +1,8 @@
 #
 # swm_config -- expose the kernel-series swm_data
 #
+import yaml
+
 from wfl.errors                 import ShankError
 from wfl.log                    import center, cleave, cinfo
 
@@ -28,6 +30,8 @@ class SwmConfig:
         """
         center(self.__class__.__name__ + '.__init__')
 
+        if isinstance(data, str):
+            data = yaml.safe_load(data)
         self._data = data
 
         cleave(self.__class__.__name__ + '.__init__')
