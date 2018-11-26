@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 from __future__             import print_function
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
                 }
             results.append((sort.format(**entry), entry))
 
-    results.sort()
+    results.sort(key=lambda x: x[0])
 
     #fmt = "{bugid:13} {flags:4}  {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:25} {phase_status:20}"
     fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:25} {phase_status:20}"
