@@ -1067,11 +1067,11 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-aws-edge:
+        linux-aws-hwe:
             packages:
-                linux-aws-edge:
+                linux-aws-hwe:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial', 'aws-edge']
-                linux-meta-aws-edge:
+                linux-meta-aws-hwe:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial', 'aws-edge']
             supported: true
