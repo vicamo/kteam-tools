@@ -774,7 +774,6 @@ class WorkflowBug():
         Add the phase we're entering as a 'property', along with a time stamp.
         """
         center(s.__class__.__name__ + '.set_phase')
-        bug_prop_chg = s.phase_key + '-changed'
 
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
