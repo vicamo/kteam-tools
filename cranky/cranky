@@ -13,23 +13,9 @@ fi
 cmd="$1"
 shift
 
-SCRIPTS="debian/scripts/helpers/$cmd $here/master-helpers/$cmd $here/cranky-$cmd"
-if [ -f debian/debian.env ] ; then
-	source debian/debian.env
-	SCRIPTS="$DEBIAN/scripts/helpers/$cmd $SCRIPTS"
-fi
-
-script=""
-for s in $SCRIPTS; do
-	if [ -x $s ] ; then
-		script=$s
-		break;
-	fi
-done
-
-if [ -z "$script" ] ; then
+if [ ! -f "$here/cranky-$cmd" ]; then
 	echo "$0: $cmd: command unknown" 1>&2
 	exit 1
 fi
 
-C="$0" P="cranky $cmd" exec "$script" "$@"
+C="$0" P="cranky $cmd" exec "$here/cranky-$cmd" "$@"
