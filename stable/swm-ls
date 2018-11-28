@@ -7,6 +7,7 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
+import argparse
 import os
 import sys
 import yaml
@@ -43,6 +44,11 @@ def bug_prefix(bugid):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='SWM status tool')
+    parser.add_argument('--phase', help='Display phase information',
+        action='store_true', default=False)
+    args = parser.parse_args()
+
     status = SwmStatus()
 
     results = []
@@ -54,7 +60,7 @@ if __name__ == '__main__':
                 print(bug_id, bug_data)
         if len(bug_data.get('reason', {}).keys()) == 0:
             bug_data['reason'] = { 'lost-in-space': 'Unknown' }
-        if True:
+        if args.phase is False:
             for task in sorted(bug_data.get('reason', {}).keys()):
                 entry = {
                     'bugid':            bug_prefix(bug_id),
