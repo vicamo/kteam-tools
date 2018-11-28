@@ -18,15 +18,28 @@ class Bug2Card:
                 '--board', self.board,
                 '--list', self.list,
                 '--card-name', card_name,
-                '--card-desc', 'http://bugs.launchpad.net/bugs/%d' % (bug)]
+                '--card-desc', 'https://bugs.launchpad.net/bugs/%d' % (bug),
+                '--format', '{id} {url}',
+               ]
         for card_member in self.card_members:
             argv.extend(['--card-member', card_member])
 
-        subprocess.run(argv)
+        result = subprocess.run(argv, check=True, stdout=subprocess.PIPE)
+        (card_id, card_url) = result.stdout.decode('utf-8').strip().split(' ')
+        print(card_url)
+
+        argv = ['/snap/bin/so-trello', 'card-addattachment',
+                '--board', self.board,
+                '--list', self.list,
+                '--card', card_id,
+                '--attachment-url', 'https://bugs.launchpad.net/bugs/%d' % (bug),
+               ]
+
+        subprocess.run(argv, stdout=subprocess.DEVNULL)
 
     def main(self, args):
         parser = ArgumentParser(description='Create trello card from LP bug')
-        parser.add_argument('bug', type=int, nargs='+', help='Bug numbers to cretae card from.')
+        parser.add_argument('bug', type=int, nargs='+', help='Bug numbers to create card from.')
         parser.add_argument('--board', help='trello board', default='Development Tasks')
         parser.add_argument('--list', help='trello list', default='Backlog')
         parser.add_argument('--card-member', help='add a card member', action='append', default=['me'])
