@@ -30,6 +30,19 @@ class PromoteToRelease(Promoter):
         retval = False
 
         while True:
+            # There is no point in considering prerequisites before we are
+            # at least in proposed.
+            if not s.bug.all_in_pocket('Proposed'):
+                break
+
+            if not s._prerequisites_released():
+                # Note this will set an appropriate reason.
+                break
+
+            # If testing is not complete, we are not ready to release.
+            if not s._testing_completed():
+                break
+
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():
                     s.task.reason = 'Master bug not ready for release'
@@ -37,10 +50,6 @@ class PromoteToRelease(Promoter):
 
             if not s._security_signoff_verified():
                 s.task.reason = 'Security signoff not verified'
-                break
-
-            if not s._testing_completed():
-                s.task.reason = 'Testing not complete'
                 break
 
             if s._kernel_block():
