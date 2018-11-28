@@ -94,7 +94,6 @@ class PreparePackageBase(TaskHandler):
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
-            s.bug.phase = 'Packaging'
             retval = True
             break
 
@@ -112,6 +111,8 @@ class PreparePackageBase(TaskHandler):
         retval = False
 
         while True:
+            s.bug.phase = 'Packaging'
+
             # If we do not have a version then whine about that.
             if not s.bug.is_valid:
                 s.task.reason = 'Version not specified'
