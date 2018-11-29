@@ -60,13 +60,17 @@ class WorkflowManager():
         WorkflowBug.no_phase_changes  = s.args.no_phase_changes
         WorkflowBug.local_msgqueue_port = s.args.local_msgqueue_port
 
-        # Load up our current status set iff we do not have a limited bug set.
+        # Load up the initial status.  If we are scaning all bugs we will
+        # attempt to clean out any bugs we did not know.  We should only
+        # do this if the bug is present at the start of our run to prevent
+        # us cleansing bugs which were newly created and shanked by other
+        # instances.
         s.status_path = 'status.yaml'
-        s.status_incremental = {}
-        s.status_clean = {}
+        s.status_start = {}
         if os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
-                s.status_incremental = yaml.safe_load(rfd)
+                status_start = yaml.safe_load(rfd)
+        s.status_wanted = {}
 
         # Per bug locking.
         s.lockfile = 'swm.lock'
@@ -79,19 +83,39 @@ class WorkflowManager():
             lockf(lfd, LOCK_EX, 1, int(what))
             yield
 
-    def status_clear(s, bugid):
-        if bugid in s.status_incremental:
-            del s.status_incremental[bugid]
-        if bugid in s.status_clean:
-            del s.status_clean[bugid]
-
-        s.status_save(s.status_incremental)
-
     def status_set(s, bugid, summary):
-        s.status_incremental[bugid] = summary
-        s.status_clean[bugid] = summary
+        with s.lock_thing(1):
+            status = {}
+            if os.path.exists(s.status_path):
+                with open(s.status_path) as rfd:
+                    status = yaml.safe_load(rfd)
 
-        s.status_save(s.status_incremental)
+            if summary:
+                status[bugid] = summary
+                s.status_wanted[bugid] = True
+            else:
+                if bugid in status:
+                    cinfo('overall status {} closing'.format(bugid))
+                    del status[bugid]
+                s.status_wanted[bugid] = False
+
+            s.status_save(status)
+
+    def status_clean(s):
+        with s.lock_thing(1):
+            status = {}
+            if os.path.exists(s.status_path):
+                with open(s.status_path) as rfd:
+                    status = yaml.safe_load(rfd)
+
+            for bugid in dict(status):
+                if (bugid in s.status_start and
+                    s.status.get(bugid, False) is False
+                    ):
+                    cinfo('overall status {} dropping'.format(bugid))
+                    del status[bugid]
+
+            s.status_save(status)
 
     def status_save(s, status):
         with open(s.status_path + '.new', 'w') as rfd:
@@ -120,7 +144,7 @@ class WorkflowManager():
                 lpbug = s.lp.default_service.get_bug(bugid)
                 if lpbug.duplicate_of is not None:
                     cinfo('    LP: #%s - %s (DUPLICATE)' % (lpbug.id, lpbug.title), 'magenta')
-                    s.status_clear(bugid)
+                    s.status_set(bugid, None)
                     continue
                 cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
@@ -167,7 +191,7 @@ class WorkflowManager():
             pass
 
         if not s.args.bugs:
-            s.status_save(s.status_clean)
+            s.status_clean()
 
         cleave('WorkflowManager.manage')
         return 0
