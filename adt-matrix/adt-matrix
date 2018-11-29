@@ -602,7 +602,11 @@ class AutoPackageTest(object):
                         (tstatus, version, rurl, ident) = self.results[ver][pkg][arch]
                         lversion = version
 
-                        some_ever[arch] = True
+                        # If this is the seed then it does not tell us we have
+                        # had a result in this series.
+                        #self.log_verbose('APW: some_ever[{}] = {} @{}'.format(arch, some_ever.get(arch, None), ver))
+                        if not ver.startswith('0 '):
+                            some_ever[arch] = True
                         if version == 'blacklist':
                             #print("APW", pkg, version, latest, DBG)
                             status = 'SKIP-BLKL'
@@ -636,7 +640,8 @@ class AutoPackageTest(object):
                         #print("APW:", ver, pkg, arch, "override", hints)
                         (status, reason) = hints
 
-                        some_ever[arch] = True
+                        if not ver.startswith('0 '):
+                            some_ever[arch] = True
 
                         # If we are hinting to FAIL then we are indicating that previous GOOD stati
                         # are to be ignored, reset tracking.
