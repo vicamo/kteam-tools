@@ -1121,27 +1121,32 @@ table.matrix td {{
                 swift_scanned = swift_scanned,
             )
 
+        adt.log_verbose('Updating from swift')
         adt.update()
 
         # Narrow matrix ...
         html_all = series + '-' + package + '-all.html'
         html = series + '-' + package + '.html'
 
+        adt.log_verbose('Summarising results data')
         (info, results) = adt.results_data()
         (state, summary, version, count, total) = info
 
+        adt.log_verbose('Generating narrow matrix')
         matrix = adt.matrix(results, limit=6, limit_url=html_all)
         with open(html + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
         os.rename(html + '.new', html)
 
         # Detail matrix ...
+        adt.log_verbose('Generating detail matrix')
         matrix = adt.matrix(results)
         with open(html_all + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
         os.rename(html_all + '.new', html_all)
 
         # Latest results (as hints)
+        adt.log_verbose('Generating hints')
         page = adt.hints(results)
         seeds = series + '-' + package + '.seeds'
         with open(seeds + '.new', 'w') as hfd:
@@ -1149,6 +1154,7 @@ table.matrix td {{
         os.rename(seeds + '.new', seeds)
 
         # Latest results as json.
+        adt.log_verbose('Generating latest.json')
         latest = adt.hints_raw(results)
         latest_json = series + '-' + package + '.latest.json'
         with open(latest_json + '.new', 'w') as cfd:
@@ -1156,12 +1162,14 @@ table.matrix td {{
         os.rename(latest_json + '.new', latest_json)
 
         # retry ...
+        adt.log_verbose('Generating retry URLs')
         retry_urls = adt.retry_urls(results)
         retry_urls_file = series + '-' + package + '.retry'
         with open(retry_urls_file + '.new', 'w') as rfd:
             print(retry_urls, end='', file=rfd)
         os.rename(retry_urls_file + '.new', retry_urls_file)
 
+        adt.log_verbose('Generating retry cmds')
         retry_cmds = adt.retry_cmds(results)
         retry_cmds_file = series + '-' + package + '.cmds'
         with open(retry_cmds_file + '.new', 'w') as rfd:
@@ -1184,6 +1192,7 @@ table.matrix td {{
 
         # We are all done with adt so make sure it is saved if changed.
         #adt.dirty = True
+        adt.log_verbose('Saving internal state')
         adt.save()
 
 
