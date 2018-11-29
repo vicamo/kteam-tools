@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #
 
+from contextlib                         import contextmanager
 from datetime                           import datetime
+from fcntl                              import lockf, LOCK_EX
 import os
 import yaml
 
@@ -66,7 +68,16 @@ class WorkflowManager():
             with open(s.status_path) as rfd:
                 s.status_incremental = yaml.safe_load(rfd)
 
+        # Per bug locking.
+        s.lockfile = 'swm.lock'
+
         cleave('WorkflowManager.__init__')
+
+    @contextmanager
+    def lock_thing(s, what):
+        with open(s.lockfile, 'w') as lfd:
+            lockf(lfd, LOCK_EX, 1, int(what))
+            yield
 
     def status_clear(s, bugid):
         if bugid in s.status_incremental:
@@ -144,7 +155,8 @@ class WorkflowManager():
         center('WorkflowManager.manage')
         try:
             for bugid in s.buglist:
-                s.crank(bugid)
+                with s.lock_thing(bugid):
+                    s.crank(bugid)
 
         except BugMailConfigFileMissing as e:
             print(e.message)
