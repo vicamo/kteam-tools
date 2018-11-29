@@ -182,7 +182,7 @@
                 - ['ubuntu', 'Release']
     sources:
         linux:
-            versions: ['4.18.0']
+            versions: ['4.19.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'master-next']
@@ -203,7 +203,6 @@
                     lowlatency:
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            copy-forward: [ '18.10', 'linux' ]
 
         linux-raspi2:
             packages:
