@@ -216,6 +216,7 @@ class AutoPackageTest(object):
     def fetch_swift_results(self, swift_url, src, arch, trigger=None):
         '''Download new results for source package/arch from swift'''
 
+        self.log_verbose('Listing {} for {}'.format(src, arch))
         src_arch_key = src + ' ' + arch
 
         # prepare query: get all runs with a timestamp later than latest_stamp
@@ -254,6 +255,7 @@ class AutoPackageTest(object):
             return
 
         for p in result_paths:
+            self.log_verbose('Examining {}'.format(p))
             self.fetch_one_result(
                 os.path.join(swift_url, 'autopkgtest-' + self.series + self.tag, p, 'result.tar'),
                 os.path.basename(p), src, arch, trigger)
