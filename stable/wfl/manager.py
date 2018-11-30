@@ -69,7 +69,7 @@ class WorkflowManager():
         s.status_start = {}
         if os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
-                status_start = yaml.safe_load(rfd)
+                s.status_start = yaml.safe_load(rfd)
         s.status_wanted = {}
 
         # Per bug locking.
@@ -110,7 +110,7 @@ class WorkflowManager():
 
             for bugid in dict(status):
                 if (bugid in s.status_start and
-                    s.status.get(bugid, False) is False
+                    s.status_wanted.get(bugid, False) is False
                     ):
                     cinfo('overall status {} dropping'.format(bugid))
                     del status[bugid]
