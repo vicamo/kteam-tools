@@ -48,6 +48,19 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '._kernel_block (%s)' % retval)
         return retval
 
+    def _kernel_manual_release(s):
+        '''
+        If a 'kernel-manual-release' tag exist return True.
+        '''
+        center(s.__class__.__name__ + '._kernel_manual_release')
+        retval = False
+
+        if 'kernel-manual-release' in s.bug.tags:
+            retval = True
+
+        cleave(s.__class__.__name__ + '._kernel_manual_release (%s)' % retval)
+        return retval
+
     def _kernel_block_ppa(s):
         '''
         If a 'kernel-block-ppa' tag exist return True.

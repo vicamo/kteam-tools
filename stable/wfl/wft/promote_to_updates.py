@@ -88,12 +88,12 @@ class PromoteToUpdates(Promoter):
                 cdebug("promote-to-updates signoffs not verified")
                 break
 
-            if not s._cycle_ready():
+            if not s._cycle_ready() and not s._kernel_manual_release():
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
             if s.bug.is_derivative_package:
-                if not s.master_bug_ready():
+                if not s.master_bug_ready() and not s._kernel_manual_release():
                     s.task.reason = 'Holding -- master bug not ready for release'
                     break
 
@@ -119,6 +119,10 @@ class PromoteToUpdates(Promoter):
                 break
 
             pull_back = False
+
+            if s._kernel_manual_release():
+                break
+
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
