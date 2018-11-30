@@ -133,16 +133,16 @@ class PromoteToProposed(Promoter):
             break
 
         while True:
-            # Confirm the packages remain available to copy.
-            if not s.bug.all_dependent_packages_fully_built:
-                s.task.reason = 'FAILED: Packages no longer available'
-                if s.task.status != 'Incomplete':
-                    s.task.status = 'Incomplete'
-                    retval = True
-                break
-
             # Check if the packages are published completely yet.
             if not s.bug.all_in_pocket('Proposed'):
+                # Confirm the packages remain available to copy.
+                if not s.bug.all_dependent_packages_fully_built:
+                    s.task.reason = 'FAILED: Packages no longer available'
+                    if s.task.status != 'Incomplete':
+                        s.task.status = 'Incomplete'
+                        retval = True
+                    break
+
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Ready for review'
                 elif s.task.status == 'Incomplete':
