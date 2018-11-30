@@ -162,6 +162,7 @@ class WorkflowManager():
                     bug = task.bug
                     if bug.duplicate_of is not None:
                         cinfo('    LP: #%s - %s (DUPLICATE)' % (bug.id, bug.title), 'magenta')
+                        s.status_set(str(bug.id), None)
                         continue
                     cinfo('    LP: #%s - %s' % (bug.id, bug.title), 'magenta')
                     retval[str(bug.id)] = bug.title
