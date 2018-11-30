@@ -559,9 +559,13 @@ class WorkflowBug():
                 package_package = package
                 break
         if package_package is not None:
-            git_tag = GitTag(package_package, s.upload_version(pkg))
-            if git_tag.verifiable and not git_tag.present:
+            version = s.upload_version(pkg)
+            if version is None:
                 published = False
+            else:
+                git_tag = GitTag(package_package, version)
+                if git_tag.verifiable and not git_tag.present:
+                    published = False
 
         return published
 
