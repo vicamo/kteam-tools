@@ -1117,16 +1117,16 @@
 
         linux-azure-edge:
             packages:
-                #linux-azure-edge:
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/xenial', 'azure-edge-next']
+                linux-azure-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/xenial', 'azure-edge-next']
                 linux-meta-azure-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial', 'azure-edge']
-                #linux-signed-azure-edge:
-                #    type: signed
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial', 'azure-edge']
+                linux-signed-azure-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial', 'azure-edge']
             supported: true
-            derived-from: [ '18.04', 'linux-azure' ]
+            derived-from: [ '18.10', 'linux-azure' ]
             testing:
                 flavours:
                     azure-edge:
