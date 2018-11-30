@@ -1140,7 +1140,7 @@ table.matrix td {{
 
         # Detail matrix ...
         adt.log_verbose('Generating detail matrix')
-        matrix = adt.matrix(results)
+        matrix = adt.matrix(results, limit=50)
         with open(html_all + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
         os.rename(html_all + '.new', html_all)
