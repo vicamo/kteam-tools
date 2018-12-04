@@ -90,7 +90,7 @@ class WorkflowManager():
                 with open(s.status_path) as rfd:
                     status = yaml.safe_load(rfd)
 
-            if summary:
+            if summary is not None:
                 status[bugid] = summary
                 s.status_wanted[bugid] = True
             else:

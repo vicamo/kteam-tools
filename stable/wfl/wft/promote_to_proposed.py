@@ -81,7 +81,7 @@ class PromoteToProposed(Promoter):
                 break
 
             if s._kernel_block_ppa():
-                s.task.reason = 'Another kernel-block/kernel-block-ppa present'
+                s.task.reason = 'Manual kernel-block/kernel-block-ppa present'
                 break
             if s._cycle_hold():
                 s.task.reason = 'Cycle on hold'
