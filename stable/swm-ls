@@ -59,7 +59,7 @@ if __name__ == '__main__':
             if ord(key[0]) == 160:
                 print(bug_id, bug_data)
         if len(bug_data.get('reason', {}).keys()) == 0:
-            bug_data['reason'] = { 'lost-in-space': 'Unknown' }
+            bug_data['reason'] = { 'idle': bug_data.get('phase', 'Not Ready'), }
         if args.phase is False:
             for task in sorted(bug_data.get('reason', {}).keys()):
                 entry = {
