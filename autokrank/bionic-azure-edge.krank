@@ -1,0 +1,9 @@
+source bionic--master.krank
+TYPE=backport
+VARIANT=azure-edge
+
+LINUX_ORIGIN=git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/$SERIES
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN azure-edge-next"
+
+META_ORIGIN=git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/$SERIES
+META_FETCH_SOURCE="$META_ORIGIN master"

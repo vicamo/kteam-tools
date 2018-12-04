@@ -1,0 +1,12 @@
+source cosmic--master.krank
+TYPE=derivative
+VARIANT=azure
+
+LINUX_ORIGIN=git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-$VARIANT/+git/$SERIES
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN master-next"
+
+META_ORIGIN=git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-$VARIANT/+git/$SERIES
+
+SIGNED_ORIGIN=git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-$VARIANT/+git/$SERIES
+
+HAS_SIGNED=1

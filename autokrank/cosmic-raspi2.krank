@@ -1,0 +1,6 @@
+source cosmic--master.krank
+TYPE=derivative
+VARIANT=raspi2
+
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN $VARIANT"
+META_FETCH_SOURCE="$META_ORIGIN $VARIANT"
