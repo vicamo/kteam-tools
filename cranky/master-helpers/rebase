@@ -110,6 +110,13 @@ if [ "${MASTER_COMMIT}" = "${BASE_COMMIT}" ]; then
 	exit 0
 fi
 
+if [ -z "${MASTER_COMMIT}" ] || [ -z "${BASE_COMMIT}" ]; then
+	echo "Could not find either master or base commit."
+	echo "master commit: ${MASTER_COMMIT}"
+	echo "base commit: ${BASE_COMMIT}"
+	exit 1
+fi
+
 MASTER_VERSION=$(git show --format=%s -s "$MASTER_COMMIT" | sed 's/^UBUNTU: //')
 BASE_VERSION=$(git show --format=%s -s "$BASE_COMMIT" | sed 's/^UBUNTU: //')
 echo "Rebase still needed between $BASE_VERSION and $MASTER_VERSION."
