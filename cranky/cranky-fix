@@ -17,7 +17,7 @@ case "$here" in
 esac
 
 # identify the current tree type.
-source=$(dpkg-parsechangelog -S Source)
+source=$(dpkg-parsechangelog -SSource)
 type=""
 debian=""
 if [ "$type" = "" ]; then
@@ -39,9 +39,9 @@ if [ "$type" = "" ]; then
 fi
 
 # identify the current series
-series=$( LC_ALL=C dpkg-parsechangelog -S Distribution )
+series=$( LC_ALL=C dpkg-parsechangelog -SDistribution )
 if [ "$series" = "UNRELEASED" ]; then
-	series=$( LC_ALL=C dpkg-parsechangelog -c 1 -S Distribution )
+	series=$( LC_ALL=C dpkg-parsechangelog -c1 -SDistribution )
 fi
 
 FIX_VERBOSE="1" \
