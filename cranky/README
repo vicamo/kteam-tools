@@ -1,0 +1,30 @@
+During cranky turning, cranky should be run as:
+
+1) cranky chroot run -- cranky fix
+2) cranky chroot run -- cranky rebase
+3) cranky chroot run -- cranky start
+4) link-to-tracker
+5) cranky chroot run -- cranky close
+6) git tag
+7) cranky test-build -a all {kathleen,gloin,tangerine}
+8) prepare meta and signed packages
+9) cranky build-sources
+10) cranky review
+11) push tags, upload packages
+
+== On Chroots ==
+
+Chroots should be used as most as possible. The reason to use a chroot is that:
+
+1) Our rules Makefiles may depend on a specific version of kernel-wedge.
+
+2) updateconfig, or rather, kconfig syncconfigs, on later Linux versions
+(starting with 4.18), depend on compiler options, and those must match the
+compiler that will be used to build the kernel.
+
+3) Those dependencies can be installed on a chroot, and leave the root system
+"clean".
+
+Reasons not to use chroot:
+
+1) Inconvenienced or insecure access to your GPG or SSH keys.
