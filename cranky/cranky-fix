@@ -10,10 +10,10 @@ if [ "$#" -ne 1 ]; then
 fi
 master="$1"
 
-here=`dirname $0`
+here=$(dirname "$0")
 case "$here" in
 /*) ;;
-*)  here="`pwd`/$here" ;;
+*)  here="$(pwd)/$here" ;;
 esac
 
 # identify the current tree type.
@@ -44,9 +44,10 @@ if [ "$series" = "UNRELEASED" ]; then
 	series=$( LC_ALL=C dpkg-parsechangelog -c1 -SDistribution )
 fi
 
+bug="1786013"
 FIX_VERBOSE="1" \
-FIX_BUG="1786013" \
-FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$FIX_BUG" \
+FIX_BUG="$bug" \
+FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$bug" \
 FIX_MASTER="$master" \
 FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
