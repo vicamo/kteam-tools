@@ -10,6 +10,11 @@ fix_error()
 	echo "ERROR: $*" 1>&2
 }
 
+fix_warning()
+{
+	echo "WARNING: $*" 1>&2
+}
+
 fix_verbose()
 {
 	[ "$FIX_VERBOSE" -ge 1 ] && echo "  $*"
@@ -30,12 +35,22 @@ $FIX_BUGLINK
 	fi
 }
 
+fix_uses_master()
+{
+	if [ -z "$FIX_MASTER" ]; then
+		fix_warning "no master directory specified, skipping"
+		exit 0
+	fi
+}
+
 resync_master()
 {
 	local msg="$1"
 	shift 1
 	local master="$FIX_MASTER"
 	local file
+
+	fix_uses_master
 
 	for file in "$@"
 	do
