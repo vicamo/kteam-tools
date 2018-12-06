@@ -2,7 +2,7 @@
 
 here()
 {
-	dirname "$(realpath -e ${0})"
+	dirname "$(realpath -e "${0}")"
 }
 
 fix_error()
@@ -39,7 +39,7 @@ resync_master()
 
 	for file in "$@"
 	do
-		[ -f "$master/$file" -a -f "$file" ] && cp -p "$master/$file" "$file"
+		[ -f "$master/$file" ] && [ -f "$file" ] && cp -p "$master/$file" "$file"
 	done
 
 	commit "$msg" "$@"
