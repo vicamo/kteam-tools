@@ -3,6 +3,7 @@
 # This script generates update.conf used by in-tree helper scripts used to
 # produce Ubuntu kernel commits.
 
+import glob
 import os
 import sys
 
@@ -12,24 +13,47 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.debian import Debian
 from ktl.shell import sh
 
-def get_repo():
+def get_parent_source():
     """
-    Return where the repo for the kernel this one is derived from.
+    Return where the source for the kernel this one is derived from.
     If no one is found, return None.
     """
-    source = Debian.get_source_from_kernel_series()
-    source = source.derived_from
-    if not source:
-        return None
-    return source.packages[0].repo
+    return Debian.get_source_from_kernel_series().derived_from
 
-REPO = get_repo()
-if REPO is None:
+# Identify parental package if we are derived.
+parent_source = get_parent_source()
+if parent_source is None:
+    print("  not a derived package", file=sys.stderr)
     sys.exit(0)
 
-print("RELEASE_REPO=" + REPO.url)
-if REPO.branch:
-    print("SOURCE_RELEASE_BRANCH=" + REPO.branch)
+# Find the primary package for this source.
+for parent_package in parent_source.packages + [ None ]:
+    if parent_package is None or parent_package.type is None:
+        break
+if parent_package is None:
+    print("  parent package has no main package?!?", file=sys.stderr)
+    sys.exit(0)
 
-sh("git fetch " + str(REPO), quiet=True)
-print("DEBIAN_MASTER=" + Debian.debian_env(branch="FETCH_HEAD"))
+if parent_package.repo is None:
+    print("  parent main package has no repository listed", file=sys.stderr)
+    sys.exit(0)
+
+# Emit the parental repository configuration.
+print("RELEASE_REPO=" + parent_package.repo.url)
+if parent_package.repo.branch:
+    print("SOURCE_RELEASE_BRANCH=" + parent_package.repo.branch)
+
+# Spin over all of the local debian.* directories looking for the
+# one which belongs to our parental package.
+for debian in glob.glob('debian.*'):
+    (result, output) = sh("dpkg-parsechangelog -l {}/changelog -S Source".format(debian), quiet=True)
+    source_name = output[0].decode('utf-8').strip()
+    (result, output) = sh("dpkg-parsechangelog -l {}/changelog -S Distribution".format(debian), quiet=True)
+    series_name = output[0].decode('utf-8').strip()
+    if series_name == 'UNRELEASED':
+        (result, output) = sh("dpkg-parsechangelog -l {}/changelog -c 1 -S Distribution".format(debian), quiet=True)
+        series_name = output[0].decode('utf-8').strip()
+
+    if parent_package.series.codename == series_name and parent_package.name == source_name:
+        print("DEBIAN_MASTER=" + debian)
+        break
