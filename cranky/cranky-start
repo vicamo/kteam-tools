@@ -62,7 +62,7 @@ class CrankyStart():
         cmd = os.path.realpath(
             os.path.join(os.path.dirname(__file__),
                          "..", "maintscripts",
-                         "maint-startnewrelease"))
+                         "maint-startnewrelease --local"))
         (rc, output) = run_command(cmd, dry_run=self.dry_run, dbg=self.debug)
         if rc != 0:
             cerror("Failed to create the start new release commit.")
