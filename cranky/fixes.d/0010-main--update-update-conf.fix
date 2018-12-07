@@ -21,13 +21,10 @@ CONF="$DEBIAN/etc/update.conf"
 TMP=$(mktemp "$CONF".XXX)
 $(here)/generate-update-conf > "$TMP"
 if [ -s "$TMP" ] ; then
-	# Touch and add so commit function will notice the diff
-	# caused by the move after the add.
-	touch "$CONF"
-	git add "$CONF"
 	mv "$TMP" "$CONF"
 else
-	rm "$TMP"
+	# The new config is empty, purge any existing contents.
+	rm -f "$TMP" "$CONF"
 fi
 
 msg="UBUNTU: [Packaging] update update.conf"

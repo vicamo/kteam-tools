@@ -24,10 +24,6 @@ HELPERS=""
 for file in $HERE/../master-helpers/{rebase,close,}; do
 	if [ -f "$file" ] ; then
 		script=$(basename "$file")
-		# Touch and add so commit function will notice the diff
-		# caused by the copy after the add.
-		touch "$HDIR/$script"
-		git add "$HDIR/$script"
 		cp -p "$file" "$HDIR/$script"
 		HELPERS="$HELPERS $HDIR/$script"
 	fi
