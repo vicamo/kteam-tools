@@ -46,6 +46,10 @@ class GitTag():
             if not self.present and '-edge' in tag:
                 tag = tag.replace('-edge', '')
                 self.lookup_tag(url, tag)
+            elif not self.present and '-lts-' in tag:
+                tag = 'Ubuntu-lts-{}'.format(
+                    version.replace('~', '_'))
+                self.lookup_tag(url, tag)
 
         cleave(self.__class__.__name__ + '.__init__')
 
