@@ -1319,6 +1319,27 @@
                         arches: ['amd64']
                         clouds: ['metal']
 
+        linux-oracle:
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/xenial', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/xenial']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/xenial']
+            supported: true
+            derived-from: [ '18.04', 'linux-oracle' ]
+            testing:
+                flavours:
+                    oracle:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-raspi2:
             packages:
                 linux-raspi2:
