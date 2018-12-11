@@ -46,12 +46,12 @@ if parent_package.repo.branch:
 # Spin over all of the local debian.* directories looking for the
 # one which belongs to our parental package.
 for debian in glob.glob('debian.*'):
-    (result, output) = sh("dpkg-parsechangelog -l {}/changelog -S Source".format(debian), quiet=True)
+    (result, output) = sh("dpkg-parsechangelog -l{}/changelog -SSource".format(debian), quiet=True)
     source_name = output[0].decode('utf-8').strip()
-    (result, output) = sh("dpkg-parsechangelog -l {}/changelog -S Distribution".format(debian), quiet=True)
+    (result, output) = sh("dpkg-parsechangelog -l{}/changelog -SDistribution".format(debian), quiet=True)
     series_name = output[0].decode('utf-8').strip()
     if series_name == 'UNRELEASED':
-        (result, output) = sh("dpkg-parsechangelog -l {}/changelog -c 1 -S Distribution".format(debian), quiet=True)
+        (result, output) = sh("dpkg-parsechangelog -l{}/changelog -c1 -SDistribution".format(debian), quiet=True)
         series_name = output[0].decode('utf-8').strip()
 
     if parent_package.series.codename == series_name and parent_package.name == source_name:
