@@ -8,6 +8,10 @@ from crl.handle import Handle, HandleError
 
 from ktl.kernel_series import KernelSeries
 
+def tree_package_type(tree):
+    ptype = tree.package.type
+    return "main" if ptype is None else ptype
+
 def handle_to_series_source(args):
     try:
         handle = Handle().lookup_set(args.handle, validate=False)
@@ -33,6 +37,9 @@ def source_packages_path(args):
         print(str(e), file=sys.stderr)
         sys.exit(1)
     for tree in handle.trees:
+        if args.type:
+            type = tree_package_type(tree)
+            print("%s " % (type), end='')
         print(tree.directory)
 
 def print_configs(args):
@@ -53,8 +60,7 @@ def tree_type(args):
     except HandleError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
-    ptype = tree.package.type
-    print("main" if ptype is None else ptype)
+    print(tree_package_type(tree))
 
 def tree_main_path(args):
     try:
@@ -110,6 +116,8 @@ Helper program for getting cranky config and handle data from shell scripts.
                                       help="Print source packages' paths")
     subparser.add_argument("handle",
                            help="<series>:<package> handle, or path to source tree.")
+    subparser.add_argument("-t", "--type", action="store_true", default=False,
+                           help="Also print package type.")
     subparser.set_defaults(func=source_packages_path)
 
     # tree-type subparser
