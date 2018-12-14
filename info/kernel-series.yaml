@@ -841,6 +841,33 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-fips:
+            routing:
+                test-build:
+                    - ['ppa:fips-cc-stig/fips-kernel', 'Release']
+                # TODO: add build, test and proposed
+                release:
+                    - ['ppa:ubuntu-advantage/fips-updates', 'Release']
+            packages:
+                linux-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'master-next']
+                linux-meta-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips']
+                linux-signed-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips']
+            supported: true
+            derived-from: ['18.04', 'linux']
+            testing:
+                flavours:
+                    fips:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'ppc64el', 's390x.LPAR', 's390x.KVM']
+                        clouds: ['metal']
+            invalid-tasks: ['certification-testing']
+
 # 17.10 (artful)
 '17.10':
     codename: artful
