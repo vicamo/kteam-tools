@@ -1,4 +1,4 @@
-curl http://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
+curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
 ./gather-releases > supported-releases.json
 ./generate-dashboard kernel-stable-dashboard.rc > kernel-stable-dashboard.tmp && mv kernel-stable-dashboard.tmp web/kernel-stable-dashboard.html
 
