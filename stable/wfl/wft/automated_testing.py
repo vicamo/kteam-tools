@@ -87,7 +87,7 @@ class AutomatedTesting(TaskHandler):
         return state is not None and state.upper() in ['REGR', 'REGN']
 
     def test_is_pass(s, state):
-        return state is not None and state.upper() in ['GOOD', 'FAIL']
+        return state is not None and state.upper() in ['GOOD', 'FAIL', 'NEUTRAL']
 
     def check_testing_regression(s, package, version, test_data):
         for l in test_data:
