@@ -55,23 +55,23 @@ class PromoteToSecurity(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():
-                    s.task.reason = 'Master bug not ready for release'
+                    s.task.reason = 'Holding -- master bug not ready for release'
                     break
 
             if not s._security_signoff_verified():
-                s.task.reason = 'Security signoff not verified'
+                s.task.reason = 'Holding -- security signoff not verified'
                 break
 
             if not s._stakeholder_signoff_verified():
-                s.task.reason = 'Stakeholder signoff not verified'
+                s.task.reason = 'Holding -- stakeholder signoff not verified'
                 break
 
             if s._kernel_block():
-                s.task.reason = 'A kernel-block/kernel-block-proposed tag present' 
+                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
                 break
 
             if not s._cycle_ready():
-                s.task.reason = 'Cycle not ready to release'
+                s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
             s.task.status = 'Confirmed'
@@ -112,9 +112,9 @@ class PromoteToSecurity(Promoter):
             #
             if not s.bug.packages_released_to_security:
                 if s.task.status == 'Confirmed':
-                    s.task.reason = 'Ready to copy'
+                    s.task.reason = 'Pending -- ready to copy'
                 else:
-                    s.task.reason = 'Packages not yet published'
+                    s.task.reason = 'Ongoing -- packages not yet published'
                 break
 
             cinfo('    All components are now in -proposed', 'magenta')

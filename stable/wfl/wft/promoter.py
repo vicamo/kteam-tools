@@ -216,7 +216,7 @@ class Promoter(TaskHandler):
             obj = 'current-driver-{}-{}-gcp-amd64'.format(s.bug.kernel_version, s.bug.abi)
             gcp_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
             if gcp_object.present is False:
-                s.task.reason = "Nvidia GCP object not found -- {}-{}".format(s.bug.kernel_version, s.bug.abi)
+                s.task.reason = "Pending -- nvidia GCP object not found -- {}-{}".format(s.bug.kernel_version, s.bug.abi)
                 retval = False
 
         cleave(s.__class__.__name__ + '._prerequisites_released (%s)' % retval)

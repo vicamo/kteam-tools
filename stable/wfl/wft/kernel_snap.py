@@ -34,10 +34,11 @@ class KernelSnapBase(TaskHandler):
                 s.task.timestamp('finished')
                 retval = True
             else:
-                s.task.reason = 'Snap not in {} channel'.format(channel)
+                s.task.reason = 'Pending -- snap not in {} channel'.format(channel)
                 cinfo('    snap not in %s channel' % channel, 'yellow')
         except SnapStoreError as e:
             cerror('    failed to query snap store (%s)' % str(e))
+            s.task.reason = 'Stalled -- snap store query failed ({})'.format(str(e))
 
         cleave(s.__class__.__name__ + '.do_verify_release')
         return retval

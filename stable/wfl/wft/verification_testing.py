@@ -120,9 +120,9 @@ class VerificationTesting(TaskHandler):
         if s.task.status == 'Fix Released':
             pass
         elif s.task.status == 'Incomplete':
-            s.task.reason = 'Testing FAILED'
+            s.task.reason = 'Stalled -- testing FAILED'
         else:
-            s.task.reason = 'Testing in progress'
+            s.task.reason = 'Ongoing -- testing in progress'
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval

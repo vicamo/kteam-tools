@@ -45,15 +45,15 @@ class PromoteToRelease(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready():
-                    s.task.reason = 'Master bug not ready for release'
+                    s.task.reason = 'Holding -- master bug not ready for release'
                     break
 
             if not s._security_signoff_verified():
-                s.task.reason = 'Security signoff not verified'
+                s.task.reason = 'Holding -- security signoff not verified'
                 break
 
             if s._kernel_block():
-                s.task.reason = 'A kernel-block/kernel-block-proposed tag present'
+                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
                 break
 
             s.task.status = 'Confirmed'

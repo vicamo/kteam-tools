@@ -55,7 +55,7 @@ class StakeholderSignoff(TaskHandler):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
 
-        s.task.reason = 'Waiting for signoff'
+        s.task.reason = 'Pending -- waiting for signoff'
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval

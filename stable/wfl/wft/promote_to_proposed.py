@@ -59,11 +59,11 @@ class PromoteToProposed(Promoter):
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
-                s.task.reason = 'Source package tags missing'
+                s.task.reason = 'Pending -- source package tags missing'
                 break
 
             if not s.bug.all_dependent_packages_fully_built:
-                s.task.reason = 'Builds not complete'
+                s.task.reason = 'Ongoing -- builds not complete'
                 break
 
             if 'boot-testing-requested' not in s.bug.bprops:
@@ -72,19 +72,19 @@ class PromoteToProposed(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
-                    s.task.reason = 'Master bug not ready for proposed'
+                    s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
             if (not s.bug.proposed_pocket_clear and
                 not s._kernel_unblock_ppa()):
-                s.task.reason = 'Another kernel is currently pending in proposed'
+                s.task.reason = 'Holding -- another kernel is currently pending in proposed'
                 break
 
             if s._kernel_block_ppa():
-                s.task.reason = 'Manual kernel-block/kernel-block-ppa present'
+                s.task.reason = 'Holding -- manual kernel-block/kernel-block-ppa present'
                 break
             if s._cycle_hold():
-                s.task.reason = 'Cycle on hold'
+                s.task.reason = 'Holding -- cycle on hold'
                 break
 
             s.task.status = 'Confirmed'

@@ -73,7 +73,7 @@ class PreparePackageBase(TaskHandler):
                 master = s.bug.master_bug
                 if master.tasks_by_name['prepare-package'].status != 'Fix Released':
                     if pkg == 'main' or not s.bug.valid_package('main'):
-                        s.task.reason = 'Waiting for master bug'
+                        s.task.reason = 'Stalled -- waiting for master bug'
                     break
 
             # Confirm whether this package is actually valid.
@@ -115,7 +115,7 @@ class PreparePackageBase(TaskHandler):
 
             # If we do not have a version then whine about that.
             if not s.bug.is_valid:
-                s.task.reason = 'Version not specified'
+                s.task.reason = 'Pending -- version not specified'
                 break
 
             # Since all the Prepare-package* packagestasks use this same method
@@ -131,12 +131,12 @@ class PreparePackageBase(TaskHandler):
 
             # Confirm that this package is uploaded.
             if not s.bug.uploaded(pkg):
-                s.task.reason = 'Package not yet uploaded'
+                s.task.reason = 'Pending -- package not yet uploaded'
                 break
 
             # Check the package tag has been published.
             if not s.bug.published_tag(pkg):
-                s.task.reason = 'Package tag not yet published'
+                s.task.reason = 'Pending -- package tag not yet published'
                 break
 
             s.bug.phase = 'Uploaded'

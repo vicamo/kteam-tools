@@ -284,11 +284,11 @@ class WorkflowManager():
             # Insert a default reason for anything which is active and did not say why.
             if task.reason == '':
                 if task.status == 'Confirmed':
-                    task.reason = 'Ready'
+                    task.reason = 'Pending -- Ready'
                 elif task.status in ('In Progress', 'Fix Committed'):
                     task.reason = task.status
                 elif task.status == 'Incomplete':
-                    task.reason = 'FAILED'
+                    task.reason = 'Stalled -- FAILED'
 
         cleave('WorkflowManager.process_bug_tasks')
         return retval
