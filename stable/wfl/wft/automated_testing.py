@@ -60,6 +60,14 @@ class AutomatedTesting(TaskHandler):
                 if s.task.status != 'Fix Released':
                     s.task.status = 'Fix Released'
                     retval = True
+            elif state is None:
+                if s.task.status != 'Confirmed':
+                    s.task.status = 'Confirmed'
+                    retval = True
+            else:
+                if s.task.status != 'In Progress':
+                    s.task.status = 'In Progress'
+                    retval = True
 
             if s.task.status == 'Fix Released':
                 pass
