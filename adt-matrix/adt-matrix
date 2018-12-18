@@ -462,9 +462,17 @@ class AutoPackageTest(object):
 
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
+        if exitcode == 8:
+            passed = None
+
+        passed_str = {
+            True:       'pass',
+            False:      'fail',
+            None:       'neutral',
+        }
 
         self.log_verbose('Fetched test result for %s/%s/%s %s: %s (kernel %s %s)' % (
-            src, ver, arch, stamp, passed and 'pass' or 'fail', kernel_pkg, kernel_ver))
+            src, ver, arch, stamp, passed_str[passed], kernel_pkg, kernel_ver))
 
         # add this result
         if kernel_pkg and kernel_ver:
@@ -491,7 +499,7 @@ class AutoPackageTest(object):
             results[arch] = (passed, ver, os.path.dirname(url) + '/', ident)
 
             # Record the first good test.
-            if passed:
+            if passed is True:
                 key = ' '.join((series, kernel_pkg, arch, src))
                 if key not in self.first_good:
                     self.first_good[key] = ident
@@ -616,7 +624,9 @@ class AutoPackageTest(object):
                             #print("APW", pkg, version, latest, DBG)
                             status = 'MISS-REPL'
                             lversion = latest
-                        elif tstatus:
+                        elif tstatus is None:
+                            status = 'NEUTRAL'
+                        elif tstatus is True:
                             good_ever = True
                             status = 'GOOD'
                         elif good_ever:
@@ -700,7 +710,7 @@ class AutoPackageTest(object):
             self.current[self.series + '-' + self.source] = miss
             self.dirty = True
 
-        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0, 'SKIP': 0, 'NEVER': 0 }
+        status = { 'REGN': 0, 'REGR': 0, 'FAIL': 0, 'GOOD': 0, 'MISS': 0, 'SKIP': 0, 'NEVER': 0, 'NEUTRAL': 0 }
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
@@ -716,7 +726,7 @@ class AutoPackageTest(object):
         total = 0
         summary = []
         primary_state = None
-        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD', 'NEVER', 'SKIP' ]:
+        for state in [ 'REGN', 'MISS', 'REGR', 'FAIL', 'GOOD', 'NEUTRAL', 'NEVER', 'SKIP' ]:
             if state and status[state] > 0:
                 if not primary_state:
                     primary_state = state
@@ -753,7 +763,7 @@ class AutoPackageTest(object):
 .GOOD {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS, .SKIP {{ background-color: yellow; }}
-.FAIL {{ background-color: orange; }}
+.FAIL, .NEUTRAL {{ background-color: orange; }}
 .NEVER {{ background-color: lightgreen; }}
 .REGR {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
@@ -1004,7 +1014,7 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 .RUNNING {{ background-color: yellow; }}
 .MISS, .SKIP, .MISSING {{ background-color: yellow; }}
 .NEVER {{ background-color: lightgreen; }}
-.FAIL {{ background-color: orange; }}
+.FAIL, .NEUTRAL {{ background-color: orange; }}
 .REGR, .REGRESSION {{ background-color: tomato; }}
 .REGN {{ background-color: red; }}
 #.sREGR {{ color: red; }}
