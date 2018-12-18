@@ -121,7 +121,7 @@ def shank_all(bot, trigger):
         #
         bot.say(trigger.nick + ', gimme some love boss')
 
-        cmd = 'flock -nx --verbose /tmp/shanky.lck -c "%s/stable/swm" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, os.environ['HOME'])
+        cmd = 'flock -x --verbose /tmp/shanky.lck -c "%s/stable/swm" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, os.environ['HOME'])
         (rc, output) = sh(cmd, quiet=True)
         if rc == 0:
             bot.say(trigger.nick + ', ' + 'I shanked them all')
@@ -138,7 +138,7 @@ def shank_all(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = 'flock -nx --verbose /tmp/shanky.lck -c "%s/stable/swm %s" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, bug, os.environ['HOME'])
+            cmd = 'flock -x --verbose /tmp/shanky.lck -c "%s/stable/swm %s" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, bug, os.environ['HOME'])
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
