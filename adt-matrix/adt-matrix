@@ -67,7 +67,7 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series=None, source=None, parent=None, packages=None, stamp=None, live=False, latest=None, triggers=None, tag='', archive=None, hints=None, migration=None):
+    def __init__(self, series=None, source=None, parent=None, packages=None, stamp=None, live=False, latest=None, triggers=None, tag='', archive=None, hints=None, migration=None, swift_scanned=None):
         self.cache = {}
         self.dirty = False
 
@@ -89,6 +89,10 @@ class AutoPackageTest(object):
         self.kernel_abi = {}
         self.first_good = {}
         self.current = {}
+
+        if swift_scanned is None:
+            swift_scanned = {}
+        self.swift_scanned = swift_scanned
 
         self.verbose = True
 
@@ -215,6 +219,14 @@ class AutoPackageTest(object):
     #
     def fetch_swift_results(self, swift_url, src, arch, trigger=None):
         '''Download new results for source package/arch from swift'''
+
+        # If we have scanned this tag/series/src before we have all new
+        # results for this particular page.
+        swift_tuple = (self.tag, self.series, src, arch)
+        if swift_tuple in self.swift_scanned:
+            self.log_verbose('Skipping {} for {}'.format(src, arch))
+            return True
+        self.swift_scanned[swift_tuple] = True
 
         self.log_verbose('Listing {} for {}'.format(src, arch))
         src_arch_key = src + ' ' + arch
@@ -1056,6 +1068,8 @@ table.matrix td {{
     else:
         tag = '-' + archive.replace('/', '-')
 
+    swift_scanned = {}
+
     series_prev = None
     for line in sys.stdin:
         bits = line.split()
@@ -1104,6 +1118,7 @@ table.matrix td {{
                 archive = archive,
                 hints = hints,
                 migration = migration,
+                swift_scanned = swift_scanned,
             )
 
         adt.update()
