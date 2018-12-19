@@ -142,10 +142,10 @@ class PromoteToUpdates(Promoter):
             #if promote_to_updates.status not in ['Invalid', 'Fix Released']:
             #    break
             if promote_to_updates.status == 'Invalid' and s.bug.packages_released:
-                s.task.reason = 'Packages have been released but the task set to Invalid'
+                s.task.reason = 'Stalled -- packages have been released but the task set to Invalid'
                 break
             elif promote_to_updates.status == 'Fix Released' and not s.bug.packages_released:
-                s.task.reason = 'Packages have been released but the task set to Fix Released'
+                s.task.reason = 'Stalled -- packages have been released but the task set to Fix Released'
                 break
 
             # Since this is the one place where the master, project task is set Fix Released it needs to
@@ -154,38 +154,38 @@ class PromoteToUpdates(Promoter):
 
             # Confirm we have completed all testing.
             if not s._testing_completed():
-                s.task.reason = 'Testing not yet complete'
+                s.task.reason = 'Stalled -- testing not yet complete'
                 break
 
             # Confirm we have a valid security signoff.
             if not s._security_signoff_verified():
-                s.task.reason = 'Security signoff not verified'
+                s.task.reason = 'Stalled -- security signoff not verified'
                 break
 
             if not s.bug.is_development_series:
                 # Check that the promote-to-security status matches -security pocket.
                 promote_to_security = s.bug.tasks_by_name['promote-to-security']
                 if promote_to_security.status not in ['Invalid', 'Fix Released']:
-                    s.task.reason = 'promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status)
+                    s.task.reason = 'Stalled -- promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status)
                     break
                 if promote_to_security.status == 'Invalid' and s.bug.packages_released_to_security:
-                    s.task.reason = 'packages have been released to security, but the task is set to "Invalid"'
+                    s.task.reason = 'Stalled -- packages have been released to security, but the task is set to "Invalid"'
                     break
                 elif promote_to_security.status == 'Fix Released' and not s.bug.packages_released_to_security:
-                    s.task.reason = 'packages have not been released to security, but the task is set to "Fix Released"'
+                    s.task.reason = 'Stalled -- packages have not been released to security, but the task is set to "Fix Released"'
                     break
 
                 # Check that the promote-to-security status matches that of the security-signoff.
                 security_signoff = s.bug.tasks_by_name['security-signoff']
                 if promote_to_security.status != security_signoff.status:
-                    s.task.reason = 'package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status)
+                    s.task.reason = 'Stalled -- package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status)
                     break
 
                 # Check that all snap tasks are either "Invalid" or "Fix Released"
                 snap_done = True
                 for taskname in s.bug.tasks_by_name:
                     if taskname.startswith('snap-') and s.bug.tasks_by_name[taskname].status not in ['Invalid', 'Fix Released']:
-                        s.task.reason = '%s is neither "Fix Released" nor "Invalid" (%s)' % (taskname, s.bug.tasks_by_name[taskname].status)
+                        s.task.reason = 'Stalled -- %s is neither "Fix Released" nor "Invalid" (%s)' % (taskname, s.bug.tasks_by_name[taskname].status)
                         snap_done = False
                 if not snap_done:
                     break

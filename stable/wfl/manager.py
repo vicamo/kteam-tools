@@ -279,14 +279,14 @@ class WorkflowManager():
             except (PackageError, WorkflowBugError) as e:
                 for l in e.args:
                     cerror(e.__class__.__name__ + ': ' + l)
-                task.reason = e.__class__.__name__ + ': ' + e.args[0]
+                task.reason = 'Stalled -- ' + e.__class__.__name__ + ': ' + e.args[0]
 
             # Insert a default reason for anything which is active and did not say why.
             if task.reason == '':
                 if task.status == 'Confirmed':
                     task.reason = 'Pending -- Ready'
                 elif task.status in ('In Progress', 'Fix Committed'):
-                    task.reason = task.status
+                    task.reason = 'Ongoing -- status ' + task.status
                 elif task.status == 'Incomplete':
                     task.reason = 'Stalled -- FAILED'
 

@@ -81,13 +81,13 @@ class PromoteToRelease(Promoter):
             #
             if not s.bug.packages_released:
                 if s.task.status == 'Confirmed':
-                    s.task.reason = 'Ready to copy'
+                    s.task.reason = 'Pending -- ready to copy'
                 elif s.task.status == 'Incomplete':
-                    s.task.reason = 'Copy FAILED'
+                    s.task.reason = 'Stalled -- copy FAILED'
                 elif s.task.status == 'Fix Committed':
-                    s.task.reason = 'Packages not yet published'
+                    s.task.reason = 'Ongoing -- packages not yet published'
                 else:
-                    s.task.reason = 'Copy in progress'
+                    s.task.reason = 'Ongoing -- copy in progress'
                 break
 
             cinfo('    All components are now in -release', 'magenta')

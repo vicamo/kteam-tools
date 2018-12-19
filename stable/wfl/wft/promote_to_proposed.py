@@ -137,32 +137,32 @@ class PromoteToProposed(Promoter):
             if not s.bug.all_in_pocket('Proposed'):
                 # Confirm the packages remain available to copy.
                 if not s.bug.all_dependent_packages_fully_built:
-                    s.task.reason = 'FAILED: Packages no longer available'
+                    s.task.reason = 'Stalled -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
                         retval = True
                     break
 
                 if s.task.status == 'Confirmed':
-                    s.task.reason = 'Ready for review'
+                    s.task.reason = 'Pending -- ready for review'
                 elif s.task.status == 'Incomplete':
-                    s.task.reason = 'Review FAILED'
+                    s.task.reason = 'Stalled -- review FAILED'
                 elif s.task.status == 'Fix Committed':
-                    s.task.reason = 'Packages copies requested'
+                    s.task.reason = 'Ongoing -- packages copies requested'
                 else:
-                    s.task.reason = 'Review in progress'
+                    s.task.reason = 'Ongoing -- review in progress'
                 break
             if not s.bug.all_built_and_in_proposed:
-                s.task.reason = 'Packages copied but not yet published to -proposed'
+                s.task.reason = 'Ongoing -- packages copied but not yet published to -proposed'
                 break
             if not s.bug.ready_for_testing:
-                s.task.reason = 'Packages waiting in -proposed for mirror sync'
+                s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
                 break
 
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
-                s.task.reason = 'Packages are in the wrong component'
+                s.task.reason = 'Stalled -- packages are in the wrong component'
                 break
 
             # If we've already been through here and already sent out the announcement
