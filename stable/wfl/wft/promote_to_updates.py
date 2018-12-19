@@ -54,26 +54,26 @@ class PromoteToUpdates(Promoter):
             if not s._testing_completed():
                 break
 
-            if s.bug.is_derivative_package:
-                if not s.master_bug_ready():
-                    s.task.reason = 'Holding -- master bug not ready for release'
-                    break
-
-            if not s._security_signoff_verified():
-                s.task.reason = 'Holding -- security signoff not verified'
+            if s._kernel_block():
+                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
                 break
 
             if not s._stakeholder_signoff_verified():
                 s.task.reason = 'Holding -- stakeholder signoff not verified'
                 break
 
-            if s._kernel_block():
-                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
+            if not s._security_signoff_verified():
+                s.task.reason = 'Holding -- security signoff not verified'
                 break
 
             if not s._cycle_ready():
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
+
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    s.task.reason = 'Holding -- master bug not ready for release'
+                    break
 
             s.task.status = 'Confirmed'
             retval = True
