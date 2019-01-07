@@ -17,7 +17,6 @@ class PromoteToRelease(Promoter):
         s.jumper['Confirmed']     = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
-        s.jumper['Fix Released']  = s._fix_released
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -98,23 +97,6 @@ class PromoteToRelease(Promoter):
             break
 
         cleave(s.__class__.__name__ + '._verify_promotion (%s)' % retval)
-        return retval
-
-    # _fix_released
-    #
-    def _fix_released(s):
-        """
-        """
-        center(s.__class__.__name__ + '._fix_released')
-        retval = False
-
-        if s.bug.packages_released and s.bug.tasks_by_name[s.bug.workflow_project].status != 'Fix Released':
-            s.bug.tasks_by_name[s.bug.workflow_project].status = 'Fix Released'
-            s.bug.phase = 'Released'
-            msgbody = 'The package has been published and the bug is being set to Fix Released\n'
-            s.bug.add_comment('Package Released!', msgbody)
-            retval = True 
-        cleave(s.__class__.__name__ + '._fix_released (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python

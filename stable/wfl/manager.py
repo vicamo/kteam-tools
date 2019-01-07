@@ -26,6 +26,7 @@ class WorkflowManager():
         s.args = args
         s._lp = None
         s._task_map = {
+            'kernel-sru-workflow'       : wfl.wft.Workflow,
             'upload-to-ppa-dnu'         : wfl.wft.Ignore,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackageLBM,
@@ -271,9 +272,6 @@ class WorkflowManager():
 
         retval = False
         for workflow_task_name in sorted(bug.tasks_by_name):
-            if workflow_task_name in WorkflowBug.projects_tracked:
-                continue
-
             task = bug.tasks_by_name[workflow_task_name]
             cinfo('')
             cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, task.assignee, workflow_task_name), 'magenta')
@@ -297,7 +295,7 @@ class WorkflowManager():
                 task.reason = 'Stalled -- ' + e.__class__.__name__ + ': ' + e.args[0]
 
             # Insert a default reason for anything which is active and did not say why.
-            if task.reason == '':
+            if task.reason == '' and workflow_task_name not in WorkflowBug.projects_tracked:
                 if task.status == 'Confirmed':
                     task.reason = 'Pending -- Ready'
                 elif task.status in ('In Progress', 'Fix Committed'):
