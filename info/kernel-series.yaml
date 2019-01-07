@@ -1083,10 +1083,10 @@
         linux-aws-hwe:
             packages:
                 linux-aws-hwe:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial', 'aws-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial', 'aws-hwe']
                 linux-meta-aws-hwe:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial', 'aws-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial', 'aws-hwe']
             supported: true
             derived-from: [ '18.04', 'linux-aws' ]
             testing:
