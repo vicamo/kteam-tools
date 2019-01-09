@@ -294,7 +294,11 @@ class SnapQaTesting(KernelSnapBase):
         center(s.__class__.__name__ + '.__init__')
         super(SnapQaTesting, s).__init__(lp, task, bug)
 
-        s.jumper['New'] = s._new
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._status_check
+        s.jumper['In Progress']   = s._status_check
+        s.jumper['Incomplete']    = s._status_check
+        s.jumper['Fix Committed'] = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -314,6 +318,22 @@ class SnapQaTesting(KernelSnapBase):
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
         return retval
 
+    # _status_check
+    #
+    def _status_check(s):
+        center(s.__class__.__name__ + '._status_check')
+        retval = False
+
+        if s.task.status == 'Fix Released':
+            pass
+        elif s.task.status == 'Incomplete':
+            s.task.reason = 'Stalled -- testing FAILED'
+        else:
+            s.task.reason = 'Ongoing -- testing in progress'
+
+        cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
+        return retval
+
 
 class SnapCertificationTesting(KernelSnapBase):
     '''
@@ -325,7 +345,11 @@ class SnapCertificationTesting(KernelSnapBase):
         center(s.__class__.__name__ + '.__init__')
         super(SnapCertificationTesting, s).__init__(lp, task, bug)
 
-        s.jumper['New'] = s._new
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._status_check
+        s.jumper['In Progress']   = s._status_check
+        s.jumper['Incomplete']    = s._status_check
+        s.jumper['Fix Committed'] = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -343,6 +367,22 @@ class SnapCertificationTesting(KernelSnapBase):
             cinfo('    task snap-release-to-beta is not \'Fix Released\'', 'yellow')
 
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
+        return retval
+
+    # _status_check
+    #
+    def _status_check(s):
+        center(s.__class__.__name__ + '._status_check')
+        retval = False
+
+        if s.task.status == 'Fix Released':
+            pass
+        elif s.task.status == 'Incomplete':
+            s.task.reason = 'Stalled -- testing FAILED'
+        else:
+            s.task.reason = 'Ongoing -- testing in progress'
+
+        cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
         return retval
 
 
