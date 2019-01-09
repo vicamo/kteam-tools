@@ -45,7 +45,6 @@ class CertificationTesting(TaskHandler):
                 msgbody = 'The bug was tagged as certification-testing-failed\n'
                 s.bug.add_comment('Certification Testing FAILURE', msgbody)
                 s.task.status = 'Incomplete'
-                s.bug.phase = 'Testing Failed'
                 retval = True
 
         elif 'certification-testing-passed' in s.bug.tags:

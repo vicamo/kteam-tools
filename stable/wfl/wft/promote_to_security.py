@@ -126,7 +126,6 @@ class PromoteToSecurity(Promoter):
             cinfo('    All components are now in -proposed', 'magenta')
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
-            s.bug.phase = 'Promoted to security'
             retval = True
             break
 

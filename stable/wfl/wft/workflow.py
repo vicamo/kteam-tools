@@ -2,6 +2,7 @@ from wfl.log                            import center, cleave, cinfo
 
 from .base                              import TaskHandler
 
+
 class Workflow(TaskHandler):
     '''
     A Task Handler for the propose-to-proposed task.
@@ -23,9 +24,6 @@ class Workflow(TaskHandler):
     # evaluate_state
     #
     def evaluate_status(s, state):
-#        # We ARE aware of invalid bugs ... but need a valid package.
-#        if not s.bug.has_package:
-#            return False
         return s.jumper[state]()
 
     # _complete
@@ -36,7 +34,57 @@ class Workflow(TaskHandler):
         center(s.__class__.__name__ + '._complete')
         retval = False
 
+        phase_section = 100
+        phase_text = None
         while True:
+            for (taskname, task) in s.bug.tasks_by_name.items():
+                if task.status in [ 'Invalid', 'Opinion', 'Fix Released', ]:
+                    continue
+
+                task_section = None
+
+                # 1: Packaging
+                if taskname.startswith('prepare-package'):
+                    (task_section, task_text) = (1, 'Packaging')
+
+                # 2: Promote to Proposed
+                elif (taskname in ('promote-to-proposed',
+                                   'snap-release-to-edge',
+                                   'snap-release-to-beta')
+                    ):
+                    (task_section, task_text) = (2, 'Promote to Proposed')
+
+                # 3: Testing
+                elif (taskname.endswith('-testing') or
+                      taskname.endswith('-signoff') or
+                      taskname in ('snap-release-to-candidate')
+                    ):
+                    (task_section, task_text) = (3, 'Testing')
+
+                # 4: Release
+                elif (taskname.startswith('promote-to-') or
+                      taskname in ('snap-release-to-stable')
+                    ):
+                    (task_section, task_text) = (4, 'Release')
+
+                if task_section is None:
+                    continue
+
+                # We are looking for the first active phase, but it is possible
+                # to be between phases.  Therefore unstarted sections are also
+                # interesting.  Jack those so they are less interesting than
+                # active tasks.
+                if task.status == 'New':
+                    (task_section, task_text) = (100 + task_section,
+                        task_text + " Holding")
+
+                # Ratchet down to the earliest phase.
+                if task_section < phase_section:
+                    (phase_section, phase_text) = (task_section, task_text)
+
+            if phase_text is not None:
+                s.bug.phase = phase_text
+
             #
             # FINAL VALIDATION:
             #
@@ -89,7 +137,6 @@ class Workflow(TaskHandler):
                     break
 
             # All is completed so we can finally close out this workflow bug.
-            s.bug.phase = 'Released'
             s.task.status = 'Fix Released'
             msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
             s.bug.add_comment('Workflow done!', msgbody)

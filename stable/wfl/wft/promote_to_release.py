@@ -92,7 +92,6 @@ class PromoteToRelease(Promoter):
             cinfo('    All components are now in -release', 'magenta')
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
-            s.bug.phase = 'Promoted to release'
             retval = True
             break
 

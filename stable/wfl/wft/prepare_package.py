@@ -111,7 +111,6 @@ class PreparePackageBase(TaskHandler):
         retval = False
 
         while True:
-            s.bug.phase = 'Packaging'
 
             # If we do not have a version then whine about that.
             if not s.bug.is_valid:
@@ -139,7 +138,6 @@ class PreparePackageBase(TaskHandler):
                 s.task.reason = 'Pending -- package tag not yet published'
                 break
 
-            s.bug.phase = 'Uploaded'
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:

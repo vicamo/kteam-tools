@@ -46,7 +46,6 @@ class RegressionTesting(TaskHandler):
                 msgbody = 'The bug was tagged as qa-testing-failed\n'
                 s.bug.add_comment('Regression Testing FAILURE', msgbody)
                 s.task.status = 'Incomplete'
-                s.bug.phase = 'Testing Failed'
                 retval = True
 
         elif 'qa-testing-passed' in s.bug.tags or 'regression-testing-passed' in s.bug.tags:
