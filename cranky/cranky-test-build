@@ -233,17 +233,6 @@ BUILD_BRANCH="gbk-$(git rev-parse --short "${commit}")"
 pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
 git branch "${BUILD_BRANCH}" "${commit}"
 
-# Possible build results
-build_passed=0
-build_failed=1
-build_skipped=2
-
-# The results array for the build summary
-declare -A result
-for arch in "${arches[@]}" ; do
-	result[${arch}]=${build_skipped}
-done
-
 # Get the logdir from the config file and create it if it doesn't exist
 logdir=$(cranky-shell-helper test-build logdir)
 logdir=${logdir/#\~\//${HOME}/}   # Replace ~/ with ${HOME}/
@@ -251,6 +240,12 @@ logdir=${logdir:-.}
 if ! [ -d "${logdir}" ] ; then
 	mkdir -p "${logdir}"
 fi
+
+# The results array for the build summary
+declare -A result
+for arch in "${arches[@]}" ; do
+	result[${arch}]="SKIPPED"
+done
 
 # Finally cycle through the arches and do the builds
 for arch in "${arches[@]}" ; do
@@ -272,10 +267,10 @@ for arch in "${arches[@]}" ; do
 	# Print the build result
 	if grep -q 'build completed OK' "${logfile}" 2>/dev/null ; then
 		pr_note "Build PASSED"
-		result[${arch}]=${build_passed}
+		result[${arch}]="PASSED"
 	else
 		pr_error "Build FAILED"
-		result[${arch}]=${build_failed}
+		result[${arch}]="FAILED"
 
 		# Pull the remote logfile
 		rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
@@ -302,10 +297,10 @@ for arch in "${arches[@]}" ; do
 	arch_target="${arch}-${target}:${pad:1}"
 
 	case "${result[${arch}]}" in
-		${build_passed})
+		PASSED)
 			pr_note "  ${arch_target} PASSED"
 			;;
-		${build_skipped})
+		SKIPPED)
 			pr_info "  ${arch_target} SKIPPED"
 			;;
 		*)
