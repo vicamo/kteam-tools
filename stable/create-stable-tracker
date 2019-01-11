@@ -191,9 +191,9 @@ class CreateTrackingBug(StdApp):
             description = description + "\n" + log
             bug = self.lp.create_bug(project='ubuntu', package=changelog[0]['package'], title=title, description=description)
 
-            # Set the status to 'Invalid'
+            # Set the status to 'Confirmed'
             for task in bug.tasks:
-                task.status = 'Invalid'
+                task.status = 'Confirmed'
 
             # Tags:
             #    kernel-stable-tracking-bug
