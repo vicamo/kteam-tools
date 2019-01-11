@@ -103,14 +103,16 @@ class TrackingBug(object):
         #   <version> initially is the string "<version to be filled>"
         package, remainder = bug.title.split(' ', 1)
         if not package.endswith(':'):
-            raise TrackingBugError('invalid title string ' + bug.title)
+            msg = 'invalid title string ({})'.format(bug.title)
+            raise TrackingBugError(msg)
         s._target_package = package[:-1]
         if remainder.startswith(s.__tbd.no_version):
             magic = remainder[len(s.__tbd.no_version)+1:]
         else:
             s._target_version, magic = remainder.split(' ', 1)
         if magic != '-proposed tracker':
-            raise TrackingBugError('invalid title string ' + bug.title)
+            msg = 'invalid title string ({})'.format(bug.title)
+            raise TrackingBugError(msg)
 
         # The target series name is encoded as a nomination for it on
         # a source package task (either real name or linux if new.
@@ -939,8 +941,9 @@ class TrackingBugs():
                 s.__tbs[int(bug_id)] = tb
                 sd = s.__idx_pkg_by_series.setdefault(tb.target_series, {})
                 sd.setdefault(tb.target_package, set()).add(int(bug_id))
-            except:
-                raise TrackingBugError('failed to instantinate tracking bug')
+            except TrackingBugError as e:
+                msg = 'failed to add bug ({})'.format(e.msg)
+                raise TrackingBugError(msg)
 
         cleave(s.__class__.__name__ + '.add')
         return tb
