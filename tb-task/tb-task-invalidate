@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import subprocess
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cdebug
+from ktl.utils import run_command
+from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
+
+
+if __name__ == '__main__':
+
+    desc = '''
+Invalidate Launchpad tracking bugs which represent kernel tasks currently
+in progress.
+'''
+
+    epilog = '''
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    parser.add_argument('bug_ids', metavar='bugID', nargs='+', type=int,
+                        help='LP bug numbers for invalidation')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    mode_prefix = ''
+    if args.dry_run:
+        mode_prefix = 'DRYRUN: '
+
+    # Main app run
+    tbs = TrackingBugs()
+
+    for bug_id in args.bug_ids:
+        try:
+            tbs.add(bug_id)
+        except TrackingBugError as e:
+            print('WW: LP: #{} does not seem to be valid. Skipping...'.format(bug_id))
+            print('WW: {}'.format(e.msg))
+
+    for tbid in tbs.bug_ids:
+        derivatives = tbs[tbid].derivative_bug_ids
+
+        if len(derivatives) > 0:
+            print('WW: Cannot invalidate LP: #{} with active derivatives'.format(tbid))
+            continue
+
+        master = tbs[tbid].master_bug_id
+        if master is not None:
+            tbs.add(master)
+            if tbid in tbs[master].derivative_bug_ids:
+                print('{}Dropping LP: #{} from master LP: #{}'.format(mode_prefix, tbid, master))
+                if not args.dry_run:
+                    tbs[master].derivative_remove(tbs[tbid])
+
+        print('{}Invalidating LP: #{}'.format(mode_prefix, tbid))
+        if not args.dry_run:
+            tbs[tbid].invalidate()
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
