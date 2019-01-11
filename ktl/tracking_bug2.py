@@ -300,7 +300,10 @@ class TrackingBug(object):
             new_desc += '\n'
 
         # For the properties just do a yaml dump
-        new_props = yaml.safe_dump(s.__wf_properties, default_flow_style=False)
+        if len(s.__wf_properties) == 0:
+            new_props = ''
+        else:
+            new_props = yaml.safe_dump(s.__wf_properties, default_flow_style=False)
         new_desc += '\n-- swm properties --\n' + new_props.strip()
 
         s.__bug.description = new_desc
@@ -420,8 +423,23 @@ class TrackingBug(object):
     def __master_bug_id_set(s, ref_tb):
         '''
         Internal helper to set the master bug ID of a derivative tracking
-        bug when it gets added to a master tracking bug.
+        bug when it gets added to a master tracking bug. If the reference
+        is None, then unset the master bug ID.
         '''
+        if ref_tb is None:
+            if s._master_bug_id is not None:
+                tag2del = 'kernel-sru-{}-of-{}'.format(s.__type, str(s._master_bug_id))
+                if tag2del in s.__bug.tags:
+                    s.__bug.tags.remove(tag2del)
+            s.__type = 'master'
+            s._master_bug_id = None
+            del(s.__wf_properties['kernel-stable-master-bug'])
+            s.__update_desc()
+            return
+
+        if not isinstance(ref_tb, TrackingBug):
+            raise TrackingBugError('reference must be a TrackingBug object')
+
         if s._target_series == ref_tb.target_series:
             s.__type = 'derivative'
         else:
@@ -611,6 +629,16 @@ class TrackingBug(object):
         s._derivative_bug_ids[ref_tb.id] = [ ref_series, ref_source ]
         s.__modified = True
         ref_tb.__master_bug_id_set(s)
+        s.save()
+
+    def derivative_remove(s, ref_tb):
+        if not isinstance(ref_tb, TrackingBug):
+            raise TrackingBugError('reference must be a tracking bug')
+        if ref_tb.id not in s._derivative_bug_ids:
+            raise TrackingBugError('reference is not a derivative')
+        del(s._derivative_bug_ids[ref_tb.id])
+        s.__modified = True
+        ref_tb.__master_bug_id_set(None)
         s.save()
         
     def invalidate(s):
