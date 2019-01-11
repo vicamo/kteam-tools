@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import subprocess
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cdebug
+from ktl.utils import run_command
+
+
+if __name__ == '__main__':
+
+    desc = '''
+'''
+
+    epilog = '''
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Main app run
+    #...
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
