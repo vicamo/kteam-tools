@@ -21,7 +21,7 @@ function cleanup()
 
 function pr_error()
 {
-    echo -e "\e[31m${*}\e[0m"
+    echo -e "\e[31m${*}\e[0m" 1>&2
 }
 
 function pr_note()
@@ -32,6 +32,24 @@ function pr_note()
 function pr_info()
 {
     echo -e "\e[33m${*}\e[0m"
+}
+
+function pr_result()
+{
+	local result=${1}
+	shift
+
+	case "${result}" in
+		PASSED)
+			pr_note "${*}"
+			;;
+		SKIPPED)
+			pr_info "${*}"
+			;;
+		*)
+			pr_error "${*}"
+			;;
+	esac
 }
 
 function usage()
@@ -254,37 +272,35 @@ for arch in "${arches[@]}" ; do
 	pr_info "Doing a test build for arch '${arch}', target '${target}'," \
 			"logfile '${logfile}'"
 
-	if [ ${dry_run} -eq 1 ] ; then
-		pr_info "Build SKIPPED"
-		continue
+	if [ ${dry_run} -eq 0 ] ; then
+		# Trigger the remote build
+		git push --force "${remote}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
+			tee /dev/stderr 2> >(tr '\r' '\n' | \
+			sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
+
+		# Get the build result from the logfile
+		if grep -q ' build completed OK\. ' "${logfile}" 2>/dev/null ; then
+			result[${arch}]="PASSED"
+		else
+			result[${arch}]="FAILED"
+
+			# Pull the remote logfile
+			rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
+						   sed -e 's,.*:,,' -e 's, ,,g' || echo)
+			if [ -n "${rlogfile}" ] ; then
+				echo >> "${logfile}"
+				# shellcheck disable=SC2029
+				ssh "${host}" cat "${rlogfile}" >> "${logfile}"
+			fi
+		fi
 	fi
 
-	# Trigger the remote build
-	git push --force "${remote}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
-		tee /dev/stderr 2> >(tr '\r' '\n' | \
-		sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
-
 	# Print the build result
-	if grep -q 'build completed OK' "${logfile}" 2>/dev/null ; then
-		pr_note "Build PASSED"
-		result[${arch}]="PASSED"
-	else
-		pr_error "Build FAILED"
-		result[${arch}]="FAILED"
+	pr_result "${result[${arch}]}" "Build ${result[${arch}]}"
 
-		# Pull the remote logfile
-		rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
-					   sed -e 's,.*:,,' -e 's, ,,g' || echo)
-		if [ -n "${rlogfile}" ] ; then
-			echo >> "${logfile}"
-			# shellcheck disable=SC2029
-			ssh "${host}" cat "${rlogfile}" >> "${logfile}"
-		fi
-
-		# Bail out if -f, --fail is specified
-		if [ ${fail} -eq 1 ] ; then
-			break
-		fi
+	# Bail out if -f, --fail is specified and the build failed
+	if [ ${fail} -eq 1 ] && [ "${result[${arch}]}" = "FAILED" ] ; then
+		break
 	fi
 done
 
@@ -292,19 +308,12 @@ done
 echo
 pr_info "Build summary:"
 for arch in "${arches[@]}" ; do
-	logfile=${logdir}/gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 	pad=$(printf " %.0s" $(seq ${#arch} 7))
-	arch_target="${arch}-${target}:${pad:1}"
-
-	case "${result[${arch}]}" in
-		PASSED)
-			pr_note "  ${arch_target} PASSED"
-			;;
-		SKIPPED)
-			pr_info "  ${arch_target} SKIPPED"
-			;;
-		*)
-			pr_error "  ${arch_target} FAILED    (see ${logfile})"
-			;;
-	esac
+	result_arch="${arch}-${target}:${pad:1} ${result[${arch}]}"
+	if [ "${result[${arch}]}" = "FAILED" ] ; then
+		# Add the location of the logfile if the build failed
+		logfile=${logdir}/gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
+		result_arch="${result_arch}    (see ${logfile})"
+	fi
+	pr_result "${result[${arch}]}" "${result_arch}"
 done
