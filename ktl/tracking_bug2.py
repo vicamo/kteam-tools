@@ -891,6 +891,16 @@ class TrackingBugs():
             yield tb
 
     @property
+    def bug_ids(s):
+        '''
+        A list of Launchpad bugs (IDs) which are currently part of the
+        TrackingBugs() set (read-only).
+
+        :type: list()
+        '''
+        return list(s.__tbs)
+
+    @property
     def series_names(s):
         '''
         A list of series names (codenames of releases) for which
