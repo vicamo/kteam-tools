@@ -84,7 +84,7 @@ EOF
 }
 
 host=
-arches=($(dpkg-architecture -q DEB_HOST_ARCH))
+arches=("$(dpkg-architecture -q DEB_HOST_ARCH)")
 commit=HEAD
 dry_run=0
 fail=0
