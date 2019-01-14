@@ -55,7 +55,8 @@ function pr_result()
 function usage()
 {
 	cat <<EOF
-Usage: cranky-test-build [-h] [-d] [-f] [-c COMMIT] [-t TARGET] [-a ARCH[,ARCH,...]] HOST
+Usage: cranky-test-build [-a ARCH[,ARCH,...]] [-c COMMIT] [-d] [-f] [-h] [-p]
+                         [-t TARGET] HOST
 
 Build kernel binary packages using Kamal's git-build-kernel build script.
 
@@ -76,6 +77,7 @@ Optional arguments:
                               after the first build error rather than continue
                               building the remaining architectures.
   -h, --help                  Show this help message and exit.
+  -p, --purge                 Purge the remote build directory after the build.
   -t, --target TARGET         Build target TARGET instead of 'binary'.
 
 Examples:
@@ -106,6 +108,7 @@ arches=("$(dpkg-architecture -q DEB_HOST_ARCH)")
 commit=HEAD
 dry_run=0
 fail=0
+purge=0
 target=binary
 
 while [ "${#}" -gt 0 ] ; do
@@ -126,6 +129,9 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-h|--help)
 			usage
+			;;
+		-p|--purge)
+			purge=1
 			;;
 		-t|--target)
 			shift
@@ -269,14 +275,20 @@ done
 for arch in "${arches[@]}" ; do
 	logfile=${logdir}/gbk_${series}_${source}_${arch}_${BUILD_BRANCH#gbk-}.log
 
+	echo
 	pr_info "Doing a test build for arch '${arch}', target '${target}'," \
 			"logfile '${logfile}'"
 
+	rbuilddir=
 	if [ ${dry_run} -eq 0 ] ; then
 		# Trigger the remote build
 		git push --force "${remote}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
 			tee /dev/stderr 2> >(tr '\r' '\n' | \
 			sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
+
+		# Get the remote build directory from the logfile
+		rbuilddir=$(grep ' starting build in ' "${logfile}" 2>/dev/null | \
+                        sed -e 's,.*:,,' -e 's, .*,,' || echo)
 
 		# Get the build result from the logfile
 		if grep -q ' build completed OK\. ' "${logfile}" 2>/dev/null ; then
@@ -285,14 +297,18 @@ for arch in "${arches[@]}" ; do
 			result[${arch}]="FAILED"
 
 			# Pull the remote logfile
-			rlogfile=$(grep '/build\.log' "${logfile}" 2>/dev/null | \
-						   sed -e 's,.*:,,' -e 's, ,,g' || echo)
-			if [ -n "${rlogfile}" ] ; then
+			if [ -n "${rbuilddir}" ] ; then
 				echo >> "${logfile}"
 				# shellcheck disable=SC2029
-				ssh "${host}" cat "${rlogfile}" >> "${logfile}"
+				ssh "${host}" cat "${rbuilddir}"/build.log >> "${logfile}"
 			fi
 		fi
+	fi
+
+	# Purge the remote build directory if -p, --purge is specified
+	if [ "${purge}" -eq 1 ] && [ -n "${rbuilddir}" ] ; then
+		pr_info "Purging remote build directory ${rbuilddir}"
+		ssh "${host}" rm -rf "${rbuilddir}"
 	fi
 
 	# Print the build result
