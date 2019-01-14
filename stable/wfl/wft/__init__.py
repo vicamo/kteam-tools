@@ -1,4 +1,4 @@
-from .upload_to_ppa                     import UploadToPPA
+from .ignore                            import Ignore
 from .prepare_package                   import PreparePackage, PreparePackageLBM, PreparePackageMeta, PreparePackagePortsMeta, PreparePackageSigned
 from .automated_testing                 import AutomatedTesting
 from .promote_to_proposed               import PromoteToProposed

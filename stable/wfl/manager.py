@@ -26,7 +26,7 @@ class WorkflowManager():
         s.args = args
         s._lp = None
         s._task_map = {
-            'upload-to-ppa'             : wfl.wft.UploadToPPA,
+            'upload-to-ppa-dnu'         : wfl.wft.Ignore,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackageLBM,
             'prepare-package-meta'      : wfl.wft.PreparePackageMeta,
