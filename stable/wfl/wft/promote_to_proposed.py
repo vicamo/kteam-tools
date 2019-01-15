@@ -58,12 +58,12 @@ class PromoteToProposed(Promoter):
             if not s.bug.all_dependent_packages_uploaded:
                 break
 
-            if not s.bug.all_dependent_packages_published_tag:
-                s.task.reason = 'Pending -- source package tags missing'
-                break
-
             if not s.bug.all_dependent_packages_fully_built:
                 s.task.reason = 'Ongoing -- builds not complete'
+                break
+
+            if not s.bug.all_dependent_packages_published_tag:
+                s.task.reason = 'Pending -- source package tags missing'
                 break
 
             if 'boot-testing-requested' not in s.bug.bprops:
