@@ -488,9 +488,9 @@
                     primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc']
                     gated: false
-                    stable: false
+                    stable: true
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     arches: ['amd64', 'i386']
                     track: '18'
                 dragonboard-kernel:
