@@ -103,7 +103,7 @@ class LibevConnection(BaseConnection):
                 warnings.simplefilter("ignore", RuntimeWarning)
                 self.ioloop = pyev.default_loop()
 
-        self.async = None
+        self.async_ioloop = None
         self._on_signal_callback = on_signal_callback
         self._io_watcher = None
         self._active_timers = {}
@@ -144,8 +144,8 @@ class LibevConnection(BaseConnection):
                                    self._PIKA_TO_LIBEV_ARRAY[self.event_state],
                                    self._handle_events)
 
-            self.async = pyev.Async(self.ioloop, self._noop_callable)
-            self.async.start()
+            self.async_ioloop = pyev.Async(self.ioloop, self._noop_callable)
+            self.async_ioloop.start()
             if self._on_signal_callback:
                 global_sigterm_watcher.start()
             if self._on_signal_callback:
