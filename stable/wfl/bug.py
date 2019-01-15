@@ -541,7 +541,7 @@ class WorkflowBug():
 
         bi = s.__package.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
                 retval = bi[pkg][pocket]['version']
                 break
 
