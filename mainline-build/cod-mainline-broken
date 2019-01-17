@@ -40,6 +40,8 @@ do
         which='cleaned in the wrong architecture' ;;
     *"No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop."*)
         which='syncconfig form changed' ;;
+    *"II: dkms-build downloading nvidia-390"*)
+        which='nvidia dkms enabled' ;;
     esac
 
     # Check for unsigned and no modules.
