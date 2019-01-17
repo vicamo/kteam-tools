@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #==============================================================================
 # Author: Stefan Bader <stefan.bader@canonical.com>
-# Copyright (C) 2010
+# Copyright (C) 2010,2019
 #
 # This script is distributed under the terms and conditions of the GNU General
 # Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
@@ -74,13 +74,11 @@ if not os.path.isdir(debian_dir):
 	print "directory."
 	sys.exit(1)
 
-(srcpkg, version, pocket, flags) = GetPackageInfo()
+(srcpkg, full_version, pocket, flags) = GetPackageInfo()
 lts_version = None
-if '~' in version:
-    lts_version = version.split('~')[1]
-version = version.split("~")[0]
-kversion = version.split("-")[0]
-kabi, krel = version.split("-")[1].split(".")
+if '~' in full_version:
+    lts_version = full_version.split('~')[1]
+version = full_version.split("~")[0]
 
 #------------------------------------------------------------------------------
 # Make sure the changelog is not locally modified.
@@ -109,9 +107,9 @@ if not os.path.isfile("debian/control"):
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
-# Only need to take care of the ABI files for the linux-kernel package.
+# If there is an ABI directory, try to get the latest information
 #------------------------------------------------------------------------------
-if not lts_version and os.path.isdir(os.path.join(debian_dir, "abi")):
+if os.path.isdir(os.path.join(debian_dir, "abi")):
 	#----------------------------------------------------------------------
 	# Try to get the new ABI files (note that version is not incremented,
 	# yet).
@@ -133,13 +131,18 @@ if not lts_version and os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --ckt-ppa"
 	for repo in opts.additional_repos:
 		cmd += " --pool '%s'" % repo
-	if srcpkg.startswith("linux-lts-"):
-		v = "Ubuntu-lts-" + version + '_' + lts_version
-	elif srcpkg.startswith("linux-"):
-		v = "Ubuntu-" + srcpkg[len("linux-"):] + '-' + version
-	else:
-		v = "Ubuntu-" + version
-	print(cmd + " " + v)
+
+        # Handle the various (historic) variants of tag names
+        if srcpkg.startswith("linux-lts-"):
+                pfx = "Ubuntu-lts"
+        elif srcpkg.startswith("linux-"):
+                pfx = "Ubuntu-" + srcpkg[len("linux-"):]
+        else:
+                pfx = "Ubuntu"
+        v = pfx + "-" + version
+        if lts_version is not None:
+            v += "_" + lts_version
+
 	(rc, output) = sh(cmd + " " + v)
 
 	#----------------------------------------------------------------------
@@ -149,23 +152,35 @@ if not lts_version and os.path.isdir(os.path.join(debian_dir, "abi")):
 	#----------------------------------------------------------------------
 	print "II: Removing old ABI files and adding the new ones"
         v = GetPackageInfo(prev=True)[1]
-        v = v.split("~")[0]
-	old_abi_dir = os.path.join(
-		debian_dir,
-		"abi",
-                v
-	)
-	if not opts.dryrun:
-		(rc, output) = sh("git rm --quiet -rf " + old_abi_dir, ignore_result=True)
-		(rc, output) = sh("rm -rf " + old_abi_dir, ignore_result=True)
-		(rc, output) = sh("git add " + os.path.join(debian_dir, "abi", version))
+        old_abi_dir = os.path.join(debian_dir, "abi", v)
+
+        # For a while backport kernels would have stripped any /~\..*/
+        # pattern from the abi directory name. If the full version string
+        # does not exist, try the stripped name.
+        if not os.path.isdir(old_abi_dir):
+            old_abi_dir = old_abi_dir.rsplit("~", 1)[0]
+
+        if os.path.isdir(old_abi_dir):
+            if opts.dryrun:
+                print "DRY: git rm -rf %s" % old_abi_dir
+            else:
+                (rc, output) = sh("git rm --quiet -rf " + old_abi_dir, ignore_result=True)
+                (rc, output) = sh("rm -rf " + old_abi_dir, ignore_result=True)
+
+        cmd = "git add %s" % os.path.join(debian_dir, "abi", full_version)
+        if opts.dryrun:
+                print "DRY: %s" % cmd
+        else:
+                (rc, output) = sh(cmd)
 
 #------------------------------------------------------------------------------
 # Next step is to create a new changelog with the new header first and the
 # remainder appended from the old one.
 #------------------------------------------------------------------------------
 if opts.dryrun:
-	print "Would call fakeroot debian/rules here"
+	print "DRY: fakeroot debian/rules startnewrelease"
+        print "DRY: git add %s" % changelog
+        print "DRY: git commit -s -F debian/commit-templates/newrelease"
 else:
 	(rc, output) = sh("fakeroot debian/rules startnewrelease")
 	(rc, output) = sh("git add " + changelog)
@@ -174,4 +189,5 @@ else:
 #------------------------------------------------------------------------------
 # Finally add the changelog and commit everything.
 #------------------------------------------------------------------------------
-print "\n\n***** Now please inspect the commit before pushing *****"
+if not opts.dryrun:
+    print "\n\n***** Now please inspect the commit before pushing *****"
