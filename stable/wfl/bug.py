@@ -104,7 +104,6 @@ class WorkflowBug():
             else:
                 cinfo('                 derivative: no', 'blue')
 
-            cinfo('               routing_mode: %s' % (s.__package.routing_mode), 'blue')
             cinfo('              test_flavours: %s' % (s.test_flavours()), 'blue')
             cinfo('')
 

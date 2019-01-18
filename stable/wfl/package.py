@@ -72,7 +72,11 @@ class Package():
                     continue
                 s._routing[key] = (archive, route[1])
             s.routing_mode = s.source.routing.name
-        cinfo("ROUTING: " + s.routing_mode + " " + str(s._routing))
+
+        cinfo('    Routing mode: {}'.format(s.routing_mode), 'blue')
+        cinfo('    Routing table:', 'blue')
+        for pocket, pocket_data in s._routing.items():
+            cinfo('        {}: {} {}'.format(pocket, pocket_data[0], pocket_data[1]), 'blue')
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
