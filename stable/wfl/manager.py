@@ -3,7 +3,7 @@
 
 from contextlib                         import contextmanager
 from datetime                           import datetime
-from fcntl                              import lockf, LOCK_EX
+from fcntl                              import lockf, LOCK_EX, LOCK_NB
 import os
 import yaml
 
@@ -78,13 +78,16 @@ class WorkflowManager():
         cleave('WorkflowManager.__init__')
 
     @contextmanager
-    def lock_thing(s, what):
+    def lock_thing(s, what, block=True):
+        mode = LOCK_EX
+        if block is False:
+            mode |= LOCK_NB
         with open(s.lockfile, 'w') as lfd:
-            lockf(lfd, LOCK_EX, 1, int(what))
+            lockf(lfd, mode, 1, int(what))
             yield
 
     def status_set(s, bugid, summary):
-        with s.lock_thing(1):
+        with s.lock_thing(2):
             status = {}
             if os.path.exists(s.status_path):
                 with open(s.status_path) as rfd:
@@ -102,7 +105,7 @@ class WorkflowManager():
             s.status_save(status)
 
     def status_clean(s):
-        with s.lock_thing(1):
+        with s.lock_thing(2):
             status = {}
             if os.path.exists(s.status_path):
                 with open(s.status_path) as rfd:
@@ -173,11 +176,23 @@ class WorkflowManager():
     # manage
     #
     def manage(s):
+        if not s.args.bugs:
+            try:
+                with s.lock_thing(1, block=False):
+                    s.manage_payload()
+            except BlockingIOError:
+                cerror('Full run already in progress.', 'red')
+        else:
+            s.manage_payload()
+
+    # manage_payload
+    #
+    def manage_payload(s):
         '''
         This drives the overall process. It gets a list of the bugs that need to
         be worked (if not specified) and then runs through each of them.
         '''
-        center('WorkflowManager.manage')
+        center('WorkflowManager.manage_payload')
         try:
             for bugid in s.buglist:
                 with s.lock_thing(bugid):
@@ -194,7 +209,7 @@ class WorkflowManager():
         if not s.args.bugs:
             s.status_clean()
 
-        cleave('WorkflowManager.manage')
+        cleave('WorkflowManager.manage_payload')
         return 0
 
     # crank
