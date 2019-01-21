@@ -92,6 +92,7 @@ class CrankyStart():
         cinfo("No ABI issues")
 
     def update_backport(self):
+        cinfo("Running update-from-*master script")
         os.putenv("SKIP_REBASE_IF_UPTODATE", "1")
         Debian.update_from_master(dry_run=self.dry_run)
         # Unstage the changelog, cause that's gonna be changed in a different way
