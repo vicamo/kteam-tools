@@ -463,6 +463,27 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oracle:
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/cosmic', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/cosmic']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/cosmic']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oracle:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '18.04', 'linux-oracle' ]
 
 # 18.04 (bionic)
 '18.04':
