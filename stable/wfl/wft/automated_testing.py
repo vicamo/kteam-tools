@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave, cdebug
+from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 import requests
 
@@ -98,7 +98,7 @@ class AutomatedTesting(TaskHandler):
                 res = l.split()
                 if res[0] == s.bug.series and res[1] == package and res[2] == version:
                     state = res[3]
-                    cdebug('            State for %s %s in %s: %s' % (package, version, s.bug.series, state))
+                    cinfo('            State for %s %s in %s: %s' % (package, version, s.bug.series, state))
 
                     if s.test_is_regression(state):
                         if s.task.status != 'Incomplete':
@@ -107,7 +107,7 @@ class AutomatedTesting(TaskHandler):
                             msgbody += "Please verify test results in %s\n" % s.regressions_url
                             # s.bug.add_comment('Automated-Testing regression', msgbody)
                     return state
-        cdebug('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
+        cinfo('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
         return None
 
 # vi: set ts=4 sw=4 expandtab syntax=python
