@@ -92,7 +92,7 @@ class TheApp(object):
             print('    </tr>')
             print('</table>')
         else:
-            print('To: Kernel SRU Announcements <kernel-sru-announce@lists.canonical.com>, '
+            print('To: Kernel SRU Announcements <kernel-sru-announce@lists.ubuntu.com>, '
                   'Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
             print('Subject: A new SRU cycle started...')
             s.print_cycle(sd)
