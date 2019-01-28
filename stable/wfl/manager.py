@@ -199,6 +199,9 @@ class WorkflowManager():
                 with s.lock_thing(bugid):
                     s.crank(bugid)
 
+            if not s.args.bugs:
+                s.status_clean()
+
         except BugMailConfigFileMissing as e:
             print(e.message)
 
@@ -206,9 +209,6 @@ class WorkflowManager():
         #
         except KeyboardInterrupt:
             pass
-
-        if not s.args.bugs:
-            s.status_clean()
 
         cleave('WorkflowManager.manage_payload')
         return 0
