@@ -1,0 +1,497 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import subprocess
+import logging
+
+from datetime           import datetime
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log            import Clog, cerror, cinfo, cdebug
+from ktl.utils          import run_command
+from ktl.kernel_series  import KernelSeries
+from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
+from ktl.cycleboard     import CycleBoard, CycleBoardError
+
+class Task():
+    def __init__(self, taskset, ks_source, ks_snap=None):
+        self.taskset   = taskset
+        self.ks_source = ks_source
+        self.ks_snap   = ks_snap
+        self.create    = False
+        self.tb        = None
+        self.subtasks  = []
+        self.level     = 0
+
+    def __repr__(self):
+        '''
+        Represents a task as a string for printing.
+        '''
+        ret = ''
+
+        i = self.level + 1
+        while i > 0:
+            ret += '  '
+            i -= 1
+
+        cn = self.ks_source.series.codename
+        pfx = '='
+        if self.create is True:
+            pfx = '+'
+        if self.ks_snap is not None:
+            ret += '{} {}/{}'.format(pfx, cn, self.ks_snap.name)
+        else:
+            ret += '{} {}/{}'.format(pfx, cn, self.ks_source.name)
+        if self.tb is None:
+            ret += ' (None)'
+        else:
+            ret += ' (LP: #{})'.format(self.tb.id)
+        if self.ks_snap is not None:
+            ret += ' [snap]'
+        else:
+            ret += ' [deb]'
+
+        for subtask in self.subtasks:
+            ret += '\n{}'.format(subtask)
+
+        return ret
+
+    @property
+    def sourcetype(self):
+        if self.ks_snap is None:
+            return 'deb'
+        else:
+            return 'snap'
+
+    def AddSubtask(self, task):
+        task.level = self.level + 1
+        self.subtasks.append(task)
+
+    def CreateTrackingBugs(self, master=None, dryrun=False):
+        new_tbids = []
+        new_tbid  = None
+        for subtask in self.subtasks:
+            new_tbids.extend(subtask.CreateTrackingBugs(master=self, dryrun=dryrun))
+
+        cn = self.ks_source.series.codename
+        sn = self.ks_source.name
+        ts = self.taskset
+        if self.create and self.sourcetype == 'deb':
+            old_tb = self.tb
+
+            cinfo('Creating tracking bug for {}/{}[{}-{}]...'.format(cn, sn, ts.cycletag, ts.spin_nr))
+            if dryrun is True:
+                new_tbid = ts.fake_id
+                ts.fake_id += 1
+            else:
+                self.tb = ts.tbs.create(cn, sn)
+                self.tb.set_cycle_and_spin(ts.cycletag, ts.spin_nr)
+                new_tbid = self.tb.id
+            cinfo('  + created LP: #{}'.format(new_tbid))
+
+            if old_tb is not None:
+                # Inherit all the derivatives set in tracking bug being replaced
+                for tbid in old_tb.derivative_bug_ids:
+                    if tbid not in ts.tbs:
+                        ts.tbs.add(tbid)
+                    tb = ts.tbs[tbid]
+                    cinfo('  + derivative {}/{}'.format(tb.target_series, tb.target_package))
+                    if dryrun is False:
+                        self.tb.derivative_add(tb)
+
+                if master is not None and master.tb is not None:
+                    if old_tb.id in master.tb.derivative_bug_ids:
+                        cinfo('  - remove LP: #{} from LP: #{}'.format(old_tb.id, master.tb.id))
+                        if dryrun is False:
+                            master.tb.derivative_remove(old_tb)
+
+                cinfo('  - duplicate LP: #{} to LP: #{}'.format(old_tb.id, new_tbid))
+                if dryrun is False:
+                    try:
+                        old_tb.make_duplicate_of(self.tb)
+                    except TrackingBugError as e:
+                        cerror('  - duplication failed: {}'.format(e.msg))
+
+        # Add the tracking bugs of the subtasks to this tasks tracking bug
+        # as derivatives.
+        for tbid in new_tbids:
+            if dryrun is False:
+                tb = ts.tbs[tbid]
+                cinfo('{}/{} + derivative {}/{}'.format(cn, sn, tb.target_series, tb.target_package))
+                self.tb.derivative_add(tb)
+            else:
+                cinfo('{}/{} + derivative LP: #{}'.format(cn, sn, tbid))
+
+        if new_tbid is None:
+            return []
+        else:
+            if dryrun is False:
+                self.tb.wf_status_set('In Progress')
+            return [ new_tbid ]
+
+    def CreateCards(self, dryrun=False):
+        if self.create is True:
+            cn = self.ks_source.series.codename
+            sn = self.ks_source.name
+            sp = self.taskset.spin_nr
+            cb = self.taskset.board
+            if self.sourcetype == 'deb':
+                card_txt = 'Crank (#{}) {}/{} kernel'.format(sp, cn, sn)
+                card_dsc = 'Use cranky tools and process to get the kernel set uploaded.'
+                if self.ks_source.series.esm is True:
+                    card_dsc += ' Note the different location and requirements for ESM!'
+                cinfo('Create "{}" card'.format(card_txt))
+                if dryrun is False:
+                    cb.add_card(card_txt, card_dsc)
+            elif self.sourcetype == 'snap':
+                sn = self.ks_snap.name
+                card_txt = 'Produce (#{}) {}/{} snap'.format(sp, cn, sn)
+                card_dsc = 'Use cranky-update-snap in related branch and push.'
+                cinfo('Create "{}" card'.format(card_txt))
+                if dryrun is False:
+                    cb.add_card(card_txt, card_dsc)
+                card_txt = 'Release (#{}) {}/{} snap to candidates channel'.format(sp, cn, sn)
+                card_dsc = 'When task is confirmed use snapcraft release to candidates channel.'
+                cinfo('Create "{}" card'.format(card_txt))
+                if dryrun is False:
+                    cb.add_card(card_txt, card_dsc)
+                if self.ks_snap.stable is True:
+                    card_txt = 'Release (#{}) {}/{} snap to stable channel'.format(sp, cn, sn)
+                    card_dsc = 'When task is confirmed use snapcraft release to stable channel.'
+                    cinfo('Create "{}" card'.format(card_txt))
+                    if dryrun is False:
+                        cb.add_card(card_txt, card_dsc)
+
+        for subtask in self.subtasks:
+            subtask.CreateCards(dryrun=dryrun)
+
+
+class TaskSet():
+    def __src_wanted(self, ks_source, src_list):
+        return (len(src_list) == 0 or ks_source.name in src_list)
+
+    def __src_get_origin(self, ks_source):
+        origin = ks_source.derived_from
+        if origin:
+            if origin.derived_from:
+                origin = self.__src_get_origin(origin)
+        return origin
+
+    def __task_match_tb(self, task):
+            series  = task.ks_source.series.codename
+            source  = task.ks_source.name
+            matchtb = None
+            bug_ids = self.tbs.get_series_package(series, source)
+
+            if bug_ids is not None:
+                # At this point there might be multiple bugs returned (for example one
+                # from a previous cycle which has not yet cleared away).
+                for bug_id in bug_ids:
+                    tb = self.tbs[bug_id]
+                    if tb.cycle != self.cycletag:
+                        continue
+                    #if task.create is True and self.spin_nr is not None:
+                    #    if tb.spin_nr < self.spin_nr:
+                    #        continue
+                    if matchtb is None:
+                        matchtb = tb
+                    elif matchtb.spin_nr == tb.spin_nr:
+                        cerror('{} has existing tbs with identical spin number!'.format(task))
+                        cerror('- {} vs. {}'.format(matchtb.id, tb.id))
+                        sys.exit(2)
+                    else:
+                        if tb.spin_nr > matchtb.spin_nr:
+                            matchtb = tb
+
+            return matchtb
+
+    def __task_match_all_tbs(self, task):
+        if task.sourcetype == 'deb':
+            series = task.ks_source.series.codename
+            if series not in self.tbs.series_names:
+                cinfo('Adding tracking bugs for {}...'.format(series))
+                self.tbs.load(series_filter=[series], debug=True)
+            task.tb = self.__task_match_tb(task)
+
+        # Next traverse all subtasks and try to find an existing tracking bug
+        for subtask in task.subtasks:
+            self.__task_match_all_tbs(subtask)
+
+    def __task_add_snaps(self, task):
+        ks_source = task.ks_source
+
+        for ks_snap in sorted(ks_source.snaps, key=lambda x: x.name):
+            if not ks_snap.repo:
+                continue
+            subtask = Task(self, ks_source, ks_snap)
+            subtask.create = True
+            task.AddSubtask(subtask)
+
+    def __get_parent_task(self, derivative):
+        if derivative.derived_from is None:
+            return self.tasks[derivative.series.codename]
+
+        task = self.__get_parent_task(derivative.derived_from)
+        for t in task.subtasks:
+            if t.ks_source == derivative:
+                return t
+        return task
+
+    def __task_check_new(self, task):
+        for subtask in task.subtasks:
+            try:
+                self.__task_check_new(subtask)
+            except:
+                raise
+
+        if task.create is True and task.tb is not None:
+            if self.spin_nr <= task.tb.spin_nr:
+                cn = task.ks_source.series.codename
+                sn = task.ks_source.name
+                raise ValueError('{}/{} already exists as spin #{}'.format(cn, sn, task.tb.spin_nr))
+
+
+    def __repr__(self):
+        '''
+        This function is called when a TaskSet is to be displayed as a
+        string for printing. At this level it loops over all series
+        which are in the task set and calls the format function for
+        each task.
+        '''
+        output = ''
+
+        for ks_series in self.ks_series_list:
+            output += '* {}\n'.format(ks_series.codename)
+            output += '{}\n'.format(self.tasks[ks_series.codename])
+
+        return output
+
+    def __init__(self, ks_series_list, source_name_list, cycledate):
+        '''
+        Initialize a TaskSet which consists
+        ks_series_list = [ KernelSeries.series ... ]
+        source_name_list = [ str ... ]
+        cycledate = datetime
+        '''
+        self.tbs = None
+        self.board = None
+        self.cycledate = cycledate
+        self.ks_series_list = ks_series_list
+        self.tasks = dict()
+        self.cycletag = cycledate.strftime('%Y.%m.%d')
+        self.spin_nr = None
+        self.fake_id = 5550000
+
+        ks = KernelSeries()
+        for ks_series in ks_series_list:
+            for ks_source in ks_series.sources:
+                if not ks_source.derived_from:
+                    tkey = ks_series.codename
+                    self.tasks[tkey] = Task(self, ks_source)
+                    break
+
+        if ks_series_list[0].development:
+            self.cycletag = 'd' + self.cycletag
+
+        for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
+            if not ks_series.development and not ks_series.supported:
+                continue
+            for ks_source in ks_series.sources:
+                if not ks_source.supported or ks_source.copy_forward:
+                    continue
+                if not self.__src_wanted(ks_source, source_name_list):
+                    continue
+                origin = self.__src_get_origin(ks_source)
+                if not origin:
+                    tkey = ks_series.codename
+                    if ks_series in ks_series_list:
+                        self.tasks[tkey].create = True
+                        self.__task_add_snaps(self.tasks[tkey])
+                else:
+                    if origin.series in ks_series_list:
+                        parent_task = self.__get_parent_task(ks_source)
+                        if parent_task == None:
+                            cerror('No parent task for {}/{}'.format(ks_source.series.codename, ks_source.name))
+                            continue
+                        subtask = Task(self, ks_source)
+                        subtask.create = True
+                        parent_task.AddSubtask(subtask)
+                        self.__task_add_snaps(subtask)
+
+    def LoadTrackingBugs(self, test=False):
+        self.tbs = TrackingBugs(testing=test)
+
+        cinfo('Fetching existing tracking bugs for reality check...')
+
+        for series in self.ks_series_list:
+            self.__task_match_all_tbs(self.tasks[series.codename])
+
+    def ValidateTasks(self):
+        # When no spin number is provided on the command-line, then pick the
+        # next one free.
+        if self.spin_nr is None:
+            self.spin_nr = 1
+            for tbid in self.tbs:
+                tb = self.tbs[tbid]
+                if tb.cycle == self.cycletag:
+                    if tb.spin_nr >= self.spin_nr:
+                        self.spin_nr = tb.spin_nr + 1
+            cinfo('Auto-selecting spin number: {}'.format(self.spin_nr))
+        else:
+            # FIXME: What are the constraints when providing a spin number?
+            #   - only additional tasks are allowed (no task to create with
+            #     an existing tracking bug assigned
+            for series in self.tasks:
+                try:
+                    self.__task_check_new(self.tasks[series])
+                except:
+                    raise
+
+        # Initial spins (#1) would find no existing tracking bugs but must create
+        # the main task. Re-spins may not require to create the main task but must
+        # find an existing tracking bug for those.
+        for series in self.tasks:
+            maintask = self.tasks[series]
+            cn = maintask.ks_source.series.codename
+            sn = maintask.ks_source.name
+            if maintask.create is False and maintask.tb is None:
+                raise ValueError('{}/{} has no tracking bug and is not created!'.format(cn, sn))
+
+    def CreateTrackingBugs(self, dryrun=False):
+        for ks_series in self.ks_series_list:
+            self.tasks[ks_series.codename].CreateTrackingBugs(dryrun=dryrun)
+
+    def CreateCards(self, dryrun=False):
+        if self.board is None:
+            self.board = CycleBoard()
+            try:
+                self.board.lookup_board_id('SRU Cycle {}'.format(self.cycletag))
+                self.board.lookup_list_id('Backlog')
+            except CycleBoardError as e:
+                cerror(e)
+                return
+        for ks_series in self.ks_series_list:
+            self.tasks[ks_series.codename].CreateCards(dryrun=dryrun)
+
+if __name__ == '__main__':
+
+    desc = '''
+Create all tasks (tracking bugs and trello cards for a given SRU cycle.
+By default this will cover all supported (excluding development) series
+and all supported kernel source for each series.
+'''
+
+    epilog = '''
+Examples:
+
+  $ create-kernel-tasks 2018.09.24
+
+  This would try to add "Crank ..." cards for all supported kernel sources
+  to the "SRU Cycle 2018.09.24" board and also create a tracking bug for
+  each source. If there are already existing tracking bugs, the next avail-
+  able spin number will be calculated and any tracking bug replaced will
+  be duplicated agains the new one.
+
+  $ create-kernel-tasks --devel 2018.09.24
+
+  This would skip creating any trello cards and only create tracking bugs.
+  Spin number calculation and duplication will be the same as for normal
+  SRU cycles but the cycle tag will automatically be prefixed with 'd'.
+  Kernel sources can be limited/selected with the --source option but
+  the --series option cannot be used together with --devel.
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--force-nocards', action='store_true', default=False,
+                        help='forcefully disable the creation of Trello cards. This is the default in --devel mode')
+    grp1 = parser.add_mutually_exclusive_group()
+    grp1.add_argument('--devel', action='store_true', default=False,
+                      help='run task creation in development mode')
+    grp1.add_argument('--series', action='append', default=[], metavar='<series>',
+                      help='limit task creation to the provided series. This means the series which a master is in, so limiting to one series might also create tasks in a different series if a source is a derivative of the master in the specified one')
+    parser.add_argument('--source', action='append', default=[], metavar='<source',
+                        help='limit task creation to the provided sources')
+    parser.add_argument('--spin', action='store', metavar='<spin nr>', default=None, type=int,
+                        help='override the spin number to be used. Only new tasks are allowed in this mode!')
+    parser.add_argument('--test', action='store_true', default=False,
+                        help='create test tracking bugs (using a different live tag)')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    parser.add_argument('cycledate', metavar='<cycle date>',
+                        help='date of this cycle (YYYY.MM.DD). When not in development mode, this has to be a Monday')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Prepare a list of (originating) series to work on
+    ks = KernelSeries()
+    ks_series_list = []
+    if args.devel:
+        ks_series = ks.lookup_series(development=True)
+        if ks_series is None:
+            cerror('No development series found!')
+            sys.exit(1)
+        ks_series_list.append(ks_series)
+    else:
+        for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
+            if len(args.series) == 0:
+                if not ks_series.supported or ks_series.development:
+                    continue
+                ks_series_list.append(ks_series)
+            else:
+                if ks_series.codename in args.series:
+                    if ks_series.development:
+                        cerror('Development series tasks must be created using --devel')
+                        sys.exit(1)
+                    ks_series_list.append(ks_series)
+
+    # Sanity check whether --source only is used together with one series
+    if len(args.source) > 0 and len(ks_series_list) != 1:
+        cerror('The --source filter is only allowed when limited to one series')
+        sys.exit(1)
+
+    # Sanity check the cycle date
+    try:
+        cycledate = datetime.strptime(args.cycledate, '%Y.%m.%d')
+    except:
+        cerror('The provided cycle date could not be parsed!')
+        sys.exit(1)
+    if not ks_series_list[0].development:
+        if cycledate.isoweekday() != 1:
+            cerror('The provided date is not a Monday when not using --devel!')
+            sys.exit(1)
+
+    # Now collect all sources (deb or snap) that need tasks
+    ts = TaskSet(ks_series_list, args.source, cycledate)
+    if args.spin is not None:
+        ts.spin_nr = args.spin
+
+    print(ts)
+    ts.LoadTrackingBugs(test=args.test)
+    print(ts)
+    try:
+        ts.ValidateTasks()
+    except ValueError as e:
+        cerror('Validation: failed with "{}"!'.format(e))
+        sys.exit(1)
+    cinfo('Validation: passed')
+    if args.force_nocards is False and args.devel is False:
+        ts.CreateCards(dryrun=args.dry_run)
+    ts.CreateTrackingBugs(dryrun=args.dry_run)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
