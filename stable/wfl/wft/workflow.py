@@ -77,7 +77,7 @@ class Workflow(TaskHandler):
                 # active tasks.
                 if task.status == 'New':
                     (task_section, task_text) = (phase_between_base +
-                        task_section, task_text + " Holding")
+                        task_section, "Holding before " + task_text)
 
                 # Ratchet down to the earliest phase.
                 if task_section < phase_section:
