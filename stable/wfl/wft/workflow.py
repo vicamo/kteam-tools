@@ -35,13 +35,14 @@ class Workflow(TaskHandler):
         retval = False
 
         phase_section = 100
+        phase_between_base = phase_section - 10
         phase_text = None
         while True:
             for (taskname, task) in s.bug.tasks_by_name.items():
                 if task.status in [ 'Invalid', 'Opinion', 'Fix Released', ]:
                     continue
 
-                task_section = None
+                (task_section, task_text) = (None, None)
 
                 # 1: Packaging
                 if taskname.startswith('prepare-package'):
@@ -75,8 +76,8 @@ class Workflow(TaskHandler):
                 # interesting.  Jack those so they are less interesting than
                 # active tasks.
                 if task.status == 'New':
-                    (task_section, task_text) = (100 + task_section,
-                        task_text + " Holding")
+                    (task_section, task_text) = (phase_between_base +
+                        task_section, task_text + " Holding")
 
                 # Ratchet down to the earliest phase.
                 if task_section < phase_section:
