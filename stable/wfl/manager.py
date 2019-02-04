@@ -27,7 +27,7 @@ class WorkflowManager():
         s._lp = None
         s._task_map = {
             'kernel-sru-workflow'       : wfl.wft.Workflow,
-            'upload-to-ppa-dnu'         : wfl.wft.Ignore,
+            'upload-to-ppa-dnu'         : wfl.wft.IgnoreInvalid,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackageLBM,
             'prepare-package-meta'      : wfl.wft.PreparePackageMeta,

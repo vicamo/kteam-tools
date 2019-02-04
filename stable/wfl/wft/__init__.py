@@ -1,5 +1,5 @@
 from .workflow                          import Workflow
-from .ignore                            import Ignore
+from .ignore                            import Ignore, IgnoreInvalid
 from .prepare_package                   import PreparePackage, PreparePackageLBM, PreparePackageMeta, PreparePackagePortsMeta, PreparePackageSigned
 from .automated_testing                 import AutomatedTesting
 from .promote_to_proposed               import PromoteToProposed
