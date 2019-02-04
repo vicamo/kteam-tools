@@ -610,7 +610,7 @@
                     primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi']
                     gated: false
-                    stable: false
+                    stable: true
                     qa: false
                     hw-cert: true
                     arches: ['armhf', 'arm64']
