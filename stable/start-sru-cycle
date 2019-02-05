@@ -146,22 +146,24 @@ class Crankers():
 
                 derivatives = []
                 backports = []
+                master_bug_id = master_bug.id
                 for (derivative_series, derivative_package) in data[(series, master_package)]:
                     print('        %s:%s' % (derivative_series, derivative_package))
                     if not s.args.dryrun:
-                        bug = s.tb.open(derivative_package, '<version to be filled>', True, master_bug.id, derivative_series)
+                        bug = s.tb.open(derivative_package, '<version to be filled>', True, master_bug_id, derivative_series)
                         if bug is None:
                             print('     -> EE: Bug creation failed (does the package exist in the archive?)!')
                             continue
                         bug.tags.append(cycle_tag)
                         if series == derivative_series:
                             derivatives.append('bug {} ({})'.format(str(bug.id), derivative_package))
-                            bug.tags.append('kernel-sru-derivative-of-%s' % master_bug.id)
+                            bug.tags.append('kernel-sru-derivative-of-%s' % master_bug_id)
                         else:
                             backports.append('bug {} ({})'.format(str(bug.id), derivative_package))
-                            bug.tags.append('kernel-sru-backport-of-%s' % master_bug.id)
+                            bug.tags.append('kernel-sru-backport-of-%s' % master_bug_id)
 
                 if not s.args.dryrun:
+                    master_bug = s.tb.get_bug(master_bug_id)
                     description = master_bug.description
                     description += '\n'
                     description += 'backports: %s\n' % ', '.join(backports)
