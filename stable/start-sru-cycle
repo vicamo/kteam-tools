@@ -129,6 +129,7 @@ class Crankers():
                 print('    ' + master_package)
 
                 print('        %s:%s' % (series, master_package))
+                sys.stdout.flush()
                 if not s.args.dryrun:
                     if s.args.usemasterbug:
                         master_bug = s.tb.get_bug(s.args.usemasterbug[0])
@@ -149,6 +150,7 @@ class Crankers():
                 master_bug_id = master_bug.id
                 for (derivative_series, derivative_package) in data[(series, master_package)]:
                     print('        %s:%s' % (derivative_series, derivative_package))
+                    sys.stdout.flush()
                     if not s.args.dryrun:
                         bug = s.tb.open(derivative_package, '<version to be filled>', True, master_bug_id, derivative_series)
                         if bug is None:
