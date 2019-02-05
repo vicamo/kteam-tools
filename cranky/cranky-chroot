@@ -50,7 +50,7 @@ base_chroot_create()
 /home           /home           none    rw,bind         0       0
 EOF
 	fi
-	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" </dev/null || exit 1
+	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" || exit 1
 
 	RET="$chroot"
 }
