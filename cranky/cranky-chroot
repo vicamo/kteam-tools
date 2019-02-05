@@ -255,7 +255,7 @@ map-session)
 	;;
 run)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
-		schroot -r -c "$RET" -- "$@"
+		schroot -p -r -c "$RET" -- "$@"
 	else
 		exit 1
 	fi
