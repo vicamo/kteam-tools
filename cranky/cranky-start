@@ -55,7 +55,10 @@ class CrankyStart():
         """
         # Start clean
         cinfo("Running fdr clean")
-        Debian.fdr("clean", dry_run=self.dry_run)
+        rc = Debian.fdr("clean", dry_run=self.dry_run)
+        if rc:
+            cerror("Failed to run fdr.")
+            sys.exit(1)
 
         # Call maint-startnewrelease
         cinfo("Running maint-startnewrelease")
@@ -94,10 +97,17 @@ class CrankyStart():
     def update_backport(self):
         cinfo("Running update-from-*master script")
         os.putenv("SKIP_REBASE_IF_UPTODATE", "1")
-        Debian.update_from_master(dry_run=self.dry_run)
+        rc = Debian.update_from_master(dry_run=self.dry_run)
+        if rc:
+            cerror("Failed to run update-from-*master.")
+            sys.exit(1)
+
         # Unstage the changelog, cause that's gonna be changed in a different way
         changelog = Debian.debian_env() + "/changelog"
-        run_command("git checkout HEAD " + changelog, dry_run=self.dry_run)
+        rc, output = run_command("git checkout HEAD " + changelog, dry_run=self.dry_run)
+        if rc:
+            cerror("Failed to unstage the changelog.")
+            sys.exit(1)
 
     def reorder_start_commit(self):
         # Get last closing commit. The start new release needs to be placed
@@ -128,6 +138,7 @@ class CrankyStart():
         if result.returncode != 0:
             cerror("Failed to re-order commits:")
             cerror(result.stdout.decode())
+            sys.exit(1)
 
 
 if __name__ == "__main__":
