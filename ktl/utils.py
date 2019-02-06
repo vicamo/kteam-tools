@@ -52,9 +52,9 @@ def run_command(cmd, dbg=False, dry_run=False):
         result = ""
         if not dry_run:
             status, result = getstatusoutput(cmd)
-            debug("     cmd: '%s'" % cmd, dbg)
-            debug("  status: '%d'" % status, dbg)
-            debug("  result: '%s'" % result, dbg)
+            debug("     cmd: '%s'\n" % cmd, dbg)
+            debug("  status: '%d'\n" % status, dbg)
+            debug("  result: '%s'\n" % result, dbg)
         else:
             debug("run_command: '%s'\n" % (cmd), True)
 
