@@ -214,6 +214,8 @@ class TrackingBug(object):
         tbmatch = s.__bp_re.search(desc)
         if tbmatch is not None:
                 for bug_ref in s.__comsep_re.split(tbmatch.group(1)):
+                    if bug_ref == '':
+                        continue
                     # A reference is/will be: "bug [0-9]+ \([<series>/]<pkg>\)"
                     ref_id, ref_label = bug_ref.split(' ')[-2:]
                     ref_bug   = int(ref_id)
@@ -228,6 +230,8 @@ class TrackingBug(object):
         tbmatch = s.__dv_re.search(desc)
         if tbmatch is not None:
                 for bug_ref in s.__comsep_re.split(tbmatch.group(1)):
+                    if bug_ref == '':
+                        continue
                     ref_id, ref_label = bug_ref.split(' ')[-2:]
                     ref_bug = int(ref_id)
                     ref_source = ref_label[1:-1]
