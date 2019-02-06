@@ -30,7 +30,7 @@ class CrankyStart():
         # if the current directory is not a valid kernel.
         cinfo("Checking kernel series info")
         kernel_source = Debian.get_source_from_kernel_series()
-        cdebug("DEBUG: Target kernel: %s" % kernel_source)
+        cdebug("Target kernel: %s" % kernel_source)
 
         # Abort if the last changelog entry is still open (ie UNRELEASED).
         cinfo("Checking changelog")
