@@ -144,6 +144,9 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
             v += "_" + lts_version
 
 	(rc, output) = sh(cmd + " " + v)
+        if rc:
+		print "EE: maint-getabis failed!"
+		sys.exit(1)
 
 	#----------------------------------------------------------------------
 	# Remove the old ABI files (as the changelog is not modified, yet,
