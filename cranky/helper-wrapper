@@ -16,7 +16,8 @@ fi
 
 SCRIPTS="debian/scripts/helpers/$cmd $here/master-helpers/$cmd"
 if [ -f debian/debian.env ] ; then
-	source debian/debian.env
+	# shellcheck disable=SC1091
+	. debian/debian.env
 	SCRIPTS="$DEBIAN/scripts/helpers/$cmd $SCRIPTS"
 fi
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# shellcheck source=./cranky/fixes.d/lib.sh
 . "$(dirname "$0")"/lib.sh
 
 if [ ! -d "debian/templates" ]; then
