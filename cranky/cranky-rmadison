@@ -87,8 +87,10 @@ def rmadison_lp(handle_set, show_all=False):
             else:
                 pocket_name = "%s (ppa:%s)" % (series, dest)
 
-            tmp.append([package, lp_sources[0].source_package_version,
-                        pocket_name, "source"])
+            package_version = lp_sources[0].source_package_version
+            package_date = lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M")
+            tmp.append([package, package_version, pocket_name, "source",
+                        package_date])
 
         # Sort the temporary list by pocket names and add it to the result
         result.extend(sorted(tmp, key=pocket_order))
@@ -96,10 +98,14 @@ def rmadison_lp(handle_set, show_all=False):
     return result
 
 
-def print_table(data):
+def print_table(data, show_ext=False):
     """
     Print the package list
     """
+    # Truncate the table to the first 4 columns if we don't show extended info
+    if not show_ext:
+        data = [d[0:4] for d in data]
+
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*data)]
 
@@ -128,6 +134,9 @@ Examples:
   $ cranky-rmadison bionic:linux
       Print information for the source packages that make up the set of Bionic
       linux kernel packages.
+
+  $ cranky-rmadison -e -a bionic:linux-ibm-gt
+      Print all information from all archives and PPAs.
 """
 
     parser = argparse.ArgumentParser(description=desc, formatter_class=
@@ -140,6 +149,9 @@ Examples:
     parser.add_argument("-a", "--show-all", action="store_true",
                         help="Show source package information from all "
                         "routing destinations.")
+    parser.add_argument("-e", "--show-extended", action="store_true",
+                        help="Show extendend source package information in "
+                        "addition to the standard rmadison data")
     args = parser.parse_args()
 
     try:
@@ -151,4 +163,5 @@ Examples:
 
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
-    print_table(rmadison_lp(handle_set, show_all=args.show_all))
+    print_table(rmadison_lp(handle_set, show_all=args.show_all),
+                show_ext=args.show_extended)
