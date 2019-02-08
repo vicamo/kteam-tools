@@ -102,12 +102,20 @@ def print_table(data, show_ext=False):
     """
     Print the package list
     """
-    # Truncate the table to the first 4 columns if we don't show extended info
-    if not show_ext:
+    # Add a header if we show extended info, otherwise truncate the table to
+    # the first 4 columns
+    if show_ext:
+        data.insert(0, ["Name", "Version", "Pocket/PPA", "Type",
+                        "Date Published"])
+    else:
         data = [d[0:4] for d in data]
 
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*data)]
+
+    # Insert a header separator
+    if show_ext:
+        data.insert(1, ["-" * w for w in widths])
 
     # Print the formatted data
     for row in data:
