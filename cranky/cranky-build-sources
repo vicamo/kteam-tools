@@ -3,11 +3,7 @@
 C=${C-cranky}
 P=${P-$0}
 
-here=`dirname $0`
-case "$here" in
-/*) ;;
-*)  here="`pwd`/$here" ;;
-esac
+here=$(dirname "$(realpath -e "${0}")")
 
 build_src()
 {
