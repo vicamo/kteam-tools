@@ -1,5 +1,5 @@
 #!/bin/bash
-. $(dirname "$0")/lib.sh
+. "$(dirname "$0")"/lib.sh
 
 if [ ! -d "debian/templates" ]; then
 	fix_verbose "debian/templates not present"

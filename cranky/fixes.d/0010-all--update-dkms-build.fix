@@ -1,5 +1,5 @@
 #!/bin/bash
-. $(dirname "$0")/lib.sh
+. "$(dirname "$0")"/lib.sh
 
 # update dkms-build components
 msg="UBUNTU: [Packaging] resync dkms-build"
