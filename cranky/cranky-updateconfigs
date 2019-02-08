@@ -48,8 +48,6 @@ if [ "$series_source" = "" ]; then
 	echo "$0: $handle: unknown series/package" 1>&2
 	exit 1
 fi
-series=${series_source% *}
-src=${series_source#* }
 
 session=$("$here/cranky" chroot map-session configs "$handle")
 if [ "$session" = '' ]; then

@@ -75,7 +75,6 @@ sources=$( "$here/cranky-shell-helper" "source-packages-path" "$handle" )
 if [ "$sources" = '' ]; then
 	exit 1
 fi
-series=$( "$here/cranky-shell-helper" "series-codename" "$handle" )
 
 session=$("$here/cranky" chroot map-session sources "$handle")
 if [ "$session" = '' ]; then
