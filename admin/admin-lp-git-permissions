@@ -4,6 +4,7 @@ from __future__ import print_function
 import json
 import os
 import sys
+import yaml
 
 from launchpadlib.launchpad             import Launchpad
 
@@ -39,7 +40,12 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 if cmd == 'list-all':
     me = lp.people(sys.argv[2])
     for repo in lp.git_repositories.getRepositories(target=me):
-        print(repo, repo.getRules())
+        print(repo)
+        current_rules = repo.getRules()
+        rule_txt = yaml.dump(current_rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+
 
 elif cmd == 'sync-all':
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
@@ -65,6 +71,8 @@ elif cmd == 'sync-all':
             #    continue
             #if source.supported:
             #    continue
+
+            repo_perms = {}
 
             for package in source.packages:
                 if package.repo is None:
@@ -121,16 +129,19 @@ elif cmd == 'sync-all':
                     people = ['/~canonical-kernel-committers']
                     if package.name.endswith('oem'):
                         people.append('/~canonical-kernel-hwe-committers')
-                    admins = 'owner'
-                    if series.esm:
-                        admins = '/~canonical-kernel-repo-admins'
-                    master_rewind = series.development
+                    #admins = 'owner'
+                    #if series.esm or package.name.endswith('ibm-gt'):
+                    #    admins = '/~canonical-kernel-repo-admins'
+                    # XXX: until we drop people from the ubuntu-kernel and canonical-kernel
+                    #      we need to bodge their admin-ness away.
+                    admins = '/~canonical-kernel-repo-admins'
+                    master_rewind = series.development or source.derived_from is not None
 
                     for person in people:
-                        rules[0]['grants'].append(generate_grant(person=person, push=True, rewind=master_rewind))
+                        rules[0]['grants'].append(generate_grant(person=person, push=True, rewind=True))
 
                     for person in people:
-                        rules[1]['grants'].append(generate_grant(person=person, push=True, rewind=True))
+                        rules[1]['grants'].append(generate_grant(person=person, push=True, rewind=master_rewind))
 
                     for person in people:
                         rules[2]['grants'].append(generate_grant(person=person, create=True, rewind=master_rewind))
@@ -146,15 +157,38 @@ elif cmd == 'sync-all':
                     if rules[0]['grants'] == rules[1]['grants']:
                         rules.pop(0)
 
+                    if package.name.endswith('ibm-gt'):
+                        set_rules = True
+                    if package.name.endswith('azure') and series.codename == 'cosmic':
+                        set_rules = True
+                    if package.name.endswith('aws') and series.codename == 'cosmic':
+                        set_rules = True
+
+                git_repo = lp.git_repositories.getByPath(path=path)
+                if git_repo is None:
+                    print("  invalid repository path {} for {}".format(path, package.name))
+                    continue
+                print(git_repo)
+                # XXX: go faster stripes ...
+                if set_rules is False:
+                    continue
+                current_rules = git_repo.getRules()
                 if set_rules:
-                    git_repo = lp.git_repositories.getByPath(path=path)
-                    print(git_repo)
-                    current_rules = git_repo.getRules()
                     #print(current_rules, current_rules != rules, rules)
                     if current_rules != rules:
-                        print("setRules()")
+                        print(" rules updated:")
                         git_repo.setRules(rules=rules)
-                    #print(git_repo.getRules())
+                        current_rules = rules
+                else:
+                    print(" is:")
+                    rule_txt = yaml.dump(current_rules, default_flow_style=False)
+                    for line in rule_txt.split('\n'):
+                        print("  " + line)
+                    print(" want:")
+                    current_rules = rules
+                rule_txt = yaml.dump(current_rules, default_flow_style=False)
+                for line in rule_txt.split('\n'):
+                    print("  " + line)
 
 
                 #print(rules)
