@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from __future__ import print_function
 
+from copy                               import deepcopy
 import json
 import os
 import sys
@@ -27,7 +28,7 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
         grant['grantee_link'] = None
     elif person:
         grant['grantee_type'] = "Person"
-        grant['grantee_link'] = person
+        grant['grantee_link'] = 'https://api.launchpad.net/devel' + person
     else:
         raise ValueError("owner or person required")
 
@@ -61,26 +62,20 @@ elif cmd == 'sync-all':
 
     kernel_series = KernelSeries()
 
-    url_seen = {}
+    repo_packages = {}
+
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if series.opening_ready('repositories') is False:
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
-            #if source.esm:
+            #if series.codename != 'bionic':
             #    continue
-            #if source.supported:
-            #    continue
-
-            repo_perms = {}
 
             for package in source.packages:
                 if package.repo is None:
                     continue
                 url = package.repo.url
-                if url in url_seen:
-                    continue
-                url_seen[url] = True
 
                 if 'git.launchpad.net' not in url:
                     continue
@@ -91,105 +86,127 @@ elif cmd == 'sync-all':
 
                 path = '~' + bits[1]
 
-                #git_repo = lp.git_repositories.getByPath(path=path)
-                #print(git_repo.getRules())
+                repo_packages.setdefault(path, []).append(package)
+                #branch = package.repo.branch
+                #repo_packages.setdefault(path, []).append(branch)
+                #if branch.endswith('-next'):
+                #    repo_packages.setdefault(path).append(branch[:-5])
 
-                rules = None
-                set_rules = False
-                if not source.supported:
-                    rules = [
-                        {
-                            'ref_pattern': "*",
-                            'grants': [
-                                generate_grant(person='owner')
-                                ]
-                        },
-                        ]
-                    set_rules = True
+    for (path, path_packages) in repo_packages.items():
+        rules = []
+        rules_wild = []
+        versions = set()
+
+        any_supported = False
+        for package in path_packages:
+            if package.source.development is False and package.source.supported is False:
+                continue
+            any_supported = True
+
+            people = ['/~canonical-kernel-committers']
+            if package.name.endswith('oem'):
+                people.append('/~canonical-kernel-hwe-committers')
+            #admins = 'owner'
+            #if series.esm or package.name.endswith('ibm-gt'):
+            #    admins = '/~canonical-kernel-repo-admins'
+            # XXX: until we drop people from the ubuntu-kernel and canonical-kernel
+            #      we need to bodge their admin-ness away.
+            admins = '/~canonical-kernel-repo-admins'
+
+            branch = package.repo.branch
+            branches = []
+            # Order here matters to launchpad, see LP: #1815431.
+            if branch.endswith('-next'):
+                branches.append(branch[:-5])
+            branches.append(branch)
+            for branch in branches:
+                if package.series.development:
+                    rewind = True
+                elif package.source.derived_from is not None and package.type is None:
+                    rewind = True
+                elif branch.endswith('-next'):
+                    rewind = True
                 else:
-                    rules = [
-                        {
-                            'ref_pattern': "refs/heads/*-next",
-                            'grants': [],
-                        },
-                        {
-                            'ref_pattern': "refs/heads/*",
-                            'grants': [],
-                        },
-                        {
-                            'ref_pattern': "refs/tags/*",
-                            'grants': [],
-                        },
-                        {
-                            'ref_pattern': "*",
-                            'grants': [],
-                        },
-                        ]
+                    rewind = False
+                grants = []
+                for person in people:
+                    grants.append(generate_grant(person=person, create=True, push=True, rewind=rewind))
+                rules.append(
+                    {
+                        'ref_pattern': "refs/heads/{}".format(branch),
+                        'grants': grants,
+                    },
+                    )
 
-                    people = ['/~canonical-kernel-committers']
-                    if package.name.endswith('oem'):
-                        people.append('/~canonical-kernel-hwe-committers')
-                    #admins = 'owner'
-                    #if series.esm or package.name.endswith('ibm-gt'):
-                    #    admins = '/~canonical-kernel-repo-admins'
-                    # XXX: until we drop people from the ubuntu-kernel and canonical-kernel
-                    #      we need to bodge their admin-ness away.
-                    admins = '/~canonical-kernel-repo-admins'
-                    master_rewind = series.development or source.derived_from is not None
+            # TAGS: allow Ubuntu-<branch>- prefixed tags.
+            branch_prefix = package.source.name.replace('linux', '')
+            if branch_prefix.startswith('lts-'):
+                branch_prefix = 'lts'
+            rewind_tags = series.development
+            grants = []
+            for person in people:
+                grants.append(generate_grant(person=person, create=True, rewind=rewind_tags))
+            rules_wild.append(
+                {
+                    'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
+                    'grants': grants,
+                },
+                )
 
-                    for person in people:
-                        rules[0]['grants'].append(generate_grant(person=person, push=True, rewind=True))
+            # TAGS: for main packages allow version tags to be pushed too.
+            if package.type in (None, 'main'):
+                pkg_versions = package.source.versions
+                if pkg_versions is not None:
+                    for version in pkg_versions:
+                        versions.add(version)
 
-                    for person in people:
-                        rules[1]['grants'].append(generate_grant(person=person, push=True, rewind=master_rewind))
+        # Add the administrator rules.
+        grants = []
+        series = path_packages[0].series
+        if any_supported:
+            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+            if admins != 'owner':
+                grants.append(generate_grant(person='owner'))
+        else:
+            grants.append(generate_grant(person='owner'))
 
-                    for person in people:
-                        rules[2]['grants'].append(generate_grant(person=person, create=True, rewind=master_rewind))
+        for version in versions:
+            if version.endswith('.0'):
+                version = version[:-2]
+            rules_wild.append(
+                {
+                    'ref_pattern': "refs/tags/v{}*".format(version),
+                    'grants': deepcopy(grants),
+                },
+                )
 
-                    # For the ESM repositories we have a badly formed admin
-                    # team.  Drop permissions for the owning team to none and
-                    # add a separate admin team.
-                    rules[3]['grants'].append(generate_grant(person=admins, create=True, push=True, rewind=True))
-                    if admins != 'owner':
-                        rules[3]['grants'].append(generate_grant(person='owner'))
-
-                    # If the *-next rule match those of * exactly then they can be elided.
-                    if rules[0]['grants'] == rules[1]['grants']:
-                        rules.pop(0)
-
-                    if package.name.endswith('ibm-gt'):
-                        set_rules = True
-                    if package.name.endswith('azure') and series.codename == 'cosmic':
-                        set_rules = True
-                    if package.name.endswith('aws') and series.codename == 'cosmic':
-                        set_rules = True
-
-                git_repo = lp.git_repositories.getByPath(path=path)
-                if git_repo is None:
-                    print("  invalid repository path {} for {}".format(path, package.name))
-                    continue
-                print(git_repo)
-                # XXX: go faster stripes ...
-                if set_rules is False:
-                    continue
-                current_rules = git_repo.getRules()
-                if set_rules:
-                    #print(current_rules, current_rules != rules, rules)
-                    if current_rules != rules:
-                        print(" rules updated:")
-                        git_repo.setRules(rules=rules)
-                        current_rules = rules
-                else:
-                    print(" is:")
-                    rule_txt = yaml.dump(current_rules, default_flow_style=False)
-                    for line in rule_txt.split('\n'):
-                        print("  " + line)
-                    print(" want:")
-                    current_rules = rules
-                rule_txt = yaml.dump(current_rules, default_flow_style=False)
-                for line in rule_txt.split('\n'):
-                    print("  " + line)
+        rules_wild.append(
+            {
+                'ref_pattern': "*",
+                'grants': grants,
+            },
+            )
 
 
-                #print(rules)
+        # XXX: build rules to avoid launchpad Assertion.
+        rules_wild = sorted(rules_wild, key=lambda x: x['ref_pattern'])
+        rules = sorted(rules, key=lambda x: x['ref_pattern'])
+        rules += rules_wild
 
+        git_repo = lp.git_repositories.getByPath(path=path)
+        if git_repo is None:
+            print("  invalid repository path {} for {}".format(path, package.name))
+            continue
+        print(git_repo)
+        current_rules = git_repo.getRules()
+        if current_rules != rules:
+            print(" is:")
+            rule_txt = yaml.dump(current_rules, default_flow_style=False)
+            for line in rule_txt.split('\n'):
+                print("  " + line)
+            print(" want:")
+            rule_txt = yaml.dump(rules, default_flow_style=False)
+            for line in rule_txt.split('\n'):
+                print("  " + line)
+            print(" rules updated:")
+            git_repo.setRules(rules=rules)
