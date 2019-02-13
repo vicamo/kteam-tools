@@ -254,8 +254,12 @@ class KernelSourceEntry:
             return self._data['versions']
 
         derived_from = self.derived_from
-        if derived_from:
+        if derived_from is not None:
             return derived_from.versions
+
+        copy_forward = self.copy_forward
+        if copy_forward is not None:
+            return copy_forward.versions
 
         # XXX: should this be []
         return None
