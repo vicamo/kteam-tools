@@ -516,9 +516,6 @@
     routing-table: *routing-table
     sources:
         linux:
-            swm:
-                deployment-blackout: &swm-bionic-point-release-blackout
-                    - ['2019-02-07 00:01', '2019-02-15 00:01']
             versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
@@ -560,8 +557,6 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-hwe:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe']
@@ -582,8 +577,6 @@
                         clouds: ['metal']
 
         linux-hwe-edge:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 #linux-hwe-edge:
                 #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
@@ -606,8 +599,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-raspi2:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-raspi2:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'raspi2']
@@ -629,8 +620,6 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-oem:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem-next']
@@ -651,8 +640,6 @@
                         clouds: ['metal']
 
         linux-aws:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic']
@@ -681,8 +668,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-edge:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-aws-edge:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-edge']
@@ -701,11 +686,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            deployment-blackout: &swm-bionic-azure-blackout
-                - ['2018-11-20 00:01', '2018-11-27 10:00']
-                - ['2018-12-21 00:01', '2019-01-02 10:00']
-                - ['2019-02-03 16:00', '2019-02-06 16:00']
-                - ['2019-02-07 00:01', '2019-02-15 00:01']
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'master-next']
@@ -728,7 +708,7 @@
             supported: true
             derived-from: [ '18.10', 'linux-azure' ]
             swm:
-                deployment-blackout: *swm-bionic-azure-blackout
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
@@ -740,8 +720,6 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
-            swm:
-                deployment-blackout: *swm-bionic-azure-blackout
             packages:
                 #linux-azure-edge:
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
@@ -802,13 +780,10 @@
                         arches: ['amd64']
                         clouds: ['gcp']
             swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
                 gcp-nvidia-packages: true
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-edge:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-gcp-edge:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-edge-next']
@@ -830,8 +805,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-kvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/bionic', 'master-next']
@@ -883,8 +856,6 @@
             invalid-tasks: ['certification-testing']
 
         linux-oracle:
-            swm:
-                deployment-blackout: *swm-bionic-point-release-blackout
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'master-next']
