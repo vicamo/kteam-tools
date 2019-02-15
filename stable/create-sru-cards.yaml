@@ -31,6 +31,8 @@
         - name: 'Update master branches after promotion to -updates'
         - name: 'Sync copy-forward kernels (archive and git trees)'
           description: 'Copy linux-snapdragon etc forward to later releases'
+        - name: 'Sync proposed PPA kernels'
+          description: 'Copy new kernels in -proposed to the proposed PPA for testing'
         - name: 'Release copy-forward kernels'
           description: 'Once primary kernels are released also release the copy forward kernels'
         - name: 'Release kernel snaps'
