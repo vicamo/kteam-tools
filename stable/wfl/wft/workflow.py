@@ -26,6 +26,9 @@ class Workflow(TaskHandler):
     def evaluate_status(s, state):
         return s.jumper[state]()
 
+    PHASE_MAX=10       # Maximum primary phases.
+    PHASE_BETWEEN=2    # Maximum number of sub-phases 'between' phases.
+
     # _complete
     #
     def _complete(s):
@@ -34,8 +37,10 @@ class Workflow(TaskHandler):
         center(s.__class__.__name__ + '._complete')
         retval = False
 
-        phase_section = 100
-        phase_between_base = phase_section - 10
+        # We will use nominal phases in 0..PHASE_MAX, and sub-phases
+        # in the range PHASE_MAX..(PHASE_MAX * PHASE_BETWEEN).
+        # Make sure we start higher than that.
+        phase_section = s.PHASE_MAX + (s.PHASE_BETWEEN * s.PHASE_MAX) + 1
         phase_text = None
         while True:
             for (taskname, task) in s.bug.tasks_by_name.items():
@@ -74,10 +79,16 @@ class Workflow(TaskHandler):
                 # We are looking for the first active phase, but it is possible
                 # to be between phases.  Therefore unstarted sections are also
                 # interesting.  Jack those so they are less interesting than
-                # active tasks.
+                # active tasks.  Jack New slightly more than Confirmed as we
+                # care to see Ready in preference to Holding.
                 if task.status == 'New':
-                    (task_section, task_text) = (phase_between_base +
-                        task_section, "Holding before " + task_text)
+                    (task_section, task_text) = (s.PHASE_MAX +
+                        (task_section * s.PHASE_BETWEEN) + 1,
+                        "Holding before " + task_text)
+                elif task.status == 'Confirmed':
+                    (task_section, task_text) = (s.PHASE_MAX +
+                        (task_section * s.PHASE_BETWEEN) + 0,
+                        "Ready for " + task_text)
 
                 # Ratchet down to the earliest phase.
                 if task_section < phase_section:
