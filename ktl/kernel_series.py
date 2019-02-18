@@ -359,19 +359,8 @@ class KernelSourceEntry:
         return source
 
     @property
-    def is_backport(self):
-        """
-        Return if this kernel source is a backport kernel.
-
-        We are currently assuming that a derivative from a different
-        series will always be a backport kernel. That's currently true
-        for all kernel, if that changes in the future this method will
-        have to be updated.
-        """
-        base = self.derived_from
-        if not base:
-            return False
-        return self.series != base.series
+    def backport(self):
+        return self._data.get('backport', False)
 
     @property
     def routing(self):

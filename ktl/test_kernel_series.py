@@ -818,6 +818,44 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
 
         self.assertFalse(source.severe_only)
 
+    def test_backport_present_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    backport: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertTrue(source.backport)
+
+    def test_backport_present_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    backport: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertFalse(source.backport)
+
+    def test_backport_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertFalse(source.backport)
+
     def test_copy_forward_present_true(self):
         data = """
         '18.04':
