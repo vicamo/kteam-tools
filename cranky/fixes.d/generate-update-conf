@@ -13,15 +13,9 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.debian import Debian
 from ktl.shell import sh
 
-def get_parent_source():
-    """
-    Return where the source for the kernel this one is derived from.
-    If no one is found, return None.
-    """
-    return Debian.get_source_from_kernel_series().derived_from
-
 # Identify parental package if we are derived.
-parent_source = get_parent_source()
+source = Debian.get_source_from_kernel_series()
+parent_source = source.derived_from
 if parent_source is None:
     print("  not a derived package", file=sys.stderr)
     sys.exit(0)
@@ -57,3 +51,9 @@ if len(parent_name) <= 1:
 else:
     master_branch=parent_name[1]
 print("DEBIAN_MASTER=debian." + master_branch)
+
+# Dump the version suffix that should be used for backports. "fdr
+# startnewrelease" will use it to build the new release version
+# following the format "${PARENT_VERSION}~${BACKPORT_SUFFIX}.N":
+if source.backport:
+    print("BACKPORT_SUFFIX={}".format(source.series.name))
