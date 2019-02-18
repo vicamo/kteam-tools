@@ -147,7 +147,8 @@ class Crankers():
 
                 derivatives = []
                 backports = []
-                master_bug_id = master_bug.id
+                if not args.dryrun:
+                    master_bug_id = master_bug.id
                 for (derivative_series, derivative_package) in data[(series, master_package)]:
                     print('        %s:%s' % (derivative_series, derivative_package))
                     sys.stdout.flush()
