@@ -567,6 +567,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
             supported: true
+            backport: true
             derived-from: [ '18.10', 'linux' ]
             testing:
                 flavours:
@@ -587,6 +588,7 @@
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-edge']
             supported: true
+            backport: true
             #derived-from: [ '18.10', 'linux' ]
             derived-from: [ '18.04', 'linux-hwe' ]
             testing:
@@ -675,6 +677,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-edge']
             supported: true
+            backport: true
             derived-from: [ '18.10', 'linux-aws' ]
             testing:
                 flavours:
@@ -706,6 +709,7 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
+            backport: true
             derived-from: [ '18.10', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -730,6 +734,7 @@
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-edge']
             supported: true
+            backport: true
             #derived-from: [ '18.10', 'linux-azure' ]
             derived-from: [ '18.04', 'linux-azure' ]
             testing:
@@ -794,6 +799,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-edge']
             supported: true
+            backport: true
             derived-from: [ '18.10', 'linux-gcp' ]
             testing:
                 flavours:
@@ -1136,6 +1142,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial', 'aws-hwe']
             supported: true
+            backport: true
             derived-from: [ '18.04', 'linux-aws' ]
             testing:
                 flavours:
@@ -1190,6 +1197,7 @@
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial', 'azure-edge']
             supported: true
+            backport: true
             derived-from: [ '16.04', 'linux-azure' ]
             testing:
                 flavours:
@@ -1249,6 +1257,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
+            backport: true
             derived-from: [ '18.04', 'linux-gcp' ]
             testing:
                 flavours:
@@ -1298,6 +1307,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe']
             supported: true
+            backport: true
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
@@ -1318,6 +1328,7 @@
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe-edge']
             supported: true
+            backport: true
             #derived-from: [ '18.04', 'linux' ]
             derived-from: [ '16.04', 'linux-hwe' ]
             testing:
@@ -1394,6 +1405,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/xenial']
             supported: true
+            backport: true
             derived-from: [ '18.04', 'linux-oracle' ]
             testing:
                 flavours:
@@ -1563,6 +1575,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/trusty']
             supported: true
+            backport: true
             derived-from: [ '16.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -1629,6 +1642,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-xenial']
             supported: true
+            backport: true
             derived-from: [ '16.04', 'linux' ]
 
 # 13.10 (saucy)
@@ -1845,6 +1859,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-precise', 'lts-backport-trusty']
             derived-from: [ '14.04', 'linux' ]
             supported: true
+            backport: true
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-mako:
