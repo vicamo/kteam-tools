@@ -10,6 +10,6 @@ fi
 
 # Update any template that is present in this package.
 msg="UBUNTU: [Packaging] resync debian/templates"
-resync_master "$msg" debian/templates/*
+resync_main "$msg" debian/templates/*
 
 exit 0

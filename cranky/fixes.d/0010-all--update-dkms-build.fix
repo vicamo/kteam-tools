@@ -5,6 +5,6 @@
 
 # update dkms-build components
 msg="UBUNTU: [Packaging] resync dkms-build"
-resync_master "$msg" debian/scripts/dkms-build debian/scripts/dkms-build--nvidia-390 debian/scripts/fix-filenames.c
+resync_main "$msg" debian/scripts/dkms-build debian/scripts/dkms-build--nvidia-390 debian/scripts/fix-filenames.c
 
 exit 0
