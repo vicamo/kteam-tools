@@ -84,7 +84,6 @@ class ThisApp():
     def finder(s, package_name, callback):
         now = datetime.now(timezone.utc)
 
-        print(package_name)
         source_package = s.distro.getSourcePackage(name=package_name)
         tasks = source_package.searchTasks(status=s.search_status, modified_since=s.search_since)
         for task in tasks:
