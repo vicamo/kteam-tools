@@ -49,28 +49,43 @@ $FIX_BUGLINK
 
 }
 
-fix_uses_master()
-{
-	if [ -z "$FIX_MASTER" ]; then
-		fix_warning "no master directory specified, skipping"
-		exit 0
-	fi
-}
-
 resync_master()
 {
 	local msg="$1"
 	shift 1
-	local master="$FIX_MASTER"
 	local file
 	local files=()
+	local base
 
-	fix_uses_master
+	local master="$FIX_MASTER"
 
 	for file in "$@"
 	do
-		if [ -f "$master/$file" ] && [ -f "$file" ]; then
-			cp -p "$master/$file" "$file"
+		base="$(basename $file)"
+		if [ -f "$master/$base" ] && [ -f "$file" ]; then
+			cp -p "$master/$base" "$file"
+			files+=("$file")
+		fi
+	done
+
+	commit "$msg" "${files[@]}"
+}
+
+resync_main()
+{
+	local msg="$1"
+	shift 1
+	local file
+	local files=()
+
+	local main_path="$FIX_MAIN_PATH"
+
+	[ "$main_path" = '' ] && return
+
+	for file in "$@"
+	do
+		if [ -f "$main_path/$file" ] && [ -f "$file" ]; then
+			cp -p "$main_path/$file" "$file"
 			files+=("$file")
 		fi
 	done
