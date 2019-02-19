@@ -17,7 +17,9 @@ fix_warning()
 
 fix_verbose()
 {
-	[ "$FIX_VERBOSE" -ge 1 ] && echo "  $*"
+	if [ "$FIX_VERBOSE" -ge 1 ]; then
+		echo "  $*"
+	fi
 }
 
 commit()
