@@ -47,7 +47,7 @@ if [ "$type" != 'main' ]; then
 fi
 
 bug="1786013"
-FIX_VERBOSE="1" \
+FIX_VERBOSE="0" \
 FIX_BUG="$bug" \
 FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$bug" \
 FIX_MASTER="$here/master" \
