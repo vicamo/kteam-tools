@@ -218,6 +218,9 @@ class Handle(HandleCore):
             config = Config()
         self.config = config
 
+    def lookup_package(self, package, validate=True):
+        return HandleTree(package.series, package, validate=validate, ks=self.ks, config=self.config)
+
     def lookup_tree(self, handle, validate=True):
         series = None
         package = None
