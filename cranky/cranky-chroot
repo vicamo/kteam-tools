@@ -253,6 +253,8 @@ run)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		schroot -p -r -c "$RET" -- "$@"
 	else
+		echo "$P: No chroot session available for $handle"
+		echo "Use \"$P create-session\" to create one"
 		exit 1
 	fi
 	;;
