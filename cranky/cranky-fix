@@ -4,19 +4,15 @@
 #               it against the primary copies of repositories.
 #
 
-if [ "$#" -ne 0 ] && [ "$#" -ne 1 ] || [ "$1" = '--help' ]; then
+if [ "$#" -ne 0 ] || [ "$1" = '--help' ]; then
 	cat - 1>&2 <<EOM
-Usage: $0 [--help] [<master-directory>]
+Usage: $0 [--help]
 
-master-directory: pointer to a checkout of an already updated main package
-		  tree, typically the development release.  We expect
-		  to apply fixes to common infrastructure there and then
-		  duplicate it to the other trees.
-
+cranky fix -- fix various common files from kteam-tools for main packages, and
+              sync those between main and subsiduary packages.
 EOM
 	exit 1
 fi
-master="$1"
 
 here=$(dirname "$0")
 case "$here" in
@@ -24,37 +20,38 @@ case "$here" in
 *)  here="$(pwd)/$here" ;;
 esac
 
-# identify the current tree type.
+# Locate the debian directory taking into accout debian.env if present.
 debian="debian"
-type=""
 if [ -f "debian/debian.env" ]; then
-	type="main"
 	debian=$(awk -F= '($1 == "DEBIAN") { print $2 }' <debian/debian.env)
 fi
-source=$(dpkg-parsechangelog -l"$debian/changelog" -SSource)
-if [ "$type" = "" ]; then
-	case "$source" in
-	*-signed*)			type="signed" ;;
-	*-meta*)			type="meta" ;;
-	*-restricted-modules*)		type="lrm" ;;
-	esac
-fi
+# Idenfify the tree package type.
+type=$("$here/cranky-shell-helper" tree-type ".")
 if [ "$type" = "" ]; then
 	echo "$0: unable to identify repository type -- assuming other" 1>&2
 	type='other'
 fi
-
-# identify the current series
+# identify the current package/series
+source=$(dpkg-parsechangelog -l"$debian/changelog" -SSource)
 series=$(dpkg-parsechangelog -l"$debian/changelog" -SDistribution)
 if [ "$series" = "UNRELEASED" ]; then
 	series=$(dpkg-parsechangelog -l"$debian/changelog" -c1 -SDistribution)
+fi
+
+main_path=""
+if [ "$type" != 'main' ]; then
+	main_path="$("$here/cranky-shell-helper" tree-main-path ".")"
+	if [ "$main_path" = '' ]; then
+		exit 1
+	fi
 fi
 
 bug="1786013"
 FIX_VERBOSE="1" \
 FIX_BUG="$bug" \
 FIX_BUGLINK="BugLink: http://bugs.launchpad.net/bugs/$bug" \
-FIX_MASTER="$master" \
+FIX_MASTER="$here/master" \
+FIX_MAIN_PATH="$main_path" \
 FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
 FIX_SERIES="$series" \
