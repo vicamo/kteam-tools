@@ -188,7 +188,9 @@ class ThisApp():
         '''
         '''
         retval = 0
-        packages_of_interest = []
+        packages_of_interest = [
+            'linux-firmware'
+        ]
         for series in s.kernel_series.series:
             if series.supported is False:
                 continue
