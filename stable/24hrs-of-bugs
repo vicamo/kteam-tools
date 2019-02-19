@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+#
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, INFO
+from ktl.log                            import Clog
+from datetime                           import datetime, timedelta, timezone
+import os
+from launchpadlib.launchpad             import Launchpad as _Launchpad
+from ktl.kernel_series                  import KernelSeries
+import json
+
+class Launchpad():
+    """
+    Manages connection to Launchpad services.
+    """
+    def __init__(s, client_name):
+        """
+        """
+        s.__service_root = 'production'
+        launchpad_cachedir = os.path.join(os.path.expanduser('~'), '.cache', client_name)
+        launchpad_creddir  = os.path.join(os.path.expanduser('~'), '.config', client_name)
+        filename_parts = ['credentials', 'production']
+
+        launchpad_credentials_file = os.path.join(launchpad_creddir, '-'.join(filename_parts))
+
+        if not os.path.exists(launchpad_creddir):
+            os.makedirs(launchpad_creddir, 0o700)
+
+        s.service = _Launchpad.login_with(client_name,
+                                          service_root=s.__service_root,
+                                          launchpadlib_dir=launchpad_cachedir,
+                                          credentials_file=launchpad_credentials_file,
+                                          version='devel')
+        return
+
+
+# ThisApp
+#
+class ThisApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+        s.finder_init()
+        s.data = {}
+        s.title_max = 60
+        s.kernel_series = KernelSeries()
+
+    def finder_init(s):
+        # We want all the bugs that have been modified since the last time we searched. Once
+        # we have that list, we eliminate any that have not been created within the time
+        # window we are interested in.
+        #
+        s.search_status = [
+            "New",
+            "Incomplete (with response)",
+            "Incomplete (without response)",
+            "Confirmed",
+            "Triaged",
+            "In Progress",
+            "Fix Committed",
+            "Invalid",
+            "Fix Released",
+        ] # A list of the bug statuses that we care about
+
+        s.search_since = datetime.utcnow() - timedelta(days=1)
+
+        s.launchpad = Launchpad('kernel-team-24hrs-of-bugs').service
+        s.search_tags = []
+        s.search_tags_combinator = "All"
+
+        # The service.distributions property is a collection of distributions. We
+        # pretty much only care about one, 'ubuntu'.
+        #
+        s.distro = s.launchpad.distributions['ubuntu']
+
+    def finder(s, package_name, callback):
+        now = datetime.now(timezone.utc)
+
+        print(package_name)
+        source_package = s.distro.getSourcePackage(name=package_name)
+        tasks = source_package.searchTasks(status=s.search_status, modified_since=s.search_since)
+        for task in tasks:
+            delta = now - task.date_created
+            if (delta.days < 1) and ('kernel-release-tracking-bug' not in task.bug.tags):
+                callback(task)
+
+    # _find_series_in_tags
+    #
+    def _find_series_in_tags(s, bug):
+        """
+        Search through all the tags on a bug to see if we can find the series that the
+        bug was filed against.
+        """
+        series_name = ''
+
+        for series in sorted(s.kernel_series.series, key=KernelSeries.key_series_name):
+            if series.codename in bug.tags:
+                series_name = series.codename
+                break
+
+        return series_name
+
+    def series(s, bug):
+        result = ''
+        while True:
+            result = s._find_series_in_tags(bug)
+            break
+
+        return result
+
+    def cb(s, task):
+        try:
+            assignee = task.assignee.display_name
+        except:
+            assignee = 'unassigned'
+
+        s.data[task.bug.id] = {
+            'id'          : task.bug.id,
+            'title'       : task.bug.title,
+            'series_name' : s.series(task.bug),
+            'importance'  : task.importance,
+            'status'      : task.status,
+            'assignee'    : assignee,
+        }
+
+    # per_bug_report
+    #
+    def per_bug_report(self, bid, data):
+        """
+        Generate the report for a single bug.
+        """
+        retval = ""
+
+        retval += 'LP: #%-7s' % (bid)
+
+        # Chop the title to a specific length
+        #
+        if len(data['title']) > self.title_max:
+            title = data['title'][:self.title_max - 3]
+            retval += '   %-*s...' % (self.title_max - 3, title)
+        else:
+            retval += '   %-*s' % (self.title_max, data['title'])
+
+        # Yes! This is a little hackish
+        retval += '    %-8s' % (data['series_name'])
+        retval += '    %-12s' % (data['importance'])
+        retval += '    %-13s' % (data['status'])
+        retval += '    %-s' % (data['assignee'])
+
+        retval += '\n'
+
+        return retval
+
+    # per_package_report
+    #
+    def per_package_report(s, pkg, data):
+        """
+        Generate the report for a single package.
+        """
+        retval = 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data))
+        retval += '\n'
+        retval += '%-7s        %-*s    %-8s    %-12s    %-13s    %-s' % ('Bug', s.title_max, 'Title', 'Series', 'Importance', 'Status', 'Assignee')
+        retval += '\n'
+        retval += '------------   ------------------------------------------------------------    --------    ------------    -------------    ---------------------\n'
+        for bug in sorted(data):
+            retval += s.per_bug_report(bug, data[bug])
+        retval += '\n\n'
+
+        return retval
+
+    def send_email(s, subject, body, to):
+        from wfl.bugmail import BugMail
+        BugMail.load_config('email.yaml')
+        BugMail.to_address = to
+        BugMail.send(subject, body)
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 0
+        packages_of_interest = []
+        for series in s.kernel_series.series:
+            if series.supported is False:
+                continue
+            for source in series.sources:
+                if source.supported is False:
+                    continue
+                for package in source.packages:
+                    if package.name not in packages_of_interest:
+                        packages_of_interest.append(package.name)
+
+        the_report = ''
+        for package_name in packages_of_interest:
+            s.data = {}
+            s.finder(package_name, s.cb)
+            if len(s.data) > 0:
+                the_report += s.per_package_report(package_name, s.data)
+
+        if len(the_report) > 0:
+            s.send_email('A Daily Bug Report for %s' % 'now', the_report, 'kernel-team@lists.ubuntu.com')
+
+        return retval
+
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+A utility that finds the LP bugs filed in the last 24 hrs. that the kernel team cares about.
+    '''
+    app_epilog = '''
+examples:
+    ThisApp --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    args = parser.parse_args()
+
+    log_format = "%(message)s"
+    basicConfig(level=INFO, format=log_format)
+    Clog.color = True
+
+    app = ThisApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
