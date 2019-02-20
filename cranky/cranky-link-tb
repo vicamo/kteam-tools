@@ -1,0 +1,79 @@
+#!/bin/bash -eu
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky-link-tb [-d] [-h] [-r] [-s SRU_CYCLE]
+
+Find and update the Launchpad tracking bug to reflect the proposed kernel version being created, and make a local git commit with a link to it.
+
+Optional arguments:
+  -d, --dry-run                      Don't actually modify the local tree or the launchpad bug
+  -h, --help                         Show this help message and exit.
+  -r, --re-run                       Run even if the tracking bug shows that link-tb has been run before
+  -s, --sru-cycle <SRU_CYCLE>        Specify the SRU cycle tag to look for when looking for a TB
+
+
+
+Example 1:
+   cranky link-tb
+
+Running without arguments will try to locate the right tracking bug from the most recent SRU cycle.
+
+
+
+Example 2:
+   cranky link-tb --sru-cycle 2019.02.04-1
+
+Running with --sru-cycle will limit the search for the tracking bug to bugs tagged with the given SRU cycle tag.
+
+
+
+Example 3:
+   cranky link-tb --dry-run -s 2019.01.14-3
+
+Running with --dry-run will still locate the TB but will NOT update the Launchpad bug or the local git tree. Useful for testing.
+
+
+
+Example 4:
+   cranky link-tb --re-run
+
+Running with --re-run can be used if "link-tb" has already been previously run for this release. This will overwrite any info in the bug that was added from a previous execution of "link-tb".
+
+
+EOF
+	exit 2
+}
+
+
+ARGS=""
+while [ "${#}" -gt 0 ] ; do
+	case "${1}" in
+		-s|--sru-cycle)
+			cycle=${2}
+			echo "SRU-cycle: $cycle"
+			shift
+			ARGS="$ARGS --sru-cycle $cycle"
+			;;
+		-d|--dry-run)
+			echo "(This is a dry-run)"
+			ARGS="$ARGS --dry-run"
+			;;
+		-r|--re-run)
+			echo "(This is a re-run)"
+			ARGS="$ARGS --re-run"
+			;;
+		-h|--help)
+			usage
+			;;
+		*)
+			echo "error: Unrecognized argument ${1}"
+			usage
+			;;
+	esac
+	shift
+done
+
+here=$(dirname "$(realpath -e "${0}")")
+"$here"/../stable/link-to-tracker $ARGS
