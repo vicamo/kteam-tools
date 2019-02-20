@@ -843,6 +843,17 @@ class TrackingBugs():
     '''
     __tbd = TrackingBugDefines()
 
+    def __add_to_set(s, new_tb):
+        '''
+        Internal helper to add a tracking bug object into the set and update
+        indexes.
+        '''
+        if not isinstance(new_tb, TrackingBug):
+            raise TrackingBugError('not a tracking bug object')
+        s.__tbs[int(new_tb.id)] = new_tb
+        sd = s.__idx_pkg_by_series.setdefault(new_tb.target_series, {})
+        sd.setdefault(new_tb.target_package, set()).add(int(new_tb.id))
+
     def __init__(s, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT, testing=False, quiet=False, private=False):
         '''
         Create a new empty set of tracking bugs.
@@ -990,9 +1001,7 @@ class TrackingBugs():
         if bug_id not in s.__tbs:
             try:
                 tb = TrackingBug(Bug(s.__lps, bug_id))
-                s.__tbs[int(bug_id)] = tb
-                sd = s.__idx_pkg_by_series.setdefault(tb.target_series, {})
-                sd.setdefault(tb.target_package, set()).add(int(bug_id))
+                s.__add_to_set(tb)
             except TrackingBugError as e:
                 msg = 'failed to add bug ({})'.format(e.msg)
                 raise TrackingBugError(msg)
@@ -1313,7 +1322,9 @@ class TrackingBugs():
             if s.testing is False and s.private is False:
                 new_tb.subscribers_add()
 
+        s.__add_to_set(new_tb)
         cleave(s.__class__.__name__ + '.create')
+
         return new_tb
 
 
