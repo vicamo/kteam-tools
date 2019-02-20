@@ -578,7 +578,7 @@ class TrackingBug(object):
         :param status: New status
         :type  status: Valid workflow status string
         '''
-        center(self.__class__.__name__ + '.wf_status_set')
+        center(s.__class__.__name__ + '.wf_status_set')
         wf_name = s.__wf_project.display_name
         for task in s.__bug.tasks:
             task_name = task.bug_target_display_name
@@ -586,7 +586,7 @@ class TrackingBug(object):
             if parts[0] == '' and parts[1] == wf_name and parts[2] == '':
                 task.status = status
                 task.importance = "Medium"
-        cleave(self.__class__.__name__ + '.wf_status_set')
+        cleave(s.__class__.__name__ + '.wf_status_set')
 
     def wf_task_get(s, task_name):
         '''
@@ -652,7 +652,25 @@ class TrackingBug(object):
         s.__modified = True
         ref_tb.__master_bug_id_set(None)
         s.save()
-        
+
+    def make_duplicate_of(s, ref_tb):
+        '''
+        Mark the current tracking bug as a duplicate of the given one.
+        This does not update any master or derivative references.
+
+        :param ref_tb: The tracking bug which the current one should
+                       be a duplicate of.
+        :type  ref_tb: TrackingBug()
+        '''
+        if not isinstance(ref_tb, TrackingBug):
+            raise TrackingBugError('reference must be a tracking bug')
+        if ref_tb.target_series != s._target_series:
+            raise TrackingBugError('reference series mismatch')
+        if ref_tb.target_package != s._target_package:
+            raise TrackingBugError('reference source mismatch')
+        s.__bug.lpbug.duplicate_of = ref_tb.__bug.lpbug
+        s.__bug.lpbug.lp_save()
+
     def invalidate(s):
         '''
         Invalidate all tasks of the tracking bug and remove all
