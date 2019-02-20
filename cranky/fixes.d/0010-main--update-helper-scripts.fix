@@ -1,8 +1,8 @@
 #!/bin/bash -eu
 # update in-tree helper scripts at debian/scripts/helper/
 
-# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
-. $(dirname "$0")/lib.sh
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")/lib.sh"
 
 # Only applies to primary trees.
 case "$FIX_TYPE" in
