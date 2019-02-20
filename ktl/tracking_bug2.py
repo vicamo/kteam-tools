@@ -634,6 +634,16 @@ class TrackingBug(object):
         s.save()
 
     def derivative_remove(s, ref_tb):
+        '''
+        Remove the given tracking bug from being a derivative/backport
+        of the current tracking bug. This also unsets the master bug
+        reference in the givven tracking bug.
+
+        :param ref_tb: The tracking bug to be removed. Must be a valid
+                       derivative tracking bug object linked to the
+                       current tracking bug or will raise an exception.
+        :type  ref_tb: TrackingBug()
+        '''
         if not isinstance(ref_tb, TrackingBug):
             raise TrackingBugError('reference must be a tracking bug')
         if ref_tb.id not in s._derivative_bug_ids:
