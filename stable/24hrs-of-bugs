@@ -208,7 +208,7 @@ class ThisApp():
                 the_report += s.per_package_report(package_name, s.data)
 
         if len(the_report) > 0:
-            s.send_email('The Daily Bug Report for %s' % str(datetime.utcnow), the_report, 'kernel-team@lists.ubuntu.com')
+            s.send_email('The Daily Bug Report for %s' % str(datetime.utcnow()), the_report, 'kernel-team@lists.ubuntu.com')
 
         return retval
 
