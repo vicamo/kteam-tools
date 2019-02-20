@@ -555,22 +555,20 @@ class TrackingBug(object):
 
         cleave(s.__class__.__name__ + '.tags_reset')
 
-
-#
-# This probably sould move into the create method of TrackingBugs()
-#    def add_subscribers(s):
-#        '''
-#        Teams / individuals to be automatically subscribed to the tracking bugs.
-#        These vary per package.
-#        '''
-#        teams = s.__wf.subscribers(s._target_package, s.isdev)
-#        for team in teams:
-#            try:
-#                lp_team = s.__bug.service.launchpad.people[team]
-#            except KeyError:
-#                    cinfo("Can't subscribe '%s', team not found in Launchpad!" % (team))
-#                continue
-#            s.__bug.lpbug.subscribe(person=lp_team)
+    def subscribers_add(s):
+        '''
+        Subscribe teams/individuals based on the target package name to the
+        tracking bug.
+        '''
+        center(s.__class__.__name__ + '.subscribers_add')
+        for subscriber in s.__wf.subscribers(s._target_package, s.isdev):
+            try:
+                lp_subscriber = s.__bug.service.launchpad.people[subscriber]
+            except KeyError:
+                cinfo('Cannot subscribe "{}", name not found in Launchpad!'.format(subscriber))
+                continue
+            s.__bug.lpbug.subscribe(person=lp_subscriber)
+        cleave(s.__class__.__name__ + '.subscribers_add')
 
     def wf_status_set(s, status):
         '''
@@ -650,6 +648,7 @@ class TrackingBug(object):
         Invalidate all tasks of the tracking bug and remove all
         search tags.
         '''
+        center(s.__class__.__name__ + '.invalidate')
         for tag in s.__bug.tags:
             if tag == s.__tbd.tag_names['default']['valid']:
                 s.__bug.tags.remove(tag)
@@ -659,6 +658,7 @@ class TrackingBug(object):
 
         for task in s.__bug.tasks:
             task.status = 'Invalid'
+        cleave(s.__class__.__name__ + '.invalidate')
 
     def tasks_reset(s):
         '''
@@ -1300,7 +1300,8 @@ class TrackingBugs():
                 new_tb.master_bug = master_bug_id
             new_tb.tasks_reset()
             new_tb.tags_reset(testing=s.testing)
-            # FIXME: new_tb.subscribers_add()
+            if s.testing is False and s.private is False:
+                new_tb.subscribers_add()
 
         cleave(s.__class__.__name__ + '.create')
         return new_tb
