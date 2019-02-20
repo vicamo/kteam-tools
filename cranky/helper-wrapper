@@ -34,4 +34,18 @@ if [ -z "$script" ] ; then
 	exit 1
 fi
 
-C="$0" P="cranky $cmd" exec "$script" "$@"
+# Assemble the schroot command
+session=$("$here/cranky" chroot map-session configs .)
+chroot_cmd=
+if [ "$session" = "$(printf '%q' "$session")" ]; then
+	chroot_cmd="schroot -r -c $session --"
+else
+	echo "Warning: chroot command was not set." \
+	     "Invalid chroot session: \"$session\"" >&2
+fi
+
+#
+# $CHROOT is supposed to be used unquoted at the beginning of every
+# commands that needs to run inside the corresponding chroot.
+#
+C="$0" P="cranky $cmd" CHROOT="$chroot_cmd" exec "$script" "$@"
