@@ -676,7 +676,7 @@ class TrackingBug(object):
         Invalidate all tasks of the tracking bug and remove all
         search tags.
         '''
-        center(s.__class__.__name__ + '.invalidate')
+        center(s.__class__.__name__ + '.invalidate({})'.format(s.id))
         for tag in s.__bug.tags:
             if tag == s.__tbd.tag_names['default']['valid']:
                 s.__bug.tags.remove(tag)
