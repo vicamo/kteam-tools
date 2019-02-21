@@ -163,6 +163,24 @@ def checkout_repos(handle, reference=None, dissociate=False):
     cnotice("Codename: {}".format(codename))
     cnotice("Source:   {}".format(handle_set.source.name))
 
+    # Check for a meta-only package.  This should really imply checking
+    # out the matching derived-from packages with our -meta; we do this as we
+    # will want to run updates against that.
+    derived_from = handle_set.source.derived_from
+    if derived_from is not None:
+        meta_only = True
+        for handle_tree in handle_set.trees:
+            if handle_tree.package.type != 'meta':
+                meta_only = False
+                break
+        if meta_only:
+            prime_handle = "{}:{}".format(derived_from.series.codename,
+                derived_from.name)
+            prime_set = hdl.lookup_set(prime_handle, validate=False)
+            for handle in prime_set.trees:
+                if handle.package.type != 'meta':
+                    handle_set.trees.append(handle)
+
     # If the trees already exist, we need to make sure they are clean otherwise
     # we may destroy work in progress.
     for handle_tree in handle_set.trees:
