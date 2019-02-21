@@ -65,7 +65,7 @@ def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
                       reference)
     cmd.extend([url, repo_dir])
 
-    cnotice("Calling: %s" % ' '.join(cmd))
+    cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
     result = run(cmd)
     if result.returncode != 0:
         cerror("git clone failed rc={}".format(result.returncode))
@@ -81,6 +81,64 @@ def git_configure(repo_dir):
          "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
     run(["git", "config", "--local", "sendemail.suppresscc", "all"],
         cwd=repo_dir)
+
+def git_lookup_ref(repo_dir, ref):
+    result = run(["git", "for-each-ref", "--format", "%(objectname)", ref],
+        cwd=repo_dir, stdout=PIPE)
+    if result.returncode != 0:
+        cerror("git for-each-ref failed rc={}".format(result.returncode))
+        sys.exit(1)
+
+    sha1 = result.stdout.decode('utf-8').strip()
+    if sha1 == '':
+        sha1 = None
+
+    return sha1
+
+def git_ancestor(repo_dir, old, new):
+    result = run(["git", "merge-base", "--is-ancestor", old, new],
+        cwd=repo_dir)
+    return result.returncode == 0
+
+# XXX: create_checkout_reset
+def git_checkout(repo_dir, remote, rmt_branch, branch):
+    rmt_ref = 'refs/remotes/{}/{}'.format(remote, rmt_branch)
+    lcl_ref = 'refs/heads/{}'.format(branch)
+
+    # Get us onto the branch in question -- if it does not exists
+    # git checkout -b branch remote/branch else
+    # git checkout branch
+    lcl_sha1 = git_lookup_ref(repo_dir, lcl_ref)
+    if lcl_sha1 is None:
+        cmd = ["git", "checkout", "-q", "-b", branch, rmt_ref]
+    else:
+        cmd = ["git", "checkout", "-q", branch]
+    result = run(cmd, cwd=repo_dir)
+    if result.returncode != 0:
+        cerror("git checkout failed rc={}".format(result.returncode))
+        sys.exit(1)
+
+    # If the new upstream branch does not match ours we need
+    # to reset the branch.  Firstly back it up in case it is not
+    # fully merged upstream.
+    rmt_sha1 = git_lookup_ref(repo_dir, rmt_ref)
+    if lcl_sha1 is not None and rmt_sha1 != lcl_sha1:
+        # Backup via an explict reflog entry if this is not an ancestor.
+        if not git_ancestor(repo_dir, lcl_sha1, rmt_sha1):
+            result = run(["git", "update-ref", "-m",
+                "cranky checkout: previous tip", "HEAD", "HEAD"],
+                cwd=repo_dir)
+            if result.returncode != 0:
+                cerror("unable to backup previous tip rc={}".format(
+                    result.returncode))
+                sys.exit(1)
+
+        # RESET
+        result = run(["git", "reset", "--hard", rmt_ref], cwd=repo_dir)
+        if result.returncode != 0:
+            cerror("unable to reset to new tip tip rc={}".format(
+                result.returncode))
+            sys.exit(1)
 
 def git_safe(repo_dir):
     """
@@ -128,29 +186,16 @@ def checkout_repos(handle, reference=None, dissociate=False):
         remote = handle_tree.remote
         branch = repo.branch if repo.branch else 'master'
 
-        # Add info for the summary
-        summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
-                        "branch": branch})
-
         # Make the parental directories.
         if not os.path.exists(os.path.dirname(repo_dir)):
             os.makedirs(os.path.dirname(repo_dir))
 
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            cnotice("Repository '%s' exists already" % repo_dir)
             git_remote_update(repo_dir, remote, repo.url)
         else:
-            cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
             git_clone(pkg, repo_dir, remote, repo.url, branch, reference,
                       dissociate)
             git_configure(repo_dir)
-
-        # Validate whether the right branch is checked out.
-        handle_validate = hdl.lookup_tree(repo_dir)
-        if handle_tree.package != handle_validate.package:
-            cwarn("Repository '%s' has the wrong package checked out %s:%s" %
-                  (repo_dir, handle_validate.package.series.codename,
-                   handle_validate.package.name))
 
         # Add a remote for the (private) security repo
         if pkg.type is None:
@@ -161,11 +206,36 @@ def checkout_repos(handle, reference=None, dissociate=False):
 
         git_remote_update(repo_dir, "security", security_url)
 
+    # Checkout the specified branches.
+    for handle_tree in handle_set.trees:
+        pkg = handle_tree.package
+        repo = pkg.repo
+        repo_dir = handle_tree.directory
+
+        remote = handle_tree.remote
+        rmt_branch = repo.branch if repo.branch else 'master'
+        # local branch is branch if we are checking out against 'origin'
+        # remote name otherwise.
+        branch = 'cranky/' + rmt_branch if remote == 'origin' else remote
+
+        # Add info for the summary
+        summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
+                        "branch": branch})
+
+        git_checkout(repo_dir, remote, rmt_branch, branch)
+
+        # Validate whether the right branch is checked out.
+        handle_validate = hdl.lookup_tree(repo_dir)
+        if handle_tree.package != handle_validate.package:
+            cwarn("Repository '%s' has the wrong package checked out %s:%s" %
+                  (repo_dir, handle_validate.package.series.codename,
+                   handle_validate.package.name))
+
     # Print the summary
     cnotice("Summary:")
     for s in summary:
         cnotice("  Repo '%(name)s' in directory '%(dir)s' "
-                "(branch '%(remote)s/%(branch)s')" % s)
+                "(branch '%(branch)s')" % s)
 
 
 def expanduser(path):
