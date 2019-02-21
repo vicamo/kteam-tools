@@ -121,6 +121,7 @@ class HandleTree(HandleCore):
         self.series = series
         self.package = package
         self.directory = directory
+        self.name = "{}:{}".format(self.series.codename, self.package.name)
 
     @property
     def remote(self):
@@ -173,6 +174,7 @@ class HandleSet(HandleCore):
 
         self.series = series
         self.source = source
+        self.name = "{}:{}".format(self.series.codename, self.source.name)
 
         if trees:
             self.trees = trees
