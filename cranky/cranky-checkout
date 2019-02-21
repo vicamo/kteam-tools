@@ -71,6 +71,17 @@ def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
         cerror("git clone failed rc={}".format(result.returncode))
         sys.exit(1)
 
+def git_configure(repo_dir):
+    # Set some sensible config defaults for git send-email:
+    #   - Add the Ubuntu kernel mailing list as the default 'to' email
+    #     address
+    #   - Don't cc the patch author and signers (we don't want to
+    #     spam upstream people)
+    run(["git", "config", "--local", "sendemail.to",
+         "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
+    run(["git", "config", "--local", "sendemail.suppresscc", "all"],
+        cwd=repo_dir)
+
 def git_safe(repo_dir):
     """
     Check that there are no uncommited changes in a repository.
@@ -132,6 +143,7 @@ def checkout_repos(handle, reference=None, dissociate=False):
             cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
             git_clone(pkg, repo_dir, remote, repo.url, branch, reference,
                       dissociate)
+            git_configure(repo_dir)
 
         # Validate whether the right branch is checked out.
         handle_validate = hdl.lookup_tree(repo_dir)
@@ -139,16 +151,6 @@ def checkout_repos(handle, reference=None, dissociate=False):
             cwarn("Repository '%s' has the wrong package checked out %s:%s" %
                   (repo_dir, handle_validate.package.series.codename,
                    handle_validate.package.name))
-
-        # Set some sensible config defaults for git send-email:
-        #   - Add the Ubuntu kernel mailing list as the default 'to' email
-        #     address
-        #   - Don't cc the patch author and signers (we don't want to
-        #     spam upstream people)
-        run(["git", "config", "--local", "sendemail.to",
-             "kernel-team@lists.ubuntu.com"], cwd=repo_dir)
-        run(["git", "config", "--local", "sendemail.suppresscc", "all"],
-            cwd=repo_dir)
 
         # Add a remote for the (private) security repo
         if pkg.type is None:
