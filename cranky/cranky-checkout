@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 #
-# Clone the trees that make up a set of kernel packages
-#
-# Juerg Haefliger <juerg.haefliger@canonical.com>
+# Checkout the trees that make up a set of kernel packages
 #
 
 import argparse
@@ -74,7 +72,7 @@ def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
         sys.exit(1)
 
 
-def clone_repos(handle, reference=None, dissociate=False):
+def checkout_repos(handle, reference=None, dissociate=False):
     """
     Clone the repos that make up the set of kernel packages
     """
@@ -89,7 +87,8 @@ def clone_repos(handle, reference=None, dissociate=False):
     cnotice("Codename: {}".format(codename))
     cnotice("Source:   {}".format(handle_set.source.name))
 
-    # Cycle through the trees and clone the repos
+    # Cycle through the trees and clone/update the package specific
+    # repositories.
     summary = []
     for handle_tree in handle_set.trees:
         pkg = handle_tree.package
@@ -219,7 +218,7 @@ Handle to a kernel source tree in <series>:<package> format.
 Obtain objects from an existing local repository to speed up the cloning
 process. This is a git clone option, check 'git help clone' for more details.
 Note that without using --dissociate, the referenced repo *must not* be deleted
-otherwise the cranky-cloned repo will get corrupted.
+otherwise the cranky-checkout'd repo will get corrupted.
 """
 
     help_dissociate = """
@@ -238,4 +237,4 @@ traffic. This is a git clone option, check 'git help clone' for more details.
                         default=config_cmd.get('dissociate', False),
                         help=help_dissociate)
 
-    clone_repos(**vars(parser.parse_args()))
+    checkout_repos(**vars(parser.parse_args()))
