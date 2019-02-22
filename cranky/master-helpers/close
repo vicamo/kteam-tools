@@ -71,6 +71,11 @@ run() {
 	fi
 }
 
+# Trick shellcheck so it doesn't complain every time it's necessary to
+# use `run $CHROOT`. Use `chroot_run` instead.
+shopt -s expand_aliases
+alias chroot_run='run ${CHROOT:-}'
+
 DEBIAN=
 # shellcheck disable=SC1091
 . debian/debian.env
@@ -90,7 +95,7 @@ if [ "$series" != 'UNRELEASED' ]; then
 fi
 
 # Update configs
-run fakeroot debian/rules clean updateconfigs
+chroot_run fakeroot debian/rules clean updateconfigs
 changes=$(git diff HEAD -- "./$DEBIAN/config/")
 if [ "$commit_configs" -eq 0 ] && [ -n "$changes" ]; then
 	echo "Config has changed! please, review it and commit."
