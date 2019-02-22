@@ -1,0 +1,69 @@
+#!/bin/bash -eu
+export LC_ALL=C
+
+usage() {
+	cat << EOF
+Usage: ${P:-$(basename "$0")} [-h|--help] [-d|--dry-run]
+
+Move the latest "start new release" commit right after the latest
+"closing" commit.
+
+Optional arguments:
+  -d, --dry-run         Perform a trial run with no changes made
+                        printing the commands instead.
+  -h, --help            Show this help message and exit.
+
+EOF
+}
+
+dry_run=0
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-d|--dry-run)
+			dry_run=1
+			;;
+		*)
+			usage
+			exit 1
+			;;
+	esac
+	shift
+done
+
+hl() { echo -e "\e[1m$*\e[0m"; }
+
+run() {
+	# Quote args for echo or eval
+	local quoted=()
+	for token; do
+		quoted+=( "$(printf '%q' "$token")" )
+	done
+	# Run
+	if [ "$dry_run" -eq 1 ]; then
+		hl "DRY RUN: ${quoted[*]}"
+	else
+		hl "${quoted[*]}"
+		"$@"
+		echo
+	fi
+}
+
+# Re-order commits so the start
+last_closing_commit=$(git log --oneline --pretty='%H %s' |
+			      awk '/^[^ ]+ UBUNTU:\s+Ubuntu-/ { print $1; exit; }')
+if [ -z "$last_closing_commit" ]; then
+	echo "Ubuntu closing commit was't found!" >&2
+	exit 1
+fi
+
+# Use ex(vi) to re-order the commits:
+# 1. Remove lines that do not start with "pick" (ie: blank lines and comments)
+# 2. Delete the first line that matches the start new release commit.
+# 3. Paste that line at the beginning of the file.
+# 4. Save it and exit.
+run env GIT_SEQUENCE_EDITOR="ex -s +'g!/^pick\>/d' +'/^pick\s\+\S\+\s\+UBUNTU: Start new release$/d' '+0pu' +'wq'" \
+    git rebase -i "$last_closing_commit"
