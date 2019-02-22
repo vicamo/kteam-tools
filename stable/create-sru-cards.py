@@ -171,39 +171,41 @@ class SRUCardsCreator:
                             board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Produce kernel snaps':
-                for (series, source) in series_sources_list:
-                    for snap in sorted(source.snaps, key=lambda x: x.name):
-                        if not snap.repo:
-                            continue
-                        card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
-                        card_desc = 'Update version in %s and push' % (snap.repo)
-                        print('Adding card: %s' % (card_name))
-                        print('             %s' % (card_desc))
-                        if not self.args.dry_run:
-                            board.add_card(card_name, card_desc)
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        for snap in sorted(source.snaps, key=lambda x: x.name):
+                            if not snap.repo:
+                                continue
+                            card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
+                            card_desc = 'Update version in %s and push' % (snap.repo)
+                            print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
+                            if not self.args.dry_run:
+                                board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Release kernel snaps':
-                for (series, source) in series_sources_list:
-                    for snap in sorted(source.snaps, key=lambda x: x.name):
-                        if not snap.repo:
-                            continue
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        for snap in sorted(source.snaps, key=lambda x: x.name):
+                            if not snap.repo:
+                                continue
 
-                        card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
-                        card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
-                        print('Adding card: %s' % (card_name))
-                        print('             %s' % (card_desc))
-                        if not self.args.dry_run:
-                            board.add_card(card_name, card_desc)
+                            card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
+                            card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
+                            print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
+                            if not self.args.dry_run:
+                                board.add_card(card_name, card_desc)
 
-                        if not snap.stable:
-                            continue
+                            if not snap.stable:
+                                continue
 
-                        card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
-                        card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
-                        print('Adding card: %s' % (card_name))
-                        print('             %s' % (card_desc))
-                        if not self.args.dry_run:
-                            board.add_card(card_name, card_desc)
+                            card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
+                            card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
+                            print('Adding card: %s' % (card_name))
+                            print('             %s' % (card_desc))
+                            if not self.args.dry_run:
+                                board.add_card(card_name, card_desc)
                 continue
 
             card_names = []
@@ -316,7 +318,7 @@ Examples:
                         required=False, action='store', default=default_cycle_info)
     parser.add_argument('--no-cycle-info', help='do not add an entry to the cycle info yaml file',
                         required=False, action='store_true', default=False)
-    parser.add_argument('--crank-turn', help='create the \'Turn the crank\' cards (defaul: False)',
+    parser.add_argument('--crank-turn', help='create the \'Turn the crank\' and snap-related cards (defaul: False)',
                         required=False, action='store_true', default=False)
     parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
                         action='store_true', default=False)
