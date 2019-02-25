@@ -21,7 +21,7 @@ mkdir -p "$HDIR"
 HERE=$(here)
 HELPERS=""
 # shellcheck disable=SC1083
-for file in $HERE/../master-helpers/{rebase,close,}; do
+for file in $HERE/../master-helpers/{rebase,close,open}; do
 	if [ -f "$file" ] ; then
 		script=$(basename "$file")
 		cp -p "$file" "$HDIR/$script"
