@@ -270,13 +270,17 @@ class TaskSet():
 
         return output
 
-    def __init__(self, ks_series_list, source_name_list, cycledate):
+    def __init__(self, ks_series_list, source_name_list, cycledate, ks=None):
         '''
         Initialize a TaskSet which consists
         ks_series_list = [ KernelSeries.series ... ]
         source_name_list = [ str ... ]
         cycledate = datetime
+        ks = Instance of KernelSeries to embed
         '''
+        if ks is None:
+            ks = KernelSeries()
+        self.ks = ks
         self.tbs = None
         self.board = None
         self.cycledate = cycledate
@@ -286,7 +290,6 @@ class TaskSet():
         self.spin_nr = None
         self.fake_id = 5550000
 
-        ks = KernelSeries()
         for ks_series in ks_series_list:
             for ks_source in ks_series.sources:
                 if not ks_source.derived_from:
@@ -477,7 +480,7 @@ Examples:
             sys.exit(1)
 
     # Now collect all sources (deb or snap) that need tasks
-    ts = TaskSet(ks_series_list, args.source, cycledate)
+    ts = TaskSet(ks_series_list, args.source, cycledate, ks)
     if args.spin is not None:
         ts.spin_nr = args.spin
 
