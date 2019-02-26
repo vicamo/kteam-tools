@@ -1138,6 +1138,9 @@ class TrackingBugs():
                 break
             if wf_series.name in ['trunk', 'latest']:
                 break
+            if wf_series.name.endswith('-dnu'):
+                cdebug('    {} marked "do not use"'.format(wf_series.name[:-4]), 'yellow')
+                break
             if wf_series.name.startswith('prepare-package-'):
                 pkg_type = wf_series.name.replace('prepare-package-', '')
                 ks_pkg = None
@@ -1146,7 +1149,7 @@ class TrackingBugs():
                         ks_pkg = entry
                         break
                 if ks_pkg is None:
-                    cdebug('    no %s' % wf_series.name, 'yellow')
+                    cdebug('    no {}'.format(wf_series.name), 'yellow')
                     break
             if wf_series.name.startswith('snap-'):
                 snap = None
@@ -1155,19 +1158,19 @@ class TrackingBugs():
                         snap = entry
                         break
                 if snap is None:
-                    cdebug('    no %s' % wf_series.name, 'yellow')
+                    cdebug('    no {}'.format(wf_series.name), 'yellow')
                     break
                 if wf_series.name == 'snap-certification-testing':
                     if not snap.hw_cert:
-                        cdebug('    no %s' % wf_series.name, 'yellow')
+                        cdebug('    no {}'.format(wf_series.name), 'yellow')
                         break
                 elif wf_series.name == 'snap-qa-testing':
                     if not snap.qa:
-                        cdebug('    no %s' % wf_series.name, 'yellow')
+                        cdebug('    no {}'.format(wf_series.name), 'yellow')
                         break
                 elif wf_series.name == 'snap-publish':
                     if not snap.gated:
-                        cdebug('    no %s' % wf_series.name, 'yellow')
+                        cdebug('    no {}'.format(wf_series.name), 'yellow')
                         break
             if wf_series.name == 'stakeholder-signoff':
                 if ks_source.stakeholder is None:
