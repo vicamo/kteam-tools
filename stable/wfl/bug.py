@@ -553,7 +553,7 @@ class WorkflowBug():
         package_package = None
         for package in s.source.packages:
             if (package.type == pkg or (
-                package.type is None and pkg == '')
+                package.type is None and pkg == 'main')
                 ):
                 package_package = package
                 break
