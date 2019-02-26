@@ -188,7 +188,10 @@ class Promoter(TaskHandler):
                 testing_tasks.append('verification-testing')
             tested = True
             for task in testing_tasks:
-                if s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
+                if task not in s.bug.tasks_by_name:
+                    s.task.reason = 'Stalled -- %s task is missing' % (task,)
+                    tested = False
+                elif s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
                     cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (task, s.bug.tasks_by_name[task].status), 'yellow')
                     tested = False
 
