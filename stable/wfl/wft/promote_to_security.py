@@ -11,7 +11,7 @@ class PromoteToSecurity(Promoter):
     #
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
-        super(Promoter, s).__init__(lp, task, bug)
+        super(PromoteToSecurity, s).__init__(lp, task, bug)
 
         s.jumper['New']           = s._ready_for_security
         s.jumper['Confirmed']     = s._verify_promotion
