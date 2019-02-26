@@ -1106,7 +1106,7 @@ class TrackingBugs():
         cleave(s.__class__.__name__ + '.get_series_package')
         return bug_list
 
-    def __wf_task_valid(s, wf_series, distro_series, ks_series, src_name):
+    def __wf_task_valid(s, wf_series, ks_source):
         '''
         Internal helper to decide whether a certain workflow task should be
         added to a launchpad bug.
@@ -1114,7 +1114,7 @@ class TrackingBugs():
         Returns: True (task is valid) or False (otherwise)
         '''
         retval = False
-        ks_source = None
+        ks_series = ks_source.series
 
         #
         # FIXME: This probably should be taken from workflow
@@ -1132,35 +1132,28 @@ class TrackingBugs():
             'regression-testing',
             'stakeholder-signoff',
         ]
-        if ks_series is not None:
-            ks_source = ks_series.lookup_source(src_name)
 
         while True:
             if not wf_series.active:
                 break
             if wf_series.name in ['trunk', 'latest']:
                 break
-            if wf_series.name == 'upload-to-ppa' and distro_series is None:
-                cdebug('    no upload-to-ppa', 'yellow')
-                break
             if wf_series.name.startswith('prepare-package-'):
                 pkg_type = wf_series.name.replace('prepare-package-', '')
                 ks_pkg = None
-                if ks_source is not None:
-                    for entry in ks_source.packages:
-                        if entry.type == pkg_type:
-                            ks_pkg = entry
-                            break
+                for entry in ks_source.packages:
+                    if entry.type == pkg_type:
+                        ks_pkg = entry
+                        break
                 if ks_pkg is None:
                     cdebug('    no %s' % wf_series.name, 'yellow')
                     break
             if wf_series.name.startswith('snap-'):
                 snap = None
-                if ks_source is not None:
-                    for entry in ks_source.snaps:
-                        if entry.primary:
-                            snap = entry
-                            break
+                for entry in ks_source.snaps:
+                    if entry.primary:
+                        snap = entry
+                        break
                 if snap is None:
                     cdebug('    no %s' % wf_series.name, 'yellow')
                     break
@@ -1177,17 +1170,13 @@ class TrackingBugs():
                         cdebug('    no %s' % wf_series.name, 'yellow')
                         break
             if wf_series.name == 'stakeholder-signoff':
-                if ks_source is None or ks_source.stakeholder is None:
+                if ks_source.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
                     break
 
-            is_dev = False
-            if ks_series is not None and ks_series.development:
-                is_dev = True
-
-            if wf_series.name == 'promote-to-release' and not is_dev:
+            if wf_series.name == 'promote-to-release' and ks_series.development is False:
                 break
-            if is_dev and wf_series.name not in valid_dev_tasks:
+            if ks_series.development and wf_series.name not in valid_dev_tasks:
                 break
             retval = True
             break
@@ -1260,6 +1249,14 @@ class TrackingBugs():
             raise TrackingBugError(err)
 
         ks_series = s.__ks.lookup_series(codename=series_name)
+        if ks_series is None:
+            err = '{} is not defined in KernelSeries'.format(series_name)
+            raise TrackingBugError(err)
+        else:
+            ks_source = ks_series.lookup_source(pkg_name)
+        if ks_source is None:
+            err = '{} is no defined source in {}'.format(pkg_name, series_name)
+            raise TrackingBugError(err)
 
         # Title string for launchpad bug
         title = '{}: {} -proposed tracker'.format(pkg_name, s.__tbd.no_version)
@@ -1285,7 +1282,7 @@ class TrackingBugs():
 
         # Individual workflow tasks here or later?
         for wf_task in wf_project.lp_project.series_collection:
-            if s.__wf_task_valid(wf_task, distro_series, ks_series, pkg_name):
+            if s.__wf_task_valid(wf_task, ks_source):
                 cdebug('    adding: %s' % wf_task.display_name)
                 nomination = lp_bug.addNomination(target=wf_task)
                 if nomination.canApprove():
