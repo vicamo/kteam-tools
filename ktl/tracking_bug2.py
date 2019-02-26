@@ -697,8 +697,6 @@ class TrackingBug(object):
         wf_name   = s.__wf_project.display_name
         ct_series = s._target_series.capitalize()
 
-        # The new create should not even create tasks which ks_source
-        # has as invalid but there might be old bugs.
         # Fetch the list of invalid tasks according to the kernel-series
         # information.
         try:
@@ -1117,7 +1115,6 @@ class TrackingBugs():
         '''
         retval = False
         ks_source = None
-        ks_invalid_tasks = []
 
         #
         # FIXME: This probably should be taken from workflow
@@ -1137,16 +1134,11 @@ class TrackingBugs():
         ]
         if ks_series is not None:
             ks_source = ks_series.lookup_source(src_name)
-            if ks_source is not None:
-                ks_invalid_tasks = ks_source.invalid_tasks
 
         while True:
             if not wf_series.active:
                 break
             if wf_series.name in ['trunk', 'latest']:
-                break
-            if wf_series.name in ks_invalid_tasks:
-                cdebug(' * no {} (source)'.format(wf_series.name), 'yellow')
                 break
             if wf_series.name == 'upload-to-ppa' and distro_series is None:
                 cdebug('    no upload-to-ppa', 'yellow')
