@@ -71,6 +71,8 @@ class Task():
         task.level = self.level + 1
         self.subtasks.append(task)
 
+        return task
+
     def CreateTrackingBugs(self, master=None, dryrun=False):
         new_tbids = []
         new_tbid  = None
@@ -227,19 +229,32 @@ class TaskSet():
         for ks_snap in sorted(ks_source.snaps, key=lambda x: x.name):
             if not ks_snap.repo:
                 continue
-            subtask = Task(self, ks_source, ks_snap)
+            subtask = task.AddSubtask(Task(self, ks_source, ks_snap))
             subtask.create = True
-            task.AddSubtask(subtask)
 
-    def __get_parent_task(self, derivative):
+    def __add_task_and_ancestors(self, derivative):
+        '''
+        Internal helper which adds a new task for a source and optionally also creates
+        all tasks in its ancestor chain.
+        '''
         if derivative.derived_from is None:
-            return self.tasks[derivative.series.codename]
+            # Top-level task (master kernel) if it is not created already, do that
+            # here.
+            tkey = derivative.series.codename
+            if tkey not in self.tasks:
+                self.tasks[tkey] = Task(self, derivative)
+            return self.tasks[tkey]
 
-        task = self.__get_parent_task(derivative.derived_from)
+        task = self.__add_task_and_ancestors(derivative.derived_from)
         for t in task.subtasks:
+            # If there is already a matching subtask, then hand that one back while
+            # unwinding.
             if t.ks_source == derivative:
                 return t
-        return task
+
+        # As there is no subtask defined already, create a fresh one and return it
+        # to the caller.
+        return task.AddSubtask(Task(self, derivative))
 
     def __task_check_new(self, task):
         for subtask in task.subtasks:
@@ -290,13 +305,6 @@ class TaskSet():
         self.spin_nr = None
         self.fake_id = 5550000
 
-        for ks_series in ks_series_list:
-            for ks_source in ks_series.sources:
-                if not ks_source.derived_from:
-                    tkey = ks_series.codename
-                    self.tasks[tkey] = Task(self, ks_source)
-                    break
-
         if ks_series_list[0].development:
             self.cycletag = 'd' + self.cycletag
 
@@ -309,20 +317,25 @@ class TaskSet():
                 if not self.__src_wanted(ks_source, source_name_list):
                     continue
                 origin = self.__src_get_origin(ks_source)
-                if not origin:
+                if origin is None:
+                    # This handles the base linux sources (top-level tasks). Depending on
+                    # the order sources are enumerated it might have been created when adding
+                    # one of the sources derived from there.
                     tkey = ks_series.codename
                     if ks_series in ks_series_list:
+                        if tkey not in self.tasks:
+                            self.tasks[tkey] = Task(self, ks_source)
                         self.tasks[tkey].create = True
                         self.__task_add_snaps(self.tasks[tkey])
                 else:
+                    # For any derivative, we call a helper which returns a new Task object
+                    # that already has been attached to its ancestor chain. Any task which
+                    # had to be created (including main tasks) will not be marked for creation
+                    # (so there must be an existing tracking bug for that or verification will
+                    # fail).
                     if origin.series in ks_series_list:
-                        parent_task = self.__get_parent_task(ks_source)
-                        if parent_task == None:
-                            cerror('No parent task for {}/{}'.format(ks_source.series.codename, ks_source.name))
-                            continue
-                        subtask = Task(self, ks_source)
+                        subtask = self.__add_task_and_ancestors(ks_source)
                         subtask.create = True
-                        parent_task.AddSubtask(subtask)
                         self.__task_add_snaps(subtask)
 
     def LoadTrackingBugs(self, test=False):
