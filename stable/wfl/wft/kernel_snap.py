@@ -17,6 +17,15 @@ class KernelSnapBase(TaskHandler):
         s._snap_info = False
         s._snap_store = None
 
+        # For a legacy combo variant the debs from which we will make a snap
+        # are associated with this bug.  For a snap variant they come from
+        # our master bug.  Add a direct pointer to whichever bug that is.
+        s.debs_bug = bug
+        if s._bug.variant == 'snap-debs':
+            master_bug = bug.master_bug
+            if master_bug is not None:
+                s.debs_bug = master_bug
+
         cleave(s.__class__.__name__ + '.__init__')
 
     def do_verify_release(s, risk):
@@ -50,7 +59,7 @@ class KernelSnapBase(TaskHandler):
         is returned.
         '''
         if s._snap_info == False:
-            package = s.bug.source
+            package = s.debs_bug.source
             if package:
                 # XXX: the bugs we create need to record the snap name.
                 snaps = package.snaps
@@ -65,7 +74,7 @@ class KernelSnapBase(TaskHandler):
     @property
     def snap_store(s):
         if s._snap_store is None:
-            s._snap_store = SnapStore(s.bug, s.snap_info)
+            s._snap_store = SnapStore(s.debs_bug, s.snap_info)
         return s._snap_store
 
 
@@ -95,7 +104,7 @@ class SnapReleaseToEdge(KernelSnapBase):
 
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
-        if s.bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
+        if s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
@@ -140,7 +149,7 @@ class SnapReleaseToBeta(KernelSnapBase):
 
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
-        if s.bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
+        if s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
@@ -256,11 +265,11 @@ class SnapReleaseToStable(KernelSnapBase):
                 cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
                 break
 
-            if s.bug.tasks_by_name['promote-to-updates'].status not in ['Fix Released', 'Invalid']:
+            if s.debs_bug.tasks_by_name['promote-to-updates'].status not in ['Fix Released', 'Invalid']:
                 cinfo('    task promote-to-updates is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
                 break
 
-            if (s.bug.tasks_by_name['promote-to-updates'].status == 'Invalid'
+            if (s.debs_bug.tasks_by_name['promote-to-updates'].status == 'Invalid'
                     and s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
                 cinfo('    task promote-to-updates is \'Invalid\' and promote-to-security is neither \'Fix Released\''
                       ' nor \'Invalid\'', 'yellow')
