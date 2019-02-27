@@ -27,7 +27,7 @@ class CertificationTesting(TaskHandler):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        if s.bug.ready_for_testing:
+        if s.bug.debs.ready_for_testing:
             s.task.status = 'Confirmed'
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)

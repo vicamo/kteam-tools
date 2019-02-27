@@ -36,7 +36,7 @@ class StakeholderSignoff(TaskHandler):
         retval = False
 
         while True:
-            if not s.bug.ready_for_testing:
+            if not s.bug.debs.ready_for_testing:
                 # It doesn't matter if this is a derivative package or not, if the
                 # package isn't ready for testing (promoted to -proposed) then it
                 # can't be set to 'Confirmed'.

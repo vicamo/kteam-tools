@@ -105,7 +105,7 @@ class PromoteToSecurity(Promoter):
 
             # Check if packages were copied to the right pocket->component
             #
-            if not s.bug.packages_released_to_security:
+            if not s.bug.debs.packages_released_to_security:
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
                 else:

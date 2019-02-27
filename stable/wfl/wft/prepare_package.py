@@ -129,7 +129,7 @@ class PreparePackage(TaskHandler):
                 break
 
             # Confirm that this package is uploaded.
-            if not s.bug.uploaded(pkg):
+            if not s.bug.debs.uploaded(pkg):
                 s.task.reason = 'Pending -- package not yet uploaded'
                 break
 
@@ -141,7 +141,7 @@ class PreparePackage(TaskHandler):
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
-                s.task.assignee = s.bug.creator(pkg)
+                s.task.assignee = s.bug.debs.creator(pkg)
             except KeyError:
                 # It doesn't matter if we set the assignee, that's just a nice
                 # to have.

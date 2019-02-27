@@ -122,10 +122,10 @@ class Workflow(TaskHandler):
                 updates_task = 'promote-to-release'
             if release_task is not None:
                 promote_to_task = s.bug.tasks_by_name[updates_task]
-                if promote_to_task.status == 'Invalid' and s.bug.packages_released:
+                if promote_to_task.status == 'Invalid' and s.bug.debs.packages_released:
                     s.task.reason = 'Stalled -- packages have been released but the task set to Invalid'
                     break
-                elif promote_to_task.status == 'Fix Released' and not s.bug.packages_released:
+                elif promote_to_task.status == 'Fix Released' and not s.bug.debs.packages_released:
                     s.task.reason = 'Stalled -- packages have been released but the task set to Fix Released'
                     break
 
@@ -135,10 +135,10 @@ class Workflow(TaskHandler):
                 if promote_to_security.status not in ['Invalid', 'Fix Released']:
                     s.task.reason = 'Stalled -- promote-to-security is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['promote-to-security'].status)
                     break
-                if promote_to_security.status == 'Invalid' and s.bug.packages_released_to_security:
+                if promote_to_security.status == 'Invalid' and s.bug.debs.packages_released_to_security:
                     s.task.reason = 'Stalled -- packages have been released to security, but the task is set to "Invalid"'
                     break
-                elif promote_to_security.status == 'Fix Released' and not s.bug.packages_released_to_security:
+                elif promote_to_security.status == 'Fix Released' and not s.bug.debs.packages_released_to_security:
                     s.task.reason = 'Stalled -- packages have not been released to security, but the task is set to "Fix Released"'
                     break
 

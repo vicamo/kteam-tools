@@ -2,11 +2,12 @@
 #
 
 import re
-from datetime                           import datetime
+from datetime                           import datetime, timedelta
 
 from ktl.kernel_series                  import KernelSeries
 from lib.utils                          import date_to_string, dump
 
+from .check_component                   import CheckComponent
 from .errors                            import ShankError, ErrorExit
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
 
@@ -610,4 +611,348 @@ class Package():
             retval = s.srcs[pkg][pocket]['signer']
         cleave('Packages::signer')
         return retval
+
+    # package_fully_built
+    #
+    def package_fully_built(s, pkg):
+        '''
+        For the package specified, the status of whether or not it is fully built
+        is returned.
+        '''
+        retval = s.fully_built(pkg)
+        return retval
+
+    # packages_released
+    #
+    @property
+    def packages_released(s):
+        '''
+        '''
+        retval = True
+
+        if s.bug.is_development_series:
+            pocket = 'Release'
+        else:
+            pocket = 'Updates'
+
+        bi = s.build_info
+        for pkg in bi:
+            if bi[pkg][pocket]['built'] is not True:
+                cinfo('            %s has not been released.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
+    # packages_released_to_security
+    #
+    @property
+    def packages_released_to_security(s):
+        '''
+        '''
+        retval = True
+
+        pocket = 'Security'
+
+        bi = s.build_info
+        for pkg in bi:
+            if bi[pkg][pocket]['built'] is not True:
+                cinfo('            %s has not been released.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
+    # proposed_pocket_clear
+    #
+    @property
+    def proposed_pocket_clear(s):
+        '''
+        Check that the proposed pocket is either empty or contains the same version
+        as found in -updates/-release.
+        '''
+        retval = True
+
+        if s.bug.is_development_series:
+            pocket = 'Release'
+        else:
+            pocket = 'Updates'
+
+        bi = s.build_info
+        for pkg in bi:
+            if bi[pkg]['Proposed']['version'] not in (None, bi[pkg][pocket]['version']):
+                cinfo('            %s has %s pending in -proposed.' % (pkg, bi[pkg]['Proposed']['version']), 'yellow')
+                retval = False
+
+        # If proposed is not clear, consider if it is full due to a bug
+        # which has been duplicated against me.
+        if not retval:
+            duplicates = s.bug.workflow_duplicates
+            for dup_wb in duplicates:
+                # Consider only those supporting debs.
+                if dup_wb.debs and dup_wb.debs.all_built_and_in_proposed:
+                    cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup_wb.lpbug.id,), 'yellow')
+                    retval = True
+                    break
+
+        return retval
+
+    # all_dependent_packages_fully_built
+    #
+    @property
+    def all_dependent_packages_fully_built(s):
+        '''
+        For the kernel package associated with this bug, the status of whether or
+        not all of the dependent packages (meta, signed, lbm, etc.) are fully built
+        is returned.
+        '''
+        retval = True
+
+        bi = s.build_info
+        for pkg in bi:
+            pkg_built = False
+            try:
+                for pocket in bi[pkg]:
+                    if bi[pkg][pocket]['built']:
+                        pkg_built = True
+                        break
+            except KeyError:
+                pkg_built = False
+
+            if not pkg_built:
+                cinfo('        %s is not fully built yet.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
+    # all_dependent_packages_uploaded
+    #
+    @property
+    def all_dependent_packages_uploaded(s):
+        '''
+        For the kernel package associated with this bug, the status of whether or
+        not all of the dependent packages (meta, signed, lbm, etc.) are uploaded
+        is returned.
+        '''
+        retval = True
+
+        bi = s.build_info
+        for pkg in bi:
+            pkg_uploaded = False
+            try:
+                for pocket in bi[pkg]:
+                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
+                        pkg_uploaded = True
+                        break
+            except KeyError:
+                pkg_uploaded = False
+
+            if not pkg_uploaded:
+                cinfo('        %s is not uploaded.' % (pkg), 'yellow')
+                retval = False
+                break
+
+        return retval
+
+
+    # uploaded
+    #
+    def uploaded(s, pkg):
+        '''
+        '''
+        center(s.__class__.__name__ + '.uploaded')
+        retval = False
+
+        bi = s.build_info
+        for pocket in bi[pkg]:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+                retval = True
+
+        cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
+        return retval
+
+    def upload_version(s, pkg):
+        '''
+        '''
+        center(s.__class__.__name__ + '.upload_version')
+        retval = None
+
+        bi = s.build_info
+        for pocket in bi[pkg]:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
+                retval = bi[pkg][pocket]['version']
+                break
+
+        cleave(s.__class__.__name__ + '.upload_version (%s)' % (retval))
+        return retval
+
+    # ready_for_testing
+    #
+    @property
+    def ready_for_testing(s):
+        '''
+        In order to determine if we're ready for testing the packages need to be
+        fully built and published to -proposed. We build in a delay after these
+        two conditions are met so that the packages are available in the archive
+        to the lab machines that will be installing them.
+        '''
+        center(s.__class__.__name__ + '.ready_for_testing')
+        retval = False
+        if s.all_built_and_in_proposed:
+
+            # Find the most recent date of either the publish date/time or the
+            # date/time of the last build of any arch of any of the dependent
+            # package.
+            #
+            date_available = None
+            bi = s.build_info
+            for d in sorted(bi):
+                for p in sorted(bi[d]):
+                    if bi[d][p]['published'] is None:
+                        continue
+                    if bi[d][p]['most_recent_build'] is None:
+                        continue
+
+                    if bi[d][p]['published'] > bi[d][p]['most_recent_build']:
+                        if date_available is None or bi[d][p]['published'] > date_available:
+                            date_available = bi[d][p]['published']
+                    else:
+                        if date_available is None or bi[d][p]['most_recent_build'] > date_available:
+                            date_available = bi[d][p]['most_recent_build']
+            now = datetime.utcnow()
+            comp_date = date_available + timedelta(hours=1.5)
+            if comp_date < now:
+                # It has been at least 1 hours since the package was either published or fully built
+                # in proposed.
+                #
+                retval = True
+            else:
+                cinfo('It has been less than 1 hr since the last package was either published or built.')
+                cinfo('    build time + 1 hrs: %s' % comp_date)
+                cinfo('                   now: %s' % now)
+
+        cinfo('        Ready for testing: %s' % (retval), 'yellow')
+        cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
+        return retval
+
+    # relevant_packages_list
+    #
+    def relevant_packages_list(s):
+        '''
+        For every tracking bug there are 'prepare-package-*' tasks. Not every tracking bug has all the
+        same 'prepare-pacakge-*' tasks. Also, there is a specific package associated with each of the
+        'prepare-package-*' tasks.
+
+        This method builds a list of the packages that are relevant to this particular bug.
+        '''
+        return sorted(s.pkgs.values())
+
+    def check_component_in_pocket(s, tstamp_prop, pocket):
+        """
+        Check if packages for the given tracking bug were properly copied
+        to the right component in the given pocket.
+        """
+        center(s.__class__.__name__ + '.check_component_in_pocket')
+        cdebug('tstamp_prop: ' + tstamp_prop)
+        cdebug('     pocket: %s' % pocket)
+
+        # If the packages are not all built and in -proposed then just bail out of
+        # here.
+        #
+        if not s.ready_for_testing:
+            cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
+            return False
+
+        check_component = CheckComponent(s.lp, s)
+
+        pkg_list = s.relevant_packages_list()
+
+        primary_src_component = None
+        missing_pkg = []
+        mis_lst = []
+        for pkg in pkg_list:
+            if pkg == s.name:
+                check_ver = s.version
+            else:
+                check_ver = None
+
+            ps = check_component.get_published_sources(s.series, pkg, check_ver, pocket)
+            if not ps:
+                if check_ver:
+                    missing_pkg.append([pkg, check_ver])
+                elif 'linux-signed' in pkg:
+                    missing_pkg.append([pkg, 'for version=%s' % (s.version)])
+                else:
+                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
+                continue
+
+            # We are going to use the primary package source component as
+            # our guide.  If we do not have that, then we cannot check.
+            if pkg == s.name:
+                primary_src_component = ps[0].component_name
+
+            if 'linux-signed' in pkg:
+                src_ver = ps[0].source_package_version
+                if src_ver.startswith(s.version):
+                    mis_lst.extend(check_component.mismatches_list(s.series,
+                                   pkg, ps[0].source_package_version,
+                                   pocket, ps, primary_src_component))
+                else:
+                    missing_pkg.append([pkg, 'for version=%s' % (s.version)])
+            elif not check_ver:
+                src_ver = ps[0].source_package_version
+
+                # source_package_version for linux-ports-meta and linux-meta is
+                # <kernel-version>.<abi>.<upload #> and for linux-backports-modules
+                # it is <kernel-version-<abi>.<upload #>
+                #
+                v1 = s.bug.kernel_version + '.' + s.abi
+                v2 = s.bug.kernel_version + '-' + s.abi
+                if src_ver.startswith(v1) or src_ver.startswith(v2):
+                    mis_lst.extend(check_component.mismatches_list(s.series,
+                                   pkg, ps[0].source_package_version,
+                                   pocket, ps, primary_src_component))
+                else:
+                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
+            else:
+                mis_lst.extend(check_component.mismatches_list(s.series,
+                               pkg, check_ver, pocket, ps, primary_src_component))
+
+        if missing_pkg:
+            cdebug('missing_pkg is set')
+            cinfo('        packages not yet available in pocket')
+            cdebug('check_component_in_pocket leave (False)')
+            return False
+
+        if mis_lst:
+            cdebug('mis_lst is set')
+
+            task_name = 'promote-to-%s' % (pocket,)
+            cinfo('        checking %s task status is %s' % (task_name, s.tasks_by_name[task_name].status))
+            if s.tasks_by_name[task_name].status != 'Incomplete':
+                s.tasks_by_name[task_name].status = 'Incomplete'
+
+                body  = "The following packages ended up in the wrong"
+                body += " component in the -%s pocket:\n" % (pocket)
+                for item in mis_lst:
+                    cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
+                    body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
+
+                subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
+                to_address  = "kernel-team@lists.ubuntu.com"
+                to_address += ", ubuntu-installer@lists.ubuntu.com"
+                cinfo('        sending email alert')
+                s.send_email(subject, body, to_address)
+
+                body += "\n\nOnce this is fixed, set the "
+                body += "promote-to-%s to Fix Released again" % (pocket)
+                s.add_comment('Packages outside of proper component', body)
+
+            cinfo('        packages ended up in the wrong pocket')
+            cdebug('check_component_in_pocket leave (False)')
+            return False
+
+        cleave(s.__class__.__name__ + '.check_component_in_pocket (True)')
+        return True
 

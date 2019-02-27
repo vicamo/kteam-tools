@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 #
-from datetime                           import datetime, timedelta
+from datetime                           import datetime
 import yaml
 import re
 from lib.utils                          import date_to_string
 from .log                               import cdebug, center, cleave, cinfo
 from .package                           import Package, PackageError
-from .check_component                   import CheckComponent
 import json
 from ktl.msgq                           import MsgQueue
 from ktl.shanky                         import send_to_shankbot
@@ -84,23 +83,23 @@ class WorkflowBug():
         s.properties = s.lpbug.properties
 
         try:
-            s.__package = Package(s.lp, s, ks=s.kernel_series)
-            ks = KernelSeries().lookup_series(codename=s.__package.series)
+            s.debs = Package(s.lp, s, ks=s.kernel_series)
+            ks = KernelSeries().lookup_series(codename=s.debs.series)
             s.is_development_series = ks.development
 
             # If the package is only partial (valid == False) then we are not valid either.
-            if not s.__package.valid:
+            if not s.debs.valid:
                 s.is_valid = False
 
             cinfo('                      title: "%s"' % s.title, 'blue')
             cinfo('                   is_valid: %s' % s.is_valid, 'blue')
             cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
-            cinfo('                      valid: %s' % s.__package.valid, 'blue')
-            cinfo('                   pkg_name: "%s"' % s.__package.name, 'blue')
-            cinfo('                pkg_version: "%s"' % s.__package.version, 'blue')
-            cinfo('                     series: "%s"' % s.__package.series, 'blue')
+            cinfo('                      valid: %s' % s.debs.valid, 'blue')
+            cinfo('                   pkg_name: "%s"' % s.debs.name, 'blue')
+            cinfo('                pkg_version: "%s"' % s.debs.version, 'blue')
+            cinfo('                     series: "%s"' % s.debs.series, 'blue')
             cinfo('      is development series: %s' % s.is_development_series, 'blue')
-            for d in s.__package.pkgs:
+            for d in s.debs.pkgs:
                 cinfo('                        dep: "%s"' % d, 'blue')
 
             if s.is_derivative_package:
@@ -126,7 +125,7 @@ class WorkflowBug():
                 cinfo(l, 'red')
             s.overall_reason = e.args[0]
             s.is_valid = False
-            s.__package = None
+            s.debs = None
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
@@ -205,18 +204,6 @@ class WorkflowBug():
             else:
                 s._master_bug = None
         return s._master_bug
-
-    # is_proposed_only
-    #
-    @property
-    def is_proposed_only(s):
-        return s.__package.proposed_only
-
-    # has_package
-    #
-    @property
-    def has_package(s):
-        return s.__package is not None
 
     # load_bug_properties
     #
@@ -359,200 +346,22 @@ class WorkflowBug():
             if task_name.startswith(s.workflow_project):
                 if '/' in task_name:
                     task_name = task_name[len(s.workflow_project) + 1:].strip()
-                tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.__package, s)
+                tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
             else:
                 cinfo('        %-25s' % (task_name), 'magenta')
                 cinfo('            Action: Skipping non-workflow task', 'magenta')
 
         return tasks_by_name
 
-    # package_fully_built
-    #
-    def package_fully_built(s, pkg):
-        '''
-        For the package specified, the status of whether or not it is fully built
-        is returned.
-        '''
-        retval = s.__package.fully_built(pkg)
-        return retval
-
-    # packages_released
-    #
-    @property
-    def packages_released(s):
-        '''
-        '''
-        retval = True
-
-        if s.is_development_series:
-            pocket = 'Release'
-        else:
-            pocket = 'Updates'
-
-        bi = s.__package.build_info
-        for pkg in bi:
-            if bi[pkg][pocket]['built'] is not True:
-                cinfo('            %s has not been released.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
-    # packages_released_to_security
-    #
-    @property
-    def packages_released_to_security(s):
-        '''
-        '''
-        retval = True
-
-        pocket = 'Security'
-
-        bi = s.__package.build_info
-        for pkg in bi:
-            if bi[pkg][pocket]['built'] is not True:
-                cinfo('            %s has not been released.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
-    # proposed_pocket_clear
-    #
-    @property
-    def proposed_pocket_clear(s):
-        '''
-        Check that the proposed pocket is either empty or contains the same version
-        as found in -updates/-release.
-        '''
-        retval = True
-
-        if s.is_development_series:
-            pocket = 'Release'
-        else:
-            pocket = 'Updates'
-
-        bi = s.__package.build_info
-        for pkg in bi:
-            if bi[pkg]['Proposed']['version'] not in (None, bi[pkg][pocket]['version']):
-                cinfo('            %s has %s pending in -proposed.' % (pkg, bi[pkg]['Proposed']['version']), 'yellow')
-                retval = False
-
-        # If proposed is not clear, consider if it is full due to a bug
-        # which has been duplicated against me.
-        if not retval:
-            # XXX: XXX: lpltk does NOT let me get to the duplicate list!?!?!?!
-            duplicates = s.lpbug.lpbug.duplicates
-            #duplicates = [ s.lp.get_bug('1703532') ]
-            for dup in duplicates:
-                dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series)
-                if not dup_wb.is_workflow:
-                    continue
-                if dup_wb.is_valid and dup_wb.__package and dup_wb.__package.all_built_and_in_proposed:
-                    cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup.id,), 'yellow')
-                    retval = True
-                    break
-
-        return retval
-
-    # all_dependent_packages_fully_built
-    #
-    @property
-    def all_dependent_packages_fully_built(s):
-        '''
-        For the kernel package associated with this bug, the status of whether or
-        not all of the dependent packages (meta, signed, lbm, etc.) are fully built
-        is returned.
-        '''
-        retval = True
-
-        bi = s.__package.build_info
-        for pkg in bi:
-            pkg_built = False
-            try:
-                for pocket in bi[pkg]:
-                    if bi[pkg][pocket]['built']:
-                        pkg_built = True
-                        break
-            except KeyError:
-                pkg_built = False
-
-            if not pkg_built:
-                cinfo('        %s is not fully built yet.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
-    # all_dependent_packages_uploaded
-    #
-    @property
-    def all_dependent_packages_uploaded(s):
-        '''
-        For the kernel package associated with this bug, the status of whether or
-        not all of the dependent packages (meta, signed, lbm, etc.) are uploaded
-        is returned.
-        '''
-        retval = True
-
-        bi = s.__package.build_info
-        for pkg in bi:
-            pkg_uploaded = False
-            try:
-                for pocket in bi[pkg]:
-                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
-                        pkg_uploaded = True
-                        break
-            except KeyError:
-                pkg_uploaded = False
-
-            if not pkg_uploaded:
-                cinfo('        %s is not uploaded.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
     # valid_package
     #
     def valid_package(s, pkg):
         center(s.__class__.__name__ + '.valid_package')
 
-        retval = pkg in s.__package.pkgs
+        # XXX: this is not deb related.
+        retval = pkg in s.debs.pkgs
 
         cleave(s.__class__.__name__ + '.valid_package')
-        return retval
-
-
-    # uploaded
-    #
-    def uploaded(s, pkg):
-        '''
-        '''
-        center(s.__class__.__name__ + '.uploaded')
-        retval = False
-
-        bi = s.__package.build_info
-        for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
-                retval = True
-
-        cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
-        return retval
-
-    def upload_version(s, pkg):
-        '''
-        '''
-        center(s.__class__.__name__ + '.upload_version')
-        retval = None
-
-        bi = s.__package.build_info
-        for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
-                retval = bi[pkg][pocket]['version']
-                break
-
-        cleave(s.__class__.__name__ + '.upload_version (%s)' % (retval))
         return retval
 
     def published_tag(s, pkg):
@@ -566,7 +375,7 @@ class WorkflowBug():
                 package_package = package
                 break
         if package_package is not None:
-            version = s.upload_version(pkg)
+            version = s.debs.upload_version(pkg)
             if version is None:
                 published = False
             else:
@@ -587,7 +396,7 @@ class WorkflowBug():
         '''
         retval = True
 
-        bi = s.__package.build_info
+        bi = s.debs.build_info
         for pkg in bi:
             if not s.published_tag(pkg):
                 cinfo('        %s missing tag.' % (pkg), 'yellow')
@@ -596,129 +405,26 @@ class WorkflowBug():
 
         return retval
 
-    # all_in_pocket
-    #
-    def all_in_pocket(s, pocket):
-        center(s.__class__.__name__ + '.all_in_pocket')
-
-        retval = s.__package.all_in_pocket(pocket) 
-
-        cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
-        return retval
-
-    # all_built_and_in_proposed
-    #
-    @property
-    def all_built_and_in_proposed(s):
-        return s.__package.all_built_and_in_proposed
-
-    # ready_for_testing
-    #
-    @property
-    def ready_for_testing(s):
-        '''
-        In order to determine if we're ready for testing the packages need to be
-        fully built and published to -proposed. We build in a delay after these
-        two conditions are met so that the packages are available in the archive
-        to the lab machines that will be installing them.
-        '''
-        center(s.__class__.__name__ + '.ready_for_testing')
-        retval = False
-        if s.__package.all_built_and_in_proposed:
-
-            # Find the most recent date of either the publish date/time or the
-            # date/time of the last build of any arch of any of the dependent
-            # package.
-            #
-            date_available = None
-            bi = s.__package.build_info
-            for d in sorted(bi):
-                for p in sorted(bi[d]):
-                    if bi[d][p]['published'] is None:
-                        continue
-                    if bi[d][p]['most_recent_build'] is None:
-                        continue
-
-                    if bi[d][p]['published'] > bi[d][p]['most_recent_build']:
-                        if date_available is None or bi[d][p]['published'] > date_available:
-                            date_available = bi[d][p]['published']
-                    else:
-                        if date_available is None or bi[d][p]['most_recent_build'] > date_available:
-                            date_available = bi[d][p]['most_recent_build']
-            now = datetime.utcnow()
-            comp_date = date_available + timedelta(hours=1.5)
-            if comp_date < now:
-                # It has been at least 1 hours since the package was either published or fully built
-                # in proposed.
-                #
-                retval = True
-            else:
-                cinfo('It has been less than 1 hr since the last package was either published or built.')
-                cinfo('    build time + 1 hrs: %s' % comp_date)
-                cinfo('                   now: %s' % now)
-
-        cinfo('        Ready for testing: %s' % (retval), 'yellow')
-        cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
-        return retval
-
-    # creator
-    #
-    def creator(s, pkg):
-        '''
-        Returns the name of the person that created the source package.
-        '''
-        retval = s.__package.creator(pkg)
-        return retval
-
-    @property
-    def ckt_ppa(s):
-        '''
-        '''
-        return s.__package.ckt_ppa
-
     @property
     def pkg_name(s):
         '''
         Property: The name of the package associated with this bug.
         '''
-        return s.__package.name
+        return s.debs.name
 
     @property
     def pkg_version(s):
         '''
         Returns the full version as specified in the bug title.
         '''
-        return s.__package.version
-
-    @property
-    def series(s):
-        '''
-        Decoded from the kernel version in the bug title, the series name associated
-        with that kernel version is returned.
-        '''
-        return s.__package.series
-
-    @property
-    def source(s):
-        '''
-        Decoded from the kernel version in the bug title, the KS source object associated
-        with that kernel version is returned.
-        '''
-        return s.__package.source
+        return s.debs.version
 
     @property
     def swm_config(s):
         '''
         Flag information from kernel-series.
         '''
-        return SwmConfig(s.__package.source.swm_data)
-
-    @property
-    def abi(s):
-        '''
-        The abi number from the full version in the bug title is returned.
-        '''
-        return s.__package.abi
+        return SwmConfig(s.debs.source.swm_data)
 
     @property
     def kernel_version(s):
@@ -726,7 +432,7 @@ class WorkflowBug():
         Decoded from the version string in the title, the kernel version is returned.
         This is just the kernel version without the ABI or upload number.
         '''
-        return s.__package.kernel
+        return s.debs.kernel
 
     @property
     def tags(s):
@@ -760,18 +466,6 @@ class WorkflowBug():
             if s.tasks_by_name[taskname].status != "Invalid":
                 return True
         return False
-
-    # relevant_packages_list
-    #
-    def relevant_packages_list(s):
-        '''
-        For every tracking bug there are 'prepare-package-*' tasks. Not every tracking bug has all the
-        same 'prepare-pacakge-*' tasks. Also, there is a specific package associated with each of the
-        'prepare-package-*' tasks.
-
-        This method builds a list of the packages that are relevant to this particular bug.
-        '''
-        return sorted(s.__package.pkgs.values())
 
     # phase
     #
@@ -833,7 +527,7 @@ class WorkflowBug():
     # test_flavours
     #
     def test_flavours(s):
-        flavours = s.__package.test_flavours
+        flavours = s.debs.test_flavours
         if not flavours:
             # XXX: this makes no sense at all to be limited to xenial.
             generic = (s.pkg_name == 'linux' or
@@ -1030,112 +724,33 @@ class WorkflowBug():
 
         cleave(s.__class__.__name__ + '.timestamp')
 
-    def check_component_in_pocket(s, tstamp_prop, pocket):
-        """
-        Check if packages for the given tracking bug were properly copied
-        to the right component in the given pocket.
-        """
-        center(s.__class__.__name__ + '.check_component_in_pocket')
-        cdebug('tstamp_prop: ' + tstamp_prop)
-        cdebug('     pocket: %s' % pocket)
+    # has_package
+    #
+    @property
+    def has_package(s):
+        return s.debs is not None
 
-        # If the packages are not all built and in -proposed then just bail out of
-        # here.
-        #
-        if not s.ready_for_testing:
-            cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
-            return False
+    # is_proposed_only
+    #
+    @property
+    def is_proposed_only(s):
+        return s.debs.proposed_only
 
-        check_component = CheckComponent(s.lp, s.__package)
+    # workflow_duplicates
+    #
+    @property
+    def workflow_duplicates(s):
+        retval = []
 
-        pkg_list = s.relevant_packages_list()
-
-        primary_src_component = None
-        missing_pkg = []
-        mis_lst = []
-        for pkg in pkg_list:
-            if pkg == s.pkg_name:
-                check_ver = s.pkg_version
-            else:
-                check_ver = None
-
-            ps = check_component.get_published_sources(s.series, pkg, check_ver, pocket)
-            if not ps:
-                if check_ver:
-                    missing_pkg.append([pkg, check_ver])
-                elif 'linux-signed' in pkg:
-                    missing_pkg.append([pkg, 'for version=%s' % (s.pkg_version)])
-                else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
+        # XXX: XXX: lpltk does NOT let me get to the duplicate list!?!?!?!
+        duplicates = s.lpbug.lpbug.duplicates
+        #duplicates = [ s.lp.get_bug('1703532') ]
+        for dup in duplicates:
+            dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series)
+            if not dup_wb.is_workflow or not dup_wb.is_valid:
                 continue
+            retval.append(dup_wb)
 
-            # We are going to use the primary package source component as
-            # our guide.  If we do not have that, then we cannot check.
-            if pkg == s.pkg_name:
-                primary_src_component = ps[0].component_name
-
-            if 'linux-signed' in pkg:
-                src_ver = ps[0].source_package_version
-                if src_ver.startswith(s.pkg_version):
-                    mis_lst.extend(check_component.mismatches_list(s.series,
-                                   pkg, ps[0].source_package_version,
-                                   pocket, ps, primary_src_component))
-                else:
-                    missing_pkg.append([pkg, 'for version=%s' % (s.pkg_version)])
-            elif not check_ver:
-                src_ver = ps[0].source_package_version
-
-                # source_package_version for linux-ports-meta and linux-meta is
-                # <kernel-version>.<abi>.<upload #> and for linux-backports-modules
-                # it is <kernel-version-<abi>.<upload #>
-                #
-                v1 = s.kernel_version + '.' + s.abi
-                v2 = s.kernel_version + '-' + s.abi
-                if src_ver.startswith(v1) or src_ver.startswith(v2):
-                    mis_lst.extend(check_component.mismatches_list(s.series,
-                                   pkg, ps[0].source_package_version,
-                                   pocket, ps, primary_src_component))
-                else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
-            else:
-                mis_lst.extend(check_component.mismatches_list(s.series,
-                               pkg, check_ver, pocket, ps, primary_src_component))
-
-        if missing_pkg:
-            cdebug('missing_pkg is set')
-            cinfo('        packages not yet available in pocket')
-            cdebug('check_component_in_pocket leave (False)')
-            return False
-
-        if mis_lst:
-            cdebug('mis_lst is set')
-
-            task_name = 'promote-to-%s' % (pocket,)
-            cinfo('        checking %s task status is %s' % (task_name, s.tasks_by_name[task_name].status))
-            if s.tasks_by_name[task_name].status != 'Incomplete':
-                s.tasks_by_name[task_name].status = 'Incomplete'
-
-                body  = "The following packages ended up in the wrong"
-                body += " component in the -%s pocket:\n" % (pocket)
-                for item in mis_lst:
-                    cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
-                    body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
-
-                subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.lpbug.id)
-                to_address  = "kernel-team@lists.ubuntu.com"
-                to_address += ", ubuntu-installer@lists.ubuntu.com"
-                cinfo('        sending email alert')
-                s.send_email(subject, body, to_address)
-
-                body += "\n\nOnce this is fixed, set the "
-                body += "promote-to-%s to Fix Released again" % (pocket)
-                s.add_comment('Packages outside of proper component', body)
-
-            cinfo('        packages ended up in the wrong pocket')
-            cdebug('check_component_in_pocket leave (False)')
-            return False
-
-        cleave(s.__class__.__name__ + '.check_component_in_pocket (True)')
-        return True
+        return retval
 
 # vi:set ts=4 sw=4 expandtab:

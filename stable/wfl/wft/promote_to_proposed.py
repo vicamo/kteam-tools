@@ -43,7 +43,7 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while not retval:
-            if not s.bug.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket('Proposed'):
                 break
 
             s.task.status = 'Fix Committed'
@@ -55,10 +55,10 @@ class PromoteToProposed(Promoter):
             break
 
         while not retval:
-            if not s.bug.all_dependent_packages_uploaded:
+            if not s.bug.debs.all_dependent_packages_uploaded:
                 break
 
-            if not s.bug.all_dependent_packages_fully_built:
+            if not s.bug.debs.all_dependent_packages_fully_built:
                 s.task.reason = 'Ongoing -- builds not complete'
                 break
 
@@ -75,7 +75,7 @@ class PromoteToProposed(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.proposed_pocket_clear and
+            if (not s.bug.debs.proposed_pocket_clear and
                 not s._kernel_unblock_ppa()):
                 s.task.reason = 'Holding -- another kernel is currently pending in proposed'
                 break
@@ -124,7 +124,7 @@ class PromoteToProposed(Promoter):
             if s.task.status in ('Fix Committed', 'Incomplete'):
                 break
 
-            if not s.bug.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket('Proposed'):
                 break
 
             s.task.status = 'Fix Committed'
@@ -134,9 +134,9 @@ class PromoteToProposed(Promoter):
 
         while True:
             # Check if the packages are published completely yet.
-            if not s.bug.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket('Proposed'):
                 # Confirm the packages remain available to copy.
-                if not s.bug.all_dependent_packages_fully_built:
+                if not s.bug.debs.all_dependent_packages_fully_built:
                     s.task.reason = 'Stalled -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
@@ -152,16 +152,16 @@ class PromoteToProposed(Promoter):
                 else:
                     s.task.reason = 'Ongoing -- review in progress'
                 break
-            if not s.bug.all_built_and_in_proposed:
+            if not s.bug.debs.all_built_and_in_proposed:
                 s.task.reason = 'Ongoing -- packages copied but not yet published to -proposed'
                 break
-            if not s.bug.ready_for_testing:
+            if not s.bug.debs.ready_for_testing:
                 s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
                 break
 
             # Check if packages were copied to the right pocket->component
             #
-            if not s.bug.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
+            if not s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
                 s.task.reason = 'Stalled -- packages are in the wrong component'
                 break
 

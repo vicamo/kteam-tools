@@ -31,7 +31,7 @@ class PromoteToRelease(Promoter):
         while True:
             # There is no point in considering prerequisites before we are
             # at least in proposed.
-            if not s.bug.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket('Proposed'):
                 break
 
             if not s._prerequisites_released():
@@ -78,7 +78,7 @@ class PromoteToRelease(Promoter):
 
             # Check if packages were copied to the right pocket->component
             #
-            if not s.bug.packages_released:
+            if not s.bug.debs.packages_released:
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
                 elif s.task.status == 'Incomplete':
