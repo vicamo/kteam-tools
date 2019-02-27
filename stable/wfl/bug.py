@@ -73,6 +73,7 @@ class WorkflowBug():
         s.bprops = s.load_bug_properties()
         s.overall_reason = None
         s.is_development_series = False
+        s._master_bug = False
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -192,13 +193,15 @@ class WorkflowBug():
         '''
         Find the 'master' bug of which this is a derivative and return that bug.
         '''
-        if s.is_derivative_package:
-            try:
-                return WorkflowBug(s.lp, s.master_bug_id)
-            except:
-                raise WorkflowBugError("invalid master bug link")
-        else:
-            return None
+        if s._master_bug is False:
+            if s.is_derivative_package:
+                try:
+                    s._master_bug = WorkflowBug(s.lp, s.master_bug_id)
+                except:
+                    raise WorkflowBugError("invalid master bug link")
+            else:
+                s._master_bug = None
+        return s._master_bug
 
     # is_proposed_only
     #
