@@ -11,7 +11,7 @@ from datetime           import datetime
 sys.path.append(os.path.realpath(
     os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
-from ktl.log            import Clog, cerror, cinfo, cdebug
+from ktl.log            import Clog, cerror, cwarn, cinfo, cdebug
 from ktl.utils          import run_command
 from ktl.kernel_series  import KernelSeries
 from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
@@ -73,19 +73,20 @@ class Task():
 
         return task
 
-    def CreateTrackingBugs(self, master=None, dryrun=False):
+    def CreateTrackingBugs(self, dryrun=False):
         new_tbids = []
         new_tbid  = None
         for subtask in self.subtasks:
-            new_tbids.extend(subtask.CreateTrackingBugs(master=self, dryrun=dryrun))
+            new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun))
 
         cn = self.ks_source.series.codename
         sn = self.ks_source.name
         ts = self.taskset
+        spintag = '{}-{}'.format(ts.cycletag, ts.spin_nr)
         if self.create and self.sourcetype == 'deb':
             old_tb = self.tb
 
-            cinfo('Creating tracking bug for {}/{}[{}-{}]...'.format(cn, sn, ts.cycletag, ts.spin_nr))
+            cinfo('Creating tracking bug for {}/{}[{}]...'.format(cn, sn, spintag))
             if dryrun is True:
                 new_tbid = ts.fake_id
                 ts.fake_id += 1
@@ -105,11 +106,20 @@ class Task():
                     if dryrun is False:
                         self.tb.derivative_add(tb)
 
-                if master is not None and master.tb is not None:
-                    if old_tb.id in master.tb.derivative_bug_ids:
-                        cinfo('  - remove LP: #{} from LP: #{}'.format(old_tb.id, master.tb.id))
+                # If the tracking bug being duplicated was linked to a master bug, then
+                # unlink it from there.
+                if old_tb.master_bug_id is not None:
+                    # Not expecting at this stage to miss that master bug from the set but
+                    # as it is easy to fix up, just do it.
+                    mbid = old_tb.master_bug_id
+                    if mbid not in ts.tbs:
+                        cwarn('  ! LP: #{} is not loaded, yet. Adding now.'.format(mbid))
+                        ts.tbs.add(mbid)
+                    mb = ts.tbs[mbid]
+                    if old_tb.id in mb.derivative_bug_ids:
+                        cinfo('  - remove LP: #{} from LP: #{}'.format(old_tb.id, mbid))
                         if dryrun is False:
-                            master.tb.derivative_remove(old_tb)
+                            mb.derivative_remove(old_tb)
 
                 cinfo('  - duplicate LP: #{} to LP: #{}'.format(old_tb.id, new_tbid))
                 if dryrun is False:
