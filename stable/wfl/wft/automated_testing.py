@@ -51,7 +51,7 @@ class AutomatedTesting(TaskHandler):
             data = request.text.split('\n')
 
             # Check main package
-            state = s.check_testing_regression(s.bug.pkg_name, s.bug.pkg_version, data)
+            state = s.check_testing_regression(s.bug.name, s.bug.version, data)
             if s.test_is_regression(state):
                 if s.task.status != 'Incomplete':
                     s.task.status = 'Incomplete'

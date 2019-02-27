@@ -43,15 +43,15 @@ class Package():
         s.kernel_series = KernelSeries() if ks is None else ks
         s.__distro_series = None
 
-        # Determine some properties of the package we are looking at based on the
-        # bug title. This information is used further on.
-        #
-        if not s.__title_decode(s.bug.lpbug):
-            raise PackageError('Package not identified from title')
-        if s.series is None:
-            raise PackageError('Series not identified from tags')
-        if s.source is None:
-            raise PackageError('Source not found in kernel-series')
+        # XXX: need to shift to using the right references here.
+        s.source = s.bug.source
+        s.series = s.bug.series
+        s.name = s.bug.name
+        s.version = s.bug.version
+        if hasattr(s.bug, 'kernel'):
+            s.kernel = s.bug.kernel
+        if hasattr(s.bug, 'abi'):
+            s.abi = s.bug.abi
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.
@@ -91,91 +91,6 @@ class Package():
         routes = self._routing[pocket]
         cleave(self.__class__.__name__ + '.routing')
         return routes
-
-    def __title_decode(s, lpbug):
-        txt = lpbug.title
-
-        matched = False
-        #                              .- package name (group(1))
-        #                             /           .- kernel version (group(2))
-        #                            /           /          .- version/abi separator (group(3))
-        #                           /           /          /
-        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
-        #                                                       /      /       /
-        #                                                      /      /       .- backport extra (m.group(6))
-        #                                                     /      .- upload number (m.group(5))
-        #                                                    .- abi (group(4))
-
-        #info('     Extract package info\n')
-        s.valid = False
-        m = ver_rc.search(txt)
-        if m is not None:
-            matched = True
-            cdebug('package: %s' % m.group(1))
-            cdebug('version: %s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
-            cdebug(' kernel: %s' % m.group(2))
-            cdebug('    abi: %s' % m.group(4))
-
-            setattr(s, 'name', m.group(1))
-            setattr(s, 'version', '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
-            setattr(s, 'kernel', m.group(2))
-            setattr(s, 'abi', m.group(4))
-
-            # XXX: neither of these is (currently) specified in the
-            # KernelSeries format; luckily neither is currently in use.
-            # proposed_only is normally only used for the first couple of
-            # kernels in a series and we have been using kernel-block-proposed
-            # tags for that so it appears redundant.  test_flavours is a
-            # layering violation, the backends are learning to handle flavours
-            # so the bodge we have in the bug.test_flavours is good enough.
-
-            # Work out if this is a proposed only entry.
-            s.proposed_only = False
-
-            # Determine testing flavours.
-            s.test_flavours = None
-
-            s.valid = True
-
-        # Try just a package match.
-        if not matched:
-            #                            .- package name (group(1))
-            #                           /
-            pkg_rc     = re.compile("(\S+):")
-            m = pkg_rc.search(txt)
-            if m is not None:
-                matched = True
-                cdebug('package: %s' % m.group(1))
-                cdebug('version: INVALID')
-
-                s.name = m.group(1)
-                s.version = None
-
-                # Determine testing flavours.
-                s.test_flavours = None
-
-        # Work out what series this package is published in...
-        series_tag_entry = None
-        for tag in lpbug.tags:
-            series_tag_entry = s.kernel_series.lookup_series(codename=tag)
-            if series_tag_entry:
-                break
-
-        if not matched:
-            cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
-            return False
-
-        # Set the series attribute
-        cdebug(' series: %s' % series_tag_entry.codename)
-        setattr(s, 'series', series_tag_entry.codename)
-
-        # Lookup the KernelSeries package and attach that.
-        source = None
-        if series_tag_entry:
-            source = series_tag_entry.lookup_source(s.name)
-        setattr(s, 'source', source)
-
-        return True
 
     # __determine_build_status
     #

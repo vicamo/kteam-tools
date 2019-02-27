@@ -49,7 +49,7 @@ class VerificationTesting(TaskHandler):
             # generate the sru report json
             sru_report_cfg = {}
             sru_report_cfg['series'] = [s.bug.series]
-            sru_report_cfg['pkgs'] = [s.bug.pkg_name]
+            sru_report_cfg['pkgs'] = [s.bug.name]
             sru_report_cfg['archive-versions'] = False
             if Clog.debug:
                 sru_report_cfg['debug'] = 'core'
@@ -62,7 +62,7 @@ class VerificationTesting(TaskHandler):
         try:
             bug_spam_cfg = {}
             bug_spam_cfg['series'] = s.bug.series
-            bug_spam_cfg['package'] = s.bug.pkg_name
+            bug_spam_cfg['package'] = s.bug.name
             bug_spam_cfg['sru'] = json.loads(sru_report)
             # the dryrun flag is passed from the swm CLI to the WorkflowBug object
             bug_spam_cfg['dryrun'] = s.bug._dryrun

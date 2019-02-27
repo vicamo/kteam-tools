@@ -109,4 +109,4 @@ class SnapStore:
                 return False
 
         return (store_version is not None and
-                store_version == s.bug.pkg_version)
+                store_version == s.bug.version)

@@ -82,22 +82,24 @@ class WorkflowBug():
         (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
         s.properties = s.lpbug.properties
 
+        # Try and decode the title for package/versions/source etc.
+        if not s.__title_decode():
+            raise WorkflowBugError('Package not identified from title')
+        if s.series is None:
+            raise WorkflowBugError('Series not identified from tags')
+        if s.source is None:
+            raise WorkflowBugError('Source not found in kernel-series')
+        s.is_development_series = s.source.series.development
+
         try:
             s.debs = Package(s.lp, s, ks=s.kernel_series)
-            ks = KernelSeries().lookup_series(codename=s.debs.series)
-            s.is_development_series = ks.development
-
-            # If the package is only partial (valid == False) then we are not valid either.
-            if not s.debs.valid:
-                s.is_valid = False
 
             cinfo('                      title: "%s"' % s.title, 'blue')
             cinfo('                   is_valid: %s' % s.is_valid, 'blue')
             cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
-            cinfo('                      valid: %s' % s.debs.valid, 'blue')
-            cinfo('                   pkg_name: "%s"' % s.debs.name, 'blue')
-            cinfo('                pkg_version: "%s"' % s.debs.version, 'blue')
-            cinfo('                     series: "%s"' % s.debs.series, 'blue')
+            cinfo('                       name: "%s"' % s.name, 'blue')
+            cinfo('                    version: "%s"' % s.version, 'blue')
+            cinfo('                     series: "%s"' % s.series, 'blue')
             cinfo('      is development series: %s' % s.is_development_series, 'blue')
             for d in s.debs.pkgs:
                 cinfo('                        dep: "%s"' % d, 'blue')
@@ -128,6 +130,73 @@ class WorkflowBug():
             s.debs = None
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
+
+    def __title_decode(s):
+        txt = s.title
+
+        matched = False
+        #                              .- package name (group(1))
+        #                             /           .- kernel version (group(2))
+        #                            /           /          .- version/abi separator (group(3))
+        #                           /           /          /
+        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
+        #                                                       /      /       /
+        #                                                      /      /       .- backport extra (m.group(6))
+        #                                                     /      .- upload number (m.group(5))
+        #                                                    .- abi (group(4))
+
+        #info('     Extract package info\n')
+        m = ver_rc.search(txt)
+        if m is not None:
+            matched = True
+            cdebug('package: %s' % m.group(1))
+            cdebug('version: %s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
+            cdebug(' kernel: %s' % m.group(2))
+            cdebug('    abi: %s' % m.group(4))
+
+            s.name = m.group(1)
+            s.version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
+            s.kernel = m.group(2)
+            s.abi = m.group(4)
+
+        # Try just a package match.
+        if not matched:
+            #                            .- package name (group(1))
+            #                           /
+            pkg_rc     = re.compile("(\S+):")
+            m = pkg_rc.search(txt)
+            if m is not None:
+                matched = True
+                cdebug('package: %s' % m.group(1))
+                cdebug('version: INVALID')
+
+                s.name = m.group(1)
+                s.version = None
+
+                s.is_valid = False
+
+        # Work out what series this package is published in...
+        series_tag_entry = None
+        for tag in s.lpbug.tags:
+            series_tag_entry = s.kernel_series.lookup_series(codename=tag)
+            if series_tag_entry:
+                break
+
+        if not matched:
+            cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
+            return False
+
+        # Set the series attribute
+        cdebug(' series: %s' % series_tag_entry.codename)
+        s.series = series_tag_entry.codename
+
+        # Lookup the KernelSeries package and attach that.
+        source = None
+        if series_tag_entry:
+            source = series_tag_entry.lookup_source(s.name)
+        s.source = source
+
+        return True
 
     # _remove_live_tag
     #
@@ -288,9 +357,9 @@ class WorkflowBug():
         try:
             status['cycle'] = s.sru_cycle
             status['series'] = s.series
-            status['package'] = s.pkg_name
-            if s.pkg_version is not None:
-                status['version'] = s.pkg_version
+            status['package'] = s.name
+            if s.version is not None:
+                status['version'] = s.version
         except:
             pass
 
@@ -406,25 +475,11 @@ class WorkflowBug():
         return retval
 
     @property
-    def pkg_name(s):
-        '''
-        Property: The name of the package associated with this bug.
-        '''
-        return s.debs.name
-
-    @property
-    def pkg_version(s):
-        '''
-        Returns the full version as specified in the bug title.
-        '''
-        return s.debs.version
-
-    @property
     def swm_config(s):
         '''
         Flag information from kernel-series.
         '''
-        return SwmConfig(s.debs.source.swm_data)
+        return SwmConfig(s.source.swm_data)
 
     @property
     def kernel_version(s):
@@ -432,7 +487,7 @@ class WorkflowBug():
         Decoded from the version string in the title, the kernel version is returned.
         This is just the kernel version without the ABI or upload number.
         '''
-        return s.debs.kernel
+        return s.kernel
 
     @property
     def tags(s):
@@ -527,18 +582,16 @@ class WorkflowBug():
     # test_flavours
     #
     def test_flavours(s):
-        flavours = s.debs.test_flavours
-        if not flavours:
-            # XXX: this makes no sense at all to be limited to xenial.
-            generic = (s.pkg_name == 'linux' or
-                       s.pkg_name.startswith('linux-hwe') or
-                       s.pkg_name.startswith('linux-lts-'))
-            if generic and s.series == 'xenial':
-                flavours = [ 'generic', 'lowlatency' ]
-            elif generic:
-                flavours = [ 'generic' ]
-            else:
-                flavours = [ s.pkg_name.replace('linux-', '') ]
+        # XXX: this makes no sense at all to be limited to xenial.
+        generic = (s.name == 'linux' or
+                   s.name.startswith('linux-hwe') or
+                   s.name.startswith('linux-lts-'))
+        if generic and s.series == 'xenial':
+            flavours = [ 'generic', 'lowlatency' ]
+        elif generic:
+            flavours = [ 'generic' ]
+        else:
+            flavours = [ s.name.replace('linux-', '') ]
 
         return flavours
 
@@ -554,7 +607,7 @@ class WorkflowBug():
         msg = s.send_testing_message(op, ppa, flavour)
 
         where = " uploaded" if not ppa else " available in ppa"
-        subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + where
+        subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
         s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com,sean.feole@canonical.com')
 
     # sru_spin
@@ -596,8 +649,8 @@ class WorkflowBug():
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : s.series,
-            "kernel-version" : s.pkg_version,
-            "package"        : s.pkg_name,
+            "kernel-version" : s.version,
+            "package"        : s.name,
             "flavour"        : flavour,
         }
 
@@ -661,7 +714,7 @@ class WorkflowBug():
 
         abi_bump = s.has_new_abi()
 
-        subject = "[" + s.series + "] " + s.pkg_name + " " + s.pkg_version + " uploaded"
+        subject = "[" + s.series + "] " + s.name + " " + s.version + " uploaded"
         if abi_bump:
             subject += " (ABI bump)"
 
@@ -677,7 +730,7 @@ class WorkflowBug():
         body += "\nThe full changelog about all bug fixes contained in this "
         body += "upload can be found at:\n\n"
         body += "https://launchpad.net/ubuntu/" + s.series + "/+source/"
-        body += s.pkg_name + "/" + s.pkg_version + "\n\n"
+        body += s.name + "/" + s.version + "\n\n"
         body += "-- \nThis message was created by an automated script,"
         body += " maintained by the\nUbuntu Kernel Team."
 
@@ -734,7 +787,7 @@ class WorkflowBug():
     #
     @property
     def is_proposed_only(s):
-        return s.debs.proposed_only
+        return False
 
     # workflow_duplicates
     #
