@@ -93,6 +93,7 @@ class WorkflowBug():
         try:
             s.debs = Package(s.lp, s, ks=s.kernel_series)
 
+            cinfo('                    variant: "%s"' % s.variant, 'blue')
             cinfo('                      title: "%s"' % s.title, 'blue')
             cinfo('                   is_valid: %s' % s.is_valid, 'blue')
             cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
@@ -226,6 +227,12 @@ class WorkflowBug():
     @property
     def _sauron(s):
         return WorkflowBug.sauron
+
+    # variant
+    #
+    @property
+    def variant(s):
+        return s.bprops.get('variant', 'combo')
 
     # master_bug_property_name
     #
