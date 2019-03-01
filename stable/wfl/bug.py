@@ -87,38 +87,12 @@ class WorkflowBug():
             raise WorkflowBugError('Series not identified from tags')
         if s.source is None:
             raise WorkflowBugError('Source not found in kernel-series')
+
         s.is_development_series = s.source.series.development
         s.is_development = s.source.development
 
         try:
             s.debs = Package(s.lp, s, ks=s.kernel_series)
-
-            cinfo('                    variant: "%s"' % s.variant, 'blue')
-            cinfo('                      title: "%s"' % s.title, 'blue')
-            cinfo('                   is_valid: %s' % s.is_valid, 'blue')
-            cinfo('                is_workflow: %s' % s.is_workflow, 'blue')
-            cinfo('                       name: "%s"' % s.name, 'blue')
-            cinfo('                    version: "%s"' % s.version, 'blue')
-            cinfo('                     series: "%s"' % s.series, 'blue')
-            cinfo('      is development series: %s' % s.is_development_series, 'blue')
-            for d in s.debs.pkgs:
-                cinfo('                        dep: "%s"' % d, 'blue')
-
-            if s.is_derivative_package:
-                cinfo('                 derivative: yes (%s)' % s.master_bug_id, 'blue')
-            else:
-                cinfo('                 derivative: no', 'blue')
-            cinfo('')
-
-            cinfo('    Targeted Project:', 'cyan')
-            cinfo('        %s' % s.workflow_project, 'magenta')
-            cinfo('')
-            props_dump = yaml.safe_dump(s.bprops, default_flow_style=False).strip().split('\n')
-            if len(props_dump) > 0:
-                cinfo('    SWM Properties:', 'cyan')
-                for prop in props_dump:
-                    cinfo('        {}'.format(prop), 'magenta')
-
         except PackageError as e:
             # Report why we are not valid.
             for l in e.args:
@@ -126,6 +100,34 @@ class WorkflowBug():
             s.overall_reason = e.args[0]
             s.is_valid = False
             s.debs = None
+
+        cinfo('                    variant: "{}"'.format(s.variant), 'blue')
+        cinfo('                      title: "{}"'.format(s.title), 'blue')
+        cinfo('                   is_valid: {}'.format(s.is_valid), 'blue')
+        cinfo('                is_workflow: {}'.format(s.is_workflow), 'blue')
+        cinfo('                       name: "{}"'.format(s.name), 'blue')
+        cinfo('                    version: "{}"'.format(s.version), 'blue')
+        cinfo('                     series: "{}"'.format(s.series), 'blue')
+        cinfo('      is development series: {}'.format(s.is_development_series), 'blue')
+
+        if s.debs is not None:
+            for p in s.debs.pkgs:
+                cinfo('                        package: "{}"'.format(p), 'blue')
+
+        if s.is_derivative_package:
+            cinfo('                 derivative: yes ({})'.format(s.master_bug_id), 'blue')
+        else:
+            cinfo('                 derivative: no', 'blue')
+        cinfo('')
+
+        cinfo('    Targeted Project:', 'cyan')
+        cinfo('        {}'.format(s.workflow_project), 'magenta')
+        cinfo('')
+        props_dump = yaml.safe_dump(s.bprops, default_flow_style=False).strip().split('\n')
+        if len(props_dump) > 0:
+            cinfo('    SWM Properties:', 'cyan')
+            for prop in props_dump:
+                cinfo('        {}'.format(prop), 'magenta')
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
