@@ -313,7 +313,8 @@ for arch in "${arches[@]}" ; do
 	# Purge the remote build directory if -p, --purge is specified
 	if [ "${purge}" -eq 1 ] && [ -n "${rbuilddir}" ] ; then
 		pr_info "Purging remote build directory ${rbuilddir}"
-		ssh "${host}" rm -rf "${rbuilddir}"
+		# shellcheck disable=SC2029
+		ssh "${host}" rm -rf "'${rbuilddir}'"
 	fi
 
 	# Print the build result
