@@ -28,6 +28,8 @@ __testing_status_colors = {
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
 }
+%>
+<%
 
 def __task_status(bug, task_name):
     try:
@@ -41,6 +43,9 @@ def __task_status(bug, task_name):
         return 'missing %s' % task_name
     return 'n/a'
 
+%>
+<%
+
 def __assignee(bug, task_name):
     try:
         for t in bug['tasks']:
@@ -50,8 +55,14 @@ def __assignee(bug, task_name):
         return 'unknown'
     return
 
+%>
+<%
+
 def __coloured(msg, colour='black'):
     return '<span style="color: %s;font-weight: bold">%s</span>' % (colour, msg)
+
+%>
+<%
 
 def __status_bite(bug):
     retval = ''
@@ -164,25 +175,35 @@ def __status_bite(bug):
         break
 
     return retval
+%>
+<%
 
 cadence = {}
 for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
     b = data['workflow']['bug-collections']['kernel-sru-workflow']['bugs'][bid]
 
-    title = b['title']
-    package, other = title.split(':')
-    other = other.strip()
-    version, other = other.split(' ', 1)
+    try:
+        title = b['title']
+        package, other = title.split(':')
+        other = other.strip()
+        version, other = other.split(' ', 1)
+    except:
+        package = 'unknown'
+        version = 'unknown'
 
     if 'kernel-stable-phase' not in b['properties']:
         phase = "Unknown (kernel-stable-phase properites missing)"
     else:
         phase = b['properties']['kernel-stable-phase']
 
-    if b['series name'] not in cadence:
-        cadence[b['series name']] = {}
-    if package not in cadence[b['series name']]:
-        cadence[b['series name']][package] = []
+    if b['series name'] == "":
+        sn = 'unknown'
+    else:
+        sn = b['series name']
+    if sn not in cadence:
+        cadence[sn] = {}
+    if package not in cadence[sn]:
+        cadence[sn][package] = []
     status = __status_bite(b)
 
     # Fixup the link to the regression testing if this is 'testing' status.
@@ -196,35 +217,14 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
     # Fixup the link to the automated testing results
     #
     if 'automated' in status:
-        status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (b['series name'], package.replace('linux', 'linux-meta')))
+        status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')))
 
     # Fixup the link to the sru-report with verification status
     #
     if 'verification' in status:
         status = status.replace('verification', '<a href="%s">verification</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html')
 
-    cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
-
-if 'kernel-development-workflow' in data['workflow']['bug-collections']:
-    for bid in data['workflow']['bug-collections']['kernel-development-workflow']['bugs']:
-        b = data['workflow']['bug-collections']['kernel-development-workflow']['bugs'][bid]
-
-        title = b['title']
-        package, other = title.split(':')
-        other = other.strip()
-        version, other = other.split(' ', 1)
-        if ('properties' in b) and ('kernel-phase' in b['properties']):
-            phase = b['properties']['kernel-phase']
-        else:
-            phase = 'damaged'
-
-        if b['series name'] not in cadence:
-            cadence[b['series name']] = {}
-        if package not in cadence[b['series name']]:
-            cadence[b['series name']][package] = []
-        status = __status_bite(b)
-        cadence[b['series name']][package].append({ 'bug': bid, 'version': version, 'phase': status })
-
+    cadence[sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
@@ -257,15 +257,16 @@ if 'kernel-development-workflow' in data['workflow']['bug-collections']:
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <%
                                         releases = data['releases']
+                                        releases['00.00'] = 'unknown'
                                     %>
                                     % for rls in sorted(releases, reverse=True):
                                         <%
                                             codename = releases[rls].capitalize()
                                         %>
+                                        % if releases[rls] in cadence:
                                         <tr>
                                             <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                         </tr>
-                                        % if releases[rls] in cadence:
                                             % for pkg in sorted(cadence[releases[rls]]):
                                                 % for bug in cadence[releases[rls]][pkg]:
                                                     <tr style="line-height: 100%">
