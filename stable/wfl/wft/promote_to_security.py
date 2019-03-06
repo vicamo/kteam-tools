@@ -36,47 +36,36 @@ class PromoteToSecurity(Promoter):
             #
             if s.bug.is_proposed_only:
                 s.task.status = 'Invalid'
-                s.bug.tasks_by_name['security-signoff'].status = 'Invalid'
+                if 'security-signoff' in s.bug.tasks_by_name:
+                    s.bug.tasks_by_name['security-signoff'].status = 'Invalid'
                 retval = True
                 break
 
             # If the security-signoff task is 'Invalid' then this task should also
             # be 'Invalid'. This task will no longer be processed after that.
             #
-            if not s.bug.is_development_series:
+            if 'security-signoff' in s.bug.tasks_by_name:
                 if s.bug.tasks_by_name['security-signoff'].status == 'Invalid':
                     s.task.status = 'Invalid'
                     retval = True
                     break
 
-            # If testing is not complete, we are not ready to release.
-            if not s._testing_completed():
+            # We are only valid if there is a promote-to-updates tasks.
+            if 'promote-to-updates' not in s.bug.tasks_by_name:
+                s.task.status = 'Invalid'
+                retval = True
                 break
 
-            if s._kernel_block():
-                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
+            # If promote-to-updates is moved Invalid we should follow.
+            if s.bug.tasks_by_name['promote-to-updates'].status == 'Invalid':
+                s.task.status = 'Invalid'
+                retval = True
                 break
 
-            if s._in_blackout():
-                s.task.reason = 'Holding -- package in development blackout'
+            # We can move Confirmed as soon as promote-to-updates moves out of 'New',
+            # then we will follow the packages separatly.
+            if s.bug.tasks_by_name['promote-to-updates'].status == 'New':
                 break
-
-            if not s._stakeholder_signoff_verified():
-                s.task.reason = 'Holding -- stakeholder signoff not verified'
-                break
-
-            if not s._security_signoff_verified():
-                s.task.reason = 'Holding -- security signoff not verified'
-                break
-
-            if not s._cycle_ready():
-                s.task.reason = 'Holding -- cycle not ready to release'
-                break
-
-            if s.bug.is_derivative_package:
-                if not s.master_bug_ready():
-                    s.task.reason = 'Holding -- master bug not ready for release'
-                    break
 
             s.task.status = 'Confirmed'
             retval = True
