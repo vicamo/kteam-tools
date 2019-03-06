@@ -34,12 +34,12 @@ class Package():
 
     # __init__
     #
-    def __init__(s, lp, shankbug):
+    def __init__(s, lp, shankbug, ks=None):
         center('package::__init__')
         s.lp = lp
         s.bug = shankbug
 
-        s.kernel_series = KernelSeries()
+        s.kernel_series = KernelSeries() if ks is None else ks
         s.__distro_series = None
 
         # Determine some properties of the package we are looking at based on the

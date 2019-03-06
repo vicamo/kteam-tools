@@ -7,6 +7,8 @@ from fcntl                              import lockf, LOCK_EX, LOCK_NB
 import os
 import yaml
 
+from ktl.kernel_series                  import KernelSeries
+
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
@@ -20,7 +22,7 @@ import wfl.wft
 class WorkflowManager():
     # __init__
     #
-    def __init__(s, args, test_mode=False):
+    def __init__(s, args, test_mode=False, ks=None):
         center('WorkflowManager.__init__')
         s.test_mode = test_mode
         s.args = args
@@ -51,6 +53,7 @@ class WorkflowManager():
             'snap-publish'              : wfl.wft.SnapPublish,
             'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
         }
+        s.kernel_series = KernelSeries() if ks is None else ks
 
         WorkflowBug.sauron            = s.args.sauron
         WorkflowBug.dryrunn           = s.args.dryrun
@@ -231,7 +234,7 @@ class WorkflowManager():
         #
         modified = True
         try:
-            bug = WorkflowBug(s.lp.default_service, bugid)
+            bug = WorkflowBug(s.lp.default_service, bugid, ks=s.kernel_series)
             bug.reason_reset_all()
             while modified:
                 try:

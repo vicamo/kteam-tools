@@ -47,7 +47,7 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid):
+    def __init__(s, lp, bugid, ks=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
@@ -67,6 +67,8 @@ class WorkflowBug():
         WorkflowBugTask.no_assignments = WorkflowBug.no_assignments
         WorkflowBugTask.no_timestamps = WorkflowBug.no_timestamps
 
+        s.kernel_series = KernelSeries() if ks is None else ks
+
         s.title = s.lpbug.title
         s._tags = None
         s.bprops = {}
@@ -81,7 +83,7 @@ class WorkflowBug():
         s.properties = s.lpbug.properties
 
         try:
-            s.__package = Package(s.lp, s)
+            s.__package = Package(s.lp, s, ks=s.kernel_series)
             ks = KernelSeries().lookup_series(codename=s.__package.series)
             s.is_development_series = ks.development
 
@@ -196,7 +198,7 @@ class WorkflowBug():
         if s._master_bug is False:
             if s.is_derivative_package:
                 try:
-                    s._master_bug = WorkflowBug(s.lp, s.master_bug_id)
+                    s._master_bug = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series)
                 except:
                     raise WorkflowBugError("invalid master bug link")
             else:
@@ -440,7 +442,7 @@ class WorkflowBug():
             duplicates = s.lpbug.lpbug.duplicates
             #duplicates = [ s.lp.get_bug('1703532') ]
             for dup in duplicates:
-                dup_wb = WorkflowBug(s.lp, dup.id)
+                dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series)
                 if not dup_wb.is_workflow:
                     continue
                 if dup_wb.is_valid and dup_wb.__package and dup_wb.__package.all_built_and_in_proposed:
