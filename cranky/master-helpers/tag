@@ -1,0 +1,107 @@
+#!/bin/bash -eu
+
+function debug_log()
+{
+	[ "$debug" = "0" ] || echo "$*"
+}
+
+function usage()
+{
+	cat <<EOF
+Usage: ${P:-$(basename "$0")} [-h|--help] [-v|--verbose] [-f|--force]
+
+Tag the current Ubuntu kernel git tree with the correct version tag.
+
+Optional arguments:
+  -h, --help                         Show this help message and exit.
+  -v, --verbose                      Show extra info when running
+  -f, --force                        Tag the topmost commit even if the commit subject doesn't match expected template
+
+
+EOF
+	exit 2
+}
+
+debug=0
+force=0
+while [ "${#}" -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			;;
+		-v|--verbose)
+			debug=1
+			;;
+		-f|--force)
+			force=1
+			;;
+		*)
+			echo "error: Unrecognized argument ${1}"
+			usage
+			;;
+	esac
+	shift
+done
+
+if [ ! -f debian/debian.env ] ; then
+	echo "error: No debian/debian.env found. Is this an Ubuntu kernel source tree?"
+	exit 1
+fi
+
+# shellcheck disable=SC1091
+. debian/debian.env
+if [ -z "${DEBIAN:-}" ] ; then
+	echo "error: Can't find 'DEBIAN' variable in debian/debian.env"
+	exit 1
+fi
+debug_log "DEBIAN: $DEBIAN"
+
+changelog_file="${DEBIAN}/changelog"
+debug_log "Changelog file: $changelog_file"
+
+# Check if changelog is open
+series=$(dpkg-parsechangelog -l"$changelog_file" -SDistribution)
+if [ "$series" = 'UNRELEASED' ]; then
+        echo "error: changelog isn't properly closed. Do you need to run cranky-close first?"
+        exit 1
+fi
+
+
+if ! git show --name-only --format= | grep "$changelog_file" > /dev/null ; then
+	echo "error: No delta in $changelog_file in latest commit"
+	echo "Are you sure the topmost commit is a closing commit?"
+	exit 1
+fi
+
+package=$(dpkg-parsechangelog -l"$changelog_file" -SSource)
+debug_log "Package: $package"
+new_version=$(dpkg-parsechangelog -SVersion -l"$changelog_file")
+debug_log "Newest version: $new_version"
+prefix="Ubuntu$(echo "$package" | sed -r -e 's/linux(-?)/\1/')-"
+debug_log "Tag Prefix: $prefix"
+new_tag_unfixed="$prefix$new_version"
+debug_log "Tag message: $new_tag_unfixed"
+
+if ! git show -s --format=%s | grep -q "^UBUNTU: $new_tag_unfixed$" ; then
+	echo "error: Topmost commit subject does not include the right content"
+	echo "Closing commit subject should have the first line: "
+	echo "   UBUNTU: $new_tag_unfixed"
+	if [ $force -ne 1 ] ; then
+		exit 1
+	else
+		echo "(--force specified - continuing anyway)"
+	fi
+else
+	debug_log "commit subject looks OK"
+fi
+
+new_tag_fixed="${new_tag_unfixed//\~/_}"
+debug_log "New tag: $new_tag_fixed"
+
+
+# OK, everything looks good. Tag it.
+tag_cmd="git tag -s -m $new_tag_unfixed $new_tag_fixed"
+echo "Tagging with:"
+echo " $tag_cmd"
+
+$tag_cmd

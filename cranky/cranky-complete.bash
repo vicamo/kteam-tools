@@ -19,6 +19,7 @@ cmds=(
 	"reorder -h --help -d --dry-run"
 	"review -h --help -p --prev-dsc-dir -o --output"
 	"rmadison -h --help -a --show-all -e --show-extended"
+	"tag -h --help -v --verbose -f --force"
 	"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
 	"update-snap -h --help --dry-run -u --updates -t --no-tags"
 	"updateconfigs -h --help"
