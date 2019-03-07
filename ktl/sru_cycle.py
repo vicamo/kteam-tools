@@ -10,11 +10,30 @@ from datetime       import datetime
 import os
 import yaml
 
-class SruCycleEntry:
-    def __init__(self, sc, name, data):
-        self._sc = sc
-        self._name = name
-        self._data = data if data else {}
+
+class SruCycleSpinEntry:
+    def __init__(self, spin, data=False, sc=None):
+        cycle = spin.split('-')[0]
+
+        self._name = spin
+        self._cycle = cycle
+        self._sc = SruCycle() if sc is None else sc
+        if data is False:
+            data = self._sc._data.get(spin, False)
+        if data is False:
+            data = self._sc._data.get(cycle, False)
+        self._known = data is not False
+        if data is False:
+            data = { 'hold': True, }
+        elif data is None:
+            data = {}
+
+        rdate = data.get('release-date')
+        if rdate is not None:
+            rdate = datetime.strptime(rdate, '%Y-%m-%d').date()
+        self._release_date = rdate
+
+        self._hold = data.get('hold', False)
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -29,19 +48,26 @@ class SruCycleEntry:
         return self._name
 
     @property
+    def cycle(self):
+        return self._cycle
+
+    @property
     def release_date(self):
-        rdate = self._data.get('release-date')
-        if not rdate:
-            return None
-        return datetime.strptime(rdate, '%Y-%m-%d').date()
+        return self._release_date
 
     @property
     def hold(self):
-        return self._data.get('hold', False)
+        return self._hold
+
+    @property
+    def known(self):
+        return self._known
 
     @property
     def ready_to_release(self):
         if self.hold:
+            return False
+        if self.release_date is None:
             return False
         return datetime.now().date() >= self.release_date
 
@@ -81,14 +107,23 @@ class SruCycle:
 
     @property
     def cycles(self):
-        return [SruCycleEntry(self, cycle_key, cycle)
+        return [SruCycleSpinEntry(cycle_key, cycle, sc=self)
                 for cycle_key, cycle in self._data.items()]
 
-    def lookup_cycle(self, cycle=None):
+    def lookup_cycle(self, cycle=None, allow_missing=False):
         if not cycle:
             raise ValueError("cycle required")
-        if cycle not in self._data:
+        spin_entry = SruCycleSpinEntry(cycle, sc=self)
+        if allow_missing is False and spin_entry.known is False:
             return None
-        return SruCycleEntry(self, cycle, self._data[cycle])
+        return spin_entry
+
+    def lookup_spin(self, spin=None, allow_missing=False):
+        if not spin:
+            raise ValueError("spin required")
+        spin_entry = SruCycleSpinEntry(spin, sc=self)
+        if allow_missing is False and spin_entry.known is False:
+            return None
+        return spin_entry
 
 # vi:set ts=4 sw=4 expandtab:

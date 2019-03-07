@@ -8,7 +8,7 @@ from testfixtures       import (TempDirectory,
 from datetime           import date
 
 from sru_cycle          import (SruCycle,
-                                SruCycleEntry,
+                                SruCycleSpinEntry,
                                )
 
 class TestSruCycleCore(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestSruCycle(TestSruCycleCore):
 
         count = 0
         for cycle in ks.cycles:
-            self.assertTrue(isinstance(cycle, SruCycleEntry))
+            self.assertTrue(isinstance(cycle, SruCycleSpinEntry))
             count += 1
         self.assertEqual(count, 2)
 
@@ -44,7 +44,7 @@ class TestSruCycle(TestSruCycleCore):
 
         count = 0
         for cycle in ks.cycles:
-            self.assertTrue(isinstance(cycle, SruCycleEntry))
+            self.assertTrue(isinstance(cycle, SruCycleSpinEntry))
             count += 1
         self.assertEqual(count, 2)
 
@@ -62,17 +62,17 @@ class TestSruCycle(TestSruCycleCore):
         self.assertItemsEqual(cycle_names, self.data_cycle_names)
 
 
-class TestSruCycleEntry(TestSruCycleCore):
+class TestSruCycleSpinEntry(TestSruCycleCore):
 
     def test_equal_true(self):
         data = """
         '2018.01.02':
         """
         sc = SruCycle(data=data)
-        cycle1 = sc.lookup_cycle('2018.01.02')
-        cycle2 = sc.lookup_cycle('2018.01.02')
+        spin1 = sc.lookup_spin('2018.01.02-1')
+        spin2 = sc.lookup_spin('2018.01.02-1')
 
-        self.assertEqual(cycle1, cycle2)
+        self.assertEqual(spin1, spin2)
 
     def test_equal_false(self):
         data = """
@@ -80,20 +80,108 @@ class TestSruCycleEntry(TestSruCycleCore):
         '2018.02.03':
         """
         sc = SruCycle(data=data)
-        cycle1 = sc.lookup_cycle('2018.01.02')
-        cycle2 = sc.lookup_cycle('2018.02.03')
+        spin1 = sc.lookup_spin('2018.01.02-1')
+        spin2 = sc.lookup_spin('2018.02.03-1')
 
-        self.assertNotEqual(cycle1, cycle2)
+        self.assertNotEqual(spin1, spin2)
 
     def test_equal_none(self):
         data = """
         '2018.01.02':
         """
         sc = SruCycle(data=data)
-        cycle1 = sc.lookup_cycle('2018.01.02')
+        spin1 = sc.lookup_spin('2018.01.02-1')
 
-        self.assertNotEqual(cycle1, None)
-        self.assertNotEqual(None, cycle1)
+        self.assertNotEqual(spin1, None)
+        self.assertNotEqual(None, spin1)
+
+    def test_lookup_spin_present_spin1(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.01.02-1')
+        self.assertEqual(spin1.cycle, '2018.01.02')
+
+    def test_lookup_spin_present_spin99(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.01.02-99')
+        self.assertEqual(spin1.cycle, '2018.01.02')
+
+    def test_lookup_spin_absent_spin1(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.02.03-1')
+        self.assertIsNone(spin1)
+
+    def test_lookup_spin_absent_spin1_allow_missing(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.02.03-1', allow_missing=True)
+        self.assertEqual(spin1.cycle, '2018.02.03')
+
+    def test_lookup_spin_present_spin99(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.01.02-99')
+        self.assertEqual(spin1.cycle, '2018.01.02')
+
+    def test_lookup_cycle_present(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_cycle('2018.01.02')
+        self.assertEqual(spin1.cycle, '2018.01.02')
+
+    def test_lookup_cycle_absent(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_cycle('2018.02.03')
+        self.assertIsNone(spin1)
+
+    def test_lookup_cycle_absent_allow_missing(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_cycle('2018.02.03', allow_missing=True)
+        self.assertEqual(spin1.cycle, '2018.02.03')
+
+    def test_known_present(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.01.02-1')
+        self.assertTrue(spin1.known)
+
+    def test_known_absent(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.02.03-1')
+        self.assertIsNone(spin1)
+
+    def test_known_absent_allow_missing(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin1 = sc.lookup_spin('2018.02.03-1', allow_missing=True)
+        self.assertFalse(spin1.known)
 
     def test_release_date_present_valid(self):
         data = """
@@ -101,9 +189,9 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date: '2018-02-03'
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertEqual(cycle.release_date, date(2018, 2, 3))
+        self.assertEqual(spin.release_date, date(2018, 2, 3))
 
     def test_release_date_present_empty(self):
         data = """
@@ -111,9 +199,9 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date:
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertEqual(cycle.release_date, None)
+        self.assertEqual(spin.release_date, None)
 
     def test_release_date_present_invalid(self):
         data = """
@@ -121,18 +209,18 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date: 'next-monday'
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
         with self.assertRaises(ValueError):
-            rdate = cycle.release_date
+            spin = sc.lookup_spin('2018.01.02-1')
+            rdate = spin.release_date
 
     def test_release_date_absent(self):
         data = """
         '2018.01.02':
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertEqual(cycle.release_date, None)
+        self.assertEqual(spin.release_date, None)
 
     def test_hold_present_true(self):
         data = """
@@ -140,9 +228,9 @@ class TestSruCycleEntry(TestSruCycleCore):
             hold: true
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertTrue(cycle.hold)
+        self.assertTrue(spin.hold)
 
     def test_hold_present_false(self):
         data = """
@@ -150,9 +238,9 @@ class TestSruCycleEntry(TestSruCycleCore):
             hold: false
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertFalse(cycle.hold)
+        self.assertFalse(spin.hold)
 
     def test_hold_present_empty(self):
         data = """
@@ -160,18 +248,36 @@ class TestSruCycleEntry(TestSruCycleCore):
             hold:
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertFalse(cycle.hold)
+        self.assertFalse(spin.hold)
 
     def test_hold_absent(self):
         data = """
         '2018.01.02':
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
-        self.assertFalse(cycle.hold)
+        self.assertFalse(spin.hold)
+
+    def test_hold_absent_in_unknown(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin = sc.lookup_spin('2018.02.03-1')
+
+        self.assertIsNone(spin)
+
+    def test_hold_absent_in_unknown_allow_missing(self):
+        data = """
+        '2018.01.02':
+        """
+        sc = SruCycle(data=data)
+        spin = sc.lookup_spin('2018.02.03-1', allow_missing=True)
+
+        self.assertTrue(spin.hold)
 
     def test_ready_to_release_before(self):
         data = """
@@ -179,10 +285,10 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date: '2018-02-03'
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
         with Replace('sru_cycle.datetime', test_datetime(2018, 2, 1, 0, 0)):
-            self.assertEqual(cycle.ready_to_release, False)
+            self.assertEqual(spin.ready_to_release, False)
 
     def test_ready_to_release_today(self):
         data = """
@@ -190,10 +296,10 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date: '2018-02-03'
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
         with Replace('sru_cycle.datetime', test_datetime(2018, 2, 3, 0, 0)):
-            self.assertEqual(cycle.ready_to_release, True)
+            self.assertEqual(spin.ready_to_release, True)
 
     def test_ready_to_release_after(self):
         data = """
@@ -201,10 +307,10 @@ class TestSruCycleEntry(TestSruCycleCore):
             release-date: '2018-02-03'
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
         with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
-            self.assertEqual(cycle.ready_to_release, True)
+            self.assertEqual(spin.ready_to_release, True)
 
     def test_ready_to_release_hold(self):
         data = """
@@ -213,10 +319,10 @@ class TestSruCycleEntry(TestSruCycleCore):
             hold: true
         """
         sc = SruCycle(data=data)
-        cycle = sc.lookup_cycle('2018.01.02')
+        spin = sc.lookup_spin('2018.01.02-1')
 
         with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
-            self.assertEqual(cycle.ready_to_release, False)
+            self.assertEqual(spin.ready_to_release, False)
 
 
 if __name__ == '__main__':
