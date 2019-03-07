@@ -212,9 +212,9 @@ remote_url=$(git remote get-url --push "${host}" || true)
 
 # Get the git directory from the remote URL
 if [ -z "${remote_url}" ] ; then
-	git_dir=$(pwd)
+	git_dir=$(pwd | sed "s,^$HOME/,~/,")
 	pr_info "${host} is not a git remote, adding it..."
-	git remote add "${host}" "ssh://${host}${git_dir}"
+	git remote add "${host}" "ssh://${host}/${git_dir}"
 
 	remote_url=$(git remote get-url --push "${host}" || true)
 fi
@@ -222,7 +222,10 @@ fi
 # Purge ssh://host from the remote URL and prepend a /
 git_dir="${remote_url#*://}"
 host="${git_dir%%/*}"
-git_dir="/${git_dir#*/}"
+git_dir="${git_dir#*/}"
+if ! [ "${git_dir::1}" = "~" ] ; then
+	git_dir="/${git_dir}"
+fi
 
 pr_note "Build host:   ${host}"
 pr_note "Build remote: ${remote}"
