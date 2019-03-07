@@ -14,6 +14,7 @@ from .errors                            import ShankError
 from .deltatime                         import DeltaTime
 from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
+from ktl.sru_cycle                      import SruCycle
 from .swm_config                        import SwmConfig
 from .git_tag                           import GitTag
 
@@ -75,6 +76,7 @@ class WorkflowBug():
         s.overall_reason = None
         s.is_development_series = False
         s._master_bug = False
+        s._sru_spin = False
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -861,17 +863,31 @@ class WorkflowBug():
         subject = "[" + s.series + "] " + s.pkg_name + " " + flavour + " " + s.pkg_version + where
         s.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com,sean.feole@canonical.com')
 
+    # sru_spin
+    #
+    @property
+    def sru_spin(s):
+        if s._sru_spin is False:
+            spin = None
+            for t in s.tags:
+                if t.startswith('kernel-sru-cycle-'):
+                    spin = t.replace('kernel-sru-cycle-', '')
+            if spin is not None:
+                spin = SruCycle().lookup_spin(spin, allow_missing=True)
+            s._sru_spin = spin
+
+        return s._sru_spin
+
     # sru_cycle
     #
     @property
     def sru_cycle(s):
-        cycle = None
-        for t in s.tags:
-            if t.startswith('kernel-sru-cycle-'):
-                cycle = t.replace('kernel-sru-cycle-', '')
-        if cycle is None:
-            cycle = '1962.11.02-00'
-        return cycle
+        spin = s.sru_spin
+        if spin is not None:
+            spin = spin.name
+        else:
+            spin = '1962.11.02-00'
+        return spin
 
     # send_testing_message
     #

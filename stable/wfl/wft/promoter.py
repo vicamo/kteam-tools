@@ -2,7 +2,6 @@ from datetime                                   import datetime
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
 from wfl.gcp_bucket                             import GcpBucketObject, GcpBucketError
-from ktl.sru_cycle                              import SruCycle
 from .base                                      import TaskHandler
 
 class Promoter(TaskHandler):
@@ -16,26 +15,19 @@ class Promoter(TaskHandler):
     def _cycle_ready(s):
         if s.bug.is_development_series or (s.bug.master_bug is not None and s.bug.master_bug.is_development_series):
             return True
-        cycle_name = s.bug.sru_cycle
-        cycle_base = cycle_name.split('-')[0]
-        cycle = SruCycle().lookup_cycle(cycle_base)
 
-        if not cycle:
+        if s.bug.sru_spin is None:
             return False
-        return cycle.ready_to_release
+        return s.bug.sru_spin.ready_to_release
 
     def _cycle_hold(s):
-        cycle_name = s.bug.sru_cycle
-        cycle_base = cycle_name.split('-')[0]
-        cycle = SruCycle().lookup_cycle(cycle_base)
-
         # We will not hold the cycle here if it is not
         # defined.  This ultimatly will allow things to
         # get to proposed before being blocked for lack
         # of a release date.
-        if not cycle:
+        if s.bug.sru_spin is None:
             return False
-        return cycle.hold
+        return s.bug.sru_spin.hold
 
     def _in_blackout(s):
         '''
