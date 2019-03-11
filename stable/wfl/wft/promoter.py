@@ -21,12 +21,9 @@ class Promoter(TaskHandler):
         return s.bug.sru_spin.ready_to_release
 
     def _cycle_hold(s):
-        # We will not hold the cycle here if it is not
-        # defined.  This ultimatly will allow things to
-        # get to proposed before being blocked for lack
-        # of a release date.
+        # If the cycle is not defined just hold the kernel.
         if s.bug.sru_spin is None:
-            return False
+            return True
         return s.bug.sru_spin.hold
 
     def _in_blackout(s):
