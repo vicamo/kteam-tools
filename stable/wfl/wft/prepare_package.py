@@ -4,7 +4,7 @@ from wfl.log                                    import center, cleave, cdebug
 from .base                                      import TaskHandler
 
 
-class PreparePackageBase(TaskHandler):
+class PreparePackage(TaskHandler):
     '''
     A Task Handler for the prepare-package task.
 
@@ -25,7 +25,7 @@ class PreparePackageBase(TaskHandler):
     #
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
-        super(PreparePackageBase, s).__init__(lp, task, bug)
+        super(PreparePackage, s).__init__(lp, task, bug)
 
         # The tracking bug should start this task out as 'Confirmed'
         # for primary packages.  Derivatives should flip to 'Confirmed'
@@ -153,70 +153,5 @@ class PreparePackageBase(TaskHandler):
 
         cleave(s.__class__.__name__ + '._common (%s)' % (retval))
         return retval
-
-
-class PreparePackage(PreparePackageBase):
-    '''
-    A Task Handler for the prepare-package task.
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(PreparePackage, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
-
-class PreparePackageMeta(PreparePackageBase):
-    '''
-    A Task Handler for the prepare-package-meta task.
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(PreparePackageMeta, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
-
-class PreparePackageSigned(PreparePackageBase):
-    '''
-    A Task Handler for the prepare-package-signed task.
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(PreparePackageSigned, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
-class PreparePackageLBM(PreparePackageBase):
-    '''
-    A Task Handler for the prepare-package-lbm task.
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(PreparePackageLBM, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
-
-class PreparePackagePortsMeta(PreparePackageBase):
-    '''
-    A Task Handler for the prepare-package-ports-meta task.
-    '''
-
-    # __init__
-    #
-    def __init__(s, lp, task, bug):
-        center(s.__class__.__name__ + '.__init__')
-        super(PreparePackagePortsMeta, s).__init__(lp, task, bug)
-        cleave(s.__class__.__name__ + '.__init__')
-
 
 # vi: set ts=4 sw=4 expandtab syntax=python
