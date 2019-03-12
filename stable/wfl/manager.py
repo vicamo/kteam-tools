@@ -32,6 +32,7 @@ class WorkflowManager():
             'upload-to-ppa-dnu'         : wfl.wft.IgnoreInvalid,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackage,
+            'prepare-package-lrm'       : wfl.wft.PreparePackage,
             'prepare-package-meta'      : wfl.wft.PreparePackage,
             'prepare-package-ports-meta': wfl.wft.PreparePackage,
             'prepare-package-signed'    : wfl.wft.PreparePackage,
