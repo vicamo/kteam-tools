@@ -1283,7 +1283,7 @@ class TrackingBugs():
             raise TrackingBugError('failed to create embedded LP bug')
 
 
-        # Individual workflow tasks here or later?
+        # First add all of the workflow tasks
         for wf_task in wf_project.lp_project.series_collection:
             if s.__wf_task_valid(wf_task, ks_source):
                 cdebug('    adding: %s' % wf_task.display_name)
@@ -1291,29 +1291,35 @@ class TrackingBugs():
                 if nomination.canApprove():
                     nomination.approve()
 
-        # Add a package task for the ubuntu project
+        # Then add a package task for the ubuntu project
         ubuntu_project = lps.projects['ubuntu']
-        cdebug('Adding {} task.'.format(pkg_name), 'blue')
         target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
 
+        # Try to add an Ubuntu task for the source (to be nominated for
+        # the target series). This can fail if the source was never published.
         try:
+            cdebug('Adding {} task.'.format(pkg_name), 'blue')
             task = lp_bug.addTask(target=target)
-            if not new_pkg:
-                state = 'Confirmed'
-                if lp_bug is not None:
-                    nomination = lp_bug.addNomination(target=distro_series)
-                    if nomination.canApprove():
-                        nomination.approve()
-            else:
-                state = 'Invalid'
-            task.status = state
+            task.status = 'Confirmed'
         except:
-            # Invalidate all tasks added so far
-            for task in lps.get_bug(lp_bug.id).tasks:
+            cwarn('The {} source was not published. Re-trying with "linux"'.format(lp_package))
+            target = lp.load(ubuntu_project.self_link + '/+source/linux')
+
+            try:
+                cdebug('Adding fallback "linux" task.', 'blue')
+                task = lp_bug.addTask(target=target)
                 task.status = 'Invalid'
-            raise TrackingBugError('failed adding workflow tasks')
-            
+            except:
+                # Invalidate all tasks added so far
+                for task in lp_bug.tasks:
+                    task.status = 'Invalid'
+                raise TrackingBugError('failed adding the source package task')
+
         if lp_bug is not None:
+            nomination = lp_bug.addNomination(target=distro_series)
+            if nomination.canApprove():
+                nomination.approve()
+
             cdebug('Creating new TrackingBug() object')
             # Convert raw LP bug into LPTK bug for tracking bug creation
             lptk_bug = lps.get_bug(lp_bug.id)
