@@ -141,9 +141,17 @@ class Task():
         if new_tbid is None:
             return []
         else:
+            return [ new_tbid ]
+
+    def FinalizeTrackingBugs(self, dryrun=False):
+        for subtask in self.subtasks:
+            subtask.FinalizeTrackingBugs(dryrun=dryrun)
+        if self.create is True and self.sourcetype == 'deb':
+            cn = self.ks_source.series.codename
+            sn = self.ks_source.name
+            cinfo('Setting {}/{} workflow status in-progress.'.format(cn, sn))
             if dryrun is False:
                 self.tb.wf_status_set('In Progress')
-            return [ new_tbid ]
 
     def CreateCards(self, dryrun=False):
         if self.create is True:
@@ -391,6 +399,10 @@ class TaskSet():
         for ks_series in self.ks_series_list:
             self.tasks[ks_series.codename].CreateTrackingBugs(dryrun=dryrun)
 
+    def FinalizeTrackingBugs(self, dryrun=False):
+        for ks_series in self.ks_series_list:
+            self.tasks[ks_series.codename].FinalizeTrackingBugs(dryrun=dryrun)
+
     def CreateCards(self, dryrun=False):
         if self.board is None:
             self.board = CycleBoard()
@@ -519,5 +531,6 @@ Examples:
     if args.force_nocards is False and args.devel is False:
         ts.CreateCards(dryrun=args.dry_run)
     ts.CreateTrackingBugs(dryrun=args.dry_run)
+    ts.FinalizeTrackingBugs(dryrun=args.dry_run)
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
