@@ -222,7 +222,11 @@ def checkout_repos(handle, reference=None, dissociate=False):
             security_repo = "linux-{}-{}".format(pkg.type, codename)
         security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
 
-        git_remote_update(repo_dir, "security", security_url)
+        try:
+            git_remote_update(repo_dir, "security", security_url)
+        except SystemExit:
+            cwarn('Could not add remote "security" {}'.format(security_url))
+            cwarn('Make sure you have permission to access this repository, otherwise ignore this message')
 
     # Checkout the specified branches.
     for handle_tree in handle_set.trees:
