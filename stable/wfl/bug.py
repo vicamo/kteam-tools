@@ -71,7 +71,6 @@ class WorkflowBug():
 
         s.title = s.lpbug.title
         s._tags = None
-        s.bprops = {}
         s.bprops = s.load_bug_properties()
         s.overall_reason = None
         s.is_development_series = False
@@ -238,6 +237,8 @@ class WorkflowBug():
             buf = buf.replace('\xa0', ' ')
             try:
                 retval = yaml.safe_load(buf)
+                if retval is None:
+                    retval = {}
             except:
                 cinfo('Exception thrown trying to load bug properties', 'red')
                 retval = {}
