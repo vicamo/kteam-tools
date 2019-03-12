@@ -184,7 +184,7 @@
                 - ['ubuntu', 'Release']
     sources:
         linux:
-            versions: ['4.19.0']
+            versions: ['5.0.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'master-next']
