@@ -9,6 +9,7 @@ cmds=(
 	"build-sources -h --help"
 	"chroot -h --help create-base create-session map-session run"
 	"clone -h --help -r --reference -d --dissociate"
+	"checkout -h --help -r --reference -d --dissociate"
 	"close -h --help -d --dry-run -c --include-config -s --skip-master"
 	"fix -h --help"
 	"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle"
