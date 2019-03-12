@@ -160,7 +160,7 @@ class WorkflowManager():
                 cinfo('project: %s' % project, 'magenta')
                 search_tags            = ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live']
                 search_tags_combinator = "All"
-                search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
+                search_status          = ["Confirmed", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
                 search_since           = datetime(year=2013, month=1, day=1)
                 lp_project = s.lp.default_service.projects[project]
                 tasks = lp_project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
