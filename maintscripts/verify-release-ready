@@ -373,6 +373,10 @@ class VerifyReleaseReady():
                 tracker = lp_bug
                 continue
 
+            # Ignore LP: #1786013 (Packaging resync)
+            if bug == '1786013':
+                continue
+
             # check bug tasks, is series/package/status correct?
             is_targeted_to_package = False
             is_targeted_to_series = False
