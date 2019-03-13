@@ -214,9 +214,8 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'raspi2']
             supported: true
-            derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
-            copy-forward: [ '18.10', 'linux-raspi2' ]
 
         linux-oem:
             packages:
