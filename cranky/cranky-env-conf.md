@@ -1,4 +1,4 @@
-#		Cranky-env-conf.md	Version 3
+#		          Cranky-env-conf.md
 
 This document describes the local host configuration required to setup the
 local host environment for turning the crank during the SRU cycle for
