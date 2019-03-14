@@ -1,6 +1,6 @@
 from ktl.kernel_series                          import KernelSeries
 
-from wfl.log                                    import center, cleave, cdebug
+from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 
 
@@ -47,6 +47,21 @@ class PreparePackage(TaskHandler):
             return False
         return s.jumper[state]()
 
+    # _kernel_block_source
+    #
+    def _kernel_block_source(s):
+        '''
+        If a 'kernel-block-source' tag exist return True.
+        '''
+        center(s.__class__.__name__ + '._kernel_block_source')
+        retval = False
+
+        if 'kernel-block' in s.bug.tags or 'kernel-block-source' in s.bug.tags:
+            retval = True
+
+        cleave(s.__class__.__name__ + '._kernel_block_source (%s)' % retval)
+        return retval
+
     # _package_name
     #
     def _package_name(s):
@@ -92,6 +107,10 @@ class PreparePackage(TaskHandler):
                 retval = False
                 break
 
+            if s._kernel_block_source():
+                s.task.reason = 'Holding -- manual kernel-block/kernel-block-source present'
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
@@ -110,7 +129,20 @@ class PreparePackage(TaskHandler):
         center(s.__class__.__name__ + '._common')
         retval = False
 
-        while True:
+        while not retval:
+            if s.task.status not in ('Confirmed'):
+                break
+            if not s._kernel_block_source():
+                break
+
+            cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+
+            s.task.status = 'New'
+
+            retval = True
+            break
+
+        while not retval:
 
             # If we do not have a version then whine about that.
             if not s.bug.is_valid:
