@@ -3,7 +3,7 @@
 
 from contextlib                         import contextmanager
 from datetime                           import datetime
-from fcntl                              import lockf, LOCK_EX, LOCK_NB
+from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 import os
 import yaml
 
@@ -79,6 +79,7 @@ class WorkflowManager():
 
         # Per bug locking.
         s.lockfile = 'swm.lock'
+        s.lockfd = open(s.lockfile, 'w')
 
         cleave('WorkflowManager.__init__')
 
@@ -87,9 +88,9 @@ class WorkflowManager():
         mode = LOCK_EX
         if block is False:
             mode |= LOCK_NB
-        with open(s.lockfile, 'w') as lfd:
-            lockf(lfd, mode, 1, int(what))
-            yield
+        lockf(s.lockfd, mode, 1, int(what))
+        yield
+        lockf(s.lockfd, LOCK_UN, 1, int(what))
 
     def status_set(s, bugid, summary):
         with s.lock_thing(2):
