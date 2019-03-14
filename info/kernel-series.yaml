@@ -312,7 +312,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/disco']
             supported: true
-            derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     kvm:
@@ -320,7 +320,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['kvm']
-            copy-forward: [ '18.10', 'linux-kvm' ]
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
             packages:
