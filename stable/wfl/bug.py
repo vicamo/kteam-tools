@@ -101,6 +101,11 @@ class WorkflowBug():
             s.is_valid = False
             s.debs = None
 
+        # If we have no version after instantiation of the variant,
+        # this is not generally crankable.
+        if s.version is None:
+            s.is_valid = False
+
         cinfo('                    variant: "{}"'.format(s.variant), 'blue')
         cinfo('                      title: "{}"'.format(s.title), 'blue')
         cinfo('                   is_valid: {}'.format(s.is_valid), 'blue')
@@ -132,70 +137,66 @@ class WorkflowBug():
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
     def __title_decode(s):
-        txt = s.title
+        (s.series, s.name, s.version, s.source) = (None, None, None, None)
 
-        matched = False
-        #                              .- package name (group(1))
-        #                             /           .- kernel version (group(2))
-        #                            /           /          .- version/abi separator (group(3))
-        #                           /           /          /
-        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
-        #                                                       /      /       /
-        #                                                      /      /       .- backport extra (m.group(6))
-        #                                                     /      .- upload number (m.group(5))
-        #                                                    .- abi (group(4))
+        # XXX: when the data moved to swm-properties this is where we would
+        #      pick those out.
+        title = s.title
 
-        #info('     Extract package info\n')
-        m = ver_rc.search(txt)
-        if m is not None:
-            matched = True
-            cdebug('package: %s' % m.group(1))
-            cdebug('version: %s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6)))
-            cdebug(' kernel: %s' % m.group(2))
-            cdebug('    abi: %s' % m.group(4))
+        # Title: [<series>/]<package>: <version> <junk>
+        #
+        # If the series is absent it will report None, if the version is
+        # unspecified it will report as None.
+        #
+        #                                 .- optional series (group(1))
+        #                                 |       .- package (group(2))
+        #                                 |       |             .- version (group(3))
+        #                                 |       |             |
+        title2spv_rc = re.compile(r'^(?:(\S+)/)?(\S+): (?:(\d+\.\d+\.\S+)|<version to be filled>)')
 
-            s.name = m.group(1)
-            s.version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
-            s.kernel = m.group(2)
-            s.abi = m.group(4)
-
-        # Try just a package match.
-        if not matched:
-            #                            .- package name (group(1))
-            #                           /
-            pkg_rc     = re.compile("(\S+):")
-            m = pkg_rc.search(txt)
-            if m is not None:
-                matched = True
-                cdebug('package: %s' % m.group(1))
-                cdebug('version: INVALID')
-
-                s.name = m.group(1)
-                s.version = None
-
-                s.is_valid = False
-
-        # Work out what series this package is published in...
-        series_tag_entry = None
-        for tag in s.lpbug.tags:
-            series_tag_entry = s.kernel_series.lookup_series(codename=tag)
-            if series_tag_entry:
-                break
-
-        if not matched:
-            cwarn(' ** None of the regular expressions matched the title (%s)' % txt)
+        match = title2spv_rc.search(title)
+        if not match:
+            cdebug('title invalid: <{}>'.format(title))
+            s.is_valid = False
             return False
 
-        # Set the series attribute
-        cdebug(' series: %s' % series_tag_entry.codename)
-        s.series = series_tag_entry.codename
+        (series, name, version) = match.groups()
+        # If we have no series specified fall back to looking at the
+        # bug tags looking for a series specific tag.
+        if series is None:
+            series_ent = None
+            for tag in s.lpbug.tags:
+                series_ent = s.kernel_series.lookup_series(codename=tag)
+                if series_ent is not None:
+                    series = tag
+                    break
+        s.series = series
+        s.name = name
+        s.version = version
 
-        # Lookup the KernelSeries package and attach that.
+        # We will want to use the kernel and ABI components so split
+        # those out here.
+        (kernel, abi) = (None, None)
+        if s.version is not None:
+            version2ka_rc = re.compile(r'^(\d+\.\d+\.\d+)[\.-](\d+)')
+            match = version2ka_rc.search(s.version)
+            if match:
+                (kernel, abi) = match.groups()
+        s.kernel = kernel
+        s.abi = abi
+
+        # Lookup the kernel-series object for this package.
+        # XXX: why is this not a property?!?
         source = None
-        if series_tag_entry:
-            source = series_tag_entry.lookup_source(s.name)
+        if s.series is not None:
+            series_ent = s.kernel_series.lookup_series(codename=series)
+            if series_ent is not None:
+                source = series_ent.lookup_source(s.name)
         s.source = source
 
+        cdebug(' series: {}'.format(series))
+        cdebug('package: {}'.format(name))
+        cdebug('version: {}'.format(version))
         return True
 
     # _remove_live_tag
@@ -500,14 +501,6 @@ class WorkflowBug():
         Flag information from kernel-series.
         '''
         return SwmConfig(s.source.swm_data)
-
-    @property
-    def kernel_version(s):
-        '''
-        Decoded from the version string in the title, the kernel version is returned.
-        This is just the kernel version without the ABI or upload number.
-        '''
-        return s.kernel
 
     @property
     def tags(s):

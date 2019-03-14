@@ -45,15 +45,13 @@ class Package():
         s.kernel_series = KernelSeries() if ks is None else ks
         s.__distro_series = None
 
-        # XXX: need to shift to using the right references here.
-        s.source = s.bug.source
+        # Pick up versions from our bug as needed.
         s.series = s.bug.series
         s.name = s.bug.name
         s.version = s.bug.version
-        if hasattr(s.bug, 'kernel'):
-            s.kernel = s.bug.kernel
-        if hasattr(s.bug, 'abi'):
-            s.abi = s.bug.abi
+        s.source = s.bug.source
+        s.kernel = s.bug.kernel
+        s.abi = s.bug.abi
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.
@@ -830,8 +828,8 @@ class Package():
                 # <kernel-version>.<abi>.<upload #> and for linux-backports-modules
                 # it is <kernel-version-<abi>.<upload #>
                 #
-                v1 = s.bug.kernel_version + '.' + s.abi
-                v2 = s.bug.kernel_version + '-' + s.abi
+                v1 = s.kernel + '.' + s.abi
+                v2 = s.kernel + '-' + s.abi
                 if src_ver.startswith(v1) or src_ver.startswith(v2):
                     mis_lst.extend(check_component.mismatches_list(s.series,
                                    pkg, ps[0].source_package_version,
