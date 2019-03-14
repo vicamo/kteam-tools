@@ -21,6 +21,8 @@ function out()
 function build_src()
 {
 	local dir=$1 session=$2 current=$3
+	local -a extra_opts=()
+	[ -n "$4" ] && IFS=" " read -r -a extra_opts <<< "$4"
 
 	if [ "${current}" -eq 1 ] && [ "${PWD}" != "${dir}" ] ; then
 		# Skip the build of this source package if --current is specified and
@@ -33,14 +35,14 @@ function build_src()
 
 		git clean -x -f -d
 		schroot -r -c "$session" -- fakeroot debian/rules clean
-		schroot -r -c "$session" -- dpkg-buildpackage -S -i -I -uc -us -d
+		schroot -r -c "$session" -- dpkg-buildpackage -S -i -I -uc -us -d "${extra_opts[@]}"
 	)
 }
 
 function usage()
 {
 	cat <<EOF
-Usage: cranky build-sources [-c] [-h] [handle]
+Usage: cranky build-sources [-c] [-h] [--build-opts OPTS ...] [handle]
 
 Build all source packages for the specified series and source as specified in
 kernel-series.yaml.
@@ -55,6 +57,11 @@ Optional arguments:
                  directory.
   -h, --help     Show this help message and exit.
 
+  --build-opts   Supply additional options for dpkg-buildpackage when building
+                 the specified source package type. OPTS is a string of the
+                 format "type:opts". This option can be supplied multiple times
+                 to supply options for multiple package types.
+
 Examples:
   $ cranky build-sources
       Build all source packages for the kernel source tree in the current
@@ -67,11 +74,17 @@ Examples:
 
   $ cranky build-sources --current
       Build only the source package for the current working directory.
+
+  $ cranky build-sources --build-opts "main:-sa"
+      Build source packages for the kernel source tree in the current
+      directory, passing '-sa' to dpkg-buildpackage to include the orig
+      tarball in the upload.
 EOF
 }
 
 current=0
 handle=${PWD}
+declare -A build_opts=()
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
@@ -81,6 +94,11 @@ while [ ${#} -gt 0 ] ; do
 		-h|--help)
 			usage
 			exit
+			;;
+		--build-opts)
+			shift
+			IFS=':' read -r type opts <<< "$1"
+			build_opts[$type]="$opts"
 			;;
 		-*)
 			usage
@@ -100,7 +118,7 @@ done
 
 trap out EXIT INT TERM HUP
 
-sources=$("$here/cranky-shell-helper" source-packages-path "$handle")
+sources=$("$here/cranky-shell-helper" source-packages-path "-t" "$handle")
 if [ -z "$sources" ] ; then
 	exit 1
 fi
@@ -112,7 +130,10 @@ if [ -z "$session" ] ; then
 fi
 
 # Build the source.
-for source in $sources
+while read -r source
 do
-	build_src "$source" "$session" "$current"
-done
+	IFS=' ' read -r type path <<< "$source"
+	opts=""
+	[ ! -z ${build_opts[$type]+x} ] && opts="${build_opts[$type]}"
+	build_src "$path" "$session" "$current" "$opts"
+done <<< "$sources"
