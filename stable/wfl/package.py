@@ -681,7 +681,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
                 retval = True
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
