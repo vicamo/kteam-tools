@@ -31,7 +31,7 @@ described and will no longer be maintained in Google Docs.
 The scripts for Start the Kernel SRU Cycle need some initial configuration
 before the first run, which is documented in $HOME/kteam-tools/stable/README.
 
-For example, the script "create-sru-cards.py" depends on the Trello
+For example, the script "create-sru-cards" depends on the Trello
 command-line tools, so make sure to follow the steps reported in
 $HOME/kteam-tool/stable/README about this particular script.
 
@@ -62,7 +62,7 @@ On the week before the actual start of the cycle (3rd week of the previous SRU
 cycle), the SRU "lead" will create a Trello board to coordinate the tasks that
 are done before the first week of the cycle, e.g. apply patches from the
 mailing-list, prepare mainline stable updates, review CVE tracker, etc.  The
-script "stable/create-sru-cards.py" creates the board with the initial cards.
+script "stable/create-sru-cards" creates the board with the initial cards.
 To create the board and the cards, it reads the configuration from
 "stable/create-sru-cards.yaml" and the information about the current supported
 kernels from "info/kernel-series.yaml" (wrapped by a library). The script also
@@ -73,7 +73,7 @@ By default, the only required parameter is the cycle tag name (the date of the
 Monday of the first week, in the format ‘YYYY.MM.DD’). Example:
 
 ```
-create-sru-cards.py 2019.03.04
+create-sru-cards 2019.03.04
 ```
 
 Some of the aspects of the default behavior can be changed by providing
