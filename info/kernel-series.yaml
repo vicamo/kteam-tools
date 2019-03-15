@@ -294,7 +294,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/disco']
             supported: true
-            derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     gcp:
@@ -302,7 +302,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['gcp']
-            copy-forward: [ '18.10', 'linux-gcp' ]
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
             packages:
