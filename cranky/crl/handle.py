@@ -163,7 +163,7 @@ class HandleTree(HandleCore):
 
 
 class HandleSet(HandleCore):
-    def __init__(self, series, source, validate=True, trees=None, sample=None, ks=None, config=None):
+    def __init__(self, handle, series, source, validate=True, trees=None, sample=None, ks=None, config=None):
         if ks is None:
             ks = KernelSeries()
         self.ks = ks
@@ -264,7 +264,7 @@ class Handle(HandleCore):
         # A directory passed as a handle.
         if os.path.exists(handle):
             tree = self.lookup_tree(handle, validate=validate)
-            return HandleSet(tree.series, tree.package.source, validate=validate, sample=tree, ks=self.ks, config=self.config)
+            return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=self.ks, config=self.config)
 
         # Validate this as a series/package handle.
         else:
@@ -282,4 +282,4 @@ class Handle(HandleCore):
             if source is None:
                 raise HandleError("{}: handle contains unknown source".format(source_name))
 
-            return HandleSet(series, source, validate=validate, ks=self.ks, config=self.config)
+            return HandleSet(handle, series, source, validate=validate, ks=self.ks, config=self.config)
