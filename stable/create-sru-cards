@@ -295,16 +295,16 @@ yaml and creates a new Trello board and adds cards to it.
 
 Examples:
     Run with the default options:
-    $ create-sru-cards.py 2018.09.10
+    $ create-sru-cards 2018.09.10
 
     Do not create anything, just print what would be done:
-    $ create-sru-cards.py --dry-run 2018.09.10
+    $ create-sru-cards --dry-run 2018.09.10
 
     Create also the 'Turn the crank' cards:
-    $ create-sru-cards.py --crank-turn 2018.09.10
+    $ create-sru-cards --crank-turn 2018.09.10
 
     Do not add the new cycle entry to the cycle info file
-    $ create-sru-cards.py --no-cycle-info 2018.09.10
+    $ create-sru-cards --no-cycle-info 2018.09.10
 '''.format(default_config)
     parser = argparse.ArgumentParser(description=description, epilog=epilog,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
