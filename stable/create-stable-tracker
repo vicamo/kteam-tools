@@ -149,10 +149,10 @@ class CreateTrackingBug(StdApp):
                 series_name = changelog[1]['release']
 
             try:
-                pversion_ = version.split(".")
+                pversion_ = version.lstrip("v").split(".")
                 pversion_[-1] = str(int(pversion_[-1]) - 1)
                 pversion = ".".join(pversion_)
-                (status, output) = run_command("git log --format='%%s' %s..%s" % ("v" + pversion, "v" + version))
+                (status, output) = run_command("git log --format='%%s' %s..%s" % ("v" + pversion, "v" + version.lstrip("v")))
                 if status:
                     log = ""
                 else:
