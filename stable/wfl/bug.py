@@ -80,17 +80,7 @@ class WorkflowBug():
         (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
         s.properties = s.lpbug.properties
 
-        # Try and decode the title for package/versions/source etc.
-        if not s.__title_decode():
-            raise WorkflowBugError('Package not identified from title')
-        if s.series is None:
-            raise WorkflowBugError('Series not identified from tags')
-        if s.source is None:
-            raise WorkflowBugError('Source not found in kernel-series')
-
-        s.is_development_series = s.source.series.development
-        s.is_development = s.source.development
-
+        # Instantiate this variant.
         try:
             s.debs = Package(s.lp, s, ks=s.kernel_series)
         except PackageError as e:
@@ -100,6 +90,17 @@ class WorkflowBug():
             s.overall_reason = e.args[0]
             s.is_valid = False
             s.debs = None
+
+        # If we have no series/package/source by now we are dead in the
+        # water kill this bug hard.
+        if s.name is None:
+            raise WorkflowBugError('Package not identified from title')
+        if s.series is None:
+            raise WorkflowBugError('Series not identified from tags')
+        if s.source is None:
+            raise WorkflowBugError('Source not found in kernel-series')
+        s.is_development_series = s.source.series.development
+        s.is_development = s.source.development
 
         # If we have no version after instantiation of the variant,
         # this is not generally crankable.
@@ -136,11 +137,15 @@ class WorkflowBug():
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
-    def __title_decode(s):
+    def version_from_title(s):
         (s.series, s.name, s.version, s.source) = (None, None, None, None)
 
         # XXX: when the data moved to swm-properties this is where we would
         #      pick those out.
+
+        s.__title_decode()
+
+    def __title_decode(s):
         title = s.title
 
         # Title: [<series>/]<package>: <version> <junk>
