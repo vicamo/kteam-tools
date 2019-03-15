@@ -9,6 +9,7 @@ from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError
 from .deltatime                         import DeltaTime
+from .snap                              import SnapDebs
 from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
@@ -82,7 +83,16 @@ class WorkflowBug():
 
         # Instantiate this variant.
         try:
-            s.debs = Package(s.lp, s, ks=s.kernel_series)
+            s.debs = None
+            if s.variant in ('debs', 'combo'):
+                s.debs = Package(s.lp, s, ks=s.kernel_series)
+            s.snap = None
+            if s.variant in ('snap-debs', 'combo'):
+                s.snap = SnapDebs(s)
+                # For a combo bug clear out the SnapDebs object if we have
+                # no primary snap defined.
+                if s.variant == 'combo' and s.snap.snap_info is None:
+                    s.snap = None
         except PackageError as e:
             # Report why we are not valid.
             for l in e.args:
@@ -138,12 +148,25 @@ class WorkflowBug():
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
     def version_from_title(s):
-        (s.series, s.name, s.version, s.source) = (None, None, None, None)
+        (s.series, s.name, s.version, s.source, s.kernel, s.abi) = (None, None, None, None, None, None)
 
         # XXX: when the data moved to swm-properties this is where we would
         #      pick those out.
 
         s.__title_decode()
+
+    def version_from_master(s):
+        # XXX: when the data moved to swm-properties this is where we would
+        #      pick those out.
+
+        master_bug = s.master_bug
+        s.series = master_bug.series
+        s.name = master_bug.name
+        s.version = master_bug.version
+        s.source = master_bug.source
+        s.kernel = master_bug.kernel
+        s.abi = master_bug.abi
+
 
     def __title_decode(s):
         title = s.title

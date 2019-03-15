@@ -10,6 +10,8 @@ except ImportError:
 import json
 from .errors import ShankError
 
+from ktl.kernel_series                          import KernelSeries
+
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
 
@@ -110,3 +112,19 @@ class SnapStore:
 
         return (store_version is not None and
                 store_version == s.bug.version)
+
+
+# SnapDebs
+#
+class SnapDebs:
+    """
+    Class representing a snap of a kernel from debian packages.
+    """
+    def __init__(s, shankbug, ks=None):
+        s.bug = shankbug
+
+        s.kernel_series = KernelSeries() if ks is None else ks
+
+        # NOTE: For a combo bug the version is already handled.
+        if s.bug.variant == 'snap-debs':
+            s.bug.version_from_master()
