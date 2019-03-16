@@ -1,0 +1,6 @@
+One of the actions from the Malta Sprint was Making the Turning-the- Crank 
+Googledocs document into a Markdown text file for inclusion as part of
+kteam-tools.  This work stream was extended to include Googledocs document
+for setting up local host environments for cranking kernels and now includes 
+several useful file examples and also a document for setting up custom PPAs and
+testing kernels in VMs. These files in this patch are all version 3

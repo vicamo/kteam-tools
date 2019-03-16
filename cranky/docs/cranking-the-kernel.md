@@ -20,18 +20,19 @@ inevitably breaks in the process.
 
 ## Before You Start
 
-Make sure you have an up-to-date clone of the kteam-tools repo before starting,
-since important changes to how the packages are cranked might have been added.
-Make sure also that you have access to the kernel team Trello workflow system.
+Before proceeding with this document, it is important to have followed the
+instructions in "cranky-env.conf.md" on your local host machine and  basic
+understanding of what Cranking an Ubuntu Kernel is all about. Information and
+instructions in this document assume this this order of action as a pre-
+requisite to successfully implementing procedures below.
 
-**Note**  This document is intended to be an integral part of the kteam-tools
-repo as well so that it is regularly updated along with the various tools
-described and will no longer be maintained in Google Docs.
+To that point, make sure you have an up-to-date clone of the kteam-tools repo
+before starting and make sure also that you have access to the kernel team
+Trello workflow system.
 
 The scripts for Start the Kernel SRU Cycle need some initial configuration
 before the first run, which is documented in $HOME/kteam-tools/stable/README.
-
-For example, the script "create-sru-cards" depends on the Trello
+For example, the script "create-sru-cards.py" depends on the Trello
 command-line tools, so make sure to follow the steps reported in
 $HOME/kteam-tool/stable/README about this particular script.
 
@@ -40,8 +41,13 @@ this can be done by setting (and exporting):
 ```
 USE_LOCAL_KERNEL_SERIES_YAML=1
 ```
-**Note** Instructions for creating the "~/.cranky.yaml" file are included in
-the accompanying document "cranky-env-conf.md"
+
+Instructions for creating the "~/.cranky.yaml" file are included in the
+"cranky-env-conf.md" document
+
+This document is now a part of the kteam-tools repo to ensure it is regularly
+updated along with the various tools it described.  This information will no
+longer be maintained in Google Docs.
 
 ## Start The Kernel SRU Cycle
 
@@ -62,39 +68,41 @@ On the week before the actual start of the cycle (3rd week of the previous SRU
 cycle), the SRU "lead" will create a Trello board to coordinate the tasks that
 are done before the first week of the cycle, e.g. apply patches from the
 mailing-list, prepare mainline stable updates, review CVE tracker, etc.  The
-script "stable/create-sru-cards" creates the board with the initial cards.
-To create the board and the cards, it reads the configuration from
-"stable/create-sru-cards.yaml" and the information about the current supported
+script "stable/create-sru-cards.py" creates the board with the initial cards.
+To create the board and the cards, "create-sru-cards.py" reads the configuration
+file "stable/create-sru-cards.yaml" and information about the current supported
 kernels from "info/kernel-series.yaml" (wrapped by a library). The script also
 adds an entry to the "info/sru-cycle.yaml" file with the information of the
 upcoming cycle.
 
 By default, the only required parameter is the cycle tag name (the date of the
 Monday of the first week, in the format ‘YYYY.MM.DD’). Example:
-
 ```
-create-sru-cards 2019.03.04
+create-sru-cards.py 2019.03.04
 ```
 
 Some of the aspects of the default behavior can be changed by providing
-additional parameters, please check the script help output. The default to be
+additional parameters, please check the script --help output. The default to be
 used now is not to create any kernel related task cards. Those will be added in
-the next step.  After the board is created, the people involved in the SRU
-cycle need to be manually added to the board and the key persons given ‘admin’
-permissions.
+the next step.
+
+After the board is created, the people involved in the SRU cycle need to be
+manually added to the board and the key persons given ‘admin’ permissions.
 
 Next, kernel tasks would be created by "create-kernel-tasks" which would create
 tracking bugs and (if not for development) also add crank turn cards to the
 backlog of the cycle board.
+```
+create-kernel-tasks 2019.03.11
+```
 
-```
-create-kernel-tasks 2019.03.04
-```
 Members of the Development team would use the following command:
 
 ```
-create-kernel-tasks --devel 2019.03.04
+create-kernel-tasks --devel 2019.03.11
 ```
+
+In this case, "2019.03.11" is a real SRU Cyle. Replace with the current cycle.
 
 The first instance creates tracking bugs and related cards on the Trello board
 for all series and sources currently supported (excluding the current
@@ -103,37 +111,68 @@ development series). The second instance will only create tracking bugs
 prefixes the cycle tag with a ‘d’. The spin number is automatically calculated
 and starts with 1.
 
-### managing kernel re-spins, which we seem to do every cycle now
+### Managing kernel re-spins, which we seem to do every cycle now
+
 In this example, we will re-spin the linux-oem source for the currently running
 cycle. The following command will create new cards for cranking and a new
 tracking bug for linux-oem.  It also marks the old tracking bug as a duplicate
 of the new one and replaces the reference in the linux (master) tracking bug by
 one to the freshly created one:
-
 ```
 create-kernel-tasks --series bionic --source linux-oem 2018.09.24
 ```
-
-For more options, see the "--help" output.
+Again, "2019.09.24" is a real SRU cycle, so update accordingly. For more
+options, see the "--help" output.
 
 ## The next several steps are performed by all Stable Team crank-turners
 
-## Tool sync stage - cranky-fix
+### Initialize chroot environment
+
+Make sure you have a proper chroot environment for the release and the kernel
+that you are going to build.
+
+Example:
+```
+cranky-chroot run bionic:linux-kvm -- cat /etc/debian_chroot bionic-amd64
+```
+
+If you get an error message you need to initialize the chroot environment to
+properly build the kernel. In this case use cranky-chroot to create the chroot
+environment for the kernel to build (as documented in "cranky-env-conf.md").
+
+Example:
+```
+cranky-chroot create-base bionic:linux-kvm
+cranky-chroot create-session configs bionic:linux-kvm
+```
+### chroot section done - ready to crank!
+
+### Clone the kernel repository - cranky-checkout
+
+Use cranky-clone to get the kernel that you want to build.
+
+Example:
+```
+cd canonical/kernel/ubuntu
+cranky-clone bionic:linux-kvm
+```
+
+### Tool sync stage - cranky-fix
 
 This updates the local (in-tree) helper scripts which cranky uses to the latest
 version and also can update/create the "debian./etc/update.conf" file and
 commits those changes. In case of a rebase tree, the changes to the helpers may
 vanish on rebase if those were already done there.
-
 ```
-cranky fix
+cd bionic/linux-kvm
+cranky-fix
 ```
 
 **Note** The "cranky-fix" step has a chicken/egg problem when unbreaking a
 derivative chain. For example a senior crank turner got the wrong master
 directory when doing the new trusty/azure. Care must be taken to verify.
 
-## Rebase stage - "cranky-rebase"
+### Rebase stage - cranky-rebase
 
 At this stage, master kernels do not require anything to be done. So, running
 cranky-rebase on them should be a no-op, resulting in no change.
@@ -154,66 +193,69 @@ Should there be any conflicts during the rebase, normal git conflict resolution
 steps "git rebase ---skip, git rebase --continue, ..." have to be taken.
 
 Example:
-
 ```
-cranky rebase -l master-next
+cranky-rebase
 ```
 
 Another example:
-
 ```
-cranky rebase -r <local path to kernel git repo> [-b master-next]
+cranky-rebase -r <local path to kernel git repo> [-b master-next]
 ```
 
-Example Exercise:
-- creating a disco chroot environment (See Cranky-env-conf.md)
-- testing cranky rebase using the latest unstable kernel with:
-
+**Note** some times cranky-rebase can fail due to conflicts. If conflicts are
+affecting the debian helper scripts (debian/scripts) you can safely skip the
+commit and continue with the rebase:
 ```
-git clone lp:/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable
-cd unstable
-cranky rebase -l master
+git rebase --skip
 ```
-As noted earlier, the last command is a no-op, but it's a good test to see if
-cranky and the required chroot environment have been configured properly.
 
-Note: you should double check that the version number at the top of
-"debian.master/changelog" matches the version that you see on the dashboard
-"https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html"
-Look under "linux", inside the section of the release you are currently
-cranking like disco.
+Conflicts that cannot be resolve this way, must be resolved manually.
 
-## Starting commit - "cranky-start"
+**Note** Continue until the rebase completes without any conflicts and re-run
+cranky-fix at the end to make sure the helper scripts are correct.
+```
+$ cranky-fix
+```
+
+At this point you should double check that the version number at the top of
+"debian.master/changelog" matches the version that you see on the dashboard:
+```
+https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
+```
+
+Look under "linux", inside the section of the release in the dashboard you are
+currently cranking such as "bionic".
+
+### Starting commit - cranky-start
 
 When a new release is in the plans, a starting commit should be created. That
-was usually done with "maint-startnewrelease". Now, it's done by running
-"cranky-start". This step should be done after rebasing, because it's needed
-on backports as well, where the "update-from-master" script is called, but the
-changelog is just opened for inclusions.  The insertion of changelog entries is
-done by the cranky close stage.
-
+historically has been done with "maint-startnewrelease". Now, it's done by
+running "cranky-start". This step should be done after rebasing, because it's
+needed on backports as well, where the "update-from-master" script is called,
+but the changelog is opened just for inclusions.  The insertion of changelog
+entries is done by the cranky close stage.
 ```
-cranky-start
+$ cranky-start
+```
+**Note** cranky-open is a proposed replacement for cranky-start and being
+pilot-tested in SRU 2019.03.11 so this section is likely to change.
+
+### Link to tracker which is now done by cranky-link-tb
+```
+$ cranky-link-tb
 ```
 
-## Link to tracker which is now done by "cranky-link-tb"
-
-```
-cranky-link-tb
-```
-
-Note: this command is making public changes, it's not only affecting your
+**Note** this command is making public changes, it's not only affecting your
 local repository. Make sure to skip this test if you're doing local tests.
 
-## Closing commit - "cranky-close"
+### Closing commit - cranky-close
 
 The last commit before a release is prepared by using "cranky-close". All of
-the following steps will be performed steps are done automatically by
-"cranky-close" so there is no need to run any of them manually but these are
-explained here so the crank-turner knows whats going on.
-
+the following steps are done automatically by "cranky-close" so there is no
+need to run any of them manually but they are explained here so that the
+crank-turner knows what's going on for trouble-shooting purposes.
 ```
-cranky-close
+$ cranky-close
 ```
 
 This step:
@@ -222,7 +264,7 @@ updateconfig" and checking no changes have been done;
 
 2) Runs "insert-ubuntu-changes" to insert into the changelog the changes that
 come from a master kernel. When "cranky-close" is run on a master kernel, it
-won't do this step.
+won't perform this step.
 
 3) Runs "debian/rules insertchanges", inserting into the changelog the changes
 that it finds from git.
@@ -230,14 +272,20 @@ that it finds from git.
 4) Updates the release series, author and date on the changelog, thus closing
 the changelog.
 
-5) Commits with the right messages.
+5) Commits with the correct messages.
 
-6) Print the git-tag command a human should run to sign that tag.
+6) Prints to stdout the git-tag command a human should run to sign that tag.
+
+If you see the "git tag" command printed by cranky-close at the end, copy it
+and execute it (double checking if the tag is correct).
+
+Example:
+```
+$ git tag -sm 'Ubuntu-azure-4.15.0-1041.45' 'Ubuntu-azure-4.15.0-1041.45' 7eec9153251fde76ce1f664e5ad51c475a4ee20b
+```
 
 **Note** cranky-close doesn't always print the git-tag command. This is a bug
-that must be fixed.
-
-If you don't see a git-tag command do this instead:
+that must be fixed.  If you don't see a git-tag command do this instead:
 
 ```
 $ git log -1
@@ -260,45 +308,33 @@ string that you have) and run:
 git tag -s -m Ubuntu-kvm-4.15.0-1031.31 Ubuntu-kvm-4.15.0-1031.31
 ```
 
+### Tagging - cranky-tag
 
-**Note** the "cranky-close" step needs to be executed in a schroot environment.
+For now, just run "cranky-close", then copy and execute the last "git tag"
+output line.  See procedure above.
 
-In most cases, no options will be required. For bootstrapping new kernels,
-there is an option to skip all changes to the master kernel (-s). Optionally it
-is also possible to skip including any config changes into the changelog (-c).
-
-Example:
-
-```
-$ cranky close
-```
-Output is
-git tag -sm 'Ubuntu-gcp-xenial-4.15.0-1020.21~16.04.1'
-'Ubuntu-gcp-xenial-4.15.0-1020.21_16.04.1' 94761cc02e5d4949fb81f1a35ed3b4737c7ecf91
-
-## Tagging - "cranky tag"
-
-For now, just run "cranky close", then copy/paste the last output line.
-See procedure above if no output from cranky-close
-
-## Testing builds - "cranky test-build"
+### Testing builds - cranky-test-build
 
 Uses the "git-build-kernel" method to test-build the tip of the kernel branch
 currently checked out.
 
 Example:
 ```
-cranky test-build -f -a all kathleen
+cranky-test-build -f -a all kathleen
 ```
 
+Make sure to specify "-a all" for official builds, we want to make sure the
+kernel builds in all architectures, otherwise cranky-test-build would build
+the kernel only for the host's architecture.
+
 **Note** crank-turners need to add the following host entry to /etc/hosts
-before running this command:
+before running the example command: "cranky-test-build -f -a all kathleen"
 10.246.72.52 kathleen
 
-**Note** kathleen in the example above represents both a git remote
-name, which by default matches the name of the remote build host.
+**Note 2** kathleen in the example above represents both a git remote name,
+which by default matches the name of the remote build host.
 
-## Prepare meta packages - "cranky prepare-meta"
+### Prepare meta packages - cranky-prepare-meta
 
 Currently this step must be done manually, calling the "./update-version"
 scripts from "linux-meta" and "linux-signed" (the addition repositories
@@ -310,7 +346,7 @@ Example:
 cd ../linux-meta
 ./update-version ../linux
 ```
-Output is
+Output to stdout is
 ...
 git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
 git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
@@ -318,16 +354,14 @@ git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
 **Note** update-version doesn't run the "git commit" and "git tag" commands
 so you run them next.  These are last two lines printed to stdout above and
 are the commands you need to copy and run them manually.
-
 ```
 $ git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
 $ git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
 ```
-
-**Note** It is mandatory to run "udpate-version' from the "linux-meta" and
+It is mandatory to run "udpate-version' from the "linux-meta" and
 "linux-signed" directory, not from the kernel source directory.
 
-**Note 2** In certain releases "linux-signed" is missing, for example linux-kvm.
+**Note** In certain releases "linux-signed" is missing, for example linux-kvm.
 To show the list of expected repositories for a certain release/flavor use the
 command cranky-rmadison, example:
 
@@ -335,7 +369,32 @@ command cranky-rmadison, example:
 cranky-rmadison bionic:linux-kvm
 ```
 
-## Build sources - "cranky-build-sources"
+### Build sources - cranky-build-sources
+
+Before running cranky-build-sources, make sure you download the previous
+source code in the parent directory before running cranky-build-sources
+(do this with linux, linux-meta and linux-signed).
+
+Example:
+
+```
+$ cd ..
+$ pull-lp-source --download-only linux-kvm bionic
+$ pull-lp-source --download-only linux-meta-kvm bionic
+$ cd -
+```
+
+Doing it this way, cranky-build-source will produce the diff.gz instead of
+whole tarballs.
+
+Now run cranky-build-sources from the main kernel source directory to build the
+source packages.
+
+Example:
+
+```
+$ cranky-build-sources
+```
 
 **Note** this part is currently under discussion as to how to proceed.
 
@@ -350,25 +409,7 @@ Using "--help" isn't helpful at all right now.
 cranky-build-sources --help
 ```
 
-One example:
-
-```
-cranky-build-sources xenial:linux-raspi2
-
-**Note** to keep things fairly simple, if you run cranky-build-source from
-the kernel source directory seems to work just fine.
-
-**Note** make sure you download the previous source code in the parent
-directory before running cranky-build-sources. Example:
-
-```
-cd ..
-pull-lp-source --download-only linux-kvm bionic
-pull-lp-source --download-only linux-meta-kvm bionic
-cd -
-```
-
-## Reviewing - cranky-review
+### Reviewing - cranky-review
 
 Generates debdiff files for review between newly generated .dsc files and
 those currently in the archive. Takes source.changes filenames as
@@ -376,23 +417,54 @@ argument(s) and produces .debdiff files for review.
 
 Example (run this on the same directory where the .changes and .dsc files have
 been generated by the previous step):
+```
+cranky-review *.changes
+```
+
+### Uploading packages - cranky-upload
+
+The command cranky-upload does not exist yet. In the meantime, the following
+manual procedure will serve.
+
+Push git repositories to your Launchpad for a review:
 
 ```
-$ cranky-review \*.changes
+cd linux-kvm
+git remote add for-review lps:~arighi/+git/bionic-linux-kvm
+git push --tags for-review cranky/master-next
+cd ..
+
+cd linux-meta-kvm
+git remote add for-review lps:~arighi/+git/bionic-linux-meta-kvm
+git push --tags for-review cranky/master
+cd ..
 ```
 
-## Uploading packages - cranky-upload
+Upload source packages to wani.canonical.com for a review:
+```
+ssh wani.canonical.com mkdir -p for-review/bionic-linux-kvm
+scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/bionic-linux-kvm
+```
 
-Does not exist yet and is in-plan post Automation 1.0
+After source packages and git repositories have been reviewed and acknowledged
+by another kernel team member, copy the signed packages locally to your host
+and upload them using dput:
+
+```
+dput -u ppa:canonical-kernel-team/ppa linux-kvm_4.15.0-1031.31_source.changes
+dput -u ppa:canonical-kernel-team/ppa linux-meta-kvm_4.15.0.1031.31_source.changes
+```
+
+**Note** Make sure you have ```default_host_main = UNKNOWN"``` set in your
+~/.dput.cf, to prevent uploading packages to ```ubuntu```.
 
 ## Summary
-
 As noted, this document (a living document itself) remains somewhat incomplete
 as is the Automation 1.0 toolset. Both are still undergoing maturation as a
 result of increased focus on automation as our primary means of productivity
 improvement and has been a primary focus of our last two engineering sprints.
 
-This document is the work of Stefan Bader, Andrea Righi, with collaboration by
-Kleber Souza and content/editing by Terry Rudd. Any of us can be contacted
+This document is the work of Stefan Bader and Andrea Righi, with collaboration
+by Kleber Souza and content/editing by Terry Rudd. Any of us can be contacted
 regarding issues or additional suggested content contribution but all Kernel
 engineers should feel free to make change/update this document in kteam-tools.
