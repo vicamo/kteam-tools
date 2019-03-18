@@ -66,5 +66,5 @@ while [ "${#}" -gt 0 ] ; do
 	shift
 done
 
-here=$(dirname "$(realpath -e "${0}")")
+here=$(dirname "$(readlink -f "${0}")")
 "$here"/../stable/link-to-tracker "${args[@]}"

@@ -2,7 +2,7 @@
 
 here()
 {
-	dirname "$(realpath -e "${0}")"
+	dirname "$(readlink -f "${0}")"
 }
 
 fix_error()

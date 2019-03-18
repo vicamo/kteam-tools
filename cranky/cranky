@@ -1,6 +1,6 @@
 #!/bin/bash
 
-here=$(dirname "$(realpath -e "${0}")")
+here=$(dirname "$(readlink -f "${0}")")
 
 if [ "$#" -lt 1 ]; then
 	echo "Usage: $0 <cmd> ..." 1>&2

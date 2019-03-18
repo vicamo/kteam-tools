@@ -3,7 +3,7 @@
 C=${C-cranky}
 P=${P-$0}
 
-here=$(dirname "$(realpath -e "${0}")")
+here=$(dirname "$(readlink -f "${0}")")
 
 build_src()
 {
