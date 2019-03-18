@@ -39,23 +39,21 @@ EOF
 	exit 2
 }
 
-
-ARGS=""
+args=()
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
 		-s|--sru-cycle)
-			cycle=${2}
-			echo "SRU-cycle: $cycle"
 			shift
-			ARGS="$ARGS --sru-cycle $cycle"
+			echo "SRU-cycle: $1"
+			args+=('--sru-cycle' "$1")
 			;;
 		-d|--dry-run)
 			echo "(This is a dry-run)"
-			ARGS="$ARGS --dry-run"
+			args+=('--dry-run')
 			;;
 		-r|--re-run)
 			echo "(This is a re-run)"
-			ARGS="$ARGS --re-run"
+			args+=('--re-run')
 			;;
 		-h|--help)
 			usage
@@ -69,4 +67,4 @@ while [ "${#}" -gt 0 ] ; do
 done
 
 here=$(dirname "$(realpath -e "${0}")")
-"$here"/../stable/link-to-tracker $ARGS
+"$here"/../stable/link-to-tracker "${args[@]}"
