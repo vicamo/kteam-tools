@@ -133,31 +133,31 @@ that you are going to build.
 
 Example:
 ```
-cranky-chroot run bionic:linux-kvm -- cat /etc/debian_chroot bionic-amd64
+cranky chroot run bionic:linux-kvm -- cat /etc/debian_chroot bionic-amd64
 ```
 
 If you get an error message you need to initialize the chroot environment to
-properly build the kernel. In this case use cranky-chroot to create the chroot
+properly build the kernel. In this case use `cranky chroot` to create the chroot
 environment for the kernel to build (as documented in "cranky-env-conf.md").
 
 Example:
 ```
-cranky-chroot create-base bionic:linux-kvm
-cranky-chroot create-session configs bionic:linux-kvm
+cranky chroot create-base bionic:linux-kvm
+cranky chroot create-session configs bionic:linux-kvm
 ```
 ### chroot section done - ready to crank!
 
-### Clone the kernel repository - cranky-checkout
+### Clone the kernel repository - `cranky checkout`
 
-Use cranky-clone to get the kernel that you want to build.
+Use `cranky clone` to get the kernel that you want to build.
 
 Example:
 ```
 cd canonical/kernel/ubuntu
-cranky-clone bionic:linux-kvm
+cranky clone bionic:linux-kvm
 ```
 
-### Tool sync stage - cranky-fix
+### Tool sync stage - `cranky fix`
 
 This updates the local (in-tree) helper scripts which cranky uses to the latest
 version and also can update/create the "debian./etc/update.conf" file and
@@ -165,19 +165,19 @@ commits those changes. In case of a rebase tree, the changes to the helpers may
 vanish on rebase if those were already done there.
 ```
 cd bionic/linux-kvm
-cranky-fix
+cranky fix
 ```
 
-**Note** The "cranky-fix" step has a chicken/egg problem when unbreaking a
+**Note** The `cranky fix` step has a chicken/egg problem when unbreaking a
 derivative chain. For example a senior crank turner got the wrong master
 directory when doing the new trusty/azure. Care must be taken to verify.
 
-### Rebase stage - cranky-rebase
+### Rebase stage - `cranky rebase`
 
 At this stage, master kernels do not require anything to be done. So, running
-cranky-rebase on them should be a no-op, resulting in no change.
+`cranky rebase` on them should be a no-op, resulting in no change.
 
-For both derivatives and backports, "cranky-rebase" is the first stage. In both
+For both derivatives and backports, `cranky rebase` is the first stage. In both
 cases one has to fetch the tip of the branch from which the current kernel is
 derived/backported from. For derivatives, this is a local branch name which is
 specified by "-l <branch>". For backports this is a remote repository (which
@@ -194,15 +194,15 @@ steps "git rebase ---skip, git rebase --continue, ..." have to be taken.
 
 Example:
 ```
-cranky-rebase
+cranky rebase
 ```
 
 Another example:
 ```
-cranky-rebase -r <local path to kernel git repo> [-b master-next]
+cranky rebase -r <local path to kernel git repo> [-b master-next]
 ```
 
-**Note** some times cranky-rebase can fail due to conflicts. If conflicts are
+**Note** some times `cranky rebase` can fail due to conflicts. If conflicts are
 affecting the debian helper scripts (debian/scripts) you can safely skip the
 commit and continue with the rebase:
 ```
@@ -212,9 +212,9 @@ git rebase --skip
 Conflicts that cannot be resolve this way, must be resolved manually.
 
 **Note** Continue until the rebase completes without any conflicts and re-run
-cranky-fix at the end to make sure the helper scripts are correct.
+`cranky fix` at the end to make sure the helper scripts are correct.
 ```
-$ cranky-fix
+$ cranky fix
 ```
 
 At this point you should double check that the version number at the top of
@@ -226,36 +226,36 @@ https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
 Look under "linux", inside the section of the release in the dashboard you are
 currently cranking such as "bionic".
 
-### Starting commit - cranky-start
+### Starting commit - `cranky start`
 
 When a new release is in the plans, a starting commit should be created. That
 historically has been done with "maint-startnewrelease". Now, it's done by
-running "cranky-start". This step should be done after rebasing, because it's
+running `cranky start`. This step should be done after rebasing, because it's
 needed on backports as well, where the "update-from-master" script is called,
 but the changelog is opened just for inclusions.  The insertion of changelog
 entries is done by the cranky close stage.
 ```
-$ cranky-start
+$ cranky start
 ```
-**Note** cranky-open is a proposed replacement for cranky-start and being
+**Note** `cranky open` is a proposed replacement for `cranky start` and being
 pilot-tested in SRU 2019.03.11 so this section is likely to change.
 
-### Link to tracker which is now done by cranky-link-tb
+### Link to tracker which is now done by `cranky link-tb`
 ```
-$ cranky-link-tb
+$ cranky link-tb
 ```
 
 **Note** this command is making public changes, it's not only affecting your
 local repository. Make sure to skip this test if you're doing local tests.
 
-### Closing commit - cranky-close
+### Closing commit - `cranky close`
 
-The last commit before a release is prepared by using "cranky-close". All of
-the following steps are done automatically by "cranky-close" so there is no
+The last commit before a release is prepared by using `cranky close`. All of
+the following steps are done automatically by `cranky close` so there is no
 need to run any of them manually but they are explained here so that the
 crank-turner knows what's going on for trouble-shooting purposes.
 ```
-$ cranky-close
+$ cranky close
 ```
 
 This step:
@@ -263,7 +263,7 @@ This step:
 updateconfig" and checking no changes have been done;
 
 2) Runs "insert-ubuntu-changes" to insert into the changelog the changes that
-come from a master kernel. When "cranky-close" is run on a master kernel, it
+come from a master kernel. When `cranky close` is run on a master kernel, it
 won't perform this step.
 
 3) Runs "debian/rules insertchanges", inserting into the changelog the changes
@@ -276,7 +276,7 @@ the changelog.
 
 6) Prints to stdout the git-tag command a human should run to sign that tag.
 
-If you see the "git tag" command printed by cranky-close at the end, copy it
+If you see the "git tag" command printed by `cranky close` at the end, copy it
 and execute it (double checking if the tag is correct).
 
 Example:
@@ -284,7 +284,7 @@ Example:
 $ git tag -sm 'Ubuntu-azure-4.15.0-1041.45' 'Ubuntu-azure-4.15.0-1041.45' 7eec9153251fde76ce1f664e5ad51c475a4ee20b
 ```
 
-**Note** cranky-close doesn't always print the git-tag command. This is a bug
+**Note** `cranky close` doesn't always print the git-tag command. This is a bug
 that must be fixed.  If you don't see a git-tag command do this instead:
 
 ```
@@ -308,37 +308,37 @@ string that you have) and run:
 git tag -s -m Ubuntu-kvm-4.15.0-1031.31 Ubuntu-kvm-4.15.0-1031.31
 ```
 
-### Tagging - cranky-tag
+### Tagging - `cranky tag`
 
-For now, just run "cranky-close", then copy and execute the last "git tag"
+For now, just run `cranky close`, then copy and execute the last "git tag"
 output line.  See procedure above.
 
-### Testing builds - cranky-test-build
+### Testing builds - `cranky test-build`
 
 Uses the "git-build-kernel" method to test-build the tip of the kernel branch
 currently checked out.
 
 Example:
 ```
-cranky-test-build -f -a all kathleen
+cranky test-build -f -a all kathleen
 ```
 
 Make sure to specify "-a all" for official builds, we want to make sure the
-kernel builds in all architectures, otherwise cranky-test-build would build
+kernel builds in all architectures, otherwise `cranky test-build` would build
 the kernel only for the host's architecture.
 
 **Note** crank-turners need to add the following host entry to /etc/hosts
-before running the example command: "cranky-test-build -f -a all kathleen"
+before running the example command: `cranky test-build -f -a all kathleen`
 10.246.72.52 kathleen
 
 **Note 2** kathleen in the example above represents both a git remote name,
 which by default matches the name of the remote build host.
 
-### Prepare meta packages - cranky-prepare-meta
+### Prepare meta packages - `cranky prepare-meta`
 
 Currently this step must be done manually, calling the "./update-version"
 scripts from "linux-meta" and "linux-signed" (the addition repositories
-cloned via "cranky-checkout").
+cloned via `cranky checkout`).
 
 Example:
 
@@ -363,16 +363,16 @@ It is mandatory to run "udpate-version' from the "linux-meta" and
 
 **Note** In certain releases "linux-signed" is missing, for example linux-kvm.
 To show the list of expected repositories for a certain release/flavor use the
-command cranky-rmadison, example:
+command `cranky rmadison`, example:
 
 ```
-cranky-rmadison bionic:linux-kvm
+cranky rmadison bionic:linux-kvm
 ```
 
-### Build sources - cranky-build-sources
+### Build sources - `cranky build-sources`
 
-Before running cranky-build-sources, make sure you download the previous
-source code in the parent directory before running cranky-build-sources
+Before running `cranky build-sources`, make sure you download the previous
+source code in the parent directory before running `cranky build-sources`
 (do this with linux, linux-meta and linux-signed).
 
 Example:
@@ -384,21 +384,21 @@ $ pull-lp-source --download-only linux-meta-kvm bionic
 $ cd -
 ```
 
-Doing it this way, cranky-build-source will produce the diff.gz instead of
+Doing it this way, `cranky build-source` will produce the diff.gz instead of
 whole tarballs.
 
-Now run cranky-build-sources from the main kernel source directory to build the
+Now run `cranky build-sources` from the main kernel source directory to build the
 source packages.
 
 Example:
 
 ```
-$ cranky-build-sources
+$ cranky build-sources
 ```
 
 **Note** this part is currently under discussion as to how to proceed.
 
-There is ongoing discussion on how to use "cranky-build-sources"
+There is ongoing discussion on how to use `cranky build-sources`
 Should it be called Locally? How can we avoid getting chroots just
 re-created? Should we use one of the builders instead of building the
 sources local?
@@ -406,10 +406,10 @@ sources local?
 Using "--help" isn't helpful at all right now.
 
 ```
-cranky-build-sources --help
+cranky build-sources --help
 ```
 
-### Reviewing - cranky-review
+### Reviewing - `cranky review`
 
 Generates debdiff files for review between newly generated .dsc files and
 those currently in the archive. Takes source.changes filenames as
@@ -418,12 +418,12 @@ argument(s) and produces .debdiff files for review.
 Example (run this on the same directory where the .changes and .dsc files have
 been generated by the previous step):
 ```
-cranky-review *.changes
+cranky review *.changes
 ```
 
-### Uploading packages - cranky-upload
+### Uploading packages - `cranky upload`
 
-The command cranky-upload does not exist yet. In the meantime, the following
+The command `cranky upload` does not exist yet. In the meantime, the following
 manual procedure will serve.
 
 Push git repositories to your Launchpad for a review:
