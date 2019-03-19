@@ -888,9 +888,18 @@
             routing:
                 test-build:
                     - ['ppa:fips-cc-stig/fips-kernel', 'Release']
-                # TODO: add build, test and proposed
-                release:
+                build:
+                    - ['ppa:fips-cc-stig/fipsdevppa', 'Release']
+                test:
+                    - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
+                proposed:
+                    - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
+                updates:
                     - ['ppa:ubuntu-advantage/fips-updates', 'Release']
+                security:
+                    - ['ppa:ubuntu-advantage/fips-updates', 'Release']
+                release:
+                    - ['ppa:ubuntu-advantage/fips', 'Release']
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'master-next']
@@ -1462,9 +1471,18 @@
             routing:
                 test-build:
                     - ['ppa:fips-cc-stig/fips-kernel', 'Release']
-                # TODO: add build, test and proposed
-                release:
+                build:
+                    - ['ppa:fips-cc-stig/fipsdevppa', 'Release']
+                test:
+                    - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
+                proposed:
+                    - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
+                updates:
                     - ['ppa:ubuntu-advantage/fips-updates', 'Release']
+                security:
+                    - ['ppa:ubuntu-advantage/fips-updates', 'Release']
+                release:
+                    - ['ppa:ubuntu-advantage/fips', 'Release']
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel', 'master-next']
