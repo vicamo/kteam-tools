@@ -246,7 +246,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/disco']
             supported: true
-            derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     aws:
@@ -254,7 +254,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['aws']
-            copy-forward: [ '18.10', 'linux-aws' ]
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
             packages:
