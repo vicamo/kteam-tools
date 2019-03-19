@@ -226,6 +226,11 @@ src=${series_source#* }
 #       linux package.
 src='linux'
 
+# precise chroots don't get updates anymore, use trusty instead
+if [ "$series" = "precise" ]; then
+	series="trusty"
+fi
+
 case "$cmd" in
 create-base)
 	if base_chroot_available "$series" "amd64"; then
