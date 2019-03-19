@@ -226,19 +226,20 @@ https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
 Look under "linux", inside the section of the release in the dashboard you are
 currently cranking such as "bionic".
 
-### Starting commit - `cranky start`
+### Starting commit - `cranky open`
 
 When a new release is in the plans, a starting commit should be created. That
 historically has been done with "maint-startnewrelease". Now, it's done by
-running `cranky start`. This step should be done after rebasing, because it's
+running `cranky open`. This step should be done after rebasing, because it's
 needed on backports as well, where the "update-from-master" script is called,
 but the changelog is opened just for inclusions.  The insertion of changelog
 entries is done by the cranky close stage.
 ```
-$ cranky start
+$ cranky open
 ```
-**Note** `cranky open` is a proposed replacement for `cranky start` and being
-pilot-tested in SRU 2019.03.11 so this section is likely to change.
+**Note** `cranky start` is still available but `cranky open` usage is
+preferable. Use `cranky start --force` if you find any blocking issues
+with `cranky open`.
 
 ### Link to tracker which is now done by `cranky link-tb`
 ```
