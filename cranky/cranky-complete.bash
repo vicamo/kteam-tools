@@ -22,7 +22,7 @@ cmds=(
 	"tag -h --help -v --verbose -f --force"
 	"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
 	"update-snap -h --help --dry-run -u --updates -t --no-tags"
-	"updateconfigs -h --help"
+	"updateconfigs -h --help -c --clean"
 	"fdr -h --help -c --clean"
 )
 
