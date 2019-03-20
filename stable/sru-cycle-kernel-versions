@@ -30,7 +30,6 @@ class TheApp(object):
         #                                                    .- abi (group(4))
 
         y = {}
-        versions = {}
         r = requests.get('http://kernel.ubuntu.com/sru/kernel-sru-workflow.json')
         trackers = json.loads(r.text)
 
@@ -43,7 +42,7 @@ class TheApp(object):
 
                 m = ver_rc.search(title)
                 if m is not None:
-                    if m.group(1) != 'linux' and '-lts-' not in m.group(1) and '-hwe' not in m.group(1):
+                    if m.group(1) != 'linux' and '-lts-' not in m.group(1) and 'linux-hwe' not in m.group(1):
                         continue
 
                     if args.no_devel and bug['series name'] == trackers['info']['dev series']:
