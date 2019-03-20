@@ -63,7 +63,7 @@ resync_master()
 
 	for file in "$@"
 	do
-		base="$(basename $file)"
+		base="$(basename "$file")"
 		if [ -f "$master/$base" ] && [ -f "$file" ]; then
 			cp -p "$master/$base" "$file"
 			files+=("$file")
