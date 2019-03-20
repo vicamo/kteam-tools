@@ -9,7 +9,7 @@ from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError
 from .deltatime                         import DeltaTime
-from .snap                              import SnapDebs
+from .snap                              import SnapDebs, SnapError
 from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
@@ -93,7 +93,8 @@ class WorkflowBug():
                 # no primary snap defined.
                 if s.variant == 'combo' and s.snap.snap_info is None:
                     s.snap = None
-        except PackageError as e:
+        # XXX: should be a VariantError or something.
+        except (PackageError, SnapError) as e:
             # Report why we are not valid.
             for l in e.args:
                 cinfo(l, 'red')

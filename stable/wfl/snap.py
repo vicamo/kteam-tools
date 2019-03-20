@@ -15,6 +15,12 @@ from ktl.kernel_series                          import KernelSeries
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
 
+# SnapError
+#
+class SnapError(ShankError):
+    pass
+
+
 # SnapStoreError
 #
 class SnapStoreError(ShankError):
@@ -123,8 +129,45 @@ class SnapDebs:
     def __init__(s, shankbug, ks=None):
         s.bug = shankbug
 
+        s.snap_info = None
+
         s.kernel_series = KernelSeries() if ks is None else ks
 
-        # NOTE: For a combo bug the version is already handled.
         if s.bug.variant == 'snap-debs':
             s.bug.version_from_master()
+
+            # Expect this bug to have the data we need to identify the
+            # snap.
+            snap_name = s.bug.bprops.get('snap-name')
+            if snap_name is None:
+                raise SnapError("snap-name not provided")
+            source = s.bug.source
+            if source is not None:
+                s.snap_info = source.lookup_snap(snap_name)
+                if s.snap_info is None:
+                    raise SnapError("{}: snap does not appear in kernel-series for that source".format(snap_name))
+
+        elif s.bug.variant == 'combo':
+            # For a combo bug take versioning from our title.
+            s.bug.version_from_title()
+
+            # Lookup the primary snap and use that.
+            source = s.bug.source
+            if source is not None:
+                snaps = source.snaps
+                for snap in snaps:
+                    if snap.primary:
+                        s.snap_info = snap
+                        break
+
+        # Pick up versions from our bug as needed.
+        s.series = s.bug.series
+        s.name = s.bug.name
+        s.version = s.bug.version
+        s.source = s.bug.source
+        s.kernel = s.bug.kernel
+        s.abi = s.bug.abi
+
+        # Our name is our snap name.
+        if s.snap_info is not None:
+            s.name = s.snap_info.name

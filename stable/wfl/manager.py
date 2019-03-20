@@ -14,6 +14,7 @@ from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
 from .bug                               import WorkflowBug, WorkflowBugError
 from .package                           import PackageError, SeriesLookupFailure
+from .snap                              import SnapError
 from .bugmail                           import BugMailConfigFileMissing
 import wfl.wft
 
@@ -243,7 +244,8 @@ class WorkflowManager():
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
                     modified = s.process_bug_tasks(bug)
 
-                except PackageError as e:
+                # XXX: should be a VariantError or something.
+                except (PackageError, SnapError) as e:
                     for l in e.message:
                         cinfo(l, 'red')
             bug.save()
