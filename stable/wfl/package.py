@@ -131,9 +131,13 @@ class Package():
                 scan_pockets = ('ppa', 'Proposed', 'Release')
 
             for pocket in scan_pockets:
-                (src_archive, src_pocket) = s._routing[pocket]
+                if pocket not in s._routing:
+                    s.bug.overall_reason = "{} pocket not defined for {}".format(pocket, s.source)
+                    cwarn(s.bug.overall_reason)
+                    continue
 
                 s._cache[dep][pocket] = {}
+                (src_archive, src_pocket) = s._routing[pocket]
                 info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket)
                 s._cache[dep][pocket]['built']   = info[0]
                 s._cache[dep][pocket]['creator'] = info[1]
