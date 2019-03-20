@@ -23,6 +23,7 @@ cmds=(
 	"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
 	"update-snap -h --help --dry-run -u --updates -t --no-tags"
 	"updateconfigs -h --help"
+	"fdr -h --help -c --clean"
 )
 
 _cranky() {

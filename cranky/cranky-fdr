@@ -1,0 +1,65 @@
+#!/bin/bash -eu
+export LC_ALL=C.UTF-8
+
+# Check if the script was invoked via an symlink (ie:
+# cranky-updateconfigs):
+alias=
+P="${P:-$(basename "$0")}"
+if [ "${P#cranky[- ]}" != 'fdr' ]; then
+	alias="${P#cranky[- ]}"
+fi
+
+usage() {
+	cat << EOF
+Usage: $P [-h|--help] [-c|--clean] <target>...
+
+Call \`fakeroot debian/rules $alias <target>...\` inside the appropriate chroot.
+
+Positional arguments:
+  TARGET                One or more targets that should be given to
+                        debian/rules (examples: clean, genconfigs,
+			updateconfigs).
+
+Optional arguments:
+  -c, --clean           Include "clean" to the beginning of the list of
+                        targets.
+  -h, --help            Show this help message and exit.
+
+EOF
+[ -z "$alias" ] && cat << EOF
+Examples:
+  Clean build files and update configs:
+    \$ cranky fdr clean updateconfigs
+
+  Alternatively:
+    \$ cranky fdr -c updateconfigs
+
+EOF
+}
+
+targets=(${alias:+"$alias"})
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-c|--clean)
+			targets=('clean' "${targets[@]}")
+			;;
+		*)
+			targets+=("$1")
+			;;
+	esac
+	shift
+done
+
+# Check for debian/rules
+if [ ! -e debian/rules ]; then
+	echo "Cannot find debian/rules!" >&2
+	exit 1
+fi
+
+here=$(dirname "$(readlink -f "${0}")")
+echo "Running: \"$here/cranky\" chroot run -- fakeroot debian/rules ${targets[*]}"
+"$here/cranky" chroot run -- fakeroot debian/rules "${targets[@]}"
