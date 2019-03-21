@@ -80,7 +80,7 @@ Examples:
 
     try:
         handle = Handle().lookup_set(args.handle if args.handle else
-                                     os.getcwd())
+                                     os.getcwd(), validate=False)
     except HandleError as e:
         cerror(e)
         sys.exit(1)
