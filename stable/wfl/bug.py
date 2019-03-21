@@ -346,14 +346,14 @@ class WorkflowBug():
         '''
         if 'reason' in s.bprops:
             del s.bprops['reason']
-        if s.overall_reason is not None:
-            s.bprops['reason'] = {'overall': s.overall_reason}
 
     def status_summary(s):
         '''
         Return the current reason set for this bug.
         '''
         status = s.bprops
+        if s.overall_reason is not None:
+            status.setdefault('reason', {})['overall'] = s.overall_reason
         try:
             status['cycle'] = s.sru_cycle
             status['series'] = s.series
