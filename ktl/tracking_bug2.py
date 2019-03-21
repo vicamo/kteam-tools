@@ -110,9 +110,6 @@ class TrackingBug(object):
             magic = remainder[len(s.__tbd.no_version)+1:]
         else:
             s._target_version, magic = remainder.split(' ', 1)
-        if magic != '-proposed tracker':
-            msg = 'invalid title string ({})'.format(bug.title)
-            raise TrackingBugError(msg)
 
         # The target series name is encoded as a nomination for it on
         # a source package task (either real name or linux if new.
@@ -1106,7 +1103,7 @@ class TrackingBugs():
         cleave(s.__class__.__name__ + '.get_series_package')
         return bug_list
 
-    def __wf_task_valid(s, wf_series, ks_source):
+    def __wf_task_valid(s, wf_series, ks_source, variant):
         '''
         Internal helper to decide whether a certain workflow task should be
         added to a launchpad bug.
@@ -1141,6 +1138,21 @@ class TrackingBugs():
             if wf_series.name.endswith('-dnu'):
                 cdebug('    {} marked "do not use"'.format(wf_series.name[:-4]), 'yellow')
                 break
+
+            if ks_series.development and wf_series.name not in valid_dev_tasks:
+                break
+
+            # SELECT: drop any series for a different variant.
+            if variant in ("debs"):
+                if wf_series.name.startswith('snap-'):
+                    cdebug('    off-variant no {} '.format(wf_series.name), 'yellow')
+                    break
+            elif variant in ("snap-debs"):
+                if not wf_series.name.startswith('snap-'):
+                    cdebug('    off-variant no {}'.format(wf_series.name), 'yellow')
+                    break
+
+            # DEBS: exclusions related to debs.
             if wf_series.name.startswith('prepare-package-'):
                 pkg_type = wf_series.name.replace('prepare-package-', '')
                 ks_pkg = None
@@ -1151,6 +1163,25 @@ class TrackingBugs():
                 if ks_pkg is None:
                     cdebug('    no {}'.format(wf_series.name), 'yellow')
                     break
+            if wf_series.name == 'stakeholder-signoff':
+                if ks_source.stakeholder is None:
+                    cdebug('    no stakeholder-signoff', 'yellow')
+                    break
+            elif wf_series.name == 'promote-signing-to-proposed':
+                ks_route = ks_source.routing
+                if ks_route is not None:
+                    ks_dst = ks_route.lookup_destination('signing')
+                else:
+                    ks_dst = None
+
+                if ks_dst is None:
+                    cdebug('    no promote-signing-to-proposed', 'yellow')
+                    break
+
+            if wf_series.name == 'promote-to-release' and ks_series.development is False:
+                break
+
+            # SNAPS: exclusions related to snaps.
             if wf_series.name.startswith('snap-'):
                 snap = None
                 for entry in ks_source.snaps:
@@ -1172,31 +1203,13 @@ class TrackingBugs():
                     if not snap.gated:
                         cdebug('    no {}'.format(wf_series.name), 'yellow')
                         break
-            if wf_series.name == 'stakeholder-signoff':
-                if ks_source.stakeholder is None:
-                    cdebug('    no stakeholder-signoff', 'yellow')
-                    break
-            elif wf_series.name == 'promote-signing-to-proposed':
-                ks_route = ks_source.routing
-                if ks_route is not None:
-                    ks_dst = ks_route.lookup_destination('signing')
-                else:
-                    ks_dst = None
 
-                if ks_dst is None:
-                    cdebug('    no promote-signing-to-proposed', 'yellow')
-                    break
-
-            if wf_series.name == 'promote-to-release' and ks_series.development is False:
-                break
-            if ks_series.development and wf_series.name not in valid_dev_tasks:
-                break
             retval = True
             break
 
         return retval
 
-    def create(s, series_name, pkg_name, master_bug_id=None, tb_type='deb'):
+    def create(s, series_name, pkg_name, master_bug_id=None, name=None, variant='combo'):
         '''
         Create a new tracking bug (and a launchpad bug which backs it). The
         new tracking bug wil not have any of those elements set:
@@ -1215,9 +1228,10 @@ class TrackingBugs():
             exist in the current set) or None (default) if there is none.
         :type: int
 
-        :param tb_type: What kind of package is tracked by this tracking
-            bug. Currently there is only 'deb' and possibly extended for
-            'snap' tracking bugs.
+        :param variant: What kind of package is tracked by this tracking
+            bug. Currently there are 'combo', 'debs', and 'snap-debs'
+            tracker.
+
         :type: str
 
         :returns: New tracking bug object (added to the set as well).
@@ -1230,7 +1244,7 @@ class TrackingBugs():
         cdebug('Package:       %s' % pkg_name)
         if master_bug_id is not None:
             cdebug('Master bug ID: %i' % master_bug_id)
-        cdebug('Type:          %s' % tb_type)
+        cdebug('Variant:       %s' % variant)
         cdebug('Testing:       %s' % s.testing)
 
         #
@@ -1272,7 +1286,11 @@ class TrackingBugs():
             raise TrackingBugError(err)
 
         # Title string for launchpad bug
-        title = '{}: {} -proposed tracker'.format(pkg_name, s.__tbd.no_version)
+        if variant in ('debs', 'combo'):
+            description = '-proposed tracker'
+        else:
+            description = variant
+        title = '{}: {} {}'.format(pkg_name, s.__tbd.no_version, description)
         # Initial description
         desc  = s.__tbd.desc_tmpl
 
@@ -1292,44 +1310,45 @@ class TrackingBugs():
         except:
             raise TrackingBugError('failed to create embedded LP bug')
 
-
         # First add all of the workflow tasks
         for wf_task in wf_project.lp_project.series_collection:
-            if s.__wf_task_valid(wf_task, ks_source):
+            if s.__wf_task_valid(wf_task, ks_source, variant):
                 cdebug('    adding: %s' % wf_task.display_name)
                 nomination = lp_bug.addNomination(target=wf_task)
                 if nomination.canApprove():
                     nomination.approve()
 
         # Then add a package task for the ubuntu project
-        ubuntu_project = lps.projects['ubuntu']
-        target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
+        if variant in ('debs', 'combo'):
+            ubuntu_project = lps.projects['ubuntu']
+            target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
 
-        # Try to add an Ubuntu task for the source (to be nominated for
-        # the target series). This can fail if the source was never published.
-        try:
-            cdebug('Adding {} task.'.format(pkg_name), 'blue')
-            task = lp_bug.addTask(target=target)
-            task.status = 'Confirmed'
-        except:
-            cwarn('The {} source was not published. Re-trying with "linux"'.format(lp_package))
-            target = lp.load(ubuntu_project.self_link + '/+source/linux')
-
+            # Try to add an Ubuntu task for the source (to be nominated for
+            # the target series). This can fail if the source was never published.
             try:
-                cdebug('Adding fallback "linux" task.', 'blue')
+                cdebug('Adding {} task.'.format(pkg_name), 'blue')
                 task = lp_bug.addTask(target=target)
-                task.status = 'Invalid'
+                task.status = 'Confirmed'
             except:
-                # Invalidate all tasks added so far
-                for task in lp_bug.tasks:
-                    task.status = 'Invalid'
-                raise TrackingBugError('failed adding the source package task')
+                cwarn('The {} source was not published. Re-trying with "linux"'.format(lp_package))
+                target = lp.load(ubuntu_project.self_link + '/+source/linux')
 
-        if lp_bug is not None:
+                try:
+                    cdebug('Adding fallback "linux" task.', 'blue')
+                    task = lp_bug.addTask(target=target)
+                    task.status = 'Invalid'
+                except:
+                    # Invalidate all tasks added so far
+                    for task in lp_bug.tasks:
+                        task.status = 'Invalid'
+                    raise TrackingBugError('failed adding the source package task')
+
             nomination = lp_bug.addNomination(target=distro_series)
             if nomination.canApprove():
                 nomination.approve()
 
+        # Finally build a real tracking bug.
+        if lp_bug is not None:
             cdebug('Creating new TrackingBug() object')
             # Convert raw LP bug into LPTK bug for tracking bug creation
             lptk_bug = lps.get_bug(lp_bug.id)
@@ -1347,6 +1366,15 @@ class TrackingBugs():
             new_tb.tags_reset(testing=s.testing)
             if s.testing is False and s.private is False:
                 new_tb.subscribers_add()
+
+            # Add the variant tag.
+            if variant != 'combo':
+                new_tb.wf_set_property('variant', variant)
+            if variant == 'snap-debs':
+                new_tb.wf_set_property('snap-name', name)
+
+            # Ensure any changes are sync'd to the bug.
+            new_tb.save()
 
         s.__add_to_set(new_tb)
         cleave(s.__class__.__name__ + '.create')
