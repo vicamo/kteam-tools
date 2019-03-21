@@ -168,6 +168,11 @@ class WorkflowBug():
         s.kernel = master_bug.kernel
         s.abi = master_bug.abi
 
+    def update_title(s, suffix='-proposed tracker'):
+        title = "{}/{}: {} {}".format(s.series, s.name, s.version, suffix)
+        if s.title != title:
+            s.lpbug.title = title
+            s.title = title
 
     def __title_decode(s):
         title = s.title

@@ -135,6 +135,9 @@ class SnapDebs:
         s.kernel_series = KernelSeries() if ks is None else ks
 
         if s.bug.variant == 'snap-debs':
+            # We take our version from the debs we are snapping up
+            # so grab the version data from there and update the bug
+            # title to match as needed.
             s.bug.version_from_master()
 
             # Expect this bug to have the data we need to identify the
@@ -147,6 +150,8 @@ class SnapDebs:
                 s.snap_info = source.lookup_snap(snap_name)
                 if s.snap_info is None:
                     raise SnapError("{}: snap does not appear in kernel-series for that source".format(snap_name))
+
+            s.bug.update_title(suffix='snap-debs snap:' + snap_name)
 
         elif s.bug.variant == 'combo':
             # For a combo bug take versioning from our title.
