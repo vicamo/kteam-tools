@@ -2223,7 +2223,7 @@
                 linux-restricted-modules-2.6.15:
                     type: lrm
 
-# 5.10 (beezy)
+# 5.10 (breezy)
 '5.10':
     codename: breezy
     development: false
