@@ -47,7 +47,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SWM status tool')
     parser.add_argument('--phase', help='Display phase information',
         action='store_true', default=False)
+    parser.add_argument('--reasons', help='Display reason information',
+        action='store_true', default=False)
+    parser.add_argument('--tasks', help='Display task information',
+        action='store_true', default=False)
     args = parser.parse_args()
+
+    # Ask for nothing, get reasons only.
+    if args.phase is False and args.reasons is False and args.tasks is False:
+        args.reasons = True
 
     status = SwmStatus()
 
@@ -60,7 +68,22 @@ if __name__ == '__main__':
                 print(bug_id, bug_data)
         if len(bug_data.get('reason', {}).keys()) == 0:
             bug_data['reason'] = { 'idle': bug_data.get('phase', 'Not Ready'), }
-        if args.phase is False:
+
+        if args.tasks is True:
+            for task in sorted(bug_data.get('task', {}).keys()):
+                entry = {
+                    'bugid':            bug_prefix(bug_id),
+                    'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
+                    'cycle':            bug_data.get('cycle', '-'),
+                    'series':           bug_data.get('series', '-'),
+                    'package':          bug_data.get('package', '-'),
+                    'version':          bug_data.get('version', '--not-specified--'),
+                    'phase':            task,
+                    'phase_status':     bug_data['task'][task]['status'],
+                    }
+                results.append((sort.format(**entry), entry))
+
+        if args.reasons is True:
             for task in sorted(bug_data.get('reason', {}).keys()):
                 entry = {
                     'bugid':            bug_prefix(bug_id),
@@ -73,7 +96,8 @@ if __name__ == '__main__':
                     'phase_status':     bug_data['reason'][task],
                     }
                 results.append((sort.format(**entry), entry))
-        else:
+
+        if args.phase is True:
             entry = {
                 'bugid':            bug_prefix(bug_id),
                 'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
