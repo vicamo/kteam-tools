@@ -353,8 +353,17 @@ class WorkflowBug():
         Return the current reason set for this bug.
         '''
         status = s.bprops
+
+        # Add the current tasks status information.
+        task = status.setdefault('task', {})
+        for taskname in s.tasks_by_name:
+            task[taskname] = {
+                'status': s.tasks_by_name[taskname].status,
+                }
+
         if s.overall_reason is not None:
             status.setdefault('reason', {})['overall'] = s.overall_reason
+
         try:
             status['cycle'] = s.sru_cycle
             status['series'] = s.series
