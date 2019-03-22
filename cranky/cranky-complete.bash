@@ -24,6 +24,7 @@ cmds=(
 	"update-snap -h --help --dry-run -u --updates -t --no-tags"
 	"updateconfigs -h --help -c --clean"
 	"fdr -h --help -c --clean"
+	"spin -h --help -d --dry-run --devel"
 )
 
 _cranky() {
