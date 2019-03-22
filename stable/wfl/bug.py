@@ -412,7 +412,8 @@ class WorkflowBug():
         try:
             status['cycle'] = s.sru_cycle
             status['series'] = s.series
-            status['package'] = s.name
+            status['source'] = s.name
+            status['package'] = s.name # XXX: legacy
             if s.version is not None:
                 status['version'] = s.version
         except:
