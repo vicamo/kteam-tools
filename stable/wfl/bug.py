@@ -90,6 +90,7 @@ class WorkflowBug():
         if s.source is None:
             raise WorkflowBugError('Source not found in kernel-series')
         s.is_development_series = s.source.series.development
+        s.is_development = s.source.development
 
         try:
             s.debs = Package(s.lp, s, ks=s.kernel_series)

@@ -13,7 +13,7 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.__init__')
 
     def _cycle_ready(s):
-        if s.bug.is_development_series or (s.bug.master_bug is not None and s.bug.master_bug.is_development_series):
+        if s.bug.is_development or (s.bug.master_bug is not None and s.bug.master_bug.is_development):
             return True
 
         if s.bug.sru_spin is None:
@@ -21,6 +21,9 @@ class Promoter(TaskHandler):
         return s.bug.sru_spin.ready_to_release
 
     def _cycle_hold(s):
+        if s.bug.is_development or (s.bug.master_bug is not None and s.bug.master_bug.is_development):
+            return False
+
         # If the cycle is not defined just hold the kernel.
         if s.bug.sru_spin is None:
             return True
