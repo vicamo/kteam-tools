@@ -889,7 +889,7 @@
                 test-build:
                     - ['ppa:fips-cc-stig/fips-kernel', 'Release']
                 build:
-                    - ['ppa:fips-cc-stig/fipsdevppa', 'Release']
+                    - ['ppa:ubuntu-advantage/fips-kernel-source', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
                 proposed:
@@ -1472,7 +1472,7 @@
                 test-build:
                     - ['ppa:fips-cc-stig/fips-kernel', 'Release']
                 build:
-                    - ['ppa:fips-cc-stig/fipsdevppa', 'Release']
+                    - ['ppa:ubuntu-advantage/fips-kernel-source', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/fips-proposed', 'Release']
                 proposed:
