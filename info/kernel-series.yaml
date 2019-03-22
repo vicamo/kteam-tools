@@ -1240,6 +1240,7 @@
                 linux-meta-flo:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'flo']
+            supported: false
 
         linux-gcp:
             packages:
@@ -1358,6 +1359,7 @@
                 linux-meta-joule:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-joule']
+            supported: false
 
         linux-kvm:
             packages:
@@ -1384,6 +1386,7 @@
                 linux-meta-mako:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'mako']
+            supported: false
 
         linux-oem:
             packages:
@@ -1641,6 +1644,7 @@
                 linux-keystone:
                 linux-meta-keystone:
                     type: meta
+            supported: false
 
         linux-lts-utopic:
             packages:
@@ -1653,6 +1657,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-utopic']
             derived-from: [ '14.10', 'linux' ]
+            supported: false
 
         linux-lts-vivid:
             packages:
@@ -1665,6 +1670,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-vivid']
             derived-from: [ '15.04', 'linux' ]
+            supported: false
 
         linux-lts-wily:
             packages:
@@ -1677,6 +1683,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-wily']
             derived-from: [ '15.10', 'linux' ]
+            supported: false
 
         linux-lts-xenial:
             packages:
@@ -1916,6 +1923,7 @@
                 linux-meta-mako:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/precise', 'mako']
+            supported: false
 
         linux-manta:
             packages:
