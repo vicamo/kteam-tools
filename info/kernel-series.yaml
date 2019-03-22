@@ -589,6 +589,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-edge']
             supported: true
+            development: true
             backport: true
             derived-from: [ '19.04', 'linux' ]
             #derived-from: [ '18.04', 'linux-hwe' ]
