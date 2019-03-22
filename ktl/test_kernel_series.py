@@ -844,6 +844,32 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
 
         self.assertFalse(source.supported)
 
+    def test_supported_absent_series_present_true(self):
+        data = """
+        '18.04':
+            supported: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertTrue(source.supported)
+
+    def test_supported_absent_series_present_false(self):
+        data = """
+        '18.04':
+            supported: false
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertFalse(source.supported)
+
     def test_severe_only_present_true(self):
         data = """
         '18.04':

@@ -262,7 +262,7 @@ class KernelSourceEntry:
 
     @property
     def supported(self):
-        return self._data.get('supported', False)
+        return self._data.get('supported', self.series.supported)
 
     @property
     def severe_only(self):
