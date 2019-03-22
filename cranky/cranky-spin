@@ -22,7 +22,7 @@ function usage() {
 }
 
 function match() {
-	echo "$1" | gawk '/^'$2'$/{exit 0} {exit 1}'
+	echo "$1" | gawk '/^'"$2"'$/{exit 0} {exit 1}'
 	return $?
 }
 
@@ -56,30 +56,30 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-if [ "$handle" == "" -o "$spin" == "" ]; then
+if [ "$handle" == "" ] || [ "$spin" == "" ]; then
 	echo "error: Missing required arguments" >&2
 	usage
 fi
-if ! $(match "$handle" "[a-z]+:[a-z][a-z\-]*");  then
+if ! match "$handle" "[a-z]+:[a-z][a-z\-]*";  then
 	echo "error: Invalid handle format" >&2
 	usage
 fi
-if ! $(match "$spin" "[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]+"); then
+if ! match "$spin" "[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]+"; then
 	echo "error: Invalid spin format" >&2
 	usage
 fi
-series=$(echo $handle|cut -d: -f1)
-sourcename=$(echo $handle|cut -d: -f2)
-cycledate=$(echo $spin|cut -d- -f1)
-spinnr=$(echo $spin|cut -d- -f2)
+series=$(echo "$handle" |cut -d: -f1)
+sourcename=$(echo "$handle" |cut -d: -f2)
+cycledate=$(echo "$spin" |cut -d- -f1)
+spinnr=$(echo "$spin" |cut -d- -f2)
 
-if [ $devel -eq 0 ]; then
+if [ "$devel" -eq 0 ]; then
 	args+=('--series' "$series")
 fi
 args+=('--source' "$sourcename")
 args+=('--spin' "$spinnr" "$cycledate")
 
-here=$(dirname $(readlink -f "$0"))
+here=$(dirname "$(readlink -f "$0")")
 "$here"/../stable/create-kernel-tasks "${args[@]}"
 
 exit 0
