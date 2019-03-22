@@ -257,6 +257,10 @@ class KernelSourceEntry:
         return versions[-1]
 
     @property
+    def development(self):
+        return self._data.get('development', self.series.development)
+
+    @property
     def supported(self):
         return self._data.get('supported', False)
 

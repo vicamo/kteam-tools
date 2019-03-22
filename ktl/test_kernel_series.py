@@ -742,6 +742,70 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
 
         self.assertEqual(source.versions, None)
 
+    def test_development_present_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    development: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.development, True)
+
+    def test_development_present_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    development: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.development, False)
+
+    def test_development_absent_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.development, False)
+
+    def test_development_absent_series_present_true(self):
+        data = """
+        '18.04':
+            development: true
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.development, True)
+
+    def test_development_absent_series_present_false(self):
+        data = """
+        '18.04':
+            development: false
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.development, False)
+
     def test_supported_present_true(self):
         data = """
         '18.04':
