@@ -360,6 +360,11 @@ class WorkflowBug():
             task[taskname] = {
                 'status': s.tasks_by_name[taskname].status,
                 }
+            # XXX: ownership of tasks should be more obvious, but this is
+            # only needed while we have combo bugs in reality.
+            if (taskname.startswith('snap-') and s.snap is not None and
+                s.snap.name != s.name):
+                task[taskname]['target'] = s.snap.name
 
         if s.overall_reason is not None:
             status.setdefault('reason', {})['overall'] = s.overall_reason
