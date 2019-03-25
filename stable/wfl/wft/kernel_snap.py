@@ -1,6 +1,6 @@
 
 from wfl.log                                    import center, cleave, cinfo, cerror
-from wfl.snap                                   import SnapStore, SnapStoreError
+from wfl.snap                                   import SnapStoreError
 from .base                                      import TaskHandler
 
 
@@ -13,9 +13,6 @@ class KernelSnapBase(TaskHandler):
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
         super(KernelSnapBase, s).__init__(lp, task, bug)
-
-        s._snap_info = False
-        s._snap_store = None
 
         # For a legacy combo variant the debs from which we will make a snap
         # are associated with this bug.  For a snap variant they come from
@@ -32,50 +29,21 @@ class KernelSnapBase(TaskHandler):
         center(s.__class__.__name__ + '.do_verify_release')
         retval = False
 
-        if s.snap_info.track is not None:
-            channel = "%s/%s" % (s.snap_info.track, risk)
-        else:
-            channel = risk
-
         try:
-            if s.snap_store.match_version(channel):
+            good, reasons = s.bug.snap.is_in_tracks(risk)
+            if good is True:
                 s.task.status = 'Fix Released'
                 s.task.timestamp('finished')
                 retval = True
             else:
-                s.task.reason = 'Pending -- snap not in {} channel'.format(channel)
-                cinfo('    snap not in %s channel' % channel, 'yellow')
+                s.task.reason = 'Pending -- snap not in {} channel'.format(','.join(reasons))
+                cinfo('    snap not in %s channel' % ','.join(reasons), 'yellow')
         except SnapStoreError as e:
             cerror('    failed to query snap store (%s)' % str(e))
             s.task.reason = 'Stalled -- snap store query failed ({})'.format(str(e))
 
         cleave(s.__class__.__name__ + '.do_verify_release')
         return retval
-
-    @property
-    def snap_info(s):
-        '''
-        Return a KernelSeriesSnapEntry for the snap.  If not found, None
-        is returned.
-        '''
-        if s._snap_info == False:
-            package = s.debs_bug.source
-            if package:
-                # XXX: the bugs we create need to record the snap name.
-                snaps = package.snaps
-                s._snap_info = None
-                for snap in snaps:
-                    if snap.primary:
-                        s._snap_info = snap
-                        break
-
-        return s._snap_info
-
-    @property
-    def snap_store(s):
-        if s._snap_store is None:
-            s._snap_store = SnapStore(s.debs_bug, s.snap_info)
-        return s._snap_store
 
 
 class SnapReleaseToEdge(KernelSnapBase):
@@ -247,7 +215,7 @@ class SnapReleaseToStable(KernelSnapBase):
         retval = False
 
         # Set the task to invalid if 'stable' is not set on kernel-series-info.yaml
-        if not s.snap_info.stable:
+        if not s.bug.snap.snap_info.stable:
             cinfo('    not a stable snap', 'yellow')
             s.task.status = 'Invalid'
             retval = True

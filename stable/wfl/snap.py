@@ -130,6 +130,7 @@ class SnapDebs:
         s.bug = shankbug
 
         s.snap_info = None
+        s._snap_store = None
 
         s.kernel_series = KernelSeries() if ks is None else ks
 
@@ -171,3 +172,23 @@ class SnapDebs:
         # Our name is our snap name.
         if s.snap_info is not None:
             s.name = s.snap_info.name
+
+    @property
+    def snap_store(s):
+        if s._snap_store is None:
+            s._snap_store = SnapStore(s.bug, s.snap_info)
+        return s._snap_store
+
+    def is_in_tracks(s, risk):
+        center(s.__class__.__name__ + '.is_in_channel')
+        retval = False
+
+        if s.snap_info.track is not None:
+            channel = "%s/%s" % (s.snap_info.track, risk)
+        else:
+            channel = risk
+
+        retval = s.snap_store.match_version(channel)
+
+        cleave(s.__class__.__name__ + '.is_in_channel')
+        return retval, [channel]
