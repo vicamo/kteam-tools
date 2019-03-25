@@ -907,15 +907,21 @@ class Package():
             msg['arches'] = ['amd64', 'i386']
 
         if ppa:
+            routing = s.routing('ppa')
+        else:
+            routing = s.routing('Proposed')
+
+        (archive, pocket) = routing
+        if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'
-            if s.series in ['precise']:
-                msg['ppa'] = 'ppa:canonical-kernel-esm/ppa'
-            else:
-                msg['ppa'] = 'ppa:canonical-kernel-team/ppa'
-            msg['key']    = 'kernel.published.ppa.%s' % s.series
-        elif s.series in ['precise']:
-            msg['pocket'] = 'ppa'
-            msg['ppa']    = 'ppa:canonical-kernel-esm/proposed'
+            # XXX: need to find out what this used for, if it is exclusively
+            #      used to look things up using lp.archive.getByReference()
+            #      then this ~ handling is not required.
+            # XXX: it appears this is used to do an apt-add-repository which
+            #      would need a ppa: prefix, though it will add one if missing
+            #      and apt-add-repository does handle a ~ prefix as expected
+            #      so it is highly likely this is not needed.
+            msg['ppa']    = archive.reference.replace('~', 'ppa:')
             msg['key']    = 'kernel.published.ppa.%s' % s.series
 
         if s.bug._dryrun or s.bug._no_announcements:
