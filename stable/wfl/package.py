@@ -3,8 +3,10 @@
 
 import re
 from datetime                           import datetime, timedelta
+import json
 
 from ktl.kernel_series                  import KernelSeries
+from ktl.msgq                           import MsgQueue
 from lib.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
@@ -74,7 +76,9 @@ class Package():
                 s._routing[key] = (archive, route[1])
             s.routing_mode = s.source.routing.name
 
-        cinfo('    Routing mode: {}'.format(s.routing_mode), 'blue')
+
+        cinfo('    test_flavours: %s' % (s.test_flavours()), 'blue')
+        cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
             cinfo('        {}: {} {}'.format(pocket, pocket_data[0], pocket_data[1]), 'blue')
@@ -875,3 +879,96 @@ class Package():
         cleave(s.__class__.__name__ + '.check_component_in_pocket (True)')
         return True
 
+    # send_testing_message
+    #
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic"):
+        # Send a message to the message queue. This will kick off testing of
+        # the kernel packages in the -proposed pocket.
+        #
+        msg = {
+            "key"            : "kernel.publish.proposed.%s" % s.series,
+            "op"             : op,
+            "who"            : ["kernel"],
+            "pocket"         : "proposed",
+            "date"           : str(datetime.utcnow()),
+            "series-name"    : s.series,
+            "kernel-version" : s.version,
+            "package"        : s.name,
+            "flavour"        : flavour,
+        }
+
+        # Add the kernel-sru-cycle identifier to the message
+        #
+        msg['sru-cycle'] = s.bug.sru_cycle
+
+        # At this time only 2 arches have the lowlatency flavour
+        #
+        if flavour == 'lowlatency':
+            msg['arches'] = ['amd64', 'i386']
+
+        if ppa:
+            msg['pocket'] = 'ppa'
+            if s.series in ['precise']:
+                msg['ppa'] = 'ppa:canonical-kernel-esm/ppa'
+            else:
+                msg['ppa'] = 'ppa:canonical-kernel-team/ppa'
+            msg['key']    = 'kernel.published.ppa.%s' % s.series
+        elif s.series in ['precise']:
+            msg['pocket'] = 'ppa'
+            msg['ppa']    = 'ppa:canonical-kernel-esm/proposed'
+            msg['key']    = 'kernel.published.ppa.%s' % s.series
+
+        if s.bug._dryrun or s.bug._no_announcements:
+            cinfo('    dryrun - Sending msgq announcement', 'red')
+            for i, v in msg.items():
+                cinfo('        [' + str(i) + '] = ' + str(v), 'red')
+        else:
+            if s.bug.local_msgqueue_port:
+                mq = MsgQueue(address='localhost', port=s.bug.local_msgqueue_port)
+            else:
+                mq = MsgQueue()
+
+            mq.publish(msg['key'], msg)
+
+        return msg
+
+    # send_boot_testing_requests
+    #
+    def send_boot_testing_requests(s):
+        s.send_testing_requests(op="boot", ppa=True)
+
+    # send_proposed_testing_requests
+    #
+    def send_proposed_testing_requests(s):
+        s.send_testing_requests(op="sru", ppa=False)
+
+    # test_flavours
+    #
+    def test_flavours(s):
+        # XXX: this makes no sense at all to be limited to xenial.
+        generic = (s.name == 'linux' or
+                   s.name.startswith('linux-hwe') or
+                   s.name.startswith('linux-lts-'))
+        if generic and s.series == 'xenial':
+            flavours = [ 'generic', 'lowlatency' ]
+        elif generic:
+            flavours = [ 'generic' ]
+        else:
+            flavours = [ s.name.replace('linux-', '') ]
+
+        return flavours
+
+    # send_testing_requests
+    #
+    def send_testing_requests(s, op="sru", ppa=False):
+        for flavour in s.test_flavours():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
+
+    # send_testing_request
+    #
+    def send_testing_request(s, op="sru", ppa=False, flavour="generic"):
+        msg = s.send_testing_message(op, ppa, flavour)
+
+        where = " uploaded" if not ppa else " available in ppa"
+        subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
+        s.bug.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com,sean.feole@canonical.com')
