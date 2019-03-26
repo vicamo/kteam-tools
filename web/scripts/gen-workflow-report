@@ -306,10 +306,14 @@ class GenWorkflowReport():
         retval += '    <tr>\n'
 
         title = bug['title']
-        package, other = title.split(':')
+        package, other = title.split(':')[:2]
+        if '/' in package:
+            (_, package) = package.split('/')
         other = other.strip()
+        # Extract the extra detail from the title to help identify the bug.
+        detail = (title.split(None, 2) + [ '???', '????' ])[2]
         version, other = other.split(' ', 1)
-        retval += '        <td width="210" style="font-weight: bold; font-size:14px;" >%s &nbsp; %s</td>\n' % (package, version)
+        retval += '        <td width="210" style="font-weight: bold; font-size:14px;" >%s &nbsp; %s &nbsp; (%s)</td>\n' % (package, version, detail)
 
         retval += '        <td width="30"><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
         retval += '    </tr>\n'
@@ -446,7 +450,9 @@ class GenWorkflowReport():
             for b in self.combined:
                 bug = self.combined[b]
                 title = bug['title']
-                package, other = title.split(':')
+                package, other = title.split(':')[:2]
+                if '/' in package:
+                    (_, package) = package.split('/')
                 if bug['series name'] == ss.codename:
                     if package in pkgs:
                         pkgs[package].append(b)
