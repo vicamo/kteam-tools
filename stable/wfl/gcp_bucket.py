@@ -45,7 +45,7 @@ class GcpBucketObject:
         try:
             # XXX: this should be a separate function which returns an opener
             #      with proxy if the object is _external_.
-            opener = build_opener(ProxyHandler({'https': 'https://proxy.internal:3128/'}))
+            opener = build_opener(ProxyHandler({'https': 'https://squid.internal:3128/'}))
             req = Request(url)
             with opener.open(req) as resp:
                 self._data = json.loads(resp.read().decode('utf-8'))
