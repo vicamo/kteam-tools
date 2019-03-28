@@ -172,6 +172,8 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
             build:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
             updates:
@@ -896,6 +898,8 @@
                     - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/fips', 'Release']
                 proposed:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 updates:
@@ -1482,6 +1486,8 @@
                     - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/fips', 'Release']
                 proposed:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 updates:
