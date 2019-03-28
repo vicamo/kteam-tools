@@ -101,7 +101,10 @@ class TrackingBug(object):
 
         # The embedded bug title encodes <package>: <version> -proposed tracker
         #   <version> initially is the string "<version to be filled>"
+        s._target_series = None
         package, remainder = bug.title.split(' ', 1)
+        if '/' in package:
+            (s._target_series, package) = package.split('/')
         if not package.endswith(':'):
             msg = 'invalid title string ({})'.format(bug.title)
             raise TrackingBugError(msg)
@@ -111,27 +114,15 @@ class TrackingBug(object):
         else:
             s._target_version, magic = remainder.split(' ', 1)
 
-        # The target series name is encoded as a nomination for it on
-        # a source package task (either real name or linux if new.
-        # The target_link of interest contains the string 'ubuntu' and
-        # then not immediately followed by '+source'.
-        # FIXME: If this gets encoded either in the title or in the
-        #        SWM properties, the whole package related tasks could
-        #        probably be avoided.
-        for task in bug.tasks:
-            tgt_link = task.lp_bug_task.target_link
-
-            if '/ubuntu/' in tgt_link:
-                if '/ubuntu/+source/' not in tgt_link:
-                    part = tgt_link.partition('/+source/')
-                    package = part[2]
-                    series_name = part[0].rsplit('/', 1)[1]
-                    s._target_series = series_name
-
         #
         # If the launchpad bug already has tracking bug related info
         # 
         for tag in bug.tags:
+            # The series is primarily encoded in the tags.
+            if s.__kernel_series.lookup_series(codename=tag) is not None:
+                s._target_series = tag
+                continue
+
             # Check for cycle tag
             prefix = s.__tbd.tag_names['default']['cycle']
             if tag.startswith(prefix):
@@ -160,6 +151,24 @@ class TrackingBug(object):
             if tag.startswith(prefix):
                 s._master_bug_id = int(tag[len(prefix):])
                 s.__type = 'backport'
+
+        # The target series name is encoded as a nomination for it on
+        # a source package task (either real name or linux if new.
+        # The target_link of interest contains the string 'ubuntu' and
+        # then not immediately followed by '+source'.
+        # FIXME: If this gets encoded either in the title or in the
+        #        SWM properties, the whole package related tasks could
+        #        probably be avoided.
+        if s._target_series is None:
+            for task in bug.tasks:
+                tgt_link = task.lp_bug_task.target_link
+
+                if '/ubuntu/' in tgt_link:
+                    if '/ubuntu/+source/' not in tgt_link:
+                        part = tgt_link.partition('/+source/')
+                        package = part[2]
+                        series_name = part[0].rsplit('/', 1)[1]
+                        s._target_series = series_name
 
         # Everything beyond "-- swm properties --" is supposed to be yaml
         # format. However Launchpad will convert leading spaces after manual
@@ -1317,6 +1326,12 @@ class TrackingBugs():
                 nomination = lp_bug.addNomination(target=wf_task)
                 if nomination.canApprove():
                     nomination.approve()
+
+        # Add the series marker.
+        tags = lp_bug.tags
+        tags.append(series_name)
+        lp_bug.tags = tags
+        lp_bug.lp_save()
 
         # Then add a package task for the ubuntu project
         if variant in ('debs', 'combo'):
