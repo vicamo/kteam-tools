@@ -39,6 +39,7 @@ class WorkflowManager():
             'prepare-package-signed'    : wfl.wft.PreparePackage,
             'automated-testing'         : wfl.wft.AutomatedTesting,
             'promote-to-proposed'       : wfl.wft.PromoteToProposed,
+            'promote-signing-to-proposed': wfl.wft.PromoteSigningToProposed,
             'verification-testing'      : wfl.wft.VerificationTesting,
             'certification-testing'     : wfl.wft.CertificationTesting,
             'regression-testing'        : wfl.wft.RegressionTesting,

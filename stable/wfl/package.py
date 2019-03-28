@@ -97,7 +97,7 @@ class Package():
 
     def routing(self, pocket):
         center(self.__class__.__name__ + '.routing')
-        routes = self._routing[pocket]
+        routes = self._routing.get(pocket)
         cleave(self.__class__.__name__ + '.routing')
         return routes
 
@@ -133,11 +133,11 @@ class Package():
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Proposed', 'Security', 'Updates')
+                scan_pockets = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates')
             else:
                 cdebug('Development Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Proposed', 'Release')
+                scan_pockets = ('ppa', 'Signing', 'Proposed', 'Release')
 
             for pocket in scan_pockets:
                 if pocket not in s._routing:

@@ -2,7 +2,7 @@ from .workflow                          import Workflow
 from .ignore                            import Ignore, IgnoreInvalid
 from .prepare_package                   import PreparePackage
 from .automated_testing                 import AutomatedTesting
-from .promote_to_proposed               import PromoteToProposed
+from .promote_to_proposed               import PromoteToProposed, PromoteSigningToProposed
 from .verification_testing              import VerificationTesting
 from .certification_testing             import CertificationTesting
 from .regression_testing                import RegressionTesting

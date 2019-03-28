@@ -1,10 +1,10 @@
-
-from wfl.log                            import center, cleave, cinfo
+from wfl.log                            import center, cleave, cinfo, cdebug
 from .promoter                          import Promoter
 
-class PromoteToProposed(Promoter):
+
+class PromoteFromTo(Promoter):
     '''
-    A Task Handler for the promote-to-proposed task.
+    A Task Handler for the promote-to-proposed/promote-signed-to-proposed task.
 
     States:
 
@@ -25,7 +25,7 @@ class PromoteToProposed(Promoter):
     #
     def __init__(s, lp, task, bug):
         center(s.__class__.__name__ + '.__init__')
-        super(PromoteToProposed, s).__init__(lp, task, bug)
+        super(PromoteFromTo, s).__init__(lp, task, bug)
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._verify_promotion
@@ -43,7 +43,7 @@ class PromoteToProposed(Promoter):
         retval = False
 
         while not retval:
-            if not s.bug.debs.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 break
 
             s.task.status = 'Fix Committed'
@@ -55,10 +55,10 @@ class PromoteToProposed(Promoter):
             break
 
         while not retval:
-            if not s.bug.debs.all_dependent_packages_uploaded:
+            if not s.bug.debs.all_in_pocket(s.pocket_src):
                 break
 
-            if not s.bug.debs.all_dependent_packages_fully_built:
+            if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
                 s.task.reason = 'Holding -- builds not complete'
                 break
 
@@ -75,9 +75,9 @@ class PromoteToProposed(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.debs.pocket_clear('Proposed', 'Release/Updates') and
+            if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pocket_after) and
                 not s._kernel_unblock_ppa()):
-                s.task.reason = 'Holding -- another kernel is currently pending in proposed'
+                s.task.reason = 'Holding -- another kernel is currently pending in {}'.format(s.pocket_dest)
                 break
 
             if s._kernel_block_ppa():
@@ -124,7 +124,7 @@ class PromoteToProposed(Promoter):
             if s.task.status in ('Fix Committed', 'Incomplete'):
                 break
 
-            if not s.bug.debs.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 break
 
             s.task.status = 'Fix Committed'
@@ -134,9 +134,9 @@ class PromoteToProposed(Promoter):
 
         while True:
             # Check if the packages are published completely yet.
-            if not s.bug.debs.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 # Confirm the packages remain available to copy.
-                if not s.bug.debs.all_dependent_packages_fully_built:
+                if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
                     s.task.reason = 'Stalled -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
@@ -152,27 +152,28 @@ class PromoteToProposed(Promoter):
                 else:
                     s.task.reason = 'Ongoing -- review in progress'
                 break
-            if not s.bug.debs.all_built_and_in_pocket('Proposed'):
+            if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
                 s.task.reason = 'Ongoing -- packages copied but not yet published to -proposed'
                 break
-            if not s.bug.debs.ready_for_testing:
-                s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
-                break
+            if s.pocket_dest == 'Proposed':
+                if not s.bug.debs.ready_for_testing:
+                    s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
+                    break
 
-            # Check if packages were copied to the right pocket->component
-            #
-            if not s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
-                s.task.reason = 'Stalled -- packages are in the wrong component'
-                break
+                # Check if packages were copied to the right pocket->component
+                #
+                if not s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
+                    s.task.reason = 'Stalled -- packages are in the wrong component'
+                    break
 
-            # If we've already been through here and already sent out the announcement
-            # don't go through it again.
-            #
-            if 'proposed-announcement-sent' not in s.bug.bprops:
-                s.bug.send_upload_announcement('proposed')
-                s.bug.bprops['proposed-announcement-sent'] = True
-                s.bug.debs.send_proposed_testing_requests()
-                s.bug.bprops['proposed-testing-requested'] = True
+                # If we've already been through here and already sent out the announcement
+                # don't go through it again.
+                #
+                if 'proposed-announcement-sent' not in s.bug.bprops:
+                    s.bug.send_upload_announcement('proposed')
+                    s.bug.bprops['proposed-announcement-sent'] = True
+                    s.bug.debs.send_proposed_testing_requests()
+                    s.bug.bprops['proposed-testing-requested'] = True
 
             cinfo('    All components are now in -proposed', 'magenta')
             s.task.status = 'Fix Released'
@@ -183,5 +184,74 @@ class PromoteToProposed(Promoter):
 
         cleave(s.__class__.__name__ + '._verify_promotion')
         return retval
+
+
+class PromoteToProposed(PromoteFromTo):
+    '''
+    A Task Handler for the promote-to-proposed task.
+
+    States:
+
+        - New:
+            As soon as all packages, main, meta, signed, etc. have been built
+            move this to Confirmed so an AA can copy the packages to -proposed.
+
+        - Confirmed / Triaged / In Progress / Fix Committed
+            When we verify that all components have been copied to -proposed
+            we send out our announcements and then can mark this task as
+            Fix Released
+
+        - Fix Released
+            We don't process when in this state. We're done.
+    '''
+
+    # __init__
+    #
+    def __init__(s, lp, task, bug):
+        center(s.__class__.__name__ + '.__init__')
+        super(PromoteToProposed, s).__init__(lp, task, bug)
+
+        s.pocket_src = 'ppa'
+        if s.bug.debs.routing('Signing'):
+            s.pocket_dest = 'Signing'
+            s.pocket_after = 'Proposed'
+        else:
+            s.pocket_dest = 'Proposed'
+            s.pocket_after = 'Release/Updates'
+        cdebug("promote-to-proposed: pocket_dest={}".format(s.pocket_dest))
+
+        cleave(s.__class__.__name__ + '.__init__')
+
+
+class PromoteSigningToProposed(PromoteFromTo):
+    '''
+    A Task Handler for the promote-signing-to-proposed task.
+
+    States:
+
+        - New:
+            As soon as all packages, main, meta, signed, etc. have been built
+            move this to Confirmed so an AA can copy the packages to -proposed.
+
+        - Confirmed / Triaged / In Progress / Fix Committed
+            When we verify that all components have been copied to -proposed
+            we send out our announcements and then can mark this task as
+            Fix Released
+
+        - Fix Released
+            We don't process when in this state. We're done.
+    '''
+
+    # __init__
+    #
+    def __init__(s, lp, task, bug):
+        center(s.__class__.__name__ + '.__init__')
+        super(PromoteSigningToProposed, s).__init__(lp, task, bug)
+
+        s.pocket_src = 'Signing'
+        s.pocket_dest = 'Proposed'
+        s.pocket_after = 'Release/Updates'
+
+        cleave(s.__class__.__name__ + '.__init__')
 
 # vi: set ts=4 sw=4 expandtab syntax=python
