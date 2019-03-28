@@ -41,83 +41,57 @@ class SnapStore:
 
     # __init__
     #
-    def __init__(s, bug, snap):
+    def __init__(s, snap):
         """
         :param bug: WorkflowBug object
         """
-        s.bug = bug
-        s._dependent_snap = snap
-        s._snap_store_versions = {}  # dictionary with {<channel>: {<arch>: <version>[, ...]}[, ...]}
+        s.snap = snap
+        s._versions = {}  # dictionary with {(<arch>,<channel>): <version>}
 
-    # _get_snap_info
+    # _channel_version
     #
-    def _get_snap_info(s, channel):
+    def _channel_version(s, arch, channel):
         """
         Query the snap store URL to get the information about the kernel snap
-        on the provided channel and store it in the private variables.
+        on the provided arch/channel and cache it.
 
-        :return: nothing
+        :return: version
         """
-        cdebug("    dependent_snap.name = %s" % str(s._dependent_snap.name))
-        cdebug("    dependent_snap.arches = %s" % str(s._dependent_snap.arches))
+        cdebug("    snap.name={}".format(s.snap.name))
+        cdebug("    snap.publish_to={}".format(s.snap.publish_to))
 
-        s._snap_store_versions[channel] = {}
-        for arch in s._dependent_snap.arches:
-            try:
-                headers = s.common_headers
-                headers['X-Ubuntu-Architecture'] = arch
-                params = urlencode({'fields': 'version', 'channel': channel})
-                url = "%s?%s" % (urljoin(s.base_url, s._dependent_snap.name), params)
-                req = Request(url, headers=headers)
-                with urlopen(req) as resp:
-                    version = json.loads(resp.read().decode('utf-8'))['version']
-                    s._snap_store_versions[channel][arch] = version
-            except HTTPError as e:
-                # Error 404 is returned if the snap has never been published
-                # to the given channel.
-                store_err = False
-                if hasattr(e, 'code') and e.code == 404:
-                    ret_body = e.read().decode()
-                    store_err_str = 'has no published revisions in the given context'
-                    if store_err_str in ret_body:
-                        store_err = True
-                        s._snap_store_versions[channel][arch] = None
-                if not store_err:
-                    raise SnapStoreError('failed to retrieve store URL (%s)' % str(e))
-            except (URLError, KeyError) as e:
-                raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
-                                     (type(e), str(e)))
-
-    # match_version
-    #
-    def match_version(s, channel):
-        """
-        Check if the snap version on the store for the given channel corresponds
-        to the kernel version and abi numbers of the kernel package.
-
-        :param channel: store channel name
-        :return: True if the snap version for all arches on the given channel match the
-        kernel version and ABI from the tracking bug, False otherwise
-        """
-
+        version = None
         try:
-            s._get_snap_info(channel)
-        except:
-            raise
+            headers = s.common_headers
+            headers['X-Ubuntu-Architecture'] = arch
+            params = urlencode({'fields': 'version', 'channel': channel})
+            url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
+            req = Request(url, headers=headers)
+            with urlopen(req) as resp:
+                version = json.loads(resp.read().decode('utf-8'))['version']
+        except HTTPError as e:
+            # Error 404 is returned if the snap has never been published
+            # to the given channel.
+            store_err = False
+            if hasattr(e, 'code') and e.code == 404:
+                ret_body = e.read().decode()
+                store_err_str = 'has no published revisions in the given context'
+                if store_err_str in ret_body:
+                    store_err = True
+            if not store_err:
+                raise SnapStoreError('failed to retrieve store URL (%s)' % str(e))
+        except (URLError, KeyError) as e:
+            raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
+                                 (type(e), str(e)))
+        return version
 
-        # Loop over the store version for all arches and check if they are consistent.
-        store_version = None
-        for arch in s._snap_store_versions[channel].keys():
-            if s._snap_store_versions[channel][arch] is None:
-                # Return False if there are no published version for one of the arches
-                return False
-            if store_version is None:
-                store_version = s._snap_store_versions[channel][arch]
-            elif store_version != s._snap_store_versions[channel][arch]:
-                return False
-
-        return (store_version is not None and
-                store_version == s.bug.version)
+    # channel_version
+    #
+    def channel_version(s, arch, channel):
+        key = (arch, channel)
+        if key not in s._versions:
+            s._versions[key] = s._channel_version(arch, channel)
+        return s._versions[key]
 
 
 # SnapDebs
@@ -181,19 +155,27 @@ class SnapDebs:
     @property
     def snap_store(s):
         if s._snap_store is None:
-            s._snap_store = SnapStore(s.bug, s.snap_info)
+            s._snap_store = SnapStore(s.snap_info)
         return s._snap_store
 
     def is_in_tracks(s, risk):
-        center(s.__class__.__name__ + '.is_in_channel')
-        retval = False
+        center(s.__class__.__name__ + '.is_in_tracks')
+        missing = []
 
-        if s.snap_info.track is not None:
-            channel = "%s/%s" % (s.snap_info.track, risk)
+        publish_to = s.snap_info.publish_to
+        if publish_to is not None:
+            retval = True
+            for arch in publish_to:
+                for track in publish_to[arch]:
+                    channel = "{}/{}".format(track, risk)
+                    version = s.snap_store.channel_version(arch, channel)
+                    cdebug("track-version: arch={} channel={}  version={} ?? bug.version={}".format(arch, channel, s.snap_store.channel_version(arch, channel), s.bug.version))
+                    if s.bug.version != version:
+                        missing.append("{}:{}".format(arch, channel))
         else:
-            channel = risk
+            missing.append("UNKNOWN")
 
-        retval = s.snap_store.match_version(channel)
+        retval = len(missing) == 0
 
-        cleave(s.__class__.__name__ + '.is_in_channel')
-        return retval, [channel]
+        cleave(s.__class__.__name__ + '.is_in_tracks')
+        return retval, missing
