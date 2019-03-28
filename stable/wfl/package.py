@@ -63,6 +63,7 @@ class Package():
         if s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
+                ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
                 ('Updates', 'updates'),
                 ('Security', 'security'),
@@ -468,7 +469,7 @@ class Package():
 
         for pkg in s.srcs:
             try:
-                pkg_seen = s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']
+                pkg_seen = s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
             except KeyError:
                 pkg_seen = False
 
@@ -515,7 +516,7 @@ class Package():
 
         if pocket is None:
             for pocket in s.srcs[pkg]:
-                if s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD']:
+                if s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
                     retval = s.srcs[pkg][pocket]['creator']
                     break
         else:
@@ -695,7 +696,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
                 retval = True
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
@@ -709,7 +710,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FAILEDTOBUILD', 'FULLYBUILT_PENDING']:
+            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
                 retval = bi[pkg][pocket]['version']
                 break
 
