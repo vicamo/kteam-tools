@@ -592,25 +592,23 @@ class Package():
 
         return retval
 
-    # proposed_pocket_clear
+    # pocket_clear
     #
-    @property
-    def proposed_pocket_clear(s):
+    def pocket_clear(s, pocket, pocket_next):
         '''
         Check that the proposed pocket is either empty or contains the same version
         as found in -updates/-release.
         '''
         retval = True
 
-        if s.bug.is_development_series:
-            pocket = 'Release'
-        else:
-            pocket = 'Updates'
+        # Release/Updates maps based on development series.
+        if pocket_next == 'Release/Updates':
+            pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
 
         bi = s.build_info
         for pkg in bi:
-            if bi[pkg]['Proposed']['version'] not in (None, bi[pkg][pocket]['version']):
-                cinfo('            %s has %s pending in -proposed.' % (pkg, bi[pkg]['Proposed']['version']), 'yellow')
+            if bi[pkg][pocket]['version'] not in (None, bi[pkg][pocket_next]['version']):
+                cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
 
         # If proposed is not clear, consider if it is full due to a bug
@@ -619,7 +617,7 @@ class Package():
             duplicates = s.bug.workflow_duplicates
             for dup_wb in duplicates:
                 # Consider only those supporting debs.
-                if dup_wb.debs and dup_wb.debs.all_built_and_in_pocket('Proposed'):
+                if dup_wb.debs and dup_wb.debs.all_built_and_in_pocket(pocket):
                     cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup_wb.lpbug.id,), 'yellow')
                     retval = True
                     break

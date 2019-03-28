@@ -75,7 +75,7 @@ class PromoteToProposed(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.debs.proposed_pocket_clear and
+            if (not s.bug.debs.pocket_clear('Proposed', 'Release/Updates') and
                 not s._kernel_unblock_ppa()):
                 s.task.reason = 'Holding -- another kernel is currently pending in proposed'
                 break
