@@ -152,7 +152,7 @@ class PromoteToProposed(Promoter):
                 else:
                     s.task.reason = 'Ongoing -- review in progress'
                 break
-            if not s.bug.debs.all_built_and_in_proposed:
+            if not s.bug.debs.all_built_and_in_pocket('Proposed'):
                 s.task.reason = 'Ongoing -- packages copied but not yet published to -proposed'
                 break
             if not s.bug.debs.ready_for_testing:

@@ -460,7 +460,7 @@ class Package():
 
     # all_in_pocket
     #
-    def all_in_pocket(s, pocket='Proposed'):
+    def all_in_pocket(s, pocket):
         '''
         All dependent packages are in the pocket 'pocket'.
         '''
@@ -482,28 +482,27 @@ class Package():
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval
 
-    # all_built_and_in_proposed
+    # all_built_and_in_pocket
     #
-    @property
-    def all_built_and_in_proposed(s):
+    def all_built_and_in_pocket(s, pocket):
         '''
-        All dependent packages are fully built and in the proposed pocket.
+        All dependent packages are fully built and in the pocket 'pocket'.
         '''
-        center(s.__class__.__name__ + '.all_built_and_in_proposed')
+        center(s.__class__.__name__ + '.all_built_and_in_pocket')
         retval = True
 
         for pkg in s.srcs:
             try:
-                pkg_built = s.srcs[pkg]['Proposed']['built']
+                pkg_built = s.srcs[pkg][pocket]['built']
             except KeyError:
                 pkg_built = False
 
             if not pkg_built:
-                cinfo('        %s is either not fully built yet or not in proposed.' % pkg, 'red')
+                cinfo('        {} is either not fully built yet or not in {}.'.format(pkg, pocket), 'red')
                 retval = False
                 break
 
-        cleave(s.__class__.__name__ + '.all_built_and_in_proposed (%s)' % (retval))
+        cleave(s.__class__.__name__ + '.all_built_and_in_pocket ({})'.format(retval))
         return retval
 
     # creator
@@ -620,7 +619,7 @@ class Package():
             duplicates = s.bug.workflow_duplicates
             for dup_wb in duplicates:
                 # Consider only those supporting debs.
-                if dup_wb.debs and dup_wb.debs.all_built_and_in_proposed:
+                if dup_wb.debs and dup_wb.debs.all_built_and_in_pocket('Proposed'):
                     cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup_wb.lpbug.id,), 'yellow')
                     retval = True
                     break
@@ -729,7 +728,7 @@ class Package():
         '''
         center(s.__class__.__name__ + '.ready_for_testing')
         retval = False
-        if s.all_built_and_in_proposed:
+        if s.all_built_and_in_pocket('Proposed'):
 
             # Find the most recent date of either the publish date/time or the
             # date/time of the last build of any arch of any of the dependent
