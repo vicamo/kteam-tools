@@ -671,65 +671,6 @@ class Package():
 
         return retval
 
-    # all_dependent_packages_fully_built
-    #
-    @property
-    def all_dependent_packages_fully_built(s):
-        '''
-        For the kernel package associated with this bug, the status of whether or
-        not all of the dependent packages (meta, signed, lbm, etc.) are fully built
-        is returned.
-        '''
-        retval = True
-
-        bi = s.build_info
-        for pkg in bi:
-            pkg_built = False
-            try:
-                for pocket in bi[pkg]:
-                    if bi[pkg][pocket]['built']:
-                        pkg_built = True
-                        break
-            except KeyError:
-                pkg_built = False
-
-            if not pkg_built:
-                cinfo('        %s is not fully built yet.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
-    # all_dependent_packages_uploaded
-    #
-    @property
-    def all_dependent_packages_uploaded(s):
-        '''
-        For the kernel package associated with this bug, the status of whether or
-        not all of the dependent packages (meta, signed, lbm, etc.) are uploaded
-        is returned.
-        '''
-        retval = True
-
-        bi = s.build_info
-        for pkg in bi:
-            pkg_uploaded = False
-            try:
-                for pocket in bi[pkg]:
-                    if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
-                        pkg_uploaded = True
-                        break
-            except KeyError:
-                pkg_uploaded = False
-
-            if not pkg_uploaded:
-                cinfo('        %s is not uploaded.' % (pkg), 'yellow')
-                retval = False
-                break
-
-        return retval
-
-
     # uploaded
     #
     def uploaded(s, pkg):
