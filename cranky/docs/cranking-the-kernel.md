@@ -133,17 +133,21 @@ that you are going to build.
 
 Example:
 ```
-cranky chroot run bionic:linux-kvm -- cat /etc/debian_chroot bionic-amd64
+cranky chroot run xenial:linux-oracle -- cat /etc/debian_chroot
 ```
 
-If you get an error message you need to initialize the chroot environment to
-properly build the kernel. In this case use `cranky chroot` to create the chroot
-environment for the kernel to build (as documented in "cranky-env-conf.md").
+If you get something like `xenial-amd64` the chroot environment is correctly
+initialized.
+
+Otherwise, if get an error, you need to initialize the chroot environment to
+properly build the kernel. In this case use `cranky chroot` to create the
+chroot environment for the kernel to build (as documented in
+"cranky-env-conf.md").
 
 Example:
 ```
-cranky chroot create-base bionic:linux-kvm
-cranky chroot create-session configs bionic:linux-kvm
+cranky chroot create-base xenial:linux-oracle
+cranky chroot create-session configs xenial:linux-oracle
 ```
 ### chroot section done - ready to crank!
 
@@ -154,7 +158,7 @@ Use `cranky clone` to get the kernel that you want to build.
 Example:
 ```
 cd canonical/kernel/ubuntu
-cranky clone bionic:linux-kvm
+cranky clone xenial:linux-oracle
 ```
 
 ### Tool sync stage - `cranky fix`
@@ -164,7 +168,7 @@ version and also can update/create the "debian./etc/update.conf" file and
 commits those changes. In case of a rebase tree, the changes to the helpers may
 vanish on rebase if those were already done there.
 ```
-cd bionic/linux-kvm
+cd xenial/linux-oracle
 cranky fix
 ```
 
@@ -224,7 +228,7 @@ https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
 ```
 
 Look under "linux", inside the section of the release in the dashboard you are
-currently cranking such as "bionic".
+currently cranking such as "xenial".
 
 ### Starting commit - `cranky open`
 
@@ -335,39 +339,42 @@ before running the example command: `cranky test-build -f -a all kathleen`
 **Note 2** kathleen in the example above represents both a git remote name,
 which by default matches the name of the remote build host.
 
-### Prepare meta packages - `cranky prepare-meta`
+### Prepare meta/signed repositories - `cranky prepare-meta`
 
 Currently this step must be done manually, calling the "./update-version"
 scripts from "linux-meta" and "linux-signed" (the addition repositories
 cloned via `cranky checkout`).
 
 Example:
+```
+cd ../linux-meta-oracle
+./update-version ../linux-oracle
 
+cd ../linux-signed-oracle
+./update-version ../linux-oracle
 ```
-cd ../linux-meta
-./update-version ../linux
-```
-Output to stdout is
+
+Output (for both commands) should look like this:
 ...
 git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
 git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
 
 **Note** update-version doesn't run the "git commit" and "git tag" commands
-so you run them next.  These are last two lines printed to stdout above and
-are the commands you need to copy and run them manually.
+so you must run them next.  These are last two lines printed to stdout above
+and are the commands you need to copy and run them manually.
 ```
 $ git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
 $ git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
 ```
+
 It is mandatory to run "udpate-version' from the "linux-meta" and
 "linux-signed" directory, not from the kernel source directory.
 
-**Note** In certain releases "linux-signed" is missing, for example linux-kvm.
-To show the list of expected repositories for a certain release/flavor use the
-command `cranky rmadison`, example:
-
+**Note** In certain releases "linux-signed" is missing, for example
+"linux-kvm". To show the list of expected repositories for a certain
+release/flavor you can use the command `cranky rmadison`, example:
 ```
-cranky rmadison bionic:linux-kvm
+cranky rmadison xenial:linux-oracle
 ```
 
 ### Build sources - `cranky build-sources`
@@ -380,8 +387,9 @@ Example:
 
 ```
 $ cd ..
-$ pull-lp-source --download-only linux-kvm bionic
-$ pull-lp-source --download-only linux-meta-kvm bionic
+$ pull-lp-source --download-only linux-oracle xenial
+$ pull-lp-source --download-only linux-meta-oracle xenial
+$ pull-lp-source --download-only linux-signed-oracle xenial
 $ cd -
 ```
 
@@ -394,21 +402,10 @@ source packages.
 Example:
 
 ```
-$ cranky build-sources
+cd linux-oracle
+cranky build-sources
 ```
-
-**Note** this part is currently under discussion as to how to proceed.
-
-There is ongoing discussion on how to use `cranky build-sources`
-Should it be called Locally? How can we avoid getting chroots just
-re-created? Should we use one of the builders instead of building the
-sources local?
-
-Using "--help" isn't helpful at all right now.
-
-```
-cranky build-sources --help
-```
+## Review
 
 ### Reviewing - `cranky review`
 
@@ -430,21 +427,26 @@ manual procedure will serve.
 Push git repositories to your Launchpad for a review:
 
 ```
-cd linux-kvm
-git remote add for-review lps:~arighi/+git/bionic-linux-kvm
+cd linux-oracle
+git remote add for-review lps:~arighi/+git/xenial-linux-oracle
 git push --tags for-review cranky/master-next
 cd ..
 
-cd linux-meta-kvm
-git remote add for-review lps:~arighi/+git/bionic-linux-meta-kvm
+cd linux-meta-oracle
+git remote add for-review lps:~arighi/+git/xenial-linux-meta-oracle
+git push --tags for-review cranky/master
+cd ..
+
+cd linux-signed-oracle
+git remote add for-review lps:~arighi/+git/xenial-linux-signed-oracle
 git push --tags for-review cranky/master
 cd ..
 ```
 
 Upload source packages to wani.canonical.com for a review:
 ```
-ssh wani.canonical.com mkdir -p for-review/bionic-linux-kvm
-scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/bionic-linux-kvm
+ssh wani.canonical.com mkdir -p for-review/xenial-linux-oracle
+scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/xenial-linux-kvm
 ```
 
 After source packages and git repositories have been reviewed and acknowledged
@@ -452,8 +454,9 @@ by another kernel team member, copy the signed packages locally to your host
 and upload them using dput:
 
 ```
-dput -u ppa:canonical-kernel-team/ppa linux-kvm_4.15.0-1031.31_source.changes
-dput -u ppa:canonical-kernel-team/ppa linux-meta-kvm_4.15.0.1031.31_source.changes
+dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
+dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
+dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1_source.changes
 ```
 
 **Note** Make sure you have ```default_host_main = UNKNOWN"``` set in your
