@@ -72,7 +72,10 @@ class Package():
                 if route is None:
                     continue
                 archive = s.lp.launchpad.archives.getByReference(reference=route[0])
+                # Record invalid pockets as present but broken.
+                s._routing[key] = None
                 if archive is None:
+                    cwarn("invalid-archive {} {}".format(route[0], route[1]))
                     continue
                 s._routing[key] = (archive, route[1])
             s.routing_mode = s.source.routing.name
@@ -137,7 +140,9 @@ class Package():
 
             for pocket in scan_pockets:
                 if pocket not in s._routing:
-                    s.bug.overall_reason = "{} pocket not defined for {}".format(pocket, s.source)
+                    continue
+                if s._routing[pocket] is None:
+                    s.bug.overall_reason = "{} pocket routing archive specified but invalid {}".format(pocket, s.source)
                     cwarn(s.bug.overall_reason)
                     continue
 
