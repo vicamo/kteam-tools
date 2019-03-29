@@ -16,32 +16,40 @@ kernel and why.  Without understanding what is actually being done by these
 tools, it is difficult to properly debug and solve issues on when something
 inevitably breaks in the process.
 
-### Initialize chroot environment
+This document is the work of Stefan Bader and Andrea Righi, with collaboration
+by Kleber Souza and content/editing by Terry Rudd. Any of us can be contacted
+regarding issues or additional suggested content contribution but all Kernel
+engineers should feel free to make change/update this document in kteam-tools.
+
+## Setup
+
+### Initialize chroot environment - `cranky chroot`
 
 Make sure you have a proper chroot environment for the release and the kernel
 that you are going to build.
 
 Example:
 ```
-cranky chroot run xenial:linux-oracle -- cat /etc/debian_chroot
+cranky chroot run xenial:linux -- cat /etc/debian_chroot
 ```
 
 If you get something like `xenial-amd64` the chroot environment is correctly
 initialized.
 
-Otherwise, if get an error, you need to initialize the chroot environment to
-properly build the kernel. In this case use `cranky chroot` to create the
+Otherwise, if you get an error, you need to initialize the chroot environment
+to properly build the kernel. In this case use `cranky chroot` to create the
 chroot environment for the kernel to build (as documented in
 "cranky-env-conf.md").
 
 Example:
 ```
-cranky chroot create-base xenial:linux-oracle
-cranky chroot create-session configs xenial:linux-oracle
+cranky chroot create-base xenial:linux
+cranky chroot create-session configs xenial:linux
 ```
-### chroot section done - ready to crank!
 
-### Clone the kernel repository - `cranky checkout`
+## Build
+
+### Clone the kernel repository - `cranky clone`
 
 Use `cranky clone` to get the kernel that you want to build.
 
@@ -74,9 +82,9 @@ At this stage, master kernels do not require anything to be done. So, running
 For both derivatives and backports, `cranky rebase` is the first stage. In both
 cases one has to fetch the tip of the branch from which the current kernel is
 derived/backported from. For derivatives, this is a local branch name which is
-specified by "-l <branch>". For backports this is a remote repository (which
+specified by "-l BRANCH". For backports this is a remote repository (which
 can be an URL or a path to a local git repository) and a remote branch name
-"(-r <repo> -b <branch>)".
+"(-r REPO -b BRANCH)".
 
 If no options are used, the default remote location defined in "update.conf" is
 used. This should be good enough for most cases as long as one does not mind
@@ -93,7 +101,7 @@ cranky rebase
 
 Another example:
 ```
-cranky rebase -r <local path to kernel git repo> [-b master-next]
+cranky rebase -r LOCAL_PATH_TO_KERNEL_GIT_REPO [-b master-next]
 ```
 
 **Note** some times `cranky rebase` can fail due to conflicts. If conflicts are
@@ -131,11 +139,14 @@ entries is done by the cranky close stage.
 ```
 $ cranky open
 ```
+
 **Note** `cranky start` is still available but `cranky open` usage is
 preferable. Use `cranky start --force` if you find any blocking issues
 with `cranky open`.
 
-### Link to tracker which is now done by `cranky link-tb`
+### Link to tracker - `cranky link-tb`
+
+Link current build to tracker bug in Launchpad:
 ```
 $ cranky link-tb
 ```
@@ -171,42 +182,14 @@ the changelog.
 
 6) Prints to stdout the git-tag command a human should run to sign that tag.
 
-If you see the "git tag" command printed by `cranky close` at the end, copy it
-and execute it (double checking if the tag is correct).
-
-Example:
-```
-$ git tag -sm 'Ubuntu-azure-4.15.0-1041.45' 'Ubuntu-azure-4.15.0-1041.45' 7eec9153251fde76ce1f664e5ad51c475a4ee20b
-```
-
-**Note** `cranky close` doesn't always print the git-tag command. This is a bug
-that must be fixed.  If you don't see a git-tag command do this instead:
-
-```
-$ git log -1
-```
-
-Example output
-
-commit 350198be5cf41183e5193a5a728a740cb55017a8 (HEAD -> cranky/master-next)
-Author: <first-last-name> <your-canonical-email@canonical.com>
-Date:   Wed Mar 13 15:33:20 2019 +0100
-
-    UBUNTU: Ubuntu-kvm-4.15.0-1031.31
-
-    Signed-off-by: <first-last-name> <your-canonical-email@canonical.com>
-
-Copy the string "Ubuntu-kvm-4.15.0-1031.31" (replace it with the equivalent
-string that you have) and run:
-
-```
-git tag -s -m Ubuntu-kvm-4.15.0-1031.31 Ubuntu-kvm-4.15.0-1031.31
-```
-
 ### Tagging - `cranky tag`
 
-For now, just run `cranky close`, then copy and execute the last "git tag"
-output line.  See procedure above.
+Run the following command to apply the correct tag to the kernel:
+```
+cranky tag
+```
+
+## Test
 
 ### Testing builds - `cranky test-build`
 
@@ -295,6 +278,7 @@ Example:
 cd linux-oracle
 cranky build-sources
 ```
+
 ## Review
 
 ### Reviewing - `cranky review`
@@ -311,27 +295,39 @@ cranky review *.changes
 
 ### Uploading packages - `cranky upload`
 
-The command `cranky upload` does not exist yet. In the meantime, the following
-manual procedure will serve.
+**Note** DO NOT publish private kernels such as ESM, linux-ibm-gt and
+linux-fips.
 
-Push git repositories to your Launchpad for a review:
-
+Push git repositories to your Launchpad for a review (only push master or
+master-next and the last tag applied):
 ```
 cd linux-oracle
-git remote add for-review lps:~arighi/+git/xenial-linux-oracle
-git push --tags for-review cranky/master-next
+git remote add for-review lps:~YOUR_LAUNCHPAD_USERNAME>/+git/xenial-linux-oracle
+git push for-review cranky/master-next
+git push for-review TAG
 cd ..
 
 cd linux-meta-oracle
-git remote add for-review lps:~arighi/+git/xenial-linux-meta-oracle
-git push --tags for-review cranky/master
+git remote add for-review lps:~YOUR_LAUNCHPAD_USERNAME/+git/xenial-linux-meta-oracle
+git push for-review cranky/master
+git push for-review TAG
 cd ..
 
 cd linux-signed-oracle
-git remote add for-review lps:~arighi/+git/xenial-linux-signed-oracle
-git push --tags for-review cranky/master
+git remote add for-review lps:~YOUR_LAUNCHPAD_USERNAME/+git/xenial-linux-signed-oracle
+git push for-review cranky/master
+git push for-review TAG
 cd ..
 ```
+
+TAG represents the last tag applied on each repository. The last tag can be
+determined running the following command:
+```
+git tag --sort=creatordate | tail -1
+```
+
+Make sure the tag matches the last version that we are currently uploading for
+review.
 
 Upload source packages to wani.canonical.com for a review:
 ```
@@ -342,7 +338,6 @@ scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/xenial-lin
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, copy the signed packages locally to your host
 and upload them using dput:
-
 ```
 dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
 dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
@@ -351,14 +346,3 @@ dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1
 
 **Note** Make sure you have ```default_host_main = UNKNOWN"``` set in your
 ~/.dput.cf, to prevent uploading packages to ```ubuntu```.
-
-## Summary
-As noted, this document (a living document itself) remains somewhat incomplete
-as is the Automation 1.0 toolset. Both are still undergoing maturation as a
-result of increased focus on automation as our primary means of productivity
-improvement and has been a primary focus of our last two engineering sprints.
-
-This document is the work of Stefan Bader and Andrea Righi, with collaboration
-by Kleber Souza and content/editing by Terry Rudd. Any of us can be contacted
-regarding issues or additional suggested content contribution but all Kernel
-engineers should feel free to make change/update this document in kteam-tools.
