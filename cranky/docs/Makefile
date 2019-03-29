@@ -4,7 +4,12 @@
 # on your local system.
 #
 
+TARGETS=cranking-the-kernel.html crank-turning-setup.html
+
 %.html: %.md
 	grip $< --export
 
-all: cranking-the-kernel.html
+all: $(TARGETS)
+
+clean:
+	rm -f $(TARGETS)
