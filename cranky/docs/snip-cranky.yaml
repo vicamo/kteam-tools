@@ -1,0 +1,7 @@
+# This assumes you are going to use the following layout:
+#
+#  ~/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
+#
+package-path:
+  base-path: '~/canonical/kernel/ubuntu'
+  default: '{series}/linux{type_suffix}'

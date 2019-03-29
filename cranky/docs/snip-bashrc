@@ -1,0 +1,21 @@
+# Set System Locale to enable scripts handling ABI files to make sure that
+# these files are not unnecessarily reordered.
+export LC_ALL=C.UTF-8
+
+# Helper to call debian/rules quickly
+alias fdr="fakeroot debian/rules"
+
+# Set shell variables so various Debian maintenance tools know your real name
+# and email address to use for packages
+export DEBEMAIL=<firstname>.<lastname>@canonical.com
+export DEFULLNAME="<firstname> <lastname>"
+
+# Set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Add cranky-tools to the PATH and enable bash auto-completion
+export PYTHONPATH=:$HOME/canonical/so-trello:$PYTHONPATH
+export PATH=$HOME/kteam-tools/cranky:$PATH
+source $HOME/canonical/kteam-tools/cranky/cranky-bash

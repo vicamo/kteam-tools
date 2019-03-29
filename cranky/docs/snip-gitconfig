@@ -1,0 +1,23 @@
+[user]
+	email = <firstname>.<lastname>@canonical.com
+	name = <firstname> <lastname>
+	signkey = <your-pgp-signing-key-id> # the one uploaded in Launchpad
+
+[sendemail]
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser = <firstname>.<lastname>@canonical.com
+	smtppass = <your-smtp-password> # Get this one from Enigma
+	smtpserverport = 587
+	signedoffbycc = 0
+	cccover = 0
+	tocover = 0
+	chainreplyto = false
+	suppresscc = all
+	suppressfrom = true
+
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/"]
+        pushinsteadof = lp:
+        insteadof = lps:
+[url "git://git.launchpad.net/"]
+        insteadof = lp:
