@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+#
+# Get a markdown file from stdin and produces a cheatsheet to stdout
+#
+# This script filters only the title lines followed by a section delimited by
+# the markers [cheatsheet][/cheatsheet] and prints them to stdout producing the
+# cheatsheet markdown document.
+#
+# Example usage:
+#
+# $ cranky-generate-cheatsheet < cranking-the-kernel.md
+
+import re
+import sys
+
+def cheatsheet_generator(data):
+    record_mode = False
+    prev_line = ''
+
+    for line in data:
+        if line.startswith("[cheatsheet]"):
+            record_mode = True
+            yield prev_line
+        elif line.startswith("[/cheatsheet]"):
+            record_mode = False
+            yield "\n"
+        elif record_mode:
+            yield line
+        prev_line = line
+
+def main():
+    for line in cheatsheet_generator(sys.stdin):
+        print(line.strip())
+
+if __name__ == '__main__':
+    main()
