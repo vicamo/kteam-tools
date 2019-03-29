@@ -230,7 +230,6 @@ class Package():
         if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
-            fullybuilt = fullybuilt and s.__all_arches_built(matches)
             version = matches[0].source_package_version
         else:
             fullybuilt   = False
@@ -327,62 +326,110 @@ class Package():
 
     # __sources_built
     #
-    def __sources_built(s, matches, archive, package, release, pocket):
+    def __sources_built(s, sources, archive, package, release, pocket):
         '''
         '''
         center('Sources::__sources_built')
-        cdebug('matches: %s' % matches, 'yellow')
+        cdebug('sources: %s' % sources, 'yellow')
         cdebug('archive: %s' % archive, 'yellow')
         cdebug('package: %s' % package, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         cdebug(' pocket: %s' % pocket, 'yellow')
-        retval = False
-        lst_date = None
-        fullybuilt = False
-        creator = ''
-        signer  = ''
-        published = None
-        status = ''
 
-        # built - The date/time of the last build of any of the arches built. We want
-        #         the one that finished most recently.
-        #
-        most_recent_build = None
-        for pkg in matches:
-            src_id = str(pkg.self).rsplit('/', 1)[1]
+        # If we do get more than one match we should be picking the latest.
+        if len(sources) != 1:
+            raise ValueError("too many sources")
 
-            build_summaries = archive.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
-            status = build_summaries['status']
-            try:
-                creator = pkg.package_creator
-                signer  = pkg.package_signer
-            except:
-                # Just eat the error
-                pass
+        source = sources[0]
 
-            if build_summaries['status'] == 'FULLYBUILT':
-                cdebug('"%s" %s built (pocket:%s)' % (package, release, pocket), 'magenta')
-                retval = True
-                fullybuilt = True
-                published = pkg.date_published.replace(tzinfo=None)
+        package_creator = source.package_creator
+        package_signer = source.package_signer
+        published = source.date_published
+        latest_build = source.date_published
+        status = set()
+        status.add('UNKNOWN')
 
-                for b in build_summaries['builds']:
-                    built = datetime.strptime(b['datebuilt'], '%Y-%m-%dT%X.%f+00:00')
-                    if most_recent_build is None:
-                        most_recent_build = built
-                    else:
-                        if most_recent_build < built:
-                            most_recent_build = built
+        if source.status in ('Pending'):
+            status.add('BUILDING')
+        elif source.status in ('Published'):
+            status.add('FULLYBUILT')
+        else:
+            # Anything else is broken.
+            #  Superseded
+            #  Deleted
+            #  Obsolete
+            status.add('FAILEDTOBUILD')
+
+        arch_build = set()
+        builds = source.getBuilds()
+        for build in builds:
+            ##print(build, build.buildstate, build.datebuilt)
+            if build.buildstate in (
+                    'Needs building',
+                    'Dependency wait',
+                    'Currently building',
+                    'Uploading build',
+                ):
+                    status.add('BUILDING')
+
+            elif build.buildstate in ('Successfully built'):
+                status.add('FULLYBUILT')
+
             else:
-                cdebug('"%s" %s not fully built yet, skipping (pocket:%s)' % (package, release, pocket), 'green')
-            # prefer newer published items...
-            if lst_date:
-                if lst_date > pkg.date_published:
-                    continue
-            lst_date = pkg.date_published
+                # Anything else is a failure, currently:
+                #  Build for superseded Source
+                #  Failed to build
+                #  Chroot problem
+                #  Failed to upload
+                #  Cancelling build
+                #  Cancelled build
+                status.add('FAILEDTOBUILD')
 
-        cleave('Sources::__sources_built (%s)' % retval)
-        return fullybuilt, creator, signer, published, most_recent_build, status
+            # Accumulate the latest build completion.
+            if build.datebuilt is not None and latest_build < build.datebuilt:
+                latest_build = build.datebuilt
+
+            # Accumulate the architectures we are meant to build for.
+            arch_build.add(build.arch_tag)
+
+        arch_published = set()
+        binaries = source.getPublishedBinaries()
+        for binary in binaries:
+            ##print(binary, binary.status, binary.date_published)
+            if binary.status in ('Pending'):
+                status.add('BUILDING')
+            elif binary.status in ('Published'):
+                status.add('FULLYBUILT')
+            else:
+                # Anything else is broken.
+                #  Superseded
+                #  Deleted
+                #  Obsolete
+                status.add('FAILEDTOBUILD')
+
+            # Accumulate the latest publication time.
+            if binary.date_published is not None and published < binary.date_published:
+                published = binary.date_published
+
+            # Accumulate the architectures we have publications for.
+            if binary.architecture_specific:
+                arch_published.add(binary.distro_arch_series_link.split('/')[-1])
+
+        # If our build architecture list does not match our published architecture
+        # list then we have a publication missing.  Treat that as BUILDING.
+        if arch_build != arch_published:
+            status.add('BUILDING')
+
+        # Pick out the stati in a severity order.
+        for state in ('FAILEDTOBUILD', 'BUILDING', 'FULLYBUILT', 'UNKNOWN'):
+            if state in status:
+                break
+
+        published = published.replace(tzinfo=None)
+        latest_build = latest_build.replace(tzinfo=None)
+
+        cleave('Sources::__sources_built' )
+        return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
 
     # build_info
     #
