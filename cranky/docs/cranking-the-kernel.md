@@ -24,6 +24,12 @@ engineers should feel free to make change/update this document in kteam-tools.
 ## Setup
 
 ### Initialize chroot environment - `cranky chroot`
+[cheatsheet]
+```
+cranky chroot create-base RELEASE:linux
+cranky chroot create-session configs RELEASE:linux
+```
+[/cheatsheet]
 
 Make sure you have a proper chroot environment for the release and the kernel
 that you are going to build.
@@ -50,6 +56,11 @@ cranky chroot create-session configs xenial:linux
 ## Build
 
 ### Clone the kernel repository - `cranky clone`
+[cheatsheet]
+```
+cranky clone RELEASE:KERNEL
+```
+[/cheatsheet]
 
 Use `cranky clone` to get the kernel that you want to build.
 
@@ -60,6 +71,11 @@ cranky clone xenial:linux-oracle
 ```
 
 ### Tool sync stage - `cranky fix`
+[cheatsheet]
+```
+cranky fix
+```
+[/cheatsheet]
 
 This updates the local (in-tree) helper scripts which cranky uses to the latest
 version and also can update/create the "debian./etc/update.conf" file and
@@ -75,6 +91,11 @@ derivative chain. For example a senior crank turner got the wrong master
 directory when doing the new trusty/azure. Care must be taken to verify.
 
 ### Rebase stage - `cranky rebase`
+[cheatsheet]
+```
+cranky rebase
+```
+[/cheatsheet]
 
 At this stage, master kernels do not require anything to be done. So, running
 `cranky rebase` on them should be a no-op, resulting in no change.
@@ -129,6 +150,11 @@ Look under "linux", inside the section of the release in the dashboard you are
 currently cranking such as "xenial".
 
 ### Starting commit - `cranky open`
+[cheatsheet]
+```
+cranky open
+```
+[/cheatsheet]
 
 When a new release is in the plans, a starting commit should be created. That
 historically has been done with "maint-startnewrelease". Now, it's done by
@@ -145,6 +171,11 @@ preferable. Use `cranky start --force` if you find any blocking issues
 with `cranky open`.
 
 ### Link to tracker - `cranky link-tb`
+[cheatsheet]
+```
+cranky link-tb
+```
+[/cheatsheet]
 
 Link current build to tracker bug in Launchpad:
 ```
@@ -155,6 +186,11 @@ $ cranky link-tb
 local repository. Make sure to skip this test if you're doing local tests.
 
 ### Closing commit - `cranky close`
+[cheatsheet]
+```
+cranky close
+```
+[/cheatsheet]
 
 The last commit before a release is prepared by using `cranky close`. All of
 the following steps are done automatically by `cranky close` so there is no
@@ -183,6 +219,11 @@ the changelog.
 6) Prints to stdout the git-tag command a human should run to sign that tag.
 
 ### Tagging - `cranky tag`
+[cheatsheet]
+```
+cranky tag
+```
+[/cheatsheet]
 
 Run the following command to apply the correct tag to the kernel:
 ```
@@ -192,6 +233,11 @@ cranky tag
 ## Test
 
 ### Testing builds - `cranky test-build`
+[cheatsheet]
+```
+cranky-test-build [-a ARCH[,ARCH,...]|-a all] [-f] HOST
+```
+[/cheatsheet]
 
 Uses the "git-build-kernel" method to test-build the tip of the kernel branch
 currently checked out.
@@ -213,6 +259,12 @@ before running the example command: `cranky test-build -f -a all kathleen`
 which by default matches the name of the remote build host.
 
 ### Prepare meta/signed repositories - `cranky prepare-meta`
+[cheatsheet]
+```
+cd linux-meta && ./update-version ../linux
+cd linux-signed && ./update-version ../linux
+```
+[/cheatsheet]
 
 Currently this step must be done manually, calling the "./update-version"
 scripts from "linux-meta" and "linux-signed" (the addition repositories
@@ -251,6 +303,11 @@ cranky rmadison xenial:linux-oracle
 ```
 
 ### Build sources - `cranky build-sources`
+[cheatsheet]
+```
+cranky build-sources
+```
+[/cheatsheet]
 
 Before running `cranky build-sources`, make sure you download the previous
 source code in the parent directory before running `cranky build-sources`
@@ -282,6 +339,11 @@ cranky build-sources
 ## Review
 
 ### Reviewing - `cranky review`
+[cheatsheet]
+```
+cranky review
+```
+[/cheatsheet]
 
 Generates debdiff files for review between newly generated .dsc files and
 those currently in the archive. Takes source.changes filenames as
