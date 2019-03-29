@@ -47,6 +47,44 @@ if cmd == 'list-all':
         for line in rule_txt.split('\n'):
             print("  " + line)
 
+elif cmd == 'sync-misc':
+
+    branch = 'master'
+
+    admins = '/~canonical-kernel-repo-admins'
+    rules = []
+
+    grants = []
+    for person in (
+            "/~canonical-kernel-committers",
+            "/~canonical-kernel-hwe-committers",
+            "/~arighi",
+            ):
+        grants.append(generate_grant(person=person, push=True))
+    grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+    if admins != 'owner':
+        grants.append(generate_grant(person='owner'))
+    rules.append(
+        {
+            'ref_pattern': "refs/heads/{}".format(branch),
+            'grants': grants,
+        },
+        )
+
+    print(" want:")
+    rule_txt = yaml.dump(rules, default_flow_style=False)
+    for line in rule_txt.split('\n'):
+        print("  " + line)
+
+    git_repo = lp.git_repositories.getByPath(path="~canonical-kernel/+git/kteam-tools")
+    rules_are = git_repo.getRules()
+
+    print(" have:")
+    rule_txt = yaml.dump(rules_are, default_flow_style=False)
+    for line in rule_txt.split('\n'):
+        print("  " + line)
+
+    git_repo.setRules(rules=rules)
 
 elif cmd == 'sync-all':
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
@@ -58,7 +96,7 @@ elif cmd == 'sync-all':
     #     '/~canonical-kernel-hwe-committers',
     #     ])
     #
-    #print(json.dumps(rules, sort_keys=True, indent=4))
+    #print(json.dumps(uules, sort_keys=True, indent=4))
 
     kernel_series = KernelSeries()
 
