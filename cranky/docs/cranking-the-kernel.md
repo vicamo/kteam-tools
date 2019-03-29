@@ -296,7 +296,7 @@ cranky review *.changes
 ### Uploading packages - `cranky upload`
 
 **Note** DO NOT publish private kernels such as ESM, linux-ibm-gt and
-linux-fips.
+linux-fips, see section "Special kernels" below.
 
 Push git repositories to your Launchpad for a review (only push master or
 master-next and the last tag applied):
@@ -346,3 +346,13 @@ dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1
 
 **Note** Make sure you have ```default_host_main = UNKNOWN"``` set in your
 ~/.dput.cf, to prevent uploading packages to ```ubuntu```.
+
+### Special kernels
+
+Pay attention to the following kernels, they require special actions to be
+cranked:
+- linux-euclid
+- linux-fips
+- linux-ibm-gt
+- all the edge kernels (i.e., linux-hwe-edge)
+- all the esm kernels, currently precise/linux and precise/linux-lts-trusty
