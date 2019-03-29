@@ -39,7 +39,7 @@ initialized.
 Otherwise, if you get an error, you need to initialize the chroot environment
 to properly build the kernel. In this case use `cranky chroot` to create the
 chroot environment for the kernel to build (as documented in
-"cranky-env-conf.md").
+"crank-turning-setup.md").
 
 Example:
 ```
