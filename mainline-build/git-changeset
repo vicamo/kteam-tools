@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 
+import codecs
+import hashlib
+import json
 import os
 import sys
-
-import codecs
-import urllib.request
-import json
-
 import textwrap
+import urllib.request
 
 sys.stdin = codecs.getreader("utf-8")(sys.stdin.detach())
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
@@ -22,7 +21,9 @@ def add_entry(entry):
         elif 'UBUNTU: Ubuntu-' in entry['subject']:
             ids = entry['subject'][8:]
         else:
-            ids = hex(abs(hash(entry['subject']))).strip()
+            m = hashlib.md5()
+            m.update(entry['subject'].encode('utf-8'))
+            ids = m.hexdigest()
         entry['id'] = ids.replace('/', '-').replace(' ', '-')
 
         entries.append(entry)
