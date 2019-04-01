@@ -62,16 +62,19 @@ class Workflow(TaskHandler):
 
                 # 3: Testing
                 elif (taskname.endswith('-testing') or
-                      taskname.endswith('-signoff') or
                       taskname in ('snap-release-to-candidate')
                     ):
                     (task_section, task_text) = (3, 'Testing')
 
-                # 4: Release
+                # 4: Signoffs
+                elif taskname.endswith('-signoff'):
+                    (task_section, task_text) = (4, 'Signoff')
+
+                # 5: Release
                 elif (taskname.startswith('promote-to-') or
                       taskname in ('snap-release-to-stable')
                     ):
-                    (task_section, task_text) = (4, 'Release')
+                    (task_section, task_text) = (5, 'Release')
 
                 if task_section is None:
                     continue
