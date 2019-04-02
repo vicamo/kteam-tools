@@ -367,6 +367,17 @@
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: [ '18.04', 'linux-oracle' ]
 
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'snapdragon']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+
 # 18.10 (Cosmic Cuttlefish)
 '18.10':
     codename: cosmic
