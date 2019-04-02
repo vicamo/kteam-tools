@@ -59,7 +59,7 @@ class PromoteToProposed(Promoter):
                 break
 
             if not s.bug.debs.all_dependent_packages_fully_built:
-                s.task.reason = 'Ongoing -- builds not complete'
+                s.task.reason = 'Holding -- builds not complete'
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
