@@ -55,6 +55,7 @@ class Workflow(TaskHandler):
 
                 # 2: Promote to Proposed
                 elif (taskname in ('promote-to-proposed',
+                                   'promote-signing-to-proposed',
                                    'snap-release-to-edge',
                                    'snap-release-to-beta')
                     ):
