@@ -716,12 +716,12 @@ class TrackingBug(object):
             task_name = task.bug_target_display_name
             cdebug('* {}'.format(task_name), 'cyan')
             parts = task_name.partition(wf_name)
-            
+
             if not s.isdev and 'linux' in parts[0] and ct_series not in parts[0]:
                 # The main linux task? [linux (Ubuntu)]
                 task.status = 'Invalid'
                 cdebug('  - is main linux task', 'white')
-                cdebug('  - status: {}; importance: {}'.format(task.status, task.importance), 'green') 
+                cdebug('  - status: {}; importance: {}'.format(task.status, task.importance), 'green')
             elif parts[0] == '' and parts[1] == wf_name and parts[2] == '':
                 # This is the main SRU Workflow task
                 continue
@@ -1175,6 +1175,16 @@ class TrackingBugs():
             if wf_series.name == 'stakeholder-signoff':
                 if ks_source.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
+                    break
+            elif wf_series.name == 'promote-signing-to-proposed':
+                ks_route = ks_source.routing
+                if ks_route is not None:
+                    ks_dst = ks_route.lookup_destination('signing')
+                else:
+                    ks_dst = None
+
+                if ks_dst is None:
+                    cdebug('    no promote-signing-to-proposed', 'yellow')
                     break
 
             if wf_series.name == 'promote-to-release' and ks_series.development is False:
