@@ -240,6 +240,27 @@
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
 
+        linux-oem-osp1:
+            packages:
+                linux-oem-osp1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/disco', 'oem-next']
+                linux-meta-oem-osp1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/disco', 'oem']
+                linux-signed-oem-osp1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/disco', 'oem']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    oem-osp1:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem-osp1' ]
+
         linux-aws:
             packages:
                 linux-aws:
@@ -406,6 +427,27 @@
                         arches: ['amd64']
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
+
+        linux-oem-osp1:
+            packages:
+                linux-oem-osp1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/cosmic', 'oem-next']
+                linux-meta-oem-osp1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/cosmic', 'oem']
+                linux-signed-oem-osp1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/cosmic', 'oem']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    oem-osp1:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
         linux-aws:
             packages:
@@ -643,6 +685,26 @@
             testing:
                 flavours:
                     oem:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+
+        linux-oem-osp1:
+            packages:
+                linux-oem-osp1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/bionic', 'oem-next']
+                linux-meta-oem-osp1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/bionic', 'oem']
+                linux-signed-oem-osp1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/bionic', 'oem']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    oem-osp1:
                         # arches as defined by the testing system
                         #
                         arches: ['amd64']
