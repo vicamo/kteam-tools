@@ -139,6 +139,7 @@ class Workflow:
                 'prepare-package-signed'     : 'canonical-kernel-team',
                 'automated-testing'          : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
+                'promote-signing-to-proposed': 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
                 'regression-testing'         : 'canonical-kernel-team',
