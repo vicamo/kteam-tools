@@ -38,6 +38,9 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 
     return grant
 
+def sort_grants(grants):
+    return sorted(deepcopy(grants), key=lambda x: (x['grantee_type'], x['grantee_link']))
+
 if cmd == 'list-all':
     me = lp.people(sys.argv[2])
     for repo in lp.git_repositories.getRepositories(target=me):
@@ -67,7 +70,7 @@ elif cmd == 'sync-misc':
     rules.append(
         {
             'ref_pattern': "refs/heads/{}".format(branch),
-            'grants': grants,
+            'grants': sort_grants(grants),
         },
         )
 
@@ -140,9 +143,10 @@ elif cmd == 'sync-all':
             if package.source.development is False and package.source.supported is False:
                 continue
             any_supported = True
+            print(package, package.source.development, package.source.supported)
 
             people = ['/~canonical-kernel-committers']
-            if package.name.endswith('oem'):
+            if package.name.endswith('oem') or '-oem-' in package.name:
                 people.append('/~canonical-kernel-hwe-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
@@ -172,7 +176,7 @@ elif cmd == 'sync-all':
                 rules.append(
                     {
                         'ref_pattern': "refs/heads/{}".format(branch),
-                        'grants': grants,
+                        'grants': sort_grants(grants),
                     },
                     )
 
@@ -187,7 +191,7 @@ elif cmd == 'sync-all':
             rules_wild.append(
                 {
                     'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
-                    'grants': grants,
+                    'grants': sort_grants(grants),
                 },
                 )
 
@@ -214,14 +218,14 @@ elif cmd == 'sync-all':
             rules_wild.append(
                 {
                     'ref_pattern': "refs/tags/v{}*".format(version),
-                    'grants': deepcopy(grants),
+                    'grants': sort_grants(grants),
                 },
                 )
 
         rules_wild.append(
             {
                 'ref_pattern': "*",
-                'grants': grants,
+                'grants': sort_grants(grants),
             },
             )
 
@@ -248,3 +252,4 @@ elif cmd == 'sync-all':
                 print("  " + line)
             print(" rules updated:")
             git_repo.setRules(rules=rules)
+        sys.stdout.flush()
