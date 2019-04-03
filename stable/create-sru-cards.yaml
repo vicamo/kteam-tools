@@ -7,6 +7,7 @@
           - 'Backlog'
           - 'On Deck'
           - 'In Progress'
+          - 'For Review'
           - 'Done'
         default_list: 'Backlog'
     cards:
