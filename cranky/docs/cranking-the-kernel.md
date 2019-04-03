@@ -302,15 +302,15 @@ cd ../linux-signed-oracle
 
 Output (for both commands) should look like this:
 ...
-git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
-git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
+git commit -s -m 'UBUNTU: Ubuntu-oracle-4.15.0.1031.31' debian/changelog
+git tag -s -m 'Ubuntu-oracle-4.15.0.1031.31' 'Ubuntu-oracle-4.15.0.1031.31'
 
 **Note** update-version doesn't run the "git commit" and "git tag" commands
 so you must run them next.  These are last two lines printed to stdout above
 and are the commands you need to copy and run them manually.
 ```
-$ git commit -s -m 'UBUNTU: Ubuntu-kvm-4.15.0.1031.31' debian/changelog
-$ git tag -s -m 'Ubuntu-kvm-4.15.0.1031.31' 'Ubuntu-kvm-4.15.0.1031.31'
+$ git commit -s -m 'UBUNTU: Ubuntu-oracle-4.15.0.1031.31' debian/changelog
+$ git tag -s -m 'Ubuntu-oracle-4.15.0.1031.31' 'Ubuntu-oracle-4.15.0.1031.31'
 ```
 
 It is mandatory to run "udpate-version' from the "linux-meta" and
@@ -415,7 +415,7 @@ review.
 Upload source packages to wani.canonical.com for a review:
 ```
 ssh wani.canonical.com mkdir -p for-review/xenial-linux-oracle
-scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/xenial-linux-kvm
+scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/xenial-linux-oracle
 ```
 
 After source packages and git repositories have been reviewed and acknowledged
