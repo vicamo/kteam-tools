@@ -18,7 +18,7 @@ uvt-kvm create --cpu ${CPUS} --memory ${VM_MEM_SIZE} ${VM} release=${RELEASE} ar
 Where:
 ```
   CPUS = number of CPUs you want
-  VM_MEM_SIZE = memory size ib MB
+  VM_MEM_SIZE = memory size in MB
   VM = a name you want to call your VM
   RELEASE = xenial, bioic, etc
   ARCH = the guest arch
