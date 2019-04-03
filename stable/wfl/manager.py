@@ -132,6 +132,39 @@ class WorkflowManager():
             yaml.dump(status, rfd, default_flow_style=False)
         os.rename(s.status_path + '.new', s.status_path)
 
+    # Returns a tuple (depth, master-bug-number, bug-number) which will be used
+    # to sort a list of bug numbers.  By sorting by master-bug chain length we
+    # ensure we see all of the top level bugs first, then all direct children,
+    # then all of their direct children and so on.  We then sort by master bug
+    # number in order to group bugs sharing a master bug together.  Finally we
+    # sort by the primary bug number to ensure a stable sort order in every
+    # run.
+    #
+    # Note #1: that we are a class member function so when we are used by
+    # sorted() and family we will implicitly retain access to self, and through
+    # that to the status_start that contains.
+    #
+    # Note #2: we are forming part of the sort key from external data, we
+    # lookup the master_bug number and also count the master_bug link depth in
+    # the status_start data which is an associative array of information by bug
+    # number.  This contains a master-bug element when such is present.
+    def tracker_key(s, bug_nr):
+        # If we do not know this bug at all, order it last.
+        if bug_nr not in s.status_start:
+            return (100, 0, bug_nr)
+
+        # Follow the master-bug links we have recorded back up the hierachy
+        # counting the number of levels.
+        master_bug = bug_nr
+        depth = 0
+        while master_bug != '0':
+            master_bug = str(s.status_start.get(master_bug, {}).get('master-bug', 0))
+            depth += 1
+
+        # Order by depth, master-bug, primary bug.
+        key = (depth, str(s.status_start.get(bug_nr, {}).get('master-bug', 0)), bug_nr)
+        return key
+
     @property
     def lp(s):
         if s._lp is None:
@@ -201,7 +234,8 @@ class WorkflowManager():
         '''
         center('WorkflowManager.manage_payload')
         try:
-            for bugid in s.buglist:
+            # Run the list based on the master chain depth, shortest first.
+            for bugid in sorted(s.buglist, key=s.tracker_key):
                 with s.lock_thing(bugid):
                     s.crank(bugid)
 
