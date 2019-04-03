@@ -1218,7 +1218,7 @@ class TrackingBugs():
 
         return retval
 
-    def create(s, series_name, pkg_name, master_bug_id=None, name=None, variant='combo'):
+    def create(s, series_name, pkg_name, name=None, variant='combo'):
         '''
         Create a new tracking bug (and a launchpad bug which backs it). The
         new tracking bug wil not have any of those elements set:
@@ -1232,10 +1232,6 @@ class TrackingBugs():
 
         :param pkg_name: The name of the package/snap
         :type: str
-
-        :param master_bug_id: Launchpad bug id of the master bug (which must
-            exist in the current set) or None (default) if there is none.
-        :type: int
 
         :param variant: What kind of package is tracked by this tracking
             bug. Currently there are 'combo', 'debs', and 'snap-debs'
@@ -1251,17 +1247,8 @@ class TrackingBugs():
 
         cdebug('Series:        %s' % series_name)
         cdebug('Package:       %s' % pkg_name)
-        if master_bug_id is not None:
-            cdebug('Master bug ID: %i' % master_bug_id)
         cdebug('Variant:       %s' % variant)
         cdebug('Testing:       %s' % s.testing)
-
-        #
-        # If a master bug ID is given, it must exist already.
-        #
-        if master_bug_id is not None and master_bug_id not in s.__tbs:
-            err = 'master bug ({}) does not exist'.format(master_bug_id)
-            raise TrackingBugError(err)
 
         #
         # Figure out whether the package name is known
@@ -1374,9 +1361,6 @@ class TrackingBugs():
                 for task in lptk_bug.tasks:
                     task.status = 'Invalid'
                 raise TrackingBugError('failed to instantinate tracking bug')
-            if master_bug_id is not None:
-                cdebug('Assigning master bug ID: {}'.format(master_bug_id))
-                new_tb.master_bug = master_bug_id
             new_tb.tasks_reset()
             new_tb.tags_reset(testing=s.testing)
             if s.testing is False and s.private is False:
