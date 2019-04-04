@@ -75,14 +75,13 @@ class WorkflowBug():
         s.is_development_series = False
         s._master_bug = False
         s._sru_spin = False
+        s.is_valid = True
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
-        (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
+        (s.is_workflow, s.is_crankable) = s.check_is_valid(s.lpbug)
         if not s.is_workflow:
             raise WorkflowBugError('Bug is not a workflow bug')
-        if not s.is_valid:
-            raise WorkflowBugError('Bug is workflow but not In Progress')
         s.properties = s.lpbug.properties
 
         # Instantiate this variant.
@@ -448,12 +447,7 @@ class WorkflowBug():
                 s.workflow_project = task_name
                 if t.status == 'In Progress':
                     valid = True
-                    continue
-                else:
-                    if s._sauron:
-                        continue
-                    cdebug('        Not processing this bug because master task state is set to %s' % (t.status))
-                    cdebug('        Quitting this bug')
+                break
 
         return (workflow, valid)
 
