@@ -590,16 +590,26 @@
                     stable: true
                     qa: false
                     hw-cert: true
-                    arches: ['amd64', 'i386']
-                    track: '18'
+                    publish-to:
+                        amd64: ['18']
+                        i386: ['18']
+                pc-lowlatency-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc-lowlatency']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['18']
+                        i386: ['18']
                 dragonboard-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'snapdragon']
                     gated: false
                     stable: false
                     qa: false
                     hw-cert: false
-                    arches: ['arm64']
-                    track: '18'
+                    publish-to:
+                        arm64: ['18']
             supported: true
             testing:
                 flavours:
