@@ -1,0 +1,7 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+# Run swm as requested and record a copy to the persistent log.
+set -o pipefail
+HOME=$HOME/shankbot "$here/swm" "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
