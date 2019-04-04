@@ -79,6 +79,10 @@ class WorkflowBug():
         # If a bug isn't to be processed, detect this as early as possible.
         #
         (s.is_workflow, s.is_valid) = s.check_is_valid(s.lpbug)
+        if not s.is_workflow:
+            raise WorkflowBugError('Bug is not a workflow bug')
+        if not s.is_valid:
+            raise WorkflowBugError('Bug is workflow but not In Progress')
         s.properties = s.lpbug.properties
 
         # Instantiate this variant.
