@@ -1,0 +1,24 @@
+#!/bin/bash
+
+key="$1"
+shift
+
+[ "$key" = "" ] && key="UNKNOWN"
+
+here=$(dirname "$(readlink -f "${0}")")
+oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
+chmod 644 "$oops"
+
+# { { { { someprog; echo $? >&3; } | filter >&4; } 3>&1; } | { read xs; exit $xs; } } 4>&1
+set -o pipefail
+
+"$@" >"$oops" 2>&1
+rc="$?"
+
+if [ "$rc" != 0 ]; then
+	echo "OOPS: http://kernel.ubuntu.com/~kernel-ppa/oops/$(basename "$oops")"
+else
+	rm -f "$oops"
+fi
+
+exit "$rc"
