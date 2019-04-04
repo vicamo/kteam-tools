@@ -1,6 +1,45 @@
-# This assumes you are going to use the following layout:
 #
-#  ~/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
+# Configuration file for the cranky toolchain.
+#
+# Copy to ~/.cranky or ~/.cranky.yaml and modify as you like. Note that a
+# configuration file is not necessary since all options can also be specified
+# using commandline arguments. Commandline arguments take precedence over
+# options specified in this file.
+#
+# Juerg Haefliger <juergh@canonical.com>
+#
+
+# cranky-clone
+#clone:
+  # A local reference kernel repo used for cloning the Ubuntu kernel repo.
+  # Using this speeds up the cloning process considerably. See
+  # 'git help clone', option --reference, for more details.
+  #reference: /path/to/local/kernel/repo
+  # Borrow the objects from the above reference repo only during the cloning
+  # process to reduce network traffic. See 'git help clone', option
+  # --dissociate, for more details.
+  #dissociate: True
+
+# cranky-test-build
+#test-build:
+  # The directory where the logfiles are written to
+  #logdir: /path/to/logdir
+
+# Path to source code directories
+#
+# Where to find the git repos for the different packages. The paths can be
+# specified per package type (main, meta, signed) or via a 'default' entry
+# which is used as a fallback. The following formatter keywords are
+# recognized:
+#   {series}:      The distro series codename (bionic, ...)
+#   {type}:        The type of the package (main, meta, signed, ...)
+#   {type_suffix}: The suffix of dependent packages (-meta, -signed, ...)
+#   {package}:     The package name (linux, linux-aws, linux-meta-gcp, ...)
+#
+# The following configuration assumes you are going to use the following
+# layout:
+#
+#  $HOME/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
 #
 package-path:
   base-path: '~/canonical/kernel/ubuntu'
