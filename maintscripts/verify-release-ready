@@ -277,6 +277,8 @@ class VerifyReleaseReady():
 
         s.verify_tracker_bug(tracker)
 
+        s.verify_changelog_commits()
+
         s.verify_content()
 
     def verify_closing_commit(s, cl0, commit, version):
@@ -403,6 +405,24 @@ class VerifyReleaseReady():
                 s.status('LP: #%s is not fix committed' % bug, 'warning')
 
         return tracker
+
+    def verify_changelog_commits(s):
+        # Verify possible issues with the commit subjects added to
+        # the changelog.
+        msg = 'changelog commits subject'
+        changelog = Debian.changelog()
+        content = changelog[0]['own-content']
+        for line in content:
+            m = re.match("^- (.*)", line.strip())
+            if m:
+                subject = m.group(1)
+                if subject.startswith('[PATCH]') or \
+                   not re.match("[a-zA-Z0-9\[{/<_]", subject):
+                    s.status(msg, "warning")
+                    s.status(subject, "warning")
+                    return
+
+        s.status(msg, True)
 
     def verify_tracker_bug(s, bug):
         if bug is None:
