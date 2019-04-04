@@ -156,13 +156,11 @@ def retest(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = '%s/stable/tbt retest %s' % (bot.config.wfm.kteam_root, bug)
+            cmd = '"%s/sbin/oops-run" hero-retest "%s/stable/tbt" retest "%s"' % (bot.config.wfm.kteam_root, bot.config.wfm.kteam_root, bug)
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'tests for bug %s kicked off' % bug)
             elif rc == 254:
-                cmd = 'pastebinit -f python /tmp/exceptions.log'
-                (rc, output) = sh(cmd, quiet=True)
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
 
 @sopel.module.nickname_commands('update')
