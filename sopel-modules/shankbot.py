@@ -121,13 +121,11 @@ def shank_all(bot, trigger):
         #
         bot.say(trigger.nick + ', gimme some love boss')
 
-        cmd = 'flock -x --verbose /tmp/shanky.lck -c "%s/stable/swm" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, os.environ['HOME'])
+        cmd = '"%s/sbin/oops-run" hero-shank "%s/stable/swm-hero"' % (bot.config.wfm.kteam_root, bot.config.wfm.kteam_root)
         (rc, output) = sh(cmd, quiet=True)
         if rc == 0:
             bot.say(trigger.nick + ', ' + 'I shanked them all')
         elif rc == 254:
-            cmd = 'pastebinit -f python /tmp/exceptions.log'
-            (rc, output) = sh(cmd, quiet=True)
             bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
     else:
         # A list of bugs were specified on the command line. Shank each of them
@@ -138,13 +136,11 @@ def shank_all(bot, trigger):
             if not bug.isdigit():
                 bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
                 continue
-            cmd = 'flock -x --verbose /tmp/shanky.lck -c "%s/stable/swm %s" >>%s/logs/shank.log 2>&1' % (bot.config.wfm.kteam_root, bug, os.environ['HOME'])
+            cmd = '"%s/sbin/oops-run" hero-shank "%s/stable/swm-hero" "%s"' % (bot.config.wfm.kteam_root, bot.config.wfm.kteam_root, bug)
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
             elif rc == 254:
-                cmd = 'pastebinit -f python /tmp/exceptions.log'
-                (rc, output) = sh(cmd, quiet=True)
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
 
 @sopel.module.nickname_commands('retest')
