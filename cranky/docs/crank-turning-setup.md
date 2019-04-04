@@ -19,6 +19,14 @@ crank kernels:
 sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python-launchpadlib-toolkit wget
 ```
 
+Also make sure to download the Trello tools (this is required because some of
+the cranky tools require to interact with Trello):
+```
+mkdir $HOME/canonical
+cd $HOME/canonical
+git clone https://git.launchpad.net/~apw/+git/so-trello
+```
+
 ## Environment setup
 
 ### ~/.bashrc
@@ -41,7 +49,12 @@ See "cranky/docs/snip-dput.cf".
 
 Clone the Kernel Team Tools git repository:
 ```
-mkdir ~/canonical
-cd ~/canonical
+cd $HOME/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
+```
+
+Connect the kteam-tools with Trello tools:
+```
+cd $HOME/canonical/kteam-tools
+ln -s $HOME/canonical/so-trello/trellotool .
 ```
