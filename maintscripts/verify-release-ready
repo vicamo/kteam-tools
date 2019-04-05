@@ -413,9 +413,14 @@ class VerifyReleaseReady():
         changelog = Debian.changelog()
         content = changelog[0]['own-content']
         for line in content:
+            # The commit subject comes after the LP bug title and
+            # begins with '    - <subject>'
             m = re.match("^- (.*)", line.strip())
             if m:
                 subject = m.group(1)
+                # Consider normal not starting with '[PATCH]'
+                # or not having a special char as the first char
+                # other than '[{/<_'
                 if subject.startswith('[PATCH]') or \
                    not re.match("[a-zA-Z0-9\[{/<_]", subject):
                     s.status(msg, "warning")
