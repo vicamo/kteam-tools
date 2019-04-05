@@ -1,11 +1,24 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 C=${C-cranky}
 P=${P-$0}
 
 here=$(dirname "$(readlink -f "${0}")")
 
-build_src()
+function out()
+{
+	local rc=$?
+
+	trap - EXIT INT TERM HUP
+
+	if [ "${rc}" -ne 0 ] ; then
+		echo "Script failed" >&2
+	fi
+
+	exit "${rc}"
+}
+
+function build_src()
 {
 	local dir="$1"
 	local session="$2"
@@ -19,19 +32,22 @@ build_src()
 	)
 }
 
-usage()
+function usage()
 {
 	cat <<EOF
-Usage: cranky build-sources [handle]
+Usage: cranky build-sources [-h] [handle]
 
 Build all source packages for the specified series and source as specified in
 kernel-series.yaml.
 
-positional arguments:
+Positional arguments:
   handle                Handle to a kernel source tree, either a path to a
                         kernel source tree or a handle in <series>:<package>
                         format. If not given the current working directory is
                         used.
+
+Optional arguments:
+  -h, --help  Show this help text.
 
 Examples:
   $ cranky build-sources
@@ -42,43 +58,42 @@ Examples:
       ktl/kernel-series.yaml. Finds the source trees based on 'package-path'
       from the cranky config file.
 EOF
-
-	exit 2
 }
 
-# MAIN:
-while [ "$1" ]
-do
-	case "$1" in
-	-*)
-		usage
-		;;
-	*)
-		break;
+handle=${PWD}
+
+while [ ${#} -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-*)
+			usage
+			exit 2
+			;;
+		*)
+			if [ ${#} -gt 1 ] ; then
+				usage
+				exit 2
+			fi
+			handle=${1}
+			break
+			;;
 	esac
 	shift
 done
 
-case "$#" in
-0)
-	handle="$PWD"
-	;;
-1)
-	handle="$1"
-	;;
-*)
-	usage
-	;;
-esac
+trap out EXIT INT TERM HUP
 
-sources=$( "$here/cranky-shell-helper" "source-packages-path" "$handle" )
-if [ "$sources" = '' ]; then
+sources=$("$here/cranky-shell-helper" source-packages-path "$handle")
+if [ -z "$sources" ] ; then
 	exit 1
 fi
 
 session=$("$here/cranky" chroot map-session sources "$handle")
-if [ "$session" = '' ]; then
-	echo "$P: sources session not available -- run: $C chroot create-session sources \"$handle\""
+if [ -z "$session" ] ; then
+	echo "$P: sources session not available -- run: $C chroot create-session sources \"$handle\"" >&2
 	exit 1
 fi
 
