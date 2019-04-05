@@ -12,8 +12,12 @@ chmod 644 "$oops"
 # { { { { someprog; echo $? >&3; } | filter >&4; } 3>&1; } | { read xs; exit $xs; } } 4>&1
 set -o pipefail
 
-"$@" >"$oops" 2>&1
-rc="$?"
+{
+	echo "RUNNING: $@"
+	"$@"
+	rc="$?"
+	echo "EXIT: rc=<$rc>"
+} >"$oops" 2>&1
 
 if [ "$rc" != 0 ]; then
 	echo "OOPS: http://kernel.ubuntu.com/~kernel-ppa/oops/$(basename "$oops")"
