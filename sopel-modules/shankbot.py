@@ -161,7 +161,7 @@ def retest(bot, trigger):
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'tests for bug %s kicked off' % bug)
             else:
-                bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
+                bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
 
 @sopel.module.nickname_commands('update')
 def update(bot, trigger):
