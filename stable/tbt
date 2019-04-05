@@ -125,8 +125,6 @@ if __name__ == '__main__':
     try:
         app = Tasks()
         retval = args.func(app, args)
-    except AttributeError:
-        parser.print_help()
     except KeyboardInterrupt:
         pass
     except Exception:
