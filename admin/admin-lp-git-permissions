@@ -182,8 +182,8 @@ elif cmd == 'sync-all':
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
             branch_prefix = package.source.name.replace('linux', '')
-            if branch_prefix.startswith('-lts-'):
-                branch_prefix = '-lts'
+            #if branch_prefix.startswith('-lts-'):
+            #    branch_prefix = '-lts'
             rewind_tags = series.development
             grants = []
             for person in people:
