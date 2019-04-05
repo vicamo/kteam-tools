@@ -35,6 +35,7 @@ examples:
     parser.add_argument('--no-announcements',           action='store_true', default=False, help='Send no email, msgq or other announcements.')
     parser.add_argument('--no-timestamps',              action='store_true', default=False, help='Don\'t set any timestamps in the properties.')
     parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
+    parser.add_argument('--no-color',                   action='store_true', default=False, help='Turn off colorisationn.)')
     parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
     parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')
     parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
@@ -52,6 +53,10 @@ examples:
         log_format = "%(message)s"
         basicConfig(filename=args.logfile, level=INFO, format=log_format)
         Clog.dbg = False
+
+    # Turn off color for logging.
+    if args.no_color:
+        Clog.color = False
 
     center('__main__')
     if args.debug:
