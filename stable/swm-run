@@ -7,4 +7,4 @@ cd "$here" || exit 1
 
 # Run swm as requested and record a copy to the persistent log.
 set -o pipefail
-HOME=$HOME/shankbot "$here/swm" "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
+HOME=$HOME/shankbot "$here/swm" --no-color "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
