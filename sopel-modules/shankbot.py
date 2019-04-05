@@ -125,7 +125,7 @@ def shank_all(bot, trigger):
         (rc, output) = sh(cmd, quiet=True)
         if rc == 0:
             bot.say(trigger.nick + ', ' + 'I shanked them all')
-        elif rc == 254:
+        else:
             bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
     else:
         # A list of bugs were specified on the command line. Shank each of them
@@ -140,7 +140,7 @@ def shank_all(bot, trigger):
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'bug %s has been shanked' % bug)
-            elif rc == 254:
+            else:
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip().decode("utf-8"))
 
 @sopel.module.nickname_commands('retest')
@@ -160,7 +160,7 @@ def retest(bot, trigger):
             (rc, output) = sh(cmd, quiet=True)
             if rc == 0:
                 bot.say(trigger.nick + ', ' + 'tests for bug %s kicked off' % bug)
-            elif rc == 254:
+            else:
                 bot.say(trigger.nick + ', ' + 'That didn\'t go very well: ' + output[0].strip())
 
 @sopel.module.nickname_commands('update')
