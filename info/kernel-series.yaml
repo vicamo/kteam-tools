@@ -856,14 +856,6 @@
                     hw-cert: false
                     arches: ['amd64']
                     track: '18'
-                gke-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -875,6 +867,37 @@
                         clouds: ['gcp']
             swm:
                 gcp-nvidia-packages: true
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-gke:
+            packages:
+                linux-gke:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'master-next']
+                linux-meta-gke:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/bionic']
+                linux-signed-gke:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic']
+            snaps:
+                gke-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                    track: '18'
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    gke:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-edge:
