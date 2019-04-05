@@ -56,6 +56,14 @@ def cinstance(instance):
     finally:
         Clog.instance = ""
 
+@contextmanager
+def cindent(by=4):
+    try:
+        Clog.indent += by
+        yield
+    finally:
+        Clog.indent -= by
+
 
 class Clog:
     '''
