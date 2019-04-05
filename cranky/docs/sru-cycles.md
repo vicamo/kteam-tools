@@ -1,7 +1,7 @@
 ## Before You Start
 
 Before proceeding with this document, it is important to have followed the
-instructions in "cranky-env.conf.md" on your local host machine and  basic
+instructions in "crank-turning-setup.md" on your local host machine and basic
 understanding of what Cranking an Ubuntu Kernel is all about. Information and
 instructions in this document assume this this order of action as a pre-
 requisite to successfully implementing procedures below.
@@ -23,7 +23,7 @@ USE_LOCAL_KERNEL_SERIES_YAML=1
 ```
 
 Instructions for creating the "~/.cranky.yaml" file are included in the
-"cranky-env-conf.md" document
+"crank-turning-setup.md" document.
 
 This document is now a part of the kteam-tools repo to ensure it is regularly
 updated along with the various tools it described.  This information will no
