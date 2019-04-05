@@ -240,7 +240,12 @@ elif cmd == 'sync-all':
             print("  invalid repository path {} for {}".format(path, package.name))
             continue
         print(git_repo)
+
+        # Get and sort the rules so we can compare against them.
         current_rules = git_repo.getRules()
+        for rule in current_rules:
+            rule['grants'] = sort_grants(rule['grants'])
+
         if current_rules != rules:
             print(" is:")
             rule_txt = yaml.dump(current_rules, default_flow_style=False)
