@@ -593,6 +593,7 @@
                     publish-to:
                         amd64: ['18']
                         i386: ['18']
+                        armhf: ['18']
                 pc-lowlatency-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc-lowlatency']
                     gated: false
@@ -685,8 +686,6 @@
                     publish-to:
                         armhf: [ '18-pi3', '18-cm3', '18-pi2' ]
                         arm64: [ '18-pi3' ]
-                    arches: ['armhf', 'arm64']
-                    track: '18-pi3'
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
