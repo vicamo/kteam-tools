@@ -165,7 +165,7 @@ class SnapDebs:
         publish_to = s.snap_info.publish_to
         if publish_to is not None:
             retval = True
-            for arch in publish_to:
+            for arch in sorted(publish_to):
                 for track in publish_to[arch]:
                     channel = "{}/{}".format(track, risk)
                     version = s.snap_store.channel_version(arch, channel)
