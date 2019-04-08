@@ -63,10 +63,13 @@ def __coloured(msg, colour='black'):
 
 %>
 <%
+# status_bites
+#
+def __status_bites(bug):
+    bites = []
 
-def __status_bite(bug):
+    # debs -- look at the bug with respect to any Debian Packages we are tracking.
     retval = ''
-
     while True:
         # Is it ready for promotion to -updates/-security?
         #
@@ -107,12 +110,11 @@ def __status_bite(bug):
             retval = __coloured('Publishing to -proposed', '#3455db')
             break
 
+        # Is it being prepared for upload/built?
+        #
         prep_status = __task_status(bug, 'prepare-package')
-
         if prep_status == 'Invalid':
-            # For -meta only packages, consider prepare-package-meta status
             prep_status = __task_status(bug, 'prepare-package-meta')
-
         if prep_status == 'New':
             retval = __coloured('Not ready to be cranked', 'grey')
             break
@@ -120,61 +122,125 @@ def __status_bite(bug):
             retval = __coloured('Ready to be cranked', '#bca136')
             break
         elif prep_status == 'In Progress':
-            retval = __coloured('Cranker: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
+            retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
             break
         elif prep_status == 'Fix Committed':
-            retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), 'magenta')
+            retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
             break
         elif prep_status == 'Fix Released' and proposed_status == 'New':
-            retval = __coloured('Building', '#3455db')
+            retval = __coloured('Building', '#1496bb')
             break
 
-        # Not ready for promotion, where are we with testing?
-        #
-        retval = '<table width="100%" border="0"><tr>'
-        retval += '<td style="padding: 0 0">%s</td>' % __coloured('Testing', '#1496bb')
-
-        # automated-testing
+        # Is it in testing?
         #
         automated_testing_status = __task_status(bug, 'automated-testing')
-        if automated_testing_status == 'n/a':
-            retval += '<td width="18%%" style="padding: 0 0"> </td>'
-        else:
-            color = __testing_status_colors[automated_testing_status]
-            retval += '<td width="18%%" style="padding: 0 0">automated: %-26s</td>' % (__coloured(automated_testing_status, color))
-
-        # certification-testing
-        #
         certification_testing_status = __task_status(bug, 'certification-testing')
-        if certification_testing_status == 'n/a':
-            retval += '<td width="18%%" style="padding: 0 0"> </td>'
-        else:
-            color = __testing_status_colors[certification_testing_status]
-            retval += '<td width="18%%" style="padding: 0 0">certification: %-26s</td>' % (__coloured(certification_testing_status, color))
-
-        # regression-testing
-        #
         regression_testing_status = __task_status(bug, 'regression-testing')
-        if regression_testing_status == 'n/a':
-            retval += '<td width="18%%" style="padding: 0 0"> </td>'
-        else:
-            color = __testing_status_colors[regression_testing_status]
-            retval += '<td width="18%%" style="padding: 0 0">regression: %-26s</td>' % (__coloured(regression_testing_status, color))
-
-        # verification-testing
-        #
         verification_testing_status = __task_status(bug, 'verification-testing')
-        if verification_testing_status == 'n/a':
-            retval += '<td width="18%%" style="padding: 0 0"> </td>'
-        else:
+        if (automated_testing_status != 'n/a' or
+                certification_testing_status != 'n/a' or
+                regression_testing_status != 'n/a' or
+                verification_testing_status != 'n/a'):
+            color = __testing_status_colors[automated_testing_status]
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">at: %-26s</span>' % (__coloured(automated_testing_status, color))
+
+            color = __testing_status_colors[certification_testing_status]
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">ct: %-26s</span>' % (__coloured(certification_testing_status, color))
+
+            color = __testing_status_colors[regression_testing_status]
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">rt: %-26s</span>' % (__coloured(regression_testing_status, color))
+
             color = __testing_status_colors[verification_testing_status]
-            retval += '<td width="18%%" style="padding: 0 0">verification: %-26s</td>' % (__coloured(verification_testing_status, color))
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">vt: %-26s</span>' % (__coloured(verification_testing_status, color))
 
-        retval += '</tr></table>'
+            break
 
+        # No debs status.
         break
 
-    return retval
+    # Report Debs release progress.
+    debs_in = []
+    security_status = __task_status(bug, 'promote-to-security')
+    updates_status  = __task_status(bug, 'promote-to-updates')
+    proposed_status = __task_status(bug, 'promote-to-proposed')
+    if proposed_status not in ('n/a', 'New', 'Invalid', 'Opinion'):
+        debs_in.append('ppa')
+    if proposed_status in ('Fix Released'):
+        debs_in.append('proposed')
+    if updates_status in ('Fix Released'):
+        debs_in.append('updates')
+    if security_status in ('Fix Released'):
+        debs_in.append('security')
+    if len(debs_in) != 0:
+        retval = '<span style="display: inline-block; min-width: 400px; width=400px;">' + retval + '</span>'
+        if retval[-2:] not in ('', '  '):
+            retval += '  '
+        retval += 'in: ' + ','.join(debs_in)
+
+    if retval != '':
+        bites.append('<span style="display: inline-block; min-width: 20px; width=20px;">d:</span>' + retval)
+
+    # snaps -- look at the bug with respect to any snap tracked.
+    retval = ''
+    while True:
+        # Are there any snap publish tasks outstanding?
+        edge_status = __task_status(bug, 'snap-release-to-edge')
+        if edge_status == 'New':
+            retval = __coloured('Snap not ready to be cranked', 'grey')
+            break
+        elif edge_status == 'Confirmed':
+            retval = __coloured('Snap ready to be cranked', '#bca136')
+            break
+        beta_status = __task_status(bug, 'snap-release-to-beta')
+        if beta_status == 'Confirmed':
+            retval = __coloured('Snap ready to release to beta', '#bca136')
+            break
+        candidate_status = __task_status(bug, 'snap-release-to-candidate')
+        if candidate_status == 'Confirmed':
+            retval = __coloured('Snap ready to release to candidate', '#bca136')
+            break
+        stable_status = __task_status(bug, 'snap-release-to-stable')
+        if stable_status == 'Confirmed':
+            retval = __coloured('Snap ready to release to stable', '#bca136')
+            break
+
+        certification_testing_status = __task_status(bug, 'snap-certification-testing')
+        qa_testing_status = __task_status(bug, 'snap-qa-testing')
+        if (certification_testing_status != 'n/a' or
+                qa_testing_status != 'n/a'):
+            color = __testing_status_colors[certification_testing_status]
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">ct: %-26s</span>' % (__coloured(certification_testing_status, color))
+
+            color = __testing_status_colors[qa_testing_status]
+            retval += '<span style="display: inline-block; min-width: 100px; width=100px;">qa: %-26s</span>' % (__coloured(qa_testing_status, color))
+            break
+
+        if (edge_status in ('Fix Released', 'Invalid') and
+                beta_status in ('Fix Released', 'Invalid') and
+                candidate_status in ('Fix Released', 'Invalid') and
+                stable_status in ('Fix Released', 'Invalid')):
+            retval = __coloured('Snap promotions complete', 'green')
+
+        # No snap status.
+        break
+
+    # Report Snap release progress.
+    risk_in = []
+    for risk in ['edge', 'beta', 'candidate', 'stable']:
+        status = __task_status(bug, 'snap-release-to-' + risk)
+        if status == 'Fix Released':
+            risk_in.append(risk)
+    if len(risk_in) != 0:
+        retval = '<span style="display: inline-block; min-width: 400px; width=400px;">' + retval + '</span>'
+        if retval[-2:] not in ('', '  '):
+            retval += '  '
+        retval += 'in: ' + ','.join(risk_in)
+
+    if retval != '':
+        bites.append('<span style="display: inline-block; min-width: 20px; width=20px;">s:</span>' + retval)
+
+    return bites
+
 %>
 <%
 
@@ -184,9 +250,13 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
 
     try:
         title = b['title']
-        package, other = title.split(':')
+        package, other = title.split(':', 1)
+        if '/' in package:
+            series, package = package.split('/', 1)
         other = other.strip()
         version, other = other.split(' ', 1)
+        # XXX: extract snap-name:
+        package = b['properties'].get('snap-name', package)
     except:
         package = 'unknown'
         version = 'unknown'
@@ -204,27 +274,28 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         cadence[sn] = {}
     if package not in cadence[sn]:
         cadence[sn][package] = []
-    status = __status_bite(b)
 
-    # Fixup the link to the regression testing if this is 'testing' status.
-    #
-    if 'regression' in status:
-        try:
-            status = status.replace('regression', '<a href="%s">regression</a>' % data['testing']['regression'][package])
-        except KeyError:
-            pass
+    status_list = __status_bites(b)
+    for status in status_list:
+        # Fixup the link to the regression testing if this is 'testing' status.
+        #
+        if 'regression' in status:
+            try:
+                status = status.replace('regression', '<a href="%s">regression</a>' % data['testing']['regression'][package])
+            except KeyError:
+                pass
 
-    # Fixup the link to the automated testing results
-    #
-    if 'automated' in status:
-        status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')))
+        # Fixup the link to the automated testing results
+        #
+        if 'automated' in status:
+            status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')))
 
-    # Fixup the link to the sru-report with verification status
-    #
-    if 'verification' in status:
-        status = status.replace('verification', '<a href="%s">verification</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html')
+        # Fixup the link to the sru-report with verification status
+        #
+        if 'verification' in status:
+            status = status.replace('verification', '<a href="%s">verification</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html')
 
-    cadence[sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
+        cadence[sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
