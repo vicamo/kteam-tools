@@ -18,4 +18,4 @@ fi
 # Add cranky-tools to the PATH and enable bash auto-completion
 export PYTHONPATH=:$HOME/canonical/so-trello:$PYTHONPATH
 export PATH=$HOME/kteam-tools/cranky:$PATH
-source $HOME/canonical/kteam-tools/cranky/cranky-bash
+source $HOME/canonical/kteam-tools/cranky/cranky-complete.bash
