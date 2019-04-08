@@ -43,6 +43,18 @@ class PromoteFromTo(Promoter):
         retval = False
 
         while not retval:
+            # If we are not required then initialisation phase will leave us
+            # with not pockets.  In this case we are a noop, close ourselves
+            # out now.
+            if s.pocket_src is not None:
+                break
+
+            s.task.status = 'Invalid'
+
+            retval = True
+            break
+
+        while not retval:
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 break
 
@@ -132,7 +144,7 @@ class PromoteFromTo(Promoter):
             retval = True
             break
 
-        while True:
+        while not retval:
             # Check if the packages are published completely yet.
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 # Confirm the packages remain available to copy.
@@ -248,9 +260,14 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        s.pocket_src = 'Signing'
-        s.pocket_dest = 'Proposed'
-        s.pocket_after = 'Release/Updates'
+        if s.bug.debs.routing('Signing'):
+            s.pocket_src = 'Signing'
+            s.pocket_dest = 'Proposed'
+            s.pocket_after = 'Release/Updates'
+        else:
+            s.pocket_src = None
+            s.pocket_dest = None
+            s.pocket_after = None
 
         cleave(s.__class__.__name__ + '.__init__')
 
