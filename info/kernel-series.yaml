@@ -603,14 +603,6 @@
                     publish-to:
                         amd64: ['18']
                         i386: ['18']
-                dragonboard-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'snapdragon']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        arm64: ['18']
             supported: true
             testing:
                 flavours:
@@ -686,6 +678,27 @@
                     publish-to:
                         armhf: [ '18-pi3', '18-cm3', '18-pi2' ]
                         arm64: [ '18-pi3' ]
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'snapdragon']
+            snaps:
+                dragonboard-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'snapdragon']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: [ '18' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
