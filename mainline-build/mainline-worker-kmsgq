@@ -81,12 +81,14 @@ class TheApp():
             print("Starting", payload['cmd'])
             sys.stdout.flush()
             child = Popen(payload['cmd'])
+            iteration = 0
             while True:
                 res = child.poll()
                 if res != None:
                     break
 
-                time.sleep(5)
+                iteration += 1
+                time.sleep(1 if iteration < 60 else 10)
                 s.mq.connection.process_data_events()
             print("Complete", payload['cmd'])
             sys.stdout.flush()
