@@ -86,7 +86,7 @@ class TheApp():
                 if res != None:
                     break
 
-                time.sleep(15)
+                time.sleep(5)
                 s.mq.connection.process_data_events()
             print("Complete", payload['cmd'])
             sys.stdout.flush()
