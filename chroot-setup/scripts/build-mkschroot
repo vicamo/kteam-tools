@@ -131,7 +131,7 @@ do
 			;;
 	esac
 done <<EOL
-i386		gcc-i686-linux-gnu g++-i686-linux-gnu libc6-dev-i386-cross
+i386		gcc-i686-linux-gnu libc6-dev-i386-cross
 armel		gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc6-dev-armel-cross
 armhf		gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross
 powerpc		gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
