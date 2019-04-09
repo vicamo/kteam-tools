@@ -14,11 +14,19 @@ esac
 
 . "$here/lib-build"
 
-master_tree_select || exit 1
+cd "$master_main" || exit 1
+for tree in *
+do
+	[ ! -d "$tree/.git" ] && continue
+	(
+		echo "* Cleaning $tree ..."
+		cd "$tree" || exit 1
 
-# Clean the tree hard.
-echo "** cleaning git repository ..."
-git clean -x -f -d
+		# Clean the tree hard.
+		echo "** git cleaning repository ..."
+		git clean -x -f -d
 
-echo "*** git gc ..."
-git gc
+		echo "** git gc ..."
+		git gc
+	)
+done
