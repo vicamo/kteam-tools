@@ -238,7 +238,7 @@ def checkout_repos(handle, reference=None, dissociate=False):
         rmt_branch = repo.branch if repo.branch else 'master'
         # local branch is branch if we are checking out against 'origin'
         # remote name otherwise.
-        branch = 'cranky/' + rmt_branch if remote == 'origin' else remote
+        branch = 'cranky/' + (rmt_branch if remote == 'origin' else remote)
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
