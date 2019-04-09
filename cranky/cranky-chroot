@@ -102,6 +102,8 @@ session_chroot_create()
 
 	# Cross Compilers
 	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-i686-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu gcc
+	# Allow CC to link to libc
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install libc6-dev-arm64-cross libc6-dev-armhf-cross libc6-dev-i386-cross libc6-dev-ppc64el-cross libc6-dev-s390x-cross
 
 	# XXX: session specific in it ...
 	
