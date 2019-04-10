@@ -3,6 +3,7 @@
     "title"    : "Kernel Stable Team Dashboard",
     "data"     : {
         "workflow" : "kernel-sru-workflow.json",
-        "releases" : "supported-releases.json"
+        "releases" : "supported-releases.json",
+        "testing": "testing.json"
     }
 }
