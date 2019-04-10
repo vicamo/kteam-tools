@@ -1608,9 +1608,9 @@
                 linux-meta-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-meta']
-                # linux-signed-fips: Does not exist
-                #     type: signed
-                #     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips']
+                linux-signed-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed']
             supported: true
             derived-from: ['16.04', 'linux']
             testing:
