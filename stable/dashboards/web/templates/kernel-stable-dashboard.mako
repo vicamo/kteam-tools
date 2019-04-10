@@ -243,6 +243,7 @@ def __status_bites(bug):
 
 %>
 <%
+import re
 
 cadence = {}
 for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
@@ -279,21 +280,21 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
     for status in status_list:
         # Fixup the link to the regression testing if this is 'testing' status.
         #
-        if 'regression' in status:
+        if 'rt:' in status:
             try:
-                status = status.replace('regression', '<a href="%s">regression</a>' % data['testing']['regression'][package])
+                status = re.sub(r'(rt: *<span.*?</span>)', r'<a href="%s">\1</a>' % data['testing']['regression'][package], status)
             except KeyError:
                 pass
 
         # Fixup the link to the automated testing results
         #
-        if 'automated' in status:
-            status = status.replace('automated', '<a href="%s">automated</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')))
+        if 'at:' in status:
+            status = re.sub(r'(at: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')), status)
 
         # Fixup the link to the sru-report with verification status
         #
-        if 'verification' in status:
-            status = status.replace('verification', '<a href="%s">verification</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html')
+        if 'vt:' in status:
+            status = re.sub(r'(vt: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html', status)
 
         cadence[sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
 %>
