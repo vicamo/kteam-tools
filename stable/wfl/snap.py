@@ -48,9 +48,9 @@ class SnapStore:
         s.snap = snap
         s._versions = {}  # dictionary with {(<arch>,<channel>): <version>}
 
-    # _channel_version
+    # _channel_version_revision
     #
-    def _channel_version(s, arch, channel):
+    def _channel_version_revision(s, arch, channel):
         """
         Query the snap store URL to get the information about the kernel snap
         on the provided arch/channel and cache it.
@@ -61,14 +61,18 @@ class SnapStore:
         cdebug("    snap.publish_to={}".format(s.snap.publish_to))
 
         version = None
+        revision = None
         try:
             headers = s.common_headers
             headers['X-Ubuntu-Architecture'] = arch
-            params = urlencode({'fields': 'version', 'channel': channel})
+            params = urlencode({'fields': 'version,revision', 'channel': channel})
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
-                version = json.loads(resp.read().decode('utf-8'))['version']
+                response = json.loads(resp.read().decode('utf-8'))
+                cdebug(response)
+                version = response['version']
+                revision = response['revision']
         except HTTPError as e:
             # Error 404 is returned if the snap has never been published
             # to the given channel.
@@ -83,15 +87,23 @@ class SnapStore:
         except (URLError, KeyError) as e:
             raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
                                  (type(e), str(e)))
-        return version
+        return (version, revision)
 
     # channel_version
     #
     def channel_version(s, arch, channel):
         key = (arch, channel)
         if key not in s._versions:
-            s._versions[key] = s._channel_version(arch, channel)
-        return s._versions[key]
+            s._versions[key] = s._channel_version_revision(arch, channel)
+        return s._versions[key][0]
+
+    # channel_revision
+    #
+    def channel_revision(s, arch, channel):
+        key = (arch, channel)
+        if key not in s._versions:
+            s._versions[key] = s._channel_version_revision(arch, channel)
+        return s._versions[key][1]
 
 
 # SnapDebs
@@ -166,12 +178,37 @@ class SnapDebs:
         if publish_to is not None:
             retval = True
             for arch in sorted(publish_to):
+                missing_arch = []
+                missing_entry = None
                 for track in publish_to[arch]:
                     channel = "{}/{}".format(track, risk)
                     version = s.snap_store.channel_version(arch, channel)
                     cdebug("track-version: arch={} channel={}  version={} ?? bug.version={}".format(arch, channel, s.snap_store.channel_version(arch, channel), s.bug.version))
                     if s.bug.version != version:
-                        missing.append("{}:{}".format(arch, channel))
+                        missing_arch.append("arch={}:channel={}".format(arch, channel))
+                # We have channels missing the expected version for this
+                # architecture.  Search all of the risks in all of the expected
+                # tracks for the version required (and associated revision).
+                # This allows us to find an appropriate revision in a higher
+                # risk category for this channel or in any other channela
+                # primary edge channel; launchpad can only publish to a single
+                # track when auto uploading so where there are more than one
+                # we need to promote it sideways.
+                if len(missing_arch) > 0:
+                    revision = None
+                    for search_risk in ('edge', 'beta', 'candidate'):
+                        for track in publish_to[arch]:
+                            channel = "{}/{}".format(track, search_risk)
+                            version = s.snap_store.channel_version(arch, channel)
+                            if s.bug.version == version:
+                                revision = s.snap_store.channel_revision(arch, channel)
+                                break
+                        if revision is not None:
+                            break
+
+                    if revision is not None:
+                        missing_arch = [ m + ':rev={}'.format(revision) for m in missing_arch]
+                missing += missing_arch
         else:
             missing.append("UNKNOWN")
 
