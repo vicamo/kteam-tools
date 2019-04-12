@@ -112,12 +112,35 @@ class KernelSnapEntry:
         self._name = name
         self._data = data if data else {}
 
+        # Convert arches/track to publish-to form.
         if 'publish-to' not in self._data:
             if 'arches' in self._data:
                 publish_to = {}
                 for arch in self._data['arches']:
                     publish_to[arch] = [self._data.get('track', 'latest')]
                 self._data['publish-to'] = publish_to
+
+        # Convert stable to promote-to form.
+        if 'promote-to' not in self._data and 'stable' in self._data:
+            if self._data['stable'] is True:
+                self._data['promote-to'] = 'stable'
+            else:
+                self._data['promote-to'] = 'candidate'
+        # Assume no promote-to data to mean just to edge.
+        promote_to = self._data.get('promote-to', 'edge')
+        if isinstance(promote_to, str):
+            expand_promote_to = []
+            for risk in ('edge', 'beta', 'candidate', 'stable'):
+                expand_promote_to.append(risk)
+                if risk == promote_to:
+                    break
+            self._data['promote-to'] = expand_promote_to
+        # Ensure we have stable when promote-to is present.
+        if 'promote-to' in self._data and 'stable' not in self._data:
+            if 'stable' in self._data['promote-to']:
+                self._data['stable'] = True
+            else:
+                self._data['stable'] = False
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -178,6 +201,10 @@ class KernelSnapEntry:
     @property
     def publish_to(self):
         return self._data.get('publish-to', None)
+
+    @property
+    def promote_to(self):
+        return self._data.get('promote-to', None)
 
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)

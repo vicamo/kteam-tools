@@ -2358,6 +2358,190 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
         self.assertIsNone(snap.track)
         self.assertEqual(match, snap.publish_to)
 
+    def test_promote_to_present_list_one(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['beta']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['beta']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_list_many(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['edge', 'beta', 'stable']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta', 'stable']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_string_edge(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: edge
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_string_beta(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: beta
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_string_candidate(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: candidate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta', 'candidate']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_string_stable(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: stable
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta', 'candidate', 'stable']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_missing_stable_missing(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_missing_stable_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            stable: false
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta', 'candidate']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_missing_stable_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            stable: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        match = ['edge', 'beta', 'candidate', 'stable']
+        self.assertEqual(match, snap.promote_to)
+
+    def test_promote_to_present_candidate_stable_implied_false(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: candidate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertFalse(snap.stable)
+
+    def test_promote_to_present_stable_stable_implied_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: stable
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.stable)
+
 
 class TestKernelRepoEntry(TestKernelSeriesCore):
 
