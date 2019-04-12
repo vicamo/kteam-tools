@@ -598,6 +598,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc-lowlatency']
                     gated: false
                     stable: true
+                    promote-to: [ 'edge' ]
                     qa: false
                     hw-cert: true
                     publish-to:
