@@ -71,9 +71,15 @@ class SnapReleaseToEdge(KernelSnapBase):
         center(s.__class__.__name__ + '._new')
         retval = False
 
+        # Check if this snap is valid in this risk.
+        if not s.bug.snap.promote_to_risk('edge'):
+            cinfo('    snap not valid in edge risk', 'yellow')
+            s.task.status = 'Invalid'
+            retval = True
+
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
-        if s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
+        elif s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
@@ -116,9 +122,15 @@ class SnapReleaseToBeta(KernelSnapBase):
         center(s.__class__.__name__ + '._new')
         retval = False
 
+        # Check if this snap is valid in this risk.
+        if not s.bug.snap.promote_to_risk('beta'):
+            cinfo('    snap not valid in beta risk', 'yellow')
+            s.task.status = 'Invalid'
+            retval = True
+
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
-        if s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
+        elif s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
@@ -160,6 +172,16 @@ class SnapReleaseToCandidate(KernelSnapBase):
     def _new(s):
         center(s.__class__.__name__ + '._new')
         retval = False
+
+        while not retval:
+            # Check if this snap is valid in this risk.
+            if s.bug.snap.promote_to_risk('candidate'):
+                break
+
+            cinfo('    snap not valid in candidate risk', 'yellow')
+            s.task.status = 'Invalid'
+            retval = True
+            break
 
         # The snap is released to candidate channel after it's on beta channel
         # and passes HW certification tests (or the task is set to invalid).
@@ -215,11 +237,15 @@ class SnapReleaseToStable(KernelSnapBase):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        # Set the task to invalid if 'stable' is not set on kernel-series-info.yaml
-        if not s.bug.snap.snap_info.stable:
-            cinfo('    not a stable snap', 'yellow')
+        while not retval:
+            # Check if this snap is valid in this risk.
+            if s.bug.snap.promote_to_risk('stable'):
+                break
+
+            cinfo('    snap not valid in stable risk', 'yellow')
             s.task.status = 'Invalid'
             retval = True
+            break
 
         # The snap is released to stable channel after it's on candidate channel,
         # passes QA tests (or the task is set to invalid) and the deb is promoted

@@ -216,3 +216,6 @@ class SnapDebs:
 
         cleave(s.__class__.__name__ + '.is_in_tracks')
         return retval, missing
+
+    def promote_to_risk(s, risk):
+        return s.snap_info.promote_to_risk(risk)
