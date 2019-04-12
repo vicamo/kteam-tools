@@ -887,14 +887,14 @@
                 gcp-nvidia-packages: true
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-gke:
+        linux-gke-4.15:
             packages:
-                linux-gke:
+                linux-gke-4.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'master-next']
-                linux-meta-gke:
+                linux-meta-gke-4.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/bionic']
-                linux-signed-gke:
+                linux-signed-gke-4.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic']
             snaps:
@@ -905,8 +905,8 @@
                     stable: false
                     qa: false
                     hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
+                    publish-to:
+                        amd64: [ '18', '18-gke-4.15' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
