@@ -2542,6 +2542,158 @@ class TestKernelSnapEntry(TestKernelSeriesCore):
 
         self.assertTrue(snap.stable)
 
+    def test_promote_to_present_list_edge_promote_to_risk_edge_true(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['edge']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.promote_to_risk('edge'))
+        self.assertFalse(snap.promote_to_risk('beta'))
+        self.assertFalse(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_list_beta_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['beta']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertFalse(snap.promote_to_risk('edge'))
+        self.assertTrue(snap.promote_to_risk('beta'))
+        self.assertFalse(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_list_candidate_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['candidate']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertFalse(snap.promote_to_risk('edge'))
+        self.assertFalse(snap.promote_to_risk('beta'))
+        self.assertTrue(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_list_stable_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: ['stable']
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertFalse(snap.promote_to_risk('edge'))
+        self.assertFalse(snap.promote_to_risk('beta'))
+        self.assertFalse(snap.promote_to_risk('candidate'))
+        self.assertTrue(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_string_edge_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: edge
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.promote_to_risk('edge'))
+        self.assertFalse(snap.promote_to_risk('beta'))
+        self.assertFalse(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_string_beta_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: beta
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.promote_to_risk('edge'))
+        self.assertTrue(snap.promote_to_risk('beta'))
+        self.assertFalse(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_string_candidate_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: candidate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.promote_to_risk('edge'))
+        self.assertTrue(snap.promote_to_risk('beta'))
+        self.assertTrue(snap.promote_to_risk('candidate'))
+        self.assertFalse(snap.promote_to_risk('stable'))
+
+    def test_promote_to_present_string_stable_promote_to_risk(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    snaps:
+                        pc-kernel:
+                            promote-to: stable
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        snap = source.lookup_snap('pc-kernel')
+
+        self.assertTrue(snap.promote_to_risk('edge'))
+        self.assertTrue(snap.promote_to_risk('beta'))
+        self.assertTrue(snap.promote_to_risk('candidate'))
+        self.assertTrue(snap.promote_to_risk('stable'))
+
 
 class TestKernelRepoEntry(TestKernelSeriesCore):
 

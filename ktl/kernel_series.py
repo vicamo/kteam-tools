@@ -206,6 +206,9 @@ class KernelSnapEntry:
     def promote_to(self):
         return self._data.get('promote-to', None)
 
+    def promote_to_risk(self, risk):
+        return risk in self._data.get('promote-to', [])
+
     def __str__(self):
         return "{} {}".format(str(self.source), self.name)
 
