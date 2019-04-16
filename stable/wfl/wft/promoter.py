@@ -230,6 +230,18 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '.master_bug_ready')
         retval = False
 
+        master = s.bug.master_bug
+
+        # Check if it already released.  If it did we do not need to check if it is
+        # otherwise ready to release.
+        for task in ('promote-to-updates', 'promote-to-release'):
+            if task in master.tasks_by_name and master.tasks_by_name[task].status == 'Fix Released':
+                cdebug('master bug already released')
+                retval = True
+                cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
+                return retval
+
+        # Check if the master bug could release.
         required_sru_tasks = {
             'prepare-package'            : ['Fix Released'],
             'prepare-package-lbm'        : ['Fix Released', 'Invalid'],
@@ -238,10 +250,9 @@ class Promoter(TaskHandler):
             'prepare-package-signed'     : ['Fix Released'],
             'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
             'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
-            'promote-to-security'        : ['Confirmed', 'In Progress', 'Fix Released', 'Invalid']
+            'promote-to-security'        : ['Confirmed', 'In Progress', 'Fix Released', 'Invalid'],
+            'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
         }
-
-        master = s.bug.master_bug
 
         if 'testing-override' not in master.tags:
             required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
@@ -260,7 +271,7 @@ class Promoter(TaskHandler):
                     retval = False
                     break
             except KeyError:
-                cdebug('master bug does not contian the %s task' % t)
+                cdebug('master bug does not contain the %s task' % t)
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval
