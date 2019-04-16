@@ -776,18 +776,6 @@ class Package():
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
         return retval
 
-    # relevant_packages_list
-    #
-    def relevant_packages_list(s):
-        '''
-        For every tracking bug there are 'prepare-package-*' tasks. Not every tracking bug has all the
-        same 'prepare-pacakge-*' tasks. Also, there is a specific package associated with each of the
-        'prepare-package-*' tasks.
-
-        This method builds a list of the packages that are relevant to this particular bug.
-        '''
-        return sorted(s.pkgs.values())
-
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied
@@ -806,13 +794,13 @@ class Package():
 
         check_component = CheckComponent(s.lp, s)
 
-        pkg_list = s.relevant_packages_list()
-
         primary_src_component = None
         missing_pkg = []
         mis_lst = []
-        for pkg in pkg_list:
-            if pkg == s.name:
+        # Run the packages list for this source, do main first as we need to
+        # check components against that.
+        for (pkg_type, pkg) in sorted(s.pkgs.items(), key=lambda a: (a[0] != 'main', a[0])):
+            if pkg_type == 'main':
                 check_ver = s.version
             else:
                 check_ver = None
@@ -829,35 +817,40 @@ class Package():
 
             # We are going to use the primary package source component as
             # our guide.  If we do not have that, then we cannot check.
-            if pkg == s.name:
+            if pkg_type == 'main':
                 primary_src_component = ps[0].component_name
 
-            if 'linux-signed' in pkg:
-                src_ver = ps[0].source_package_version
-                if src_ver.startswith(s.version):
-                    mis_lst.extend(check_component.mismatches_list(s.series,
-                                   pkg, ps[0].source_package_version,
-                                   pocket, ps, primary_src_component))
-                else:
-                    missing_pkg.append([pkg, 'for version=%s' % (s.version)])
-            elif not check_ver:
-                src_ver = ps[0].source_package_version
+            # Packages are versioned in a number of ways, try these in 'longest'
+            # match order.
+            src_ver = ps[0].source_package_version
+            match = False
+            # <version>+N                      -- signed/lrm respins
+            if src_ver.startswith(s.version + '+'):
+                cdebug("version is full +N")
+                match = True
+            # <version>                        -- signed/lrm
+            elif src_ver == s.version:
+                cdebug("version is exact")
+                match = True
+            # <base version>.<abi>.<upload>    -- meta/ports-meta
+            elif src_ver.startswith(s.kernel + '.' + s.abi + '.'):
+                cdebug("version is base.abi.upload")
+                match = True
+            # <base version>-<abi>.<upload>    -- lbm
+            # qualify with package type as this one is abigious against older
+            # versions.  We will not use this form for new types.
+            elif (pkg_type == 'lbm' and
+                    src_ver.startswith(s.kernel + '-' + s.abi + '.')):
+                cdebug("version is base-abi.upload (for lbm)")
+                match = True
 
-                # source_package_version for linux-ports-meta and linux-meta is
-                # <kernel-version>.<abi>.<upload #> and for linux-backports-modules
-                # it is <kernel-version-<abi>.<upload #>
-                #
-                v1 = s.kernel + '.' + s.abi
-                v2 = s.kernel + '-' + s.abi
-                if src_ver.startswith(v1) or src_ver.startswith(v2):
-                    mis_lst.extend(check_component.mismatches_list(s.series,
-                                   pkg, ps[0].source_package_version,
-                                   pocket, ps, primary_src_component))
-                else:
-                    missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
-            else:
+            # If we have a match:
+            if match:
                 mis_lst.extend(check_component.mismatches_list(s.series,
-                               pkg, check_ver, pocket, ps, primary_src_component))
+                               pkg, ps[0].source_package_version,
+                               pocket, ps, primary_src_component))
+            else:
+                missing_pkg.append([pkg, 'for version=%s' % (s.version)])
 
         if missing_pkg:
             cdebug('missing_pkg is set')
