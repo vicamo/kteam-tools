@@ -846,9 +846,16 @@ class Package():
 
             # If we have a match:
             if match:
+                if pkg_type == 'lrm':
+                    if primary_src_component == 'main':
+                        which_component = 'restricted'
+                    else:
+                        which_component = 'multiverse'
+                else:
+                    which_component = primary_src_component
                 mis_lst.extend(check_component.mismatches_list(s.series,
                                pkg, ps[0].source_package_version,
-                               pocket, ps, primary_src_component))
+                               pocket, ps, which_component))
             else:
                 missing_pkg.append([pkg, 'for version=%s' % (s.version)])
 
