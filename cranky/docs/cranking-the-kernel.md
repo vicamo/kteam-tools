@@ -70,6 +70,27 @@ cd canonical/kernel/ubuntu
 cranky clone xenial:linux-oracle
 ```
 
+### dkms package update stage - `update-versions-dkms`
+[cheatsheet]
+```
+./update-version-dkms POCKET
+```
+[/cheatsheet]
+
+In disco and newer, this updates the package versions in `debian/dkms-versions`
+to match those currently present in the specified pocket. For SRU kernels
+`POCKET` should be `updates`.  For development kernels it will typically be
+`proposed`.
+
+**Note**: `update-version-dkms` should only need to be run for primary and hwe
+kernels.  Other derivatives generally should not be deviating from the versions
+in the primary kernel.
+
+Example:
+```
+./update-version-dkms updates
+```
+
 ### Tool sync stage - `cranky fix`
 [cheatsheet]
 ```
