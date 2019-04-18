@@ -883,11 +883,11 @@ class Package():
                 to_address  = "kernel-team@lists.ubuntu.com"
                 to_address += ", ubuntu-installer@lists.ubuntu.com"
                 cinfo('        sending email alert')
-                s.send_email(subject, body, to_address)
+                s.bug.send_email(subject, body, to_address)
 
                 body += "\n\nOnce this is fixed, set the "
                 body += "promote-to-%s to Fix Released again" % (pocket)
-                s.add_comment('Packages outside of proper component', body)
+                s.bug.add_comment('Packages outside of proper component', body)
 
             cinfo('        packages ended up in the wrong pocket')
             cdebug('check_component_in_pocket leave (False)')
