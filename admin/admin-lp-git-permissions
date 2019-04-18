@@ -52,42 +52,50 @@ if cmd == 'list-all':
 
 elif cmd == 'sync-misc':
 
-    branch = 'master'
+    for repo_path in (
+            '~canonical-kernel/+git/kteam-tools',
+            '~canonical-kernel/+git/adt-matrix-hints',
+        ):
 
-    admins = '/~canonical-kernel-repo-admins'
-    rules = []
+        print(repo_path)
 
-    grants = []
-    for person in (
-            "/~canonical-kernel-committers",
-            "/~canonical-kernel-hwe-committers",
-            "/~arighi",
-            ):
-        grants.append(generate_grant(person=person, push=True))
-    grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
-    if admins != 'owner':
-        grants.append(generate_grant(person='owner'))
-    rules.append(
-        {
-            'ref_pattern': "refs/heads/{}".format(branch),
-            'grants': sort_grants(grants),
-        },
-        )
+        branch = 'master'
 
-    print(" want:")
-    rule_txt = yaml.dump(rules, default_flow_style=False)
-    for line in rule_txt.split('\n'):
-        print("  " + line)
+        admins = '/~canonical-kernel-repo-admins'
+        rules = []
+        grants = []
 
-    git_repo = lp.git_repositories.getByPath(path="~canonical-kernel/+git/kteam-tools")
-    rules_are = git_repo.getRules()
+        for person in (
+                "/~canonical-kernel-committers",
+                "/~canonical-kernel-hwe-committers",
+                "/~arighi",
+                "/~connork",
+                ):
+            grants.append(generate_grant(person=person, push=True))
+        grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+        if admins != 'owner':
+            grants.append(generate_grant(person='owner'))
+        rules.append(
+            {
+                'ref_pattern': "refs/heads/{}".format(branch),
+                'grants': sort_grants(grants),
+            },
+            )
 
-    print(" have:")
-    rule_txt = yaml.dump(rules_are, default_flow_style=False)
-    for line in rule_txt.split('\n'):
-        print("  " + line)
+        print(" want:")
+        rule_txt = yaml.dump(rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
 
-    git_repo.setRules(rules=rules)
+        git_repo = lp.git_repositories.getByPath(path=repo_path)
+        rules_are = git_repo.getRules()
+
+        print(" have:")
+        rule_txt = yaml.dump(rules_are, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+
+        git_repo.setRules(rules=rules)
 
 elif cmd == 'sync-all':
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
