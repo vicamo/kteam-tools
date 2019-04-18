@@ -396,6 +396,103 @@
     supported: true
     routing-table: *routing-table
     sources:
+        linux:
+            versions: ['5.0.0']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/disco']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/disco']
+            supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'raspi2']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+
+        linux-oem:
+            packages:
+                linux-oem:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/disco', 'oem-next']
+                linux-meta-oem:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/disco', 'oem']
+                linux-signed-oem:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco', 'oem']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oem:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem' ]
+
+        linux-oem-osp1:
+            packages:
+                linux-oem-osp1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/disco', 'oem-next']
+                linux-meta-oem-osp1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/disco', 'oem']
+                linux-signed-oem-osp1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/disco', 'oem']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    oem-osp1:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem-osp1' ]
+
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/disco']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/disco']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-azure:
             packages:
                 linux-azure:
