@@ -552,6 +552,31 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket ({})'.format(retval))
         return retval
 
+    # all_failures_in_pocket
+    #
+    def all_failures_in_pocket(s, pocket):
+        failures = []
+        building = False
+        for pkg in s.srcs:
+            status = s.srcs[pkg].get(pocket).get('status')
+            if status == 'BUILDING':
+                building = True
+            # Signed is allowed to be broken until we have built the main kernel.
+            if pkg == 'signed':
+                continue
+            if status == 'FAILEDTOBUILD':
+                failures.append("{}:failed".format(pkg))
+            elif status == '':
+                failures.append("{}:missing".format(pkg))
+        if building is True:
+            return None
+
+        if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
+                s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
+            failures.append("signed:retry-needed")
+
+        return failures if len(failures) > 0 else None
+
     # creator
     #
     def creator(s, pkg, pocket=None):

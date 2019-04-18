@@ -71,7 +71,11 @@ class PromoteFromTo(Promoter):
                 break
 
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
-                s.task.reason = 'Holding -- builds not complete'
+                failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
+                if failures is not None:
+                    s.task.reason = 'Pending -- builds not complete in {} {}'.format(s.pocket_src, ','.join(failures))
+                else:
+                    s.task.reason = 'Holding -- builds not complete in {}'.format(s.pocket_src)
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -160,12 +164,20 @@ class PromoteFromTo(Promoter):
                 elif s.task.status == 'Incomplete':
                     s.task.reason = 'Stalled -- review FAILED'
                 elif s.task.status == 'Fix Committed':
-                    s.task.reason = 'Ongoing -- packages copies requested'
+                    failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                    if failures is not None:
+                        s.task.reason = 'Pending -- packages copies requested to {} {}'.format(s.pocket_dest, ','.join(failures))
+                    else:
+                        s.task.reason = 'Ongoing -- packages copies requested'
                 else:
                     s.task.reason = 'Ongoing -- review in progress'
                 break
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
-                s.task.reason = 'Ongoing -- packages copied but not yet published to -proposed'
+                failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                if failures is not None:
+                    s.task.reason = 'Pending -- packages copied to {} {}'.format(s.pocket_dest, ','.join(failures))
+                else:
+                    s.task.reason = 'Ongoing -- packages copied but not yet published to {}'.format(s.pocket_dest)
                 break
             if s.pocket_dest == 'Proposed':
                 if not s.bug.debs.ready_for_testing:
