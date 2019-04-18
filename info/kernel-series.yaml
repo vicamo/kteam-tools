@@ -140,11 +140,12 @@
 #       archive pocket
 #
 
-# 19.04 (Disco Dingo)
-'19.04':
-    codename: disco
-    development: false
-    supported: true
+# 19.10 (Eoan Eggplant)
+'19.10':
+    codename: eoan
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
@@ -189,16 +190,16 @@
             versions: ['5.0.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'master-next']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/eoan', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan']
                 linux-signed:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/disco']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/eoan']
                 linux-restricted-modules:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/disco']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/eoan']
             supported: true
             testing:
                 flavours:
@@ -210,28 +211,30 @@
                     lowlatency:
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            copy-forward: ['19.04', 'linux']
 
         linux-raspi2:
             packages:
                 linux-raspi2:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/disco', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/eoan', 'raspi2']
                 linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'raspi2']
             supported: true
             derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            copy-forward: ['19.04', 'linux-raspi2']
 
         linux-oem:
             packages:
                 linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/disco', 'oem-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/eoan', 'oem-next']
                 linux-meta-oem:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/disco', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/eoan', 'oem']
                 linux-signed-oem:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/eoan', 'oem']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -246,13 +249,13 @@
         linux-oem-osp1:
             packages:
                 linux-oem-osp1:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/disco', 'oem-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/eoan', 'oem-next']
                 linux-meta-oem-osp1:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/disco', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/eoan', 'oem']
                 linux-signed-oem-osp1:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/disco', 'oem']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/eoan', 'oem']
             supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
@@ -267,10 +270,10 @@
         linux-aws:
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/disco']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/eoan']
                 linux-meta-aws:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/disco']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/eoan']
             supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
@@ -281,7 +284,118 @@
                         arches: ['amd64']
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.04', 'linux-aws']
 
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/eoan', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/eoan']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/eoan']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2018-11-20 00:01', '2018-11-27 10:00']
+                    - ['2018-12-21 00:01', '2019-01-02 10:00']
+                    - ['2019-02-03 16:00', '2019-02-06 16:00']
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+            copy-forward: ['19.04', 'linux-azure']
+
+        linux-gcp:
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/eoan', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/eoan']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/eoan']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.04', 'linux-gcp']
+
+        linux-kvm:
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/eoan', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/eoan']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.04', 'linux-kvm']
+
+        linux-oracle:
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/eoan', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/eoan']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/eoan']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oracle:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '18.04', 'linux-oracle' ]
+
+        linux-snapdragon:
+            packages:
+                linux-snapdragon:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/eoan', 'snapdragon']
+                linux-meta-snapdragon:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'snapdragon']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+            copy-forward: ['19.04', 'linux-snapdragon']
+
+# 19.04 (Disco Dingo)
+'19.04':
+    codename: disco
+    development: false
+    supported: true
+    routing-table: *routing-table
+    sources:
         linux-azure:
             packages:
                 linux-azure:
@@ -295,10 +409,7 @@
             supported: true
             derived-from: [ '19.04', 'linux' ]
             swm:
-                deployment-blackout: &swm-azure-blackout
-                    - ['2018-11-20 00:01', '2018-11-27 10:00']
-                    - ['2018-12-21 00:01', '2019-01-02 10:00']
-                    - ['2019-02-03 16:00', '2019-02-06 16:00']
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
