@@ -26,9 +26,7 @@ if [ "$#" -ne 3 ]; then
 fi
 trello_board="$1"
 trello_list="$2"
-title="$3"
-
-text="CHECKLIST"
+text="$3"
 
 sed \
 	-e 's///g' \
@@ -39,7 +37,7 @@ sed \
  <"$text" | \
 awk '
 	BEGIN				{ emit=0 }
-	/^== '"$title"' ==$/		{ emit=1; next }
+	/== /				{ emit=1; next }
 	/^$/				{ next }
 	/^[^ -]/			{ emit=0; next }
 	(/^ -/ && emit)			{ print "EOC" }

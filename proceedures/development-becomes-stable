@@ -1,0 +1,5 @@
+﻿== Development Becomes Stable ==
+ - Switch development series to stable
+    - In kteam-tools/info/kernel-series.yaml
+       - Mark the series as “supported: true”, “development: false”
+
