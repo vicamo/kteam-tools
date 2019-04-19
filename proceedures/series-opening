@@ -4,7 +4,10 @@
        - New section for the new series.
        - Mark the new series as “supported : false”; “development: true”; “opening:”
        - CHECK: confirm that we have derived kernels specified correctly in the previous series.
- - Archive opening
+ - Archive opening -- closed
+    - NEEDS: archive published
+    - OPENING: opening: archive-closed: true
+ - Archive opening -- open
     - NEEDS: final name set and archive accepting uploads
     - OPENING: opening: archive-open: true
  - Create new primary repositories
