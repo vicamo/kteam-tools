@@ -4,7 +4,7 @@
 # on your local system.
 #
 
-TARGETS=cranking-the-kernel.html crank-turning-setup.html
+TARGETS=cranking-the-kernel.html crank-turning-setup.html sru-cycles.html
 
 %.html: %.md
 	grip $< --export
