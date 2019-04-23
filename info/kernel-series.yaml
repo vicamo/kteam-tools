@@ -1116,7 +1116,7 @@
                     qa: false
                     hw-cert: false
                     publish-to:
-                        amd64: [ '18', '18-gke-4.15' ]
+                        amd64: [ '18', '18-4.15' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
