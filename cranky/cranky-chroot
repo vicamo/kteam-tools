@@ -22,7 +22,7 @@ base_chroot_available()
 
 	local chroot
 
-	for chroot in "$series-$arch-sbuild" "$series-$arch"
+	for chroot in "$series-security-$arch-sbuild" "$series-$arch-sbuild" "$series-$arch"
 	do
 		schroot --directory / -c "$chroot" /bin/true >/dev/null 2>&1 && {
 			#echo "II: $chroot base chroot available"
