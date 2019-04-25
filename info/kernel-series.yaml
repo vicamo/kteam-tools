@@ -1569,7 +1569,7 @@
                 linux-meta-euclid:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-euclid']
-            supported: true
+            supported: false
             severe-only: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
