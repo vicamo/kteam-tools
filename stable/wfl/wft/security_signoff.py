@@ -38,6 +38,12 @@ class SecuritySignoff(TaskHandler):
         retval = False
 
         while True:
+            # If we have no routing for security then we are invalid.
+            if s.bug.debs.routing('Security') is None:
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
             if not s.bug.debs.ready_for_testing:
                 # It doesn't matter if this is a derivative package or not, if the
                 # package isn't ready for testing (promoted to -proposed) then it

@@ -31,6 +31,12 @@ class PromoteToSecurity(Promoter):
 
         while True:
 
+            # If we have no routing for security then we are invalid.
+            if s.bug.debs.routing('Security') is None:
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
             # The kernels below are in evaluation.  These only get as far
             # as -proposed and will not be promoted further:
             #
