@@ -1237,8 +1237,8 @@
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 updates:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
-                security:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+                #security:
+                #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
                 release:
                     - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release']
             packages:
