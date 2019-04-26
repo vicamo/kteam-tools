@@ -47,7 +47,7 @@
     - NEEDS: dashboard updated
     - Adt-matrix configuration:
     - Add a sensible version seed to the primary-hints.d and push
-       - kteam-tools/adt-matrix/adt-gen-seed bionic linux http://people.canonical.com/~kernel/status/adt-matrix/artful-linux-meta.latest.json
+       - kteam-tools/adt-matrix/adt-gen-seed bionic linux-meta http://people.canonical.com/~kernel/status/adt-matrix/artful-linux-meta.latest.json
  - Request Britney blocks for all copy-forward kernels
     - NEEDS: britney running
     - Each copy forward kernel needs blocking to prevent them escaping when the primary kernel is released
