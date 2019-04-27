@@ -49,6 +49,7 @@ if cmd == 'list-all':
         rule_txt = yaml.dump(current_rules, default_flow_style=False)
         for line in rule_txt.split('\n'):
             print("  " + line)
+        sys.stdout.flush()
 
 elif cmd == 'sync-misc':
 
@@ -96,6 +97,43 @@ elif cmd == 'sync-misc':
             print("  " + line)
 
         git_repo.setRules(rules=rules)
+
+elif cmd == 'sync-esm':
+    kernel_series = KernelSeries()
+
+    in_esm = set()
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.esm:
+            continue
+        in_esm.add(series.codename)
+
+    rules = [
+        {
+        'ref_pattern': "*",
+        'grants': sort_grants([generate_grant(person='owner')]),
+        },
+        ]
+
+    for team_name in ('ubuntu-kernel', 'canonical-kernel'):
+        team = lp.people(team_name)
+        for git_repo in lp.git_repositories.getRepositories(target=team):
+            bits = git_repo.self_link.split('/')
+            if bits[-2] != '+git' or bits[-1] not in in_esm:
+                continue
+            print(git_repo, 'ESM')
+            current_rules = git_repo.getRules()
+            if current_rules != rules:
+                print(" is:")
+                rule_txt = yaml.dump(current_rules, default_flow_style=False)
+                for line in rule_txt.split('\n'):
+                    print("  " + line)
+                print(" want:")
+                rule_txt = yaml.dump(rules, default_flow_style=False)
+                for line in rule_txt.split('\n'):
+                    print("  " + line)
+                print(" rules updated:")
+                git_repo.setRules(rules=rules)
+            sys.stdout.flush()
 
 elif cmd == 'sync-all':
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
