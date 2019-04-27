@@ -148,6 +148,7 @@
     opening:
         repositories: true
         archive-closed: true
+        debootstrap: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
