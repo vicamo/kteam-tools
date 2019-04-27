@@ -1921,19 +1921,20 @@
     development: false
     supported: true
     lts: true
+    esm: true
     routing-table: *routing-table
     sources:
         linux:
             versions: ['3.13.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-trusty', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-trusty']
                 linux-signed:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-trusty']
             supported: true
             testing:
                 flavours:
@@ -1949,10 +1950,10 @@
         linux-aws:
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-aws-trusty']
                 linux-meta-aws:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-trusty']
             supported: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'certification-testing' ]
@@ -1960,13 +1961,13 @@
         linux-azure:
             packages:
                 linux-azure:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/trusty', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-trusty', 'master-next']
                 linux-meta-azure:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-azure-trusty']
                 linux-signed-azure:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/trusty']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-trusty']
             supported: true
             backport: true
             derived-from: [ '16.04', 'linux-azure' ]
@@ -2031,13 +2032,13 @@
         linux-lts-xenial:
             packages:
                 linux-lts-xenial:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-trusty', 'lts-backport-xenial']
                 linux-meta-lts-xenial:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/trusty', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-trusty', 'lts-backport-xenial']
                 linux-signed-lts-xenial:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/trusty', 'lts-backport-xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-trusty', 'lts-backport-xenial']
             supported: true
             backport: true
             derived-from: [ '16.04', 'linux' ]
