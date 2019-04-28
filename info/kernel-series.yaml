@@ -150,6 +150,9 @@
         archive-closed: true
         debootstrap: true
         chroots: true
+        autopkgtest: true
+        britney: true
+        archive-open: true
     routing-table: &routing-table
         default: &routing-table-default
             security-build:
