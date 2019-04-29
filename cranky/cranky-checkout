@@ -18,7 +18,7 @@ from crl.handle             import Handle, HandleError
 from ktl.log                import cerror, cnotice, cwarn
 
 
-def git_remote_update(repo_dir, remote, url):
+def git_remote_update(repo_dir, remote, url, fetch=True):
     result = run(["git", "config", "remote.{}.url".format(remote)],
                  cwd=repo_dir, stdout=PIPE)
     if result.returncode == 0:
@@ -39,12 +39,13 @@ def git_remote_update(repo_dir, remote, url):
                    "rc={}".format(remote, result.returncode))
             sys.exit(1)
 
-    cnotice("Fetching remote {} in {}".format(remote, repo_dir))
-    result = run(["git", "fetch", remote], cwd=repo_dir)
-    if result.returncode != 0:
-        cerror("failed to fetch remote {} "
-               "rc={}".format(remote, result.returncode))
-        sys.exit(1)
+    if fetch:
+        cnotice("Fetching remote {} in {}".format(remote, repo_dir))
+        result = run(["git", "fetch", remote], cwd=repo_dir)
+        if result.returncode != 0:
+            cerror("failed to fetch remote {} "
+                   "rc={}".format(remote, result.returncode))
+            sys.exit(1)
 
 
 def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
@@ -223,10 +224,10 @@ def checkout_repos(handle, reference=None, dissociate=False):
         security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
 
         try:
-            git_remote_update(repo_dir, "security", security_url)
+            # Add the security repo without fetching it
+            git_remote_update(repo_dir, "security", security_url, fetch=False)
         except SystemExit:
             cwarn('Could not add remote "security" {}'.format(security_url))
-            cwarn('Make sure you have permission to access this repository, otherwise ignore this message')
 
     # Checkout the specified branches.
     for handle_tree in handle_set.trees:
