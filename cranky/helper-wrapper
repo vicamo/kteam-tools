@@ -40,8 +40,9 @@ chroot_cmd=
 if [ "$session" = "$(printf '%q' "$session")" ]; then
 	chroot_cmd="schroot -r -c $session --"
 else
-	echo "Warning: chroot command was not set." \
+	echo "Error: chroot command was not set." \
 	     "Invalid chroot session: \"$session\"" >&2
+	exit 1
 fi
 
 #
