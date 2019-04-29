@@ -1248,6 +1248,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips']
             supported: true
+            private: true
             derived-from: ['18.04', 'linux']
             testing:
                 flavours:
@@ -1836,6 +1837,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed']
             supported: true
+            private: true
             derived-from: ['16.04', 'linux']
             testing:
                 flavours:
