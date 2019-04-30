@@ -467,3 +467,35 @@ cranked:
 - linux-ibm-gt
 - all the edge kernels (i.e., linux-hwe-edge)
 - all the esm kernels, currently precise/linux and precise/linux-lts-trusty
+
+#### -meta only packages
+
+Some -edge kernels are -meta only cranks. This is because the regular and
+and the -edge kernels for that variant (e.g. as of now xenial/linux-hwe and
+xenial/linux-hwe-edge) might have the same version for a period of time
+until we update the -edge kernel to be based on a newer series. During this
+time we only update the -meta package of the -edge kernel to have as
+dependency the regular kernel. You can see that a package is -meta only by
+looking at the tracking bug, which will have the 'prepare-package' task set
+to 'Invalid', or by running cranky checkout which will checkout the regular
+branch on the main repo (e.g. hwe instead of hwe-edge).
+
+For these cases the procedures are:
+
+1. Checkout the -edge branch of the meta package and the regular branch of
+   the main repos (e.g. hwe branch of xenial/linux and hwe-edge of
+   xenial/linux-meta). 'cranky checkout' should already checkout these
+   branches correctly.
+
+2. Update the meta package by running "./update-version <main repo path>",
+   pointing to the main repo path of the regular variant. Commit and tag
+   as a regular -meta package.
+
+3. Update the package version on the tracking bug of the -edge package.
+   As of now this still needs to be done manually, by copying the same
+   version from the tracking of the regular variant package.
+
+4. Build the sources only for the -edge -meta package.
+
+5. Continue with the remaining steps as documented above (sign, review,
+   upload, etc) only for the -meta package.
