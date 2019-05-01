@@ -107,6 +107,10 @@
 #  * hw-cert (bool)
 #       whether the snap needs HW certification tests
 #       (snap-certification-testing).
+#  * publish-to (dictionary):
+#       a named series of track lists.  The name is the architecture
+#       being released, the track list is a list of store tracks.
+# Snap record fields (deprecated):
 #  * arches (list)
 #       list of architectures which the snap is built for.
 #  * track (string)
