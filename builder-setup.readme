@@ -6,25 +6,45 @@ Step by step instructions for setting up a new builder system.
    3. sudo passwd kernel
       ubuntu
    4. sudo apt-get install git
-   5. git clone git://kernel.ubuntu.com/ubuntu/kteam-tools.git
-   6. sudo mkdir -p /home/usr3/chroots
+   4a. XXX: sudo apt-get install python python-yaml
+   5. --
+   6. sudo mkdir -p /home/usr3/chroots /home/usr3/ubuntu
    7. sudo ln -s /home/usr3 /usr3
-   8. sudo mkdir -p /usr3/ubuntu
+   8. git clone git://kernel.ubuntu.com/ubuntu/kteam-tools.git /usr3/ubuntu/kteam-tools
    9. sudo chown kernel.kernel /usr3/ubuntu
-  10. sudo kteam-tools/chroot-setup/make_all
+  10. --
   11. sudo su - kernel
-  12. (cd /usr3/ubuntu; git clone --bare git://kernel.ubuntu.com/virgin/linux.git linux.git)
   13. git clone git://kernel.ubuntu.com/ubuntu/kteam-tools.git
-  14. kteam-tools/kernel-team-accounts/update-repos2.sh
-  14a. kteam-tools/dashboard/dashboard-bin-init kmsgq $HOME/bin
+  14. kteam-tools/dashboard/dashboard-bin-init kmsgq $HOME/bin
+  14a. mkdir logs
+  14b. cat - >~/.logrotate.conf <<EOL
+daily
+create
+compress
+delaycompress
+rotate 14
+
+~/logs/cod-worker.log {
+   postrotate
+        $HOME/kteam-tools/mainline-build/mainline-logrotate
+   endscript
+}
+~/logs/root-chroots.log {}
+~/logs/root-gbk-cleanup.log {}
+EOL
+  14d. ssh-keygen -f $HOME/.ssh/mainline-publish
+  14e. (add the public above to wani /etc/user-authorized-keys/kernel-ppa)
   15. exit # return to the account with sudo (ubuntu)
-  16. (cd kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
-  17. add "apw,bradf,rtg,ogasawara    ALL=NOPASSWD: /bin/su - kernel" to sudoers file
+  16. (cd /usr3/ubuntu/kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
+  17. echo "apw,bradf,smb,sforshee    ALL=NOPASSWD: /bin/su - kernel" >/etc/sudoers.d/99-kernel-users
   18. lock down kernel account; passwd -l kernel
-  19. adduser apw sudo; adduser rtg sudo; adduser bradf sudo; adduser ogasawara sudo
+  19. adduser apw sudo; adduser bradf sudo; adduser smb sudo; adduser sforshee sudo
   20. adduser kernel sbuild
 
   NN. add crontab for root
+*/5  *  *   *   *     /usr3/ubuntu/kteam-tools/mainline-build/cod-periodic-root && su -c '"$HOME/bin/dashboard-status" "cod-periodic-root" "Host: `hostname`" "Periodic Update (root)" 10m 15m' kernel   
   NN. add crontab for kernel
+0       0  *    *   * /usr/sbin/logrotate -s $HOME/.logrotate.state $HOME/.logrotate.conf
+*/5  *  *    *   * $HOME/kteam-tools/mainline-build/cod-periodic && "$HOME/bin/dashboard-status" "cod-periodic" "Host: `hostname`" "Periodic Update (kernel)" 10m 15m
 
   MM. check that the host key is up to date and file RT if not
