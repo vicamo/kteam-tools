@@ -100,8 +100,6 @@
 #       whether the snap is gated by another snap. This controls if the snap
 #       will be refreshed automatically by the users once it hits the stable
 #       channel.
-#  * stable (bool)
-#       whether the snap should be published to the stable channel.
 #  * qa (bool)
 #       whether the snap needs QA testing (snap-qa-testing task).
 #  * hw-cert (bool)
@@ -110,11 +108,16 @@
 #  * publish-to (dictionary):
 #       a named series of track lists.  The name is the architecture
 #       being released, the track list is a list of store tracks.
+#  * promote-to (string/list):
+#       a list of risks to which we are allowed to publish, either
+#       specified as a literal list or as the 'lowest' risk acceptable.
 # Snap record fields (deprecated):
 #  * arches (list)
 #       list of architectures which the snap is built for.
 #  * track (string)
 #       store track this is published into.
+#  * stable (bool)
+#       whether the snap should be published to the stable channel.
 #
 # Repository record elements:
 #  * 0 (string)
