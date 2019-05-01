@@ -16,6 +16,8 @@ ARCH=$2
 MIRROR=$3
 RELEASE_ARCH=
 
+export DEBIAN_FRONTEND=noninteractive
+
 if ! not_expired_release ${RELEASE}
 then
 	echo ${RELEASE} is expired.
