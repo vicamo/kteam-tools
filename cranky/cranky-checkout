@@ -237,9 +237,16 @@ def checkout_repos(handle, reference=None, dissociate=False):
 
         remote = handle_tree.remote
         rmt_branch = repo.branch if repo.branch else 'master'
-        # local branch is branch if we are checking out against 'origin'
-        # remote name otherwise.
-        branch = 'cranky/' + (rmt_branch if remote == 'origin' else remote)
+
+        # local branch is branch if we are checking out against 'origin',
+        # derivative's name otherwise.
+        branch_suffix = rmt_branch
+        if remote != 'origin':
+            if pkg.type is None:
+                branch_suffix = pkg.name.replace('linux-', '')
+            else:
+                branch_suffix = pkg.name.replace('linux-%s-' % pkg.type, '')
+        branch = 'cranky/' + branch_suffix
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
