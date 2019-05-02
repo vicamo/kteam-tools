@@ -14,6 +14,7 @@ do_chroot()
 	# Some systems use <series> for <series>-amd64, so try both.
 	series="${chroot%-amd64}"
 	case "$slist$dlist" in
+	*\ chroot:$chroot[\ ,]*)	;;
 	*\ $chroot[\ ,]*)	;;
 	*\ $series[\ ,]*)	chroot="$series" ;;
 	*)	echo "$chroot: chroot not found ($slist::$dlist)" 1>&2; exit 1 ;;
@@ -21,6 +22,7 @@ do_chroot()
 
 	# Ok we do have the chroot in one of the tools, fire it up.
 	case "$slist" in
+	*\ chroot:$chroot[\ ,]*)	cmd='schroot' ;;
 	*\ $chroot[\ ,]*)	cmd='schroot' ;;
 	*)			cmd='dchroot' ;;
 	esac

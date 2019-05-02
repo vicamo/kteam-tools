@@ -7,6 +7,7 @@ except ImportError:
     from urllib2 import urlopen
 
 import os
+from warnings import warn
 import yaml
 
 class KernelRoutingEntry:
@@ -192,6 +193,7 @@ class KernelSnapEntry:
     @property
     def arches(self):
         # XXX: should this be []
+        warn('arches replaced by publish-to', PendingDeprecationWarning)
         return self._data.get('arches', None)
 
     @property
