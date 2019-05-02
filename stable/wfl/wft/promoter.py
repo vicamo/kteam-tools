@@ -215,10 +215,11 @@ class Promoter(TaskHandler):
         retval = True
 
         if s.bug.swm_config.gcp_nvidia_packages:
-            obj = 'current-driver-{}-{}-gcp-amd64'.format(s.bug.kernel, s.bug.abi)
+            flavour = 'gke' if s.bug.source and '-gke' in s.bug.source.name else 'gcp'
+            obj = 'current-driver-{}-{}-{}-amd64'.format(s.bug.kernel, s.bug.abi, flavour)
             gcp_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
             if gcp_object.present is False:
-                s.task.reason = "Pending -- nvidia GCP object not found -- {}-{}".format(s.bug.kernel, s.bug.abi)
+                s.task.reason = "Pending -- Nvidia object not found -- {}".format(obj)
                 retval = False
 
         cleave(s.__class__.__name__ + '._prerequisites_released (%s)' % retval)
