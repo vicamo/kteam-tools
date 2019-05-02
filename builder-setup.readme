@@ -34,6 +34,7 @@ rotate 14
 EOL
   14d. ssh-keygen -f $HOME/.ssh/mainline-publish
   14e. (add the public above to wani /etc/user-authorized-keys/kernel-ppa)
+  14f. ssh kernel.ubuntu.com and accept the host key
   15. exit # return to the account with sudo (ubuntu)
   16. (cd /usr3/ubuntu/kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
   17. echo "apw,bradf,smb,sforshee    ALL=NOPASSWD: /bin/su - kernel" >/etc/sudoers.d/99-kernel-users
