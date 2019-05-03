@@ -133,7 +133,7 @@ class Workflow(TaskHandler):
                     s.task.reason = 'Stalled -- packages have been released but the task set to Fix Released'
                     break
 
-            if s.bug.debs.routing('Security') is not None and 'promote-to-security' in s.bug.tasks_by_name:
+            if s.bug.debs is not None and s.bug.debs.routing('Security') is not None and 'promote-to-security' in s.bug.tasks_by_name:
                 # Check that the promote-to-security status matches -security pocket.
                 promote_to_security = s.bug.tasks_by_name['promote-to-security']
                 if promote_to_security.status not in ['Invalid', 'Fix Released']:
