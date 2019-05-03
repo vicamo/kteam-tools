@@ -41,6 +41,27 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 def sort_grants(grants):
     return sorted(deepcopy(grants), key=lambda x: (x['grantee_type'], x['grantee_link']))
 
+def update_rules(git_repo, rules, show=False):
+    # Get and sort the rules so we can compare against them.
+    current_rules = git_repo.getRules()
+    for rule in current_rules:
+        rule['grants'] = sort_grants(rule['grants'])
+
+    if current_rules != rules or show is True:
+        print(" is:")
+        rule_txt = yaml.dump(current_rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+
+    if current_rules != rules:
+        print(" want:")
+        rule_txt = yaml.dump(rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+        print(" rules updated")
+        git_repo.setRules(rules=rules)
+
+
 if cmd == 'list-all':
     me = lp.people(sys.argv[2])
     for repo in lp.git_repositories.getRepositories(target=me):
@@ -52,13 +73,10 @@ if cmd == 'list-all':
         sys.stdout.flush()
 
 elif cmd == 'sync-misc':
-
     for repo_path in (
             '~canonical-kernel/+git/kteam-tools',
             '~canonical-kernel/+git/adt-matrix-hints',
         ):
-
-        print(repo_path)
 
         branch = 'master'
 
@@ -83,20 +101,10 @@ elif cmd == 'sync-misc':
             },
             )
 
-        print(" want:")
-        rule_txt = yaml.dump(rules, default_flow_style=False)
-        for line in rule_txt.split('\n'):
-            print("  " + line)
-
         git_repo = lp.git_repositories.getByPath(path=repo_path)
-        rules_are = git_repo.getRules()
-
-        print(" have:")
-        rule_txt = yaml.dump(rules_are, default_flow_style=False)
-        for line in rule_txt.split('\n'):
-            print("  " + line)
-
-        git_repo.setRules(rules=rules)
+        print(git_repo)
+        update_rules(git_repo, rules)
+        sys.stdout.flush()
 
 elif cmd == 'sync-esm':
     kernel_series = KernelSeries()
@@ -121,18 +129,7 @@ elif cmd == 'sync-esm':
             if bits[-2] != '+git' or bits[-1] not in in_esm:
                 continue
             print(git_repo, 'ESM')
-            current_rules = git_repo.getRules()
-            if current_rules != rules:
-                print(" is:")
-                rule_txt = yaml.dump(current_rules, default_flow_style=False)
-                for line in rule_txt.split('\n'):
-                    print("  " + line)
-                print(" want:")
-                rule_txt = yaml.dump(rules, default_flow_style=False)
-                for line in rule_txt.split('\n'):
-                    print("  " + line)
-                print(" rules updated:")
-                git_repo.setRules(rules=rules)
+            update_rules(git_repo, rules)
             sys.stdout.flush()
 
 elif cmd == 'sync-all':
@@ -286,21 +283,6 @@ elif cmd == 'sync-all':
             print("  invalid repository path {} for {}".format(path, package.name))
             continue
         print(git_repo)
+        update_rules(git_repo, rules)
 
-        # Get and sort the rules so we can compare against them.
-        current_rules = git_repo.getRules()
-        for rule in current_rules:
-            rule['grants'] = sort_grants(rule['grants'])
-
-        if current_rules != rules:
-            print(" is:")
-            rule_txt = yaml.dump(current_rules, default_flow_style=False)
-            for line in rule_txt.split('\n'):
-                print("  " + line)
-            print(" want:")
-            rule_txt = yaml.dump(rules, default_flow_style=False)
-            for line in rule_txt.split('\n'):
-                print("  " + line)
-            print(" rules updated:")
-            git_repo.setRules(rules=rules)
         sys.stdout.flush()
