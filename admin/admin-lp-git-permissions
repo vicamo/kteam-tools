@@ -61,18 +61,7 @@ def update_rules(git_repo, rules, show=False):
         print(" rules updated")
         git_repo.setRules(rules=rules)
 
-
-if cmd == 'list-all':
-    me = lp.people(sys.argv[2])
-    for repo in lp.git_repositories.getRepositories(target=me):
-        print(repo)
-        current_rules = repo.getRules()
-        rule_txt = yaml.dump(current_rules, default_flow_style=False)
-        for line in rule_txt.split('\n'):
-            print("  " + line)
-        sys.stdout.flush()
-
-elif cmd == 'sync-misc':
+def sync_misc():
     for repo_path in (
             '~canonical-kernel/+git/kteam-tools',
             '~canonical-kernel/+git/adt-matrix-hints',
@@ -106,7 +95,7 @@ elif cmd == 'sync-misc':
         update_rules(git_repo, rules)
         sys.stdout.flush()
 
-elif cmd == 'sync-esm':
+def sync_esm():
     kernel_series = KernelSeries()
 
     in_esm = set()
@@ -132,7 +121,7 @@ elif cmd == 'sync-esm':
             update_rules(git_repo, rules)
             sys.stdout.flush()
 
-elif cmd == 'sync-all':
+def sync_primary():
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
     #    for repo in lp.git_repositories.getRepositories(target=person):
     #        print(repo, repo.getRules())
@@ -286,3 +275,31 @@ elif cmd == 'sync-all':
         update_rules(git_repo, rules)
 
         sys.stdout.flush()
+
+
+if cmd == 'list-all':
+    me = lp.people(sys.argv[2])
+    for repo in lp.git_repositories.getRepositories(target=me):
+        print(repo)
+        current_rules = repo.getRules()
+        rule_txt = yaml.dump(current_rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+        sys.stdout.flush()
+
+elif cmd == 'sync-misc':
+    sync_misc()
+
+elif cmd == 'sync-esm':
+    sync_esm()
+
+elif cmd == 'sync-primary':
+    sync_primary()
+
+elif cmd == 'sync-all':
+    print("SYNC: primary")
+    sync_primary()
+    print("SYNC: esm")
+    sync_esm()
+    print("SYNC: misc")
+    sync_misc()
