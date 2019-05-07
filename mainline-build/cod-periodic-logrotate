@@ -1,0 +1,62 @@
+#!/bin/bash
+
+logs="logs"
+host=$(uname -n)
+
+generate_config()
+{
+	cat - <<EOF
+daily
+create
+compress
+delaycompress
+rotate 14
+
+EOF
+
+	for log in $(cd "$HOME" && ls -1 "$logs/"*.log)
+	do
+		log="~/$log"
+
+		case "$host::$log" in
+		*/shank.log)
+			cat - <<EOF
+$log {
+	daily
+	rotate 31
+}
+EOF
+		;;
+		*/cleanup.log|*/mainline-trigger.log|*/cod-incoming-publish.log)
+			cat - <<EOF
+$log {
+	weekly
+}
+EOF
+		;;
+		*/cod-worker.log)
+			cat - <<EOF
+$log {
+   postrotate
+	$HOME/kteam-tools/mainline-build/mainline-logrotate
+   endscript
+}
+EOF
+		;;
+		wani::*/cod-enqueue.log)
+			cat -- <<EOF
+$log {
+	weekly
+	rotate 26
+}
+EOF
+		;;
+		*)
+			echo "$log {}"
+			;;
+		esac
+	done
+}
+
+generate_config >"$HOME/.logrotate.conf"
+/usr/sbin/logrotate -s "$HOME/.logrotate.state" "$HOME/.logrotate.conf"
