@@ -27,13 +27,13 @@ logs)
 	touch "$HOME/logs/root-gbk-cleanup.log"
 	;;
 machine-check)
-	"$HOME/bin/dashboard-status" "machine-check" "Host: `hostname`" "Machine Check" 20m 30m
+	"$HOME/bin/dashboard-status" "machine-check" "Host: `hostname`" "Machine Check" 20m 30m >>$HOME/logs/machine-check.log
 	;;
 kteam-tools)
-	(cd "$HOME/kteam-tools" && git pull >update.log 2>&1 && "$HOME/bin/dashboard-status" "machine-kteam-tools" "Host: `hostname`" "Update Tools" 65m 70m)
+	(cd "$HOME/kteam-tools" && git pull >>$HOME/logs/update-tools.log 2>&1 && "$HOME/bin/dashboard-status" "machine-kteam-tools" "Host: `hostname`" "Update Tools" 65m 70m)
 	;;
 update-repos)
-	$HOME/kteam-tools/kernel-team-accounts/update-repos2.sh >/usr3/ubuntu/log.txt 2>&1 && "$HOME/bin/dashboard-status" "update-repos" "Host: `hostname`" "Update Repos" 5h 9h
+	$HOME/kteam-tools/kernel-team-accounts/update-repos2.sh >>$HOME/logs/update-repos.log 2>&1 && "$HOME/bin/dashboard-status" "update-repos" "Host: `hostname`" "Update Repos" 5h 9h
 	;;
 mainline-worker)
 	$HOME/kteam-tools/sbin/cron-start $HOME/kteam-tools/mainline-build/mainline-worker -- 'Mainline Builds' 'Mainline Worker' 30m 45m >>$HOME/logs/cod-worker.log 2>&1
