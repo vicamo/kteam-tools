@@ -1224,6 +1224,9 @@
             routing:
                 test-build:
                     - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
                 test:
@@ -1813,6 +1816,9 @@
             routing:
                 test-build:
                     - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
                 test:
