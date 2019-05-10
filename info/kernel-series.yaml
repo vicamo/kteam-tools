@@ -1169,6 +1169,9 @@
             routing:
                 test-build:
                     - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
                     - ['ppa:ibm-cloud/ubuntu/build', 'Release']
                 test:
