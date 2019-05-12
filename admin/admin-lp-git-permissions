@@ -62,6 +62,8 @@ def update_rules(git_repo, rules, show=False):
         git_repo.setRules(rules=rules)
 
 def sync_misc():
+    admins = '/~canonical-kernel-repo-admins-active'
+
     for repo_path in (
             '~canonical-kernel/+git/kteam-tools',
             '~canonical-kernel/+git/adt-matrix-hints',
@@ -69,7 +71,6 @@ def sync_misc():
 
         branch = 'master'
 
-        admins = '/~canonical-kernel-repo-admins'
         rules = []
         grants = []
 
@@ -96,7 +97,10 @@ def sync_misc():
         sys.stdout.flush()
 
 def sync_esm():
+    admins = '/~canonical-kernel-repo-admins-active'
+
     kernel_series = KernelSeries()
+
 
     in_esm = set()
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
@@ -104,10 +108,14 @@ def sync_esm():
             continue
         in_esm.add(series.codename)
 
+    grants = []
+    grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+    if admins != 'owner':
+        grants.append(generate_grant(person='owner'))
     rules = [
         {
         'ref_pattern': "*",
-        'grants': sort_grants([generate_grant(person='owner')]),
+        'grants': sort_grants(grants),
         },
         ]
 
@@ -122,6 +130,8 @@ def sync_esm():
             sys.stdout.flush()
 
 def sync_primary():
+    admins = '/~canonical-kernel-repo-admins-active'
+
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
     #    for repo in lp.git_repositories.getRepositories(target=person):
     #        print(repo, repo.getRules())
@@ -185,7 +195,6 @@ def sync_primary():
             #    admins = '/~canonical-kernel-repo-admins'
             # XXX: until we drop people from the ubuntu-kernel and canonical-kernel
             #      we need to bodge their admin-ness away.
-            admins = '/~canonical-kernel-repo-admins'
 
             branch = package.repo.branch
             branches = []
@@ -237,11 +246,8 @@ def sync_primary():
         # Add the administrator rules.
         grants = []
         series = path_packages[0].series
-        if any_supported:
-            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
-            if admins != 'owner':
-                grants.append(generate_grant(person='owner'))
-        else:
+        grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+        if admins != 'owner':
             grants.append(generate_grant(person='owner'))
 
         for version in versions:
