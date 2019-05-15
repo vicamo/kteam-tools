@@ -70,6 +70,24 @@ cd canonical/kernel/ubuntu
 cranky checkout xenial:linux-oracle
 ```
 
+**Note**: private kernels repositories should be cloned via `git+ssh`
+using your launchpad ID. In other to do so, it's necessary to include
+the following configuration to your `~/.gitconfig` file:
+
+```
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/<project>"]
+	insteadof = lp:~<project>
+	insteadof = git://git.launchpad.net/<project>
+```
+
+For example, for linux-fips:
+
+```
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/~fips-cc-stig"]`
+	insteadof = lp:~fips-cc-stig`
+	insteadof = git://git.launchpad.net/~fips-cc-stig`
+```
+
 ### dkms package update stage - `update-versions-dkms`
 <!--cheatsheet-->
 ```
@@ -191,6 +209,26 @@ $ cranky open
 preferable. Use `cranky start --force` if you find any blocking issues
 with `cranky open`.
 
+**Note** regarding private kernels: One of the steps performed by
+`cranky open` is to download and update the ABI files based on the
+last release and those files are obtained from a list of
+repositories. For regular kernels that list is kept in-tree in the
+file `debian.<variant>/etc/getabis`. For private kernels, this list is
+retrieved from the file `~/.getabis.<series>-<variant>` (for instance:
+`~/.getabis.bionic-fips`). That file should be created manually
+containing on each line an URL (that can be obtained from the
+`kteam-tools/info/kernel-series.yaml` file), but including your
+subscription credentials to the PPA.
+
+An example of an URL is:
+
+```
+https://USER:PASS@private-ppa.launchpad.net/ubuntu-advantage/fips-kernel-source/ubuntu
+```
+
+The username and password can be obtained from
+<https://launchpad.net/~/+archivesubscriptions>.
+
 ### Link to tracker - `cranky link-tb`
 <!--cheatsheet-->
 ```
@@ -255,6 +293,23 @@ that it finds from git.
 the changelog.
 
 5) Commits with the correct messages.
+
+**Note**: Private kernels might have commits that reference private
+bugs or SalesForce cases (please check the private kernel git log to
+find out what is usually used for each case) and because of that
+`debian/rules insertchanges` might not be able to obtain the launchpad
+bug title.
+
+To workaround that, it's possible to update the commit message adding
+the the bug title between parenthesis just after the Buglink URL, for
+example:
+
+- `BugLink: http://bugs.launchpad.net/bugs/9999999 (Private bug title... (LP: #9999999))`.
+- `BugLink: https://canonical.my.salesforce.com/XXXXXXX (SF case title (SF: #99999999))`.
+
+For patchsets, please make sure the exact same text between
+parenthesis is used for all the patches in the series, otherwise
+they will **not** be grouped in the changelog.
 
 ## Test
 
