@@ -223,18 +223,20 @@ def sync_primary():
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
             branch_prefix = package.source.name.replace('linux', '')
-            #if branch_prefix.startswith('-lts-'):
-            #    branch_prefix = '-lts'
+            branch_prefixes = [ branch_prefix ]
+            if branch_prefix.startswith('-lts-'):
+                branch_prefixes.append('-lts')
             rewind_tags = series.development
             grants = []
             for person in people:
                 grants.append(generate_grant(person=person, create=True, rewind=rewind_tags))
-            rules_wild.append(
-                {
-                    'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
-                    'grants': sort_grants(grants),
-                },
-                )
+            for branch_prefix in branch_prefixes:
+                rules_wild.append(
+                    {
+                        'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
+                        'grants': sort_grants(grants),
+                    },
+                    )
 
             # TAGS: for main packages allow version tags to be pushed too.
             if package.type in (None, 'main'):
