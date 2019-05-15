@@ -88,6 +88,24 @@ For example, for linux-fips:
 	insteadof = git://git.launchpad.net/~fips-cc-stig`
 ```
 
+**Note**: private kernels repositories should be cloned via `git+ssh`
+using your launchpad ID. In other to do so, it's necessary to include
+the following configuration to your `~/.gitconfig` file:
+
+```
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/<project>"]
+	insteadof = lp:~<project>
+	insteadof = git://git.launchpad.net/<project>
+```
+
+For example, for linux-fips:
+
+```
+[url "git+ssh://<your-launchpad-id>@git.launchpad.net/~fips-cc-stig"]`
+	insteadof = lp:~fips-cc-stig`
+	insteadof = git://git.launchpad.net/~fips-cc-stig`
+```
+
 ### dkms package update stage - `update-version-dkms`
 <!--cheatsheet-->
 ```
