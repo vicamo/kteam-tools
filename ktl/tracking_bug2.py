@@ -747,6 +747,7 @@ class TrackingBug(object):
 
                 # All workflow tasks are "Medium" importance
                 task.importance = 'Medium'
+                task.status = 'New'
 
                 # Determine and set the assignee.
                 task_name = parts[2].strip()
@@ -763,7 +764,7 @@ class TrackingBug(object):
                 else:
                     lp = s.__bug.service.launchpad
                     try:
-                
+
                         task.assignee = lp.people[assignee]
                         cdebug('  - assigning: {}'.format(task.assignee.display_name))
                     except:
