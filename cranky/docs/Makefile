@@ -4,12 +4,16 @@
 # on your local system.
 #
 
-TARGETS=cranking-the-kernel.html crank-turning-setup.html sru-cycles.html
+TARGETS=cranking-the-kernel.cheatsheet.html cranking-the-kernel.html crank-turning-setup.html sru-cycles.html
+CHEATSHEET_TARGETS=cranking-the-kernel.cheatsheet.md
+
+%.cheatsheet.md: %.md
+	$(PWD)/cranky-generate-cheatsheet < $< > $@
 
 %.html: %.md
 	grip $< --export
 
-all: $(TARGETS)
+all: $(CHEATSHEET_TARGETS) $(TARGETS)
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(CHEATSHEET_TARGETS) $(TARGETS) *.html
