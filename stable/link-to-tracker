@@ -9,11 +9,11 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '
 from datetime                           import datetime, timedelta
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
-import subprocess
 from ktl.log                            import center, cleave, cdebug, cinfo, Clog
 from ktl.launchpad                      import Launchpad
 from lib.git                            import Git
 from lib.debian                         import Debian
+from lib.shell                          import sh
 
 # AppError
 #
@@ -204,17 +204,33 @@ class Tracking():
 
             print("LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
 
-            if s.args.dry_run:
-                print("Dry Run -- no changes made")
-                return 0
-
             # -------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
             # Pull the entire changelog file into a list
             #
-            changelog = Debian.changelog(local=True)
-            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
+            target_version = Debian.changelog(local=True)[0]['version']
+            title = "%s: %s -proposed tracker" % (target_package, target_version)
+            print(" -> %s" % title)
+
+            cmd = "%s/cranky-rmadison" % os.path.join(os.path.dirname(__file__), "..", "cranky")
+            retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
+            if retval != 0:
+                raise AppError('Error while checking currently released versions')
+                exit(retval)
+
+            for line in out:
+                f = line.split(' | ')
+                if f[0].lstrip().rstrip() != target_package:
+                    continue
+                pocket_name = f[2].lstrip().rstrip()
+                pocket_vers = f[1].lstrip().rstrip()
+                if pocket_vers == target_version:
+                    raise AppError('Target version(%s) already in %s!' % (target_version, pocket_name))
+
+            if s.args.dry_run:
+                print("Dry Run -- no changes made")
+                return 0
 
             changelog, changelog_path = Debian.raw_changelog(local=True)
 
@@ -263,13 +279,13 @@ UBUNTU: link-to-tracker: update tracking bug
 
 BugLink: https://bugs.launchpad.net/bugs/{}
                 """.strip().format(bugid)
-                for cmd in (
-                        [ 'git', 'add', tracking ],
-                        [ 'git', 'commit', '-s', '-m', msg, tracking ],
-                    ):
-                    result = subprocess.run(cmd)
-                    if result.returncode != 0:
-                        raise AppError("unable to commit tracking bug number")
+                retval, out = sh('git add %s' % (tracking), quiet=True)
+                if retval != 0:
+                    raise AppError('Unable to add tracking bug number')
+
+                retval, out = sh('git commit -s -m "%s" %s' % (msg, tracking), quiet=True)
+                if retval != 0:
+                    raise AppError('Unable to commit new tracking bug number')
 
             retval = 0
 
