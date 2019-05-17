@@ -11,12 +11,7 @@ main)	;;
 *)	fix_verbose "not a main package"; exit 0 ;;
 esac
 
-# Do not fix precise/linux, it is tooooo old.
-case "$FIX_SERIES:$FIX_SOURCE" in
-precise:linux)	fix_verbose "precise is pre-retpoline"; exit 0 ;;
-esac
-
-# update getabits
+# update getabis
 msg="UBUNTU: [Packaging] resync getabis"
 resync_master "$msg" debian/scripts/misc/getabis
 
