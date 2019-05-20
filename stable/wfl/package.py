@@ -567,6 +567,47 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket ({})'.format(retval))
         return retval
 
+    # all_built_and_in_pocket_for
+    #
+    def all_built_and_in_pocket_for(s, pocket, period):
+        '''
+        Check if we are fully built in a specific pocket and have been there
+        for at least period time.
+        '''
+        center(s.__class__.__name__ + '.all_built_and_in_pocket_for({}, {})'.format(pocket, period))
+        retval = False
+        if s.all_built_and_in_pocket(pocket):
+
+            # Find the most recent date of either the publish date/time or the
+            # date/time of the last build of any arch of any of the dependent
+            # package.
+            #
+            date_available = None
+            bi = s.build_info
+            for d in sorted(bi):
+                if bi[d][pocket]['published'] is None:
+                    continue
+                if bi[d][pocket]['most_recent_build'] is None:
+                    continue
+
+                if bi[d][pocket]['published'] > bi[d][pocket]['most_recent_build']:
+                    if date_available is None or bi[d][pocket]['published'] > date_available:
+                        date_available = bi[d][pocket]['published']
+                else:
+                    if date_available is None or bi[d][pocket]['most_recent_build'] > date_available:
+                        date_available = bi[d][pocket]['most_recent_build']
+            now = datetime.utcnow()
+            comp_date = date_available + period
+            if comp_date < now:
+                retval = True
+            else:
+                cinfo('It has been less than {} since the last package was either published or built in {}'.format(period, pocket))
+                cinfo('    target: %s' % comp_date)
+                cinfo('       now: %s' % now)
+
+        cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
+        return retval
+
     # all_failures_in_pocket
     #
     def all_failures_in_pocket(s, pocket):
@@ -751,40 +792,7 @@ class Package():
         to the lab machines that will be installing them.
         '''
         center(s.__class__.__name__ + '.ready_for_testing')
-        retval = False
-        if s.all_built_and_in_pocket('Proposed'):
-
-            # Find the most recent date of either the publish date/time or the
-            # date/time of the last build of any arch of any of the dependent
-            # package.
-            #
-            date_available = None
-            bi = s.build_info
-            for d in sorted(bi):
-                for p in sorted(bi[d]):
-                    if bi[d][p]['published'] is None:
-                        continue
-                    if bi[d][p]['most_recent_build'] is None:
-                        continue
-
-                    if bi[d][p]['published'] > bi[d][p]['most_recent_build']:
-                        if date_available is None or bi[d][p]['published'] > date_available:
-                            date_available = bi[d][p]['published']
-                    else:
-                        if date_available is None or bi[d][p]['most_recent_build'] > date_available:
-                            date_available = bi[d][p]['most_recent_build']
-            now = datetime.utcnow()
-            comp_date = date_available + timedelta(hours=1.5)
-            if comp_date < now:
-                # It has been at least 1 hours since the package was either published or fully built
-                # in proposed.
-                #
-                retval = True
-            else:
-                cinfo('It has been less than 1 hr since the last package was either published or built.')
-                cinfo('    build time + 1 hrs: %s' % comp_date)
-                cinfo('                   now: %s' % now)
-
+        retval = s.all_built_and_in_pocket_for('Proposed', timedelta(hours=1.5))
         cinfo('        Ready for testing: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
         return retval
