@@ -558,7 +558,7 @@ class Package():
         failures = []
         building = False
         for pkg in s.srcs:
-            status = s.srcs[pkg].get(pocket).get('status')
+            status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 building = True
             # Signed is allowed to be broken until we have built the main kernel.
