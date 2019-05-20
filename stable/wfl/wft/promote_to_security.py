@@ -68,9 +68,14 @@ class PromoteToSecurity(Promoter):
                 retval = True
                 break
 
-            # We can move Confirmed as soon as promote-to-updates moves out of 'New',
-            # then we will follow the packages separatly.
+            # We can consider moving Confirmed as soon as promote-to-updates
+            # moves out of 'New', then we will follow the packages separatly.
             if s.bug.tasks_by_name['promote-to-updates'].status == 'New':
+                break
+
+            # Check we meet the release criteria for -security; currently
+            # that we have given the packages sufficient time to replicate.
+            if not s.bug.debs.ready_for_security:
                 break
 
             s.task.status = 'Confirmed'

@@ -797,6 +797,21 @@ class Package():
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
         return retval
 
+    # ready_for_security
+    #
+    @property
+    def ready_for_security(s):
+        '''
+        When routinely releasing to -security we will floor our infrastructure
+        if the packages have not had sufficient time to mirror out to
+        -updates first.  Make them wait in -updates for 24 hours.
+        '''
+        center(s.__class__.__name__ + '.ready_for_security')
+        retval = s.all_built_and_in_pocket_for('Updates', timedelta(days=1))
+        cinfo('        Ready for security: %s' % (retval), 'yellow')
+        cleave(s.__class__.__name__ + '.ready_for_security (%s)' % (retval))
+        return retval
+
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied
