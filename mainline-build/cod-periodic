@@ -15,7 +15,9 @@ if [ "$1" = "" ]; then
 	"$locker"   60 "$locks/kteam-tools"		"$0" kteam-tools &
 	"$locker"  240 "$locks/update-repos"		"$0" update-repos &
 	[ -f "$locks/chroots-done" ] && \
-	[ -f "$locks/machine-check-done" ] && \
+	[ -f "$locks/kteam-tools-done" ] && \
+	[ -f "$locks/update-repos-done" ] && \
+	[ ! -f "$locks/mainline-worker-stop" ] && \
 							"$0" mainline-worker &
 	"$locker"  30 "$locks/mainline-failsafe"        "$0" mainline-worker-failsafe &
 	exit 0
