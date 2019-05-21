@@ -1,0 +1,128 @@
+#!/bin/bash -eu
+#
+# Pull kernel source packages from launchpad
+#
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky-pull-source [-h] SOURCE_PACKAGE VERSION RELEASE
+       cranky-pull-source [-h] SOURCE_PACKAGE [VERSION|RELEASE]
+
+Downloads the specified VERSION of the kernel source package SOURCE_PACKAGE
+from Launchpad, or the latest version of the specified RELEASE.
+
+There are basically two modes of operation:
+  1) If both VERSION and RELEASE are specified, the script will use the URLs
+     from the file ~/.getabis.<RELEASE>[-<VARIANT>] to download the package.
+     This mode is used for downloading packages from ESM or private PPAs.
+  2) Otherwise, the script simply calls pull-lp-source with the specified
+     positional arguments. This mode is used for downloading regular kernel
+     packages from the archive.
+
+Positional arguments:
+  SOURCE_PACKAGE  The kernel package name (linux, linux-aws, ...).
+  VERSION         The kernel package version.
+  RELEASE         The release name (xenial, bionic, ...).
+
+Optional arguments:
+  -h, --help    Show this help text and exit.
+
+Examples:
+  $ cranky-pull-source linux
+    Downloads the latest linux package from the development release.
+
+  $ cranky-pull-source linux 4.4.0-149.175
+    Downloads the linux package with version 4.4.0-149.175.
+
+  $ cranky-pull-source linux xenial
+    Downloads the latest linux package from Xenial.
+
+  $ cranky-pull-source linux-ibm-gt 4.15.0-1023.24 bionic
+    Downloads the linux-ibm-gt package with version 4.15.0-1023.24 from the
+    PPA listed in ~/.getabis.bionic-ibm-gt.
+EOF
+}
+
+src_pkg=
+version=
+release=
+
+while [ $# -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-*)
+			echo "Unexpected argument: $1" >&2
+			exit 2
+			;;
+		*)
+			if [ -z "${src_pkg}" ] ; then
+				src_pkg=${1}
+			elif [ -z "${version}" ] ; then
+				version=${1}
+			elif [ -z "${release}" ] ; then
+				release=${1}
+			else
+				echo "Unexpected argument: $1" >&2
+				exit 2
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ -z "${src_pkg}" ] ; then
+	usage
+	exit 2
+fi
+
+# Call pull-lp-source if not all positional arguments are specified
+if [ -z "${version}" ] ; then
+	pull-lp-source -d "${src_pkg}"
+	exit
+elif [ -z "${release}" ] ; then
+	pull-lp-source -d "${src_pkg}" "${version}"
+	exit
+fi
+
+dsc=${src_pkg}_${version}.dsc
+
+# Download the dsc file from a private PPA specified in a .getabis file
+if ! [ -e "${dsc}" ] ; then
+	variant=${src_pkg#linux-}
+	variant=${variant#meta-}
+	variant=${variant#signed-}
+
+	getabis=${HOME}/.getabis.${release}-${variant}
+	if ! [ -e "${getabis}" ] ; then
+		getabis=${HOME}/.getabis.${release}
+	fi
+
+	if ! [ -e "${getabis}" ] ; then
+		echo "Unable to find a .getabis file for this source package" >&2
+		exit 1
+	fi
+
+	while IFS= read -r url ; do
+		wget -O "${dsc}" "${url}"/pool/main/l/"${src_pkg}"/"${dsc}" || true
+		if [ -e "${dsc}" ] ; then
+			break
+		fi
+	done < <(grep '^http' "${getabis}")
+fi
+
+# Bail out if we failed to download the dsc file
+if ! [ -e "${dsc}" ] ; then
+	echo "Failed to download ${dsc}" >&2
+	exit 1
+fi
+
+# Download the files listed in the dsc file
+while IFS= read -r file ; do
+	if ! [ -e "${file}" ] ; then
+		wget -O "${file}" "${url}"/pool/main/l/"${src_pkg}"/"${file}"
+	fi
+done < <(dcmd "${dsc}")
