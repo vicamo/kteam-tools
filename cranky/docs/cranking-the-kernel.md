@@ -334,8 +334,8 @@ It is mandatory to run "udpate-version' from the "linux-meta" and
 "linux-signed" directory, not from the kernel source directory.
 
 **Note** In certain releases "linux-signed" is missing, for example
-"linux-kvm". To show the list of expected repositories for a certain
-release/flavor you can use the command `cranky rmadison`, example:
+"linux-kvm". To show the list of packages that are part of a certain kernel
+set, you can use the command `cranky rmadison`, example:
 ```
 cranky rmadison xenial:linux-oracle
 ```
@@ -347,17 +347,18 @@ cranky build-sources
 ```
 [/cheatsheet]
 
-Before running `cranky build-sources`, make sure you download the previous
-source code in the parent directory before running `cranky build-sources`
-(do this with linux, linux-meta and linux-signed).
+Before running `cranky build-sources`, you need to download the previous
+source packages to the parent directory. Note that you need to download all
+source packages listed by `cranky rmadison` for the kernel set you're working
+on.
 
 Example:
 
 ```
 $ cd ..
-$ pull-lp-source --download-only linux-oracle xenial
-$ pull-lp-source --download-only linux-meta-oracle xenial
-$ pull-lp-source --download-only linux-signed-oracle xenial
+$ cranky-pull-source linux-oracle xenial
+$ cranky-pull-source linux-meta-oracle xenial
+$ cranky-pull-source linux-signed-oracle xenial
 $ cd -
 ```
 
