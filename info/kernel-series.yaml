@@ -1954,6 +1954,7 @@
                     lowlatency:
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
             packages:
@@ -1964,7 +1965,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-trusty']
             supported: true
             derived-from: [ '16.04', 'linux' ]
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
             packages:
@@ -1988,7 +1989,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['azure']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-keystone:
@@ -2050,6 +2051,7 @@
             supported: true
             backport: true
             derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
 # 13.10 (saucy)
 '13.10':
