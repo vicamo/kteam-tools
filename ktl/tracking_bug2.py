@@ -91,6 +91,42 @@ class TrackingBug(object):
                 # Not stopping here so duplicates get removed, too
         s.__bug.tags.append(new_tag)
 
+    def __parse_reflist(s, reflist, sameseries=True):
+        '''
+        Internal helper to parse a (comma seperated) list of
+        bug references from either the backport or the derivatives
+        section.
+
+        With sameseries being True, the format is:
+          bug <number> (<name>)[, ...]
+        otherwise it is:
+          bug <number> (<series>/<name>)[, ...]
+        '''
+        for bug_ref in reflist:
+            if bug_ref == '':
+                continue
+
+            # The bug number and the human readable source label are
+            # the last 2 elements separated by spaces.
+            ref_id, ref_name = bug_ref.split(' ')[-2:]
+            ref_name = ref_name[1:-1]
+
+            # For backport lists, expect the first element separated
+            # by '/' to be the series.
+            if sameseries is False:
+                if '/' in ref_name:
+                    ref_series, ref_name = ref_name.split('/', 1)
+                else:
+                    ref_series = '<unknown>'
+            else:
+                ref_series = ''
+
+            # Whatever remains in ref_name is the name for the object
+            # which the tracking bug follows, intended for human con-
+            # sumption only.
+
+            s._derivative_bug_ids[int(ref_id)] = [ ref_series, ref_name ]
+
     def __parse_lpbug(s):
         '''
         Internal helper to set/refresh tracking bug properties from
@@ -219,29 +255,11 @@ class TrackingBug(object):
         # backport target series.
         tbmatch = s.__bp_re.search(desc)
         if tbmatch is not None:
-                for bug_ref in s.__comsep_re.split(tbmatch.group(1)):
-                    if bug_ref == '':
-                        continue
-                    # A reference is/will be: "bug [0-9]+ \([<series>/]<pkg>\)"
-                    ref_id, ref_label = bug_ref.split(' ')[-2:]
-                    ref_bug   = int(ref_id)
-                    ref_label = ref_label[1:-1]
-                    # Is this a format which contains a target series?
-                    if '/' in ref_label:
-                        ref_series, ref_source = ref_label.split('/', 1)
-                    else:
-                        ref_series = '<unknown>'
-                        ref_source = ref_label
-                    s._derivative_bug_ids[ref_bug] = [ ref_series, ref_source ]
+            s.__parse_reflist(s.__comsep_re.split(tbmatch.group(1)), sameseries=False)
+
         tbmatch = s.__dv_re.search(desc)
         if tbmatch is not None:
-                for bug_ref in s.__comsep_re.split(tbmatch.group(1)):
-                    if bug_ref == '':
-                        continue
-                    ref_id, ref_label = bug_ref.split(' ')[-2:]
-                    ref_bug = int(ref_id)
-                    ref_source = ref_label[1:-1]
-                    s._derivative_bug_ids[ref_bug] = [ '', ref_source ]
+            s.__parse_reflist(s.__comsep_re.split(tbmatch.group(1)))
 
     def __init__(s, bug, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT):
         '''
@@ -289,23 +307,23 @@ class TrackingBug(object):
         dv_str = ''
         bp_str = ''
         for dbug_id in s._derivative_bug_ids:
-            series, source = s._derivative_bug_ids[dbug_id]
+            series, name = s._derivative_bug_ids[dbug_id]
             if series == '':
                 if dv_str != '':
-                    dv_str += ','
-                dv_str += ' bug {} ({})'.format(dbug_id, source)
+                    dv_str += ', '
+                dv_str += 'bug {} ({})'.format(dbug_id, name)
             else:
                 if bp_str != '':
-                    bp_str += ','
-                if series == '<unknown>':
-                    bp_str += ' bug {} ({})'.format(dbug_id, source)
+                    bp_str += ', '
+                if series != '<unknown>':
+                    bp_str += 'bug {} ({}/{})'.format(dbug_id, series, name)
                 else:
-                    bp_str += ' bug {} ({}/{})'.format(dbug_id, series, source)
+                    bp_str += 'bug {} ({})'.format(dbug_id, name)
 
         if bp_str != '':
-            new_desc += '\nbackports:' + bp_str
+            new_desc += '\nbackports: ' + bp_str
         if dv_str != '':
-            new_desc += '\nderivatives:' + dv_str
+            new_desc += '\nderivatives: ' + dv_str
         if dv_str != '' or bp_str != '':
             new_desc += '\n'
 
@@ -631,10 +649,13 @@ class TrackingBug(object):
         if ref_tb.id in s._derivative_bug_ids:
             return
         ref_series = ''
-        ref_source = ref_tb.target_package
+        ref_name   = ref_tb.target_package
         if ref_tb.target_series != s._target_series:
             ref_series = ref_tb.target_series
-        s._derivative_bug_ids[ref_tb.id] = [ ref_series, ref_source ]
+        if 'variant' in ref_tb.__wf_properties.keys():
+            if ref_tb.__wf_properties['variant'] == 'snap-debs':
+                ref_name = ref_tb.__wf_properties['snap-name']
+        s._derivative_bug_ids[ref_tb.id] = [ ref_series, ref_name ]
         s.__modified = True
         ref_tb.__master_bug_id_set(s)
         s.save()
