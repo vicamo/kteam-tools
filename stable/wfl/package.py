@@ -556,20 +556,16 @@ class Package():
     #
     def all_failures_in_pocket(s, pocket):
         failures = []
-        building = False
         for pkg in s.srcs:
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
-                building = True
-            # Signed is allowed to be broken until we have built the main kernel.
-            if pkg == 'signed':
-                continue
-            if status == 'FAILEDTOBUILD':
-                failures.append("{}:failed".format(pkg))
+                failures.append("{}:building".format(pkg))
+            elif status == 'FAILEDTOBUILD':
+                # Signed is allowed to be broken until we have built the main kernel.
+                if pkg != 'signed':
+                    failures.append("{}:failed".format(pkg))
             elif status == '':
                 failures.append("{}:missing".format(pkg))
-        if building is True:
-            return None
 
         if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
                 s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
