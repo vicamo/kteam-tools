@@ -236,7 +236,9 @@ class PromoteToProposed(PromoteFromTo):
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
         s.pocket_src = 'ppa'
-        if s.bug.debs.routing('Signing'):
+        if (s.bug.debs.routing('Signing') and
+                'prepare-package-signed' in s.bug.tasks_by_name and
+                s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
             s.pocket_dest = 'Signing'
             s.pocket_after = 'Proposed'
         else:
@@ -272,7 +274,9 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        if s.bug.debs.routing('Signing'):
+        if (s.bug.debs.routing('Signing') and
+                'prepare-package-signed' in s.bug.tasks_by_name and
+                s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'
             s.pocket_after = 'Release/Updates'
