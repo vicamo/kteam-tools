@@ -3,7 +3,6 @@
 import os
 import sys
 import argparse
-import subprocess
 import logging
 
 from datetime           import datetime
@@ -12,7 +11,6 @@ sys.path.append(os.path.realpath(
     os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
 from ktl.log            import Clog, cerror, cwarn, cinfo, cdebug
-from ktl.utils          import run_command
 from ktl.kernel_series  import KernelSeries
 from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
 from ktl.cycleboard     import CycleBoard, CycleBoardError
@@ -141,7 +139,7 @@ class Task():
         if new_tbid is None:
             return []
         else:
-            return [ new_tbid ]
+            return [new_tbid]
 
     def FinalizeTrackingBugs(self, dryrun=False):
         for subtask in self.subtasks:
@@ -214,7 +212,7 @@ class TaskSet():
                     tb = self.tbs[bug_id]
                     if tb.cycle != self.cycletag:
                         continue
-                    #if task.create is True and self.spin_nr is not None:
+                    # if task.create is True and self.spin_nr is not None:
                     #    if tb.spin_nr < self.spin_nr:
                     #        continue
                     if matchtb is None:
@@ -286,7 +284,6 @@ class TaskSet():
                 cn = task.ks_source.series.codename
                 sn = task.ks_source.name
                 raise ValueError('{}/{} already exists as spin #{}'.format(cn, sn, task.tb.spin_nr))
-
 
     def __repr__(self):
         '''
@@ -414,6 +411,7 @@ class TaskSet():
                 return
         for ks_series in self.ks_series_list:
             self.tasks[ks_series.codename].CreateCards(dryrun=dryrun)
+
 
 if __name__ == '__main__':
 
