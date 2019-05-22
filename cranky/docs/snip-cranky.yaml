@@ -9,8 +9,8 @@
 # Juerg Haefliger <juergh@canonical.com>
 #
 
-# cranky-clone
-#clone:
+# cranky-checkout
+#checkout:
   # A local reference kernel repo used for cloning the Ubuntu kernel repo.
   # Using this speeds up the cloning process considerably. See
   # 'git help clone', option --reference, for more details.

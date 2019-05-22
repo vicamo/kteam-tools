@@ -55,19 +55,19 @@ cranky chroot create-session configs xenial:linux
 
 ## Build
 
-### Clone the kernel repository - `cranky clone`
+### Clone and checkout the kernel repository - `cranky checkout`
 [cheatsheet]
 ```
-cranky clone RELEASE:KERNEL
+cranky checkout RELEASE:KERNEL
 ```
 [/cheatsheet]
 
-Use `cranky clone` to get the kernel that you want to build.
+Use `cranky checkout` to get the kernel that you want to build.
 
 Example:
 ```
 cd canonical/kernel/ubuntu
-cranky clone xenial:linux-oracle
+cranky checkout xenial:linux-oracle
 ```
 
 ### dkms package update stage - `update-versions-dkms`
@@ -305,7 +305,7 @@ cd linux-signed && ./update-version ../linux
 [/cheatsheet]
 
 Currently this step must be done manually, calling the "./update-version"
-scripts from "linux-meta" and "linux-signed" (the addition repositories
+scripts from "linux-meta" and "linux-signed" (the additional repositories
 cloned via `cranky checkout`).
 
 Example:

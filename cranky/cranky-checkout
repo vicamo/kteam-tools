@@ -281,42 +281,45 @@ if __name__ == '__main__':
 
     # Get the config options from file
     config = Config()
-    config_cmd = config.lookup('clone', {})
+    if config.lookup('clone', None) is not None:
+        cerror("Deprecated 'clone' section found in the .cranky config file.")
+        cerror("You need to remove it or rename it to 'checkout'.")
+        sys.exit(1)
+    config_cmd = config.lookup('checkout', {})
 
     desc = """
-Clone the repos (typically 'linux', 'linux-meta', and 'linux-signed') that make
-up a set of Ubuntu kernel packages. The local directories where the repos are
-cloned into is specified in the cranky config file (see 'package-path' in the
+Checkout the repos (typically 'linux', 'linux-meta', and 'linux-signed') that
+make up a set of Ubuntu kernel packages. The repos are cloned first, if they
+don't yet exist locally. The local directories where the repos are cloned into
+are specified in the cranky config file (see 'package-path' in the
 'Configuration file' section below).
 """
 
     epilog = """
 Examples:
-  $ cranky-clone xenial:linux
-      Clone the 'linux', 'linux-meta' and 'linux-signed' repositories for
+  $ cranky-checkout xenial:linux
+      Checkout the 'linux', 'linux-meta' and 'linux-signed' repositories for
       Xenial.
 
-  $ cranky-clone --reference /home/work/linux-2.6 xenial:linux
+  $ cranky-checkout --reference /home/work/linux-2.6 xenial:linux
       Same as above but use a local clone of Linus' upstream repo as a git
       reference.
 
-  $ cranky-clone xenial:linux-aws
-      Clone the 'linux-aws', 'linux-meta-aws' and 'linux-signed-aws'
+  $ cranky-checkout xenial:linux-aws
+      Checkout the 'linux-aws', 'linux-meta-aws' and 'linux-signed-aws'
       repositories for the Xenial AWS variant.
 
-  $ cranky-clone xenial:linux-raspi2
+  $ cranky-checkout xenial:linux-raspi2
       This variant doesn't have stand-alone repos but instead resides on
       branches of the main 'linux', 'linux-meta' and 'linux-signed' repos. See
       below for more details.
 
 Notes:
   Some kernel variants have their own repos (like aws, for example) whereas
-  others simply reside on branches of the main repos (like raspi2). If a
-  stand-alone variant is cloned, the repos end up in their own subdirectories
-  (see the aws example above). Cloning a non stand-alone variant simply results
-  in cloning the main repos (if they aren't already locally present). At the
-  end of the operation, the tool will print out the directory and branch names
-  for the clones.
+  others simply reside on branches of the main repos (like raspi2). Depending
+  on the 'package-path' configuration in your .cranky config file you'll end
+  up with one local clone per repo or with individual clones for the different
+  variants which means you'll have multiple local copies of the same repo.
 
 Configuration file:
   ~/.cranky is a yaml format configuration file where the optional commandline
@@ -325,7 +328,7 @@ Configuration file:
 
   Example ~/.cranky section:
   ---
-    clone:
+    checkout:
       reference: '/home/repo/linux-2.6'
       dissociate: true
     package-path:
