@@ -86,6 +86,8 @@ class Package():
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
+            if pocket_data is None:
+                pocket_data = ('NONE', 'NONE')
             cinfo('        {}: {} {}'.format(pocket, pocket_data[0], pocket_data[1]), 'blue')
 
         s.pkgs = s.dependent_packages
