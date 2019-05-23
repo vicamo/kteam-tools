@@ -78,18 +78,27 @@ class Task():
             new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun))
 
         cn = self.ks_source.series.codename
-        sn = self.ks_source.name
+        if self.sourcetype == 'deb':
+            sn = self.ks_source.name
+            bv = 'debs'
+        else:
+            sn = self.ks_snap.name
+            bv = 'snap-debs'
+
         ts = self.taskset
         spintag = '{}-{}'.format(ts.cycletag, ts.spin_nr)
-        if self.create and self.sourcetype == 'deb':
+        if self.create:
             old_tb = self.tb
 
-            cinfo('Creating tracking bug for {}/{}[{}]...'.format(cn, sn, spintag))
+            cinfo('Creating {} tracking bug for {}/{}[{}]...'.format(bv, cn, sn, spintag))
             if dryrun is True:
                 new_tbid = ts.fake_id
                 ts.fake_id += 1
             else:
-                self.tb = ts.tbs.create(cn, sn)
+                if bv == 'debs':
+                    self.tb = ts.tbs.create(cn, sn, variant=bv)
+                else:
+                    self.tb = ts.tbs.create(cn, self.ks_source.name, variant=bv, name=sn)
                 self.tb.set_cycle_and_spin(ts.cycletag, ts.spin_nr)
                 new_tbid = self.tb.id
             cinfo('  + created LP: #{}'.format(new_tbid))
@@ -144,9 +153,12 @@ class Task():
     def FinalizeTrackingBugs(self, dryrun=False):
         for subtask in self.subtasks:
             subtask.FinalizeTrackingBugs(dryrun=dryrun)
-        if self.create is True and self.sourcetype == 'deb':
+        if self.create is True:
             cn = self.ks_source.series.codename
-            sn = self.ks_source.name
+            if self.sourcetype == 'deb':
+                sn = self.ks_source.name
+            else:
+                sn = self.ks_snap.name
             cinfo('Setting {}/{} workflow status in-progress.'.format(cn, sn))
             if dryrun is False:
                 self.tb.wf_status_set('In Progress')
