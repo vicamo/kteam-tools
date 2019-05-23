@@ -363,6 +363,7 @@ class Package():
             status.add('FAILEDTOBUILD')
 
         arch_build = set()
+        arch_complete = set()
         builds = source.getBuilds()
         for build in builds:
             ##print(build, build.buildstate, build.datebuilt)
@@ -376,6 +377,7 @@ class Package():
 
             elif build.buildstate in ('Successfully built'):
                 status.add('FULLYBUILT')
+                arch_complete.add(build.arch_tag)
 
             else:
                 # Anything else is a failure, currently:
@@ -418,12 +420,16 @@ class Package():
                 arch_published.add(binary.distro_arch_series_link.split('/')[-1])
 
         # If our build architecture list does not match our published architecture
-        # list then we have a publication missing.  Treat that as BUILDING.
+        # list then we have a publication missing.  Check if we have publications
+        # missing because they are in flight.
         if arch_build != arch_published:
-            status.add('BUILDING')
+            if arch_build == arch_complete:
+                status.add('FULLYBUILT_PENDING')
+            else:
+                status.add('BUILDING')
 
         # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'BUILDING', 'FULLYBUILT', 'UNKNOWN'):
+        for state in ('FAILEDTOBUILD', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
             if state in status:
                 break
 
@@ -568,6 +574,8 @@ class Package():
                     failures.append("{}:failed".format(pkg))
             elif status == '':
                 failures.append("{}:missing".format(pkg))
+            elif status == 'FULLYBUILT_PENDING':
+                failures.append("{}:queued".format(pkg))
 
         if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
                 s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
