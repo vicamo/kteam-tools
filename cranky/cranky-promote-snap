@@ -1,0 +1,264 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cdebug
+from ktl.utils import run_command
+
+class SwmDataError(Exception):
+    pass
+
+class SwmDataElement():
+    def __init__(self):
+        self.__data = {
+            'bugid':    None,
+            'master':   None,
+            'cycle':    None,
+            'series':   None,
+            'source':   None,
+            'version':  None,
+            'task':     None,
+            'status':   None,
+            'extinfo':  None,
+        }
+
+    def __getitem__(self, key):
+        if key not in self.__data:
+            raise SwmDataError('invalid key')
+        return self.__data[key]
+
+    def __setitem__(self, key, value):
+        if key not in self.__data:
+            raise SwmDataError('invalid key')
+        self.__data[key] = value
+
+    def __repr__(self):
+        return str(self.__data)
+
+class SwmData():
+    def __init__(self, stream=None):
+        self.__data = dict()
+        if stream is not None:
+            self.load(stream)
+
+    def __repr__(self):
+        return str(self.__data)
+
+    def __iter__(self):
+        for key in self.__data:
+            yield key
+
+    def __getitem__(self, key):
+        if key not in self.__data:
+            raise SwmDataError('invalid key')
+        return self.__data[key]
+
+    def load(self, stream):
+        for line in stream:
+            if not line.startswith('LP:'):
+                continue
+            flds = line.split(None, 11)
+
+            newdata = SwmDataElement()
+            newdata['bugid']    = int(flds[1][1:])
+            if flds[3] != '--':
+                newdata['master'] = int(flds[3][1:])
+            newdata['cycle']    = flds[4]
+            newdata['series']   = flds[5]
+            newdata['source']   = flds[6]
+            newdata['version']  = flds[7]
+            newdata['task']     = flds[8]
+            newdata['status']   = flds[9]
+            if len(flds) > 10:
+                newdata['extinfo'] = flds[11]
+            else:
+                newdata['extinfo'] = ''
+
+            self.__data[len(self.__data)] = newdata
+
+class SnapcraftDataError(Exception):
+    pass
+
+class SnapcraftData():
+    def __init__(self, snapname):
+        rc, output = run_command('snapcraft status {}'.format(snapname))
+        if rc != 0:
+            raise SnapcraftDataError('Failed to obtain snapcraft status')
+
+        self.__arch_start = None
+        self.__chan_start = None
+        self.__vers_start = None
+        self.__revi_start = None
+        self.__expi_start = None
+        self.__init_done  = False
+        self.data = dict()
+
+        track = None
+        arch  = None
+        for line in output:
+            if line.startswith('Track'):
+                # This is the header get the spacing from here
+                self.__arch_start = line.index('Arch')
+                self.__chan_start = line.index('Channel')
+                self.__vers_start = line.index('Version')
+                self.__revi_start = line.index('Revision')
+                # Sometimes there is 'Expires at', sometimes there is not...
+                try:
+                    self.__expi_start = line.index('Expires')
+                except:
+                    self.__expi_start = len(line)
+                self.__init_done = True
+            else:
+                if not self.__init_done:
+                    raise SnapcraftDataError('Failed to setup input format')
+                f = line[0:self.__arch_start].rstrip()
+                if f != "":
+                    track = f
+                f = line[self.__arch_start:self.__chan_start].rstrip()
+                if f != "":
+                    arch = f
+                if track is None or arch is None:
+                    raise SnapcraftDataError('Failed to parse snapcraft data')
+                channel = line[self.__chan_start:self.__vers_start].rstrip()
+                version = line[self.__vers_start:self.__revi_start].rstrip()
+                rev     = line[self.__revi_start:self.__expi_start].rstrip()
+                if track == 'latest':
+                    trkchn = channel
+                else:
+                    trkchn = '{}/{}'.format(track, channel)
+
+                self.data.setdefault(arch, dict())
+                self.data[arch].setdefault(trkchn, dict())
+                self.data[arch][trkchn] = (version, rev)
+
+
+if __name__ == '__main__':
+
+    desc = '''
+This command is for promoting snaps which have been produced already
+into their next destination channels (as determines by the workflow).
+For some kernel snaps this may also be a required step for some edge
+and beta channels if automatic uploads cannot cover all combinations
+of tracks.
+'''
+
+    epilog = '''
+Example: cranky-snap-promote bionic/linux-raspi2/pi-kernel
+
+  This will execute all promotions needed for the pi-kernel
+  snap which is based on bionic/linux-raspi2.
+
+  NOTE(!): Since this kernel snap is released to more channels
+  than an automatic  build can handle, this run would also finish
+  the produce  step by promoting to the missing channels.
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    parser.add_argument('snap_handles', metavar='<series>/<source name>/<snap name>', nargs='+', type=str,
+                        help='specification of the snap to be promoted')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Some basic verification on the provided handles and fill with snapcraft data
+    scd = dict()
+    for sh in args.snap_handles:
+        part = sh.split('/')
+        if len(part) != 3:
+            cerror('{} is not in */*/* format!'.format(sh))
+            sys.exit(1)
+        snapname = part[2]
+        try:
+            scd[snapname] = SnapcraftData(snapname)
+        except SnapcraftDataError as e:
+            cerror(e)
+            sys.exit(1)
+
+    cmd = os.path.join(os.path.dirname(__file__), '..', 'stable', 'swm-ls')
+    rc, output = run_command(cmd)
+    if rc != 0:
+        cerror('Failed to retrieve workflow data (RC={})'.format(rc))
+        sys.exit(1)
+
+    # Main app run
+    swm  = SwmData(output)
+    todo = dict()
+    for idx in swm:
+        if 'snap-release-to-' in swm[idx]['task']:
+            # snap <name> not in expected channel(s): <dest> ...
+            # <dest>: arch=<arch>:channel=<channel>/<risk>:rev=<revision>
+            info = swm[idx]['extinfo']
+            parts = info.partition(' not in expected channel(s): ')
+            series = swm[idx]['series']
+            source = swm[idx]['source']
+            snapname = source.split('/')[1]
+            snaphandle = '{}/{}'.format(series, source)
+            if snaphandle not in args.snap_handles:
+                continue
+            for dst in parts[2].split():
+                snapvars = dict()
+                for subpart in dst.split(':'):
+                    name, value = subpart.split('=')
+                    snapvars[name] = value
+                arch = snapvars['arch']
+                channel = snapvars['channel']
+                if 'latest/' in channel:
+                    channel = channel.split('/')[1]
+                if 'rev' not in snapvars:
+                    cerror('# {}/{} needs to be produced'.format(snapname, channel))
+                    continue
+                rev = snapvars['rev']
+                if rev == 'None':
+                    cerror('# {}/{} needs to be produced'.format(snapname, channel))
+                    continue
+                if scd[snapname].data[arch][channel][1] == rev:
+                    cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
+                    continue
+                todo.setdefault(snapname, dict())
+                todo[snapname].setdefault(arch, dict())
+                todo[snapname][arch].setdefault(rev, [])
+                todo[snapname][arch][rev].append(channel)
+
+    if len(todo) == 0:
+        cerror('Nothing to do!')
+        sys.exit(2)
+
+    for snapname in todo:
+        for arch in todo[snapname]:
+            for rev in todo[snapname][arch]:
+                chanlist = ''
+                for channel in todo[snapname][arch][rev]:
+                    if chanlist != '':
+                        chanlist += ','
+                    chanlist += channel
+                cmd = 'snapcraft release {} {} {}'.format(snapname, rev, chanlist)
+                if args.dry_run:
+                    cinfo('DRYRUN: ' + cmd)
+                else:
+                    rc, output = run_command(cmd)
+                    if rc != 0:
+                        cerror('Failed to run "{}"'.format(cmd))
+                        sys.exit(1)
+                    for line in output:
+                        cinfo(line)
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
