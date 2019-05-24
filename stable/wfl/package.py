@@ -351,6 +351,7 @@ class Package():
         status = set()
         status.add('UNKNOWN')
 
+        cdebug("source status={}".format(source.status))
         if source.status in ('Pending'):
             status.add('BUILDING')
         elif source.status in ('Published'):
@@ -367,6 +368,7 @@ class Package():
         builds = source.getBuilds()
         for build in builds:
             ##print(build, build.buildstate, build.datebuilt)
+            cdebug("build arch={} status={}".format(build.arch_tag, build.buildstate))
             if build.buildstate in (
                     'Needs building',
                     'Dependency wait',
@@ -400,6 +402,11 @@ class Package():
         binaries = source.getPublishedBinaries()
         for binary in binaries:
             ##print(binary, binary.status, binary.date_published)
+            if binary.architecture_specific:
+                arch_tag = binary.distro_arch_series_link.split('/')[-1]
+            else:
+                arch_tag = 'all'
+            cdebug("binary arch={} status={}".format(arch_tag, binary.status))
             if binary.status in ('Pending'):
                 status.add('BUILDING')
             elif binary.status in ('Published'):
