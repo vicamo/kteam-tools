@@ -1,0 +1,157 @@
+#!/bin/bash -eu
+#
+# Upload a set of kernel source packages to a PPA
+#
+
+C=${C-cranky}
+P=${P-$0}
+
+here=$(dirname "$(readlink -f "${0}")")
+
+function out()
+{
+	local rc=$?
+
+	trap - EXIT INT TERM HUP
+
+	if [ "${rc}" -ne 0 ] ; then
+		echo "Script failed" >&2
+	fi
+
+	exit "${rc}"
+}
+
+function dput_src()
+{
+	local dir="$1" ppa="${2:-}"
+	local DEBIAN src version changes
+
+	(
+		cd "$dir" || exit 1
+
+		DEBIAN=debian
+		# shellcheck disable=SC1091
+		if [ -e debian/debian.env ] ; then
+			. debian/debian.env
+		fi
+
+		src=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Source)
+		version=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Version)
+		changes=${src}_${version}_source.changes
+
+		if ! [ -e "../${changes}" ] ; then
+			echo "No such changes file: ${changes}" >&2
+			exit 1
+		fi
+
+		echo "${changes}"
+
+		if [ -n "${ppa}" ] ; then
+			dput "${ppa}" "../${changes}"
+		fi
+	)
+}
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky-dput-sources [-h] DESTINATION [HANDLE]
+
+Upload the kernel source packages specified by HANDLE to the DESTINATION PPA.
+The script will show the details of the destination PPA and list the source
+packages that it wants to upload and wait for user confirmation before doing
+the actual upload.
+
+Positional arguments:
+  DESTINATION  An upload destination as listed by cranky-list-routing.
+  HANDLE       Handle to a kernel source tree, either a path to a kernel
+               source tree or a handle in <series>:<package> format. If not
+               given the current working directory is used.
+
+Optional arguments:
+  -h, --help  Show this help text and exit.
+
+Example:
+  $ cranky-dput-sources build
+      Upload the kernel source packages of the current directory to the
+      standard builder PPA for that kernel.
+
+  $ cranky-dput-sources security-build xenial:linux
+      Upload the Xenial linux kernel source packages to the security builder
+      PPA.
+EOF
+}
+
+dest=
+handle=
+
+while [ ${#} -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		-*)
+			usage
+			exit 2
+			;;
+		*)
+			if [ -z "${dest}" ] ; then
+				dest=${1}
+			elif [ -z "${handle}" ] ; then
+				handle=${1}
+			else
+				usage
+				exit 2
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ -z "${dest}" ] ; then
+	usage
+	exit 2
+fi
+
+if [ -z "${handle}" ] ; then
+	handle=${PWD}
+fi
+
+trap out EXIT INT TERM HUP
+
+# Get the PPA for the given upload destination
+ppa=$("${here}"/cranky-list-routing "${handle}" | \
+		  awk '$1 == "'"${dest}"'" { print $3 }')
+if [ -z "${ppa}" ] ; then
+	echo "No PPA found for destination ${dest}" >&2
+	exit 1
+fi
+
+echo "PPA: ${ppa}"
+
+# Get the source directories for the package set
+readarray -t srcs < <("${here}"/cranky-shell-helper source-packages-path \
+							   "${handle}")
+if [ "${#srcs[@]}" -eq 0 ] ; then
+	exit 1
+fi
+
+# List all .changes files
+for src in "${srcs[@]}" ; do
+	dput_src "${src}"
+done
+
+# Get confirmation from the user to do the upload
+tmp=
+while [ "${tmp,,}" != "y" ] && [ "${tmp,,}" != "n" ] ; do
+	echo -n "Upload packages (y|N)? "
+	read -r tmp
+done
+
+# Do the upload
+if [ "${tmp,,}" = "y" ] ; then
+	for src in "${srcs[@]}" ; do
+		dput_src "${src}" "${ppa}"
+	done
+fi
