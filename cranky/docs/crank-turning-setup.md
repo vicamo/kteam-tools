@@ -16,7 +16,7 @@ the cranky tools required to produce all the Canonical kernels.
 You will need to install/update the following packages on your local host to
 crank kernels:
 ```
-sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python-launchpadlib-toolkit wget
+sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python-launchpadlib-toolkit python3-launchpadlib wget
 ```
 
 Also make sure to download the Trello tools (this is required because some of
