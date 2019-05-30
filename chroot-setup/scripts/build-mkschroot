@@ -172,6 +172,15 @@ amd64)
 	;;
 esac
 
+# TEMPORARY: add new Build-Depend:s here before they are in
+#            the official archive packages as they are not yet
+#            included in the apt-get build-dep instantiation.
+case "$SUITE" in
+bionic|cosmic|disco|eoan)
+	ADDPKG="$ADDPKG default-jdk-headless java-common"
+	;;
+esac
+
 case $SUITE in
 *)	_SUITE=$SUITE ;;
 esac
