@@ -1638,6 +1638,11 @@
             supported: false
             derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   snapdragon:
+                        arches: ['armhf']        # test system arch names
+                        clouds: ['metal']
 
 # 18.10 (Cosmic Cuttlefish)
 '18.10':
@@ -2138,6 +2143,11 @@
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   snapdragon:
+                        arches: ['armhf']        # test system arch names
+                        clouds: ['metal']
 
         linux-oem:
             packages:
@@ -3598,6 +3608,11 @@
             supported: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
 
         linux-snapdragon:
             packages:
@@ -3618,6 +3633,11 @@
             supported: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   snapdragon:
+                        arches: ['armhf']        # test system arch names
+                        clouds: ['metal']
 
         linux-fips:
             routing: fips
