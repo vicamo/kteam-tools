@@ -256,18 +256,6 @@ the changelog.
 
 5) Commits with the correct messages.
 
-### Tagging - `cranky tag`
-<!--cheatsheet-->
-```
-cranky tag
-```
-<!--/cheatsheet-->
-
-Run the following command to apply the correct tag to the kernel:
-```
-cranky tag
-```
-
 ## Test
 
 ### Testing builds - `cranky test-build`
@@ -289,12 +277,29 @@ Make sure to specify "-a all" for official builds, we want to make sure the
 kernel builds in all architectures, otherwise `cranky test-build` would build
 the kernel only for the host's architecture.
 
+If the test build fails and you need to apply additional fixes, make sure to
+re-run `cranky close` once all additional fixes have been applied successfully.
+
+**No additional commits should be added without re-running cranky close.**
+
 **Note** crank-turners need to add the following host entry to /etc/hosts
 before running the example command: `cranky test-build -f -a all kathleen`
 10.246.72.52 kathleen
 
 **Note 2** kathleen in the example above represents both a git remote name,
 which by default matches the name of the remote build host.
+
+### Tagging - `cranky tag`
+<!--cheatsheet-->
+```
+cranky tag
+```
+<!--/cheatsheet-->
+
+Run the following command to apply the correct tag to the kernel:
+```
+cranky tag
+```
 
 ### Prepare meta/signed repositories - `cranky prepare-meta`
 <!--cheatsheet-->
