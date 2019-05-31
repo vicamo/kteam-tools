@@ -24,12 +24,12 @@ engineers should feel free to make change/update this document in kteam-tools.
 ## Setup
 
 ### Initialize chroot environment - `cranky chroot`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky chroot create-base RELEASE:linux
 cranky chroot create-session configs RELEASE:linux
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Make sure you have a proper chroot environment for the release and the kernel
 that you are going to build.
@@ -56,11 +56,11 @@ cranky chroot create-session configs xenial:linux
 ## Build
 
 ### Clone and checkout the kernel repository - `cranky checkout`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky checkout RELEASE:KERNEL
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Use `cranky checkout` to get the kernel that you want to build.
 
@@ -71,11 +71,11 @@ cranky checkout xenial:linux-oracle
 ```
 
 ### dkms package update stage - `update-versions-dkms`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 ./update-version-dkms POCKET
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 In disco and newer, this updates the package versions in `debian/dkms-versions`
 to match those currently present in the specified pocket. For SRU kernels
@@ -92,11 +92,11 @@ Example:
 ```
 
 ### Tool sync stage - `cranky fix`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky fix
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 This updates the local (in-tree) helper scripts which cranky uses to the latest
 version and also can update/create the "debian./etc/update.conf" file and
@@ -112,11 +112,11 @@ derivative chain. For example a senior crank turner got the wrong master
 directory when doing the new trusty/azure. Care must be taken to verify.
 
 ### Rebase stage - `cranky rebase`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky rebase
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 At this stage, master kernels do not require anything to be done. So, running
 `cranky rebase` on them should be a no-op, resulting in no change.
@@ -171,11 +171,11 @@ Look under "linux", inside the section of the release in the dashboard you are
 currently cranking such as "xenial".
 
 ### Starting commit - `cranky open`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky open
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 When a new release is in the plans, a starting commit should be created. That
 historically has been done with "maint-startnewrelease". Now, it's done by
@@ -192,11 +192,11 @@ preferable. Use `cranky start --force` if you find any blocking issues
 with `cranky open`.
 
 ### Link to tracker - `cranky link-tb`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky link-tb
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Link current build to tracker bug in Launchpad:
 ```
@@ -207,11 +207,11 @@ $ cranky link-tb
 local repository. Make sure to skip this test if you're doing local tests.
 
 ### Closing commit - `cranky close`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky close
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 The last commit before a release is prepared by using `cranky close`. All of
 the following steps are done automatically by `cranky close` so there is no
@@ -257,11 +257,11 @@ the changelog.
 5) Commits with the correct messages.
 
 ### Tagging - `cranky tag`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky tag
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Run the following command to apply the correct tag to the kernel:
 ```
@@ -271,11 +271,11 @@ cranky tag
 ## Test
 
 ### Testing builds - `cranky test-build`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky-test-build [-a ARCH[,ARCH,...]|-a all] [-f] HOST
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Uses the "git-build-kernel" method to test-build the tip of the kernel branch
 currently checked out.
@@ -297,12 +297,12 @@ before running the example command: `cranky test-build -f -a all kathleen`
 which by default matches the name of the remote build host.
 
 ### Prepare meta/signed repositories - `cranky prepare-meta`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cd linux-meta && ./update-version ../linux
 cd linux-signed && ./update-version ../linux
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Currently this step must be done manually, calling the "./update-version"
 scripts from "linux-meta" and "linux-signed" (the additional repositories
@@ -341,11 +341,11 @@ cranky rmadison xenial:linux-oracle
 ```
 
 ### Build sources - `cranky build-sources`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky build-sources
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Before running `cranky build-sources`, you need to download the previous
 source packages to the parent directory. Note that you need to download all
@@ -378,11 +378,11 @@ cranky build-sources
 ## Review
 
 ### Reviewing - `cranky review`
-[cheatsheet]
+<!--cheatsheet-->
 ```
 cranky review
 ```
-[/cheatsheet]
+<!--/cheatsheet-->
 
 Generates debdiff files for review between newly generated .dsc files and
 those currently in the archive. Takes source.changes filenames as

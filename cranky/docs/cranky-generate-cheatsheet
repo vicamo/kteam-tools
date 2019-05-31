@@ -3,7 +3,7 @@
 # Get a markdown file from stdin and produces a cheatsheet to stdout
 #
 # This script filters only the title lines followed by a section delimited by
-# the markers [cheatsheet][/cheatsheet] and prints them to stdout producing the
+# the markers <!--cheatsheet--><!--/cheatsheet--> and prints them to stdout producing the
 # cheatsheet markdown document.
 #
 # Example usage:
@@ -18,10 +18,10 @@ def cheatsheet_generator(data):
     prev_line = ''
 
     for line in data:
-        if line.startswith("[cheatsheet]"):
+        if line.startswith("<!--cheatsheet-->"):
             record_mode = True
             yield prev_line
-        elif line.startswith("[/cheatsheet]"):
+        elif line.startswith("<!--/cheatsheet-->"):
             record_mode = False
             yield "\n"
         elif record_mode:
