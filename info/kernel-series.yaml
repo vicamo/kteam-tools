@@ -1129,7 +1129,10 @@
                         arches: ['amd64']
                         clouds: ['gke']
             swm:
-                gcp-nvidia-packages: true
+                gcp-nvidia-packages:
+                    - gke-amd64
+                    - gke-d1703-0-amd64
+                    - gke-d1809-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-edge:
