@@ -251,7 +251,6 @@ class Promoter(TaskHandler):
             'prepare-package-signed'     : ['Fix Released'],
             'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
             'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
-            'promote-to-security'        : ['Confirmed', 'In Progress', 'Fix Released', 'Invalid'],
             'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
         }
 
