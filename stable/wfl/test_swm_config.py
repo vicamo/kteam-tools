@@ -29,7 +29,7 @@ class TestSwmConfigCore(unittest.TestCase):
 class TestSwmConfig(TestSwmConfigCore):
 
     data_yaml = """
-        gcp-nvidia-packages: true
+        gke-nvidia-packages:
     """
     def test_initialisation_direct(self):
         data = yaml.safe_load(self.data_yaml)
@@ -48,26 +48,45 @@ class TestSwmConfig(TestSwmConfigCore):
 
         self.assertIsNotNone(sc)
 
-    def test_gcp_nvidia_packages_absent(self):
+    def test_gke_nvidia_packages_absent(self):
         data = ""
         sc = SwmConfig(data=data)
 
         self.assertIsNotNone(sc)
-        self.assertFalse(sc.gcp_nvidia_packages)
+        self.assertIsNone(sc.gke_nvidia_packages)
 
-    def test_gcp_nvidia_packages_present_false(self):
-        data = "gcp-nvidia-packages: false"
+    def test_gke_nvidia_packages_present_empty(self):
+        data = "gke-nvidia-packages:"
         sc = SwmConfig(data=data)
 
         self.assertIsNotNone(sc)
-        self.assertFalse(sc.gcp_nvidia_packages)
+        self.assertIsNone(sc.gke_nvidia_packages)
 
-    def test_gcp_nvidia_packages_present_true(self):
-        data = "gcp-nvidia-packages: true"
+    def test_gke_nvidia_packages_present_one(self):
+        data = """
+            gke-nvidia-packages:
+                - gke-amd64
+        """
         sc = SwmConfig(data=data)
 
+        expected = ['gke-amd64']
+
         self.assertIsNotNone(sc)
-        self.assertTrue(sc.gcp_nvidia_packages)
+        self.assertEqual(expected, sc.gke_nvidia_packages)
+
+    def test_gke_nvidia_packages_present_many(self):
+        data = """
+            gke-nvidia-packages:
+                - gke-amd64
+                - gke-1001-0-amd64
+                - gke-2001-0-amd64
+        """
+        sc = SwmConfig(data=data)
+
+        expected = ['gke-amd64', 'gke-1001-0-amd64', 'gke-2001-0-amd64']
+
+        self.assertIsNotNone(sc)
+        self.assertEqual(expected, sc.gke_nvidia_packages)
 
     def test_deployment_blackout_present_empty(self):
         data = """

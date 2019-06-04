@@ -58,8 +58,8 @@ class SwmConfig:
         cleave(self.__class__.__name__ + '.__init__')
 
     @property
-    def gcp_nvidia_packages(self):
-        return self._data.get('gcp-nvidia-packages', False)
+    def gke_nvidia_packages(self):
+        return self._data.get('gke-nvidia-packages', None)
 
     def in_blackout(self, when):
         for blackout in self._blackouts:
