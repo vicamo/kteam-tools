@@ -71,43 +71,38 @@ def __status_bites(bug):
     # debs -- look at the bug with respect to any Debian Packages we are tracking.
     retval = ''
     while True:
-        # Is it ready for promotion to -updates/-security?
-        #
-        security_status = __task_status(bug, 'promote-to-security')
-        updates_status  = __task_status(bug, 'promote-to-updates')
+        # Is it ready for promotion to -proposed.
         proposed_status = __task_status(bug, 'promote-to-proposed')
-        if updates_status == 'Confirmed':
-            if security_status == 'Confirmed':
-                retval = __coloured('Ready for updates and security', '#1496bb')
-            elif security_status == 'Invalid':
-                retval = __coloured('Ready for updates', '#1496bb')
-            else:
-                retval = __coloured('Waiting for security review', '#bca136')
-            break
-        elif updates_status == 'Fix Committed':
-            if security_status == 'Fix Committed':
-                retval = __coloured('Releasing to updates and security', '#1496bb')
-            elif security_status == 'Invalid':
-                retval = __coloured('Releasing to updates', '#1496bb')
-            else:
-                retval = __coloured('Unknown release state', '#bca136')
-            break
-        elif updates_status == 'Fix Released':
-            if security_status == 'Fix Committed':
-                retval = __coloured('Releasing to updates and security', '#1496bb')
-            elif security_status == 'Invalid':
-                retval = __coloured('Released to updates', '#1496bb')
-            elif security_status == 'Fix Released':
-                retval = __coloured('Released to updates and security', '#1496bb')
-            break
-        elif proposed_status == 'Confirmed':
+        if proposed_status == 'Confirmed':
             retval = __coloured('Waiting to be copied to -proposed', 'red')
             break
-        elif proposed_status == 'In Progress':
-            retval = __coloured('Being copied to -proposed', '#bca136')
-            break
-        elif proposed_status == 'Fix Committed':
+        elif proposed_status == ('In Progress', 'Fix Committed'):
             retval = __coloured('Publishing to -proposed', '#3455db')
+            break
+
+        # Is it ready for promotion to -updates/-security?
+        security_status = __task_status(bug, 'promote-to-security')
+        updates_status  = __task_status(bug, 'promote-to-updates')
+        retval_release = []
+        if updates_status == 'Confirmed':
+            retval_release.append('Ready for updates')
+        elif updates_status in ('In Progress', 'Fix Committed'):
+            retval_release.append('Releasing to updates')
+        elif updates_status == 'Fix Released':
+            retval_release.append('Released to updates')
+
+        if (len(retval_release) > 0 and updates_status == 'Fix Released' and
+                security_status == 'New'):
+            retval_release.append('Holding before security')
+        elif security_status == 'Confirmed':
+            retval_release.append('Ready for security')
+        elif security_status in ('In Progress', 'Fix Committed'):
+            retval_release.append('Releasing to security')
+        elif security_status == 'Fix Released':
+            retval_release.append('released to security')
+
+        if len(retval_release) > 0:
+            retval = __coloured('. '.join(retval_release), '#1496bb')
             break
 
         # Is it being prepared for upload/built?
