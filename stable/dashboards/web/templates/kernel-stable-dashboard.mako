@@ -132,10 +132,17 @@ def __status_bites(bug):
         certification_testing_status = __task_status(bug, 'certification-testing')
         regression_testing_status = __task_status(bug, 'regression-testing')
         verification_testing_status = __task_status(bug, 'verification-testing')
-        if (automated_testing_status != 'n/a' or
+        testing_valid = (
+                automated_testing_status != 'n/a' or
                 certification_testing_status != 'n/a' or
                 regression_testing_status != 'n/a' or
-                verification_testing_status != 'n/a'):
+                verification_testing_status != 'n/a')
+        testing_complete = (
+                automated_testing_status in ('Invalid', 'Fix Released') and
+                certification_testing_status in ('Invalid', 'Fix Released') and
+                regression_testing_status in ('Invalid', 'Fix Released') and
+                verification_testing_status in ('Invalid', 'Fix Released'))
+        if testing_valid and not testing_complete:
             color = __testing_status_colors[automated_testing_status]
             retval += '<span style="display: inline-block; min-width: 100px; width=100px;">at: %-26s</span>' % (__coloured(automated_testing_status, color))
 
@@ -148,6 +155,29 @@ def __status_bites(bug):
             color = __testing_status_colors[verification_testing_status]
             retval += '<span style="display: inline-block; min-width: 100px; width=100px;">vt: %-26s</span>' % (__coloured(verification_testing_status, color))
 
+            break
+
+        retval_tested = []
+
+        stakeholder_signoff = __task_status(bug, 'stakeholder-signoff')
+        security_signoff    = __task_status(bug, 'security-signoff')
+        if stakeholder_signoff in ('Confirmed', 'In Progress', 'Fix Committed'):
+            retval_tested.append(__coloured('Waiting for stakeholder signoff', 'red'))
+
+        if security_signoff in ('Confirmed', 'In Progress', 'Fix Committed'):
+            retval_tested.append(__coloured('Waiting for security signoff', 'red'))
+
+        # If we are post testing but not releasable report this as something we cannot
+        # see is causing us to hold.
+        if len(retval_tested) == 0:
+            retval_tested.append(__coloured('Not Releaseable', 'red'))
+
+        # Insert the testing status now we have accumulated the underlying reasons.
+        if testing_complete:
+            retval_tested.insert(0, __coloured('Testing complete', '#1496bb'))
+
+        if len(retval_tested) > 0:
+            retval = '. '.join(retval_tested)
             break
 
         # No debs status.
