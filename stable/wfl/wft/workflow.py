@@ -72,10 +72,13 @@ class Workflow(TaskHandler):
                     (task_section, task_text) = (4, 'Signoff')
 
                 # 5: Release
-                elif (taskname.startswith('promote-to-') or
-                      taskname in ('snap-release-to-stable')
-                    ):
+                elif taskname in ('promote-to-updates', 'promote-to-release',
+                         'snap-release-to-stable'):
                     (task_section, task_text) = (5, 'Release')
+
+                # 6: Security
+                elif taskname in ('promote-to-security'):
+                    (task_section, task_text) = (6, 'Security')
 
                 if task_section is None:
                     continue
