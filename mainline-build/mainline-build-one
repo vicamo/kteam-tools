@@ -14,6 +14,7 @@ case "$here" in
 esac
 
 . "$here/lib-build"
+. "$here/lib-chroot"
 
 commit="$1"
 series="$2"
@@ -38,32 +39,6 @@ esac
 	echo "Host: `hostname`"
 	echo "Start: $time"
 } >../BUILT
-
-slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
-dlist="`dchroot -l 2>/dev/null`,"
-do_chroot()
-{
-	typeset chroot="$1"
-	typeset series
-	typeset cmd
-	shift
-
-	# Some systems use <series> for <series>-amd64, so try both.
-	series="${chroot%-amd64}"
-	case "$slist$dlist" in
-	*\ $chroot[\ ,]*)	;;
-	*\ $series[\ ,]*)	chroot="$series" ;;
-	*)	echo "$chroot: chroot not found ($slist::$dlist)" 1>&2; exit 1 ;;
-	esac
-
-	# Ok we do have the chroot in one of the tools, fire it up.
-	case "$slist" in
-	*\ $chroot[\ ,]*)	cmd='schroot' ;;
-	*)			cmd='dchroot' ;;
-	esac
-	echo -- "$cmd" -c "$chroot" --directory=`pwd` -- "$@"
-	"$cmd" -c "$chroot" --directory=`pwd` -- "$@"
-}
 
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
