@@ -286,10 +286,13 @@ for arch in "${arches[@]}" ; do
 
 	rbuilddir=
 	if [ ${dry_run} -eq 0 ] ; then
+		remote_branch="${arch}-${target}"
+		# delete the old remote branch
+		git push --delete "${remote}" "${remote_branch}" > "${logfile}" 2>&1 || true
 		# Trigger the remote build
-		git push --force "${remote}" "${BUILD_BRANCH}:${arch}-${target}" 2>&1 | \
+		git push "${remote}" "${BUILD_BRANCH}:${remote_branch}" 2>&1 | \
 			tee /dev/stderr 2> >(tr '\r' '\n' | \
-			sed '/  elapsed: .* load average: .*/d' > "${logfile}") || true
+			sed '/  elapsed: .* load average: .*/d' >> "${logfile}") || true
 
 		# Get the remote build directory from the logfile
 		rbuilddir=$(grep ' starting build in ' "${logfile}" 2>/dev/null | \
