@@ -18,6 +18,7 @@ do
             -e "dh_prep: Requested unknown package linux-image-" \
             -e "No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop." \
             -e "II: dkms-build downloading nvidia-390" \
+            -e ": chroot not found (" \
         "$log" | head -1
     )
     case "$which" in
@@ -43,6 +44,8 @@ do
         which='syncconfig form changed' ;;
     *"II: dkms-build downloading nvidia-390"*)
         which='nvidia dkms enabled' ;;
+    *": chroot not found ("*)
+        which='broken chroots' ;;
     esac
 
     # Check for unsigned and no modules.

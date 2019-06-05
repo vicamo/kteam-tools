@@ -18,6 +18,7 @@ do
             -e "Error: attempt to move .org backwards" \
             -e 'error: code model kernel does not support PIC mode' \
             -e "tail: cannot open 'debian/changelog' for reading: No such file or directory" \
+            -e ": chroot not found (" \
         "$log" | head -1
     )
     case "$which" in
@@ -45,6 +46,8 @@ do
         which='PIC mode' ;;
     *"tail: cannot open 'debian/changelog' for reading: No such file or directory"*)
         which='did not clean' ;;
+    *": chroot not found ("*)
+        which='broken chroots' ;;
     esac
 #    if [ "$count" -eq 0 ]; then
 #        count=$( grep -c "dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead" "$log" )
