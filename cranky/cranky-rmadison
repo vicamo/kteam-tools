@@ -66,10 +66,15 @@ def rmadison_lp(handle_set, show_all=False):
 
             if ((dest not in ("release", "security", "updates", "proposed") and
                  not show_all)):
-                # This is a non-standard PPA and we didn't ask for it, so skip it
+                # This is a non-standard PPA and we didn't ask for it, so
+                # skip it
                 continue
 
             lp_archive = lp.archives.getByReference(reference=ppa)
+            if not lp_archive:
+                # Archive not found (private?)
+                continue
+
             lp_sources = lp_archive.getPublishedSources(source_name=package,
                                                         distro_series=lp_series,
                                                         pocket=pocket,
