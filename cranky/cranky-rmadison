@@ -98,10 +98,16 @@ def rmadison_lp(handle_set, show_all=False):
     return result
 
 
-def print_table(data, show_ext=False):
+def print_table(data, show_ext=False, script=False):
     """
     Print the package list
     """
+    if script:
+        # Dump all the data without formatting it into a fancy table
+        for row in data:
+            print(' '.join(row))
+        return
+
     # Add a header if we show extended info, otherwise truncate the table to
     # the first 4 columns
     if show_ext:
@@ -160,6 +166,10 @@ Examples:
     parser.add_argument("-e", "--show-extended", action="store_true",
                         help="Show extendend source package information in "
                         "addition to the standard rmadison data")
+    parser.add_argument("-s", "--script", action="store_true",
+                        help="Dump the data in a format suitable for "
+                        "subsequent consumption by a script, i.e., don't "
+                        "render a fancy table")
     args = parser.parse_args()
 
     try:
@@ -172,4 +182,4 @@ Examples:
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
     print_table(rmadison_lp(handle_set, show_all=args.show_all),
-                show_ext=args.show_extended)
+                show_ext=args.show_extended, script=args.script)
