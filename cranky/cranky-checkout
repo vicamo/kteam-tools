@@ -72,22 +72,38 @@ def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
         cerror("git clone failed rc={}".format(result.returncode))
         sys.exit(1)
 
-def git_configure(repo_dir, repo_url):
-    # Set some sensible config defaults for git send-email:
-    #   - Add a default mailing list address
-    #   - Don't cc the patch author and signers
+def git_configure(repo_dir, repo_url, pkg_type, codename):
+    """
+    Do some additional git repo configuration
+    """
+    # Add the default mailing list address for sending patches
     if "canonical-kernel-esm" in repo_url:
-        address="canonical-kernel-esm@lists.canonical.com"
+        address = "canonical-kernel-esm@lists.canonical.com"
     else:
-        address="kernel-team@lists.ubuntu.com"
+        address = "kernel-team@lists.ubuntu.com"
     run(["git", "config", "--local", "sendemail.to", address],
         cwd=repo_dir)
+
+    # Don't cc the patch author and signers, i.e., don't spam upstream
     run(["git", "config", "--local", "sendemail.suppresscc", "all"],
         cwd=repo_dir)
 
+    # Add a remote for the (private) security repo
+    if pkg_type is None:
+        security_repo = "linux-{}".format(codename)
+    else:
+        security_repo = "linux-{}-{}".format(pkg_type, codename)
+    security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
+
+    try:
+        # Add the security repo without fetching it
+        git_remote_update(repo_dir, "security", security_url, fetch=False)
+    except SystemExit:
+        cwarn('Could not add remote "security" {}'.format(security_url))
+
 def git_lookup_ref(repo_dir, ref):
     result = run(["git", "for-each-ref", "--format", "%(objectname)", ref],
-        cwd=repo_dir, stdout=PIPE)
+                 cwd=repo_dir, stdout=PIPE)
     if result.returncode != 0:
         cerror("git for-each-ref failed rc={}".format(result.returncode))
         sys.exit(1)
@@ -100,7 +116,7 @@ def git_lookup_ref(repo_dir, ref):
 
 def git_ancestor(repo_dir, old, new):
     result = run(["git", "merge-base", "--is-ancestor", old, new],
-        cwd=repo_dir)
+                 cwd=repo_dir)
     return result.returncode == 0
 
 # XXX: create_checkout_reset
@@ -129,8 +145,8 @@ def git_checkout(repo_dir, remote, rmt_branch, branch):
         # Backup via an explict reflog entry if this is not an ancestor.
         if not git_ancestor(repo_dir, lcl_sha1, rmt_sha1):
             result = run(["git", "update-ref", "-m",
-                "cranky checkout: previous tip", "HEAD", "HEAD"],
-                cwd=repo_dir)
+                          "cranky checkout: previous tip", "HEAD", "HEAD"],
+                         cwd=repo_dir)
             if result.returncode != 0:
                 cerror("unable to backup previous tip rc={}".format(
                     result.returncode))
@@ -178,7 +194,7 @@ def checkout_repos(handle, reference=None, dissociate=False):
                 break
         if meta_only:
             prime_handle = "{}:{}".format(derived_from.series.codename,
-                derived_from.name)
+                                          derived_from.name)
             prime_set = hdl.lookup_set(prime_handle, validate=False)
             for handle in prime_set.trees:
                 if handle.package.type != 'meta':
@@ -192,7 +208,7 @@ def checkout_repos(handle, reference=None, dissociate=False):
             continue
         if not git_safe(repo_dir):
             cerror("repo for {} is not clean, unable to update".format(
-                    handle_tree.name))
+                handle_tree.name))
             sys.exit(1)
 
     # Cycle through the trees and clone/update the package specific
@@ -211,25 +227,16 @@ def checkout_repos(handle, reference=None, dissociate=False):
         if not os.path.exists(os.path.dirname(repo_dir)):
             os.makedirs(os.path.dirname(repo_dir))
 
+        # Update an existing repo or otherwise clone it
         if os.path.exists(os.path.join(repo_dir, '.git')):
             git_remote_update(repo_dir, remote, repo.url)
         else:
             git_clone(pkg, repo_dir, remote, repo.url, branch, reference,
                       dissociate)
-            git_configure(repo_dir, repo.url)
 
-        # Add a remote for the (private) security repo
-        if pkg.type is None:
-            security_repo = "linux-{}".format(codename)
-        else:
-            security_repo = "linux-{}-{}".format(pkg.type, codename)
-        security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
-
-        try:
-            # Add the security repo without fetching it
-            git_remote_update(repo_dir, "security", security_url, fetch=False)
-        except SystemExit:
-            cwarn('Could not add remote "security" {}'.format(security_url))
+        # Configure the git repo. Do this every time in case things have
+        # changed, for example when a release transitions to ESM.
+        git_configure(repo_dir, repo.url, pkg.type, codename)
 
     # Checkout the specified branches.
     for handle_tree in handle_set.trees:
