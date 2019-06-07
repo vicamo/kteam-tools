@@ -172,7 +172,11 @@ class WorkflowBug():
         s.abi = master_bug.abi
 
     def update_title(s, suffix='-proposed tracker'):
-        title = "{}/{}: {} {}".format(s.series, s.name, s.version, suffix)
+        if s.version is None:
+            version = '<version to be filled>'
+        else:
+            version = s.version
+        title = "{}/{}: {} {}".format(s.series, s.name, version, suffix)
         if s.title != title:
             s.lpbug.title = title
             s.title = title
