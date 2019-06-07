@@ -59,7 +59,10 @@ class Workflow(TaskHandler):
                                    'snap-release-to-edge',
                                    'snap-release-to-beta')
                     ):
-                    (task_section, task_text) = (2, 'Promote to Proposed')
+                    if taskname.startswith('snap-'):
+                        (task_section, task_text) = (2, 'Promote to Edge')
+                    else:
+                        (task_section, task_text) = (2, 'Promote to Proposed')
 
                 # 3: Testing
                 elif (taskname.endswith('-testing') or
