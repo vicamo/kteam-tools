@@ -19,6 +19,7 @@ do
             -e 'error: code model kernel does not support PIC mode' \
             -e "tail: cannot open 'debian/changelog' for reading: No such file or directory" \
             -e ": chroot not found (" \
+            -e "fatal: empty ident name (for" \
         "$log" | head -1
     )
     case "$which" in
@@ -48,6 +49,8 @@ do
         which='did not clean' ;;
     *": chroot not found ("*)
         which='broken chroots' ;;
+    *"fatal: empty ident name (for"*)
+        which='broken git configuration' ;;
     esac
 #    if [ "$count" -eq 0 ]; then
 #        count=$( grep -c "dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead" "$log" )

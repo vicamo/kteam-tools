@@ -19,6 +19,7 @@ do
             -e "No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop." \
             -e "II: dkms-build downloading nvidia-390" \
             -e ": chroot not found (" \
+            -e "fatal: empty ident name (for" \
         "$log" | head -1
     )
     case "$which" in
@@ -46,6 +47,8 @@ do
         which='nvidia dkms enabled' ;;
     *": chroot not found ("*)
         which='broken chroots' ;;
+    *"fatal: empty ident name (for"*)
+        which='broken git configuration' ;;
     esac
 
     # Check for unsigned and no modules.
