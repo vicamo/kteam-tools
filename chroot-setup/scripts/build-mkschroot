@@ -180,6 +180,11 @@ bionic|cosmic|disco|eoan)
 	ADDPKG="$ADDPKG default-jdk-headless java-common"
 	;;
 esac
+case "$SUITE" in
+bionic|cosmic|disco)
+	ADDPKG="$ADDPKG dkms wget"
+	;;
+esac
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
