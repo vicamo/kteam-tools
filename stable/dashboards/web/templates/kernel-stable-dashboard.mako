@@ -169,7 +169,7 @@ def __status_bites(bug):
 
         # If we are post testing but not releasable report this as something we cannot
         # see is causing us to hold.
-        if len(retval_tested) == 0:
+        if testing_complete and len(retval_tested) == 0:
             retval_tested.append(__coloured('Not Releaseable', 'red'))
 
         # Insert the testing status now we have accumulated the underlying reasons.
