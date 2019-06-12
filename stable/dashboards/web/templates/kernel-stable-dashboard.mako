@@ -270,11 +270,17 @@ def __status_bites(bug):
 <%
 import re
 
+cycles = {}
 cadence = {}
 for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
     b = data['workflow']['bug-collections']['kernel-sru-workflow']['bugs'][bid]
 
     try:
+        cycle = 'unknown'
+        for tag in b['tags']:
+            if tag.startswith('kernel-sru-cycle-'):
+                cycle = (tag.replace('kernel-sru-cycle-', '').split('-') + [''])[0]
+
         title = b['title']
         package, other = title.split(':', 1)
         if '/' in package:
@@ -284,8 +290,11 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         # XXX: extract snap-name:
         package = b['properties'].get('snap-name', package)
     except:
+        cycle = 'unknown'
         package = 'unknown'
         version = 'unknown'
+
+    cycles[cycle] = True
 
     if 'kernel-stable-phase' not in b['properties']:
         phase = "Unknown (kernel-stable-phase properites missing)"
@@ -296,10 +305,13 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         sn = 'unknown'
     else:
         sn = b['series name']
-    if sn not in cadence:
-        cadence[sn] = {}
-    if package not in cadence[sn]:
-        cadence[sn][package] = []
+
+    if cycle not in cadence:
+        cadence[cycle] = {}
+    if sn not in cadence[cycle]:
+        cadence[cycle][sn] = {}
+    if package not in cadence[cycle][sn]:
+        cadence[cycle][sn][package] = []
 
     status_list = __status_bites(b)
     for status in status_list:
@@ -321,7 +333,7 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         if 'vt:' in status:
             status = re.sub(r'(vt: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html', status)
 
-        cadence[sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
+        cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
@@ -355,31 +367,44 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
                                     <%
                                         releases = data['releases']
                                         releases['00.00'] = 'unknown'
+                                        cycle_first = True
                                     %>
-                                    % for rls in sorted(releases, reverse=True):
-                                        <%
-                                            codename = releases[rls].capitalize()
-                                        %>
-                                        % if releases[rls] in cadence:
-                                        <tr>
-                                            <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
-                                        </tr>
-                                            % for pkg in sorted(cadence[releases[rls]]):
-                                                % for bug in cadence[releases[rls]][pkg]:
-                                                    <tr style="line-height: 100%">
-                                                        <td>&nbsp;</td>
-                                                        <%
-                                                            url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
-                                                        %>
-                                                        <td width="120" align="right" style="color: green"><a href="${url}">${bug['version']}</a></td>
-                                                        <td style="color: green"><a href="${url}">${pkg}</a></td>
-                                                        <td>${bug['phase']}</td>
-                                                    </tr>
-                                                % endfor
-                                            % endfor
+                                    % for cycle in sorted(cycles):
+                                        % if cycle_first is False:
+                                            <tr>
+                                                <td colspan="5">&nbsp;</td>
+                                            </tr>
                                         % endif
+                                        <tr>
+                                            <td colspan="5" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
+                                        </tr>
+                                        <%
+                                            cycle_first = False
+                                        %>
+                                        % for rls in sorted(releases, reverse=True):
+                                            <%
+                                                codename = releases[rls].capitalize()
+                                            %>
+                                            % if releases[rls] in cadence[cycle]:
+                                            <tr>
+                                                <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
+                                            </tr>
+                                                % for pkg in sorted(cadence[cycle][releases[rls]]):
+                                                    % for bug in cadence[cycle][releases[rls]][pkg]:
+                                                        <tr style="line-height: 100%">
+                                                            <td>&nbsp;</td>
+                                                            <%
+                                                                url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
+                                                            %>
+                                                            <td width="120" align="right" style="color: green"><a href="${url}">${bug['version']}</a></td>
+                                                            <td style="color: green"><a href="${url}">${pkg}</a></td>
+                                                            <td>${bug['phase']}</td>
+                                                        </tr>
+                                                    % endfor
+                                                % endfor
+                                            % endif
+                                        % endfor
                                     % endfor
-
                                     </table>
                                 </td>
                                 <!--
