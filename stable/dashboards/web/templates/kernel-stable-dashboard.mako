@@ -288,7 +288,8 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
         other = other.strip()
         version, other = other.split(' ', 1)
         # XXX: extract snap-name:
-        package = b['properties'].get('snap-name', package)
+        if 'snap-name' in b['properties']:
+            package = package + ' / ' + b['properties']['snap-name']
     except:
         cycle = 'unknown'
         package = 'unknown'
