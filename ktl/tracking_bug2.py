@@ -549,32 +549,41 @@ class TrackingBug(object):
         remove any/all existing tags.
         '''
         center(s.__class__.__name__ + '.tags_reset')
-        
-        # First remove all tags
-        for itag in s.__bug.tags:
-            s.__bug.tags.remove(itag)
+        tags_to_set = []
 
         # Target series tag
         if s._target_series is not None:
-            itag = s._target_series
-            s.__bug.tags.append(itag)
+            tags_to_set.append(s._target_series)
 
         # Query the workflow for the base set of tags
         for itag in s.__wf.initial_tags(s._target_package, s.isdev):
             if itag == s.__tbd.tag_names['default']['valid'] and testing:
                 itag = s.__tbd.tag_names['testing']['valid']
-            s.__bug.tags.append(itag)
+            tags_to_set.append(itag)
 
         # If there is a cycle set, also create the cycle tag.
         if s._cycle is not None:
             itag  = s.__tbd.tag_names['default']['cycle'] + s._cycle
             itag += '-' + str(s._spin_nr)
-            s.__bug.tags.append(itag)
+            tags_to_set.append(itag)
 
         # If master bug ID is set ...
         if s._master_bug_id is not None:
             itag  = s.__tbd.tag_names[tagset_key][s.__type]
             itab += str(s._master_bug_id)
+            tags_to_set.append(itag)
+
+        # Now run through all existing tags and remove all those which
+        # are not in the set to be added, but if they are, drop them
+        # from the set to be added instead.
+        for itag in s.__bug.tags:
+            if itag in tags_to_set:
+                tags_to_set.remove(itag)
+            else:
+                s.__bug.tags.remove(itag)
+
+        # And finally add those which remain.
+        for itag in tags_to_set:
             s.__bug.tags.append(itag)
 
         cleave(s.__class__.__name__ + '.tags_reset')
@@ -1338,6 +1347,10 @@ class TrackingBugs():
 
         # Add the series marker.
         tags = lp_bug.tags
+        # This tag prevents the Ubuntu kernel bot from asking for logs.
+        # We want that to be set as soon as possible (or at least before
+        # there is a linux package task.
+        tags.append('kernel-release-tracking-bug')
         tags.append(series_name)
         lp_bug.tags = tags
         lp_bug.lp_save()
