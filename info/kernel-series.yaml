@@ -154,6 +154,8 @@
     supported: false
     routing-table: &routing-table
         default: &routing-table-default
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
@@ -175,6 +177,8 @@
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
         esm:
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
             build:
