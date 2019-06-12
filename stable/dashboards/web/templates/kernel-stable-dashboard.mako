@@ -33,14 +33,9 @@ __testing_status_colors = {
 
 def __task_status(bug, task_name):
     try:
-        for t in bug['tasks']:
-            if t['target-name'] == '%s/%s' % ('kernel-sru-workflow', task_name):
-                return t['status']
-            if 'kernel-development-workflow' in t['target-name']:
-                if t['target-name'] == '%s/%s' % ('kernel-development-workflow', task_name):
-                    return t['status']
+        return bug['task'][task_name].get('status','missing %s' % task_name)
     except KeyError:
-        return 'missing %s' % task_name
+        pass
     return 'n/a'
 
 %>
@@ -48,9 +43,7 @@ def __task_status(bug, task_name):
 
 def __assignee(bug, task_name):
     try:
-        for t in bug['tasks']:
-            if t['target-name'] == '%s/%s' % ('kernel-sru-workflow', task_name):
-                return t['assignee']
+        return bug['task'][task_name]['assignee']
     except KeyError:
         return 'unknown'
     return
@@ -272,24 +265,19 @@ import re
 
 cycles = {}
 cadence = {}
-for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
-    b = data['workflow']['bug-collections']['kernel-sru-workflow']['bugs'][bid]
+for bid in data['swm']:
+    b = data['swm'][bid]
 
     try:
         cycle = 'unknown'
-        for tag in b['tags']:
-            if tag.startswith('kernel-sru-cycle-'):
-                cycle = (tag.replace('kernel-sru-cycle-', '').split('-') + [''])[0]
+        if 'cycle' in b:
+            cycle = (b['cycle'].split('-') + [''])[0]
 
-        title = b['title']
-        package, other = title.split(':', 1)
-        if '/' in package:
-            series, package = package.split('/', 1)
-        other = other.strip()
-        version, other = other.split(' ', 1)
-        # XXX: extract snap-name:
-        if 'snap-name' in b['properties']:
-            package = package + ' / ' + b['properties']['snap-name']
+        package = b.get('source', 'unknown')
+        version = b.get('version', '-')
+
+        if 'snap-name' in b:
+            package = package + ' / ' + b['snap-name']
     except:
         cycle = 'unknown'
         package = 'unknown'
@@ -297,15 +285,9 @@ for bid in data['workflow']['bug-collections']['kernel-sru-workflow']['bugs']:
 
     cycles[cycle] = True
 
-    if 'kernel-stable-phase' not in b['properties']:
-        phase = "Unknown (kernel-stable-phase properites missing)"
-    else:
-        phase = b['properties']['kernel-stable-phase']
+    phase = b.get('phase', 'unknown (no phase set)')
 
-    if b['series name'] == "":
-        sn = 'unknown'
-    else:
-        sn = b['series name']
+    sn = b.get('series', 'unknown')
 
     if cycle not in cadence:
         cadence[cycle] = {}

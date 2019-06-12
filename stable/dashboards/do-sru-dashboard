@@ -1,4 +1,6 @@
-curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
+curl -L https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml | \
+    python -c 'import json, sys, yaml ; y=yaml.safe_load(sys.stdin.read()) ; print(json.dumps(y))' >swm-status.json
+#curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
 ./gather-releases > supported-releases.json
 ./generate-dashboard kernel-stable-dashboard.rc > kernel-stable-dashboard.tmp && mv kernel-stable-dashboard.tmp web/kernel-stable-dashboard.html
 
