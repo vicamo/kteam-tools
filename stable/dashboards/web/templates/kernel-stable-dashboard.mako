@@ -69,7 +69,7 @@ def __status_bites(bug):
         if proposed_status == 'Confirmed':
             retval = __coloured('Waiting to be copied to -proposed', 'red')
             break
-        elif proposed_status == ('In Progress', 'Fix Committed'):
+        elif proposed_status in ('In Progress', 'Fix Committed'):
             retval = __coloured('Publishing to -proposed', '#3455db')
             break
 
