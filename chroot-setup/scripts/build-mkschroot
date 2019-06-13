@@ -176,7 +176,7 @@ esac
 #            the official archive packages as they are not yet
 #            included in the apt-get build-dep instantiation.
 case "$SUITE" in
-bionic|cosmic|disco|eoan)
+xenial|bionic|cosmic|disco|eoan)
 	ADDPKG="$ADDPKG default-jdk-headless java-common"
 	;;
 esac
