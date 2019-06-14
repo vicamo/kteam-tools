@@ -90,7 +90,7 @@ fi
 
 dsc=${src_pkg}_${version}.dsc
 
-# Download the dsc file from a private PPA specified in a .getabis file
+# Download the source package from a private PPA specified in a .getabis file
 if ! [ -e "${dsc}" ] ; then
 	variant=${src_pkg#linux-}
 	variant=${variant#meta-}
@@ -107,22 +107,15 @@ if ! [ -e "${dsc}" ] ; then
 	fi
 
 	while IFS= read -r url ; do
-		wget -O "${dsc}" "${url}"/pool/main/l/"${src_pkg}"/"${dsc}" || true
+		dget -d "${url}"/pool/main/l/"${src_pkg}"/"${dsc}" || true
 		if [ -e "${dsc}" ] ; then
 			break
 		fi
 	done < <(grep '^http' "${getabis}")
 fi
 
-# Bail out if we failed to download the dsc file
+# Bail out if we failed to download the source package
 if ! [ -e "${dsc}" ] ; then
-	echo "Failed to download ${dsc}" >&2
+	echo "Failed to download the source package" >&2
 	exit 1
 fi
-
-# Download the files listed in the dsc file
-while IFS= read -r file ; do
-	if ! [ -e "${file}" ] ; then
-		wget -O "${file}" "${url}"/pool/main/l/"${src_pkg}"/"${file}"
-	fi
-done < <(dcmd "${dsc}")
