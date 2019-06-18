@@ -440,7 +440,7 @@ cranky build-sources
 ### Reviewing - `cranky review`
 <!--cheatsheet-->
 ```
-cranky review
+cranky review *.changes
 ```
 <!--/cheatsheet-->
 
