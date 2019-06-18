@@ -1,0 +1,6 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+set -o pipefail
+"$here/swm-trello-sync" "$@" 2>&1 | tee -a "$HOME/logs/swm-trello-sync.log"

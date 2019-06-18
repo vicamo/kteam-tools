@@ -1,0 +1,102 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+tasks=$(mktemp /tmp/sru-sync--tasks.XXXXXX)
+lists=$(mktemp /tmp/sru-sync--lists.XXXXXX)
+
+"$here/swm-ls" --tasks >"$tasks"
+
+while read junk junk junk junk cycle series package target version task state
+do
+	case "$task" in
+	prepare-package*)	task='prepare-package' ;;
+	snap-release-to-*)	;;
+	*)			continue ;;
+	esac
+	[ "$target" = '-' ] && target="$package"
+	echo "$cycle/$series/$target/$task:$state"
+done <"$tasks" | awk -F: '
+	{ if ($1 in states) { states[$1] = states[$1] ":" $2} else { states[$1] = $2 } }
+	END { for (task in states) { print task " " states[task]; } }
+' | \
+while read task states
+do
+	# Note the list of valid trello lists is those in which it is
+	# acceptable to be found, the _last_ one is where we will move
+	# it to if it is not in one of those lists.
+	#echo "task<$task> states<$states>" 1>&2
+	case ":$states:" in
+	*:Confirmed:*)				list='In Progress|For Review|Review|On Deck' ;;
+	*:In\ Progress:*|*:Fix\ Committed:*)	list='For Review|Review|In Progress' ;;
+	*:New:*)				list='In Progress|Backlog' ;;
+	*)					list='Done' ;;
+	esac
+
+	echo "$task $list"
+done >"$lists"
+
+while read junk junk junk junk cycle series package target version task state
+do
+	base_cycle="${cycle%-[0-9]*}"
+	echo "$base_cycle"
+done <"$tasks" | sort -u | \
+while read cycle
+do
+	case "$cycle" in
+	d*)		continue ;;
+	1962.11.02)	continue ;;
+	esac
+	so-trello board-cards --board "SRU Cycle $cycle" --format "$cycle	{list[name]}	{name}"
+done | \
+while IFS='	' read base_cycle list name
+do
+	board="SRU Cycle $base_cycle"
+
+	case "$list" in
+	Blocked)					continue ;;
+	Backlog|On\ Deck|In\ Progress|For\ Review)	;;
+	Done|Done\ *)					list='Done' ;;
+	# Ignore cards in other lists, we have no idea of their meaning.
+	*)						continue ;
+	esac
+
+	key=$(echo "$name" | sed \
+		-e 's@^Crank (#[0-9]*) \([^ ]*\) kernel$@\1/prepare-package@' \
+		-e 's@^Produce (#[0-9]*) \([^ ]*\) snap$@\1/snap-release-to-edge@' \
+		-e 's@^Release (#[0-9]*) \([^ ]*\) snap to \([^ ]*\) channel$@\1/snap-release-to-\2@' \
+		)
+	if [ "$name" = "$key" ]; then
+		continue
+	fi
+
+	# Extract the cycle number.
+	case "$name" in
+	*'#'*)		spin=$(echo "$name" | sed -e 's/.*#\([0-9]*\).*/\1/') ;;
+	*)		spin='1' ;; # XXX: handle old cards with no (#1).
+	esac
+	cycle="$base_cycle-$spin"
+
+	list_to=$(awk '($1 == "'"$cycle/$key"'") { sub("[^ ]* ",""); print }' <"$lists")
+	#echo "# cycle<$cycle> key<$key> board<$board> card<$name> from<$list> to<$list_to>"
+	if [ "$list_to" = '' ]; then
+		continue
+	fi
+	(
+		ok=0
+		IFS='|'
+		for list_to in $list_to
+		do
+			[ "$list" = "$list_to" ] && ok=1
+		done
+			
+		if [ "$ok" -eq 0 ]; then
+			echo "so-trello card-update --board '$board' --card '$name' --update-board '$board' --update-list '$list_to' --update-position top # $list -> $list_to"
+			so-trello card-update --board "$board" --card "$name" --update-board "$board" --update-list "$list_to" --update-position top
+		fi
+	)
+done
+
+rm -f "$tasks" "$lists"
+
+date 1>&2

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+PATH="$HOME/bin:$PATH"
+exec "$here/../sbin/oops-run" swm-trello-sync-cron "$here/swm-trello-sync-run"
