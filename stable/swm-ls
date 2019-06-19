@@ -76,7 +76,7 @@ if __name__ == '__main__':
                     'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
                     'cycle':            bug_data.get('cycle', '-'),
                     'series':           bug_data.get('series', '-'),
-                    'package':          bug_data.get('source', '-'),
+                    'source':           bug_data.get('source', '-'),
                     'target':           bug_data['task'][task].get('target', '-'),
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task,
@@ -91,7 +91,7 @@ if __name__ == '__main__':
                     'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
                     'cycle':            bug_data.get('cycle', '-'),
                     'series':           bug_data.get('series', '-'),
-                    'package':          bug_data.get('package', '-'),
+                    'source':           bug_data.get('source', '-'),
                     'target':           '-',
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task,
@@ -105,7 +105,7 @@ if __name__ == '__main__':
                 'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
                 'cycle':            bug_data.get('cycle', '-'),
                 'series':           bug_data.get('series', '-'),
-                'package':          bug_data.get('package', '-'),
+                'source':           bug_data.get('source', '-'),
                 'target':           '-',
                 'version':          bug_data.get('version', '--not-specified--'),
                 'phase':            'overall',
@@ -115,11 +115,11 @@ if __name__ == '__main__':
 
     results.sort(key=lambda x: x[0])
 
-    #fmt = "{bugid:13} {flags:4}  {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:25} {phase_status:20}"
+    #fmt = "{bugid:13} {flags:4}  {bugid_parent:13} {cycle:15} {series:15} {source:20} {version:25}  {phase:25} {phase_status:20}"
     if args.tasks is True:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {package:20} {target:20} {version:25}  {phase:28} {phase_status:20}"
+        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {source:20} {target:20} {version:25}  {phase:28} {phase_status:20}"
     else:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {package:20} {version:25}  {phase:28} {phase_status:20}"
+        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {source:20} {version:25}  {phase:28} {phase_status:20}"
     sort_prev = None
     count = 0
     for (sort, entry) in results:
