@@ -15,7 +15,7 @@ import yaml
 # SwmStatus
 #
 class SwmStatus:
-    _url = 'http://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
+    _url = 'https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
 
     def __init__(self, url=None, data=None, use_local=False):
         if data is None and url is None:
