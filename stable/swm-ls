@@ -51,6 +51,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--tasks', help='Display task information',
         action='store_true', default=False)
+    parser.add_argument('--separate-target', help='Display full target information',
+        action='store_true', default=False)
     args = parser.parse_args()
 
     # Ask for nothing, get reasons only.
@@ -115,7 +117,7 @@ if __name__ == '__main__':
 
     results.sort(key=lambda x: x[0])
 
-    if args.tasks is True:
+    if args.separate_target:
         fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {source:20} {target:20} {version:25}  {phase:28} {phase_status:20}"
     else:
         fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {full_target:35} {version:25}  {phase:28} {phase_status:20}"
