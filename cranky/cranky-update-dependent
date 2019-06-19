@@ -1,0 +1,103 @@
+#!/bin/bash -eu
+#
+# Update a dependent package (-meta, -signed, ...)
+#
+
+function usage()
+{
+	cat <<EOF
+Usage: cranky update-dependent [-h]
+
+Update a dependent package (-meta, -signed, ...).
+
+This script checks that there is an 'update-version' script in the current
+directory and executes it. It parses the output of 'update-version' to extract
+the 'git commit' line and runs that command to commit the changes.
+
+Optional arguments:
+  -h, --help  Show this help text and exit.
+EOF
+}
+
+while [ $# -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			exit
+			;;
+		*)
+			echo "Unexpected argument: ${1}" >&2
+			exit 1
+			;;
+	esac
+	shift
+done
+
+if ! [ -d debian ] || ! [ -f update-version ] ; then
+	echo "This is not a dependent kernel package repo" >&2
+	exit 1
+fi
+
+# Sanity check: The repo must be clean
+if [ -n "$(git status --porcelain)" ] ; then
+	echo "Repo is not clean" >&2
+	exit 1
+fi
+
+# Get the path to the main package
+main_path=$(cranky shell-helper tree-main-path .)
+if [ -z "${main_path}" ] ; then
+	echo "Main kernel source path not found" >&2
+	exit 1
+fi
+
+# Get main package details (distro, version, ABI, ...)
+# shellcheck disable=SC1090
+. "${main_path}"/debian/debian.env
+main_changelog="${main_path}/${DEBIAN}"/changelog
+main_distro=$(dpkg-parsechangelog -l "${main_changelog}" -S Distribution)
+main_version=$(dpkg-parsechangelog -l "${main_changelog}" -S Version)
+main_abi=${main_version%~*}
+main_abi=${main_abi%.*}
+
+# Get the dependent package details
+dep_distro=$(dpkg-parsechangelog -S Distribution)
+dep_version=$(dpkg-parsechangelog -S Version)
+dep_abi=${dep_version%~*}
+dep_abi=${dep_abi%.*}
+
+# Replace last '.' with '-' in -meta package ABI version
+# shellcheck disable=SC2001
+dep_abi_dash=$(echo "${dep_abi}" | sed -e 's,\.\([0-9]*\)$,-\1,')
+
+# Sanity check: The distros must match
+if [ "${main_distro}" != "${dep_distro}" ] ; then
+	echo "Incorrect main package distro: ${main_distro} (!= ${dep_distro})" >&2
+	exit 1
+fi
+
+# Sanity check: The main package ABI version must be higher
+if dpkg --compare-versions "${main_abi}" le "${dep_abi_dash}" ; then
+	echo "Main package ABI version is not higher: ${main_abi} (<= ${dep_abi})" >&2
+	exit 1
+fi
+
+# Update the changelog and capture stdout
+readarray -t stdout < <(./update-version "${main_path}")
+
+# Cycle through stdout, print each line and look for the 'git commit' line
+commit_cmd=
+for line in "${stdout[@]}" ; do
+	echo "${line}"
+	if [ "${line#git commit}" != "${line}" ] ; then
+		commit_cmd=${line}
+	fi
+done
+
+if [ -z "${commit_cmd}" ] ; then
+	echo "Commit line not found in output of ./update-version" >&2
+	exit 1
+fi
+
+# Commit the changelog
+sh -c "${commit_cmd}"
