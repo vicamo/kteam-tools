@@ -5,7 +5,7 @@ here=$(dirname "$(readlink -f "${0}")")
 tasks=$(mktemp /tmp/sru-sync--tasks.XXXXXX)
 lists=$(mktemp /tmp/sru-sync--lists.XXXXXX)
 
-"$here/swm-ls" --tasks >"$tasks"
+"$here/swm-ls" --separate-target --tasks >"$tasks"
 
 while read junk junk junk junk cycle series package target version task state
 do
