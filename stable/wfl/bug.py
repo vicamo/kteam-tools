@@ -424,6 +424,11 @@ class WorkflowBug():
             status['package'] = s.name # XXX: legacy
             if s.version is not None:
                 status['version'] = s.version
+            # Identify the target of this bug.
+            for target in (s.debs, s.snap):
+                if target is not None:
+                    status['target'] = target.name
+                    break
         except:
             pass
 
