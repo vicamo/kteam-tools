@@ -184,7 +184,22 @@ class WorkflowManager():
         retval = {}
         cinfo('Starting run ' + str(datetime.now()))
         if s.args.bugs:
+            bugs = []
             for bugid in s.args.bugs:
+                if bugid.isdigit():
+                    bugs.append(bugid)
+                elif ':' in bugid:
+                    for search_id, search_data in s.status_start.items():
+                        search_key = "{}:{}".format(
+                            search_data.get('series', '-'),
+                            search_data.get('target', '-'))
+                        if bugid == search_key:
+                            bugs.append(search_id)
+                else:
+                    cerror('    {}: bugid format unknown'.format(bugid), 'red')
+                    continue
+
+            for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
                 if lpbug.duplicate_of is not None:
                     cinfo('    LP: #%s - %s (DUPLICATE)' % (lpbug.id, lpbug.title), 'magenta')
