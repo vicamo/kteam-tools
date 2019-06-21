@@ -28,6 +28,14 @@ def change_directory(new_dir):
 
 
 class HandleCore:
+    def __init__(self, series=None, package=None, source=None, config=None, ks=None):
+        self.series = series
+        self.package = package
+        self.source = source
+        self.config = Config() if config is None else config
+        self.ks = KernelSeries() if ks is None else ks
+        self.name = "" if series is None or package is None else "{}:{}".format(series.codename, package.name)
+
     def encode_directory(self, package):
         base_path = self.config.lookup(['package-path', 'base-path'], '')
         which = package.type if package.type else 'main'
@@ -93,13 +101,7 @@ class HandleCore:
 
 class HandleTree(HandleCore):
     def __init__(self, series, package, directory=None, validate=True, config=None, ks=None):
-        if ks is None:
-            ks = KernelSeries()
-        self.ks = ks
-
-        if config is None:
-            config = Config()
-        self.config = config
+        super().__init__(series=series, package=package, config=config, ks=ks)
 
         if directory is None:
             directory = self.encode_directory(package)
@@ -111,10 +113,7 @@ class HandleTree(HandleCore):
                 raise HandleError("{}: tree inconsistent, is for {}:{}".format(
                     directory, series_name, package_name))
 
-        self.series = series
-        self.package = package
         self.directory = directory
-        self.name = "{}:{}".format(self.series.codename, self.package.name)
 
     @property
     def remote(self):
@@ -157,17 +156,7 @@ class HandleTree(HandleCore):
 
 class HandleSet(HandleCore):
     def __init__(self, handle, series, source, validate=True, trees=None, sample=None, ks=None, config=None):
-        if ks is None:
-            ks = KernelSeries()
-        self.ks = ks
-
-        if config is None:
-            config = Config()
-        self.config = config
-
-        self.series = series
-        self.source = source
-        self.name = "{}:{}".format(self.series.codename, self.source.name)
+        super().__init__(series=series, source=source, config=config, ks=ks)
 
         if trees:
             self.trees = trees
@@ -205,13 +194,7 @@ class HandleSet(HandleCore):
 
 class Handle(HandleCore):
     def __init__(self, config=None, ks=None):
-        if ks is None:
-            ks = KernelSeries()
-        self.ks = ks
-
-        if config is None:
-            config = Config()
-        self.config = config
+        super().__init__(config=config, ks=ks)
 
     def lookup_package(self, package, validate=True):
         return HandleTree(package.series, package, validate=validate, ks=self.ks, config=self.config)
