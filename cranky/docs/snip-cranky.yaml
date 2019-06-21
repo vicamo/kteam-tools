@@ -6,8 +6,13 @@
 # using commandline arguments. Commandline arguments take precedence over
 # options specified in this file.
 #
-# Juerg Haefliger <juergh@canonical.com>
+
+# Absolute base path for all the bits managed by the cranky tools. The repos,
+# logs, ...
 #
+# All paths below are relative to this 'base-path':
+#
+base-path: '~/canonical/kernel/ubuntu'
 
 # cranky-checkout
 #checkout:
@@ -27,8 +32,8 @@
 
 # Path to source code directories
 #
-# Where to find the git repos for the different packages. The paths can be
-# specified per package type (main, meta, signed) or via a 'default' entry
+# The relative paths to the git repos of the different packages. The paths can
+# be specified per package type (main, meta, signed) or via a 'default' entry
 # which is used as a fallback. The following formatter keywords are
 # recognized:
 #   {series}:      The distro series codename (bionic, ...)
@@ -42,5 +47,4 @@
 #  $HOME/canonical/kernel/ubuntu/<ubuntu_release>/<kernel_version>
 #
 package-path:
-  base-path: '~/canonical/kernel/ubuntu'
   default: '{series}/linux{type_suffix}'

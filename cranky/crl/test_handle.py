@@ -55,7 +55,7 @@ class TestHandle(unittest.TestCase):
         default:                    '{series}/{package}'
     """
     basepath_config_yaml = path_config_yaml + """
-        base-path:                  '/src'
+    base-path:                      '/src'
     """
 
     def assertEqualTrees(self, expected, trees_raw):

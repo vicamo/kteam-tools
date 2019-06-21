@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import yaml
 
 
@@ -28,6 +29,17 @@ class Config:
             data = {}
 
         self.config = data
+
+        # Warn if old/deprecated config options are found
+        warn = False
+        if self.lookup("package-path.base-path", None) is not None:
+            warn = True
+            print("Deprecated 'package-path.base-path' option found in "
+                  ".cranky config file.", file=sys.stderr)
+            print("You should rename it to 'base-path'.", file=sys.stderr)
+        if warn:
+            print("Check the config example in kteam-tools/cranky/docs/"
+                  "snip-cranky.yaml for more information.", file=sys.stderr)
 
     def lookup(self, element, default=None):
         config = self.config

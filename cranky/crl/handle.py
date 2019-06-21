@@ -36,8 +36,11 @@ class HandleCore:
         self.ks = KernelSeries() if ks is None else ks
         self.name = "" if series is None or package is None else "{}:{}".format(series.codename, package.name)
 
+        # TODO: Remove lookup of deprecated option package-path.base-path
+        self.base_path = os.path.expanduser(self.config.lookup('base-path',
+                                self.config.lookup('package-path.base-path', '')))   # noqa: E128
+
     def encode_directory(self, package):
-        base_path = self.config.lookup('package-path.base-path', '')
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
 
@@ -63,7 +66,7 @@ class HandleCore:
                                            type=which,
                                            type_suffix=which_suffix)
 
-        return os.path.expanduser(os.path.join(base_path, package_path))
+        return os.path.join(self.base_path, package_path)
 
     def set_minimal_suffixes(self, source):
         # Built a set of directory names for all of the packages in the source.
