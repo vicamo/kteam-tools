@@ -60,10 +60,6 @@ def rmadison_lp(handle_set, show_all=False):
             dest = route[0]
             ppa, pocket = route[1][0]
 
-            if dest == "build" or dest.endswith("-build"):
-                # This is a builder PPA, not a publishing PPA, so skip it
-                continue
-
             if ((dest not in ("release", "security", "updates", "proposed") and
                  not show_all)):
                 # This is a non-standard PPA and we didn't ask for it, so
