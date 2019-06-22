@@ -450,7 +450,7 @@ class GenWorkflowReport():
             for b in self.combined:
                 bug = self.combined[b]
                 title = bug['title']
-                package, other = title.split(':')[:2]
+                package = title.split(':')[0]
                 if '/' in package:
                     (_, package) = package.split('/')
                 if bug['series name'] == ss.codename:
