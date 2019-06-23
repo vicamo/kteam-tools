@@ -182,7 +182,7 @@ class HandleSet(HandleCore):
                 if package_entry == sample.package:
                     continue
                 directory = prefix + add[package_entry.type if package_entry.type else 'main']
-                self.trees.append(HandleTree(series, package_entry, directory,
+                self.trees.append(HandleTree(series, package_entry, directory=directory,
                                              validate=validate, ks=self.ks, config=self.config))
 
         else:
@@ -233,7 +233,7 @@ class Handle(HandleCore):
         if package is None:
             raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
-        return HandleTree(series, package, directory, validate=validate, ks=self.ks, config=self.config)
+        return HandleTree(series, package, directory=directory, validate=validate, ks=self.ks, config=self.config)
 
     def lookup_set(self, handle, validate=True):
         series = None
