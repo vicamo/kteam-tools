@@ -199,6 +199,17 @@ class WorkflowManager():
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
                     continue
 
+            if s.args.dependants:
+                bugs_new = set(bugs)
+                bugs_new_len = 0
+                while bugs_new_len != len(bugs_new):
+                    bugs_new_len = len(bugs_new)
+                    changed = False
+                    for srch_bugid, srch_data in s.status_start.items():
+                        if str(srch_data.get('master-bug')) in bugs_new:
+                            bugs_new.add(srch_bugid)
+                bugs = list(bugs_new)
+
             for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
                 if lpbug.duplicate_of is not None:
