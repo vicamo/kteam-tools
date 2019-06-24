@@ -64,7 +64,7 @@ do
 	key=$(echo "$name" | sed \
 		-e 's@^Crank (#[0-9]*) \([^ ]*\) kernel$@\1/prepare-package@' \
 		-e 's@^Produce (#[0-9]*) \([^ ]*\) snap$@\1/snap-release-to-edge@' \
-		-e 's@^Release (#[0-9]*) \([^ ]*\) snap to \([^ ]*\) channel$@\1/snap-release-to-\2@' \
+		-e 's@^Release (#[0-9]*) \([^ ]*\) snap to \([^ ]*/\|\)\([^ ]*\) channel$@\1/snap-release-to-\3@' \
 		)
 	if [ "$name" = "$key" ]; then
 		continue
