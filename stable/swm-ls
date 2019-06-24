@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
                 'cycle':            bug_data.get('cycle', '-'),
                 'series':           bug_data.get('series', '-'),
-                'package':          bug_data.get('package', '-'),
+                'source':           bug_data.get('source', '-'),
                 'target':           bug_data.get('target', '-'),
                 'version':          bug_data.get('version', '--not-specified--'),
                 'phase':            'overall',
