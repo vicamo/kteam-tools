@@ -133,8 +133,8 @@ def shank_all(bot, trigger):
         #
         bot.say(trigger.nick + ', roger, roger')
         for bug in what.split():
-            if not bug.isdigit():
-                bot.say(trigger.nick + ', ' + '%s is not a vaid bug id' % bug)
+            if not bug.isdigit() and not ':' in bug:
+                bot.say(trigger.nick + ', ' + '%s is not a vaid bug id or handle' % bug)
                 continue
             cmd = '"%s/sbin/oops-run" hero-shank "%s/stable/swm-hero" "%s"' % (bot.config.wfm.kteam_root, bot.config.wfm.kteam_root, bug)
             (rc, output) = sh(cmd, quiet=True)
