@@ -200,7 +200,6 @@ class Handle(HandleCore):
         return HandleTree(package.series, package, validate=validate, ks=self.ks, config=self.config)
 
     def lookup_tree(self, handle, validate=True):
-        series = None
         package = None
         directory = None
 
@@ -236,9 +235,6 @@ class Handle(HandleCore):
         return HandleTree(series, package, directory=directory, validate=validate, ks=self.ks, config=self.config)
 
     def lookup_set(self, handle, validate=True):
-        series = None
-        source = None
-
         # A directory passed as a handle.
         if os.path.exists(handle):
             tree = self.lookup_tree(handle, validate=validate)
