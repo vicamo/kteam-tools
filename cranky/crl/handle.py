@@ -37,7 +37,7 @@ class HandleCore:
         self.name = "" if series is None or package is None else "{}:{}".format(series.codename, package.name)
 
     def encode_directory(self, package):
-        base_path = self.config.lookup(['package-path', 'base-path'], '')
+        base_path = self.config.lookup('package-path.base-path', '')
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
 
@@ -51,7 +51,7 @@ class HandleCore:
                              package=package.name,
                              type=which)
 
-            package_path = self.config.lookup(['package-path', key])
+            package_path = self.config.lookup('package-path.' + key)
             if package_path:
                 break
         if package_path is None:

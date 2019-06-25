@@ -35,39 +35,18 @@ class TestConfig(unittest.TestCase):
         data = config.lookup('paths.default')
         self.assertEqual(data, 'something')
 
-    def test_config_data_list_simple2_absent(self):
+    def test_config_data_simple2_absent(self):
         config = Config(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
         data = config.lookup('simple2')
         self.assertIsNone(data)
 
-    def test_config_data_list_simple_present(self):
-        config = Config(data=self.data_yaml)
-        self.assertNotEqual(config, None)
-
-        data = config.lookup(['simple'])
-        self.assertEqual(data, 'data')
-
-    def test_config_data_list_paths_default_present(self):
-        config = Config(data=self.data_yaml)
-        self.assertNotEqual(config, None)
-
-        data = config.lookup(['paths', 'default'])
-        self.assertEqual(data, 'something')
-
-    def test_config_data_list_simple2_absent(self):
-        config = Config(data=self.data_yaml)
-        self.assertNotEqual(config, None)
-
-        data = config.lookup(['simple2'])
-        self.assertIsNone(data)
-
     def test_config_data_dict_value_error(self):
         config = Config(data=self.data_yaml)
         self.assertNotEqual(config, None)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AttributeError):
             data = config.lookup({})
 
 

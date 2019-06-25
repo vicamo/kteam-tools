@@ -32,13 +32,7 @@ class Config:
     def lookup(self, element, default=None):
         config = self.config
 
-        if isinstance(element, str):
-            element = element.split('.')
-        elif isinstance(element, list):
-            pass
-        else:
-            raise ValueError("element must be list or str")
-
+        element = element.split('.')
         while len(element) > 0:
             if not config:
                 return default
