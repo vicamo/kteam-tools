@@ -72,10 +72,14 @@ class PromoteFromTo(Promoter):
 
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
                 failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
+                state = 'Ongoing'
+                for failure in failures:
+                    if not failure.endswith(':building'):
+                        state = 'Pending'
+                reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
                 if failures is not None:
-                    s.task.reason = 'Pending -- builds not complete in {} {}'.format(s.pocket_src, ','.join(failures))
-                else:
-                    s.task.reason = 'Holding -- builds not complete in {}'.format(s.pocket_src)
+                    reason += ' ' + ','.join(failures)
+                s.task.reason = reason
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
