@@ -95,6 +95,20 @@ class SRUBoard:
 
         self.tt.trello.list_addcard(self.default_list_id, **params)
 
+    def add_member(self, member_id, member_type):
+        """
+        Add a given member ID as the specified type to the board
+
+        :param member_id: member ID
+        :param member_type: member type ('admin', 'normal', 'observer')
+        :return: None
+        """
+        params = {
+            'idMember': member_id,
+            'type': member_type,
+        }
+        self.tt.trello.board_addmember(self.id, **params)
+
 
 class SRUCardsCreator:
     def __init__(self, args):
@@ -139,7 +153,8 @@ class SRUCardsCreator:
 
     def create(self):
         """
-        Create the board, the lists and the cards form the config file
+        Create the board, the lists and the cards and add the initial members
+        of the board, taking the info from the config file
 
         :return: None
         """
@@ -149,6 +164,16 @@ class SRUCardsCreator:
         if not self.args.dry_run:
             board.create(self.config['board']['trello_organization'])
             board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
+
+        # Add the initial members of the board
+        for member_id in self.config['board'].get('admin_members'):
+            print('Adding member \'%s\' as admin' % member_id)
+            if not self.args.dry_run:
+                board.add_member(member_id, 'admin')
+        for member_id in self.config['board'].get('normal_members'):
+            print('Adding member \'%s\' as normal user' % member_id)
+            if not self.args.dry_run:
+                board.add_member(member_id, 'normal')
 
         # Cache the tuples (series, source) of supported sources
         series_sources_list = self.get_supported_series_sources()
@@ -291,7 +316,7 @@ if __name__ == '__main__':
     description = 'Create a Trello board with cards for SRU cycles'
     epilog = '''
 The script reads the configuration from a yaml file, updates the sru-cycle info
-yaml and creates a new Trello board and adds cards to it.
+yaml and creates a new Trello board, adding the initial cards and members.
 
 Examples:
     Run with the default options:
