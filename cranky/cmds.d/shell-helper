@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 import sys
 import argparse
 
@@ -101,22 +102,16 @@ Helper program for getting cranky config and handle data from shell scripts.
     # handle-to-series-source subparser
     subparser = subparsers.add_parser("handle-to-series-source",
                                       help="Print series codename and source name for the given handle")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=handle_to_series_source)
 
     # series-codename subparser
     subparser = subparsers.add_parser("series-codename",
                                       help="Print series codename for the given handle")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=series_codename)
 
     # source-packages-path subparser
     subparser = subparsers.add_parser("source-packages-path",
                                       help="Print source packages' paths")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.add_argument("-t", "--type", action="store_true", default=False,
                            help="Also print package type.")
     subparser.set_defaults(func=source_packages_path)
@@ -124,27 +119,21 @@ Helper program for getting cranky config and handle data from shell scripts.
     # tree-type subparser
     subparser = subparsers.add_parser("tree-type",
                                       help="tree-type: dump source tree type")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=tree_type)
 
     # tree-main-path subparser
     subparser = subparsers.add_parser("tree-main-path",
                                       help="tree-main-path: dump source tree main tree path")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=tree_main_path)
 
-    # list-handles
+    # list-handles subparser
     subparser = subparsers.add_parser("list-handles",
                                       help="Print the list of supported handles")
     subparser.set_defaults(func=list_handles)
 
-    # list variants
+    # list variants subparser
     subparser = subparsers.add_parser("list-variants",
                                       help="Print variants for the given handle")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=list_variants)
 
     # config subparser
@@ -152,9 +141,16 @@ Helper program for getting cranky config and handle data from shell scripts.
                                       help="Print a config option")
     subparser.add_argument("key",
                            help="The key name of the config option, in the form of <key>[.<key>].")
-    subparser.add_argument("handle",
-                           help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=config)
+
+    # Add common subparser arguments
+    for name, subparser in subparsers.choices.items():
+        if name in ["list-handles"]:
+            # These subcommands don't require a 'handle' argument
+            continue
+        subparser.add_argument("handle", nargs='?', default=os.getcwd(),
+                               help="<series>:<package> handle, or path to source tree. "
+                               "If not provided, defaults to the current directory.")
 
     args = parser.parse_args()
     args.func(args)
