@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import sys
 import argparse
 
@@ -76,8 +75,8 @@ if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
 """
-    parser = argparse.ArgumentParser(description=desc, formatter_class=
-                                     argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     subparsers = parser.add_subparsers(help="commands", dest="command")
     subparsers.required = True
 
