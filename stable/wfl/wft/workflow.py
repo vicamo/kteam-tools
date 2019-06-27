@@ -159,6 +159,7 @@ class Workflow(TaskHandler):
                     break
 
             # All is completed so we can finally close out this workflow bug.
+            s.bug.phase = 'Complete'
             s.task.status = 'Fix Released'
             msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
             s.bug.add_comment('Workflow done!', msgbody)
