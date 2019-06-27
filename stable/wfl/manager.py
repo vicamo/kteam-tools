@@ -300,7 +300,8 @@ class WorkflowManager():
         try:
             bug = WorkflowBug(s.lp.default_service, bugid, ks=s.kernel_series)
             if not bug.is_crankable:
-                raise WorkflowBugError('not crankable, skipping')
+                s.status_set(bugid, None)
+                raise WorkflowBugError('not crankable, skipping (and dropping)')
 
             while modified:
                 # Reset reason data for each crank run.
