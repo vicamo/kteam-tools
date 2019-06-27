@@ -3,15 +3,14 @@
 import contextlib
 import os
 import sys
-import yaml
 
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
 
-from ktl.kernel_series              import KernelSeries
-from ktl.debian                     import Debian, DebianError
-from ktl.git                        import GitError
+from ktl.kernel_series import KernelSeries
+from ktl.debian import Debian, DebianError
+from ktl.git import GitError
 
-from crl.config                     import Config
+from crl.config import Config
 
 
 class HandleError(ValueError):
@@ -34,19 +33,15 @@ class HandleCore:
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
 
-        for key in (
-            "{series}--{source}--{package}",
-            "{series}--{source}",
-            "{series}",
-            "{type}",
-            "default",
-            ):
-            key = key.format(
-                series=package.series.codename,
-                source=package.source.name,
-                package=package.name,
-                type=which,
-                )
+        for key in ("{series}--{source}--{package}",
+                    "{series}--{source}",
+                    "{series}",
+                    "{type}",
+                    "default"):
+            key = key.format(series=package.series.codename,
+                             source=package.source.name,
+                             package=package.name,
+                             type=which)
 
             package_path = self.config.lookup(['package-path', key])
             if package_path:
@@ -54,13 +49,11 @@ class HandleCore:
         if package_path is None:
             package_path = '{series}/{package}'
 
-        package_path = package_path.format(
-            series=package.series.codename,
-            source=package.source.name,
-            package=package.name,
-            type=which,
-            type_suffix=which_suffix,
-            )
+        package_path = package_path.format(series=package.series.codename,
+                                           source=package.source.name,
+                                           package=package.name,
+                                           type=which,
+                                           type_suffix=which_suffix)
 
         return os.path.expanduser(os.path.join(base_path, package_path))
 
@@ -78,7 +71,7 @@ class HandleCore:
             paths[key] = paths[key][prefix_len:]
 
         # Build a list, longest suffix first.
-        longest = sorted(paths.values(), key=lambda p : -len(p))
+        longest = sorted(paths.values(), key=lambda p : -len(p))   # noqa: E203
 
         return (longest, paths)
 
@@ -180,7 +173,7 @@ class HandleSet(HandleCore):
             self.trees = trees
 
         elif sample is not None:
-            self.trees = [ sample ]
+            self.trees = [sample]
             (remove, add) = self.set_minimal_suffixes(source)
 
             prefix = None
@@ -201,13 +194,13 @@ class HandleSet(HandleCore):
                     continue
                 directory = prefix + add[package_entry.type if package_entry.type else 'main']
                 self.trees.append(HandleTree(series, package_entry, directory,
-                     validate=validate, ks=self.ks, config=self.config))
+                                             validate=validate, ks=self.ks, config=self.config))
 
         else:
             self.trees = []
             for package_entry in source.packages:
                 self.trees.append(HandleTree(series, package_entry,
-                    validate=validate, ks=self.ks, config=self.config))
+                                             validate=validate, ks=self.ks, config=self.config))
 
 
 class Handle(HandleCore):
@@ -269,21 +262,20 @@ class Handle(HandleCore):
             return HandleSet(handle, tree.series, tree.package.source, validate=validate, sample=tree, ks=self.ks, config=self.config)
 
         # Validate this as a series/package handle.
-        else:
-            bits = handle.split(':')
-            if len(bits) != 2:
-                raise HandleError("{}: handle format unknown".format(handle))
+        bits = handle.split(':')
+        if len(bits) != 2:
+            raise HandleError("{}: handle format unknown".format(handle))
 
-            (series_name, source_name) = bits
+        (series_name, source_name) = bits
 
-            series = self.ks.lookup_series(codename=series_name)
-            if series is None:
-                series = self.ks.lookup_series(series=series_name)
-            if series is None:
-                raise HandleError("{}: handle contains unknown series".format(series_name))
+        series = self.ks.lookup_series(codename=series_name)
+        if series is None:
+            series = self.ks.lookup_series(series=series_name)
+        if series is None:
+            raise HandleError("{}: handle contains unknown series".format(series_name))
 
-            source = series.lookup_source(source_name)
-            if source is None:
-                raise HandleError("{}: handle contains unknown source".format(source_name))
+        source = series.lookup_source(source_name)
+        if source is None:
+            raise HandleError("{}: handle contains unknown source".format(source_name))
 
-            return HandleSet(handle, series, source, validate=validate, ks=self.ks, config=self.config)
+        return HandleSet(handle, series, source, validate=validate, ks=self.ks, config=self.config)
