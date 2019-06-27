@@ -23,8 +23,14 @@ function out()
 
 function dput_src()
 {
-	local dir="$1" ppa="${2:-}"
+	local dir=$1 current=$2 ppa=${3:-}
 	local DEBIAN src version changes
+
+	if [ "${current}" -eq 1 ] && [ "${PWD}" != "${dir}" ] ; then
+		# Skip the upload of this source package if --current is specified and
+		# the current directory doesn't match the package directory
+		return
+	fi
 
 	(
 		cd "$dir" || exit 1
@@ -79,14 +85,22 @@ Example:
   $ cranky-dput-sources security-build xenial:linux
       Upload the Xenial linux kernel source packages to the security builder
       PPA.
+
+  $ cranky-dput-sources --current test-build
+      Upload only the kernel source package for the current working directory
+      to the test builder PPA for that kernel.
 EOF
 }
 
+current=0
 dest=
 handle=
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
+		-c|--current)
+			current=1
+			;;
 		-h|--help)
 			usage
 			exit
@@ -139,7 +153,7 @@ fi
 
 # List all .changes files
 for src in "${srcs[@]}" ; do
-	dput_src "${src}"
+	dput_src "${src}" "${current}"
 done
 
 # Get confirmation from the user to do the upload
@@ -152,6 +166,6 @@ done
 # Do the upload
 if [ "${tmp,,}" = "y" ] ; then
 	for src in "${srcs[@]}" ; do
-		dput_src "${src}" "${ppa}"
+		dput_src "${src}" "${current}" "${ppa}"
 	done
 fi

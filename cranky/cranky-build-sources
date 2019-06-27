@@ -20,8 +20,13 @@ function out()
 
 function build_src()
 {
-	local dir="$1"
-	local session="$2"
+	local dir=$1 session=$2 current=$3
+
+	if [ "${current}" -eq 1 ] && [ "${PWD}" != "${dir}" ] ; then
+		# Skip the build of this source package if --current is specified and
+		# the current directory doesn't match the package directory
+		return
+	fi
 
 	(
 		cd "$dir" || exit 1
@@ -35,35 +40,44 @@ function build_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky build-sources [-h] [handle]
+Usage: cranky build-sources [-c] [-h] [handle]
 
 Build all source packages for the specified series and source as specified in
 kernel-series.yaml.
 
 Positional arguments:
-  handle                Handle to a kernel source tree, either a path to a
-                        kernel source tree or a handle in <series>:<package>
-                        format. If not given the current working directory is
-                        used.
+  handle         Handle to a kernel source tree, either a path to a kernel
+                 kernel source tree or a handle in <series>:<package> format.
+                 If not given the current working directory is used.
 
 Optional arguments:
-  -h, --help  Show this help text.
+  -c, --current  Only build the source package for the current working
+                 directory.
+  -h, --help     Show this help message and exit.
 
 Examples:
   $ cranky build-sources
       Build all source packages for the kernel source tree in the current
       working directory.
+
   $ cranky build-sources bionic:linux
       Build all source packages defined under the bionic:linux source in
       ktl/kernel-series.yaml. Finds the source trees based on 'package-path'
       from the cranky config file.
+
+  $ cranky build-sources --current
+      Build only the source package for the current working directory.
 EOF
 }
 
+current=0
 handle=${PWD}
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
+		-c|--current)
+			current=1
+			;;
 		-h|--help)
 			usage
 			exit
@@ -100,5 +114,5 @@ fi
 # Build the source.
 for source in $sources
 do
-	build_src "$source" "$session"
+	build_src "$source" "$session" "$current"
 done
