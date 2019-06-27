@@ -117,18 +117,29 @@ if __name__ == '__main__':
 
     results.sort(key=lambda x: x[0])
 
-    if args.separate_target:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {source:20} {target:20} {version:25}  {phase:28} {phase_status:20}"
-    else:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:15} {full_target:35} {version:25}  {phase:28} {phase_status:20}"
-    sort_prev = None
-    count = 0
+    # Size the various stretchy fields.
+    measure = ('series', 'source', 'target', 'version', 'full_target', 'phase')
+    sizes = {}
     for (sort, entry) in results:
         entry['full_target'] = entry['source']
         if entry['target'] not in ('-', entry['source']):
             entry['full_target'] += '/' + entry['target']
 
-        row = fmt.format(**entry)
+        for key in measure:
+            lkey = 'len_' + key
+            if len(entry.get(key, '')) > sizes.get(lkey, 0):
+                sizes[lkey] = len(entry[key])
+
+    if args.separate_target:
+        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {source:{len_source}} {target:{len_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
+    else:
+        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {full_target:{len_full_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
+    sort_prev = None
+    count = 0
+    for (sort, entry) in results:
+        entry_plus = entry
+        entry_plus.update(sizes)
+        row = fmt.format(**entry_plus)
 
         if sort != sort_prev:
             sort_prev = sort
