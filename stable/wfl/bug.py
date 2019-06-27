@@ -401,6 +401,13 @@ class WorkflowBug():
         '''
         status = s.bprops
 
+        # Check if we are actually fully complete, if so then
+        # we can delete this entry from status.
+        if ('kernel-sru-workflow' in s.tasks_by_name and
+                s.tasks_by_name['kernel-sru-workflow'].status in
+                ('Fix Released', 'Invalid')):
+            return None
+
         # Add the current tasks status information.
         task = status.setdefault('task', {})
         for taskname in s.tasks_by_name:
