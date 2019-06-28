@@ -303,8 +303,8 @@ class ModifyPatch(StdApp):
                 cmdline.verify_options(self.cfg)
 
             if self.cfg['list-aliases']:
-                for alias in self.cfg['irc-aliases']:
-                   stdo("%15s : %s\n" % (alias, self.cfg['irc-aliases'][alias]))
+                for alias in sorted(self.cfg['irc-aliases'].items(), key=lambda a: a[1].lower()):
+                   stdo("%15s : %s\n" % (alias[0], self.cfg['irc-aliases'][alias[0]]))
                 return
 
             self.initialize()
