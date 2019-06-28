@@ -351,9 +351,9 @@ class ModifyPatch(StdApp):
         sob_insertion_point               = False
         just_copy                         = False
 
-        with patch as src:
-            with NamedTemporaryFile(dir='./', delete=False) as dst:
-
+        with patch as src, NamedTemporaryFile(dir='./', delete=False) as dst:
+            temp = dst.name
+            try:
                 for line in src:
 
                     if just_copy:
@@ -466,7 +466,10 @@ class ModifyPatch(StdApp):
                     if looking_4_sob_insertion_point or sob_insertion_point:
                         dst.write(self.sob_block(existing_acks, existing_sobs, existing_cps, existing_bps))
 
-                temp = dst.name
+            except:
+                unlink(temp)
+                raise
+
         if not self.cfg['dry-run'] and not self.cfg['filter'] and patch != stdin:
             rename(temp, patch.name)
         if self.cfg['filter']:
