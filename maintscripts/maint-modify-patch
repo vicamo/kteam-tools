@@ -305,6 +305,7 @@ class ModifyPatch(StdApp):
             if self.cfg['list-aliases']:
                 for alias in self.cfg['irc-aliases']:
                    stdo("%15s : %s\n" % (alias, self.cfg['irc-aliases'][alias]))
+                return
 
             self.initialize()
 
