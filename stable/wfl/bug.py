@@ -3,7 +3,7 @@
 from datetime                           import datetime
 import yaml
 import re
-from lib.utils                          import date_to_string
+from lib.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo
 from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
@@ -613,6 +613,13 @@ class WorkflowBug():
         s.bprops['phase'] = phasetext
         s.bprops['phase-changed'] = tstamp
         cleave(s.__class__.__name__ + '.set_phase')
+
+    @property
+    def phase_changed(s):
+        stamp = s.bprops.get('phase-changed')
+        if stamp is None:
+            return None
+        return string_to_date(stamp)
 
     # has_new_abi
     #

@@ -1,3 +1,5 @@
+from datetime                           import datetime, timedelta
+
 from wfl.log                            import center, cleave, cinfo
 
 from .base                              import TaskHandler
@@ -158,8 +160,18 @@ class Workflow(TaskHandler):
                     s.task.reason = 'Stalled -- package promote-to-security status (%s) does not match security-signoff status (%s)' % (promote_to_security.status, security_signoff.status)
                     break
 
-            # All is completed so we can finally close out this workflow bug.
+            # Everything looks ok now so move to phase Complete.
             s.bug.phase = 'Complete'
+
+            # Hold this bug open for an hour so that any tooling needing to see
+            # it will notice the final state.
+            close_time = s.bug.phase_changed + timedelta(hours=1)
+            now = datetime.utcnow()
+            if now <= close_time:
+                cinfo("Complete but holding open until {} is {}".format(close_time, now))
+                break
+
+            # All is completed so we can finally close out this workflow bug.
             s.task.status = 'Fix Released'
             msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
             s.bug.add_comment('Workflow done!', msgbody)
