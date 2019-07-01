@@ -1030,4 +1030,4 @@ class Package():
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
-        s.bug.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,kleber.souza@canonical.com,sean.feole@canonical.com')
+        s.bug.send_email(subject, json.dumps(msg, sort_keys=True, indent=4), 'brad.figg@canonical.com,po-hsu.lin@canonical.com,sean.feole@canonical.com')
