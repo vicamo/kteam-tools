@@ -20,6 +20,8 @@ do
             -e "tail: cannot open 'debian/changelog' for reading: No such file or directory" \
             -e ": chroot not found (" \
             -e "fatal: empty ident name (for" \
+            -e "dpkg-buildpackage: error: failed to sign .changes file" \
+            -e "dpkg-buildpackage: unknown option or argument --no-sign" \
         "$log" | head -1
     )
     case "$which" in
@@ -51,6 +53,10 @@ do
         which='broken chroots' ;;
     *"fatal: empty ident name (for"*)
         which='broken git configuration' ;;
+    *"dpkg-buildpackage: error: failed to sign .changes file"*)
+        which='signing not disabled' ;;
+    *"dpkg-buildpackage: unknown option or argument --no-sign"*)
+        which='signing not disabled' ;;
     esac
 #    if [ "$count" -eq 0 ]; then
 #        count=$( grep -c "dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead" "$log" )
