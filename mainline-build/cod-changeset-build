@@ -103,7 +103,7 @@ do
 		fakeroot debian/rules clean
 	{
 		do_chroot "$build_release-$barch" \
-			dpkg-buildpackage --no-sign -a"$arch" "$build" -d
+			dpkg-buildpackage -ui -uc -a"$arch" "$build" -d
 		rc="$?"
 		echo "$rc" >"$result/$arch.status"
 	} 2>&1 | tee -a "$result/$arch.log"
