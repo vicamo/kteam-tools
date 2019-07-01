@@ -92,10 +92,16 @@ class Cmdline:
         stdo("                         A list of git commit ids that will make up 'back-port' lines        \n")
         stdo("                         in the signed-off-by block of the commit.                           \n")
         stdo("                                                                                             \n")
+        stdo("        --filter                                                                             \n")
+        stdo("                         With this option, the script may be used as a msg-filter to git     \n")
+        stdo("                         filter-branch. This allows message to come from stdin, and put it   \n")
+        stdo("                         out to stdout.                                                      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --list-aliases                                                                    \n" % self.cfg['app_name'])
         stdo('        %s --bug=772543 --sob=bjf --ack="smb,ogasawara" *.patch                              \n' % self.cfg['app_name'])
         stdo('        %s --bug=772543 --sob=bjf --cve=2011-1182 *.patch                                    \n' % self.cfg['app_name'])
+        stdo('        %s --filter --bug=772543 --sob=bjf --ack="smb,klebers"                               \n' % self.cfg['app_name'])
 
     # process
     #
