@@ -4,12 +4,13 @@
 
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
-do_chroot()
+do_chroot_common()
 {
-	typeset chroot="$1"
+	typeset quiet="$1"
+	typeset chroot="$2"
 	typeset series
 	typeset cmd
-	shift
+	shift 2
 
 	# Some systems use <series> for <series>-amd64, so try both.
 	series="${chroot%-amd64}"
@@ -26,6 +27,16 @@ do_chroot()
 	*\ $chroot[\ ,]*)	cmd='schroot' ;;
 	*)			cmd='dchroot' ;;
 	esac
-	echo -- "$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+	$quiet echo -- "$cmd" -c "$chroot" --directory=`pwd` -- "$@"
 	"$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+}
+
+do_chroot()
+{
+	do_chroot_common "" "$@"
+}
+
+do_chroot_quiet()
+{
+	do_chroot_common ":" "$@"
 }

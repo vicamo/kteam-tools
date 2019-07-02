@@ -102,8 +102,8 @@ do
 	do_chroot "$build_release-amd64" \
 		fakeroot debian/rules clean
 	{
-		version=$(do_chroot "$build_release-$barch" dpkg-buildpackage --version | \
-			awk '{ print $NF; exit; }')
+		version=$(do_chroot_quiet "$build_release-$barch" dpkg-buildpackage --version | \
+			awk '(found == 1) {next;} {found=1; print $NF;}')
 		echo "dpkg-buildpackage version=$version"
 		opts="-uc"
 		if dpkg --compare-versions "$version" ge "1.18.19"; then
