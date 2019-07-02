@@ -2,4 +2,4 @@
 
 here=$(dirname "$(readlink -f "${0}")")
 
-exec "$here/../sbin/oops-run" swm-cron "$here/swm-run"
+exec "$here/../sbin/oops-run" swm-cron "$here/swm-run" "$@"

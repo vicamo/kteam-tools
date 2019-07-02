@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+#
+# SWM - SRU Workflow Manager  (aka: shankbot)
+#
+# swm-publishing -- monitor publishing of things.
+#
+
+import os
+import sys
+from datetime import datetime, timezone
+from subprocess import Popen
+#from logging import DEBUG, INFO, WARNING, basicConfig
+
+import yaml
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.kernel_series import KernelSeries
+from wfl.launchpad import Launchpad
+#from wfl.log import Clog, cdebug, center, cleave
+
+
+class MonitorStore:
+    '''
+    A backing store provider for monitor data.  This class behaves very like a
+    persistent dictionary.  On instantiation it will load up the specified
+    yaml file.  When the sync is called all current data is flushed back
+    to the backing store.  Handles timezones being lost in the default
+    yaml date format.
+    '''
+    def __init__(self, store_path=None):
+        if store_path is None:
+            store_path = 'swm-publisher.yaml'
+
+        self.store_path = store_path
+        self._store = {}
+        if os.path.exists(store_path):
+            with open(store_path) as rfd:
+                self._store = yaml.safe_load(rfd)
+                self.fix_timezones(self._store)
+
+    # YAML saves timestamps always converted to UTC and the loses
+    # this information on load dispite storing +00:00 as the data.
+    # As we know they are all converted to UTC we can simply wack
+    # over them with a UTC timezone.
+    def fix_timezones(self, record):
+        for item, item_data in record.items():
+            if isinstance(item_data, datetime):
+                record[item] = item_data.replace(tzinfo=timezone.utc)
+            elif isinstance(item_data, dict):
+                self.fix_timezones(item_data)
+
+    def __getitem__(self, key):
+        return self._store[key]
+
+    def __setitem__(self, key, value):
+        self._store[key] = value
+
+    def setdefault(self, key, value=None):
+        return self._store.setdefault(key, value)
+
+    def sync(self):
+        with open(self.store_path + '.new', 'w') as wfd:
+            yaml.dump(self._store, wfd, default_flow_style=False)
+        os.rename(self.store_path + '.new', self.store_path)
+
+
+class MonitorStoreAttr:
+    '''
+    This class is a Python descriptor class.  This means that an instance
+    of this class may be used to replace a class attribute; all access to that
+    attribute is mediated by this class.  The attribute key in the store
+    is passed to the constructor, and this key is used gainst the owning
+    objects _store attribute.  Typically this would be initialised to a
+    unique key in the MonitorStore object.  Doing this renders the contents
+    of this attribute persistent.
+
+    For example:
+
+        class MonitorThing:
+
+            def __init__(self, backing_store):
+                # Create a unique space in the backing store if not present.
+                self._store = backing_store.setdefault('unique-key', {})
+                # Default our last-date to UTC now if not present.
+                self._store.setdefault('last-date', datetime.now(timezone.utc))
+
+            # Connect the instance attribute to the backing store.
+            last_date = MonitorStoreAttr('last-date')
+
+            def operation(self, when):
+                # Read and update attribute as normal.
+                if self.last_date < when:
+                    self.last_date = when
+    '''
+    def __init__(self, attr):
+        self.attr = attr
+
+    def __get__(self, obj, type=None):
+        #print("__get__", self.attr, obj, type)
+        return obj._store[self.attr]
+
+    def __set__(self, obj, value):
+        #print("__set__", self.attr, obj, value)
+        obj._store[self.attr] = value
+
+
+class MonitorFactory:
+
+    def __init__(self, lp=None, ks=None, bs=None):
+        self._lp = lp
+        self._ks = ks
+        self._bs = bs
+
+    @property
+    def lp(self):
+        if self._lp is None:
+            self._lp = Launchpad(False).default_service.launchpad
+        return self._lp
+
+    @property
+    def ks(self):
+        if self._ks is None:
+            self._ks = KernelSeries()
+        return self._ks
+
+    @property
+    def bs(self):
+        if self._bs is None:
+            self._bs = MonitorStore('swm-publishing.yaml')
+        return self._bs
+
+    def sync(self):
+        self.bs.sync()
+
+    def __str__(self):
+        return "Private Archive Monitor {}".format(self.reference)
+
+
+if __name__ == '__main__':
+    factory = MonitorFactory()
+
+    monitors = []
+
+    command = None
+
+    # Look for updates in each monitor.
+    changed = set()
+    for monitor in monitors:
+        print("***", monitor)
+        sys.stdout.flush()
+        new = monitor.changed()
+        if len(new) > 0:
+            print(monitor, "CHANGED", list(new))
+        sys.stdout.flush()
+        changed = changed | new
+    print("CHANGED", changed)
+
+    sys.stdout.flush()
+
+    if len(changed) > 0:
+        cmd = ['./swm-cron', '--dependants'] + list(changed)
+        command = Popen(cmd)
+        print("COMMAND STARTED", command.pid)
+        sys.stdout.flush()
+        status = command.wait()
+        print("COMMAND COMPLETE", status)
+        if status != 0:
+            sys.exit(1)
+
+    # All is done, update the backing store.
+    factory.sync()

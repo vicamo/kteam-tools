@@ -7,4 +7,10 @@ cd "$here" || exit 1
 
 # Run swm as requested and record a copy to the persistent log.
 set -o pipefail
+
+# BODGE: ensure we don't duplicate the HOME protection.
+case "$HOME" in
+*/shankbot)	HOME="${HOME%/shankbot}" ;;
+esac
+
 HOME=$HOME/shankbot "$here/swm" --no-color "$@" 2>&1 | tee -a "$HOME/logs/shank.log"
