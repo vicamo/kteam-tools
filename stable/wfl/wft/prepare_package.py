@@ -70,6 +70,19 @@ class PreparePackage(TaskHandler):
             pkg = 'main'
         return pkg
 
+    # master_prepare_ready
+    #
+    def master_prepare_ready(s):
+        if not s.bug.is_derivative_package:
+            return True
+
+        master = s.bug.master_bug
+        if master.tasks_by_name['prepare-package'].status == 'Fix Released':
+            return True
+
+        return False
+
+
     # _new
     #
     def _new(s):
@@ -84,12 +97,10 @@ class PreparePackage(TaskHandler):
             # For derivative bugs we wait until the parent has at least got its
             # primary package uploaded.  Then we must have something we _could_
             # rebase on.
-            if s.bug.is_derivative_package:
-                master = s.bug.master_bug
-                if master.tasks_by_name['prepare-package'].status != 'Fix Released':
-                    if pkg == 'main' or not s.bug.valid_package('main'):
-                        s.task.reason = 'Stalled -- waiting for master bug'
-                    break
+            if not s.master_prepare_ready():
+                if pkg == 'main' or not s.bug.valid_package('main'):
+                    s.task.reason = 'Stalled -- waiting for master bug'
+                break
 
             # Confirm whether this package is actually valid.
             if not s.bug.valid_package(pkg):
@@ -132,10 +143,13 @@ class PreparePackage(TaskHandler):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-            if not s._kernel_block_source():
+            if not s._kernel_block_source() and s.master_prepare_ready():
                 break
 
-            cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+            if s._kernel_block_source():
+                cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+            if not s.master_prepare_ready():
+                cinfo('            Master kernel no longer ready pulling back from Confirmed', 'yellow')
 
             s.task.status = 'New'
 
