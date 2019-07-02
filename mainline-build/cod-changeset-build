@@ -103,7 +103,7 @@ do
 		fakeroot debian/rules clean
 	{
 		version=$(do_chroot "$build_release-$barch" dpkg-buildpackage --version | \
-			awk '{ print $NF; exit; }'
+			awk '{ print $NF; exit; }')
 		echo "dpkg-buildpackage version=$version"
 		opts="-uc"
 		if dpkg --compare-versions "$version" ge "1.18.19"; then
