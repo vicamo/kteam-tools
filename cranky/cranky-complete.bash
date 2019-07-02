@@ -26,6 +26,7 @@ _cranky() {
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
 		"updateconfigs -h --help -c --clean"
 		"pull-source -h --help"
+		"dput-sources -h --help"
 	)
 	local opts=
 	if [ "$COMP_CWORD" -eq 1 ]; then
