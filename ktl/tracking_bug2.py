@@ -923,7 +923,12 @@ class TrackingBugs():
             raise TrackingBugError('not a tracking bug object')
         s.__tbs[int(new_tb.id)] = new_tb
         sd = s.__idx_pkg_by_series.setdefault(new_tb.target_series, {})
-        sd.setdefault(new_tb.target_package, set()).add(int(new_tb.id))
+
+        sourcename = new_tb.target_package
+        snapname = new_tb.wf_get_property('snap-name')
+        if snapname is not None:
+            sourcename = '{}/{}'.format(sourcename, snapname)
+        sd.setdefault(sourcename, set()).add(int(new_tb.id))
 
     def __init__(s, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT, testing=False, quiet=False, private=False):
         '''
