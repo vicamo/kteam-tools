@@ -1129,9 +1129,19 @@ class TrackingBugs():
 
         bug_ids = []
         for task in tasks:
+            tlink = task.target_link
+            # Is this a snap-debs task in that case the series is part of the title.
+            # To make things not that easy the tasks.title is something in the form:
+            #  'Bug #[0-9]+ in Kernel SRU Workflow: "<series>/<source>: ..."'
+            if 'snap-debs' in task.title and tlink.endswith('kernel-sru-workflow'):
+                series = task.title.split('"')[1].split(':')[0].split('/')[0]
+                if len(series_filter) > 0 and series not in series_filter:
+                    continue
+                bug_ids.append(task.self_link.split('/')[-1])
+                continue
+
             # Only interested in the <package> tasks in the ubuntu project
             # because that has info about the target series codename.
-            tlink = task.target_link
             if '/ubuntu/' not in tlink:
                 continue
             if '/ubuntu/+source/' in tlink:
