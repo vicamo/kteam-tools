@@ -172,7 +172,9 @@ class Tracking():
             target_package, target_series = s.repo_info
             found_tasks = []
             for (bugid, title) in s.trackers(s.project_tracked).items():
-                if not title.startswith(target_package + ':'):
+                # The title has an optional series/ prefix (will become manditory).
+                if (not title.startswith(target_package + ':') and
+                        not title.startswith(target_series + '/' + target_package + ':')):
                     continue
                 tasks_by_name = s.create_tasks_by_name_mapping(bugid, s.project_tracked)
                 found_tasks.append((bugid, tasks_by_name))
@@ -181,8 +183,12 @@ class Tracking():
             found = []
             for (bugid, tasks_by_name) in found_tasks:
                 lpbug = s.launchpad.bugs[bugid]
+                # Ignore this bug if we cannot determine the series.
                 if '%s (Ubuntu %s)' % (target_package, target_series.title()) not in tasks_by_name and \
                         target_series not in lpbug.tags:
+                    continue
+                # Ignore this bug if it is not a 'debs' variant.
+                if ' -proposed tracker' not in lpbug.title:
                     continue
                 if not s.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
