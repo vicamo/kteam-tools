@@ -49,9 +49,9 @@ class SnapStore:
         s.snap = snap
         s._versions = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
 
-    # _channel_map
+    # channel_map
     #
-    def _channel_map(s):
+    def channel_map(s):
         """
         Query the snap store URL to get the information about the kernel snap
         publishing.
@@ -64,7 +64,7 @@ class SnapStore:
         result = {}
         try:
             headers = s.common_headers
-            params = urlencode({'fields': 'channel-map,architecture,channel,revision,version'})
+            params = urlencode({'fields': 'channel-map,architecture,channel,revision,version,released-at'})
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
@@ -77,6 +77,7 @@ class SnapStore:
                     entry = {}
                     entry['version'] = channel_rec['version']
                     entry['revision'] = channel_rec['revision']
+                    entry['released-at'] = channel_rec['channel']['released-at']
                     result[channel] = entry
 
         except HTTPError as e:
@@ -100,7 +101,7 @@ class SnapStore:
     def channel_version(s, arch, channel):
         key = (arch, channel)
         if s._versions is None:
-            s._versions = s._channel_map()
+            s._versions = s.channel_map()
         return s._versions.get(key, {}).get('version', None)
 
     # channel_revision
@@ -108,7 +109,7 @@ class SnapStore:
     def channel_revision(s, arch, channel):
         key = (arch, channel)
         if s._versions is None:
-            s._versions[key] = s._channel_map()
+            s._versions[key] = s.channel_map()
         return s._versions.get(key, {}).get('revision', None)
 
 
