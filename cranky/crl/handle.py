@@ -139,7 +139,7 @@ class HandleTree(HandleCore):
                             primary_package = package
                     if self.package == package:
                         continue
-                    directory = self.encode_directory(package)
+                    directory = os.path.abspath(self.encode_directory(package))
                     if self.directory == directory:
                         if self.series != series:
                             cross_series = True
