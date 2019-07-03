@@ -242,6 +242,8 @@ class Handle(HandleCore):
 
         series = self.ks.lookup_series(codename=series_name)
         if series is None:
+            series = self.ks.lookup_series(series=series_name)
+        if series is None:
             raise HandleError("{}: handle directory contains unknown series {}".format(handle, series_name))
 
         for source_entry in series.sources:
@@ -275,6 +277,8 @@ class Handle(HandleCore):
             (series_name, source_name) = bits
 
             series = self.ks.lookup_series(codename=series_name)
+            if series is None:
+                series = self.ks.lookup_series(series=series_name)
             if series is None:
                 raise HandleError("{}: handle contains unknown series".format(series_name))
 

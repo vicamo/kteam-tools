@@ -135,6 +135,18 @@ class TestHandleSeries(TestHandle):
         self.assertEqualTrees(trees_match, hdl.trees)
 
 
+class TestHandleSeriesVersion(TestHandle):
+
+    def test_series_bionic(self):
+        ks = KernelSeries(data=self.data_yaml)
+        config = Config(data=self.path_config_yaml)
+        hdlc = Handle(ks=ks, config=config).lookup_set('bionic:linux')
+        hdlv = Handle(ks=ks, config=config).lookup_set('18.04:linux')
+
+        self.assertEqual(hdlc.series, hdlv.series)
+        self.assertEqual(hdlc.source, hdlv.source)
+
+
 class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_series(self):
