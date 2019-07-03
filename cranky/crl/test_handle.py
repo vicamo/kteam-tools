@@ -107,8 +107,8 @@ class TestHandleSeries(TestHandle):
         hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
 
         trees_match = [
-            [ 'bionic', 'linux', 'bionic/linux' ],
-            [ 'bionic', 'linux-meta', 'bionic/linux-meta' ],
+            [ 'bionic', 'linux', os.path.abspath('bionic/linux') ],
+            [ 'bionic', 'linux-meta', os.path.abspath('bionic/linux-meta') ],
             ]
         self.assertEqualTrees(trees_match, hdl.trees)
 
@@ -118,8 +118,8 @@ class TestHandleSeries(TestHandle):
         hdl = Handle(ks=ks, config=config).lookup_set('artful:linux')
 
         trees_match = [
-            [ 'artful', 'linux', 'artful/linux' ],
-            [ 'artful', 'linux-meta', 'artful/meta' ],
+            [ 'artful', 'linux', os.path.abspath('artful/linux') ],
+            [ 'artful', 'linux-meta', os.path.abspath('artful/meta') ],
             ]
         self.assertEqualTrees(trees_match, hdl.trees)
 
@@ -209,7 +209,7 @@ class TestHandleDirectoryEncode(TestHandle):
         """
         ks = KernelSeries(data=self.data_yaml)
         config = Config(data=config_yaml)
-        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux')
+        hdl = Handle(ks=ks, config=config).lookup_tree('bionic:linux', validate=False)
 
         directory = hdl.encode_directory(hdl.package)
 
@@ -236,7 +236,7 @@ class TestHandleDirectoryEncode(TestHandle):
         directory = hdl.encode_directory(hdl.package)
 
         self.assertEqual(directory, 'bionic/linux')
-        self.assertEqual(hdl.directory, 'bionic/linux')
+        self.assertEqual(hdl.directory, os.path.abspath('bionic/linux'))
 
     def test_encode_directory_bionic_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -246,7 +246,7 @@ class TestHandleDirectoryEncode(TestHandle):
         directory = hdl.encode_directory(hdl.package)
 
         self.assertEqual(directory, 'bionic/linux-meta')
-        self.assertEqual(hdl.directory, 'bionic/linux-meta')
+        self.assertEqual(hdl.directory, os.path.abspath('bionic/linux-meta'))
 
     def test_encode_directory_artful_linux(self):
         ks = KernelSeries(data=self.data_yaml)
