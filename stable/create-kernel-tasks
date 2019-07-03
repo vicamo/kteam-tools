@@ -231,6 +231,9 @@ class TaskSet():
             series  = task.ks_source.series.codename
             source  = task.ks_source.name
             matchtb = None
+
+            if task.ks_snap is not None:
+                source = '{}/{}'.format(source, task.ks_snap.name)
             bug_ids = self.tbs.get_series_package(series, source)
 
             if bug_ids is not None:
@@ -240,6 +243,10 @@ class TaskSet():
                     tb = self.tbs[bug_id]
                     if tb.cycle != self.cycletag:
                         continue
+                    if task.sourcetype == 'snap':
+                        variant = tb.wf_get_property('variant')
+                        if variant is None or variant != 'snap-debs':
+                            continue
                     # if task.create is True and self.spin_nr is not None:
                     #    if tb.spin_nr < self.spin_nr:
                     #        continue
@@ -256,20 +263,19 @@ class TaskSet():
             return matchtb
 
     def __task_match_all_tbs(self, task):
-        if task.sourcetype == 'deb':
-            series = task.ks_source.series.codename
-            if series not in self.tbs.series_names:
-                cinfo('Adding tracking bugs for {}...'.format(series))
-                tags = []
-                if self.spin_nr is not None:
-                    if self.spin_nr > 1:
-                        n = self.spin_nr - 1
-                        while n > 0:
-                            tags.append('kernel-sru-cycle-{}-{}'.format(self.cycletag, n))
-                            n = n - 1
+        series = task.ks_source.series.codename
+        if series not in self.tbs.series_names:
+            cinfo('Adding tracking bugs for {}...'.format(series))
+            tags = []
+            if self.spin_nr is not None:
+                if self.spin_nr > 1:
+                    n = self.spin_nr - 1
+                    while n > 0:
+                        tags.append('kernel-sru-cycle-{}-{}'.format(self.cycletag, n))
+                        n = n - 1
 
-                self.tbs.load(series_filter=[series], tag_filter=tags, debug=True)
-            task.tb = self.__task_match_tb(task)
+            self.tbs.load(series_filter=[series], tag_filter=tags, debug=True)
+        task.tb = self.__task_match_tb(task)
 
         # Next traverse all subtasks and try to find an existing tracking bug
         for subtask in task.subtasks:
