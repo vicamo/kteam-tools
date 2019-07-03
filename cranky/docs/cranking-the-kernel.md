@@ -400,6 +400,18 @@ set, you can use the command `cranky rmadison`, example:
 cranky rmadison xenial:linux-oracle
 ```
 
+### Verify preparation
+<!--cheatsheet-->
+```
+$ cd linux-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+$ cd linux-meta-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+$ cd linux-signed-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+```
+<!--/cheatsheet-->
+
+Perform one last sanity check on the git trees with `verify-release-ready` to catch
+many of the mistakes that will require changes before this kernel passes review.
+
 ### Build sources - `cranky build-sources`
 <!--cheatsheet-->
 ```
