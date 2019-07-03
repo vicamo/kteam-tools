@@ -1062,16 +1062,21 @@ class TrackingBugs():
         cleave(s.__class__.__name__ + '.add')
         return tb
 
-    def load(s, series_filter=[], debug=False):
+    def load(s, series_filter=[], tag_filter=[], debug=False):
         '''
-        Load all currently active tracking bugs from launchpad.
+        Load a set of tracking bugs from Launchpad which match
+        the given filters (default all live tracking bugs).
 
         :param series_filter: List of series (codenames of releases)
             for which tracking bug data should get loaded.
-        :type: list()
+        :type  series_filter: []
+
+        :param tag_filter: List of tags to be used in the Launchpad
+            task search (instead of the live tracking bug tag).
+        :type  tag_filter: []
 
         :param debug: Print status info while working on the task.
-        :type: Bool()
+        :type  debug: Bool()
         '''
         center(s.__class__.__name__ + '.load')
 
@@ -1083,13 +1088,15 @@ class TrackingBugs():
             'Incomplete',
             'Fix Committed',
             'Fix Released',
-            #'Invalid',
         ]
 
-        if s.testing:
-            search_tag = s.__tbd.tag_names['testing']['valid']
+        if len(tag_filter) > 0:
+            search_tag = tag_filter
         else:
-            search_tag = s.__tbd.tag_names['default']['valid']
+            if s.testing:
+                search_tag = s.__tbd.tag_names['testing']['valid']
+            else:
+                search_tag = s.__tbd.tag_names['default']['valid']
 
         #tasks = s.__lps.launchpad.projects[s.project].searchTasks(
         tasks = s.__lps.launchpad.bugs.searchTasks(
