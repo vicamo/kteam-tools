@@ -36,8 +36,9 @@ class SnapStore:
     """
     A helper class to handle Snapcraft store operations.
     """
-    base_url = "https://search.apps.ubuntu.com/api/v1/snaps/details/"
-    common_headers = {'X-Ubuntu-Series': '16'}
+    base_url = "https://api.snapcraft.io/v2/snaps/info/"
+    common_headers = {'Snap-Device-Series': '16'}
+    # curl -H 'Snap-Device-Series: 16' 'https://api.snapcraft.io/v2/snaps/info/pc-kernel?fields=channel-map,architecture,channel,revision,version'
 
     # __init__
     #
@@ -46,33 +47,38 @@ class SnapStore:
         :param bug: WorkflowBug object
         """
         s.snap = snap
-        s._versions = {}  # dictionary with {(<arch>,<channel>): <version>}
+        s._versions = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
 
-    # _channel_version_revision
+    # _channel_map
     #
-    def _channel_version_revision(s, arch, channel):
+    def _channel_map(s):
         """
         Query the snap store URL to get the information about the kernel snap
-        on the provided arch/channel and cache it.
+        publishing.
 
-        :return: version
+        :return: publishing array
         """
         cdebug("    snap.name={}".format(s.snap.name))
         cdebug("    snap.publish_to={}".format(s.snap.publish_to))
 
-        version = None
-        revision = None
+        result = {}
         try:
             headers = s.common_headers
-            headers['X-Ubuntu-Architecture'] = arch
-            params = urlencode({'fields': 'version,revision', 'channel': channel})
+            params = urlencode({'fields': 'channel-map,architecture,channel,revision,version'})
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
                 response = json.loads(resp.read().decode('utf-8'))
                 cdebug(response)
-                version = response['version']
-                revision = response['revision']
+                for channel_rec in response['channel-map']:
+                    channel = (channel_rec['channel']['architecture'],
+                        channel_rec['channel']['track'] + '/' +
+                        channel_rec['channel']['risk'])
+                    entry = {}
+                    entry['version'] = channel_rec['version']
+                    entry['revision'] = channel_rec['revision']
+                    result[channel] = entry
+
         except HTTPError as e:
             # Error 404 is returned if the snap has never been published
             # to the given channel.
@@ -87,23 +93,23 @@ class SnapStore:
         except (URLError, KeyError) as e:
             raise SnapStoreError('failed to retrieve store URL (%s: %s)' %
                                  (type(e), str(e)))
-        return (version, revision)
+        return result
 
     # channel_version
     #
     def channel_version(s, arch, channel):
         key = (arch, channel)
-        if key not in s._versions:
-            s._versions[key] = s._channel_version_revision(arch, channel)
-        return s._versions[key][0]
+        if s._versions is None:
+            s._versions = s._channel_map()
+        return s._versions.get(key, {}).get('version', None)
 
     # channel_revision
     #
     def channel_revision(s, arch, channel):
         key = (arch, channel)
-        if key not in s._versions:
-            s._versions[key] = s._channel_version_revision(arch, channel)
-        return s._versions[key][1]
+        if s._versions is None:
+            s._versions[key] = s._channel_map()
+        return s._versions.get(key, {}).get('revision', None)
 
 
 # SnapDebs
