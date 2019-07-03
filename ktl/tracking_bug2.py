@@ -603,6 +603,24 @@ class TrackingBug(object):
             s.__bug.lpbug.subscribe(person=lp_subscriber)
         cleave(s.__class__.__name__ + '.subscribers_add')
 
+    def wf_status_get(s):
+        '''
+        Retrieves the status of the workflow project task.
+
+        :rtype: str
+        '''
+        center(s.__class__.__name__ + '.wf_status_get')
+        wf_name = s.__wf_project.display_name
+        status = ''
+        for task in s.__bug.tasks:
+            task_name = task.bug_target_display_name
+            parts = task_name.partition(wf_name)
+            if parts[0] == '' and parts[1] == wf_name and parts[2] == '':
+                status = task.status
+                break
+        cleave(s.__class__.__name__ + '.wf_status_get')
+        return status
+
     def wf_status_set(s, status):
         '''
         Sets the status of the workflow project task to the given
