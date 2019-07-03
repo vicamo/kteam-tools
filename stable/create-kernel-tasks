@@ -128,12 +128,15 @@ class Task():
                         if dryrun is False:
                             mb.derivative_remove(old_tb)
 
-                cinfo('  - duplicate LP: #{} to LP: #{}'.format(old_tb.id, new_tbid))
-                if dryrun is False:
-                    try:
-                        old_tb.make_duplicate_of(self.tb)
-                    except TrackingBugError as e:
-                        cerror('  - duplication failed: {}'.format(e.msg))
+                if old_tb.wf_status_get() == 'Fix Released':
+                    cinfo('  - old task closed, skipping duplication')
+                else:
+                    cinfo('  - duplicate LP: #{} to LP: #{}'.format(old_tb.id, new_tbid))
+                    if dryrun is False:
+                        try:
+                            old_tb.make_duplicate_of(self.tb)
+                        except TrackingBugError as e:
+                            cerror('  - duplication failed: {}'.format(e.msg))
 
         # Add the tracking bugs of the subtasks to this tasks tracking bug
         # as derivatives.
@@ -257,7 +260,15 @@ class TaskSet():
             series = task.ks_source.series.codename
             if series not in self.tbs.series_names:
                 cinfo('Adding tracking bugs for {}...'.format(series))
-                self.tbs.load(series_filter=[series], debug=True)
+                tags = []
+                if self.spin_nr is not None:
+                    if self.spin_nr > 1:
+                        n = self.spin_nr - 1
+                        while n > 0:
+                            tags.append('kernel-sru-cycle-{}-{}'.format(self.cycletag, n))
+                            n = n - 1
+
+                self.tbs.load(series_filter=[series], tag_filter=tags, debug=True)
             task.tb = self.__task_match_tb(task)
 
         # Next traverse all subtasks and try to find an existing tracking bug
