@@ -849,7 +849,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
             supported: true
             backport: true
-            derived-from: [ '18.10', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     hwe:
@@ -860,19 +860,19 @@
 
         linux-hwe-edge:
             packages:
-                linux-hwe-edge:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
+                # linux-hwe-edge:
+                #     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
                 linux-meta-hwe-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe-edge']
-                linux-signed-hwe-edge:
-                    type: signed
+                # linux-signed-hwe-edge:
+                #     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-edge']
             supported: true
             development: true
-            backport: true
-            derived-from: [ '19.04', 'linux' ]
-            #derived-from: [ '18.04', 'linux-hwe' ]
+            #backport: true
+            #derived-from: [ '19.04', 'linux' ]
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     hwe-edge:
