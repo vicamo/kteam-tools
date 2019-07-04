@@ -434,7 +434,7 @@ $ cranky-pull-source linux-signed-oracle xenial
 $ cd -
 ```
 
-Doing it this way, `cranky build-source` will produce the diff.gz instead of
+Doing it this way, `cranky build-sources` will produce the diff.gz instead of
 whole tarballs.
 
 Now run `cranky build-sources` from the main kernel source directory to build the
