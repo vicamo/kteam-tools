@@ -556,6 +556,12 @@ Examples:
 
     # Now collect all sources (deb or snap) that need tasks
     ts = TaskSet(ks_series_list, args.source, cycledate, ks)
+
+    # If the taskset is empty, then your choice was poor...
+    if len(ts.tasks) == 0:
+        cerror('The given selection did not result in any matched task')
+        sys.exit(1)
+
     if args.spin is not None:
         ts.spin_nr = args.spin
 
