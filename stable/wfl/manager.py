@@ -302,8 +302,9 @@ class WorkflowManager():
             if not bug.is_crankable:
                 raise WorkflowBugError('not crankable, skipping')
 
-            bug.reason_reset_all()
             while modified:
+                # Reset reason data for each crank run.
+                bug.reason_reset_all()
                 try:
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
                     modified = s.process_bug_tasks(bug)
