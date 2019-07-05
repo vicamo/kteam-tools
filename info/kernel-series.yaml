@@ -1050,18 +1050,17 @@
 
         linux-azure-edge:
             packages:
-                #linux-azure-edge:
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
+                linux-azure-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
                 linux-meta-azure-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic', 'azure-edge']
-                #linux-signed-azure-edge:
-                #    type: signed
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-edge']
+                linux-signed-azure-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-edge']
             supported: true
             backport: true
-            #derived-from: [ '18.10', 'linux-azure' ]
-            derived-from: [ '18.04', 'linux-azure' ]
+            derived-from: [ '19.04', 'linux-azure' ]
             testing:
                 flavours:
                     azure-edge:
