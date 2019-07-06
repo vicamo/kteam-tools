@@ -251,8 +251,9 @@ create-session)
 map-session)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		echo "$RET"
-		exit 0
 	else
+		echo "$P: No chroot session available for $handle"
+		echo "Use \"$P create-session\" to create one"
 		exit 1
 	fi
 	;;
