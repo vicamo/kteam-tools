@@ -88,7 +88,7 @@ function dput_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky-dput-sources [-h] [-f|--force] [-e EMAIL] DESTINATION [HANDLE]
+Usage: cranky-dput-sources [-h] [-f|--force] [-c|--current] [-e EMAIL] DESTINATION [HANDLE]
 
 Sign and upload the kernel source packages specified by HANDLE to the
 DESTINATION PPA. The script will show the details of the destination PPA
@@ -102,14 +102,16 @@ Positional arguments:
                given the current working directory is used.
 
 Optional arguments:
-  -h, --help   Show this help text and exit.
-  -f, --force  Do not ask for confirmation before signing and uploading
-               the package. Note that this option will cause debsign to be
-               called with --re-sign, causing an already signed package to
-               be re-signed.
-  -e           Email address of the key to be used for the package signing.
-               Useful when (re-)signing a package built using another
-               email address.
+  -h, --help     Show this help text and exit.
+  -f, --force    Do not ask for confirmation before signing and uploading
+                 the package. Note that this option will cause debsign to be
+                 called with --re-sign, causing an already signed package to
+                 be re-signed.
+  -c, --current  Only sign and upload the source package for the current
+                 working directory.
+  -e             Email address of the key to be used for the package signing.
+                 Useful when (re-)signing a package built using another
+                 email address.
 
 Example:
   $ cranky-dput-sources build
