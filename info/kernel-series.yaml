@@ -197,7 +197,7 @@
                 - ['ubuntu', 'Release']
     sources:
         linux:
-            versions: ['5.0.0']
+            versions: ['5.2.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/eoan', 'master-next']
@@ -221,7 +221,6 @@
                     lowlatency:
                         arches: ['amd64', 'i386']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            copy-forward: ['19.04', 'linux']
 
         linux-raspi2:
             packages:
