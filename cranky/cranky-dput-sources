@@ -61,7 +61,7 @@ function dput_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky-dput-sources [-h] DESTINATION [HANDLE]
+Usage: cranky-dput-sources [-h] [-f|--force] DESTINATION [HANDLE]
 
 Upload the kernel source packages specified by HANDLE to the DESTINATION PPA.
 The script will show the details of the destination PPA and list the source
@@ -75,16 +75,17 @@ Positional arguments:
                given the current working directory is used.
 
 Optional arguments:
-  -h, --help  Show this help text and exit.
+  -h, --help   Show this help text and exit.
+  -f, --force  Do not ask for confirmation before uploading the package.
 
 Example:
   $ cranky-dput-sources build
       Upload the kernel source packages of the current directory to the
       standard builder PPA for that kernel.
 
-  $ cranky-dput-sources security-build xenial:linux
+  $ cranky-dput-sources --force security-build xenial:linux
       Upload the Xenial linux kernel source packages to the security builder
-      PPA.
+      PPA without asking for confirmation.
 
   $ cranky-dput-sources --current test-build
       Upload only the kernel source package for the current working directory
@@ -93,6 +94,7 @@ EOF
 }
 
 current=0
+force=0
 dest=
 handle=
 
@@ -100,6 +102,9 @@ while [ ${#} -gt 0 ] ; do
 	case "${1}" in
 		-c|--current)
 			current=1
+			;;
+		-f|--force)
+			force=1
 			;;
 		-h|--help)
 			usage
@@ -156,15 +161,23 @@ for src in "${srcs[@]}" ; do
 	dput_src "${src}" "${current}"
 done
 
-# Get confirmation from the user to do the upload
-tmp=
-while [ "${tmp,,}" != "y" ] && [ "${tmp,,}" != "n" ] ; do
-	echo -n "Upload packages (y|N)? "
-	read -r tmp
-done
+# Get confirmation from the user to do the upload if
+# force was not provided
+if [ "${force}" -eq 1 ]; then
+	upload="y"
+else
+	upload=
+	while [ "${upload,,}" != "y" ] && [ "${upload,,}" != "n" ] ; do
+		echo -n "Upload packages (y|N)? "
+		read -r upload
+		if [ -z "${upload}" ]; then
+			upload="n"
+		fi
+	done
+fi
 
 # Do the upload
-if [ "${tmp,,}" = "y" ] ; then
+if [ "${upload,,}" = "y" ] ; then
 	for src in "${srcs[@]}" ; do
 		dput_src "${src}" "${current}" "${ppa}"
 	done

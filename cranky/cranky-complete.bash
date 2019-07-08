@@ -29,7 +29,7 @@ _cranky() {
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
 		"updateconfigs -h --help -c --clean"
 		"pull-source -h --help"
-		"dput-sources -h --help HANDLER"
+		"dput-sources -h --help -f --force HANDLER"
 		"promote-snap -h --help --dry-run --debug"
 	)
 	if [ "$COMP_CWORD" -eq 1 ]; then
