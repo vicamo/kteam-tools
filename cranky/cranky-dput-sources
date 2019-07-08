@@ -21,16 +21,10 @@ function out()
 	exit "${rc}"
 }
 
-function dput_src()
+function get_changes_file()
 {
-	local dir=$1 current=$2 ppa=${3:-}
+	local dir=$1
 	local DEBIAN src version changes
-
-	if [ "${current}" -eq 1 ] && [ "${PWD}" != "${dir}" ] ; then
-		# Skip the upload of this source package if --current is specified and
-		# the current directory doesn't match the package directory
-		return
-	fi
 
 	(
 		cd "$dir" || exit 1
@@ -50,23 +44,56 @@ function dput_src()
 			exit 1
 		fi
 
+		echo "$changes"
+	)
+}
+
+function sign_src()
+{
+	local dir=$1 resign=$2 maint_email=${3:-}
+
+	(
+		cd "$dir" || exit 1
+
+		changes="$(get_changes_file "$dir")"
 		echo "${changes}"
 
-		if [ -n "${ppa}" ] ; then
-			dput "${ppa}" "../${changes}"
+		sign_opts=()
+		if [ "${resign}" -eq 1 ]; then
+			sign_opts+=("--re-sign")
 		fi
+		if [ ! -z "${maint_email}" ]; then
+			sign_opts+=("-e${maint_email}")
+		fi
+
+		# shellcheck disable=SC2086
+		debsign ${sign_opts[*]} "../${changes}"
+	)
+}
+
+function dput_src()
+{
+	local dir=$1 ppa=$2
+
+	(
+		cd "$dir" || exit 1
+
+		changes="$(get_changes_file "$dir")"
+		echo "${changes}"
+
+		dput "${ppa}" "../${changes}"
 	)
 }
 
 function usage()
 {
 	cat <<EOF
-Usage: cranky-dput-sources [-h] [-f|--force] DESTINATION [HANDLE]
+Usage: cranky-dput-sources [-h] [-f|--force] [-e EMAIL] DESTINATION [HANDLE]
 
-Upload the kernel source packages specified by HANDLE to the DESTINATION PPA.
-The script will show the details of the destination PPA and list the source
-packages that it wants to upload and wait for user confirmation before doing
-the actual upload.
+Sign and upload the kernel source packages specified by HANDLE to the
+DESTINATION PPA. The script will show the details of the destination PPA
+and list the source packages that it wants to upload and wait for user
+confirmation before doing the actual sign and upload.
 
 Positional arguments:
   DESTINATION  An upload destination as listed by cranky-list-routing.
@@ -76,16 +103,26 @@ Positional arguments:
 
 Optional arguments:
   -h, --help   Show this help text and exit.
-  -f, --force  Do not ask for confirmation before uploading the package.
+  -f, --force  Do not ask for confirmation before signing and uploading
+               the package. Note that this option will cause debsign to be
+               called with --re-sign, causing an already signed package to
+               be re-signed.
+  -e           Email address of the key to be used for the package signing.
+               Useful when (re-)signing a package built using another
+               email address.
 
 Example:
   $ cranky-dput-sources build
-      Upload the kernel source packages of the current directory to the
-      standard builder PPA for that kernel.
+      Sign and upload the kernel source packages of the current directory
+      to the standard builder PPA for that kernel.
+
+  $ cranky-dput-sources -e kernel.developer@canonical.com build2
+      Re-sign the source packages of the current directory using the email
+      address provided and upload it to ppa2 builder PPA.
 
   $ cranky-dput-sources --force security-build xenial:linux
-      Upload the Xenial linux kernel source packages to the security builder
-      PPA without asking for confirmation.
+      Sign and upload the Xenial linux kernel source packages to the
+      security builder PPA without asking for confirmation.
 
   $ cranky-dput-sources --current test-build
       Upload only the kernel source package for the current working directory
@@ -97,6 +134,7 @@ current=0
 force=0
 dest=
 handle=
+maint_email=
 
 while [ ${#} -gt 0 ] ; do
 	case "${1}" in
@@ -105,6 +143,14 @@ while [ ${#} -gt 0 ] ; do
 			;;
 		-f|--force)
 			force=1
+			;;
+		-e)
+			shift
+			maint_email="$1"
+			if [[ $maint_email != *"@"* ]]; then
+				usage
+				exit 2
+			fi
 			;;
 		-h|--help)
 			usage
@@ -156,13 +202,56 @@ if [ "${#srcs[@]}" -eq 0 ] ; then
 	exit 1
 fi
 
-# List all .changes files
-for src in "${srcs[@]}" ; do
-	dput_src "${src}" "${current}"
-done
+# If --current is specified, filter the srcs array keeping
+# only the current directory
+if [ "${current}" -eq 1 ]; then
+	new_srcs=()
+	for src in "${srcs[@]}"; do
+		if [ "${PWD}" = "${src}" ] ; then
+			new_srcs+=("${src}")
+		fi
+	done
+	if [ "${#new_srcs[@]}" -eq 0 ]; then
+		echo "Current directory not in source package path list." >&2
+		exit 1
+	fi
+	srcs=("${new_srcs[@]}")
+fi
+
+# If --force was provided we don't need to list the .source files
+# here since they will be echo'ed again later.
+if [ "${force}" -eq 0 ]; then
+	for src in "${srcs[@]}" ; do
+		changes="$(get_changes_file "$src")"
+		echo "${changes}"
+	done
+fi
+
+# Get confirmation from the user to sign the package if
+# --force was not provided
+if [ "${force}" -eq 1 ]; then
+	sign="y"
+else
+	sign=
+	while [ "${sign,,}" != "y" ] && [ "${sign,,}" != "n" ] ; do
+		echo -n "Sign packages (y|N)? "
+		read -r sign
+		if [ -z "${sign}" ]; then
+			sign="n"
+		fi
+	done
+fi
+
+if [ "${sign,,}" = "y" ]; then
+	for src in "${srcs[@]}" ; do
+		# In case 'force' option was provided, we also want to
+		# force a re-sign of the package
+		sign_src "${src}" "${force}" "${maint_email}"
+	done
+fi
 
 # Get confirmation from the user to do the upload if
-# force was not provided
+# --force was not provided
 if [ "${force}" -eq 1 ]; then
 	upload="y"
 else
@@ -179,6 +268,6 @@ fi
 # Do the upload
 if [ "${upload,,}" = "y" ] ; then
 	for src in "${srcs[@]}" ; do
-		dput_src "${src}" "${current}" "${ppa}"
+		dput_src "${src}" "${ppa}"
 	done
 fi
