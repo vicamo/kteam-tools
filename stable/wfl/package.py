@@ -629,7 +629,7 @@ class Package():
                 s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
             failures.append("signed:retry-needed")
 
-        return failures if len(failures) > 0 else None
+        return sorted(failures) if len(failures) > 0 else None
 
     # creator
     #
