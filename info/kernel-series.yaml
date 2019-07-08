@@ -1002,7 +1002,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-edge']
             supported: true
             backport: true
-            derived-from: [ '18.10', 'linux-aws' ]
+            derived-from: [ '19.04', 'linux-aws' ]
             testing:
                 flavours:
                     aws:
