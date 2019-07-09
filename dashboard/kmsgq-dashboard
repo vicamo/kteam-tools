@@ -70,9 +70,9 @@ class TheApp():
                 if 'order' not in update:
                     update['order'] = 50
                 if 'group_order' not in update:
-                    if update['group'] == 'Dashboard':
+                    if update.get('group', '') == 'Dashboard':
                         update['gorder'] = 0
-                    elif update['group'].startswith('Host:'):
+                    elif update.get('group', '').startswith('Host:'):
                         update['gorder'] = 90
                     else:
                         update['gorder'] = 50
