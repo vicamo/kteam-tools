@@ -1899,6 +1899,48 @@
                         clouds: ['metal']
             invalid-tasks: ['certification-testing']
 
+        linux-fips-recert:
+            routing:
+                test-build:
+                    - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
+                test:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/fips', 'Release']
+                proposed:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                updates:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release'] # fips-recert never goes to fips-updates
+                #security:
+                #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+                release:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release']
+            packages:
+                linux-fips-recert:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel', 'fips-recert']
+                linux-meta-fips-recert:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-meta', 'fips-recert']
+                linux-signed-fips-recert:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed', 'fips-recert']
+            supported: false # fips-recert isn't cranked every cycle
+            private: true
+            derived-from: ['16.04', 'linux-fips']
+            testing:
+                flavours:
+                    fips:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64'] # fips-recert is amd64 only
+                        clouds: ['metal']
+            invalid-tasks: ['certification-testing']
+
 # 15.10 (wily)
 '15.10':
     codename: wily
