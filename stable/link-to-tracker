@@ -216,7 +216,7 @@ class Tracking():
             # Pull the entire changelog file into a list
             #
             target_version = Debian.changelog(local=True)[0]['version']
-            title = "%s: %s -proposed tracker" % (target_package, target_version)
+            title = "%s/%s: %s -proposed tracker" % (target_series, target_package, target_version)
             print(" -> %s" % title)
 
             cmd = "%s/cranky-rmadison" % os.path.join(os.path.dirname(__file__), "..", "cranky")
