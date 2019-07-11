@@ -45,8 +45,9 @@ class Package():
         s.kernel_series = KernelSeries() if ks is None else ks
         s.__distro_series = None
 
-        # debs record their versions in their title.
+        # debs record their versions in their title -- sync back canonical form.
         s.bug.version_from_title()
+        s.bug.update_title()
 
         # Pick up versions from our bug as needed.
         s.series = s.bug.series
