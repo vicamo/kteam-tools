@@ -2,7 +2,7 @@
 #
 
 import re
-from datetime                           import datetime, timedelta
+from datetime                           import datetime, timedelta, timezone
 import json
 
 from ktl.kernel_series                  import KernelSeries
@@ -612,6 +612,9 @@ class Package():
                 cinfo('It has been less than {} since the last package was either published or built in {}'.format(period, pocket))
                 cinfo('    target: %s' % comp_date)
                 cinfo('       now: %s' % now)
+
+                # Record when it makes sense to check again.
+                s.bug.refresh_at(now.replace(tzinfo=timezone.utc) + period, 'package publication to {} for {}'.format(pocket, period))
 
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
