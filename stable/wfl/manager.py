@@ -189,11 +189,18 @@ class WorkflowManager():
                 if bugid.isdigit():
                     bugs.append(bugid)
                 elif ':' in bugid:
+                    # We will search for <series>:<source>:<target>
+                    # if target is missing imply it from source.
+                    bits = bugid.split(':')
+                    if len(bits) < 3:
+                        bits.append(bits[-1])
+
                     for search_id, search_data in s.status_start.items():
-                        search_key = "{}:{}".format(
+                        search_key = [
                             search_data.get('series', '-'),
-                            search_data.get('target', '-'))
-                        if bugid == search_key:
+                            search_data.get('source', '-'),
+                            search_data.get('target', '-')]
+                        if bits == search_key:
                             bugs.append(search_id)
                 else:
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
