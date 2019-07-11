@@ -1226,8 +1226,8 @@
                     - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
                 updates:
                     - ['ppa:ibm-cloud/ubuntu/release', 'Release']
-                security:
-                    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+                #security:
+                #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
                 release:
                     - ['ppa:ibm-cloud/ubuntu/release', 'Release']
             packages:
