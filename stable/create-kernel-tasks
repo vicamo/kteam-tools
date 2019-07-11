@@ -41,7 +41,7 @@ class Task():
         if self.create is True:
             pfx = '+'
         if self.ks_snap is not None:
-            ret += '{} {}/{}'.format(pfx, cn, self.ks_snap.name)
+            ret += '{} {}/{}/{}'.format(pfx, cn, self.ks_source.name, self.ks_snap.name)
         else:
             ret += '{} {}/{}'.format(pfx, cn, self.ks_source.name)
         if self.tb is None:
@@ -181,9 +181,9 @@ class Task():
                 if dryrun is False:
                     cb.add_card(card_txt, card_dsc)
             elif self.sourcetype == 'snap':
-                sn = self.ks_snap.name
+                snn = self.ks_snap.name
                 pt = self.ks_snap.publish_to
-                card_txt = 'Produce (#{}) {}/{} snap'.format(sp, cn, sn)
+                card_txt = 'Produce (#{}) {}/{}/{} snap'.format(sp, cn, sn, snn)
                 card_dsc = 'Use cranky-update-snap in related branch and push with new tag.'
                 cinfo('Create "{}" card'.format(card_txt))
                 cdebug('  Desc: {}'.format(card_dsc))
@@ -203,7 +203,7 @@ class Task():
                             track = risk
                         else:
                             track = '{}/{}'.format(track, risk)
-                        card_txt  = 'Release (#{}) {}/{} snap '.format(sp, cn, sn)
+                        card_txt  = 'Release (#{}) {}/{}/{} snap '.format(sp, cn, sn, snn)
                         card_txt += 'to {} channel'.format(track)
                         card_dsc  = 'When task switches to "confirmed" state, release '
                         card_dsc += 'to {} channel.'.format(track)
