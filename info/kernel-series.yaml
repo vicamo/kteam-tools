@@ -1136,6 +1136,40 @@
                     - gke-d1809-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gke-5.0:
+            packages:
+                linux-gke-5.0:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.0-next']
+                linux-meta-gke-5.0:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/bionic', 'gke-5.0']
+                linux-signed-gke-5.0:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic', 'gke-5.0']
+            snaps:
+                gke-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke-5.0']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: [ '18-5.0' ]
+            supported: true
+            derived-from: [ '19.04', 'linux-gcp' ]
+            testing:
+                flavours:
+                    gke:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gke']
+            swm:
+                gke-nvidia-packages:
+                    - gke-d1809-0-amd64
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gcp-edge:
             packages:
                 linux-gcp-edge:
