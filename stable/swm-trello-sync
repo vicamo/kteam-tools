@@ -15,7 +15,7 @@ do
 	*)			continue ;;
 	esac
 	[ "$target" = '-' ] && target="$package"
-	echo "$cycle/$series/$target/$task:$state"
+	echo "$cycle/$series/$package/$target/$task:$state"
 done <"$tasks" | awk -F: '
 	{ if ($1 in states) { states[$1] = states[$1] ":" $2} else { states[$1] = $2 } }
 	END { for (task in states) { print task " " states[task]; } }
@@ -62,7 +62,7 @@ do
 	esac
 
 	key=$(echo "$name" | sed \
-		-e 's@^Crank (#[0-9]*) \([^ ]*\) kernel$@\1/prepare-package@' \
+		-e 's@^Crank (#[0-9]*) \([^/]*\)/\([^ ]*\) kernel$@\1/\2/\2/prepare-package@' \
 		-e 's@^Produce (#[0-9]*) \([^ ]*\) snap$@\1/snap-release-to-edge@' \
 		-e 's@^Release (#[0-9]*) \([^ ]*\) snap to \([^ ]*/\|\)\([^ ]*\) channel$@\1/snap-release-to-\3@' \
 		)
