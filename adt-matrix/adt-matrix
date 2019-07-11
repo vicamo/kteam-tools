@@ -416,8 +416,8 @@ class AutoPackageTest(object):
 
         
                     # This is a triggered event not for linux, ignore.
-                    #if modern and not kernel_pkg:
-                    #    return
+                    if modern and not kernel_pkg:
+                        return
 
                 # Accumulate the latest versions of packages seen so we can detect missing results.
                 if not is_proposed and ver != 'blacklisted' and ver != 'unknown':
