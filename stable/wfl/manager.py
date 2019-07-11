@@ -355,8 +355,8 @@ class WorkflowManager():
             bug.add_live_children(s.live_children(bugid))
 
             while modified:
-                # Reset reason data for each crank run.
-                bug.reason_reset_all()
+                # Reset transient data for each crank run.
+                bug.transient_reset_all()
                 try:
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
                     modified = s.process_bug_tasks(bug)

@@ -79,6 +79,7 @@ class WorkflowBug():
         s._tags = None
         s.bprops = s.load_bug_properties()
         s.overall_reason = None
+        s._refresh = [None, None]
         s.is_development_series = False
         s._master_bug = False
         s._sru_spin = False
@@ -396,14 +397,24 @@ class WorkflowBug():
         cleave(s.__class__.__name__ + '.save_bug_properties')
         return retval
 
-    # reason_reset_all
+    # transient_reset_all
     #
-    def reason_reset_all(s):
+    def transient_reset_all(s):
         '''
-        Reset all existing reasons for this bug.
+        Reset all existing transient data (reasons etc) for this bug.
         '''
         if 'reason' in s.bprops:
             del s.bprops['reason']
+        s._refresh = [None, None]
+
+    @property
+    def refresh(s):
+        return s._refresh
+
+    def refresh_at(s, when, why):
+        (current_when, _) = s._refresh
+        if current_when is None or when < current_when:
+            s._refresh = [when, why]
 
     def add_live_children(s, children):
         new_children = {}
@@ -443,6 +454,8 @@ class WorkflowBug():
 
         if s.overall_reason is not None:
             status.setdefault('reason', {})['overall'] = s.overall_reason
+        if s.refresh[0] is not None:
+            status['refresh'] = s.refresh
 
         try:
             status['cycle'] = s.sru_cycle
