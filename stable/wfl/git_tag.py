@@ -61,12 +61,12 @@ class GitTag():
 
         refs = {}
         if url.startswith("git://git.launchpad.net"):
-            self._verifiable = True
-
             cmd = [ 'git', 'ls-remote', url ]
             result = run(cmd, stdout=PIPE, stderr=PIPE)
             if result.returncode != 0:
-                raise GitTagError(str(result.stderr))
+                raise GitTagError(result.stderr.decode('utf-8').strip())
+
+            self._verifiable = True
 
             for line in result.stdout.decode('utf-8').split('\n'):
                 if '\t' not in line:

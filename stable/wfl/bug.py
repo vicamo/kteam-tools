@@ -4,7 +4,7 @@ from datetime                           import datetime
 import yaml
 import re
 from lib.utils                          import date_to_string, string_to_date
-from .log                               import cdebug, center, cleave, cinfo
+from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError
@@ -14,7 +14,7 @@ from .task                              import WorkflowBugTask
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 from .swm_config                        import SwmConfig
-from .git_tag                           import GitTag
+from .git_tag                           import GitTag, GitTagError
 
 
 # WorkflowBugError
@@ -522,8 +522,13 @@ class WorkflowBug():
             if version is None:
                 published = False
             else:
-                git_tag = GitTag(package_package, version)
-                if git_tag.verifiable and not git_tag.present:
+                try:
+                    git_tag = GitTag(package_package, version)
+                    if git_tag.verifiable and not git_tag.present:
+                        published = False
+                except GitTagError as e:
+                    cerror("{} {}: Tag lookup failed -- {}".format(
+                        package_package, version, e))
                     published = False
 
         return published
