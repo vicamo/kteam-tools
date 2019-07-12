@@ -1947,6 +1947,41 @@
                         clouds: ['metal']
             invalid-tasks: ['certification-testing']
 
+        linux-deeplens:
+            routing:
+                test-build:
+                    - ['ppa:baring-team/ubuntu/test', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:baring-team/ubuntu/build', 'Release']
+                test:
+                    - ['ppa:baring-team/ubuntu/test', 'Release']
+                proposed:
+                    - ['ppa:baring-team/ubuntu/proposed', 'Release']
+                updates:
+                    - ['ppa:baring-team/ubuntu/release', 'Release']
+                release:
+                    - ['ppa:baring-team/ubuntu/release', 'Release']
+            packages:
+                linux-deeplens:
+                    repo: ['git://git.launchpad.net/~baring-team/baring/+git/linux-deeplens', 'master-hwe']
+                linux-meta-deeplens:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~baring-team/baring/+git/linux-meta-deeplens', 'master-hwe']
+            supported: true
+            private: true
+            derived-from: ['16.04', 'linux-hwe']
+            testing:
+                flavours:
+                    deeplens:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            invalid-tasks: ['certification-testing']
+
 # 15.10 (wily)
 '15.10':
     codename: wily
