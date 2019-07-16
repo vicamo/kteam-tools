@@ -32,10 +32,14 @@ class KernelSnapBase(TaskHandler):
         try:
             good, reasons = s.bug.snap.is_in_tracks(risk)
             if good is True:
-                s.task.status = 'Fix Released'
-                s.task.timestamp('finished')
-                retval = True
+                if s.task.status != 'Fix Released':
+                    s.task.status = 'Fix Released'
+                    s.task.timestamp('finished')
+                    retval = True
             else:
+                if s.task.status == 'Fix Released':
+                    s.task.status = 'New'
+                    retval = True
                 issue = 'snap {} not in expected channel(s): {}'.format(s.bug.snap.name, ' '.join(reasons))
                 s.task.reason = 'Pending -- {}'.format(issue)
                 cinfo('    {}'.format(issue), 'yellow')
@@ -62,6 +66,7 @@ class SnapReleaseToEdge(KernelSnapBase):
         s.jumper['Triaged']       = s._verify_release
         s.jumper['In Progress']   = s._verify_release
         s.jumper['Fix Committed'] = s._verify_release
+        s.jumper['Fix Released']  = s._verify_release
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -113,6 +118,7 @@ class SnapReleaseToBeta(KernelSnapBase):
         s.jumper['Triaged']       = s._verify_release
         s.jumper['In Progress']   = s._verify_release
         s.jumper['Fix Committed'] = s._verify_release
+        s.jumper['Fix Released']  = s._verify_release
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -164,6 +170,7 @@ class SnapReleaseToCandidate(KernelSnapBase):
         s.jumper['Triaged']       = s._verify_release
         s.jumper['In Progress']   = s._verify_release
         s.jumper['Fix Committed'] = s._verify_release
+        s.jumper['Fix Released']  = s._verify_release
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -228,6 +235,7 @@ class SnapReleaseToStable(KernelSnapBase):
         s.jumper['Triaged']       = s._verify_release
         s.jumper['In Progress']   = s._verify_release
         s.jumper['Fix Committed'] = s._verify_release
+        s.jumper['Fix Released']  = s._verify_release
 
         cleave(s.__class__.__name__ + '.__init__')
 
