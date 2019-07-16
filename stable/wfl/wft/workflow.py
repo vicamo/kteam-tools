@@ -109,6 +109,17 @@ class Workflow(TaskHandler):
             if phase_text is not None:
                 s.bug.phase = phase_text
 
+            # SAFETY CHECKS:
+            #
+            # Things which if found are worthy of reporting even if we are not yet trying
+            # to close.
+            #
+            if s.bug.snap:
+                (consistent, reasons) = s.bug.snap.channel_revisions_consistent()
+                if consistent is False:
+                    s.task.reason = "snap channel revisions inconsistent {}".format(",".join(reasons))
+                    break
+
             #
             # FINAL VALIDATION:
             #

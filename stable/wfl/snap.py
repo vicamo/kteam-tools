@@ -221,5 +221,43 @@ class SnapDebs:
         cleave(s.__class__.__name__ + '.is_in_tracks')
         return retval, missing
 
+    def channel_revisions_consistent(s):
+        center(s.__class__.__name__ + '.channel_revisions_consistent')
+        broken = []
+
+        publish_to = s.snap_info.publish_to
+        promote_to = s.snap_info.promote_to
+        if publish_to is not None and promote_to is not None:
+            for arch in sorted(publish_to):
+                # Find the highest revision in the highest risk.  This is will
+                # then be used to validate the publications in the appropriate
+                # channels.
+                expected_revision = None
+                for search_risk in ('edge', 'beta', 'candidate'):
+                    for track in publish_to[arch]:
+                        channel = "{}/{}".format(track, search_risk)
+                        version = s.snap_store.channel_version(arch, channel)
+                        if s.bug.version == version:
+                            revision = s.snap_store.channel_revision(arch, channel)
+                            if expected_revision is None or revision > expected_revision:
+                                expected_revision = revision
+                            break
+                    if expected_revision is not None:
+                        break
+
+                if expected_revision is not None:
+                    for track in publish_to[arch]:
+                        track_versions = ()
+                        for risk in s.snap_info.promote_to:
+                            channel = "{}/{}".format(track, risk)
+                            revision = s.snap_store.channel_revision(arch, channel)
+                            if revision is not None and expected_revision != revision:
+                                broken.append("arch={}:channel={}:rev={}:badrev={}".format(arch, channel, expected_revision, revision))
+
+        retval = len(broken) == 0
+
+        cleave(s.__class__.__name__ + '.channel_revisions_consistent')
+        return retval, broken
+
     def promote_to_risk(s, risk):
         return s.snap_info.promote_to_risk(risk)

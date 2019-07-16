@@ -303,6 +303,7 @@ class SnapQaTesting(KernelSnapBase):
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
