@@ -184,36 +184,34 @@ class SnapDebs:
         if publish_to is not None:
             retval = True
             for arch in sorted(publish_to):
+                # Find the highest revision in the highest risk.  This is will
+                # then be used to validate the publications in the appropriate
+                # channels.
+                expected_revision = None
+                for search_risk in ('edge', 'beta', 'candidate'):
+                    for track in publish_to[arch]:
+                        channel = "{}/{}".format(track, search_risk)
+                        version = s.snap_store.channel_version(arch, channel)
+                        if s.bug.version == version:
+                            revision = s.snap_store.channel_revision(arch, channel)
+                            if expected_revision is None or revision > expected_revision:
+                                expected_revision = revision
+                            break
+                    if expected_revision is not None:
+                        break
+
                 missing_arch = []
                 missing_entry = None
                 for track in publish_to[arch]:
                     channel = "{}/{}".format(track, risk)
                     version = s.snap_store.channel_version(arch, channel)
-                    cdebug("track-version: arch={} channel={}  version={} ?? bug.version={}".format(arch, channel, s.snap_store.channel_version(arch, channel), s.bug.version))
-                    if s.bug.version != version:
-                        missing_arch.append("arch={}:channel={}".format(arch, channel))
-                # We have channels missing the expected version for this
-                # architecture.  Search all of the risks in all of the expected
-                # tracks for the version required (and associated revision).
-                # This allows us to find an appropriate revision in a higher
-                # risk category for this channel or in any other channela
-                # primary edge channel; launchpad can only publish to a single
-                # track when auto uploading so where there are more than one
-                # we need to promote it sideways.
-                if len(missing_arch) > 0:
-                    revision = None
-                    for search_risk in ('edge', 'beta', 'candidate'):
-                        for track in publish_to[arch]:
-                            channel = "{}/{}".format(track, search_risk)
-                            version = s.snap_store.channel_version(arch, channel)
-                            if s.bug.version == version:
-                                revision = s.snap_store.channel_revision(arch, channel)
-                                break
+                    revision = s.snap_store.channel_revision(arch, channel)
+                    cdebug("track-version: arch={} channel={}  version={} revision={} ?? bug.version={} expected_revision={}".format(arch, channel, version, revision, s.bug.version, expected_revision))
+                    if expected_revision != revision:
+                        entry = "arch={}:channel={}:rev={}".format(arch, channel, expected_revision)
                         if revision is not None:
-                            break
-
-                    if revision is not None:
-                        missing_arch = [ m + ':rev={}'.format(revision) for m in missing_arch]
+                            entry += ':badrev={}'.format(revision)
+                        missing_arch.append(entry)
                 missing += missing_arch
         else:
             missing.append("UNKNOWN")
