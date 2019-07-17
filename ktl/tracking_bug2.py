@@ -1326,14 +1326,8 @@ class TrackingBugs():
         #
         lps     = s.__lps
         lp      = lps.launchpad
-        new_pkg = False
         ubuntu  = lp.distributions['ubuntu']
-        if ubuntu.getSourcePackage(name=pkg_name) is None:
-            cwarn('%s is not a known source' % pkg_name)
-            new_pkg = True
 
-        #
-        # 
         for distro_series in ubuntu.series_collection:
             # cdebug('ubuntu.series: %s' % distro_series.name)
             if distro_series.name == series_name:
@@ -1360,11 +1354,6 @@ class TrackingBugs():
         title = '{}: {} {}'.format(pkg_name, s.__tbd.no_version, description)
         # Initial description
         desc  = s.__tbd.desc_tmpl
-
-        if new_pkg:
-            lp_package = 'linux'
-        else:
-            lp_package = pkg_name
 
         cdebug('Creating bug for {}'.format(s.project), 'blue')
 
@@ -1396,19 +1385,22 @@ class TrackingBugs():
         lp_bug.lp_save()
 
         # Then add a package task for the ubuntu project
+        lptk_bug = None
         if variant in ('debs', 'combo'):
             ubuntu_project = lps.projects['ubuntu']
-            target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
+            lp_package     = pkg_name
+            target         = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
 
             # Try to add an Ubuntu task for the source (to be nominated for
             # the target series). This can fail if the source was never published.
             try:
-                cdebug('Adding {} task.'.format(pkg_name), 'blue')
+                cdebug('Adding {} task.'.format(lp_package), 'blue')
                 task = lp_bug.addTask(target=target)
                 task.status = 'Confirmed'
             except:
                 cwarn('The {} source was not published. Re-trying with "linux"'.format(lp_package))
-                target = lp.load(ubuntu_project.self_link + '/+source/linux')
+                lp_package = 'linux'
+                target     = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
 
                 try:
                     cdebug('Adding fallback "linux" task.', 'blue')
@@ -1424,31 +1416,41 @@ class TrackingBugs():
             if nomination.canApprove():
                 nomination.approve()
 
-        # Finally build a real tracking bug.
-        if lp_bug is not None:
-            cdebug('Creating new TrackingBug() object')
-            # Convert raw LP bug into LPTK bug for tracking bug creation
-            lptk_bug = lps.get_bug(lp_bug.id)
-            try:
-                new_tb = TrackingBug(lptk_bug, wf_project_name=s.project)
-            except:
-                # Invalidate all tasks added so far
+                # Clone the package task status into the now approved nomination task
+                # (while we still have the info).
+                saved_status = task.status
+                cseries      = series_name.capitalize()
+                lptk_bug     = lps.get_bug(lp_bug.id)
                 for task in lptk_bug.tasks:
-                    task.status = 'Invalid'
-                raise TrackingBugError('failed to instantinate tracking bug')
-            new_tb.tasks_reset()
-            new_tb.tags_reset(testing=s.testing)
-            if s.testing is False and s.private is False:
-                new_tb.subscribers_add()
+                    if cseries in task.bug_target_display_name:
+                        task.status = saved_status
 
-            # Add the variant tag.
-            if variant != 'combo':
-                new_tb.wf_set_property('variant', variant)
-            if variant == 'snap-debs':
-                new_tb.wf_set_property('snap-name', name)
+        # Finally build a real tracking bug.
+        cdebug('Creating new TrackingBug() object')
+        # Convert raw LP bug into LPTK bug for tracking bug creation
+        # (if not already done)
+        if lptk_bug is None:
+            lptk_bug = lps.get_bug(lp_bug.id)
+        try:
+            new_tb = TrackingBug(lptk_bug, wf_project_name=s.project)
+        except:
+            # Invalidate all tasks added so far
+            for task in lptk_bug.tasks:
+                task.status = 'Invalid'
+            raise TrackingBugError('failed to instantinate tracking bug')
+        new_tb.tasks_reset()
+        new_tb.tags_reset(testing=s.testing)
+        if s.testing is False and s.private is False:
+            new_tb.subscribers_add()
 
-            # Ensure any changes are sync'd to the bug.
-            new_tb.save()
+        # Add the variant tag.
+        if variant != 'combo':
+            new_tb.wf_set_property('variant', variant)
+        if variant == 'snap-debs':
+            new_tb.wf_set_property('snap-name', name)
+
+        # Ensure any changes are sync'd to the bug.
+        new_tb.save()
 
         s.__add_to_set(new_tb)
         cleave(s.__class__.__name__ + '.create')
