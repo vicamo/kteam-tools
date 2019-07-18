@@ -56,7 +56,7 @@ do
 		cd "$master_main/$repo" || exit 1
 
 		"$here/git-changeset" "$prev" "$tip" | \
-		while read sha1 changeset title
+		while read sha1 changeset order title
 		do
 			# We cannot assume any remote machine has this sha1 so tag it with a
 			# temporary name, and publish that into the crack repository.
@@ -71,7 +71,7 @@ do
 
 			# Queue up the build.
 			"$here/cod-enqueue" "cod-changeset-build" \
-				"$series" "$package" "crack" "$tag" "$changeset"
+				"$series" "$package" "crack" "$tag" "$changeset" "$order"
 		done
 	)
 		

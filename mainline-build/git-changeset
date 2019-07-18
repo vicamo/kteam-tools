@@ -97,6 +97,7 @@ with Popen(['git', 'log', '-p', '{}..{}'.format(left_tip, right_tip)], stdout=PI
 ##entries.reverse()
 
 # Go through the entries and clear out authors for upstream commits.
+order=10000
 current = ['None']
 for entry in entries:
     ids = entry.get('id', 'None')
@@ -104,4 +105,5 @@ for entry in entries:
     if ids == current:
         continue
     current = ids
-    print(commit, ids, entry['subject'])
+    order -= 1
+    print(commit, ids, order, entry['subject'])
