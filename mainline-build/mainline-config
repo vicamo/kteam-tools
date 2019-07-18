@@ -142,7 +142,8 @@ elif mode == 'changeset':
             if not source.supported:
                 continue
 
-            if source.derived_from or source.copy_forward:
+            if (source.copy_forward or (source.derived_from and
+                    source.name != 'linux-oem-osp1')):
                 continue
 
             for package in sorted(source.packages, key=lambda x: x.name):
