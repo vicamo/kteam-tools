@@ -1,4 +1,4 @@
-from datetime                           import datetime, timedelta
+from datetime                           import datetime, timedelta, timezone
 
 from wfl.log                            import center, cleave, cinfo
 
@@ -197,9 +197,10 @@ class Workflow(TaskHandler):
 
             # Hold this bug open for an hour so that any tooling needing to see
             # it will notice the final state.
-            close_time = s.bug.phase_changed + timedelta(hours=1)
-            now = datetime.utcnow()
+            close_time = s.bug.phase_changed.replace(tzinfo=timezone.utc) + timedelta(hours=1)
+            now = datetime.now(timezone.utc)
             if now <= close_time:
+                s.bug.refresh_at(close_time, 'final close delay')
                 cinfo("Complete but holding open until {} is {}".format(close_time, now))
                 break
 
