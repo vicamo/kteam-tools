@@ -11,12 +11,12 @@ cranking-the-kernel.md.
 
 ### Clone kernel repository
 
-Use cranky-clone to clone the repositories required to build the kernel.
+Use `cranky checkout` to checkout the repositories required to build the kernel.
 We will keep using a "disco" release as an example.
 ```
 $ mkdir -p canonical/kernel/ubuntu
 $ cd canonical/kernel/ubuntu
-$ cranky-clone disco:linux
+$ cranky checkout disco:linux
 ```
 
 If the command completes successfully you should be able to see the following
