@@ -143,7 +143,7 @@ elif mode == 'changeset':
                 continue
 
             if (source.copy_forward or (source.derived_from and
-                    source.name != 'linux-oem-osp1')):
+                    source.name not in ('linux-oem', 'linux-oem-osp1'))):
                 continue
 
             for package in sorted(source.packages, key=lambda x: x.name):
