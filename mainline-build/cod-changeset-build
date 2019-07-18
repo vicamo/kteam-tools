@@ -3,9 +3,12 @@ P='cod-changeset-build'
 
 # Options.
 
-# Title used to be added, ignore it.
-if [ "$#" -ne 5 ]; then
-	echo "Usage: $0 <series> <package> <remote> <commit-ish> <id>" 1>&2
+# If the order is missing throw a 0 in, this allows rebuilds to work.
+if [ "$#" -eq 5 ]; then
+	set - "$@" 0
+fi
+if [ "$#" -ne 6 ]; then
+	echo "Usage: $0 <series> <package> <remote> <commit-ish> <id> <order>" 1>&2
 	exit 1
 fi
 
@@ -23,6 +26,7 @@ package="$2"
 remote="$3"
 commit="$4"
 id="$5"
+order="$6"
 
 master_tree_select
 
@@ -57,6 +61,7 @@ done
 # Find the commit time.
 sha=$( git log -1 --pretty=format:%H "$commit" )
 cts=$( git log -1 --pretty=format:%ct "$commit" )
+cts="$cts.$order"
 title=$( git log -1 --pretty=format:%s "$commit" )
 
 # Clean the tree so we can tell what architectures need building.
