@@ -30,6 +30,9 @@ with Popen(['git', 'log', '-p', '{}..{}'.format(left_tip, right_tip)], stdout=PI
 
 entries = []
 def add_entry(entry):
+    # XXX: should be replaced by Properties: no-test-build
+    if entry and entry.get('subject', "") == 'UBUNTU: link-to-tracker: update tracking bug':
+        entry['ignore'] = True
     if entry and 'ignore' not in entry:
         if 'bugs' in entry:
             ids = ','.join(set(entry['bugs']))
