@@ -52,17 +52,10 @@ do
 		continue
 	fi
 
-	# If the tip is non-linear we have no idea how far back to go ...
-	merge_base=$( cd "$master_main/$repo" && git merge-base "$prev" "$tip" )
-	if [ "$merge_base" != "$prev" ]; then
-		echo "rebase detected, only rebuilding tip"
-		prev="$tip^"
-	fi
-
 	(
 		cd "$master_main/$repo" || exit 1
 
-		git log "$prev..$tip" | "$here/git-changeset" | \
+		"$here/git-changeset" "$prev" "$tip" | \
 		while read sha1 changeset title
 		do
 			# We cannot assume any remote machine has this sha1 so tag it with a

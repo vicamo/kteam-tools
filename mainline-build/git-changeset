@@ -1,15 +1,32 @@
 #!/usr/bin/python3
 
-import codecs
 import hashlib
-import json
-import os
 import sys
-import textwrap
-import urllib.request
+from subprocess import Popen, PIPE
 
-sys.stdin = codecs.getreader("utf-8")(sys.stdin.detach())
-sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+(left_tip, right_tip) = sys.argv[1:]
+#(left_tip, right_tip) = ('Ubuntu-oem-osp1-5.0.0-1012.13', 'Ubuntu-oem-osp1-5.0.0-1013.14')
+#(left_tip, right_tip) = ('Ubuntu-4.15.0-52.56', 'Ubuntu-4.15.0-54.58')
+
+# Identify all patches on the left side of the merge-base.  Maintain
+# a list of the patch-ids found.
+##print("git log --oneline {}..{}".format(right_tip, left_tip))
+left_ids = set()
+with Popen(['git', 'log', '-p', '{}..{}'.format(right_tip, left_tip)], stdout=PIPE) as p1, \
+        Popen(['git', 'patch-id'], stdin=p1.stdout, stdout=PIPE) as p2:
+    for line in p2.stdout:
+        (patch_id, sha) = line.decode('utf-8').strip().split()
+        left_ids.add(patch_id)
+
+# Identify all patches on the right side of the merge-base.  Maintain
+# a mapping from sha1 to patch-id.
+##print("git log --oneline {}..{}".format(left_tip, right_tip))
+right_ids = {}
+with Popen(['git', 'log', '-p', '{}..{}'.format(left_tip, right_tip)], stdout=PIPE) as p1, \
+        Popen(['git', 'patch-id'], stdin=p1.stdout, stdout=PIPE) as p2:
+    for line in p2.stdout:
+        (patch_id, sha) = line.decode('utf-8').strip().split()
+        right_ids[sha] = patch_id
 
 entries = []
 def add_entry(entry):
@@ -28,36 +45,54 @@ def add_entry(entry):
 
         entries.append(entry)
 
-# Suck up the git log output and extract the information we need.
-entry = None
-subject_wait = False
-for line in sys.stdin:
-    if line.startswith('commit '):
-        add_entry(entry)
-        entry = {}
-        subject_wait = True
-        entry['commit'] = line.split()[1]
+# Rescan the commits on the right of the merge-base.  Eliminate those
+# which are also on the left hand side.
+##print("git log --oneline {}..{}".format(left_tip, right_tip))
+with Popen(['git', 'log', '-p', '{}..{}'.format(left_tip, right_tip)], stdout=PIPE) as p1:
+    # Suck up the git log output and extract the information we need.
+    entry = None
+    subject_wait = False
+    for line in p1.stdout:
+        line = line.decode('utf-8')
+        if line.startswith('commit '):
+            add_entry(entry)
+            if (entry is not None and
+                    'ignore' not in entry and
+                    right_ids[entry['commit']] in left_ids):
+                # This is a matching entry from the left branch and not
+                # to be ignored.  We are thus hitting the history from
+                # the other branch we may now stop.
+                entry = None
+                break
+            entry = {}
+            subject_wait = True
+            entry['commit'] = line.split()[1]
 
-    elif line.startswith('Author: '):
-        bits = line.strip().split(maxsplit=1)
-        entry['author'] = bits[1]
+        elif line.startswith('Author: '):
+            bits = line.strip().split(maxsplit=1)
+            entry['author'] = bits[1]
 
-    elif subject_wait and line.startswith('    '):
-        subject_wait = False
-        entry['subject'] = line.strip()
+        elif subject_wait and line.startswith('    '):
+            subject_wait = False
+            entry['subject'] = line.strip()
 
-    elif line.startswith('    BugLink: ') and 'launchpad.net' in line:
-        bits = line.strip().split(maxsplit=1)
-        bits = bits[1].split('/')
-        entry.setdefault('bugs', []).append('LP#' + bits[-1])
+        elif line.startswith('    BugLink: ') and 'launchpad.net' in line:
+            bits = line.strip().split(maxsplit=1)
+            bits = bits[1].split('/')
+            entry.setdefault('bugs', []).append('LP#' + bits[-1])
 
-    elif line.startswith('    CVE-'):
-        entry.setdefault('cves', []).append(line.strip())
+        elif line.startswith('    CVE-'):
+            entry.setdefault('cves', []).append(line.strip())
 
-    elif line.startswith('    Ignore:'):
-        entry['ignore'] = True
+        elif line.startswith('    Properties:'):
+            for prop in line.strip().split()[:1]:
+                if prop == 'no-test-build':
+                    entry['ignore'] = True
 
-add_entry(entry)
+        elif line.startswith('    Ignore:'):
+            entry['ignore'] = True
+
+    add_entry(entry)
 
 ##entries.reverse()
 
