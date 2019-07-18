@@ -146,7 +146,7 @@ elif mode == 'changeset':
                 continue
 
             for package in sorted(source.packages, key=lambda x: x.name):
-                if source.name != package.name:
+                if package.type not in (None, 'main'):
                     continue
 
                 repo = package.repo
