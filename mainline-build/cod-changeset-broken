@@ -22,6 +22,7 @@ do
             -e "fatal: empty ident name (for" \
             -e "dpkg-buildpackage: error: failed to sign .changes file" \
             -e "dpkg-buildpackage: unknown option or argument --no-sign" \
+            -e '"mkimage" command not found - U-Boot images will not be built' \
         "$log" | head -1
     )
     case "$which" in
@@ -57,6 +58,8 @@ do
         which='signing not disabled' ;;
     *"dpkg-buildpackage: unknown option or argument --no-sign"*)
         which='signing not disabled' ;;
+    *'"mkimage" command not found - U-Boot images will not be built'*)
+        which='u-boot-tools not installed correctly' ;;
     esac
 #    if [ "$count" -eq 0 ]; then
 #        count=$( grep -c "dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead" "$log" )
