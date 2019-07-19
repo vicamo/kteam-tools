@@ -15,7 +15,7 @@ class WorkflowBugTask(object):
     #
     def __init__(s, lp_task, task_name, package, bug):
         s.__status   = None
-        s.__assignee = None
+        s.__assignee = False
         setattr(s, 'name', task_name)
         setattr(s, 'importance', lp_task.importance)
         setattr(s, 'lp_task', lp_task)
@@ -86,12 +86,8 @@ class WorkflowBugTask(object):
         '''
         Property: Gets the assignee for the task.
         '''
-        if s.__assignee is None:
-            assignee = s.lp_task.assignee
-            if assignee is None:
-                s.__assignee = '*Unassigned'
-            else:
-                s.__assignee = assignee.display_name
+        if s.__assignee is False:
+            s.__assignee = s.lp_task.assignee
         return s.__assignee
 
     @assignee.setter
@@ -120,7 +116,7 @@ class WorkflowBugTask(object):
             # else:
             #     cdebug('            Task %s already assigned to %s' % (s.name, val), 'red')
             s.lp_task.assignee = val
-            s.__assignee = None
+            s.__assignee = False
             cinfo('    Task %s assigned to %s' % (s.name, val), 'yellow')
         center(s.__class__.__name__ + '.assignee')
 

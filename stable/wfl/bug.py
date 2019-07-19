@@ -413,8 +413,11 @@ class WorkflowBug():
         for taskname in s.tasks_by_name:
             task[taskname] = {
                 'status': s.tasks_by_name[taskname].status,
-                'assignee': s.tasks_by_name[taskname].assignee,
                 }
+            assignee = s.tasks_by_name[taskname].assignee
+            if assignee is not None:
+                task[taskname]['assignee'] = assignee.username
+
             # XXX: ownership of tasks should be more obvious, but this is
             # only needed while we have combo bugs in reality.
             if (taskname.startswith('snap-') and s.snap is not None and

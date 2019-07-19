@@ -347,7 +347,8 @@ class WorkflowManager():
         for workflow_task_name in sorted(bug.tasks_by_name):
             task = bug.tasks_by_name[workflow_task_name]
             cinfo('')
-            cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, task.assignee, workflow_task_name), 'magenta')
+            username = task.assignee.username if task.assignee is not None else None
+            cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, username, workflow_task_name), 'magenta')
 
             therest = task_name[len(s.projectname) + 1:].strip()
             task_name = therest
