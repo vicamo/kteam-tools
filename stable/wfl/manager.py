@@ -167,6 +167,25 @@ class WorkflowManager():
         key = (depth, str(s.status_start.get(bug_nr, {}).get('master-bug', 0)), bug_nr)
         return key
 
+    def live_children(s, bug_nr):
+        result = []
+        with s.lock_thing(2):
+            status = s.status_load()
+
+        for child_nr, child_data in status.items():
+            master_bug = str(child_data.get('master-bug', 0))
+            if master_bug != bug_nr:
+                continue
+            series = child_data.get('series', 'unknown')
+            source = child_data.get('source', 'unknown')
+            target = child_data.get('target', 'unknown')
+            key = "{}/{}".format(series, source)
+            if source != target:
+                key += "/{}".format(target)
+            result.append((key, child_nr))
+
+        return result
+
     @property
     def lp(s):
         if s._lp is None:
@@ -310,6 +329,9 @@ class WorkflowManager():
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
+
+            # Update linkage.
+            bug.add_live_children(s.live_children(bugid))
 
             while modified:
                 # Reset reason data for each crank run.

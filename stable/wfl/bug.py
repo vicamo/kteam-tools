@@ -395,6 +395,13 @@ class WorkflowBug():
         if 'reason' in s.bprops:
             del s.bprops['reason']
 
+    def add_live_children(s, children):
+        new_children = {}
+        for (target, child_id) in children:
+            new_children.setdefault(target, []).append("bug " + child_id)
+        for target, target_ids in new_children.items():
+            s.bprops.setdefault('trackers', {})[target] = ", ".join(target_ids)
+
     def status_summary(s):
         '''
         Return the current reason set for this bug.
