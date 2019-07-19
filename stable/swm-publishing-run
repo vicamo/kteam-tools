@@ -1,0 +1,16 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+# We are meant to run in the swm directory.
+cd "$here" || exit 1
+
+# Run swm as requested and record a copy to the persistent log.
+set -o pipefail
+
+# BODGE: ensure we don't duplicate the HOME protection.
+case "$HOME" in
+*/shankbot)	HOME="${HOME%/shankbot}" ;;
+esac
+
+HOME=$HOME/shankbot "$here/swm-publishing" "$@" 2>&1 | tee -a "$HOME/logs/swm-publishing.log"
