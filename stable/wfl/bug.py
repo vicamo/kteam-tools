@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-from datetime                           import datetime
+from datetime                           import datetime, timedelta, timezone
 import yaml
 import re
 from lib.utils                          import date_to_string, string_to_date
@@ -562,6 +562,10 @@ class WorkflowBug():
                     cerror("{} {}: Tag lookup failed -- {}".format(
                         package_package, version, e))
                     published = False
+                if published is False:
+                    s.refresh_at(datetime.now(timezone.utc) + timedelta(hours=1),
+                        '{} {} polling for tag'.format(
+                        package_package, version))
 
         return published
 
