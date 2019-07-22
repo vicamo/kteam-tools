@@ -289,9 +289,17 @@ class WorkflowManager():
         center('WorkflowManager.manage_payload')
         try:
             # Run the list based on the master chain depth, shortest first.
-            for bugid in sorted(s.buglist, key=s.tracker_key):
-                with s.lock_thing(bugid):
-                    s.crank(bugid)
+            buglist = s.buglist
+            while len(buglist) > 0:
+                buglist_rescan = []
+                # Make sure that each bug only appears once.
+                buglist = list(set(buglist))
+                for bugid in list(sorted(buglist, key=s.tracker_key)):
+                    with s.lock_thing(bugid):
+                        buglist_rescan += s.crank(bugid)
+
+                cinfo("manage_payload: rescan={}".format(buglist_rescan))
+                buglist = buglist_rescan
 
             if not s.args.bugs:
                 s.status_clean()
@@ -319,6 +327,8 @@ class WorkflowManager():
         s.printlink = '%s : (%s)' % (bugid, s.lp.bug_url(bugid))
         cinfo('')
         cinfo('Processing: %s' % s.printlink, 'cyan')
+
+        rescan = []
 
         # If the bug was modified (task status changed) on that crank of the bug then
         # crank it again.
@@ -349,12 +359,18 @@ class WorkflowManager():
             # Update the global status for this bug.
             s.status_set(bugid, bug.status_summary())
 
+            # If we are a new bug and we have a master bug request that
+            # be rescanned to ensure it gains our linkage.
+            if bugid not in s.status_start and bug.is_derivative_package:
+                rescan.append(str(bug.master_bug_id))
+
         except (SeriesLookupFailure, WorkflowBugError) as e:
             modified = False
             for l in e.args:
                 cerror(e.__class__.__name__ + ': ' + l)
 
         cleave('WorkflowManager.crank')
+        return rescan
 
     # process_bug_tasks
     #
