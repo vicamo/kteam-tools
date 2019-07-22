@@ -284,6 +284,7 @@ class Tracking():
 UBUNTU: link-to-tracker: update tracking bug
 
 BugLink: https://bugs.launchpad.net/bugs/{}
+Properties: no-test-build
                 """.strip().format(bugid)
                 retval, out = sh('git add %s' % (tracking), quiet=True)
                 if retval != 0:
