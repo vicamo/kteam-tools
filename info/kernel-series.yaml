@@ -601,7 +601,7 @@
 # 18.10 (Cosmic Cuttlefish)
 '18.10':
     codename: cosmic
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
