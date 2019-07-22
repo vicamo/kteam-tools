@@ -67,18 +67,19 @@ class WorkflowManager():
         WorkflowBug.no_phase_changes  = s.args.no_phase_changes
         WorkflowBug.local_msgqueue_port = s.args.local_msgqueue_port
 
+        # Per bug locking.
+        s.lockfile = 'swm.lock'
+        s.lockfd = open(s.lockfile, 'w')
+
         # Load up the initial status.  If we are scaning all bugs we will
         # attempt to clean out any bugs we did not know.  We should only
         # do this if the bug is present at the start of our run to prevent
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.yaml'
-        s.status_start = s.status_load()
+        with s.lock_thing(2):
+            s.status_start = s.status_load()
         s.status_wanted = {}
-
-        # Per bug locking.
-        s.lockfile = 'swm.lock'
-        s.lockfd = open(s.lockfile, 'w')
 
         cleave('WorkflowManager.__init__')
 
