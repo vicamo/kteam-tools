@@ -73,10 +73,7 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.yaml'
-        s.status_start = {}
-        if os.path.exists(s.status_path):
-            with open(s.status_path) as rfd:
-                s.status_start = yaml.safe_load(rfd)
+        s.status_start = s.status_load()
         s.status_wanted = {}
 
         # Per bug locking.
@@ -96,11 +93,7 @@ class WorkflowManager():
 
     def status_set(s, bugid, summary):
         with s.lock_thing(2):
-            status = {}
-            if os.path.exists(s.status_path):
-                with open(s.status_path) as rfd:
-                    status = yaml.safe_load(rfd)
-
+            status = s.status_load()
             if summary is not None:
                 status[bugid] = summary
                 s.status_wanted[bugid] = True
@@ -127,6 +120,13 @@ class WorkflowManager():
                     del status[bugid]
 
             s.status_save(status)
+
+    def status_load(s):
+        status = {}
+        if os.path.exists(s.status_path):
+            with open(s.status_path) as rfd:
+                status = yaml.safe_load(rfd)
+        return status
 
     def status_save(s, status):
         with open(s.status_path + '.new', 'w') as rfd:
