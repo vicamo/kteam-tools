@@ -190,9 +190,9 @@
             updates:
                 - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
                 - ['ubuntu', 'Updates']
-            security:
-                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
-                - ['ubuntu', 'Security']
+            #security:
+            #    - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+            #    - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
     sources:
