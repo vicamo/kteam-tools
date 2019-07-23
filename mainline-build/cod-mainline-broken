@@ -20,6 +20,7 @@ do
             -e "II: dkms-build downloading nvidia-390" \
             -e ": chroot not found (" \
             -e "fatal: empty ident name (for" \
+            -e "error: '-mindirect-branch' and '-fcf-protection' are not compatible" \
         "$log" | head -1
     )
     case "$which" in
@@ -49,6 +50,8 @@ do
         which='broken chroots' ;;
     *"fatal: empty ident name (for"*)
         which='broken git configuration' ;;
+    *"error: '-mindirect-branch' and '-fcf-protection' are not compatible"*)
+        which='compiler enables -fcf-protection by default' ;;
     esac
 
     # Check for unsigned and no modules.
