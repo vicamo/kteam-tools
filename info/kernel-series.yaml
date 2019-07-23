@@ -802,6 +802,9 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic']
             snaps:
                 pc-kernel:
                     primary: true
