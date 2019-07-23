@@ -1,0 +1,40 @@
+From 41dbf1af09c2b376fe9530d179968db29291e1cb Mon Sep 17 00:00:00 2001
+From: Seth Forshee <seth.forshee@canonical.com>
+Date: Sun, 7 Jul 2019 21:37:43 -0500
+Subject: [PATCH] UBUNTU: SAUCE: kbuild: add -fcf-protection=none when using
+ retpoline flags
+
+BugLink: [Replace -fcf-protection=none patch with new version]
+
+The gcc -fcf-protection=branch option is not compatible with
+-mindirect-branch=thunk-extern. The latter is used when
+CONFIG_RETPOLINE is selected, and this will fail to build with
+a gcc which has -fcf-protection=branch enabled by default. Adding
+-fcf-protection=none when building with retpoline support to
+prevents such build failures.
+
+Signed-off-by: Seth Forshee <seth.forshee@canonical.com>
+---
+ Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index f775a6902a18..a0375c7a65b6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -905,6 +905,12 @@ KBUILD_CFLAGS   += $(call cc-option,-Werror=designated-init)
+ # change __FILE__ to the relative path from the srctree
+ KBUILD_CFLAGS	+= $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
+ 
++# ensure -fcf-protection is disabled when using retpoline as it is
++# incompatible with -mindirect-branch=thunk-extern
++ifdef CONFIG_RETPOLINE
++KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none,)
++endif
++
+ # use the deterministic mode of AR if available
+ KBUILD_ARFLAGS := $(call ar-option,D)
+ 
+-- 
+2.20.1
+
