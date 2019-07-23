@@ -79,7 +79,7 @@ for line in sys.stdin:
         entry['ignore'] = True
 
     elif line.startswith('    Properties:'):
-        for prop in bits = line.strip().split()[1:]:
+        for prop in line.strip().split()[1:]:
             if prop in ('ignore', 'no-changelog'):
                 entry['ignore'] = True
 
