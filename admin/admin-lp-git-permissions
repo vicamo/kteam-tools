@@ -77,8 +77,7 @@ def sync_misc():
         for person in (
                 "/~canonical-kernel-committers",
                 "/~canonical-kernel-hwe-committers",
-                "/~arighi",
-                "/~connork",
+                "/~canonical-kernel-tools-committers",
                 ):
             grants.append(generate_grant(person=person, push=True))
         grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
