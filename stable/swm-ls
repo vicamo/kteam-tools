@@ -43,6 +43,18 @@ def bug_prefix(bugid):
     return bugid
 
 
+def generate_sort(entry):
+    cycle = entry.get('cycle')
+    if cycle != '-':
+        cycle_bits = cycle.split('-')
+        cycle_bits[-1] = '{:03}'.format(int(cycle_bits[-1]))
+        cycle_pad = '-'.join(cycle_bits)
+    else:
+        cycle_pad = '-'
+
+    return "{cycle_pad} {series} {bugid_parent} {bugid}".format(cycle_pad=cycle_pad, **entry)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SWM status tool')
     parser.add_argument('--phase', help='Display phase information',
@@ -63,7 +75,6 @@ if __name__ == '__main__':
 
     results = []
 
-    sort = "{cycle} {series} {bugid_parent} {bugid}"
     for (bug_id, bug_data) in status.items():
         for key in bug_data.keys():
             if ord(key[0]) == 160:
@@ -84,7 +95,7 @@ if __name__ == '__main__':
                     'phase':            task,
                     'phase_status':     bug_data['task'][task]['status'],
                     }
-                results.append((sort.format(**entry), entry))
+                results.append((generate_sort(entry), entry))
 
         if args.reasons is True:
             for task in sorted(bug_data.get('reason', {}).keys()):
@@ -99,7 +110,7 @@ if __name__ == '__main__':
                     'phase':            task,
                     'phase_status':     bug_data['reason'][task],
                     }
-                results.append((sort.format(**entry), entry))
+                results.append((generate_sort(entry), entry))
 
         if args.phase is True:
             entry = {
@@ -113,7 +124,7 @@ if __name__ == '__main__':
                 'phase':            'overall',
                 'phase_status':     bug_data.get('phase', 'Not Ready'),
                 }
-            results.append((sort.format(**entry), entry))
+            results.append((generate_sort(entry), entry))
 
     results.sort(key=lambda x: x[0])
 
