@@ -251,6 +251,10 @@ class SnapDebs:
                     for track in publish_to[arch]:
                         track_versions = ()
                         for risk in s.snap_info.promote_to:
+                            task = "snap-release-to-{}".format(risk)
+                            if (task not in s.bug.tasks_by_name or
+                                    s.bug.tasks_by_name[task] != 'New'):
+                                continue
                             channel = "{}/{}".format(track, risk)
                             revision = s.snap_store.channel_revision(arch, channel)
                             if revision is not None and expected_revision != revision:
