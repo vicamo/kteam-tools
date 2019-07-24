@@ -80,7 +80,9 @@ if __name__ == '__main__':
             if ord(key[0]) == 160:
                 print(bug_id, bug_data)
         if len(bug_data.get('reason', {}).keys()) == 0:
-            bug_data['reason'] = { 'idle': bug_data.get('phase', 'Not Ready'), }
+            phase = bug_data.get('phase', 'Holding not ready')
+            phase = phase.replace(' ', ' -- ', 1)
+            bug_data['reason'] = { 'idle': phase, }
 
         if args.tasks is True:
             for task in sorted(bug_data.get('task', {}).keys()):
