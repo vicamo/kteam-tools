@@ -470,15 +470,17 @@ class Package():
         '''
         Put together a list of all the packages that depend on this package.
         '''
-        pkgs = {}
-        series = s.kernel_series.lookup_series(codename=s.series)
-        source = series.lookup_source(s.name)
-        if source is None:
-            return None
-        for package in source.packages:
-            pkgs[package.type if package.type else 'main'] = package.name
+        if 'packages' not in s.bug.bprops:
+            pkgs = {}
+            series = s.kernel_series.lookup_series(codename=s.series)
+            source = series.lookup_source(s.name)
+            if source is None:
+                return None
+            for package in source.packages:
+                pkgs[package.type if package.type else 'main'] = package.name
+            s.bug.bprops['packages'] = pkgs
 
-        return pkgs
+        return s.bug.bprops['packages']
 
     # distro_series
     #
