@@ -175,14 +175,23 @@ esac
 # TEMPORARY: add new Build-Depend:s here before they are in
 #            the official archive packages as they are not yet
 #            included in the apt-get build-dep instantiation.
+#            Or they are needed in a series via a package other
+#            than series:linux.
+#            XXX: we should use kernel series to instantiate the
+#            full list of packages in the series.
 case "$SUITE" in
 xenial|bionic|cosmic|disco|eoan)
 	ADDPKG="$ADDPKG default-jdk-headless java-common"
 	;;
 esac
 case "$SUITE" in
-bionic|cosmic|disco)
+xenial|bionic|cosmic|disco)
 	ADDPKG="$ADDPKG dkms wget"
+	;;
+esac
+case "$SUITE" in
+xenial)
+	ADDPKG="$ADDPKG libnuma-dev"
 	;;
 esac
 
