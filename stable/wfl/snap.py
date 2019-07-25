@@ -208,7 +208,9 @@ class SnapDebs:
                     revision = s.snap_store.channel_revision(arch, channel)
                     cdebug("track-version: arch={} channel={}  version={} revision={} ?? bug.version={} expected_revision={}".format(arch, channel, version, revision, s.bug.version, expected_revision))
                     if expected_revision != revision:
-                        entry = "arch={}:channel={}:rev={}".format(arch, channel, expected_revision)
+                        entry = "arch={}:channel={}".format(arch, channel)
+                        if expected_revision is not None:
+                            entry += ':rev={}'.format(expected_revision)
                         if revision is not None:
                             entry += ':badrev={}'.format(revision)
                         missing_arch.append(entry)
