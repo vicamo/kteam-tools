@@ -211,7 +211,7 @@ class SnapDebs:
                         entry = "arch={}:channel={}".format(arch, channel)
                         if expected_revision is not None:
                             entry += ':rev={}'.format(expected_revision)
-                        if revision is not None:
+                        if s.bug.version == version and revision is not None:
                             entry += ':badrev={}'.format(revision)
                         missing_arch.append(entry)
                 missing += missing_arch
