@@ -136,6 +136,8 @@ commands:
       Emit the name of the required session if available.
   run [<handle>] -- command
       Run command under chroot.
+  destroy-session configs|sources [<handle>]
+      Destroy the session created for the specified purpose.
 
 Build either base chroots or chroot sessions appropriate for building
 sources or updating configurations.
@@ -149,11 +151,16 @@ positional arguments:
 Examples:
   $ cranky chroot create-base bionic:linux
       Build a clean sbuilder chroot for use in bionic build etc.
+
   $ cranky chroot create-session configs bionic:linux
       Build a chroot session with the appropriate build-depends and cross compilers
       to allow update of configurations for bionic:linux.
+
   $ cranky chroot run bionic:linux -- cranky close
       Run cranky close under the chroot session.
+
+  $ cranky chroot destroy-session configs bionic:linux
+      Destroy the specified chroot session.
 EOF
 
 	exit 2
@@ -173,7 +180,7 @@ create-base)
 	fi
 	handle="$1"
 	;;
-create-session|map-session)
+create-session|map-session|destroy-session)
 	if [ "$#" -eq 1 ]; then
 		set - "$@" "$PWD"
 	elif [ "$#" -ne 2 ]; then
@@ -263,6 +270,14 @@ run)
 	else
 		echo "$P: No chroot session available for $handle" 1>&2
 		echo "Use \"$P create-session\" to create one" 1>&2
+		exit 1
+	fi
+	;;
+destroy-session)
+	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+		schroot -e -c "$RET"
+	else
+		echo "$P: No chroot session available for $handle" 1>&2
 		exit 1
 	fi
 	;;
