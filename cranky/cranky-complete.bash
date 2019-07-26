@@ -27,6 +27,7 @@ _cranky() {
 		"updateconfigs -h --help -c --clean"
 		"pull-source -h --help"
 		"dput-sources -h --help"
+		"promote-snap -h --help --dry-run --debug"
 	)
 	local opts=
 	if [ "$COMP_CWORD" -eq 1 ]; then
