@@ -118,14 +118,26 @@ session_chroot_create()
 
 	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true build-dep --no-install-recommends "$package"
 
-	# Cross Compilers
-	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-i686-linux-gnu gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu gcc
-	# Allow CC to link to libc
-	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install libc6-dev-arm64-cross libc6-dev-armhf-cross libc6-dev-i386-cross libc6-dev-ppc64el-cross libc6-dev-s390x-cross
-
 	# XXX: session specific in it ...
-	
+
 	RET="$session"
+
+	# The kernels supported on Trusty don't need cross-compilers so don't
+	# install them
+	if [ "${series}" = "trusty" ] ; then
+		return
+	fi
+
+	# Cross Compilers
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu gcc
+
+	# Allow CC to link to libc
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install libc6-dev-arm64-cross libc6-dev-armhf-cross libc6-dev-ppc64el-cross libc6-dev-s390x-cross
+
+	if [ "${series}" != "xenial" ] ; then
+		# Xenial doesn't have these packages
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-i686-linux-gnu libc6-dev-i386-cross
+	fi
 }
 
 chroot_update() {
