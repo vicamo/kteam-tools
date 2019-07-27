@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # TODO:
 #  - error handling
@@ -14,6 +14,23 @@ C=${C-cranky}
 P=${P-$0}
 
 here=$(dirname "$(readlink -f "${0}")")
+
+function out()
+{
+	local rc=$?
+
+	trap - INT TERM EXIT HUP
+
+	if [ ${rc} -ne 0 ] ; then
+		if [ -n "${OUT_SESSION}" ] ; then
+			# create-session failed so kill the broken session
+			schroot -e -c "${OUT_SESSION}"
+		fi
+		echo "Script failed" >&2
+	fi
+
+	exit "${rc}"
+}
 
 base_chroot_available()
 {
@@ -50,7 +67,7 @@ base_chroot_create()
 /home           /home           none    rw,bind         0       0
 EOF
 	fi
-	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series" || exit 1
+	mk-sbuild --skip-updates --skip-proposed --distro="ubuntu" --arch="$arch" "$series"
 
 	RET="$chroot"
 }
@@ -94,6 +111,7 @@ session_chroot_create()
 
 	schroot -b -n "$session" -c "$chroot"
 	session="session:$session"
+	OUT_SESSION=${session}   # Used by the exit handler
 
 	schroot -u root -r -c "$session" -- apt-get update
 	schroot -u root -r -c "$session" -- apt-get -y dist-upgrade
@@ -178,6 +196,7 @@ create-base)
 		echo "Usage: $P $cmd [<handle>]" 1>&2
 		exit 1
 	fi
+	session=
 	handle="$1"
 	;;
 create-session|map-session|destroy-session)
@@ -239,6 +258,9 @@ src='linux'
 if [ "$series" = "precise" ]; then
 	series="trusty"
 fi
+
+OUT_SESSION=
+trap out INT TERM EXIT HUP
 
 case "$cmd" in
 create-base)
