@@ -55,7 +55,7 @@ def rmadison_lp(handle_set, show_all=False):
 
     result = []
     for package in sorted(packages):
-        tmp = []
+        package_list = []
         for route in routing:
             dest = route[0]
             ppa, pocket = route[1][0]
@@ -90,11 +90,11 @@ def rmadison_lp(handle_set, show_all=False):
 
             package_version = lp_sources[0].source_package_version
             package_date = lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M")
-            tmp.append([package, package_version, pocket_name, "source",
-                        package_date])
+            package_list.append([package, package_version, pocket_name,
+                                 "source", package_date])
 
         # Sort the temporary list by pocket names and add it to the result
-        result.extend(sorted(tmp, key=pocket_order))
+        result.extend(sorted(package_list, key=pocket_order))
 
     return result
 
@@ -154,8 +154,8 @@ Examples:
       Print all information from all archives and PPAs.
 """
 
-    parser = argparse.ArgumentParser(description=desc, formatter_class=
-                                     argparse.RawDescriptionHelpFormatter,
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
                                      epilog=epilog)
     parser.add_argument("handle", nargs='?', help="A kernel package handle "
                         "in the form of <series>:<source>. If not specified, "
