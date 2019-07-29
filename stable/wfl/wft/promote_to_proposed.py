@@ -74,7 +74,7 @@ class PromoteFromTo(Promoter):
                 failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
                 state = 'Ongoing'
                 for failure in failures:
-                    if not failure.endswith(':building'):
+                    if not failure.endswith(':building') and not failure.endswith(':depwait'):
                         state = 'Pending'
                 reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
                 if failures is not None:

@@ -327,6 +327,8 @@ class Package():
         cleave('Sources::__find_matches (%s)' % match)
         return matches
 
+    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
+
     # __sources_built
     #
     def __sources_built(s, sources, archive, package, release, pocket):
@@ -372,13 +374,14 @@ class Package():
             cdebug("build arch={} status={}".format(build.arch_tag, build.buildstate))
             if build.buildstate in (
                     'Needs building',
-                    'Dependency wait',
                     'Currently building',
-                    'Uploading build',
-                ):
-                    status.add('BUILDING')
+                    'Uploading build'):
+                status.add('BUILDING')
 
-            elif build.buildstate in ('Successfully built'):
+            elif build.buildstate == 'Dependency wait':
+                status.add('DEPWAIT')
+
+            elif build.buildstate == 'Successfully built':
                 status.add('FULLYBUILT')
                 arch_complete.add(build.arch_tag)
 
@@ -437,7 +440,7 @@ class Package():
                 status.add('BUILDING')
 
         # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
+        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
             if state in status:
                 break
 
@@ -534,7 +537,7 @@ class Package():
 
         for pkg in s.srcs:
             try:
-                pkg_seen = s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
+                pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
             except KeyError:
                 pkg_seen = False
 
@@ -619,6 +622,8 @@ class Package():
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 failures.append("{}:building".format(pkg))
+            elif status == 'DEPWAIT':
+                failures.append("{}:depwait".format(pkg))
             elif status == 'FAILEDTOBUILD':
                 # Signed is allowed to be broken until we have built the main kernel.
                 if pkg != 'signed':
@@ -644,7 +649,7 @@ class Package():
 
         if pocket is None:
             for pocket in s.srcs[pkg]:
-                if s.srcs[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
+                if s.srcs[pkg][pocket]['status'] in s.__states_present:
                     retval = s.srcs[pkg][pocket]['creator']
                     break
         else:
@@ -763,7 +768,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
+            if bi[pkg][pocket]['status'] in s.__states_present:
                 retval = True
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
@@ -777,7 +782,7 @@ class Package():
 
         bi = s.build_info
         for pocket in bi[pkg]:
-            if bi[pkg][pocket]['status'] in ['BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']:
+            if bi[pkg][pocket]['status'] in s.__states_present:
                 retval = bi[pkg][pocket]['version']
                 break
 
