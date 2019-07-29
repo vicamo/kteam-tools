@@ -37,7 +37,7 @@ def pocket_order(val):
     return 0
 
 
-def rmadison_lp(handle_set, show_all=False):
+def rmadison_lp(handle_set, show_all=False, show_ext=False):
     """
     Query Launchpad for source package information
     """
@@ -81,6 +81,10 @@ def rmadison_lp(handle_set, show_all=False):
                 # Nothing found in this PPA/pocket
                 continue
 
+            # The package version
+            package_version = lp_sources[0].source_package_version
+
+            # Generate the pocket name to display
             if dest == "release":
                 pocket_name = series
             elif dest in ("security", "updates", "proposed"):
@@ -88,10 +92,15 @@ def rmadison_lp(handle_set, show_all=False):
             else:
                 pocket_name = "%s (ppa:%s)" % (series, dest)
 
-            package_version = lp_sources[0].source_package_version
-            package_date = lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M")
-            package_list.append([package, package_version, pocket_name,
-                                 "source", package_date])
+            # The basic data that we always display
+            route_data = [package, package_version, pocket_name, "source"]
+
+            if show_ext:
+                # Pull additional (non-rmadison) data from launchpad
+                route_data.append(lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M"))
+
+            # Add the route data to the package list
+            package_list.append(route_data)
 
         # Sort the temporary list by pocket names and add it to the result
         result.extend(sorted(package_list, key=pocket_order))
@@ -109,13 +118,10 @@ def print_table(data, show_ext=False, script=False):
             print(' '.join(row))
         return
 
-    # Add a header if we show extended info, otherwise truncate the table to
-    # the first 4 columns
+    # Add a header if we show extended info
     if show_ext:
         data.insert(0, ["Name", "Version", "Pocket/PPA", "Type",
                         "Date Published"])
-    else:
-        data = [d[0:4] for d in data]
 
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*data)]
@@ -182,5 +188,6 @@ Examples:
 
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
-    print_table(rmadison_lp(handle_set, show_all=args.show_all),
+    print_table(rmadison_lp(handle_set, show_all=args.show_all,
+                            show_ext=args.show_extended),
                 show_ext=args.show_extended, script=args.script)
