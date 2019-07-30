@@ -172,6 +172,9 @@ class WorkflowBug():
         s.abi = master_bug.abi
 
     def update_title(s, suffix='-proposed tracker'):
+        # We must not modify the bug unless it is crankable.
+        if not s.is_crankable:
+            return
         if s.version is None:
             version = '<version to be filled>'
         else:
