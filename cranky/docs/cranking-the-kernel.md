@@ -88,14 +88,14 @@ For example, for linux-fips:
 	insteadof = git://git.launchpad.net/~fips-cc-stig`
 ```
 
-### dkms package update stage - `update-versions-dkms`
+### dkms package update stage - `update-version-dkms`
 <!--cheatsheet-->
 ```
 ./update-version-dkms POCKET
 ```
 <!--/cheatsheet-->
 
-In disco and newer, this updates the package versions in `debian/dkms-versions`
+In bionic and newer, this updates the package versions in `debian/dkms-versions`
 to match those currently present in the specified pocket. For SRU kernels
 `POCKET` should be `updates`.  For development kernels it will typically be
 `proposed`.
