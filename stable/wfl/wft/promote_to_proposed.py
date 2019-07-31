@@ -173,19 +173,27 @@ class PromoteFromTo(Promoter):
                     s.task.reason = 'Stalled -- review FAILED'
                 elif s.task.status == 'Fix Committed':
                     failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                    state = 'Ongoing'
+                    for failure in failures:
+                        if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                            state = 'Pending'
+                    reason = '{} -- package copies requested to {}'.format(state, s.pocket_dest)
                     if failures is not None:
-                        s.task.reason = 'Pending -- packages copies requested to {} {}'.format(s.pocket_dest, ','.join(failures))
-                    else:
-                        s.task.reason = 'Ongoing -- packages copies requested'
+                        reason += ' ' + ','.join(failures)
+                    s.task.reason = reason
                 else:
                     s.task.reason = 'Ongoing -- review in progress'
                 break
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
                 failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                state = 'Ongoing'
+                for failure in failures:
+                    if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                        state = 'Pending'
+                reason = '{} -- package copied to {}'.format(state, s.pocket_dest)
                 if failures is not None:
-                    s.task.reason = 'Pending -- packages copied to {} {}'.format(s.pocket_dest, ','.join(failures))
-                else:
-                    s.task.reason = 'Ongoing -- packages copied but not yet published to {}'.format(s.pocket_dest)
+                    reason += ' ' + ','.join(failures)
+                s.task.reason = reason
                 break
             if s.pocket_dest == 'Proposed':
                 if not s.bug.debs.ready_for_testing:
