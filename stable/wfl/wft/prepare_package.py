@@ -181,7 +181,7 @@ class PreparePackage(TaskHandler):
 
             # Check the package tag has been published.
             if not s.bug.published_tag(pkg):
-                s.task.reason = 'Pending -- package tag not yet published'
+                s.task.reason = 'Stalled -- package tag not yet published'
                 break
 
             s.task.status = 'Fix Released'
