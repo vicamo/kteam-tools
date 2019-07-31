@@ -99,7 +99,7 @@ class PreparePackage(TaskHandler):
             # rebase on.
             if not s.master_prepare_ready():
                 if pkg == 'main' or not s.bug.valid_package('main'):
-                    s.task.reason = 'Stalled -- waiting for master bug'
+                    s.task.reason = 'Holding -- waiting for master bug'
                 break
 
             # Confirm whether this package is actually valid.
