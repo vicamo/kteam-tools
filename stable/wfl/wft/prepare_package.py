@@ -119,7 +119,7 @@ class PreparePackage(TaskHandler):
                 break
 
             if s._kernel_block_source():
-                s.task.reason = 'Holding -- manual kernel-block/kernel-block-source present'
+                s.task.reason = 'Stalled -- manual kernel-block/kernel-block-source present'
                 break
 
             s.task.status = 'Confirmed'
