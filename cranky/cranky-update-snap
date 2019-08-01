@@ -37,7 +37,18 @@ class UpdateSnap():
         snap by its name.
         '''
         series = self.ks.lookup_series(codename=self.series)
+        source_name = None
+
+        # If the same snap is produced by multiple sources, we set the name
+        # of the source in the make parameter section.
+        for param in self.scy['parts']['kernel']['make-parameters']:
+            if param.startswith('KERNEL_SOURCE='):
+                source_name = param.split('=', 1)[1]
+                break
+
         for source in series.sources:
+            if source_name is not None and source.name != source_name:
+                continue
             snap = source.lookup_snap(self.scy['name'])
             if snap is not None:
                 return source.name
