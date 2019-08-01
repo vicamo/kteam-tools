@@ -19,15 +19,18 @@ class TheApp(object):
         retval = 0
         ks     = KernelSeries()
 
-        #                              .- package name (group(1))
-        #                             /           .- kernel version (group(2))
-        #                            /           /          .- version/abi separator (group(3))
-        #                           /           /          /
-        ver_rc     = re.compile("(\S+): (\d+\.\d+\.\d+)([-\.])(\d+)\.(\d+)([~a-z\d.]*)")
-        #                                                       /      /       /
-        #                                                      /      /       .- backport extra (m.group(6))
-        #                                                     /      .- upload number (m.group(5))
-        #                                                    .- abi (group(4))
+        #                   .- series name (optional)
+        #                  /                .- package name
+        #                 /                /                .- kernel version
+        #                /                /                /                         .- separator
+        #               /                /                /                         /
+        ver_str  = r'(?P<series>\S+/)?(?P<source>\S+): (?P<version>\d+\.\d+\.\d+)(?P<sep>[-\.])'
+        ver_str += r'(?P<abi>\d+)\.(?P<upload>\d+)(?P<bpextra>[~a-z\d.]*)'
+        #               \             \              \
+        #                \             \              - backport extension
+        #                 \             - upload number
+        #                  - abi number
+        ver_rc     = re.compile(ver_str)
 
         y = {}
         r = requests.get('http://kernel.ubuntu.com/sru/kernel-sru-workflow.json')
@@ -42,7 +45,9 @@ class TheApp(object):
 
                 m = ver_rc.search(title)
                 if m is not None:
-                    if m.group(1) != 'linux' and '-lts-' not in m.group(1) and 'linux-hwe' not in m.group(1):
+                    if m.group('source') != 'linux' and \
+                       not m.group('source').startswith('linux-lts') and \
+                       not m.group('source').startswith('linux-hwe'):
                         continue
 
                     if args.no_devel and bug['series name'] == trackers['info']['dev series']:
@@ -51,11 +56,13 @@ class TheApp(object):
                     if args.no_esm and bug['series name'] in trackers['info']['esm series']:
                         continue
 
-                    version = '%s%s%s.%s%s' % (m.group(2), m.group(3), m.group(4), m.group(5), m.group(6))
+                    version = '{}{}{}.{}{}'.format(m.group('version'), m.group('sep'),
+                                                   m.group('abi'), m.group('upload'),
+                                                   m.group('bpextra'))
 
                     if bug['series name'] not in y:
                         y[bug['series name']] = {}
-                    y[bug['series name']][m.group(1)] = version
+                    y[bug['series name']][m.group('source')] = version
 
         print('Kernel Versions')
         print('====================================================================')
