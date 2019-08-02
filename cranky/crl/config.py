@@ -70,7 +70,8 @@ if __name__ == "__main__":
     # Load up the application config.
     config = Config()
 
-    if sys.argv[1] == 'source-packages-path':
+    cmd = sys.argv[1]
+    if cmd  == 'source-packages-path':
         if len(sys.argv) != 4:
             abort("Usage: {0} {1} <series> <source>".format(*sys.argv))
 
@@ -92,3 +93,7 @@ if __name__ == "__main__":
                 package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
 
             print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix, name=package.name)))
+    elif cmd == 'list-handlers':
+        for series in ks.series:
+            for source in series.sources:
+                print("%s:%s" % (series.codename, source.name))
