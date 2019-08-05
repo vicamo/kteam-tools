@@ -6,6 +6,8 @@ import argparse
 from crl.config import Config
 from crl.handle import Handle, HandleError
 
+from ktl.kernel_series import KernelSeries
+
 def handle_to_series_source(args):
     try:
         handle = Handle().lookup_set(args.handle, validate=False)
@@ -71,6 +73,15 @@ def tree_main_path(args):
             print(tree.directory)
             break
 
+def list_handles(args):
+    for series in KernelSeries(use_local=True).series:
+        if not series.supported:
+            continue
+        for source in series.sources:
+            if not source.supported:
+                continue
+            print("{}:{}".format(series.codename, source.name))
+
 if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
@@ -114,6 +125,11 @@ Helper program for getting cranky config and handle data from shell scripts.
     subparser.add_argument("handle",
                            help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=tree_main_path)
+
+    # list-handles
+    subparser = subparsers.add_parser("list-handles",
+                                      help="Print the list of supported handles")
+    subparser.set_defaults(func=list_handles)
 
     # cranky-<foo> config options subparser
     for command in ("clone", "test-build"):
