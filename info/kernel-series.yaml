@@ -1910,13 +1910,13 @@
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
+                    - ['ppa:fips-cc-stig/ubuntu/fips-recert-build', 'Release']
                 test:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                    - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
                 signing:
                     - ['ppa:canonical-signing/ubuntu/fips', 'Release']
                 proposed:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                    - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
                 updates:
                     - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release'] # fips-recert never goes to fips-updates
                 #security:
