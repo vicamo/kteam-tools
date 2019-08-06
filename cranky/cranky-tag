@@ -42,20 +42,26 @@ while [ "${#}" -gt 0 ] ; do
 	shift
 done
 
-if [ ! -f debian/debian.env ] ; then
-	echo "error: No debian/debian.env found. Is this an Ubuntu kernel source tree?" >&2
+if [ -f debian/debian.env ] ; then
+	# shellcheck disable=SC1091
+	. debian/debian.env
+	if [ -z "${DEBIAN:-}" ] ; then
+		echo "error: Can't find 'DEBIAN' variable in debian/debian.env" >&2
+		exit 1
+	fi
+	debug_log "DEBIAN: $DEBIAN"
+
+	changelog_file="${DEBIAN}/changelog"
+
+elif [ -f update-version ] ; then
+	# This is a dependent package repo
+	changelog_file=debian/changelog
+
+else
+	echo "error: No debian/debian.env or update-version script found. Is this an Ubuntu kernel source tree?" >&2
 	exit 1
 fi
 
-# shellcheck disable=SC1091
-. debian/debian.env
-if [ -z "${DEBIAN:-}" ] ; then
-	echo "error: Can't find 'DEBIAN' variable in debian/debian.env" >&2
-	exit 1
-fi
-debug_log "DEBIAN: $DEBIAN"
-
-changelog_file="${DEBIAN}/changelog"
 debug_log "Changelog file: $changelog_file"
 
 # Check if changelog is open
@@ -65,7 +71,6 @@ if [ "$series" = 'UNRELEASED' ]; then
         exit 1
 fi
 
-
 if ! git show --name-only --format= | grep "$changelog_file" > /dev/null ; then
 	echo "error: No delta in $changelog_file in latest commit" >&2
 	echo "Are you sure the topmost commit is a closing commit?" >&2
@@ -74,14 +79,22 @@ fi
 
 package=$(dpkg-parsechangelog -l"$changelog_file" -SSource)
 debug_log "Package: $package"
+
 new_version=$(dpkg-parsechangelog -SVersion -l"$changelog_file")
 debug_log "Newest version: $new_version"
-prefix="Ubuntu$(echo "$package" | sed -r -e 's/linux(-?)/\1/')-"
+
+prefix=${package#linux}
+prefix=${prefix#-meta}
+prefix=${prefix#-signed}
+prefix=${prefix#-restricted-modules}
+prefix=${prefix#-backports-modules-3.2.0}
+prefix=Ubuntu${prefix}-
 debug_log "Tag Prefix: $prefix"
+
 new_tag_unfixed="$prefix$new_version"
 debug_log "Tag message: $new_tag_unfixed"
 
-if ! git show -s --format=%s | grep -q "^UBUNTU: $new_tag_unfixed$" ; then
+if [ "$(git log --format=%s -1)" != "UBUNTU: $new_tag_unfixed" ] ; then
 	echo "error: Topmost commit subject does not include the right content" >&2
 	echo "Closing commit subject should be:" >&2
 	echo "   UBUNTU: $new_tag_unfixed" >&2
