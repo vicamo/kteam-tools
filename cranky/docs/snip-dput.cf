@@ -1,9 +1,3 @@
 [DEFAULT]
+# Prevent accidential uploads to the main Ubuntu archive
 default_host_main = UNKNOWN
-
-[oem]
-fqdn = cesg.canonical.com
-method = sftp
-login = <your_launchpad_username>
-incoming = /uploads/%(oem)s
-allow_unsigned_uploads = 0
