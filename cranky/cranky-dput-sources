@@ -109,7 +109,7 @@ Optional arguments:
                  be re-signed.
   -c, --current  Only sign and upload the source package for the current
                  working directory.
-  -e             Email address of the key to be used for the package signing.
+  -e, --email    Email address of the key to be used for the package signing.
                  Useful when (re-)signing a package built using another
                  email address.
 
@@ -146,7 +146,7 @@ while [ ${#} -gt 0 ] ; do
 		-f|--force)
 			force=1
 			;;
-		-e)
+		-e|--email)
 			shift
 			maint_email="$1"
 			if [[ $maint_email != *"@"* ]]; then
