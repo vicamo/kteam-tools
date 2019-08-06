@@ -169,7 +169,16 @@ class Tracking():
     def main(s):
         retval = 1
         try:
-            target_package, target_series = s.repo_info
+            # If no source is supplied use information from the current working
+            # directory.
+            if s.args.source is None:
+                target_package, target_series = s.repo_info
+            elif s.args.source is not None and s.args.version is not None:
+                target_series, target_package = s.args.source.split(':')
+            else:
+                raise AppError('--source and --version required')
+            #print("{} {}".format(target_series, target_package))
+
             found_tasks = []
             for (bugid, title) in s.trackers(s.project_tracked).items():
                 # The title has an optional series/ prefix (will become manditory).
@@ -215,9 +224,21 @@ class Tracking():
 
             # Pull the entire changelog file into a list
             #
-            target_version = Debian.changelog(local=True)[0]['version']
+            if s.args.version is None:
+                target_version = Debian.changelog(local=True)[0]['version']
+            else:
+                target_version = s.args.version
             title = "%s/%s: %s -proposed tracker" % (target_series, target_package, target_version)
             print(" -> %s" % title)
+
+            # If we were directed to a version then we will just use that version and write it to the bug.
+            if s.args.version is not None:
+                if s.args.dry_run:
+                    print("Dry Run -- no changes made")
+                else:
+                    lpbug.title = title
+                    lpbug.lp_save()
+                return 0
 
             cmd = "%s/cranky-rmadison" % os.path.join(os.path.dirname(__file__), "..", "cranky")
             retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
@@ -332,6 +353,8 @@ if __name__ == '__main__':
     '''
 
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--source', help='supply source handle directly -- will not attempt to write to local tree')
+    parser.add_argument('--version', help='supply version directly')
     parser.add_argument('--info',  action='store_true', default=False, help='')
     parser.add_argument('--debug', action='store_true', default=False, help='')
     parser.add_argument('--dry-run', action='store_true', default=False, help='')
