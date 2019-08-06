@@ -3,14 +3,12 @@
 import os
 import sys
 import argparse
-import subprocess
 import logging
 
 sys.path.append(os.path.realpath(
     os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
 from ktl.log import Clog, cerror, cinfo, cdebug
-from ktl.utils import run_command
 from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
 
 
@@ -32,6 +30,8 @@ in progress.
                         'just show what would be done')
     parser.add_argument('--debug', action='store_true', default=False,
                         help='output debug level logs')
+    parser.add_argument('--hard', action='store_true', default=False,
+                        help='invalidate hard for the tracking bug never to be seen again')
     parser.add_argument('bug_ids', metavar='bugID', nargs='+', type=int,
                         help='LP bug numbers for invalidation')
     args = parser.parse_args()
@@ -54,27 +54,31 @@ in progress.
     for bug_id in args.bug_ids:
         try:
             tbs.add(bug_id)
+            cdebug('LP: #{} "{}"'.format(bug_id, tbs[bug_id].title))
         except TrackingBugError as e:
-            print('WW: LP: #{} does not seem to be valid. Skipping...'.format(bug_id))
-            print('WW: {}'.format(e.msg))
+            cerror('WW: LP: #{} does not seem to be valid. Skipping...'.format(bug_id))
+            cerror('WW: {}'.format(e.msg))
 
     for tbid in tbs.bug_ids:
         derivatives = tbs[tbid].derivative_bug_ids
 
         if len(derivatives) > 0:
-            print('WW: Cannot invalidate LP: #{} with active derivatives'.format(tbid))
+            cerror('WW: Cannot invalidate LP: #{} with active derivatives'.format(tbid))
             continue
 
         master = tbs[tbid].master_bug_id
         if master is not None:
             tbs.add(master)
             if tbid in tbs[master].derivative_bug_ids:
-                print('{}Dropping LP: #{} from master LP: #{}'.format(mode_prefix, tbid, master))
+                cinfo('{}Dropping LP: #{} from master LP: #{}'.format(mode_prefix, tbid, master))
                 if not args.dry_run:
                     tbs[master].derivative_remove(tbs[tbid])
 
-        print('{}Invalidating LP: #{}'.format(mode_prefix, tbid))
+        hardtxt = ""
+        if args.hard:
+            hardtxt = " (hard)"
+        cinfo('{}Invalidating LP: #{}{}'.format(mode_prefix, tbid, hardtxt))
         if not args.dry_run:
-            tbs[tbid].invalidate()
+            tbs[tbid].invalidate(hard=args.hard)
 
 # vi:set ts=4 sw=4 expandtab syntax=python:

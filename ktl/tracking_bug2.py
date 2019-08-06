@@ -742,7 +742,7 @@ class TrackingBug(object):
                 s.__bug.tags.remove(tag)
             elif tag == s.__tbd.tag_names['testing']['valid']:
                 s.__bug.tags.remove(tag)
-            elif tag.startswith('kernel-sru-cycle-') and hard == True:
+            elif tag.startswith('kernel-sru-cycle') and hard == True:
                 s.__bug.tags.remove(tag)
 
         for task in s.__bug.tasks:
