@@ -1934,6 +1934,9 @@
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed', 'fips-recert']
             supported: false # fips-recert isn't cranked every cycle
             private: true
+            # Handle linux-fips-recert as a backport since it should
+            # be basically be a replica of linux-fips with fewer archs:
+            backport: true
             derived-from: ['16.04', 'linux-fips']
             testing:
                 flavours:
