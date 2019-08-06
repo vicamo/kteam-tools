@@ -1111,6 +1111,7 @@ class TrackingBugs():
             'Incomplete',
             'Fix Committed',
             'Fix Released',
+            'Invalid',
         ]
 
         if len(tag_filter) > 0:
