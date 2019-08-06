@@ -1,13 +1,7 @@
 #!/usr/bin/python3
 
-from copy import deepcopy
 import os
-import sys
 import yaml
-
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'libs')))
-
-from ktl.kernel_series              import KernelSeries
 
 
 class Config:
@@ -18,10 +12,8 @@ class Config:
             raise ValueError("supply only one of filename and data")
 
         if data is None and filename is None:
-            for path in (
-                os.path.join(os.environ['HOME'], '.cranky.yaml'),
-                os.path.join(os.environ['HOME'], '.cranky'),
-                ):
+            for path in (os.path.join(os.environ['HOME'], '.cranky.yaml'),
+                         os.path.join(os.environ['HOME'], '.cranky')):
                 if os.path.exists(path):
                     filename = path
                     break
@@ -54,46 +46,3 @@ class Config:
         if not config:
             return default
         return config
-
-
-if __name__ == "__main__":
-    def abort(msg):
-        print(msg, file=sys.stderr)
-        sys.exit(1)
-
-    if len(sys.argv) < 2:
-        abort("Usage: {} <cmd> ...".format(sys.argv[0]))
-
-    # Load up the kernel-series information.
-    ks = KernelSeries(use_local=True)
-
-    # Load up the application config.
-    config = Config()
-
-    cmd = sys.argv[1]
-    if cmd  == 'source-packages-path':
-        if len(sys.argv) != 4:
-            abort("Usage: {0} {1} <series> <source>".format(*sys.argv))
-
-        (series_codename, source_name) = sys.argv[2:]
-
-        series = ks.lookup_series(codename=series_codename)
-        if not series:
-            abort("{}: {}: series not found".format(sys.argv[0], series_codename))
-        source = series.lookup_source(source_name)
-        if not source:
-            abort("{}: {}: source not found in {}".format(sys.argv[0], source_name, series_codename))
-
-        for package in source.packages:
-            which = package.type if package.type else 'main'
-            which_suffix = '-' + package.type if package.type else ''
-
-            package_path = config.lookup(['package-path', which])
-            if not package_path:
-                package_path = config.lookup(['package-path', 'default'], '{series}{type_suffix}')
-
-            print(os.path.expanduser(package_path.format(series=series.codename, type=which, type_suffix=which_suffix, name=package.name)))
-    elif cmd == 'list-handlers':
-        for series in ks.series:
-            for source in series.sources:
-                print("%s:%s" % (series.codename, source.name))
