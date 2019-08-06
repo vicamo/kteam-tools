@@ -269,7 +269,7 @@ class TaskSet():
             tags = []
             if self.spin_nr is not None:
                 if self.spin_nr > 1:
-                    n = self.spin_nr - 1
+                    n = self.spin_nr
                     while n > 0:
                         tags.append('kernel-sru-cycle-{}-{}'.format(self.cycletag, n))
                         n = n - 1
