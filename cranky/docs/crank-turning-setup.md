@@ -1,12 +1,12 @@
 #		          crank-turning-setup.md
 
 This document describes the local host configuration required to setup the
-local host environment for turning the crank during the SRU cycle for
+local host environment for turning the crank during an SRU cycle for
 Ubuntu kernels.
 
 The following configuration steps make cranking kernels easier, whether an
-engineer is new to canonical or experienced. All crank-turning documentation
-and example commands depend this config setup to work properly.
+engineer is new to Canonical or experienced. All crank-turning documentation
+and example commands depend on this config setup to work properly.
 
 **Note** This is a one-time process to initialize your workstation to use all
 the cranky tools required to produce all the Canonical kernels.
@@ -47,7 +47,8 @@ See "cranky/docs/snip-dput.cf".
 
 ## Get cranky tools
 
-Clone the Kernel Team Tools git repository:
+Clone the Kernel Team Tools git repository (yes, by now you've cloned
+kteam-tools already, otherwise you wouldn't be reading this document :-):
 ```
 cd $HOME/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
