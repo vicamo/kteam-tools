@@ -725,17 +725,24 @@ class TrackingBug(object):
         s.__bug.lpbug.duplicate_of = ref_tb.__bug.lpbug
         s.__bug.lpbug.lp_save()
 
-    def invalidate(s):
+    def invalidate(s, hard=False):
         '''
         Invalidate all tasks of the tracking bug and remove all
         search tags.
+
+        :param hard: Invalidate and also remove any cycle tag(s). This will prevent
+                     finding the bug again while looking for closed tracking bugs
+                     of a certain cycle.
+        :type  hard: Boolean
         '''
-        center(s.__class__.__name__ + '.invalidate({})'.format(s.id))
-        for tag in s.__bug.tags:
+        center(s.__class__.__name__ + '.invalidate({}, {})'.format(s.id, hard))
+        current_tags = s.__bug.tags
+        for tag in current_tags:
             if tag == s.__tbd.tag_names['default']['valid']:
                 s.__bug.tags.remove(tag)
-                continue
-            if tag == s.__tbd.tag_names['testing']['valid']:
+            elif tag == s.__tbd.tag_names['testing']['valid']:
+                s.__bug.tags.remove(tag)
+            elif tag.startswith('kernel-sru-cycle-') and hard == True:
                 s.__bug.tags.remove(tag)
 
         for task in s.__bug.tasks:
