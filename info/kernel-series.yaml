@@ -1280,7 +1280,7 @@
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
+                    - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 signing:
@@ -1868,7 +1868,7 @@
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-kernel-source', 'Release']
+                    - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
                 test:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 signing:
