@@ -174,10 +174,22 @@ class PreparePackage(TaskHandler):
                 retval = True
                 break
 
+            # We have a version so we are at least In Progress.
+            # NOTE: we do not break so we can upgrade to later states.
+            if s.task.status not in ('In Progress', 'Fix Committed'):
+                s.task.status = 'In Progress'
+                retval = True
+
             # Confirm that this package is uploaded.
             if not s.bug.debs.uploaded(pkg):
                 s.task.reason = 'Pending -- package not yet uploaded'
                 break
+
+            # We have uploads so we are at least Fix Committed.
+            # NOTE: we do not break so we can upgrade to later states.
+            if s.task.status != 'Fix Committed':
+                s.task.status = 'Fix Committed'
+                retval = True
 
             # Check the package tag has been published.
             if not s.bug.published_tag(pkg):
