@@ -1,102 +1,224 @@
-#!/bin/bash
+#!/usr/bin/env python3
+#
+from __future__             import print_function
 
-here=$(dirname "$(readlink -f "${0}")")
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 
-tasks=$(mktemp /tmp/sru-sync--tasks.XXXXXX)
-lists=$(mktemp /tmp/sru-sync--lists.XXXXXX)
+import argparse
+import os
+import re
+import sys
+import yaml
 
-"$here/swm-ls" --separate-target --tasks >"$tasks"
+from datetime import datetime
 
-while read junk junk junk junk cycle series package target version task state
-do
-	case "$task" in
-	prepare-package*)	task='prepare-package' ;;
-	snap-release-to-*)	;;
-	*)			continue ;;
-	esac
-	[ "$target" = '-' ] && target="$package"
-	echo "$cycle/$series/$package/$target/$task:$state"
-done <"$tasks" | awk -F: '
-	{ if ($1 in states) { states[$1] = states[$1] ":" $2} else { states[$1] = $2 } }
-	END { for (task in states) { print task " " states[task]; } }
-' | \
-while read task states
-do
-	# Note the list of valid trello lists is those in which it is
-	# acceptable to be found, the _last_ one is where we will move
-	# it to if it is not in one of those lists.
-	#echo "task<$task> states<$states>" 1>&2
-	case ":$states:" in
-	*:Confirmed:*)				list='In Progress|For Review|Review|On Deck' ;;
-	*:In\ Progress:*|*:Fix\ Committed:*)	list='For Review|Review|In Progress' ;;
-	*:New:*)				list='In Progress|Backlog' ;;
-	*)					list='Done' ;;
-	esac
+from trellotool.trellotool import TrelloTool
 
-	echo "$task $list"
-done >"$lists"
+# SwmStatus
+#
+class SwmStatus:
+    _url = 'https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
 
-while read junk junk junk junk cycle series package target version task state
-do
-	base_cycle="${cycle%-[0-9]*}"
-	echo "$base_cycle"
-done <"$tasks" | sort -u | \
-while read cycle
-do
-	case "$cycle" in
-	d*)		continue ;;
-	1962.11.02)	continue ;;
-	esac
-	so-trello board-cards --board "SRU Cycle $cycle" --format "$cycle	{list[name]}	{name}"
-done | \
-while IFS='	' read base_cycle list name
-do
-	board="SRU Cycle $base_cycle"
+    def __init__(self, url=None, data=None, use_local=False):
+        if data is None and url is None:
+            url = self._url
+        if data is None and url:
+            response = urlopen(url)
+            data = response.read()
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
 
-	case "$list" in
-	Blocked)					continue ;;
-	Backlog|On\ Deck|In\ Progress|For\ Review)	;;
-	Done|Done\ *)					list='Done' ;;
-	# Ignore cards in other lists, we have no idea of their meaning.
-	*)						continue ;
-	esac
+        self._data = yaml.safe_load(data)
 
-	key=$(echo "$name" | sed \
-		-e 's@^Crank (#[0-9]*) \([^/]*\)/\([^ ]*\) kernel$@\1/\2/\2/prepare-package@' \
-		-e 's@^Produce (#[0-9]*) \([^ ]*\) snap$@\1/snap-release-to-edge@' \
-		-e 's@^Release (#[0-9]*) \([^ ]*\) snap to \([^ ]*/\|\)\([^ ]*\) channel$@\1/snap-release-to-\3@' \
-		)
-	if [ "$name" = "$key" ]; then
-		continue
-	fi
+    def __iter__(self):
+        return iter(self._data)
 
-	# Extract the cycle number.
-	case "$name" in
-	*'#'*)		spin=$(echo "$name" | sed -e 's/.*#\([0-9]*\).*/\1/') ;;
-	*)		spin='1' ;; # XXX: handle old cards with no (#1).
-	esac
-	cycle="$base_cycle-$spin"
+    def items(self):
+        return self._data.items()
 
-	list_to=$(awk '($1 == "'"$cycle/$key"'") { sub("[^ ]* ",""); print }' <"$lists")
-	#echo "# cycle<$cycle> key<$key> board<$board> card<$name> from<$list> to<$list_to>"
-	if [ "$list_to" = '' ]; then
-		continue
-	fi
-	(
-		ok=0
-		IFS='|'
-		for list_to in $list_to
-		do
-			[ "$list" = "$list_to" ] && ok=1
-		done
-			
-		if [ "$ok" -eq 0 ]; then
-			echo "so-trello card-update --board '$board' --card '$name' --update-board '$board' --update-list '$list_to' --update-position top # $list -> $list_to"
-			so-trello card-update --board "$board" --card "$name" --update-board "$board" --update-list "$list_to" --update-position top
-		fi
-	)
-done
+    def __getitem__(self, *args, **kwargs):
+        return self._data.__getitem__(*args, **kwargs)
 
-rm -f "$tasks" "$lists"
+    def get(self, *args, **kwargs):
+        return self._data.get(*args, **kwargs)
 
-date 1>&2
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='SWM trellow card syncer')
+    args = parser.parse_args()
+
+    # Load up the Swm Status data.  This tells us what trackers exist
+    # and provides us with status information for each.
+    status = SwmStatus()
+
+    # Run the list of tracks and extract the live cycles and create
+    # a tracker mapping.  Ensure this is done in bug_id order so
+    # we use a consistent tracker.
+    cycles = set()
+    trackers = {}
+    for bug_id, bug_data in sorted(status.items()):
+        (cycle, spin) = bug_data['cycle'].rsplit('-', 1)
+        if cycle[0] == 'd':
+            continue
+        cycles.add(cycle)
+
+        #print(bug_id, cycle, spin, bug_data['phase'])
+
+        trackers[(bug_data['cycle'], bug_data['series'], bug_data['source'], bug_data['target'])] = bug_data
+
+    # Connect us to trello.
+    tt = TrelloTool()
+    tt.assert_authenticated()
+
+    # Look up the kernelteam2.
+    trello_team = tt.trello.organization_record('kernelteam2')
+    trello_team_id = trello_team['id']
+
+    # Run the list of boards on the team and extract those which are
+    # boards for our ongoing cycles.
+    debs_crank_re = re.compile(r'^Crank \(#([0-9]+)\) ([^/]*)/([^/ ]*) kernel$')
+    snap_produce_re = re.compile(r'^Produce \(#([0-9]+)\) ([^/]*)/([^/]*)/([^/ ]*) snap$')
+    snap_release_re = re.compile(r'^Release \(#([0-9]+)\) ([^/]*)/([^/]*)/([^/ ]*) snap to ([^ ]*/|)([^ ]*) channel$')
+    for board_entry in tt.trello.organization_boards(trello_team_id):
+        board_id = board_entry['id']
+        board_name = board_entry['name']
+        if not board_name.startswith('SRU Cycle '):
+            continue
+        board_cycle = board_name.split(' ')[-1]
+        if board_cycle not in cycles:
+            continue
+
+        print("Scanning", board_name)
+
+        list_id_name = {}
+        list_name_id = {}
+        for list_entry in sorted(tt.trello.board_lists(board_id),
+                key=lambda x: x['id']):
+            list_id = list_entry['id']
+            list_name = list_entry['name']
+            list_id_name[list_id] = list_name
+            list_name_id[list_name] = list_id
+
+        tracker_task_seen = {}
+        for card_entry in sorted(tt.trello.board_cards(board_id),
+                key=lambda x: x['id']):
+            card_id = card_entry['id']
+            card_name = card_entry['name']
+
+            ##print(card_name)
+            which = None
+            match = debs_crank_re.search(card_name)
+            if match:
+                which = 'debs-prepare'
+                tracker_key = (board_cycle + '-' + match.group(1),
+                    match.group(2), match.group(3), match.group(3))
+            if not match:
+                match = snap_produce_re.search(card_name)
+                if match:
+                    which = 'snap-release-to-edge'
+                    tracker_key = (board_cycle + '-' + match.group(1),
+                        match.group(2), match.group(3), match.group(4))
+            if not match:
+                match = snap_release_re.search(card_name)
+                if match:
+                    which = 'snap-release-to-' + match.group(6)
+                    tracker_key = (board_cycle + '-' + match.group(1),
+                        match.group(2), match.group(3), match.group(4))
+            if not match:
+                continue
+
+            # Work out where this thing is currently meant to be placed.
+            dest_list = None
+            dest_why = None
+
+            # We need to check for duplicates in a task type, build a key.
+            tracker_task_key = tracker_key + (which,)
+
+            tracker = trackers.get(tracker_key)
+
+            # Check for a duplicate card -- as the entries are stable
+            # due to the applied sorting we can assume the later cards
+            # are bad.
+            if tracker_task_key in tracker_task_seen:
+                #print("DUPLICATE TRACKER", tracker_task_key, card_id, tracker_task_seen[tracker_task_key])
+                dest_list = [ 'Done', 'lost+found']
+                dest_why = 'Duplicate Tracker'
+
+            # Check for unknown trackers.
+            # This is unknown to swm, so either broken or already
+            # closed out completely.  Expect it to be in Done
+            # or lost+found.
+            elif tracker is None:
+                ##print("UNKNOWN TRACKER", tracker_key)
+                dest_list = ['Done', 'lost+found']
+                dest_why = 'Unknown Tracker'
+
+            # deb-prepare tasks
+            elif which == 'debs-prepare':
+                phase = tracker['phase']
+                ##print("DEBS PREPARE", tracker_key, phase)
+
+                # Not yet ready for packaging -- Backlog
+                if phase == 'Holding before Packaging':
+                    dest_list = ['In Progress', 'Backlog']
+
+                # Ready to package -- On Deck
+                elif phase == 'Ready for Packaging':
+                    dest_list = ['For Review', 'Review', 'In Progress', 'On Deck']
+
+                # Packaging -- In Progress
+                elif phase == 'Packaging':
+                    dest_list = ['For Review', 'Review', 'In Progress']
+
+                # Otherwise we are beyond packaging.
+                else:
+                    dest_list = ['Done']
+                dest_why = phase
+
+                #for task_name, task_data in tracker['task']:
+
+            elif which.startswith('snap-release-'):
+                task_state = tracker['task'].get(which, {}).get('status', 'unknown')
+                ##print("SNAP RELEASE", tracker_key, which, task_state)
+
+                # Not yet ready for packaging -- Backlog
+                if task_state == 'New':
+                    dest_list = ['In Progress', 'Backlog']
+
+                # Ready to package -- On Deck
+                elif task_state == 'Confirmed':
+                    dest_list = ['For Review', 'Review', 'In Progress', 'On Deck']
+
+                # Packaging -- In Progress
+                elif task_state in ('In Progress', 'Fix Committed'):
+                    dest_list = ['For Review', 'Review', 'In Progress']
+
+                # Otherwise we are beyond packaging.
+                else:
+                    dest_list = ['Done']
+                dest_why = which + ':' + task_state
+
+            # Make sure we catch a miss-identify.
+            else:
+                raise ValueError('unknown task type {}'.format(which))
+
+            tracker_task_seen[tracker_task_key] = card_id
+
+            if dest_list is not None:
+                list_id = card_entry['idList']
+                list_name = list_id_name[list_id]
+                if list_name.startswith('Done '):
+                    list_name = 'Done'
+
+                #print("CHECK", card_name, dest_list, list_name)
+                if list_name == 'Blocked':
+                    print("BLOCKED: '{}' {} -> -- ({} {})".format(card_name, list_name, dest_why, dest_list))
+
+                elif list_name not in dest_list:
+                    print("MOVE: '{}' {} -> {} ({} {})".format(card_name, list_name, dest_list[-1], dest_why, dest_list))
+                    card = tt.trello.card_update(card_id, idList=list_name_id[dest_list[-1]], pos='top')
+
+    print(datetime.now())
