@@ -243,8 +243,9 @@ for bid in data['swm']:
 
     try:
         cycle = 'unknown'
+        spin = '?'
         if 'cycle' in b:
-            cycle = (b['cycle'].split('-') + [''])[0]
+            (cycle, spin) = (b['cycle'].split('-') + ['?'])[0:2]
 
         package = b.get('source', 'unknown')
         version = b.get('version', '-')
@@ -291,10 +292,10 @@ for bid in data['swm']:
             status = re.sub(r'(vt: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html', status)
 
         if first:
-            cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status })
+            cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status, 'spin': spin })
             first = False
         else:
-            cadence[cycle][sn][package].append({ 'bug': None, 'version': None, 'phase': status })
+            cadence[cycle][sn][package].append({ 'bug': None, 'version': None, 'phase': status, 'spin': spin })
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
@@ -357,13 +358,16 @@ for bid in data['swm']:
                                                             <%
                                                                 cell_version = '&nbsp;'
                                                                 cell_package = '&nbsp;'
+                                                                cell_spin = '&nbsp;'
                                                                 if bug['bug'] is not None:
                                                                     url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
                                                                     cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
                                                                     cell_package = '<a href="{}">{}</a>'.format(url, pkg)
+                                                                    cell_spin = '#{}'.format(bug['spin'])
                                                             %>
                                                             <td width="120" align="right" style="color: green">${cell_version}</td>
                                                             <td style="color: green">${cell_package}</a></td>
+                                                            <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
                                                         </tr>
                                                     % endfor
