@@ -84,7 +84,7 @@ def list_handles(args):
         if not series.supported:
             continue
         for source in series.sources:
-            if not source.supported:
+            if not source.supported or source.copy_forward is not None:
                 continue
             print("{}:{}".format(series.codename, source.name))
 
