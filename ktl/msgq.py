@@ -7,13 +7,17 @@ class MsgQueue():
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None):
+    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None, heartbeat=None):
         s.exchange_name = exchange
 
-        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat_interval=heartbeat_interval)
+        # Backwards compatibility with pre-0.11.x pika.
+        if heartbeat is None:
+            heartbeat = heartbeat_interval
+
+        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat=heartbeat)
         s.connection = pika.BlockingConnection(params)
         s.channel = s.connection.channel()
-        s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
+        s.channel.exchange_declare(exchange=s.exchange_name, exchange_type=exchange_type)
 
 
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True, queue_arguments=None):
@@ -23,7 +27,7 @@ class MsgQueue():
 
         s.channel.queue_declare(queue_name, durable=queue_durable, arguments=queue_arguments)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
-        s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=True)
+        s.channel.basic_consume(queue=queue_name, auto_ack=False, on_message_callback=wrapped_handler)
         s.channel.start_consuming()
 
 
@@ -36,7 +40,7 @@ class MsgQueue():
         s.channel.queue_declare(queue_name, durable=queue_durable, auto_delete=auto_delete, arguments=queue_arguments)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
         s.channel.basic_qos(prefetch_count=1)
-        s.channel.basic_consume(wrapped_handler, queue=queue_name, no_ack=False)
+        s.channel.basic_consume(queue=queue_name, auto_ack=True, on_message_callback=wrapped_handler)
 
 
     def listen_start(s):

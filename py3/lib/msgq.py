@@ -13,13 +13,17 @@ class MsgQueue():
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None):
+    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None, heartbeat=None):
         s.exchange_name = exchange
 
-        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat_interval=heartbeat_interval)
+        # Backwards compatibility with pre-0.11.x pika.
+        if heartbeat is None:
+            heartbeat = heartbeat_interval
+
+        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat=heartbeat)
         s.connection = pika.BlockingConnection(params)
         s.channel = s.connection.channel()
-        s.channel.exchange_declare(exchange=s.exchange_name, type=exchange_type)
+        s.channel.exchange_declare(exchange=s.exchange_name, exchange_type=exchange_type)
 
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True):
         def wrapped_handler(channel, method, properties, body):
