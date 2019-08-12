@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+from __future__ import print_function
 
 #from sys                    import stdout, stderr
 #from commands               import getstatusoutput
@@ -25,7 +26,7 @@ class Email:
         # This is pretty much only tested and working with the authentication required by the Canonical server
         # It probably needs more options added
         if smtp_server is None:
-            raise ValueError, "Must supply smpt server information"
+            raise ValueError("Must supply smpt server information")
         self.smtp_server = smtp_server
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
@@ -39,7 +40,7 @@ class Email:
         Send email. Uses the smtp server info already initialized.
         """
         if self.verbose:
-            print 'send_email: from=<%s>, to=<%s>, subject=<%s>, body=<%s>' % (from_address, to_address, subject, body)
+            print('send_email: from=<%s>, to=<%s>, subject=<%s>, body=<%s>' % (from_address, to_address, subject, body))
 
         msg = MIMEText(body)
         msg['Subject'] = subject
@@ -71,7 +72,7 @@ class Status:
         Save the information needed to contact the server
         """
         if (status_url is None) or (status_user is None) or (status_password is None):
-            raise ValueError, "Must supply status server information"
+            raise ValueError("Must supply status server information")
         self.status_url = status_url
         self.status_user = status_user
         self.status_password = status_password

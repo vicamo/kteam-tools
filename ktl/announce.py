@@ -1,8 +1,8 @@
 import os
 
-from msgq                           import MsgQueue
-from messaging                      import Email
-from cfg                            import Cfg
+from .msgq                           import MsgQueue
+from .messaging                      import Email
+from .cfg                            import Cfg
 
 class Announce:
 
