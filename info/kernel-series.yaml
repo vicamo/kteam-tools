@@ -1271,6 +1271,27 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oracle-edge:
+            packages:
+                linux-oracle-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-edge']
+                linux-meta-oracle-edge:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/bionic', 'oracle-edge']
+                linux-signed-oracle-edge:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic', 'oracle-edge']
+            supported: true
+            derived-from: [ '19.04', 'linux-oracle' ]
+            testing:
+                flavours:
+                    oracle-edge:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-fips:
             routing:
                 test-build:
