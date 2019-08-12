@@ -384,7 +384,7 @@
                         arches: ['amd64']
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '18.04', 'linux-oracle' ]
+            copy-forward: [ '19.04', 'linux-oracle' ]
 
         linux-snapdragon:
             packages:
@@ -576,7 +576,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/disco']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     oracle:
@@ -585,7 +585,6 @@
                         arches: ['amd64']
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '18.04', 'linux-oracle' ]
 
         linux-snapdragon:
             packages:
