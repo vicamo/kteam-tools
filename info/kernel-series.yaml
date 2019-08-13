@@ -936,6 +936,9 @@
                 linux-signed-oem:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/bionic', 'oem']
+                linux-restricted-modules-oem:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/bionic', 'oem']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
@@ -956,6 +959,9 @@
                 linux-signed-oem-osp1:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/bionic', 'oem']
+                linux-restricted-modules-oem-osp1:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem-osp1/+git/bionic', 'oem']
             supported: true
             development: true
             derived-from: [ '19.04', 'linux' ]
@@ -974,6 +980,9 @@
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic']
             snaps:
                 aws-kernel:
                     primary: true
@@ -1024,6 +1033,9 @@
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic']
             snaps:
                 azure-kernel:
                     primary: true
@@ -1059,6 +1071,9 @@
                 #linux-signed-azure-edge:
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-edge']
+                #linux-restricted-modules-azure:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-edge']
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux-azure' ]
@@ -1081,6 +1096,9 @@
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic']
             snaps:
                 gcp-kernel:
                     primary: true
@@ -1260,6 +1278,9 @@
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
