@@ -120,10 +120,10 @@ def __status_bites(bug):
             regression_testing_status not in ('n/a', 'New', 'Invalid') or
             verification_testing_status not in ('n/a', 'New', 'Invalid'))
     testing_complete = (
-            automated_testing_status in ('Invalid', 'Fix Released') and
-            certification_testing_status in ('Invalid', 'Fix Released') and
-            regression_testing_status in ('Invalid', 'Fix Released') and
-            verification_testing_status in ('Invalid', 'Fix Released'))
+            automated_testing_status in ('n/a', 'Invalid', 'Fix Released') and
+            certification_testing_status in ('n/a', 'Invalid', 'Fix Released') and
+            regression_testing_status in ('n/a', 'Invalid', 'Fix Released') and
+            verification_testing_status in ('n/a', 'Invalid', 'Fix Released'))
     if testing_valid and not testing_complete:
         retval = ''
 
