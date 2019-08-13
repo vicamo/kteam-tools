@@ -170,8 +170,13 @@ def __status_bites(bug):
     # snaps: testing status mashup.
     certification_testing_status = __task_status(bug, 'snap-certification-testing')
     qa_testing_status = __task_status(bug, 'snap-qa-testing')
-    if (certification_testing_status not in ('n/a', 'New', 'Invalid') or
-            qa_testing_status not in ('n/a', 'New', 'Invalid')):
+    testing_valid = (
+            certification_testing_status not in ('n/a', 'New', 'Invalid') or
+            qa_testing_status not in ('n/a', 'New', 'Invalid'))
+    testing_complete = (
+            certification_testing_status in ('n/a', 'Invalid', 'Fix Released') and
+            qa_testing_status in ('n/a', 'Invalid', 'Fix Released'))
+    if testing_valid and not testing_complete:
         retval = ''
 
         color = __testing_status_colors[certification_testing_status]
