@@ -1397,11 +1397,11 @@ class TrackingBugs():
         if variant in ('debs', 'combo'):
             ubuntu_project = lps.projects['ubuntu']
             lp_package     = pkg_name
-            target         = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
 
             # Try to add an Ubuntu task for the source (to be nominated for
             # the target series). This can fail if the source was never published.
             try:
+                target = lp.load(ubuntu_project.self_link + '/+source/' + lp_package)
                 cdebug('Adding {} task.'.format(lp_package), 'blue')
                 task = lp_bug.addTask(target=target)
                 task.status = 'Confirmed'
