@@ -77,14 +77,14 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.yaml'
-        with s.lock_thing(2):
+        with s.lock_status():
             s.status_start = s.status_load()
         s.status_wanted = {}
 
         cleave('WorkflowManager.__init__')
 
     @contextmanager
-    def lock_thing(s, what, block=True):
+    def lock_bug(s, what, block=True):
         mode = LOCK_EX
         if block is False:
             mode |= LOCK_NB
@@ -92,8 +92,18 @@ class WorkflowManager():
         yield
         lockf(s.lockfd, LOCK_UN, 1, int(what))
 
+    @contextmanager
+    def single_thread(s):
+        with s.lock_bug(1, block=False):
+            yield
+
+    @contextmanager
+    def lock_status(s):
+        with s.lock_bug(2):
+            yield
+
     def status_set(s, bugid, summary):
-        with s.lock_thing(2):
+        with s.lock_status():
             status = s.status_load()
             if summary is not None:
                 status[bugid] = summary
@@ -107,7 +117,7 @@ class WorkflowManager():
             s.status_save(status)
 
     def status_clean(s):
-        with s.lock_thing(2):
+        with s.lock_status():
             status = {}
             if os.path.exists(s.status_path):
                 with open(s.status_path) as rfd:
@@ -169,7 +179,7 @@ class WorkflowManager():
 
     def live_children(s, bug_nr):
         result = []
-        with s.lock_thing(2):
+        with s.lock_status():
             status = s.status_load()
 
         for child_nr, child_data in status.items():
@@ -272,7 +282,7 @@ class WorkflowManager():
     def manage(s):
         if not s.args.bugs:
             try:
-                with s.lock_thing(1, block=False):
+                with s.single_thread():
                     s.manage_payload()
             except BlockingIOError:
                 cerror('Full run already in progress.', 'red')
@@ -295,7 +305,7 @@ class WorkflowManager():
                 # Make sure that each bug only appears once.
                 buglist = list(set(buglist))
                 for bugid in list(sorted(buglist, key=s.tracker_key)):
-                    with s.lock_thing(bugid):
+                    with s.lock_bug(bugid):
                         buglist_rescan += s.crank(bugid)
 
                 cinfo("manage_payload: rescan={}".format(buglist_rescan))
