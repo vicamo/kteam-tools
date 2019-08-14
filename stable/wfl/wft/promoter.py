@@ -1,4 +1,4 @@
-from datetime                                   import datetime
+from datetime                                   import datetime, timedelta, timezone
 
 from wfl.log                                    import center, cleave, cinfo, cdebug
 from wfl.gcp_bucket                             import GcpBucketObject, GcpBucketError
@@ -226,6 +226,8 @@ class Promoter(TaskHandler):
                     missing.append(obj)
             if len(missing) > 0:
                 s.task.reason = "Pending -- Nvidia objects not found -- {}".format(','.join(missing))
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(hours=1),
+                    'polling for nvidia objects {}'.format(','.join(missing)))
                 retval = False
 
         cleave(s.__class__.__name__ + '._prerequisites_released (%s)' % retval)
