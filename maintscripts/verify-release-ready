@@ -137,7 +137,7 @@ class VerifyReleaseReady():
             #
             msg = 'build number (%d)' % (int(cl1_build) + 1)
             if int(cl0_build) != int(cl1_build) + 1:
-                s.status(msg, False)
+                s.status(msg, "warning")
                 s.verbose("expected %d but got: %d" % (int(cl1_build), int(cl0_build)))
             else:
                 s.status(msg, True)
