@@ -185,10 +185,21 @@ class PreparePackage(TaskHandler):
                 s.task.reason = 'Pending -- package not yet uploaded'
                 break
 
+            # If we have uploaded packages we have a creator.
+            creator = s.bug.debs.creator(pkg)
+
             # We have uploads so we are at least Fix Committed.
             # NOTE: we do not break so we can upgrade to later states.
             if s.task.status != 'Fix Committed':
                 s.task.status = 'Fix Committed'
+                try:
+                    s.task.assignee = s.bug.debs.creator(pkg)
+                except KeyError:
+                    # It doesn't matter if we set the assignee, that's just a nice
+                    # to have.
+                    #
+                    pass
+
                 retval = True
 
             # Check the package tag has been published.
