@@ -8,7 +8,7 @@
 _cranky() {
 	local cur first cmd opts
 	local cmds=(
-		"build-sources -h --help HANDLE"
+		"build-sources -h --help -c --current --build-opts HANDLE"
 		"checkout -h --help -r --reference -d --dissociate HANDLE"
 		"chroot -h --help create-base create-session map-session run HANDLE"
 		"clone -h --help -r --reference -d --dissociate HANDLE"
