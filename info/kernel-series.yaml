@@ -1141,7 +1141,8 @@
                     publish-to:
                         amd64: [ '18', '18-4.15' ]
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            backport: true
+            derived-from: [ '19.04', 'linux-gcp' ]
             testing:
                 flavours:
                     gke:
@@ -1193,17 +1194,17 @@
 
         linux-gcp-edge:
             packages:
-                linux-gcp-edge:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-edge-next']
+                #linux-gcp-edge:
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-edge-next']
                 linux-meta-gcp-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-edge']
-                linux-signed-gcp-edge:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-edge']
+                #linux-signed-gcp-edge:
+                #    type: signed
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-edge']
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux-gcp' ]
+            #backport: true
+            derived-from: [ '18.04', 'linux-gcp' ]
             testing:
                 flavours:
                     gcp:
@@ -1703,7 +1704,7 @@
                     arches: ['amd64']
             supported: true
             backport: true
-            derived-from: [ '18.04', 'linux-gcp' ]
+            derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
                     gcp:
