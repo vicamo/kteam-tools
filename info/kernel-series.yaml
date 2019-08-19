@@ -1110,6 +1110,7 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
+            backport: true
             derived-from: [ '19.04', 'linux-gcp' ]
             testing:
                 flavours:
