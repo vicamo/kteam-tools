@@ -1110,7 +1110,7 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '19.04', 'linux-gcp' ]
             testing:
                 flavours:
                     gcp:
@@ -1142,7 +1142,7 @@
                         amd64: [ '18', '18-4.15' ]
             supported: true
             backport: true
-            derived-from: [ '19.04', 'linux-gcp' ]
+            derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
                     gke:
