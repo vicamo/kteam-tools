@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #
+from datetime                           import datetime, timezone
+
 from .log                               import cdebug, center, cleave, cinfo, cwarn
 
 
@@ -119,6 +121,17 @@ class WorkflowBugTask(object):
             s.__assignee = False
             cinfo('    Task %s assigned to %s' % (s.name, val), 'yellow')
         center(s.__class__.__name__ + '.assignee')
+
+    # reason_state
+    #
+    def reason_state(s, ok_state, acceptable):
+        task_start = s.lp_task.date_left_new
+        now = datetime.now(timezone.utc)
+        cdebug("{} stall check {} {}".format(s.name, now, now - task_start, now - task_start > acceptable))
+        state = ok_state
+        if now - task_start > acceptable:
+            state = 'Stalled'
+        return state
 
     # modified
     #
