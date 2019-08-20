@@ -1,5 +1,6 @@
+from datetime                                   import datetime, timezone, timedelta
 
-from wfl.log                                    import center, cleave
+from wfl.log                                    import center, cleave, cdebug
 from .base                                      import TaskHandler
 
 class StakeholderSignoff(TaskHandler):
@@ -55,7 +56,8 @@ class StakeholderSignoff(TaskHandler):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
 
-        s.task.reason = 'Pending -- waiting for signoff'
+        s.task.reason = '{} -- waiting for signoff'.format(
+            s.task.reason_state('Pending', timedelta(hours=12)))
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
         return retval
