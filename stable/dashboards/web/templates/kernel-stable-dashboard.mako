@@ -207,7 +207,7 @@ def __status_bites(bug):
                 continue
         (state, _, reason) = reason.split(' ', 2)
         colour = {
-                'Pending': 'red', #'#bca136',
+                'Pending': 'green', #'#bca136',
                 'Ongoing': '#1496bb',
                 'Holding': 'grey',
                 'Stalled': 'orange',
