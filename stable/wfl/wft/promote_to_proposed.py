@@ -1,3 +1,5 @@
+from datetime                           import datetime, timezone, timedelta
+
 from wfl.log                            import center, cleave, cinfo, cdebug
 from .promoter                          import Promoter
 
@@ -168,12 +170,13 @@ class PromoteFromTo(Promoter):
                     break
 
                 if s.task.status == 'Confirmed':
-                    s.task.reason = 'Pending -- ready for review'
+                    state = s.task.reason_state('Pending', timedelta(hours=12))
+                    s.task.reason = '{} -- ready for review'.format(state)
                 elif s.task.status == 'Incomplete':
                     s.task.reason = 'Stalled -- review FAILED'
                 elif s.task.status == 'Fix Committed':
                     failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
-                    state = 'Ongoing'
+                    state = s.task.reason_state('Ongoing', timedelta(hours=4))
                     for failure in failures:
                         if not failure.endswith(':building') and not failure.endswith(':depwait'):
                             state = 'Pending'
@@ -182,7 +185,8 @@ class PromoteFromTo(Promoter):
                         reason += ' ' + ','.join(failures)
                     s.task.reason = reason
                 else:
-                    s.task.reason = 'Ongoing -- review in progress'
+                    s.task.reason = '{} -- review in progress'.format(
+                        s.task.reason_state('Ongoing', timedelta(hours=4)))
                 break
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
                 failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
