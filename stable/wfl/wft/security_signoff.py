@@ -1,3 +1,4 @@
+from datetime                                   import timedelta
 
 from wfl.log                                    import center, cleave, cinfo
 from .base                                      import TaskHandler
@@ -75,7 +76,8 @@ class SecuritySignoff(TaskHandler):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
 
-        s.task.reason = 'Pending -- waiting for signoff'
+        s.task.reason = '{} -- waiting for signoff'.format(
+            s.task.reason_state('Pending', timedelta(hours=48)))
 
         if s.bug.is_derivative_package:
             master = s.bug.master_bug
