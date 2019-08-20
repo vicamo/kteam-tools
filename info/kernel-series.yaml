@@ -1704,7 +1704,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            backport: true
+            backport: false
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
