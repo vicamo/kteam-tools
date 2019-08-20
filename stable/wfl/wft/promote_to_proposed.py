@@ -208,6 +208,9 @@ class PromoteFromTo(Promoter):
                 #
                 if not s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
                     s.task.reason = 'Stalled -- packages are in the wrong component'
+                    # NOTE: when we update components the package will be republished
+                    # which triggers swm-publishing to detect it automatically so we avoid
+                    # the need to request a refresh_at.
                     break
 
                 # If we've already been through here and already sent out the announcement
