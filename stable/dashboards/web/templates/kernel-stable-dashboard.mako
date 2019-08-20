@@ -95,7 +95,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Ready to be cranked', '#bca136')
+        retval = __coloured('Ready to be cranked', 'green') #bca136
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     elif prep_status == 'Fix Committed':
@@ -153,7 +153,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Ready to be cranked', '#bca136')
+        retval = __coloured('Ready to be cranked', 'green') #bca136
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     elif prep_status == 'Fix Committed':
