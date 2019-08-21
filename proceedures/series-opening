@@ -1,4 +1,4 @@
-﻿== New Series Opening ==
+== Backlog ==
  - Add new series to Ubuntu KTL
     - In kteam-tools/info/kernel-series.yaml:
        - New section for the new series.

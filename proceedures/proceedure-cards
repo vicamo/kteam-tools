@@ -1,32 +1,54 @@
 #!/bin/bash
 
+list()
+{
+	local board="$1"
+	local list="$2"
+
+	echo "+++ $list ..."
+	so-trello board-addlist \
+		--board "$board" \
+		--list-name "$list"
+}
+
 card()
 {
-	local name="$1"
-	local body="$2"
+	local board="$1"
+	local list="$2"
+	local name="$3"
+	local body="$4"
 
 	echo "*** $name ..."
-
 	so-trello list-addcard \
-		--board "$trello_board" \
-		--list "$trello_list" \
+		--board "$board" \
+		--list "$list" \
 		--card-name "$name" \
 		--card-desc "$body"
 }
 
-card2()
-{
-	echo "title<$1>"
-	echo "body<$2>"
-}
+if false; then
+	list()
+	{
+		echo "LIST:"
+		echo " board<$1>"
+		echo " list<$2>"
+	}
+	card()
+	{
+		echo "CARD:"
+		echo " board<$1>"
+		echo " list<$2>"
+		echo " title<$3>"
+		echo " body<$4>"
+	}
+fi
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <board> <list> <section title>" 1>&2
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <board> <proceedure-file>" 1>&2
 	exit 1
 fi
 trello_board="$1"
-trello_list="$2"
-text="$3"
+proceedure="$2"
 
 sed \
 	-e 's///g' \
@@ -34,10 +56,10 @@ sed \
 	-e "s/’/'/g" \
 	-e 's/“/"/g' \
 	-e 's/”/"/g' \
- <"$text" | \
+ <"$proceedure" | \
 awk '
 	BEGIN				{ emit=0 }
-	/== /				{ emit=1; next }
+	/== /				{ emit=1; print "EOC"; print; next }
 	/^$/				{ next }
 	/^[^ -]/			{ emit=0; next }
 	(/^ -/ && emit)			{ print "EOC" }
@@ -46,20 +68,30 @@ awk '
 ' | {
 	title=""
 	body=""
+	trello_list="Backlog"
 	while IFS='' read -r line
 	do
+		##echo "LINE: $line" | cat -vet
 		case "$line" in
 		EOC)
 			if [ "$title" != '' ]; then
-				card "$title" "$body"
+				card "$trello_board" "$trello_list" "$title" "$body"
 			fi
 			title=''
 			body=''
+			;;
+		'== '*)
+			trello_list="$line"
+			trello_list="${trello_list% ==}"
+			trello_list="${trello_list#== }"
+			##echo "LIST: $trello_list"
+			list "$trello_board" "$trello_list"
 			;;
 		' - '*)
 			title=$( echo "$line" | sed -e 's/^ - //' )
 			;;
 		*)
+			##echo "BODY: $line"
 			if [ "$body" = '' ]; then
 				body="$line"
 			else

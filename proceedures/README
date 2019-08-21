@@ -1,17 +1,13 @@
 = Series Opening/Point Release/Series Closing Checklist =
 
-The official checklists for the kernel team is in the file CHECKLIST in
-this directory.  Each top level section represents a separate checklist.
+The official checklists for the kernel team is in the relevant proceedure
+files this directory.  Each proceedure file represents a separate
+checklist.  Each section represents a list to create and populate.
 Within each section each top level list item represents a separate card
 in that checklist.
 
-We recommend creating a new Trello board for the checklist and creating
-cards for each of the steps listed in the checklist.  The proceedure-cards
+Create a new board for the checklist to populate.  The proceedure-cards
 script will use the so-trello (snap install so-trello) command to create
-these from the document.
+the lists and cards from the proceedure file:
 
-Create a new trello board called something sensible like "Artful Opening"
-and add a "Backlog" list to it.  Then use the command below to create
-the cards:
-
-  ./proceedure-cards 'Artful Opening' 'Backlog' 'New Series Opening'
+  ./proceedure-cards 'Artful Opening' series-opening
