@@ -61,7 +61,16 @@ in progress.
             args.bug_ids.remove(bug_id)
 
     for tbid in args.bug_ids:
-        derivatives = tbs[tbid].derivative_bug_ids
+        derivatives = list(tbs[tbid].derivative_bug_ids)
+
+        for derivative_id in list(derivatives):
+            try:
+                tbs.add(derivative_id)
+            except:
+                derivatives.remove(derivative_id)
+            if tbs[derivative_id].wf_status_get() == 'Invalid':
+                cdebug('Ignoring invalidated derivative (LP: #{})'.format(derivative_id))
+                derivatives.remove(derivative_id)
 
         if len(derivatives) > 0:
             cerror('WW: Cannot invalidate LP: #{} with active derivatives'.format(tbid))
