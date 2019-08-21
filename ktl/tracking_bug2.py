@@ -75,9 +75,6 @@ class TrackingBug(object):
     current state.
     '''
     # Shared between all instances
-    __bp_re = re.compile('^backports: (.+)$', re.M)
-    __dv_re = re.compile('^derivatives: (.+)$', re.M)
-    __comsep_re = re.compile(', *')
     __tbd = TrackingBugDefines()
 
     def __replace_pfx_tag(s, prefix, new_tag):
@@ -90,42 +87,6 @@ class TrackingBug(object):
                 s.__bug.tags.remove(tag)
                 # Not stopping here so duplicates get removed, too
         s.__bug.tags.append(new_tag)
-
-    def __parse_reflist(s, reflist, sameseries=True):
-        '''
-        Internal helper to parse a (comma seperated) list of
-        bug references from either the backport or the derivatives
-        section.
-
-        With sameseries being True, the format is:
-          bug <number> (<name>)[, ...]
-        otherwise it is:
-          bug <number> (<series>/<name>)[, ...]
-        '''
-        for bug_ref in reflist:
-            if bug_ref == '':
-                continue
-
-            # The bug number and the human readable source label are
-            # the last 2 elements separated by spaces.
-            ref_id, ref_name = bug_ref.split(' ')[-2:]
-            ref_name = ref_name[1:-1]
-
-            # For backport lists, expect the first element separated
-            # by '/' to be the series.
-            if sameseries is False:
-                if '/' in ref_name:
-                    ref_series, ref_name = ref_name.split('/', 1)
-                else:
-                    ref_series = '<unknown>'
-            else:
-                ref_series = ''
-
-            # Whatever remains in ref_name is the name for the object
-            # which the tracking bug follows, intended for human con-
-            # sumption only.
-
-            s._derivative_bug_ids[int(ref_id)] = [ ref_series, ref_name ]
 
     def __parse_lpbug(s):
         '''
@@ -242,24 +203,14 @@ class TrackingBug(object):
                 cwarn('P[target-series]: {}'.format(s.__wf_properties[p_key]))
                 cwarn('T: {}'.format(s._target_series))
 
-        # Evaluate the bug description and fill the various caching
-        # elements. Though the lists for derivatives comes before
-        # SWM properties, evaluation must be after those to pick up
-        # the target series.
-        # FIXME: Derivative and backport should become the same.
+        # Initialize the list of derivative/child tracking bugs from
+        # the SWM trackers property. Change the key to be the bug ID
+        # for backwards compatibility with previous tb2 versions.
         s._derivative_bug_ids = {}
-        ks_series = s.__kernel_series.lookup_series(codename=s._target_series)
-
-        # Currently the backports list refers to sources to which the source
-        # of this tracking bug is backported, but without any info about the
-        # backport target series.
-        tbmatch = s.__bp_re.search(desc)
-        if tbmatch is not None:
-            s.__parse_reflist(s.__comsep_re.split(tbmatch.group(1)), sameseries=False)
-
-        tbmatch = s.__dv_re.search(desc)
-        if tbmatch is not None:
-            s.__parse_reflist(s.__comsep_re.split(tbmatch.group(1)))
+        if 'trackers' in s.__wf_properties.keys():
+            for srchandle in s.__wf_properties['trackers']:
+                bugid = int(s.__wf_properties['trackers'][srchandle].replace('bug ', ''))
+                s._derivative_bug_ids[bugid] = srchandle
 
     def __init__(s, bug, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT):
         '''
@@ -293,7 +244,7 @@ class TrackingBug(object):
         s._cycle                    = None
         s._spin_nr                  = 1
         s._master_bug_id            = None
-        s._derivative_bug_ids       = {}
+        s._derivative_bug_ids       = None
 
         s.__parse_lpbug()
 
@@ -303,29 +254,6 @@ class TrackingBug(object):
         bug with the workflow content.
         '''
         new_desc = s.__tbd.desc_tmpl
-
-        dv_str = ''
-        bp_str = ''
-        for dbug_id in s._derivative_bug_ids:
-            series, name = s._derivative_bug_ids[dbug_id]
-            if series == '':
-                if dv_str != '':
-                    dv_str += ', '
-                dv_str += 'bug {} ({})'.format(dbug_id, name)
-            else:
-                if bp_str != '':
-                    bp_str += ', '
-                if series != '<unknown>':
-                    bp_str += 'bug {} ({}/{})'.format(dbug_id, series, name)
-                else:
-                    bp_str += 'bug {} ({})'.format(dbug_id, name)
-
-        if bp_str != '':
-            new_desc += '\nbackports: ' + bp_str
-        if dv_str != '':
-            new_desc += '\nderivatives: ' + dv_str
-        if dv_str != '' or bp_str != '':
-            new_desc += '\n'
 
         # For the properties just do a yaml dump
         if len(s.__wf_properties) == 0:
@@ -675,17 +603,12 @@ class TrackingBug(object):
             raise TrackingBugError('reference must be a tracking bug')
         if ref_tb.id in s._derivative_bug_ids:
             return
-        ref_series = ''
-        ref_name   = ref_tb.target_package
-        if ref_tb.target_series != s._target_series:
-            ref_series = ref_tb.target_series
+        srchandle = '{}/{}'.format(ref_tb.target_series, ref_tb.target_package)
         if 'variant' in ref_tb.__wf_properties.keys():
             if ref_tb.__wf_properties['variant'] == 'snap-debs':
-                ref_name = ref_tb.__wf_properties['snap-name']
-        s._derivative_bug_ids[ref_tb.id] = [ ref_series, ref_name ]
-        s.__modified = True
+                srchandle += '/{}'.format(ref_tb.__wf_properties['snap-name'])
+        s._derivative_bug_ids[int(ref_tb.id)] = srchandle
         ref_tb.__master_bug_id_set(s)
-        s.save()
 
     def derivative_remove(s, ref_tb):
         '''
@@ -702,10 +625,8 @@ class TrackingBug(object):
             raise TrackingBugError('reference must be a tracking bug')
         if ref_tb.id not in s._derivative_bug_ids:
             raise TrackingBugError('reference is not a derivative')
-        del(s._derivative_bug_ids[ref_tb.id])
-        s.__modified = True
+        del(s._derivative_bug_ids[int(ref_tb.id)])
         ref_tb.__master_bug_id_set(None)
-        s.save()
 
     def make_duplicate_of(s, ref_tb):
         '''
@@ -1087,6 +1008,15 @@ class TrackingBugs():
             except TrackingBugError as e:
                 msg = 'failed to add bug ({})'.format(e.msg)
                 raise TrackingBugError(msg)
+
+            if tb.master_bug_id is not None:
+                if tb.master_bug_id not in s.__tbs:
+                    mb = s.add(tb.master_bug_id)
+                else:
+                   mb = s.__tbs[tb.master_bug_id]
+                mb.derivative_add(tb)
+        else:
+            tb = s.__tbs[bug_id]
 
         cleave(s.__class__.__name__ + '.add')
         return tb
