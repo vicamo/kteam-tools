@@ -736,8 +736,7 @@ class TrackingBug(object):
         :type  hard: Boolean
         '''
         center(s.__class__.__name__ + '.invalidate({}, {})'.format(s.id, hard))
-        current_tags = s.__bug.tags
-        for tag in current_tags:
+        for tag in list(s.__bug.tags):
             if tag == s.__tbd.tag_names['default']['valid']:
                 s.__bug.tags.remove(tag)
             elif tag == s.__tbd.tag_names['testing']['valid']:
