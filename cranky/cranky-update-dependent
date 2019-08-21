@@ -19,6 +19,8 @@ Optional arguments:
 EOF
 }
 
+here=$(dirname "$(readlink -f "${0}")")
+
 while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
@@ -45,7 +47,7 @@ if [ -n "$(git status --porcelain)" ] ; then
 fi
 
 # Get the path to the main package
-main_path=$(cranky shell-helper tree-main-path .)
+main_path=$("$here/cranky" shell-helper tree-main-path .)
 if [ -z "${main_path}" ] ; then
 	echo "Main kernel source path not found" >&2
 	exit 1
