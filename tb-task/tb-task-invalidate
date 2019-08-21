@@ -51,15 +51,16 @@ in progress.
     # Main app run
     tbs = TrackingBugs()
 
-    for bug_id in args.bug_ids:
+    for bug_id in list(args.bug_ids):
         try:
             tbs.add(bug_id)
             cdebug('LP: #{} "{}"'.format(bug_id, tbs[bug_id].title))
         except TrackingBugError as e:
             cerror('WW: LP: #{} does not seem to be valid. Skipping...'.format(bug_id))
             cerror('WW: {}'.format(e.msg))
+            args.bug_ids.remove(bug_id)
 
-    for tbid in tbs.bug_ids:
+    for tbid in args.bug_ids:
         derivatives = tbs[tbid].derivative_bug_ids
 
         if len(derivatives) > 0:
