@@ -465,6 +465,21 @@ cd linux-oracle
 cranky build-sources
 ```
 
+**Note:** If you are performing a respin and the package version in `-proposed` is greater
+than the package version in `-updates`, then the package version in `-updates` must be
+supplied to `cranky build-sources` so the source packages are built against the correct
+package versions to preserve the delta between the one in `-updates` and the current spin.
+One can use `cranky rmadison` to see what versions are in `-updates` and `-proposed`.
+
+Example:
+
+```
+$ cranky rmadison xenial:linux-oracle
+$ # output of cranky rmadison omitted for brevity
+$ cd linux-oracle
+$ cranky build-sources --build-opts "main:-v4.15.0-1021.23~16.04.1" --build-opts "meta:-v4.15.0.1021.15" --build-opts "signed:-v4.15.0-1021.23~16.04.1"
+```
+
 ## Review
 
 ### Reviewing - `cranky review`
