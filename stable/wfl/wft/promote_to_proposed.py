@@ -101,7 +101,7 @@ class PromoteFromTo(Promoter):
 
             if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pocket_after) and
                 not s._kernel_unblock_ppa()):
-                s.task.reason = 'Holding -- another kernel is currently pending in {}'.format(s.pocket_dest)
+                s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(s.pocket_dest)
                 break
 
             if s._kernel_block_ppa():
