@@ -1268,7 +1268,7 @@
                         #
                         arches: ['amd64', 'ppc64el', 's390x.LPAR']
                         clouds: ['metal']
-            invalid-tasks: ['certification-testing']
+            invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-oracle:
             packages:
