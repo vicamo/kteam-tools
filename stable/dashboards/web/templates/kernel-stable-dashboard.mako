@@ -194,6 +194,12 @@ def __status_bites(bug):
         bites.append('<span style="display: inline-block; min-width: 20px; width=20px;">{}:</span>'.format(thing_prefix) + retval)
 
     # Run the list of reasons swm is reporting and emit those that do not overlap with testing.
+    status_colour = {
+            'Pending': 'green', #'#bca136',
+            'Ongoing': '#1496bb',
+            'Holding': 'grey',
+            'Stalled': 'orange',
+        }
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
         if ((task.startswith('prepare-package') or
@@ -206,12 +212,7 @@ def __status_bites(bug):
             if task == 'security-signoff':
                 continue
         (state, _, reason) = reason.split(' ', 2)
-        colour = {
-                'Pending': 'green', #'#bca136',
-                'Ongoing': '#1496bb',
-                'Holding': 'grey',
-                'Stalled': 'orange',
-            }.get(state, 'blue')
+        colour = status_colour.get(state, 'blue')
         retval = '{}: {}'.format(task, reason)
         if len(retval) > 88:
             retval = retval[:85] + '...'
@@ -227,6 +228,9 @@ def __status_bites(bug):
     # We have nothing to say ... so use the phase as a hint.
     if len(bites) == 0:
         retval = bug.get('phase', 'Holding not ready')
+        state = retval.split(' ', 1)[0]
+        colour = status_colour.get(state, 'blue')
+        retval = __coloured(retval, colour)
         if len(thing_in) != 0:
             retval = '<span style="display: inline-block; min-width: 400px; width=400px;">' + retval + '</span>'
             if retval[-2:] not in ('', '  '):
