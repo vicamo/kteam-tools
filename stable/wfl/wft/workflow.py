@@ -51,39 +51,60 @@ class Workflow(TaskHandler):
 
                 (task_section, task_text) = (None, None)
 
-                # 1: Packaging
-                if taskname.startswith('prepare-package'):
-                    (task_section, task_text) = (1, 'Packaging')
+                if s.bug.variant in ('debs', 'combo'):
+                    # 1: Packaging
+                    if taskname.startswith('prepare-package'):
+                        (task_section, task_text) = (1, 'Packaging')
 
-                # 2: Promote to Proposed
-                elif (taskname in ('promote-to-proposed',
-                                   'promote-signing-to-proposed',
-                                   'snap-release-to-edge',
-                                   'snap-release-to-beta')
-                    ):
-                    if taskname.startswith('snap-'):
-                        (task_section, task_text) = (2, 'Promote to Edge')
-                    else:
+                    # 2: Promote to Proposed
+                    elif (taskname in ('promote-to-proposed',
+                           'promote-signing-to-proposed')):
                         (task_section, task_text) = (2, 'Promote to Proposed')
 
-                # 3: Testing
-                elif (taskname.endswith('-testing') or
-                      taskname in ('snap-release-to-candidate')
-                    ):
-                    (task_section, task_text) = (3, 'Testing')
+                    # 3: Testing
+                    elif taskname.endswith('-testing'):
+                        (task_section, task_text) = (3, 'Testing')
 
-                # 4: Signoffs
-                elif taskname.endswith('-signoff'):
-                    (task_section, task_text) = (4, 'Signoff')
+                    # 4: Signoffs
+                    elif taskname.endswith('-signoff'):
+                        (task_section, task_text) = (4, 'Signoff')
 
-                # 5: Release
-                elif taskname in ('promote-to-updates', 'promote-to-release',
-                         'snap-release-to-stable'):
-                    (task_section, task_text) = (5, 'Release')
+                    # 5: Release
+                    elif taskname in ('promote-to-updates',
+                            'promote-to-release'):
+                        pocket = taskname.split('-')[-1].title()
+                        (task_section, task_text) = (
+                            5, 'Promote to {}'.format(pocket))
 
-                # 6: Security
-                elif taskname in ('promote-to-security'):
-                    (task_section, task_text) = (6, 'Security')
+                    # 6: Security
+                    elif taskname in ('promote-to-security'):
+                        (task_section, task_text) = (6, 'Promote to Security')
+
+                if s.bug.variant == 'snap-debs':
+                    # SNAPS:
+                    # 1: Promote to Edge
+                    if taskname == 'snap-release-to-edge':
+                        (task_section, task_text) = (1, 'Promote to Edge')
+
+                    # 2: Promote to Beta
+                    elif taskname == 'snap-release-to-beta':
+                        (task_section, task_text) = (2, 'Promote to Beta')
+
+                    # 3: Testing
+                    elif taskname == 'snap-certification-testing':
+                        (task_section, task_text) = (3, 'Certification Testing')
+
+                    # 4: Promote to Candidate
+                    elif taskname == 'snap-release-to-candidate':
+                        (task_section, task_text) = (4, 'Promote to Candidate')
+
+                    # 5: Testing (again)
+                    elif taskname == 'snap-qa-testing':
+                        (task_section, task_text) = (5, 'Q/A Testing')
+
+                    # 4: Promote to Candidate
+                    elif taskname == 'snap-release-to-stable':
+                        (task_section, task_text) = (6, 'Promote to Stable')
 
                 if task_section is None:
                     continue
