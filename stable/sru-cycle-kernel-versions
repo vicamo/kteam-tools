@@ -50,10 +50,17 @@ class TheApp(object):
                        not m.group('source').startswith('linux-hwe'):
                         continue
 
-                    if args.no_devel and bug['series name'] == trackers['info']['dev series']:
+                    series = ks.lookup_series(codename=bug['series name'])
+
+                    if args.no_devel and series.development:
                         continue
 
-                    if args.no_esm and bug['series name'] in trackers['info']['esm series']:
+                    if args.no_esm and series.esm:
+                        continue
+
+                    source = series.lookup_source(m.group('source'))
+
+                    if args.no_devel and source.development:
                         continue
 
                     version = '{}{}{}.{}{}'.format(m.group('version'), m.group('sep'),
@@ -89,7 +96,7 @@ if __name__ == '__main__':
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--no-devel', action='store_true', default=False,
-                        help='do not include the development series')
+                        help='do not include the development series and sources')
     parser.add_argument('--no-esm', action='store_true', default=False,
                         help='do not include ESM series')
     args = parser.parse_args()
