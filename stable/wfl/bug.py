@@ -412,6 +412,8 @@ class WorkflowBug():
         return s._refresh
 
     def refresh_at(s, when, why):
+        if when.tzinfo is None:
+            raise ValueError("refresh_at needs an offset-aware datetime")
         (current_when, _) = s._refresh
         if current_when is None or when < current_when:
             s._refresh = [when, why]
