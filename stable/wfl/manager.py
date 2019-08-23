@@ -249,10 +249,6 @@ class WorkflowManager():
 
             for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
-                if lpbug.duplicate_of is not None:
-                    cinfo('    LP: #%s - %s (DUPLICATE)' % (lpbug.id, lpbug.title), 'magenta')
-                    s.status_set(bugid, None)
-                    continue
                 cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
         else:
@@ -267,10 +263,6 @@ class WorkflowManager():
 
                 for task in tasks:
                     bug = task.bug
-                    if bug.duplicate_of is not None:
-                        cinfo('    LP: #%s - %s (DUPLICATE)' % (bug.id, bug.title), 'magenta')
-                        s.status_set(str(bug.id), None)
-                        continue
                     cinfo('    LP: #%s - %s' % (bug.id, bug.title), 'magenta')
                     retval[str(bug.id)] = bug.title
 
@@ -345,7 +337,16 @@ class WorkflowManager():
         #
         modified = True
         try:
-            bug = WorkflowBug(s.lp.default_service, bugid, ks=s.kernel_series)
+            lpbug = s.lp.default_service.get_bug(bugid)
+            if lpbug is None:
+                cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
+                s.status_set(bugid, None)
+                raise WorkflowBugError('is invalid, skipping (and dropping)')
+            if lpbug.duplicate_of is not None:
+                cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
+                s.status_set(bugid, None)
+                raise WorkflowBugError('is duplicated, skipping (and dropping)')
+            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series)
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
