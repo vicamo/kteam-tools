@@ -1,0 +1,110 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cwarn, cdebug
+from ktl.utils import run_command
+from ktl.kernel_series import KernelSeries
+
+def get_meta_version(handle, dbg=False):
+    version = None
+    cmd = 'cranky rmadison -s {}'.format(handle)
+    try:
+        rc, out = run_command(cmd, dbg=dbg)
+    except:
+        cerror('Failed to run {}'.format(cmd))
+
+    for line in out:
+        parts = line.rstrip().split()
+        if 'meta' not in parts[0]:
+            continue
+        version = parts[1]
+
+    return version
+
+
+if __name__ == '__main__':
+
+    desc = '''
+Make sure that all meta package versions of backports are not higher
+than those of the respective master.
+'''
+
+    epilog = '''
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Main app run
+    ks = KernelSeries()
+    for ks_series in ks.series:
+        if not ks_series.supported or ks_series.development:
+            continue
+        cdebug('Checking {} sources...'.format(ks_series.codename))
+        for ks_source1 in ks_series.sources:
+            if not ks_source1.backport:
+                continue
+            ks_source2 = ks_source1.derived_from
+
+            if ks_source1.name != ks_source2.name:
+                continue
+
+            src_handle = '{}:{}'.format(ks_source1.series.codename, ks_source1.name)
+            tgt_handle = '{}:{}'.format(ks_source2.series.codename, ks_source2.name)
+
+            cinfo('Gathering versions for {} and {}'.format(src_handle, tgt_handle))
+            src_version = get_meta_version(src_handle)
+            tgt_version = get_meta_version(tgt_handle)
+
+            bits = src_version.split('.')
+            src_base = '.'.join(bits[0:3])
+            src_abi = int(bits[3])
+            src_upload = int(bits[4])
+
+            bits = tgt_version.split('.')
+            tgt_base = '.'.join(bits[0:3])
+            tgt_abi = int(bits[3])
+            tgt_upload = int(bits[4])
+
+            if src_base != tgt_base:
+                cerror('FAIL: Version numbers inconsistent for backport')
+                cerror('      {} <--> {}'.format(src_version, tgt_version))
+                continue
+
+            # Adjust for any abi delta.
+            src_upload += (tgt_abi - src_abi)
+            # src_abi += (tgt_abi - src_abi)
+
+            # Work out the separation
+            delta = tgt_upload - src_upload
+
+            if delta >= 10:
+                cinfo('PASS: {} <= {} (upload delta >=10)'.format(src_version, tgt_version))
+            elif delta > 0:
+                cwarn('WARN: {} <= {} (upload delta <10)'.format(src_version, tgt_version), 'yellow')
+            else:
+                cerror('FAIL: {} > {} (upload delta negative)'.format(src_version, tgt_version))
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
