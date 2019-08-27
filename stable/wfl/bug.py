@@ -46,18 +46,25 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid, ks=None):
+    def __init__(s, lp, bugid=None, bug=None, ks=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
         '''
         s.lp = lp
-        try:
-            s.lpbug = s.lp.get_bug(bugid)
-        except KeyError:
-            s.is_valid = False
-            cdebug('Failed to get bug #%s' % bugid, 'red')
-            raise WorkflowBugError('Invalid bug number %s' % bugid)
+        if bug is not None:
+            s.lpbug = bug
+
+        elif bugid is not None:
+            try:
+                s.lpbug = s.lp.get_bug(bugid)
+            except KeyError:
+                s.is_valid = False
+                cdebug('Failed to get bug #%s' % bugid, 'red')
+                raise WorkflowBugError('Invalid bug number %s' % bugid)
+
+        else:
+                raise WorkflowBugError('bug or bugid required')
 
         # Pass along any "global" settings to the WorkflowBugTask.
         #
