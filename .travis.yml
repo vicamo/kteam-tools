@@ -35,9 +35,9 @@ before_script:
 
 script:
 - sudo mkdir -p /usr3/chroots
-- sudo ~/kteam-tools/chroot-setup/make_chroot ${SUITE} ${ARCH}
-- sudo tar -C /usr3/chroots/${SUITE}-${ARCH} -zcpf ${TRAVIS_BUILD_DIR}/rootfs.tar.gz .
-- docker build -t vicamo/kteam-tools-chroot:${SUITE}-${ARCH} ${TRAVIS_BUILD_DIR}
+- sudo echo ~/kteam-tools/chroot-setup/make_chroot ${SUITE} ${ARCH}
+- sudo echo tar -C /usr3/chroots/${SUITE}-${ARCH} -zcpf ${TRAVIS_BUILD_DIR}/rootfs.tar.gz .
+- echo docker build -t vicamo/kteam-tools-chroot:${SUITE}-${ARCH} ${TRAVIS_BUILD_DIR}
 
 after_script:
 - if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
@@ -54,7 +54,6 @@ jobs:
       env(GITLAB_TRIGGER_TOKEN) IS present && \
       env(GITLAB_TRIGGER_REF) IS present && \
       env(GITLAB_PROJECT_ID) IS present && \
-      branch = master && \
       type = push
     script:
     - curl -X POST
