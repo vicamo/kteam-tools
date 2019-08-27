@@ -46,3 +46,19 @@ after_script:
       docker push $image;
     done
   fi
+
+jobs:
+  include:
+  - stage: trigger
+    if: |
+      env(GITLAB_TRIGGER_TOKEN) IS present && \
+      env(GITLAB_TRIGGER_REF) IS present && \
+      env(GITLAB_PROJECT_ID) IS present && \
+      branch = master && \
+      type = push
+    script:
+    - curl -X POST
+          -F token=${GITLAB_TRIGGER_TOKEN}
+          -F ref=${GITLAB_TRIGGER_REF}
+          -F "variables[SOURCE_DOCKER_REPO]=${DOCKER_USER}/kteam-tools-chroot"
+          https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID}/trigger/pipeline
