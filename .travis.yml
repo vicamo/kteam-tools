@@ -1,0 +1,48 @@
+sudo: required
+service: docker
+dist: bionic
+
+env:
+  global:
+  - secure: "Mxhldpkkx0mw4zdI9R+wTNmZAnKIsk2uWojBrTDuJf89A07cLEhviGYOZbknOKCAWwaDBtrxt+bzPSP/5fFfj+IQAqM7Xw0JaX0vGIpcK+aeiZl7qIzguPG1OC60nmOEkGgnw6my2THniZV6s395FQnOhBa1pI1shn73swdSIRaNNdDeux/go9GcN4wPPULUqp9m5IJPw9UJmjlSF2Aje7eD17aQxo0BBFNgeh4FZzOQ8y6jPPc2AoQapqlXxOcZ64a0ml26XdCgAQoCkNvpeUtWz5Jcdg4Yc5DVD0DKE6D5MOsJhVX5zv0kPn6tTFDNmQo5O+1MXgFhR7xf0J9aVBtKce7xlqRgRtcrrv6+bT43gtXDDdHtAusi1HrRs/79+YC7XLq+mwXyLWsOPbPDzH4U78jBkvidn6qrHokWOFOJv4piWQ8S7GUP0opkznSgenwKW5P0vkFxQNgsq+mDnzw4OFSWyCvYoPQRSqej1OQAlUJpXaBqI7aC/2K24TQqeLdwWEXkJv5AEa8tqcvoFMf9aROCAdGagRUnafTSfsfvdBDPSZ2L2YcMuxOAuPyHGNMNFxYsQeJNQu9m9b6wDSyebUOGMbtmofcbDRGsgooV/E+A9o8eY6T+93XeWopcUwll5ePgKyIf4yJ2piBqV3sQi4vuGm1aY9sVtk2+MBg="
+  matrix:
+  - SUITE=trusty ARCH=amd64
+  - SUITE=xenial ARCH=amd64
+  - SUITE=bionic ARCH=amd64
+  - SUITE=disco ARCH=amd64
+  - SUITE=eoan ARCH=amd64
+
+branches:
+  only:
+  - master
+
+addons:
+  apt:
+    packages:
+    - debootstrap
+    - fakeroot
+    - gnupg
+    - kernel-wedge
+    - postfix
+    - qemu-user-static
+    - schroot
+
+install:
+- git clone git://kernel.ubuntu.com/ubuntu/kteam-tools ~/kteam-tools
+
+before_script:
+- cat /proc/sys/fs/binfmt_misc/qemu-*
+
+script:
+- sudo mkdir -p /usr3/chroots
+- sudo ~/kteam-tools/chroot-setup/make_chroot ${SUITE} ${ARCH}
+- sudo tar -C /usr3/chroots/${SUITE}-${ARCH} -zcpf ${TRAVIS_BUILD_DIR}/rootfs.tar.gz .
+- docker build -t vicamo/kteam-tools-chroot:${SUITE}-${ARCH} ${TRAVIS_BUILD_DIR}
+
+after_script:
+- if [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+    docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}";
+    for image in $(docker images | grep ^${DOCKER_USER}/kteam-tools-chroot | awk '{print $1 ":" $2}'); do
+      docker push $image;
+    done
+  fi
