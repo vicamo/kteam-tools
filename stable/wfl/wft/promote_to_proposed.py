@@ -214,8 +214,10 @@ class PromoteFromTo(Promoter):
                 # don't go through it again.
                 #
                 if 'proposed-announcement-sent' not in s.bug.bprops:
-                    s.bug.send_upload_announcement('proposed')
+                    if not s.bug.source.private:
+                        s.bug.send_upload_announcement('proposed')
                     s.bug.bprops['proposed-announcement-sent'] = True
+                if 'proposed-testing-requested' not in s.bug.bprops:
                     s.bug.debs.send_proposed_testing_requests()
                     s.bug.bprops['proposed-testing-requested'] = True
 
