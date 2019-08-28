@@ -89,7 +89,9 @@ class Package():
         for pocket, pocket_data in s._routing.items():
             if pocket_data is None:
                 pocket_data = ('NONE', 'NONE')
-            cinfo('        {}: {} {}'.format(pocket, pocket_data[0], pocket_data[1]), 'blue')
+                cerror('        {}: {} {}'.format(pocket, 'NONE', 'NONE', 'red'))
+            else:
+                cinfo('        {}: {} {}'.format(pocket, pocket_data[0].reference, pocket_data[1]), 'blue')
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
@@ -160,7 +162,7 @@ class Package():
                 s._cache[dep][pocket]['most_recent_build'] = info[4]
                 s._cache[dep][pocket]['status'] = info[5]
                 s._cache[dep][pocket]['version'] = info[6]
-                cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive, src_pocket), 'cyan')
+                cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
         cdebug('')
@@ -221,7 +223,7 @@ class Package():
         center(s.__class__.__name__ + '.__is_fully_built')
         cdebug('package: %s' % package, 'yellow')
         cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('archive: %s' % archive, 'yellow')
+        cdebug('archive: %s' % archive.reference, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         cdebug(' pocket: %s' % pocket, 'yellow')
 
@@ -264,7 +266,7 @@ class Package():
         center(s.__class__.__name__ + '.__get_published_sources')
         cdebug('package: %s' % package, 'yellow')
         cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('archive: %s' % archive, 'yellow')
+        cdebug('archive: %s' % archive.reference, 'yellow')
         cdebug(' series: %s' % s.distro_series, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         if pocket == '':
@@ -336,7 +338,7 @@ class Package():
         '''
         center('Sources::__sources_built')
         cdebug('sources: %s' % sources, 'yellow')
-        cdebug('archive: %s' % archive, 'yellow')
+        cdebug('archive: %s' % archive.reference, 'yellow')
         cdebug('package: %s' % package, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         cdebug(' pocket: %s' % pocket, 'yellow')
