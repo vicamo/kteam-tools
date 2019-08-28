@@ -800,7 +800,14 @@ class Package():
         to the lab machines that will be installing them.
         '''
         center(s.__class__.__name__ + '.ready_for_testing')
-        retval = s.all_built_and_in_pocket_for('Proposed', timedelta(hours=1.5))
+        # We only have mirrors on the primary archive, so if we are not routing
+        routing = s.routing('Proposed')
+        (archive, pocket) = routing
+        if archive.reference == 'ubuntu':
+            delay = timedelta(hours=1.5)
+        else:
+            delay = timedelta(hours=0)
+        retval = s.all_built_and_in_pocket_for('Proposed', delay)
         cinfo('        Ready for testing: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
         return retval
