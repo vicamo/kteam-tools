@@ -129,6 +129,12 @@ class Task():
                             old_tb.make_duplicate_of(self.tb)
                         except TrackingBugError as e:
                             cerror('  - duplication failed: {}'.format(e.msg))
+                    # Add a hint about the old tracking bug which should be replaced by the
+                    # new tracking bug as a SWM property of the new tracking bug.
+                    replaces = 'bug {}'.format(old_tb.id)
+                    cinfo('  + replaces: {}'.format(replaces))
+                    if dryrun is False:
+                        self.tb.wf_set_property('replaces', replaces)
 
         # Add the tracking bugs of the subtasks to this tasks tracking bug
         # as derivatives.
