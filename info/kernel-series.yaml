@@ -1233,6 +1233,15 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-bluefield:
+            packages:
+                linux-bluefield:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/bionic']
+                linux-meta:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+
         linux-ibm-gt:
             routing:
                 test-build:
