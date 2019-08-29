@@ -10,6 +10,10 @@ import sys
 from datetime import datetime, timezone
 from subprocess import Popen
 #from logging import DEBUG, INFO, WARNING, basicConfig
+from urllib.parse import urlsplit, urlunsplit
+from urllib.request import (HTTPBasicAuthHandler,
+                            HTTPPasswordMgrWithDefaultRealm,
+                            build_opener)
 
 import yaml
 from lazr.restfulclient.errors import Unauthorized
@@ -198,6 +202,182 @@ class MonitorLaunchpadArchive:
         return "Launchpad Archive Monitor {}".format(self.reference)
 
 
+class MonitorLaunchpadArchivePrivate:
+
+    def __init__(self, archive, lp=None, ks=None, bs=None):
+        if lp is None:
+            lp = Launchpad(False).default_service.launchpad
+        if ks is None:
+            ks = KernelSeries()
+        if bs is None:
+            bs = {}
+
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + archive, {})
+        self._store.setdefault('series-inrelease', {})
+        self._store.setdefault('src-date', {})
+        self._store.setdefault('bin-date', {})
+        self._store
+        self.lp = lp
+        self.ks = ks
+        self.reference = archive
+        self.archive = lp.archives.getByReference(reference=archive)
+
+        # Get the callers private subscription URL so we can look at the
+        # InRelease files later.
+        #print(archive)
+        me = self.lp.load(self.lp.me.self_link)
+        #print("APW", me, archive)
+        ##self.subscription = me.getArchiveSubscriptionURL(archive=self.archive)
+        ##print("APW", self.subscription)
+
+        # XXX: until python3 lazr.restfulclient is upgraded ....
+        found = None
+        find = archive[4:].split('/')
+        find = '/{}/{}/{}'.format(find[0], find[2], find[1])
+        for sub in me.getArchiveSubscriptionURLs():
+            if sub.endswith(find):
+                found = sub
+                break
+        print(find, found)
+        #sys.exit(1)
+        if found is None:
+            raise MonitorIncompatible()
+        self.subscription = found
+
+        # The current InRelease data for the archive pocket.  This will change
+        # iff we have a publication change in the archive.  There is no point
+        # in doing an expensive by package scan if it has not changed.  We assume
+        # this is a PPA and only look at the release pocket.
+        ##self.series_inrelease = {}
+
+        # Make a quick lookup for source packages which may route here.
+        self.poll_sources = []
+        for series in self.ks.series:
+            for source in series.sources:
+                if source.supported or source.development:
+                    if not source.routing:
+                        continue
+                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                            'release'):
+                        dest = source.routing.lookup_destination(pocket)
+                        if not dest:
+                            continue
+                        for route in dest:
+                            if route[0] == self.reference:
+                                lp_series = lp.distributions['ubuntu'].getSeries(name_or_version=series.codename)
+                                self.poll_sources.append((lp_series, source))
+                                self.series_inrelease.setdefault(series.codename, None)
+                                #print("PP", lp_series, source)
+        #print("POLL", len(self.poll_sources))
+
+    series_inrelease = MonitorStoreAttr('series-inrelease')
+    src_date = MonitorStoreAttr('src-date')
+    bin_date = MonitorStoreAttr('bin-date')
+
+    def changed(self):
+        sources = set()
+        things_seen = set()
+
+        #print(self.archive)
+
+        series_changed = set()
+        for series, series_data in self.series_inrelease.items():
+            url = os.path.join(self.subscription, 'dists', series, 'InRelease')
+            url_split = urlsplit(url)
+
+            # Form the URL without username:password information.  We cannot
+            # actually connect to things with this embedded as it gets miss
+            # recognised as a bad port.
+            clean_split = [url_split.scheme, url_split.hostname,
+                url_split.path, url_split.query, url_split.fragment]
+            clean_url = urlunsplit(clean_split)
+
+            # Attach the authentication infomation to the whole domain.
+            domain_split = [url_split.scheme, url_split.hostname, '/', None, None]
+            domain_url =  urlunsplit(domain_split)
+            #print("APW", len(domain_split), domain_url)
+
+            # create a password manager
+            password_mgr = HTTPPasswordMgrWithDefaultRealm()
+
+            # Add the username and password.
+            # If we knew the realm, we could use it instead of None.
+            password_mgr.add_password(None, domain_url, url_split.username, url_split.password)
+
+            # Instantiate the authentication handler.
+            handler = HTTPBasicAuthHandler(password_mgr)
+
+            # create "opener" (OpenerDirector instance)
+            opener = build_opener(handler)
+
+            # Grab the InRelease file using a URL without password.
+            inrelease = opener.open(clean_url)
+
+            # If we are unable to obtain the series InRelease file assume it is changed.
+            if inrelease.status != 200:
+                series_changed.add(series)
+                continue
+
+            last_modified = inrelease.getheader('Last-Modified')
+            if last_modified != series_data:
+                print("I?", series, series_data, '->', last_modified)
+                self.series_inrelease[series] = last_modified
+                series_changed.add(series)
+
+        for series_lp, source in self.poll_sources:
+            if source.series.codename not in series_changed:
+                continue
+            for package in source.packages:
+                key = "{}:{}".format(source.series.codename, package.name)
+                src_start_date = self.src_date.setdefault(key, datetime.now(timezone.utc)) # - timedelta(days=10))
+                bin_start_date = self.bin_date.setdefault(key, datetime.now(timezone.utc)) # - timedelta(days=10))
+
+                # Accumulate new source package publications.
+                present = self.archive.getPublishedSources(order_by_date=True,
+                    distro_series=series_lp, status='Published',
+                    exact_match=True, source_name=package.name)
+                for pub in present:
+                    print("S?", pub, pub.date_published, pub.distro_series_link,
+                        pub.source_package_name, pub.source_package_version)
+                    if pub.date_published > src_start_date:
+                        if pub.date_published > self.src_date[key]:
+                            self.src_date[key] = pub.date_published
+
+                        print("S", pub, pub.date_published, pub.distro_series_link,
+                            pub.source_package_name, pub.source_package_version)
+                        sources.add("{}:{}".format(source.series.codename, source.name))
+
+                    # Accumulate new binary package publications.
+                    changed = pub.getPublishedBinaries()
+                    print("B?", len(changed))
+                    for pub in changed:
+                        if pub.date_published is None:
+                            print("B", "no-date-published")
+                            continue
+                        if pub.date_published <= bin_start_date:
+                            print("B", "too-old")
+                            continue
+                        if pub.date_published > self.bin_date[key]:
+                            self.bin_date[key] = pub.date_published
+                        #print("B?", pub, pub.date_published, pub.binary_package_name,
+                        #    pub.binary_package_version, pub.distro_arch_series_link)
+                        # All binary packages in a build is associated with the same source.
+                        if pub.build_link in things_seen:
+                            continue
+                        things_seen.add(pub.build_link)
+                        print("B", pub, pub.date_published,
+                            pub.distro_arch_series_link, pub.build.source_package_name,
+                            pub.binary_package_version)
+                        sources.add("{}:{}".format(source.series.codename, source.name))
+
+        #print("SOURCES", sources)
+        return sources
+
+    def __str__(self):
+        return "Launchpad Private Archive Monitor {} ({})".format(self.reference, len(self.poll_sources))
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -242,7 +422,10 @@ class MonitorFactory:
 
         monitors = []
         for archive_name in archive_names:
-            monitors.append(MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
+            try:
+                monitors.append(MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
+            except MonitorIncompatible:
+                monitors.append(MonitorLaunchpadArchivePrivate(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
 
         return monitors
 
