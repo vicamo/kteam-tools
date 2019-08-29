@@ -120,15 +120,7 @@ class Task():
                 # better be kept intact to make unduplication simpler.
                 # For that reason we stop touching the (old) master bug completely.
 
-                if old_tb.wf_status_get() == 'Fix Released':
-                    cinfo('  - old task closed, skipping duplication')
-                else:
-                    cinfo('  - duplicate LP: #{} to LP: #{}'.format(old_tb.id, new_tbid))
-                    if dryrun is False:
-                        try:
-                            old_tb.make_duplicate_of(self.tb)
-                        except TrackingBugError as e:
-                            cerror('  - duplication failed: {}'.format(e.msg))
+                if old_tb.wf_status_get() == 'In Progress':
                     # Add a hint about the old tracking bug which should be replaced by the
                     # new tracking bug as a SWM property of the new tracking bug.
                     replaces = 'bug {}'.format(old_tb.id)
