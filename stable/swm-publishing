@@ -378,6 +378,74 @@ class MonitorLaunchpadArchivePrivate:
         return "Launchpad Private Archive Monitor {} ({})".format(self.reference, len(self.poll_sources))
 
 
+class MonitorLaunchpadProject:
+
+    def __init__(self, project, lp=None, bs=None):
+        if lp is None:
+            lp = Launchpad(False).default_service.launchpad
+        if bs is None:
+            bs = {}
+
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + project, {})
+        self._store.setdefault('last-date', datetime.now(timezone.utc))
+        self.lp = lp
+        self.project_name = project
+        self.project = lp.projects[project]
+
+    last_date = MonitorStoreAttr('last-date')
+
+    def changed(self):
+        bugs = {}
+        start_date = self.last_date
+
+        tasks = self.project.searchTasks(
+            status=['Confirmed', 'In Progress', 'Incomplete', 'Fix Committed'],
+            tags=['kernel-release-tracking-bug-live'],
+            omit_duplicates=False,
+            modified_since=self.last_date)
+        for task in tasks:
+            bug = task.bug
+            if bug.date_last_updated > self.last_date:
+                self.last_date = bug.date_last_updated
+            print("TASK", task, bug, bug.date_last_updated)
+            bugs[bug.id] = bug
+
+        # Now that we have the latest update, check through the activity
+        # log for each bug and consider whether it has been changed by
+        # swm, if so then we can ignore it.
+        changed = set()
+        for bug_id, bug in bugs.items():
+            dup = bug.duplicate_of
+            if dup is not None:
+                dup_id = bug.duplicate_of.id
+                print("D", dup_id, '<-', bug_id)
+                changed.add(str(dup_id))
+            for activity in bug.activity:
+                activity_date = activity.datechanged
+
+                #print("D?", activity, start_date, activity_date, self.last_date)
+                # We are only interested in bug activity between the start date
+                # and the latest task update time (inclusive).  Scanning
+                # activity after this upper bound might lead to false positives
+                # and to multiple redundant scans.  We will be informed of this
+                # later activity in a future run.
+                if activity_date < start_date or activity_date > self.last_date:
+                    continue
+                #print("P?", activity, activity.person_link)
+                # Why is this not lp.me.self_link ?
+                if activity.person_link.endswith("/~ubuntu-kernel-bot"):
+                    continue
+                print("Y", bug_id, activity, activity.person_link)
+                changed.add(str(bug_id))
+                break
+
+        return changed
+
+    def __str__(self):
+        return "Launchpad Project Monitor {}".format(self.project_name)
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -429,6 +497,9 @@ class MonitorFactory:
 
         return monitors
 
+    def launchpad_project(self, project):
+        return [MonitorLaunchpadProject(project, lp=self.lp, bs=self.bs)]
+
     def sync(self):
         self.bs.sync()
 
@@ -441,6 +512,7 @@ if __name__ == '__main__':
 
     monitors = []
     monitors += factory.kernel_series_archives()
+    monitors += factory.launchpad_project('kernel-sru-workflow')
 
     command = None
 
