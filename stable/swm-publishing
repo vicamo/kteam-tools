@@ -12,6 +12,7 @@ from subprocess import Popen
 #from logging import DEBUG, INFO, WARNING, basicConfig
 
 import yaml
+from lazr.restfulclient.errors import Unauthorized
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
@@ -19,6 +20,10 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.kernel_series import KernelSeries
 from wfl.launchpad import Launchpad
 #from wfl.log import Clog, cdebug, center, cleave
+
+
+class MonitorIncompatible(Exception):
+    pass
 
 
 class MonitorStore:
@@ -106,6 +111,93 @@ class MonitorStoreAttr:
         obj._store[self.attr] = value
 
 
+class MonitorLaunchpadArchive:
+
+    def __init__(self, archive, lp=None, ks=None, bs=None):
+        if lp is None:
+            lp = Launchpad(False).default_service.launchpad
+        if ks is None:
+            ks = KernelSeries()
+        if bs is None:
+            bs = {}
+
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + archive, {})
+        self._store.setdefault('src-date', datetime.now(timezone.utc))
+        self._store.setdefault('bin-date', datetime.now(timezone.utc))
+        self.lp = lp
+        self.ks = ks
+        self.reference = archive
+        self.archive = lp.archives.getByReference(reference=archive)
+
+        # Make a quick lookup for all valid source packages.
+        self.source_packages = {}
+        for series in self.ks.series:
+            for source in series.sources:
+                for package in source.packages:
+                    self.source_packages["{}:{}".format(series.codename, package.name)] = source.name
+
+        # Validate that this archive is sufficiently public.
+        try:
+            self.archive.getPublishedBinaries(order_by_date=True,
+                status='Published', created_since_date=self.bin_date)
+        except Unauthorized:
+            raise MonitorIncompatible()
+
+    src_date = MonitorStoreAttr('src-date')
+    bin_date = MonitorStoreAttr('bin-date')
+
+    def changed(self):
+        sources = set()
+        things_seen = set()
+
+        #print(self.archive, self.src_date, self.bin_date)
+
+        # Accumulate new source package publications.
+        changed = self.archive.getPublishedSources(order_by_date=True,
+            status='Published', created_since_date=self.src_date)
+        if len(changed) > 0:
+            self.src_date = changed[0].date_published
+            for pub in changed:
+                print("S", pub, pub.date_published, pub.distro_series_link,
+                    pub.source_package_name, pub.source_package_version)
+                series_name = pub.distro_series_link.split('/')[-1]
+                series_source_key = "{}:{}".format(series_name, pub.source_package_name)
+                if series_source_key not in self.source_packages:
+                    continue
+                sources.add("{}:{}".format(series_name,
+                    self.source_packages[series_source_key]))
+
+        # Accumulate new binary package publications.
+        changed = self.archive.getPublishedBinaries(order_by_date=True,
+            status='Published', created_since_date=self.bin_date)
+        if len(changed) > 0:
+            self.bin_date = changed[0].date_published
+            for pub in changed:
+                #print("B?", pub, pub.date_published, pub.binary_package_name,
+                #    pub.binary_package_version, pub.distro_arch_series_link)
+                # All binary packages in a build is associated with the same source.
+                if pub.build_link in things_seen:
+                    continue
+                things_seen.add(pub.build_link)
+                print("B", pub, pub.date_published,
+                    pub.distro_arch_series_link, pub.build.source_package_name,
+                    pub.binary_package_version)
+                series_name = pub.distro_arch_series_link.split('/')[-2]
+                series_source_key = "{}:{}".format(series_name, pub.build.source_package_name)
+                if series_source_key not in self.source_packages:
+                    continue
+                sources.add("{}:{}".format(series_name,
+                    self.source_packages[series_source_key]))
+
+        #print("SOURCES", sources)
+        #print("APW", self._backing_store)
+        return sources
+
+    def __str__(self):
+        return "Launchpad Archive Monitor {}".format(self.reference)
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -131,6 +223,29 @@ class MonitorFactory:
             self._bs = MonitorStore('swm-publishing.yaml')
         return self._bs
 
+    def kernel_series_archives(self):
+        # Find out which archives we may be publishing to and which
+        # series/package combinations are interesting to us.
+        archive_names = set()
+        for series in self.ks.series:
+            for source in series.sources:
+                if source.supported or source.development:
+                    if not source.routing:
+                        continue
+                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                            'release'):
+                        dest = source.routing.lookup_destination(pocket)
+                        if not dest:
+                            continue
+                        for route in dest:
+                            archive_names.add(route[0])
+
+        monitors = []
+        for archive_name in archive_names:
+            monitors.append(MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
+
+        return monitors
+
     def sync(self):
         self.bs.sync()
 
@@ -142,6 +257,7 @@ if __name__ == '__main__':
     factory = MonitorFactory()
 
     monitors = []
+    monitors += factory.kernel_series_archives()
 
     command = None
 
