@@ -24,6 +24,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.kernel_series import KernelSeries
 from wfl.launchpad import Launchpad
 #from wfl.log import Clog, cdebug, center, cleave
+from wfl.snap import SnapStore
 
 
 class MonitorIncompatible(Exception):
@@ -446,6 +447,67 @@ class MonitorLaunchpadProject:
         return "Launchpad Project Monitor {}".format(self.project_name)
 
 
+class MonitorSnapStore:
+
+    def __init__(self, snap, bs=None):
+        if bs is None:
+            bs = {}
+        if snap.publish_to is None:
+            raise ValueError("snap {} is not published to any tracks".format(snap.name))
+        if snap.promote_to is None:
+            raise ValueError("snap {} is not promoted to any risks".format(snap.name))
+
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + str(snap), {})
+        self._store.setdefault('last-date', datetime.now(timezone.utc))
+        self.snap = snap
+        self.snap_store = SnapStore(snap)
+
+    last_date = MonitorStoreAttr('last-date')
+
+    def changed(self):
+        changed = set()
+        start_date = self.last_date
+
+        #print(self.snap)
+
+        data = self.snap_store.channel_map()
+        for arch, tracks in self.snap.publish_to.items():
+            for track in tracks:
+                for risk in self.snap.promote_to:
+                    channel = "{}/{}".format(track, risk)
+                    #print("?", self.snap.name, arch, channel)
+                    key = (arch, channel)
+                    if key not in data:
+                        continue
+
+                    # Convert the iso8601 format timestring into one
+                    # which strptime actually can parse.
+                    released_at = data[key]['released-at']
+                    released_at = released_at[:-3] + released_at[-2:]
+                    #print("D?", released_at)
+
+                    date_published = datetime.strptime(released_at,
+                        "%Y-%m-%dT%H:%M:%S.%f%z")
+                    #print(date_published, '>', self.last_date)
+                    if date_published > self.last_date:
+                        self.last_date = date_published
+
+                    #print(date_published, start_date)
+                    if date_published > start_date:
+                        print("P", self.snap.name, arch, channel)
+                        changed.add("{}:{}:{}".format(
+                            self.snap.source.series.codename,
+                            self.snap.source.name, self.snap.name))
+
+        return changed
+
+    def __str__(self):
+        return "Snapstore Snap Monitor {}:{}:{}".format(
+            self.snap.source.series.codename,
+            self.snap.source.name, self.snap.name)
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -500,6 +562,17 @@ class MonitorFactory:
     def launchpad_project(self, project):
         return [MonitorLaunchpadProject(project, lp=self.lp, bs=self.bs)]
 
+    def kernel_series_snaps(self):
+        snaps = []
+        for series in self.ks.series:
+            for source in series.sources:
+                if source.supported or source.development:
+                    for snap in source.snaps:
+                        if (snap.promote_to is not None and
+                                snap.publish_to is not None):
+                            snaps.append(MonitorSnapStore(snap, bs=self.bs))
+        return snaps
+
     def sync(self):
         self.bs.sync()
 
@@ -513,6 +586,7 @@ if __name__ == '__main__':
     monitors = []
     monitors += factory.kernel_series_archives()
     monitors += factory.launchpad_project('kernel-sru-workflow')
+    monitors += factory.kernel_series_snaps()
 
     command = None
 
