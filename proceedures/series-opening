@@ -36,6 +36,8 @@
     - Create recipies (Producing snaps documentation)
  - Prime builder-extras for the new series
     - NEEDS: series open in launchpad and launchpad builders valid
+    - ensure the suite is present
+     - mark-suite-dirty -A ppa:canonical-kernel-team/ubuntu/builder-extra -s disco
     - Copy any valid packages in old series to new series
  - Add series to chroot creation
     - NEEDS: builder-extras primed
