@@ -508,6 +508,36 @@ class MonitorSnapStore:
             self.snap.source.name, self.snap.name)
 
 
+class MonitorStatusRefreshTime:
+
+    def __init__(self, status_path, bs=None):
+        self.status_path = status_path
+
+    def changed(self):
+        changed = set()
+        start_date = datetime.utcnow() # - timedelta(minutes=60)
+
+        with open(self.status_path) as rfd:
+            status = yaml.safe_load(rfd)
+
+        for bug_id, bug_data in status.items():
+            if 'refresh' in bug_data:
+                (when, why) = bug_data['refresh']
+                print("REFRESH", bug_id, when, when - start_date, when < start_date, "({})".format(why))
+                #print("APW", bug_id, bug_data['refresh-time'], start_date)
+                #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
+                if when < start_date:
+                    #print("APW", bug_id, bug_data['refresh-time'], "READY")
+                    changed.add(bug_id)
+
+        #print("REFRESH", changed)
+
+        return changed
+
+    def __str__(self):
+        return "Status refresh_time Monitor"
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -573,6 +603,9 @@ class MonitorFactory:
                             snaps.append(MonitorSnapStore(snap, bs=self.bs))
         return snaps
 
+    def swm_status(self, status_path):
+        return [MonitorStatusRefreshTime(status_path, bs=self.bs)]
+
     def sync(self):
         self.bs.sync()
 
@@ -587,6 +620,7 @@ if __name__ == '__main__':
     monitors += factory.kernel_series_archives()
     monitors += factory.launchpad_project('kernel-sru-workflow')
     monitors += factory.kernel_series_snaps()
+    monitors += factory.swm_status('status.yaml')
 
     command = None
 
