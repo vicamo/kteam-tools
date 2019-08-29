@@ -29,6 +29,10 @@ addons:
 
 install:
 - git clone git://kernel.ubuntu.com/ubuntu/kteam-tools ~/kteam-tools
+- |
+    (cd ~/kteam-tools; \
+        grep -e '^MUST_INCLUDE=".*gnupg' chroot-setup/scripts/build-mkschroot || \
+        (patch -p1 < ${TRAVIS_BUILD_DIR}/patches/chroot-setup-ensure-gnupg-is-installed-in-chroot.patch) )
 
 before_script:
 - cat /proc/sys/fs/binfmt_misc/qemu-*
