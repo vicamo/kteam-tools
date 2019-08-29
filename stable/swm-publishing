@@ -22,6 +22,7 @@ from lazr.restfulclient.errors import Unauthorized
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
+from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
 from wfl.launchpad import Launchpad
 #from wfl.log import Clog, cdebug, center, cleave
@@ -448,6 +449,79 @@ class MonitorLaunchpadProject:
         return "Launchpad Project Monitor {}".format(self.project_name)
 
 
+class MonitorLaunchpadQueues:
+
+    def __init__(self, lp=None, ks=None, bs=None):
+        if lp is None:
+            lp = Launchpad(False).default_service.launchpad
+        if ks is None:
+            ks = KernelSeries()
+        if bs is None:
+            bs = {}
+
+        #archive = 'ubuntu'
+
+        self.distro = 'ubuntu'
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + self.distro, {})
+        self._store.setdefault('last-date', datetime.now(timezone.utc))
+        self.lp = lp
+        self.ks = ks
+        self.bs = bs
+        #self.reference = archive
+        #self.archive = lp.archives.getByReference(reference=archive)
+
+        # Make a quick lookup for all valid source packages.
+        self.source_packages = {}
+        for series in self.ks.series:
+            for source in series.sources:
+                for package in source.packages:
+                    self.source_packages["{}:{}".format(series.codename, package.name)] = source.name
+
+
+    last_date = MonitorStoreAttr('last-date')
+
+    def changed(self):
+        start_date = self.last_date #- timedelta(hours=1)
+
+        changed = set()
+        notices = list()
+
+        for series in self.ks.series:
+            if not series.supported or series.esm:
+                continue
+            series_lp = self.lp.distributions[self.distro].getSeries(name_or_version=series.name)
+            for status in ('New', 'Unapproved'):
+                for upload in series_lp.getPackageUploads(created_since_date=start_date, status=status):
+                    package_name = upload.package_name
+                    # If we have no package name this is likely a signing block.
+                    if package_name is None and upload.display_arches in ('uefi', 'signing'):
+                        package_name = upload.display_name.split('_')[0]
+                    print("QUEUE", upload, package_name, upload.status, upload.date_created)
+                    package_key = "{}:{}".format(series.codename, package_name)
+                    if upload.date_created > self.last_date:
+                        self.last_date = upload.date_created
+                    if package_key not in self.source_packages:
+                        continue
+                    source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
+                    if source_key in changed:
+                        continue
+                    changed.add(source_key)
+                    notices.append("{} {} on {} queue for {}".format(series.codename, package_name, status, upload.pocket))
+                sys.stdout.flush()
+
+        if len(notices) > 0:
+            announce = Announce()
+            for notice in notices:
+                print("ANNOUNCE", notice)
+                announce.send('swm-queued-item', notice)
+
+        return changed
+
+    def __str__(self):
+        return "Launchpad Queue Monitor {}".format(self.distro)
+
+
 class MonitorSnapStore:
 
     def __init__(self, snap, bs=None):
@@ -629,6 +703,9 @@ class MonitorFactory:
     def launchpad_project(self, project):
         return [MonitorLaunchpadProject(project, lp=self.lp, bs=self.bs)]
 
+    def launchpad_queues(self):
+        return [MonitorLaunchpadQueues(lp=self.lp, ks=self.ks, bs=self.bs)]
+
     def kernel_series_snaps(self):
         snaps = []
         for series in self.ks.series:
@@ -662,6 +739,7 @@ if __name__ == '__main__':
     monitors += factory.kernel_series_snaps()
     monitors += factory.swm_status('status.yaml')
     monitors += factory.automated_testing('https://people.canonical.com/~kernel/status/adt-matrix/overall.txt')
+    monitors += factory.launchpad_queues()
 
     command = None
 
