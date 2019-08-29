@@ -13,7 +13,8 @@ from subprocess import Popen
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import (HTTPBasicAuthHandler,
                             HTTPPasswordMgrWithDefaultRealm,
-                            build_opener)
+                            build_opener,
+                            urlopen)
 
 import yaml
 from lazr.restfulclient.errors import Unauthorized
@@ -538,6 +539,42 @@ class MonitorStatusRefreshTime:
         return "Status refresh_time Monitor"
 
 
+class MonitorAutomatedTesting:
+
+    def __init__(self, adt_url, bs=None):
+        if bs is None:
+            bs = {}
+        self.adt_url = adt_url
+
+        self._store = bs.setdefault(
+            self.__class__.__name__ + ':' + adt_url, {})
+        self._store.setdefault('test-status', {})
+
+    test_status = MonitorStoreAttr('test-status')
+
+    def changed(self):
+        changed = set()
+
+        with urlopen(self.adt_url) as status:
+            ##print(status, status.status)
+            for line in status.read().decode('utf-8').split('\n'):
+                bits = line.split(None, 4)
+                if len(bits) < 4:
+                    continue
+                (series, source, version, state) = bits[0:4]
+                key = "{}:{}".format(series, source)
+                if self.test_status.setdefault(key, state) != state:
+                    changed.add(key)
+                    self.test_status[key] = state
+
+        #print("TESTING", changed)
+
+        return changed
+
+    def __str__(self):
+        return "Automated Testing Monitor"
+
+
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None):
@@ -606,6 +643,9 @@ class MonitorFactory:
     def swm_status(self, status_path):
         return [MonitorStatusRefreshTime(status_path, bs=self.bs)]
 
+    def automated_testing(self, adt_url):
+        return [MonitorAutomatedTesting(adt_url, bs=self.bs)]
+
     def sync(self):
         self.bs.sync()
 
@@ -621,6 +661,7 @@ if __name__ == '__main__':
     monitors += factory.launchpad_project('kernel-sru-workflow')
     monitors += factory.kernel_series_snaps()
     monitors += factory.swm_status('status.yaml')
+    monitors += factory.automated_testing('https://people.canonical.com/~kernel/status/adt-matrix/overall.txt')
 
     command = None
 
