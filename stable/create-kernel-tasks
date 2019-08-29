@@ -113,20 +113,12 @@ class Task():
                     if dryrun is False:
                         self.tb.derivative_add(tb)
 
-                # If the tracking bug being duplicated was linked to a master bug, then
-                # unlink it from there.
-                if old_tb.master_bug_id is not None:
-                    # Not expecting at this stage to miss that master bug from the set but
-                    # as it is easy to fix up, just do it.
-                    mbid = old_tb.master_bug_id
-                    if mbid not in ts.tbs:
-                        cwarn('  ! LP: #{} is not loaded, yet. Adding now.'.format(mbid))
-                        ts.tbs.add(mbid)
-                    mb = ts.tbs[mbid]
-                    if old_tb.id in mb.derivative_bug_ids:
-                        cinfo('  - remove LP: #{} from LP: #{}'.format(old_tb.id, mbid))
-                        if dryrun is False:
-                            mb.derivative_remove(old_tb)
+                # We used to remove the old tracking bug as a derivative from the (old)
+                # master bug. This used to update the forward links in the master and
+                # the backward link to the master in the old tracking bug.
+                # The forward links are no longer maintained and the backward link should
+                # better be kept intact to make unduplication simpler.
+                # For that reason we stop touching the (old) master bug completely.
 
                 if old_tb.wf_status_get() == 'Fix Released':
                     cinfo('  - old task closed, skipping duplication')
