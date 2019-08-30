@@ -61,6 +61,28 @@ def update_rules(git_repo, rules, show=False):
         print(" rules updated")
         git_repo.setRules(rules=rules)
 
+def update_subscriptions(git_repo, crankers):
+    if not git_repo.private:
+        return
+
+    # For private repositories we need to add an empty subscription
+    # for each cranker.  Look up all the existing subscriptions.
+    subscriber_seen = set()
+    for subscription in git_repo.subscriptions:
+        #print(subscription, subscription.person)
+        subscriber_seen.add(subscription.person.name)
+
+    for cranker in crankers:
+        cranker = cranker[2:]
+        if cranker not in subscriber_seen:
+            person = lp.people(cranker)
+            print(" cranker:")
+            print("  " + cranker)
+            git_repo.subscribe(person=person,
+                code_review_level='No email',
+                max_diff_lines="Don't send diffs",
+                notification_level='No email')
+
 def sync_misc():
     admins = '/~canonical-kernel-repo-admins-active'
 
@@ -178,6 +200,7 @@ def sync_primary():
         rules = []
         rules_wild = []
         versions = set()
+        crankers = ['/~canonical-kernel-crankers']
 
         any_supported = False
         for package in path_packages:
@@ -282,6 +305,7 @@ def sync_primary():
             continue
         print(git_repo)
         update_rules(git_repo, rules)
+        update_subscriptions(git_repo, crankers)
 
         sys.stdout.flush()
 
