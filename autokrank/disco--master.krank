@@ -1,6 +1,6 @@
-SERIES=trusty
+SERIES=disco
 TYPE=master
-CHROOT=$TRUSTY_CHROOT
+CHROOT=$DISCO_CHROOT
 PKG_NAME_SUFFIX=""
 
 LINUX_ORIGIN=git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/$SERIES

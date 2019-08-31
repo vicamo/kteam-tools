@@ -1,6 +1,6 @@
-source xenial--master.krank
+source disco--master.krank
 TYPE=derivative
-VARIANT=raspi2
+VARIANT=snapdragon
 PKG_NAME_SUFFIX="-$VARIANT"
 
 LINUX_FETCH_SOURCE="$LINUX_ORIGIN $VARIANT"

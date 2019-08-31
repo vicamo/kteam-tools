@@ -1,4 +1,4 @@
-source xenial--master.krank
+source disco--master.krank
 TYPE=derivative
 VARIANT=raspi2
 PKG_NAME_SUFFIX="-$VARIANT"

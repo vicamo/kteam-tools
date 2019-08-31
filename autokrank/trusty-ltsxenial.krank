@@ -1,16 +1,7 @@
 source trusty--master.krank
-TYPE=backport
+VARIANT="lts-xenial"
+PKG_NAME_SUFFIX="-$VARIANT"
 
 LINUX_FETCH_SOURCE="$LINUX_ORIGIN lts-backport-xenial"
 SIGNED_FETCH_SOURCE="$SIGNED_ORIGIN lts-backport-xenial"
 META_FETCH_SOURCE="$META_ORIGIN lts-backport-xenial"
-
-
-# vars for backports only:
-
-# VARIANT is the part that comes after "linux-" 
-# (or "linux-meta-" or "linux-signed-") in the package name
-VARIANT=lts-xenial
-CHANGELOG_FILE=./debian.xenial/changelog
-BACKPORT_UPDATE_SCRIPT=./debian.xenial/etc/update-from-xenial-master
-

@@ -1,4 +1,4 @@
-source xenial--master.krank
+source disco--master.krank
 TYPE=derivative
 VARIANT=kvm
 PKG_NAME_SUFFIX="-$VARIANT"

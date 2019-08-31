@@ -1,0 +1,7 @@
+source bionic--master.krank
+VARIANT=hwe-edge
+PKG_NAME_SUFFIX="-$VARIANT"
+
+LINUX_FETCH_SOURCE="$LINUX_ORIGIN hwe-edge"
+SIGNED_FETCH_SOURCE="$SIGNED_ORIGIN hwe-edge"
+META_FETCH_SOURCE="$META_ORIGIN hwe-edge"

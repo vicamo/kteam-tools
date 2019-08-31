@@ -99,6 +99,9 @@ function prepare_directory {
 	elif [ $1 = 'meta' ] ; then
 		FETCH_SOURCE=$META_FETCH_SOURCE
 		ORIGIN=$META_ORIGIN
+	elif [ $1 = 'lrm' ] ; then
+		FETCH_SOURCE=$LRM_FETCH_SOURCE
+		ORIGIN=$LRM_ORIGIN
 	fi
 
 	git cherry-pick --abort  &> /dev/null
@@ -132,102 +135,13 @@ function prepare_directory {
 
 
 function run_in_chroot {
-#	echo "source ~/.zshrc; $@" | schroot -c $CHROOT
-	schroot --preserve-environment -c $CHROOT -- $@
+	schroot -r --preserve-environment -c $CHROOT -- $@
 }
 
-function need_startnewrelease {
-	git describe --exact-match HEAD  &> /dev/null
 
-	if [[ $? -eq 0 ]]; then
-		TOPMOST_COMMIT_IS_TAGGED=1
-	fi
-
-	if [[ $TOPMOST_COMMIT_IS_TAGGED -eq 1 ]] ; then
-		if [ $TYPE = 'master' ] ; then
-			return 0
-		fi
-		if [ $TYPE = 'derivative' ] ; then
-			return 1
-		fi
-	else
-		LASTTAG=$(git describe --abbrev=0 HEAD~1)
-		LOG "Last tag is; $LASTTAG"
-		git log --oneline $LASTTAG..HEAD|tail -n 1|grep "Start new release"
-		if [[ $? -eq 0 ]]; then
-			return 0
-		else
-			return 1
-		fi
-	fi
-}
-
-function add_startnewrelease_after_last_tag {
-
-	add_startnewrelease_on_top 
-
-	LASTTAG=$(git describe --abbrev=0 HEAD~1)
-	LOG "Last tag is $LASTTAG"
-
-	# We want to move the 'start new release' to just after
-	# the last tag.
-
-	REBASE_SCRIPT=/tmp/autokrank-rebase-script
-	TMPFILE1=/tmp/autokrank-rebase-tmpfile-1
-	TMPFILE2=/tmp/autokrank-rebase-tmpfile-2
-	cat <<EOF > $REBASE_SCRIPT
-#!/bin/bash
-cat \$@ |grep ^pick  > $TMPFILE1
-NUMLINES=\$(cat $TMPFILE1 | wc -l)
-# subtract 1
-NUMLINES=\$((\$NUMLINES - 1))
-tail -n 1 $TMPFILE1 > $TMPFILE2
-head -n \$NUMLINES $TMPFILE1 >> $TMPFILE2
-
-cp $TMPFILE2 .git/rebase-merge/git-rebase-todo
-
-EOF
-
-	chmod +x $REBASE_SCRIPT
-	export EDITOR=$REBASE_SCRIPT
-
-	LOG "Rebasing on tag '$LASTTAG' to move startnewrelease right after it"
-
-	# The script above will be called when we rebase -i
-	git rebase -i $LASTTAG
-	rm $REBASE_SCRIPT
-	rm $TMPFILE1
-	rm $TMPFILE2
-	LOG "Done rebasing"
-}
-
-function add_startnewrelease_on_top {
-	git clean -fxd
-	git checkout -- .
-	$FDR clean
-	run_in_chroot $KTEAMTOOLS/maintscripts/maint-startnewrelease
-	git clean -fxd
-}
-
-function add_startnewrelease {
-	git describe --exact-match HEAD  &> /dev/null
-
-	if [[ $? -eq 0 ]]; then
-		TOPMOST_COMMIT_IS_TAGGED=1
-	fi
-
-	if [[ $TOPMOST_COMMIT_IS_TAGGED -eq 1 ]] ; then
-		CURRENTTAG=$(git describe)
-		LOG "Topmost commit is tagged ($CURRENTTAG) - assuming this is a release"
-		LOG "adding startnewrelease after it"
-		add_startnewrelease_on_top
-	else
-		LOG "Topmost commit is not tagged - will add startnewrelease then rebase it to the right location"
-		add_startnewrelease_after_last_tag
-	fi
-}
 
 function LOG {
+	echo -n "$(date "+%F %T.%N: ")" >> $LOGFILE
 	echo $@ >> $LOGFILE
 }
 
@@ -345,19 +259,6 @@ else
 fi
 LOG "Using branch name: $TEMPBRANCH"
 
-if [ $TYPE = 'master' ] ; then
-	MASTER_PKGNAME=linux
-elif [ $TYPE = 'derivative' ] ; then
-	MASTER_PKGNAME=linux-$VARIANT
-elif [ $TYPE = 'backport' ] ; then
-	MASTER_PKGNAME=linux-$VARIANT
-elif [ $TYPE = 'meta-only' ] ; then
-	MASTER_PKGNAME=linux-$VARIANT
-else
-	LOG "cannot determine PKGNAME - exiting"
-	exit 1
-fi
-
 
 if [ x$TASKS = 'x' ] ; then
 	# If no tasks were specified, then do everything
@@ -373,6 +274,8 @@ TASK_CRANK_SIGNED=$(echo $TASKS | grep -o .|head -n 3|tail -n 1)
 TASK_BUILD_SIGNED=$(echo $TASKS | grep -o .|head -n 4|tail -n 1)
 TASK_CRANK_META=$(echo $TASKS | grep -o .|head -n 5|tail -n 1)
 TASK_BUILD_META=$(echo $TASKS | grep -o .|head -n 6|tail -n 1)
+TASK_CRANK_LRM=$(echo $TASKS | grep -o .|head -n 7|tail -n 1)
+TASK_BUILD_LRM=$(echo $TASKS | grep -o .|head -n 8|tail -n 1)
 
 if [ $NO_LINKTOTRACKER = '1' ] ; then
 	LOG "Will NOT run link-to-tracker (no bug number will appear in the changelog)"
@@ -384,14 +287,17 @@ fi
 # LINUX
 #
 ##################
-if [ $TASK_CRANK_LINUX = '1' -o $TASK_BUILD_LINUX = '1' -o $TYPE = 'meta-only' ] ; then
-	LOG ""
-	LOG "LINUX"
-	LOG "-----"
-	LOG "Switching to $LINUX_DIR"
-	cd $LINUX_DIR
-	prepare_directory linux
-fi
+LOG ""
+LOG "LINUX"
+LOG "-----"
+LOG "Switching to $LINUX_DIR"
+cd $LINUX_DIR
+prepare_directory linux
+
+CHROOT=$($KTEAMTOOLS/cranky/cranky chroot map-session sources)
+LOG "chroot session that will be used: $CHROOT"
+
+
 
 if [ $TYPE = 'meta-only' ]; then
 	TASK_CRANK_LINUX=0;
@@ -399,104 +305,54 @@ if [ $TYPE = 'meta-only' ]; then
 fi
 
 if [ $TASK_CRANK_LINUX = '1'  ] ; then
-	if [ $TYPE = 'backport' ] ; then
-		# Run update-from-bionic-master etc.
-		# The last 2 lines that the script outputs are the commit
-		# commit and tag commands - save them for later.
-		LOG "Updating backport from: $BACKPORT_UPDATE_SCRIPT"
-		SCRIPT_OUTPUT=$(run_in_chroot $BACKPORT_UPDATE_SCRIPT)
-		COMMANDS=$(echo $SCRIPT_OUTPUT|tail -n 2)
+	LOG "Running cranky-fix"
+	$KTEAMTOOLS/cranky/cranky fix
 
-		# The following 2 lines are a hack basically because COMMANDS
-		# isn't really the last 2 lines of the output - it's the whole output
-		# (not sure why that happens)
+	LOG "Running cranky-rebase"
+	$KTEAMTOOLS/cranky/cranky rebase
+	RES=$?
 
-		# Remove the 'tag' command from after the 'commit' command
-		COMMIT_CMD=$(echo $COMMANDS| head -n 1 |sed -e 's/git tag.*//g')
-
-		# Remve everything before the 'commit' command from the output
-		COMMIT_CMD=$(echo $COMMIT_CMD|sed -e 's/.*git commit /git commit /g')
-
-		# Remove everything before the 'tag' command from the output
-		TAG_CMD=$(echo $COMMANDS| tail -n 1 |sed -e 's/.*git tag/git tag/g')
-	else
-		LOG "Running cranky-start"
-		run_in_chroot $KTEAMTOOLS/cranky/cranky-start
-	fi
-
-	if [ $TYPE = 'derivative' ] ; then
-		# For derivatives, use the 'master-tag' as the master commit
-		# for rebasing if it is given
-		# Otherwise, use the last saved autokrank tag
-		if [ x$REBASE_TAG = x'' ] ; then
-			LOG "No master-tag specified for derivative"
-			LOG "Rebasing on latest autokrank tag ('$KRANK_TAGNAME' a.k.a '$(git describe $KRANK_TAGNAME)')"
-			git rebase $KRANK_TAGNAME
-		else
-			LOG "master-tag specified ($REBASE_TAG) - using that as new base"
-			git rebase $REBASE_TAG
-		fi
-		if [[ $? -ne 0 ]]; then
-			LOG "==============================================================="
-			LOG "FATAL: Error when rebasing the tree - cannot crank this kernel!"
-			LOG "You may consider cranking it manually then re-running autokrank"
-			LOG "with --tasks 011111"
-			LOG "...exiting"
-			LOG "==============================================================="
+	while [ $RES -eq 128 ] ; do
+		git diff --name-only|grep debian.scripts.helpers
+		if [ $? -eq 1 ] ; then
+			LOG "FATAL: rebase failed, needs manual merge"
 			exit 1
+		else
+			LOG "(WARN) Rebase failed to merge helper scripts, skipping"
+			git rebase --skip
+			RES=$?
 		fi
+	done
+
+	LOG "Running cranky-open"
+	RES=$($KTEAMTOOLS/cranky/cranky open)
+	if [ $RES != '0' ] ; then
+		LOG "FATAL: cranky-open failed -- please investigate"
+		exit 1
 	fi
-
-
-
-
-	# CHANGELOG_FILE is already set for backports in the 
-	# .krank file
-	if [ $TYPE = 'master' ] ; then
-		CHANGELOG_FILE=debian.$TYPE/changelog
-	elif [ $TYPE = 'derivative' ] ; then
-		CHANGELOG_FILE=debian.$VARIANT/changelog
-	fi
-
-	LOG "Changelog file to be used: $CHANGELOG_FILE"
 
 
 	if [ $NO_LINKTOTRACKER != '1' ] ; then
-		LINK_TO_TRACKER_CMD="$KTEAMTOOLS/stable/link-to-tracker --re-run --sru-cycle $SRUCYCLE"
-		LOG "link-to-tracker command:"
-		LOG "   $LINK_TO_TRACKER_CMD"
-		LOG "Running link-to-tracker:"
-		BUG_ID=$($LINK_TO_TRACKER_CMD|tail -n 1 )
-		LOG "Bug ID:         $BUG_ID"
+		LOG "Running cranky-link-tb"
+		$KTEAMTOOLS/cranky/cranky link-tb --re-run -s $SRUCYCLE
 	else
 		LOG "Skipping link-to-tracker!!"
 	fi;
 
-
-	run_in_chroot $KTEAMTOOLS/cranky/cranky-close
-
-
-	if [ $TYPE = 'master' ] ; then
-		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
-		NEWTAG=Ubuntu-$VER
-		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
-	elif [ $TYPE = 'derivative' ] ; then
-		VER=$(head -n 1 $CHANGELOG_FILE|sed -e 's/.*(//g'|sed -e 's/).*//g')
-		NEWTAG=Ubuntu-$VARIANT-$VER
-		TAG_CMD="git tag -s -m $NEWTAG $NEWTAG"
-
-	# No need to save VER or NEWTAG for 'backport' - we already saved the COMMIT_CMD and TAG_CMD
+	LOG "Running cranky-close"
+	RES=$($KTEAMTOOLS/cranky/cranky close)
+	if [ $RES != '0' ] ; then
+		LOG "FATAL: cranky-close failed -- please investigate"
+		exit 1
 	fi
 
-	git clean -fxd
-	git add .
-	LOG "Committing changes"
-	LOG "Tag command is: $TAG_CMD"
-	echo $TAG_CMD | bash
+	LOG "Running cranky-tag"
+	$KTEAMTOOLS/cranky/cranky tag
 
 	if [ $TYPE = 'master' ] ; then
 		# if this is master, tag our new commit so that
 		# the derivatives have something on which to rebase
+		# (This is obsoleted by cranky)
 		git tag -d $KRANK_TAGNAME
 		git tag $KRANK_TAGNAME
 		LOG "Generated new autokrank master tag ('$KRANK_TAGNAME' a.k.a '$(git describe $KRANK_TAGNAME)')"
@@ -507,18 +363,18 @@ fi
 if [ $TASK_BUILD_LINUX = '1' ] ; then
 	git clean -fxd
 	$FDR clean
-	PKGNAME=$MASTER_PKGNAME
-	LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
 
-	LOG "Last linux version in rmadison: $LASTVER"
+	# Just in case a linux.orig is present from before:
+	rm -rf ../linux.orig
 
-	if [ $TYPE = 'backport' ] ; then
-		# Remove the ~ from LASTVER for backports:
-		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
-		LOG "Version that will be used with debuild: $LASTVER"
-	fi
+	eval PKG_NAME="$LINUX_PKG_NAME"
+	LOG "PKG_NAME is $PKG_NAME"
+	LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
+	LOG "Last linux version in rmadison -updates: $LASTVER"
+	LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+	LOG "Version that will be used with debuild: $LASTVER"
 	LOG "Constructing source pkg for linux"
-	run_in_chroot 'debuild -S -i -I -us -uc -v'$LASTVER
+	run_in_chroot debuild -S -i -I -us -uc -v$LASTVER
 	LOG "Done constructing linux pkgs"
 fi
 
@@ -529,16 +385,14 @@ fi
 #
 ##################
 
-if [ $TYPE = 'master' -o $TYPE = 'backport' -o x$HAS_SIGNED = x'1' ] ; then
-	if [ $TASK_CRANK_SIGNED = '1' -o $TASK_BUILD_SIGNED = '1' ] ; then
-		LOG ""
-		LOG "SIGNED"
-		LOG "------"
-		LOG "Switching to $SIGNED_DIR"
-		cd $SIGNED_DIR
-		prepare_directory signed
-	fi
+LOG ""
+LOG "SIGNED"
+LOG "------"
+LOG "Switching to $SIGNED_DIR"
+cd $SIGNED_DIR
+prepare_directory signed
 
+if [ x"$SIGNED_PKG_NAME" != "x" ] ; then
 	if [ $TASK_CRANK_SIGNED = '1' ] ; then
 
 		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
@@ -551,22 +405,24 @@ if [ $TYPE = 'master' -o $TYPE = 'backport' -o x$HAS_SIGNED = x'1' ] ; then
 	fi
 
 	if [ $TASK_BUILD_SIGNED = '1' ] ; then
-		if [ $TYPE = 'master' ] ; then
-			PKGNAME=linux-signed
-		elif [ $TYPE = 'backport' -o $TYPE = 'derivative' ] ; then
-			PKGNAME=linux-signed-$VARIANT
-		fi
-		LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
-		LOG "Last linux-signed version in rmadison: $LASTVER"
 		git clean -fxd
 		$FDR clean
+
+		eval PKG_NAME="$SIGNED_PKG_NAME"
+		LOG "PKG_NAME is $PKG_NAME"
+		LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
+		LOG "Last linux-signed version in rmadison -updates: $LASTVER"
+
 		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
 		LOG "Version that will be used with debuild: $LASTVER"
 		LOG "Constructing source pkg for signed"
 		run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc -v$LASTVER
 		LOG "Done constructing linux-signed pkgs"
 	fi
+else
+	LOG "This kernel doesn't have a signed pkg - skipping 'signed'"
 fi
+
 
 
 
@@ -581,14 +437,12 @@ fi
 #
 ##################
 
-if [ $TASK_CRANK_META = '1' -o $TASK_BUILD_META = '1' ] ; then
-	LOG ""
-	LOG "META"
-	LOG "----"
-	LOG "Switching to $META_DIR"
-	cd $META_DIR
-	prepare_directory meta
-fi
+LOG ""
+LOG "META"
+LOG "----"
+LOG "Switching to $META_DIR"
+cd $META_DIR
+prepare_directory meta
 
 
 if [ $TASK_CRANK_META = '1' ] ; then
@@ -603,15 +457,13 @@ if [ $TASK_CRANK_META = '1' ] ; then
 fi
 
 if [ $TASK_BUILD_META = '1' ] ; then
-	if [ $TYPE = 'master' ] ; then
-		PKGNAME=$MASTER_PKGNAME-meta
-	elif [ $TYPE = 'derivative' -o $TYPE = 'backport' -o $TYPE = 'meta-only' ] ; then
-		PKGNAME=linux-meta-$VARIANT
-	fi
-	LASTVER=$(rmadison -a source $PKGNAME | grep $SERIES|grep updates|sed -e "s/.$PKGNAME...//g"|sed -e 's/ .*//g')
-	LOG "Last linux-meta version in rmadison: $LASTVER"
 	git clean -fxd
 	$FDR clean
+
+	eval PKG_NAME="$META_PKG_NAME"
+	LOG "PKG_NAME is $PKG_NAME"
+	LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
+	LOG "Last linux-meta version in rmadison -updates: $LASTVER"
 	LOG "Constructing source pkg for meta"
 	run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
 	LOG "Done constructing linux-meta pkgs"
@@ -620,7 +472,49 @@ fi
 
 
 
+##################
+#
+# LRM
+#
+##################
 
+LOG ""
+LOG "LRM"
+LOG "----"
+LOG "Switching to $LRM_DIR"
+if [ x"$LRM_PKG_NAME" != "x" ] ; then
+	cd $LRM_DIR
+	prepare_directory lrm
+
+
+	if [ $TASK_CRANK_LRM = '1' ] ; then
+
+		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
+		COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
+		TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+		LOG "Commit command is: $COMMIT_CMD"
+		echo $COMMIT_CMD | bash
+		LOG "Tag command is: $TAG_CMD"
+		echo $TAG_CMD | bash
+	fi
+
+	if [ $TASK_BUILD_LRM = '1' ] ; then
+		git clean -fxd
+		$FDR clean
+
+		eval PKG_NAME="$LRM_PKG_NAME"
+		LOG "PKG_NAME is $PKG_NAME"
+		LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
+		LOG "Last linux-restricted-modules version in rmadison: $LASTVER"
+		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+		LOG "Version that will be used with debuild: $LASTVER"
+		LOG "Constructing source pkg for lrm"
+		run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
+		LOG "Done constructing linux-restricted-modules pkgs"
+	fi
+else
+	LOG "This kernel doesn't have a liux-restricted-modules pkg - skipping 'lrm'"
+fi
 
 LOG ""
 LOG "done autokranking $KRANKFILE"
