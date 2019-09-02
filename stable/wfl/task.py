@@ -132,7 +132,7 @@ class WorkflowBugTask(object):
         if now - task_start > acceptable:
             state = 'Stalled'
         else:
-            s.bug.refresh_at(when + acceptable, "{} stall check {}".format(s.name, acceptable))
+            s.bug.refresh_at(task_start + acceptable, "{} stall check {}".format(s.name, acceptable))
         return state
 
     # modified
