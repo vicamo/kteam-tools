@@ -2077,7 +2077,7 @@
                         #
                         arches: ['amd64']
                         clouds: ['metal']
-            invalid-tasks: ['certification-testing']
+            invalid-tasks: ['automated-testing', 'regression-testing']
 
 # 15.10 (wily)
 '15.10':
