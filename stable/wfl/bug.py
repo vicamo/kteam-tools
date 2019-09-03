@@ -335,6 +335,48 @@ class WorkflowBug():
                 s._master_bug = None
         return s._master_bug
 
+    # dup_replaces
+    #
+    def dup_replaces(s, inactive_only=False):
+        '''
+        If we have a pending replaces bug pointer duplicate that bug now against ourselves.
+        '''
+        center(s.__class__.__name__ + '.dup_replaces')
+
+        dup_pointer = s.bprops.get('replaces')
+        if dup_pointer is None:
+            cleave(s.__class__.__name__ + '.dup_replaces')
+            return
+        dup_id = dup_pointer.split()[1]
+        try:
+            dup_wb = WorkflowBug(s.lp, dup_id, ks=s.kernel_series)
+        except WorkflowBugError:
+            raise WorkflowBugError("invalid replaces pointer {}".dup_id)
+
+        # If we have no testing tasks active then there is is no value in
+        # holding the duplication till later.  For variant debs we also trigger
+        # duplication when we are ready to to promote the replacement tracker.
+        keep = False
+        if inactive_only:
+            cinfo("replaces={} detected checking target inactive".format(dup_pointer))
+            for taskname, task in dup_wb.tasks_by_name.items():
+                if (taskname.endswith('-testing') and task.status in
+                        (['Confirmed', 'Triaged', 'In Progress',
+                        'Fix Committed'])):
+                    keep = True
+
+        # If we deem this ready for duplication wack it.
+        if not keep:
+            cinfo("replaces={} detected duplicating {} to {}".format(dup_pointer, dup_wb.lpbug.id, s.lpbug.id))
+            # XXX: lpltk does not a allow access to the duplicates.
+            dup_wb.lpbug.lpbug.duplicate_of = s.lpbug.lpbug
+            dup_wb.lpbug.lpbug.lp_save()
+
+            # Now that we have duplicated the bug, drop the replaces.
+            del s.bprops['replaces']
+
+        cleave(s.__class__.__name__ + '.dup_replaces')
+
     # load_bug_properties
     #
     def load_bug_properties(s):

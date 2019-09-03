@@ -39,6 +39,9 @@ class Workflow(TaskHandler):
         center(s.__class__.__name__ + '._complete')
         retval = False
 
+        # Attempt to apply replaces where the target is inactive.
+        s.bug.dup_replaces(inactive_only=True)
+
         # We will use nominal phases in 0..PHASE_MAX, and sub-phases
         # in the range PHASE_MAX..(PHASE_MAX * PHASE_BETWEEN).
         # Make sure we start higher than that.
