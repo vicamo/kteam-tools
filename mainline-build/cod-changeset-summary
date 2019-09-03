@@ -42,7 +42,8 @@ for (dirname, dirs, files) in os.walk(directory):
             entry[key] = bits[1]
         entry['status'] = overall
 
-        results.append((entry['committed'], entry))
+        if 'committed' in entry:
+            results.append((entry['committed'], entry))
 
 results.sort(reverse=True)
 
@@ -95,7 +96,7 @@ table.matrix td {{
             status_string = 'GOOD'
             status_class = 'GOOD'
         else:
-            status_string = 'FAIL rc=' + status
+            status_string = 'FAIL rc=' + str(status)
             status_class = 'FAIL'
         commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={hash}".format(**entry)
         status_url = "http://kernel.ubuntu.com/~kernel-ppa/test-build/"
