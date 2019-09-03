@@ -27,7 +27,7 @@ class MsgQueue():
 
         s.channel.queue_declare(queue_name, durable=queue_durable, arguments=queue_arguments)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
-        s.channel.basic_consume(queue=queue_name, auto_ack=False, on_message_callback=wrapped_handler)
+        s.channel.basic_consume(queue=queue_name, auto_ack=True, on_message_callback=wrapped_handler)
         s.channel.start_consuming()
 
 
@@ -40,7 +40,7 @@ class MsgQueue():
         s.channel.queue_declare(queue_name, durable=queue_durable, auto_delete=auto_delete, arguments=queue_arguments)
         s.channel.queue_bind(exchange=s.exchange_name, queue=queue_name, routing_key=routing_key)
         s.channel.basic_qos(prefetch_count=1)
-        s.channel.basic_consume(queue=queue_name, auto_ack=True, on_message_callback=wrapped_handler)
+        s.channel.basic_consume(queue=queue_name, auto_ack=False, on_message_callback=wrapped_handler)
 
 
     def listen_start(s):
