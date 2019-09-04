@@ -205,8 +205,8 @@ def __status_bites(bug):
         (state, _, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
         retval = '{}: {}'.format(task, reason)
-        if len(retval) > 88:
-            retval = retval[:85] + '...'
+        if len(retval) > 83:
+            retval = retval[:80] + '...'
         retval = __coloured(retval, colour)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
