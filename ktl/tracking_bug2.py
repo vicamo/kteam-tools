@@ -209,7 +209,13 @@ class TrackingBug(object):
         s._derivative_bug_ids = {}
         if 'trackers' in s.__wf_properties.keys():
             for srchandle in s.__wf_properties['trackers']:
-                bugid = int(s.__wf_properties['trackers'][srchandle].replace('bug ', ''))
+                bugids = []
+                # Take the highest bug number from the listed set on the assumption
+                # that is newest.  Example:
+                #    linux-oem: bug 123, bug 234
+                for bughandle in s.__wf_properties['trackers'][srchandle].split(','):
+                    bugids.append(int(bughandle.strip().replace('bug ', '')))
+                bugid = sorted(bugids)[-1]
                 s._derivative_bug_ids[bugid] = srchandle
 
     def __init__(s, bug, wf_project_name=TRACKINGBUG_DEFAULT_PROJECT):
