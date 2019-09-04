@@ -7,6 +7,9 @@ from os                                 import path
 from subprocess                         import Popen, PIPE
 import re
 
+from ktl.sru_cycle                      import SruCycle
+
+
 # ErrorExit
 #
 class ErrorExit(Exception):
@@ -38,32 +41,65 @@ class TheApp(object):
             raise ErrorExit('Badly formed date. Must be in YYYY.MM.DD format. For example: 2018.04.23')
         return t
 
+    # layout_cycle
+    #
+    def layout_cycle(s, date):
+        sru_cycle = SruCycle().lookup_cycle(date)
+        # If the cycle is not yet defined, assume a 3 week cadance.
+        if sru_cycle is None:
+            cycle_start = s.sd(date)
+            cycle_end = cycle_start + timedelta(days=21)
+        else:
+            cycle_start = sru_cycle.start_date
+            cycle_end = sru_cycle.release_date - timedelta(days=1)
+
+        patch_end = cycle_start - timedelta(days=5)
+
+        prep_start = cycle_start
+        prep_end = cycle_start + timedelta(days=4)
+
+        test_start = cycle_start + timedelta(days=7)
+        test_end = cycle_end - timedelta(days=2)
+
+        release_end = cycle_end + timedelta(days=1)
+
+        return (release_end.strftime('%Y.%m.%d'),
+                cycle_start.strftime('%d-%b'),
+                cycle_end.strftime('%d-%b'),
+                patch_end.strftime('%d-%b'),
+                prep_start.strftime('%d-%b'),
+                prep_end.strftime('%d-%b'),
+                test_start.strftime('%d-%b'),
+                test_end.strftime('%d-%b'),
+                release_end.strftime('%d-%b'),
+            )
+
     # print_cycle
     #
-    def print_cycle(s, sd):
-        pd = sd - timedelta(days=5)
+    def print_cycle(s, layout):
+        (_, cycle_start, cycle_end, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('')
-        print('cycle: %s through %s' % (sd.strftime('%d-%b'), (sd + timedelta(days=20)).strftime('%d-%b')))
+        print('cycle: %s through %s' % (cycle_start, cycle_end))
         print('====================================================================')
-        print('         %s   Last day for kernel commits for this cycle.' % (pd.strftime('%d-%b')))
-        print('%s - %s   Kernel prep week.' %
-                (sd.strftime('%d-%b'), (sd + timedelta(days=4)).strftime('%d-%b')))
-        print('%s - %s   Bug verification & Regression testing.' %
-                ((sd + timedelta(days=7)).strftime('%d-%b'), (sd + timedelta(days=18)).strftime('%d-%b')))
-        print('         %s   Release to -updates.' % ((sd + timedelta(days=21)).strftime('%d-%b')))
+        print('         %s   Last day for kernel commits for this cycle.' % (patch_end))
+        print('%s - %s   Kernel prep week.' % (prep_start, prep_end))
+        print('%s - %s   Bug verification & Regression testing.' % (test_start, test_end))
+        print('         %s   Release to -updates.' % (release_end))
         print('')
 
     # Print the cycle dates as HTML table
     #
-    def print_cycle_html(s, sd):
+    def print_cycle_html(s, layout):
+        (_, cycle_start, cycle_end, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+
         print('        <td width="50%">')
         print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (sd.strftime('%d-%b'), (sd + timedelta(days=20)).strftime('%d-%b')))
-        print('                <tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % ((sd - timedelta(days=5)).strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (sd.strftime('%d-%b'), (sd + timedelta(days=4)).strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % ((sd + timedelta(days=7)).strftime('%d-%b'), (sd + timedelta(days=18)).strftime('%d-%b')))
-        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % ((sd + timedelta(days=21)).strftime('%d-%b')))
+        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (cycle_start, cycle_end))
+        print('                <tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (patch_end))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (prep_start, prep_end))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>%s</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % (test_start, test_end))
+        print('<tr> <td width="10%%">&nbsp;</td>   <td width="10%%"><h3>&nbsp;</h3></td>   <td width="10%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % (release_end))
         print('            </table>')
         print('        </td>')
 
@@ -82,24 +118,27 @@ class TheApp(object):
     def main(s, args):
         retval = 0
 
+        layout = s.layout_cycle(args.date)
+        layout2 = s.layout_cycle(layout[0])
+
         sd = s.sd(args.date)
 
         if args.html:
             print('<table border="0" width="100%"> <!-- -->')
             print('    <tr>')
-            s.print_cycle_html(sd)
-            s.print_cycle_html(sd + timedelta(days=21))
+            s.print_cycle_html(layout)
+            s.print_cycle_html(layout2)
             print('    </tr>')
             print('</table>')
         else:
             print('To: Kernel SRU Announcements <kernel-sru-announce@lists.ubuntu.com>, '
                   'Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
             print('Subject: A new SRU cycle started...')
-            s.print_cycle(sd)
+            s.print_cycle(layout)
             print('')
             s.print_kernel_versions()
             print('')
-            s.print_cycle(sd + timedelta(days=21))
+            s.print_cycle(layout2)
 
         return retval
 
