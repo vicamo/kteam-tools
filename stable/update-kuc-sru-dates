@@ -31,7 +31,7 @@ fi
 TMP=$(mktemp '/tmp/update-sru-XXXXX')
 trap 'test -f "$TMP" && rm "$TMP"' EXIT
 
-gen-sru-announce --html "$1" >>$TMP || (
+"$BINDIR/gen-sru-announce" --html "$1" >>$TMP || (
 	echo "EE: Error calling gen-sru-announce:" >&2
 	cat $TMP >&2
 	exit 1
