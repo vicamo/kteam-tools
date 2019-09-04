@@ -347,6 +347,12 @@ class WorkflowManager():
                 s.status_set(bugid, None)
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
             bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series)
+            if bug.is_closed:
+                # Update linkage.
+                bug.add_live_children(s.live_children(bugid))
+                bug.save()
+                s.status_set(bugid, None)
+                raise WorkflowBugError('is closed, skipping (and dropping)')
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
