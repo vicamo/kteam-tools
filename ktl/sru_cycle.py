@@ -28,6 +28,9 @@ class SruCycleSpinEntry:
         elif data is None:
             data = {}
 
+        sdate = datetime.strptime(cycle, '%Y.%m.%d').date()
+        self._start_date = sdate
+
         rdate = data.get('release-date')
         if rdate is not None:
             rdate = datetime.strptime(rdate, '%Y-%m-%d').date()
@@ -50,6 +53,10 @@ class SruCycleSpinEntry:
     @property
     def cycle(self):
         return self._cycle
+
+    @property
+    def start_date(self):
+        return self._start_date
 
     @property
     def release_date(self):
