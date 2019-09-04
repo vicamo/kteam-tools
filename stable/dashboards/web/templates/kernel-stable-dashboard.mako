@@ -56,10 +56,12 @@ def __coloured(msg, colour='black'):
 
 %>
 <%
+import textwrap
+
 # bite_format
 #
 def bite_format(thing_prefix, payload, thing_in):
-    bite = '<span style="display: inline-block; min-width: 20px; width=20px;">{}:</span>'.format(thing_prefix)
+    bite = '<span style="display: inline-block; min-width: 20px; width=20px;">{}</span>'.format(thing_prefix)
     bite += '<span style="display: inline-block; min-width: 400px; width=400px;">{}</span>'.format(payload)
     if len(thing_in) != 0:
         if payload[-2:] not in ('', '  '):
@@ -72,12 +74,12 @@ def bite_format(thing_prefix, payload, thing_in):
 def __status_bites(bug):
     bites = []
 
-    thing_prefix = '?'
+    thing_prefix = '?:'
     thing_in = []
 
     # Report Debs release progress.
     if bug['variant'] in ('debs', 'combo'):
-        thing_prefix = 'd'
+        thing_prefix = 'd:'
         security_status = __task_status(bug, 'promote-to-security')
         updates_status  = __task_status(bug, 'promote-to-updates')
         proposed_status = __task_status(bug, 'promote-to-proposed')
@@ -92,7 +94,7 @@ def __status_bites(bug):
 
     # Report Snap release progress.
     if bug['variant'] == 'snap-debs':
-        thing_prefix = 's'
+        thing_prefix = 's:'
         for risk in ['edge', 'beta', 'candidate', 'stable']:
             status = __task_status(bug, 'snap-release-to-' + risk)
             if status == 'Fix Released':
@@ -205,12 +207,14 @@ def __status_bites(bug):
         (state, _, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
         retval = '{}: {}'.format(task, reason)
-        if len(retval) > 83:
-            retval = retval[:80] + '...'
-        retval = __coloured(retval, colour)
-
-        bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
+        thing_prefix_wrap = thing_prefix
+        for line in textwrap.wrap(retval, width=80):
+            if len(line) > 83:
+                 line= line[:80] + '...'
+            line = __coloured(line, colour)
+            bites.append(bite_format(thing_prefix_wrap, line, thing_in))
+            thing_in = []
+            thing_prefix_wrap = ''
 
     # We have nothing to say ... so use the phase as a hint.
     if len(bites) == 0:
