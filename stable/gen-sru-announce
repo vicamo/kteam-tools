@@ -48,7 +48,7 @@ class TheApp(object):
         # If the cycle is not yet defined, assume a 3 week cadance.
         if sru_cycle is None:
             cycle_start = s.sd(date)
-            cycle_end = cycle_start + timedelta(days=21)
+            cycle_end = cycle_start + timedelta(days=20)
         else:
             cycle_start = sru_cycle.start_date
             cycle_end = sru_cycle.release_date - timedelta(days=1)
