@@ -63,9 +63,13 @@ class TheApp(object):
 
         release_end = cycle_end + timedelta(days=1)
 
+        length = release_end - cycle_start
+        length = int(length.days / 7)
+
         return (release_end.strftime('%Y.%m.%d'),
                 cycle_start.strftime('%d-%b'),
                 cycle_end.strftime('%d-%b'),
+                length,
                 patch_end.strftime('%d-%b'),
                 prep_start.strftime('%d-%b'),
                 prep_end.strftime('%d-%b'),
@@ -77,10 +81,10 @@ class TheApp(object):
     # print_cycle
     #
     def print_cycle(s, layout):
-        (_, cycle_start, cycle_end, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+        (_, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('')
-        print('cycle: %s through %s' % (cycle_start, cycle_end))
+        print('cycle: %s through %s (%s weeks)' % (cycle_start, cycle_end, length))
         print('====================================================================')
         print('         %s   Last day for kernel commits for this cycle.' % (patch_end))
         print('%s - %s   Kernel prep week.' % (prep_start, prep_end))
@@ -91,11 +95,11 @@ class TheApp(object):
     # Print the cycle dates as HTML table
     #
     def print_cycle_html(s, layout):
-        (_, cycle_start, cycle_end, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+        (_, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('        <td width="50%">')
         print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4"><h2>%s through %s<h2></td></tr>' % (cycle_start, cycle_end))
+        print('                <tr> <td colspan="4"><h2>%s through %s (%s weeks)<h2></td></tr>' % (cycle_start, cycle_end, length))
         print('                <tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>&nbsp;</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (patch_end))
         print('<tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>%s</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (prep_start, prep_end))
         print('<tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>%s</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % (test_start, test_end))
