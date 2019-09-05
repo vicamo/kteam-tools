@@ -70,16 +70,18 @@ class Package():
                 ('Security', 'security'),
                 ('Release', 'release'),
                 ):
-                route = s.source.routing.lookup_destination(destination, primary=True)
-                if route is None:
+                routes = s.source.routing.lookup_destination(destination)
+                if routes is None:
                     continue
-                archive = s.lp.launchpad.archives.getByReference(reference=route[0])
+                route_list = []
+                for route in routes:
+                    archive = s.lp.launchpad.archives.getByReference(reference=route[0])
+                    if archive is None:
+                        cwarn("invalid-archive {} {}".format(route[0], route[1]))
+                        continue
+                    route_list.append((archive, route[1]))
                 # Record invalid pockets as present but broken.
-                s._routing[key] = None
-                if archive is None:
-                    cwarn("invalid-archive {} {}".format(route[0], route[1]))
-                    continue
-                s._routing[key] = (archive, route[1])
+                s._routing[key] = route_list if len(route_list) > 0 else None
             s.routing_mode = s.source.routing.name
 
 
@@ -91,7 +93,8 @@ class Package():
                 pocket_data = ('NONE', 'NONE')
                 cerror('        {}: {} {}'.format(pocket, 'NONE', 'NONE', 'red'))
             else:
-                cinfo('        {}: {} {}'.format(pocket, pocket_data[0].reference, pocket_data[1]), 'blue')
+                for route in pocket_data:
+                    cinfo('        {}: {} {}'.format(pocket, route[0].reference, route[1]), 'blue')
 
         s.pkgs = s.dependent_packages
         if s.pkgs == None:
@@ -152,9 +155,22 @@ class Package():
                     cwarn(s.bug.overall_reason)
                     continue
 
+                publications = []
+                for (src_archive, src_pocket) in s._routing[pocket]:
+                    info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket)
+                    publications.append(info)
+                    # If this archive pocket contains the version we are looking for then scan
+                    # no further.
+                    if info[5] != '':
+                        break
+
+                # If we have a match use that, else use the first one.
+                if publications[-1][5] != '':
+                    info = publications[-1]
+                else:
+                    info = publications[0]
+
                 s._cache[dep][pocket] = {}
-                (src_archive, src_pocket) = s._routing[pocket]
-                info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket)
                 s._cache[dep][pocket]['built']   = info[0]
                 s._cache[dep][pocket]['creator'] = info[1]
                 s._cache[dep][pocket]['signer']  = info[2]
@@ -807,7 +823,7 @@ class Package():
         center(s.__class__.__name__ + '.ready_for_testing')
         # We only have mirrors on the primary archive, so if we are not routing
         routing = s.routing('Proposed')
-        (archive, pocket) = routing
+        (archive, pocket) = routing[0]
         if archive.reference == 'ubuntu':
             delay = timedelta(hours=1.5)
         else:
@@ -971,7 +987,7 @@ class Package():
         else:
             routing = s.routing('Proposed')
 
-        (archive, pocket) = routing
+        (archive, pocket) = routing[0]
         if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'
             # XXX: need to find out what this used for, if it is exclusively

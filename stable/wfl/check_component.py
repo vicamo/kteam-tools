@@ -23,7 +23,7 @@ class CheckComponent():
 
     def get_published_sources(self, series, package, version, pocket):
         cdebug("    CheckComponent::get_published_sources enter")
-        (archive, pocket) = self.package.routing(pocket.title())
+        (archive, pocket) = self.package.routing(pocket.title())[0]
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         lp_series = ubuntu.getSeries(name_or_version=series)
         if version:
