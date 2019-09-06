@@ -473,8 +473,8 @@ class WorkflowBug():
                 if target is not None:
                     status['target'] = target.name
                     break
-        except:
-            pass
+        except Exception as e:
+            cerror("status failed {}".format(e))
 
         # Do not expose this API error.
         master_bug = s.master_bug_property_name
