@@ -28,7 +28,10 @@ class SruCycleSpinEntry:
         elif data is None:
             data = {}
 
-        sdate = datetime.strptime(cycle, '%Y.%m.%d').date()
+        sdate = cycle
+        if sdate.startswith('d'):
+            sdate = sdate[1:]
+        sdate = datetime.strptime(sdate, '%Y.%m.%d').date()
         self._start_date = sdate
 
         rdate = data.get('release-date')
