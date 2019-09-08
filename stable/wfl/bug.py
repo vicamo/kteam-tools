@@ -172,6 +172,8 @@ class WorkflowBug():
         #      pick those out.
 
         master_bug = s.master_bug
+        if master_bug is None:
+            raise WorkflowBugError("Master bug required")
         s.series = master_bug.series
         s.name = master_bug.name
         s.version = master_bug.version
