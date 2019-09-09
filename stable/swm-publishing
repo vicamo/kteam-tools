@@ -242,7 +242,7 @@ class MonitorLaunchpadArchivePrivate:
             if sub.endswith(find):
                 found = sub
                 break
-        print(find, found)
+        #print(find, found)
         #sys.exit(1)
         if found is None:
             raise MonitorIncompatible()
