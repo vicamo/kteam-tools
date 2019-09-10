@@ -78,12 +78,16 @@ def __status_bites(bug):
     thing_in = []
 
     # Report Debs release progress.
+    prep_status = __task_status(bug, 'prepare-package')
+    if prep_status == 'Invalid':
+        prep_status = __task_status(bug, 'prepare-package-meta')
+
     if bug['variant'] in ('debs', 'combo'):
         thing_prefix = 'd:'
         security_status = __task_status(bug, 'promote-to-security')
         updates_status  = __task_status(bug, 'promote-to-updates')
         proposed_status = __task_status(bug, 'promote-to-proposed')
-        if proposed_status not in ('n/a', 'New', 'Invalid', 'Opinion'):
+        if prep_status in ('Fix Committed', 'Fix Released'):
             thing_in.append('ppa')
         if proposed_status in ('Fix Released'):
             thing_in.append('proposed')
@@ -102,9 +106,6 @@ def __status_bites(bug):
 
     # debs: being prepared?
     retval = ''
-    prep_status = __task_status(bug, 'prepare-package')
-    if prep_status == 'Invalid':
-        prep_status = __task_status(bug, 'prepare-package-meta')
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
@@ -196,7 +197,7 @@ def __status_bites(bug):
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
         if ((task.startswith('prepare-package') or
-                task.startswith('snap-released-to-edge')) and
+                task.startswith('snap-release-to-edge')) and
                 not reason.startswith('Stalled -- ')):
             continue
         if task.endswith('-testing'):
