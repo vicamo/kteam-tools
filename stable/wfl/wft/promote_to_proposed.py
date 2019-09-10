@@ -163,7 +163,7 @@ class PromoteFromTo(Promoter):
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 # Confirm the packages remain available to copy.
                 if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
-                    s.task.reason = 'Stalled -- packages no longer available'
+                    s.task.reason = 'Alert -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
                         retval = True
