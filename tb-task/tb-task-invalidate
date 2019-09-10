@@ -77,12 +77,12 @@ in progress.
             continue
 
         master = tbs[tbid].master_bug_id
-        if master is not None:
-            tbs.add(master)
-            if tbid in tbs[master].derivative_bug_ids:
-                cinfo('{}Dropping LP: #{} from master LP: #{}'.format(mode_prefix, tbid, master))
-                if not args.dry_run:
-                    tbs[master].derivative_remove(tbs[tbid])
+        # if master is not None:
+        #     tbs.add(master)
+        #     if tbid in tbs[master].derivative_bug_ids:
+        #         cinfo('{}Dropping LP: #{} from master LP: #{}'.format(mode_prefix, tbid, master))
+        #         if not args.dry_run:
+        #             tbs[master].derivative_remove(tbs[tbid])
 
         hardtxt = ""
         if args.hard:
