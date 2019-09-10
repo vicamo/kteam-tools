@@ -193,6 +193,7 @@ def __status_bites(bug):
             'Ongoing': '#1496bb',
             'Holding': 'grey',
             'Stalled': 'orange',
+            'Alert':   'red',
         }
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
