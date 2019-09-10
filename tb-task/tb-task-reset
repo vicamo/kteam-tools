@@ -1,0 +1,94 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cdebug
+from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
+
+
+if __name__ == '__main__':
+
+    desc = '''
+Reset all tasks of a tracking bug (except the Ubuntu source series nomination)
+back to "New" state and unsets the version number. This should only be done
+before a package got promoted into proposed.
+
+Once the reset has completed, the workflow manager (SWM) has to process the
+tracking bug to update all properties.
+'''
+
+    epilog = '''
+EXAMPLE:
+
+    tb-task-reset 12345
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    parser.add_argument('bug_ids', metavar='<bugid>', nargs='+', type=int,
+                        help='LP bug numbers of the tracking bugs to be reset')
+    args = parser.parse_args()
+
+    Clog.color = True
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Main app run
+    tbs = TrackingBugs()
+
+    for bug_id in args.bug_ids:
+        try:
+            cdebug('tbs.add({})'.format(bug_id))
+            tb = tbs.add(bug_id)
+        except TrackingBugError as e:
+            cerror('EE: {}'.format(e.msg))
+            cerror('Failed to load LP: #{}. Skipping...'.format(bug_id))
+            continue
+
+        if 'snap-release-to-edge' in tb.wf_tasks:
+            if tb.wf_task_get('snap-release-to-edge').status == 'Fix Released':
+                cerror('Snap (LP: #{}) already released to beta. Skipping'.format(bug_id))
+                continue
+
+        if 'promote-to-proposed' in tb.wf_tasks:
+            if tb.wf_task_get('promote-to-proposed').status == 'Fix Released':
+                cerror('Sources (LP: #{}) already in proposed. Skipping'.format(bug_id))
+                continue
+
+        '''
+        FIXME: In case  it is desired to reset past promote-to-proposed, at least stop
+               if already released.
+
+        if 'phase' in tb.wf_properties:
+            if tb.wf_get_property('phase') == 'Complete':
+                cerror('Refusing to reset bug (LP: {}) in phase complete state'.format(bug_id))
+                continue
+        '''
+
+        if args.dry_run:
+            cinfo('DRYRUN: resetting: LP: #{}'.format(bug_id))
+        else:
+            cinfo('Resetting LP: #{}'.format(bug_id))
+            cdebug('- unsetting version number')
+            tb.target_version = '<version to be filled>'
+            cdebug('- calling tasks_reset()')
+            tb.tasks_reset()
+            tb.save()
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
