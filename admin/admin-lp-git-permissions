@@ -199,7 +199,7 @@ def sync_primary():
     for (path, path_packages) in repo_packages.items():
         rules = []
         rules_wild = []
-        versions = set()
+        version_people = dict()
         crankers = ['/~canonical-kernel-crankers']
 
         any_supported = False
@@ -267,7 +267,8 @@ def sync_primary():
                 pkg_versions = package.source.versions
                 if pkg_versions is not None:
                     for version in pkg_versions:
-                        versions.add(version)
+                        for person in people:
+                            version_people.setdefault(version, set()).add(person)
 
         # Add the administrator rules.
         grants = []
@@ -276,13 +277,18 @@ def sync_primary():
         if admins != 'owner':
             grants.append(generate_grant(person='owner'))
 
-        for version in versions:
+        # Add versioned tag rules.
+        for version, people in version_people.items():
             if version.endswith('.0'):
                 version = version[:-2]
+            vgrants = []
+            for person in people:
+                vgrants.append(generate_grant(person=person, create=True, push=True, rewind=rewind_tags))
+            vgrants += grants
             rules_wild.append(
                 {
                     'ref_pattern': "refs/tags/v{}*".format(version),
-                    'grants': sort_grants(grants),
+                    'grants': sort_grants(vgrants),
                 },
                 )
 
@@ -292,7 +298,6 @@ def sync_primary():
                 'grants': sort_grants(grants),
             },
             )
-
 
         # XXX: build rules to avoid launchpad Assertion.
         rules_wild = sorted(rules_wild, key=lambda x: x['ref_pattern'])
