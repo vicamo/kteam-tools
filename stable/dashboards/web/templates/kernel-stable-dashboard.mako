@@ -236,7 +236,7 @@ import re
 
 cycles = {}
 cadence = {}
-for bid in data['swm']:
+for bid in sorted(data['swm']):
     b = data['swm'][bid]
 
     try:
@@ -294,6 +294,7 @@ for bid in data['swm']:
             first = False
         else:
             cadence[cycle][sn][package].append({ 'bug': None, 'version': None, 'phase': status, 'spin': spin })
+
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
