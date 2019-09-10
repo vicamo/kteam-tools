@@ -53,7 +53,7 @@ class PromoteToUpdates(Promoter):
                 break
 
             if s._kernel_block():
-                s.task.reason = 'Holding -- kernel-block/kernel-block-proposed tag present'
+                s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
             if s._in_blackout():

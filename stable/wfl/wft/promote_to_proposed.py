@@ -107,7 +107,7 @@ class PromoteFromTo(Promoter):
                 break
 
             if s._kernel_block_ppa():
-                s.task.reason = 'Holding -- manual kernel-block/kernel-block-ppa present'
+                s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
             if s._cycle_hold():
                 s.task.reason = 'Holding -- cycle on hold'
