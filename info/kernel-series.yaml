@@ -197,7 +197,7 @@
                 - ['ubuntu', 'Release']
     sources:
         linux:
-            versions: ['5.2.0']
+            versions: ['5.3.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/eoan', 'master-next']
