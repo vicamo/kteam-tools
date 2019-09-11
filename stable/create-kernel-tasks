@@ -432,11 +432,11 @@ class TaskSet():
         for ks_series in self.ks_series_list:
             self.tasks[ks_series.codename].FinalizeTrackingBugs(dryrun=dryrun)
 
-    def CreateCards(self, dryrun=False):
+    def CreateCards(self, boardname, dryrun=False):
         if dryrun is False and self.board is None:
             self.board = CycleBoard()
             try:
-                self.board.lookup_board_id('SRU Cycle {}'.format(self.cycletag))
+                self.board.lookup_board_id(boardname)
                 self.board.lookup_list_id('Backlog')
             except CycleBoardError as e:
                 cerror(e)
@@ -476,11 +476,15 @@ Examples:
     formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=desc, epilog=epilog,
                                      formatter_class=formatter)
+    parser.add_argument('--boardname', action='store', metavar='<board name>', default=None,
+                        type=str, help='use given name to add cards instead of the date')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='do not make any changes, ' +
                         'just show what would be done')
     parser.add_argument('--force-nocards', action='store_true', default=False,
                         help='forcefully disable the creation of Trello cards. This is the default in --devel mode')
+    parser.add_argument('--force-nobugs', action='store_true', default=False,
+                        help='forcefully disable the creation of tracking bugs')
     grp1 = parser.add_mutually_exclusive_group()
     grp1.add_argument('--devel', action='store_true', default=False,
                       help='run task creation in development mode')
@@ -505,6 +509,14 @@ Examples:
         Clog.dbg = True
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    if args.force_nocards and args.force_nobugs:
+        cerror('Forcing no cards and no tracking bugs is not allowed')
+        sys.exit(1)
+
+    if args.force_nobugs and args.spin is None:
+        cerror('Forcing no tracking bugs requires a spin number!')
+        sys.exit(1)
 
     # Prepare a list of (originating) series to work on
     ks = KernelSeries()
@@ -556,17 +568,25 @@ Examples:
         ts.spin_nr = args.spin
 
     print(ts)
-    ts.LoadTrackingBugs(test=args.test)
-    print(ts)
-    try:
-        ts.ValidateTasks()
-    except ValueError as e:
-        cerror('Validation: failed with "{}"!'.format(e))
-        sys.exit(1)
-    cinfo('Validation: passed')
-    if args.force_nocards is False and args.devel is False:
-        ts.CreateCards(dryrun=args.dry_run)
-    ts.CreateTrackingBugs(dryrun=args.dry_run)
-    ts.FinalizeTrackingBugs(dryrun=args.dry_run)
+    if not args.force_nobugs:
+        ts.LoadTrackingBugs(test=args.test)
+        print(ts)
+        try:
+            ts.ValidateTasks()
+        except ValueError as e:
+            cerror('Validation: failed with "{}"!'.format(e))
+            sys.exit(1)
+        cinfo('Validation: passed')
+    if not args.force_nocards and not args.devel:
+        if args.boardname is not None:
+            boardname = args.boardname
+        else:
+            boardname = 'SRU Cycle {}'.format(ts.cycletag)
+
+        cdebug('Creating cards on: {}'.format(boardname))
+        ts.CreateCards(boardname, dryrun=args.dry_run)
+    if not args.force_nobugs:
+        ts.CreateTrackingBugs(dryrun=args.dry_run)
+        ts.FinalizeTrackingBugs(dryrun=args.dry_run)
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
