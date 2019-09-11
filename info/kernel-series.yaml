@@ -1339,12 +1339,16 @@
                     - ['ppa:canonical-signing/ubuntu/fips', 'Release']
                 proposed:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
-                updates:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+                # Ignore the updates pocket while the certification is
+                # in progress
+                #updates:
+                #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
                 #security:
                 #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
-                release:
-                    - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release']
+                # Ignore the release pocket while the certification is
+                # in progress
+                #release:
+                #    - ['ppa:ubuntu-advantage/ubuntu/fips', 'Release']
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'master-next']
