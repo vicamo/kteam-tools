@@ -329,6 +329,12 @@ class WorkflowBug():
             if s.is_derivative_package:
                 try:
                     s._master_bug = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series)
+                    if not s._master_bug.is_crankable and not s._master_bug.is_closed:
+                        # check if our master is a duplicte, and if so follow the chain.
+                        duplicate_of = s._master_bug.lpbug.lpbug.duplicate_of
+                        if duplicate_of is not None:
+                            cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, s._master_bug.lpbug.lpbug.id))
+                            s._master_bug = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series)
                 except:
                     raise WorkflowBugError("invalid master bug link")
             else:
