@@ -762,6 +762,8 @@ class Package():
 
         bi = s.build_info
         for pkg in bi:
+            if pocket not in bi[pkg] or pocket_next not in bi[pkg]:
+                continue
             if bi[pkg][pocket]['version'] not in (None, bi[pkg][pocket_next]['version']):
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
