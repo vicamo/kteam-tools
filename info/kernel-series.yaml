@@ -1142,7 +1142,6 @@
                     publish-to:
                         amd64: [ '18', '18-4.15' ]
             supported: true
-            backport: true
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
