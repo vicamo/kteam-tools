@@ -109,7 +109,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Ready to be cranked', 'green') #bca136
+        retval = __coloured('Debs ready to be cranked', 'green') #bca136
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     elif prep_status == 'Fix Committed':
@@ -157,7 +157,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Ready to be cranked', 'green') #bca136
+        retval = __coloured('Snap ready to be cranked', 'green')
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     elif prep_status == 'Fix Committed':
@@ -171,7 +171,7 @@ def __status_bites(bug):
         if promote_status == 'Confirmed':
             promote_to.append(risk)
     if len(promote_to) > 0:
-        retval = __coloured("Ready to promote to: " + ', '.join(promote_to), 'green')
+        retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'green')
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
 
