@@ -1236,7 +1236,8 @@
             packages:
                 linux-bluefield:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/bionic']
-                linux-meta:
+                linux-meta-bluefield:
+                    type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
