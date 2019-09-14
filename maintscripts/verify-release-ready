@@ -34,7 +34,7 @@ class VerifyReleaseReady():
         s.defaults['verbose'] = False
         s.passed = 0
         s.failed = 0
-        s.delimiter = 50
+        s.delimiter = 60
         # add launchpadlib support
         s.lp = Launchpad.login_anonymously(s.__class__.__name__, 'production')
         s.lp_ubuntu = s.lp.distributions['ubuntu']
@@ -208,13 +208,10 @@ class VerifyReleaseReady():
         # latest commit tag
         #
         pkg = cl0['package']
-        if pkg.startswith('linux-lts'):
-            tag_prefix = 'Ubuntu-lts'
-            v = cl0['version']
-        elif pkg.startswith('linux-hwe'):
+        if pkg.startswith('linux-hwe'):
             tag_prefix = 'Ubuntu-hwe'
             v = cl0['version']
-        elif Debian.is_backport():
+        elif pkg.startswith('linux-lts') or Debian.is_backport():
             tag_prefix = pkg.replace('linux', 'Ubuntu')
             v = cl0['version']
         else:
