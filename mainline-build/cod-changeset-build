@@ -128,7 +128,7 @@ time=$( date +%s )
 echo "End: $time" >>"$result/SUMMARY"
 
 # Clean out any build artifacts ...
-rm -f "$master_main"/*.deb "$master_main"/*.udeb "$master_main"/*.tar.gz
+rm -f "$master_main"/*.udeb "$master_main"/*.tar.gz
 
 # Output.
 publish="$HOME/public_html/test-build/$series/$package/$id--$sha"
