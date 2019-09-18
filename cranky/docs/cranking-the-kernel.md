@@ -374,46 +374,49 @@ Run the following command to apply the correct tag to the kernel:
 cranky tag
 ```
 
-### Prepare meta/signed repositories - `cranky prepare-meta`
+### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
 <!--cheatsheet-->
 ```
-cd linux-meta && ./update-version ../linux
-cd linux-signed && ./update-version ../linux
+cd ../linux-meta-oracle
+cranky update-dependent
+cranky tag
+
+cd ../linux-signed-oracle
+cranky update-dependent
+cranky tag
+
+cd ../linux-lrm-oracle
+cranky update-dependent
+cranky tag
 ```
 <!--/cheatsheet-->
 
-Currently this step must be done manually, calling the "./update-version"
-scripts from "linux-meta" and "linux-signed" (the additional repositories
+Currently this step must be done manually, calling the scripts from
+"linux-meta", "linux-signed" and "linux-lrm" (the additional repositories
 cloned via `cranky checkout`).
 
 Example:
 ```
 cd ../linux-meta-oracle
-./update-version ../linux-oracle
+cranky update-dependent
+cranky tag
 
 cd ../linux-signed-oracle
-./update-version ../linux-oracle
+cranky update-dependent
+cranky tag
+
+cd ../linux-lrm-oracle
+cranky update-dependent
+cranky tag
 ```
 
-Output (for both commands) should look like this:
-...
-git commit -s -m 'UBUNTU: Ubuntu-oracle-4.15.0.1031.31' debian/changelog
-git tag -s -m 'Ubuntu-oracle-4.15.0.1031.31' 'Ubuntu-oracle-4.15.0.1031.31'
+It is mandatory to run "cranky update-dependent" and "cranky tag" from the
+"linux-meta", "linux-signed" and "linux-lrm" directories, not from the kernel
+source directory.
 
-**Note** update-version doesn't run the "git commit" and "git tag" commands
-so you must run them next.  These are last two lines printed to stdout above
-and are the commands you need to copy and run them manually.
-```
-$ git commit -s -m 'UBUNTU: Ubuntu-oracle-4.15.0.1031.31' debian/changelog
-$ git tag -s -m 'Ubuntu-oracle-4.15.0.1031.31' 'Ubuntu-oracle-4.15.0.1031.31'
-```
-
-It is mandatory to run "udpate-version' from the "linux-meta" and
-"linux-signed" directory, not from the kernel source directory.
-
-**Note** In certain releases "linux-signed" is missing, for example
-"linux-kvm". To show the list of packages that are part of a certain kernel
-set, you can use the command `cranky rmadison`, example:
+**Note** In certain releases "linux-signed" and "linux-lrm" are missing, for
+example "linux-kvm". To show the list of packages that are part of a certain
+kernel set, you can use the command `cranky rmadison`, example:
 ```
 cranky rmadison xenial:linux-oracle
 ```
@@ -424,6 +427,7 @@ cranky rmadison xenial:linux-oracle
 $ cd linux-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
 $ cd linux-meta-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
 $ cd linux-signed-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+$ cd linux-lrm-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
 ```
 <!--/cheatsheet-->
 
