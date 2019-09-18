@@ -138,6 +138,9 @@ class Task():
             else:
                 cinfo('{}/{} + derivative LP: #{}'.format(cn, sn, tbid))
 
+        if not dryrun:
+            self.tb.save()
+
         if new_tbid is None:
             return []
         else:
