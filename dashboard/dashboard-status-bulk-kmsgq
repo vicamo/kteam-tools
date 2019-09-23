@@ -15,7 +15,7 @@ import json
 
 # Exit
 #
-class Exit():
+class Exit(Exception):
     """
     If an error message has already been displayed and we want to just exit the app, this
     exception is raised.
