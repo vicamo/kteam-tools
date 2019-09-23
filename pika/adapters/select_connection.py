@@ -27,8 +27,8 @@ SELECT_TYPE = None
 # platforms select.error is an aliases for OSError. We don't want the lambda
 # for select.error to win over one for OSError.
 _SELECT_ERROR_CHECKERS = {}
-if pika.compat.PY3:
-    # InterruptedError is undefined in PY2
+if pika.compat.PY3_3:
+    # InterruptedError is undefined in PY3 < 3.3
     # pylint: disable=E0602
     _SELECT_ERROR_CHECKERS[InterruptedError] = lambda e: True
 

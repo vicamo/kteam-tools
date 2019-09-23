@@ -14,6 +14,7 @@ import time
 
 PY2 = _sys.version_info.major == 2
 PY3 = not PY2
+PY3_3 = PY3 and _sys.version_info.minor >= 3
 RE_NUM = re.compile(r'(\d+).+')
 
 ON_LINUX = platform.system() == 'Linux'
@@ -54,11 +55,19 @@ if PY3:
     # the unicode type is str
     unicode_type = str
 
-    def time_now():
-        """
-        Python 3 supports monotonic time
-        """
-        return time.monotonic()
+    if PY3_3:
+        def time_now():
+            """
+            Python 3 supports monotonic time
+            """
+            return time.monotonic()
+
+    else:
+        def time_now():
+            """
+            Python <3.3 does not support monotonic time
+            """
+            return time.time()
 
     def dictkeys(dct):
         """
