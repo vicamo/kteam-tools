@@ -1594,7 +1594,6 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial']
             snaps:
-                caracalla-kernel:
                 pc-kernel:
                     primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'pc']
@@ -1603,7 +1602,20 @@
                     qa: false
                     hw-cert: true
                     arches: ['amd64', 'i386']
+                caracalla-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'caracalla']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64']
                 stlouis-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'stlouis']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64']
             supported: true
             testing:
                 flavours:
