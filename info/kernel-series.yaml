@@ -1231,7 +1231,7 @@
         linux-bluefield:
             packages:
                 linux-bluefield:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/bionic']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/bionic', 'master-next']
                 linux-meta-bluefield:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
