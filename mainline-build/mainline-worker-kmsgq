@@ -30,8 +30,8 @@ class TheApp():
         '''
         s.args = args
 
-        #s.admin = s.args.queue + '-' + s.args.name
-        s.admin = 'admin-' + s.args.name
+        s.admin = s.args.queue + '-' + s.args.name
+        #s.admin = 'admin-' + s.args.name
 
     # _announce
     #
