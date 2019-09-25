@@ -15,17 +15,18 @@ class TrelloError(Exception):
 
 
 class SRUBoard:
-    def __init__(self, tt, name):
+    def __init__(self, tt, name, dryrun=False):
         """
         :param tt: TrelloTool object
         :param name: name of the board
         """
+        self.dryrun = dryrun
         self.tt = tt
         self.name = name
         self.id = None
         self.url = None
         self.default_list_name = None
-        self.default_list_id = None
+        self.lists = {}
 
     def create(self, org):
         """
@@ -41,10 +42,19 @@ class SRUBoard:
             'defaultLists': 'false'
         }
 
-        self.tt.trello.board_create(**params)
+        if self.dryrun:
+            print('DRY: Create board: "{}"'.format(self.name))
+        else:
+            print('Create board: "{}"'.format(self.name))
+            self.tt.trello.board_create(**params)
         self.lookup_board_id()
 
     def lookup_board_id(self):
+        if self.dryrun:
+            self.id = 0
+            self.url = 'http://this.is.a.dryrun.info'
+            return
+
         for board in self.tt.trello.member_boards('me'):
             if board['name'] == self.name:
                 self.id = board['id']
@@ -61,6 +71,18 @@ class SRUBoard:
         :param default_list: default list to add the cards to
         :return: None
         """
+        self.default_list_name = default_list
+        if self.dryrun:
+            list_id = 1
+            for list_name in list_names:
+                isdefault = ''
+                if list_name == default_list:
+                    isdefault = '*'
+                print('DRY: Add list: {}{}'.format(list_name, isdefault))
+                self.lists[list_name] = list_id
+                list_id += 1
+            return
+
         for list_name in list_names:
             params = {
                 'name': list_name,
@@ -68,24 +90,25 @@ class SRUBoard:
             }
             self.tt.trello.board_addlist(self.id, **params)
 
-        self.default_list_name = default_list
-        self.lookup_list_id(default_list)
-
-    def lookup_list_id(self, list_name):
         for board_list in self.tt.trello.board_lists(self.id):
-            if board_list['name'] == list_name:
-                self.default_list_id = board_list['id']
-                return
-        raise TrelloError("Could not find id for list '%s'" % list_name)
+            self.lists[board_list['name']] = board_list['id']
 
-    def add_card(self, name, desc=None):
+    def add_card(self, name, desc=None, list_name=None):
         """
         Add the given card to the default list board
 
         :param name: card name
         :param desc: card description
+        :param list_name: optional alternative list target
         :return: None
         """
+        if list_name is not None:
+            if list_name not in self.lists:
+                raise TrelloError("Undefined list target for '{}'({})".format(name, list_name))
+        else:
+            list_name = self.default_list_name
+        list_id = self.lists[list_name]
+
         params = {
             'name': name,
             'pos': 'bottom',
@@ -93,7 +116,13 @@ class SRUBoard:
         if desc:
             params['desc'] = desc
 
-        self.tt.trello.list_addcard(self.default_list_id, **params)
+        if self.dryrun:
+            print('DRY: Add "{}" card to "{}"'.format(name, list_name))
+            if desc:
+                print('DRY:     "{}"'.format(desc))
+        else:
+            print('Adding card: {}'.format(name))
+            self.tt.trello.list_addcard(list_id, **params)
 
     def add_member(self, member_id, member_type):
         """
@@ -107,7 +136,14 @@ class SRUBoard:
             'idMember': member_id,
             'type': member_type,
         }
-        self.tt.trello.board_addmember(self.id, **params)
+        if self.dryrun:
+            print('DRY: Add member: {} as {}'.format(member_id, member_type))
+        else:
+            if member_type == 'admin':
+                print('Adding {} as an administrator'.format(member_id))
+            else:
+                print('Adding {} as normal user'.format(member_id))
+            self.tt.trello.board_addmember(self.id, **params)
 
 
 class SRUCardsCreator:
@@ -159,21 +195,16 @@ class SRUCardsCreator:
         :return: None
         """
         # create the board with the lists on the organization
-        board = SRUBoard(self.tt, self.config['board']['prefix_name'] + self.cycle)
-        print('Create board: %s' % (self.config['board']['prefix_name'] + self.cycle))
-        if not self.args.dry_run:
-            board.create(self.config['board']['trello_organization'])
-            board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
+        board_title = self.config['board']['prefix_name'] + self.cycle
+        board = SRUBoard(self.tt, board_title, dryrun=self.args.dry_run)
+        board.create(self.config['board']['trello_organization'])
+        board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
 
         # Add the initial members of the board
         for member_id in self.config['board'].get('admin_members'):
-            print('Adding member \'%s\' as admin' % member_id)
-            if not self.args.dry_run:
-                board.add_member(member_id, 'admin')
+            board.add_member(member_id, 'admin')
         for member_id in self.config['board'].get('normal_members'):
-            print('Adding member \'%s\' as normal user' % member_id)
-            if not self.args.dry_run:
-                board.add_member(member_id, 'normal')
+            board.add_member(member_id, 'normal')
 
         # Cache the tuples (series, source) of supported sources
         series_sources_list = self.get_supported_series_sources()
@@ -189,11 +220,7 @@ class SRUCardsCreator:
                             card_desc = 'ESM mode: Note different git location and build PPA'
                         if source.name == 'linux-euclid':
                             card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
-                        print('Adding card: %s' % (card_name))
-                        if card_desc:
-                            print('             %s' % (card_desc))
-                        if not self.args.dry_run:
-                            board.add_card(card_name, card_desc)
+                        board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Produce kernel snaps':
                 if self.args.crank_turn:
@@ -203,10 +230,7 @@ class SRUCardsCreator:
                                 continue
                             card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
                             card_desc = 'Update version in %s and push' % (snap.repo)
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                            if not self.args.dry_run:
-                                board.add_card(card_name, card_desc)
+                            board.add_card(card_name, card_desc)
                 continue
             if card['name'] == 'Release kernel snaps':
                 if self.args.crank_turn:
@@ -217,20 +241,14 @@ class SRUCardsCreator:
 
                             card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
                             card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                            if not self.args.dry_run:
-                                board.add_card(card_name, card_desc)
+                            board.add_card(card_name, card_desc)
 
                             if not snap.stable:
                                 continue
 
                             card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
                             card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
-                            print('Adding card: %s' % (card_name))
-                            print('             %s' % (card_desc))
-                            if not self.args.dry_run:
-                                board.add_card(card_name, card_desc)
+                            board.add_card(card_name, card_desc)
                 continue
 
             card_names = []
@@ -244,12 +262,12 @@ class SRUCardsCreator:
             if 'description' in card:
                 card_desc = card['description']
 
+            card_list = None
+            if 'list' in card:
+                card_list = card['list']
+
             for card_name in card_names:
-                print('Adding card: %s' % (card_name))
-                if card_desc:
-                    print('             %s' % (card_desc))
-                if not self.args.dry_run:
-                    board.add_card(card_name, card_desc)
+                board.add_card(card_name, card_desc, card_list)
 
         if self.args.dry_run:
             print("This was a dry-run - board was NOT created")
