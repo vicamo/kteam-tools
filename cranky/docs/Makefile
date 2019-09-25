@@ -4,7 +4,7 @@
 # on your local system.
 #
 
-TARGETS=cranking-the-kernel.cheatsheet.html cranking-the-kernel.html crank-turning-setup.html sru-cycles.html
+TARGETS=cranking-the-kernel.cheatsheet.html cranking-the-kernel.html crank-turning-setup.html sru-cycles.html verification-testing.html
 CHEATSHEET_TARGETS=cranking-the-kernel.cheatsheet.md
 
 %.cheatsheet.md: %.md
