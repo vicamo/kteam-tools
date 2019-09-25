@@ -3,18 +3,22 @@ import pika
 
 # MsgQueue
 #
-class MsgQueue():
+class MsgQueue(object):
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', port=5672, exchange='kernel', exchange_type='topic', heartbeat_interval=None, heartbeat=None):
+    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, **kwargs):
         s.exchange_name = exchange
 
-        # Backwards compatibility with pre-0.11.x pika.
-        if heartbeat is None:
-            heartbeat = heartbeat_interval
+        # Address should now be considered deprecated.
+        kwargs.setdefault('host', address)
+        kwargs.setdefault('port', 5672)
+        kwargs.setdefault('connection_attempts', 3)
 
-        params = pika.ConnectionParameters(address, port, connection_attempts=3, heartbeat=heartbeat)
+        # Backwards compatibility with pre-0.11.x pika.
+        kwargs.setdefault('heartbeat', heartbeat_interval)
+
+        params = pika.ConnectionParameters(**kwargs)
         s.connection = pika.BlockingConnection(params)
         s.channel = s.connection.channel()
         s.channel.exchange_declare(exchange=s.exchange_name, exchange_type=exchange_type)
@@ -67,10 +71,38 @@ class MsgQueue():
     def queue_delete(s, queue_name):
         s.channel.queue_delete(queue_name)
 
+    def exchange_delete(s, queue_name):
+        s.channel.exchange_delete(queue_name)
 
     def publish(s, routing_key, payload, priority=None):
         message_body = json.dumps(payload)
         properties = pika.BasicProperties(delivery_mode=2, priority=priority)
         s.channel.basic_publish(exchange=s.exchange_name, routing_key=routing_key, body=message_body, properties=properties)
+
+
+class MsgQueueService(MsgQueue):
+    """
+    Service oriented interface for creating a message queue.  This allows
+    us to direct that services appropriatly and choose appropriate
+    authentication.  Start with hardwired data.
+    """
+
+    # __init__
+    #
+    def __init__(s, service=None, **kwargs):
+        # Services are all on the "new" rabbitmq server by default.
+        kwargs.setdefault('host', '10.15.182.2')
+
+        # Use the service prefix for the virtual_host name.
+        if '-' in service:
+            kwargs.setdefault('virtual_host', service.split('-')[0])
+
+        # The new server always wants a service specific username.  For now
+        # there is effectivly no password on those.  We will add this to a
+        # configuration service once it is built.
+        if 'credentials' not in kwargs:
+            kwargs['credentials'] = pika.PlainCredentials(service, service)
+
+        super(MsgQueueService, s).__init__(**kwargs)
 
 # vi:set ts=4 sw=4 expandtab:
