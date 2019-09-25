@@ -6,7 +6,7 @@ import os
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, WARNING, info, warning, DEBUG
 from ktl.log                            import cdebug, center, cleave
-from ktl.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueueService
 import json
 
 #from lib.grinder                        import JenkinsTestResultsTree, JenkinsTestResultsTreeError
@@ -53,9 +53,9 @@ class TheApp():
             # Submit the message to the Message Queue
             #
             if s.args.local:
-                mq = MsgQueue(address='localhost', port=9123, exchange='kernel-mainline-todo')
+                mq = MsgQueueService(service='kernel-mainline', address='localhost', port=9123, exchange='mainline-todo')
             else:
-                mq = MsgQueue(exchange='kernel-mainline-todo')
+                mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo')
 
             if s.args.command[0] == 'queue-status':
                 state = mq.queue_info(s.args.to)

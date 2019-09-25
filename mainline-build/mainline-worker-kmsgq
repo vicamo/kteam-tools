@@ -11,7 +11,7 @@ import socket
 import threading
 import Queue
 from ktl.log                            import cdebug, center, cleave, cerror
-from ktl.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueueService
 import time
 from subprocess                         import Popen
 from ktl.announce                       import Announce
@@ -120,16 +120,16 @@ class TheApp():
 
         try:
             if args.local:
-                s.mq = MsgQueue(address='localhost', port=9123, exchange='kernel-mainline-todo', heartbeat_interval=60)
+                s.mq = MsgQueueService(service='kernel-mainline', address='localhost', port=9123, exchange='mainline-todo', heartbeat_interval=60)
             else:
-                s.mq = MsgQueue(exchange='kernel-mainline-todo', heartbeat_interval=60)
+                s.mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
 
             s._announce('cod-job-control', 'start')
 
-            q_args = {'x-max-priority': 9}
+            q_args = {'x-max-priority': 7}
             s.mq.listen_worker(s.args.queue, s.args.queue, s._handler, queue_arguments=q_args)
             s.mq.listen_worker(s.admin, s.admin, s._handler, auto_delete=True)
 
