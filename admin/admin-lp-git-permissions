@@ -20,6 +20,8 @@ lp = Launchpad.login_with('admin-lp-git-permissions', 'production', version='dev
 
 cmd = sys.argv[1]
 
+crankers = ['/~canonical-kernel-crankers']
+
 def generate_grant(create=False, push=False, rewind=False, person=None):
     grant = {}
 
@@ -115,6 +117,7 @@ def sync_misc():
         git_repo = lp.git_repositories.getByPath(path=repo_path)
         print(git_repo)
         update_rules(git_repo, rules)
+        update_subscriptions(git_repo, crankers)
         sys.stdout.flush()
 
 def sync_esm():
@@ -148,6 +151,7 @@ def sync_esm():
                 continue
             print(git_repo, 'ESM')
             update_rules(git_repo, rules)
+            update_subscriptions(git_repo, crankers)
             sys.stdout.flush()
 
 def sync_primary():
@@ -200,7 +204,6 @@ def sync_primary():
         rules = []
         rules_wild = []
         version_people = dict()
-        crankers = ['/~canonical-kernel-crankers']
 
         any_supported = False
         for package in path_packages:
