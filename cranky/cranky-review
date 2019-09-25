@@ -120,7 +120,7 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
             sys.exit(1)
         normalize_tree(new_path, ver, abi, upload)
 
-        cmd = ["git", "diff", "--no-index", "--no-prefix", "--stat", "-p",  prev_dir, new_dir]
+        cmd = ["git", "diff", "--no-index", "--no-prefix", "--stat=500", "--stat-graph-width=10", "-p",  prev_dir, new_dir]
         sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE, cwd=tmpdir)
         stderr = sp.communicate()[1].decode()
         if sp.returncode != 0 and sp.returncode != 1:
