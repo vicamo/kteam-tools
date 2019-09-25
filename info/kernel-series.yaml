@@ -283,6 +283,9 @@
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/eoan']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/eoan']
             supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
@@ -304,6 +307,9 @@
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/eoan']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/eoan']
             supported: true
             derived-from: [ '19.10', 'linux' ]
             swm:
@@ -331,6 +337,9 @@
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/eoan']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/eoan']
             supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
@@ -370,6 +379,9 @@
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/eoan']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/eoan']
             supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
