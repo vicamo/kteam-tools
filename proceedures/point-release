@@ -1,6 +1,3 @@
-== Roles ==
- - Point Release Owner: <insert name>
-
 == Before nn.nn Release ==
  - Identify point release owner
     - Identify the formal owner for the cycle.
@@ -33,3 +30,6 @@
     needed and merge changelogs.
   - Note: we need to confirm testing and have stakeholder-signoff for
     these.
+
+== Roles ==
+ - Point Release Owner: <insert name>
