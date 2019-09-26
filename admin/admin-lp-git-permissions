@@ -200,13 +200,15 @@ def sync_primary():
             # Order here matters to launchpad, see LP: #1815431.
             if branch.endswith('-next'):
                 branches.append(branch[:-5])
+                if package.type in (None, 'main'):
+                    branches.append(branches[-1] + '-current')
             branches.append(branch)
             for branch in branches:
                 if package.series.development:
                     rewind = True
                 elif package.source.derived_from is not None and package.type is None:
                     rewind = True
-                elif branch.endswith('-next'):
+                elif branch.endswith('-next') or branch.endswith('-current'):
                     rewind = True
                 else:
                     rewind = False
