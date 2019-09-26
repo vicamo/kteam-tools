@@ -1,12 +1,35 @@
-== Backlog ==
- - Pick point release SRU cycle and announce
-    - Pick a likely last SRU cycle to hit the point release image
+== Roles ==
+ - Point Release Owner: <insert name>
+
+== Before nn.nn Release ==
+ - Identify point release owner
+    - Identify the formal owner for the cycle.
+ - Identify formal release date
+    - Find the formal release date for use in cycle selection.
+    - Update the board title with this date.
+ - Pick point release kernel cut over cycle and announce
+    - Pick a likely last SRU cycle to hit the point release image, this
+      should be two cycles before the point release.
     - announce to kernel-team@ mailing list etc
- - Add/Update linux-hwe backport in Ubuntu kernel-series
-    - if necessary add linux-hwe to kernel-series ready for
-      release
- - Review ADT testing for linux-hwe-edge in preparation for promotion
- - Roll over linux-hwe-edge over to linux-hwe for point release SRU cycle
-    - pull the linux-hwe-edge kernel into linux-hwe repositories and upload
-      as linux-hwe et al.
- - Update linux-hwe-edge backport to point to the next series
+ - Identify kernels to be rolled with the point release
+    - Copy "Roll linux-foo-edge to point release version" card for
+      all kernels which will be rolled at the point release to this
+      column.
+    - Copy "Roll linux-foo to linux-foo-edge package" cards for the same
+      list of kernels to the "At Cut Over" column.
+ - Roll linux-foo-edge to point release version
+  - Prepare and upload updates to the linux-foo-edge package moving it
+    to the release kernel base version as soon as the primary series
+    kernel reaches the final version.
+ - Review linux-*-edge testing
+  - Once kernels are rolled review ADT testing for those and create
+    cards to fix any issues found.
+
+== At Cut Over ==
+ - Review linux-*-edge upgrade testing and approve
+  - Review all of the ADT and upgrade testing and approve rolls
+ - Roll linux-foo to linux-foo-edge package
+  - Move the linux-foo-edge pacakge contents over to linux-foo, adjust as
+    needed and merge changelogs.
+  - Note: we need to confirm testing and have stakeholder-signoff for
+    these.
