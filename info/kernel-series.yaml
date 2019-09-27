@@ -382,7 +382,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/eoan']
             supported: true
-            derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
                     oracle:
@@ -391,7 +391,6 @@
                         arches: ['amd64']
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '19.04', 'linux-oracle' ]
 
         linux-snapdragon:
             packages:
@@ -401,9 +400,8 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'snapdragon']
             supported: true
-            derived-from: [ '19.04', 'linux' ]
+            derived-from: [ '19.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
-            copy-forward: ['19.04', 'linux-snapdragon']
 
 # 19.04 (Disco Dingo)
 '19.04':
