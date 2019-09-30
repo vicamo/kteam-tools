@@ -202,6 +202,10 @@ show_elapsed &
 	git archive --format=tar "$GITBRANCH" | tar -x -C "$BUILDDIR"
 
 	echo "+++gbk++++ dchroot -c $CHROOT"
+	BUILD_TARGET="build${TARGET#binary}"
+	unset BUILD_FAKEROOT
+	[ "$TARGET" == "binary-perarch" ] && BUILD_FAKEROOT="fakeroot"
+	[ "$TARGET" == "binary-headers" ] && BUILD_FAKEROOT="echo {skipping}"
 	dchroot -c "$CHROOT"   2>&1 <<-XXEOFXX
 		set -e
 		set -x
@@ -213,7 +217,7 @@ show_elapsed &
 		then
 		    debuild $srcpkg_debopts -S -I -i -uc -us
 		else
-		    debian/rules build
+		    $BUILD_FAKEROOT debian/rules $BUILD_TARGET
 		    fakeroot debian/rules $TARGET
 		fi
 XXEOFXX
