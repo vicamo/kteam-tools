@@ -9,19 +9,18 @@
 ### build target
 ORIG_TARBALLS_DIR=/home/usr3/ubuntu
 
-# DEFAULT_FDR_TARGETS="binary-headers binary-arch"
-DEFAULT_FDR_TARGETS="binary-generic"
+DEFAULT_FDR_TARGET="binary-generic"
 
 
 function usage
 {
     {
-    echo "usage: git-build-kernel {branch|tag|ref|commit} amd64|i386 [fdr_targets]"
+    echo "usage: git-build-kernel {branch|tag|ref|commit} amd64|i386 [fdr_target]"
     echo "       git-build-kernel {branch|tag|ref|commit} source"
     echo
-    echo "    Default fdr_targets: $DEFAULT_FDR_TARGETS"
+    echo "    Default fdr_target: $DEFAULT_FDR_TARGET"
     echo "      (Use 'binary' for a full binary package build, or"
-    echo "       any subset of 'binary-headers binary-arch binary-indep')"
+    echo "       any one of e.g. 'binary-headers binary-arch binary-indep')"
     } 1>&2
     exit 1
 }
@@ -41,12 +40,12 @@ shift
 do_source_pkg=0
 if [ "$ARCH" = "source" ]
 then
-    TARGETS="[source package]"
+    TARGET="[source package]"
     ARCH=amd64
     do_source_pkg=1
 else
-    TARGETS="$*"		# optional
-    [ -z "$TARGETS" ] && TARGETS="$DEFAULT_FDR_TARGETS"
+    TARGET="$1"		# optional
+    [ -z "$TARGET" ] && TARGET="$DEFAULT_FDR_TARGET"
 fi
 
 
@@ -170,7 +169,7 @@ trap "rm -rf $WORKDIR/building $BUILDDIR" 0
 
 echo "git-build-kernel"
 echo "      package: $SRCPKG ($VERSION) $DISTRO"
-echo "      targets: $TARGETS"
+echo "       target: $TARGET"
 if [ $do_source_pkg = 1 ]
 then
     echo "    changes-v: $updates_version"
@@ -215,7 +214,7 @@ show_elapsed &
 		    debuild $srcpkg_debopts -S -I -i -uc -us
 		else
 		    debian/rules build
-		    fakeroot debian/rules $TARGETS
+		    fakeroot debian/rules $TARGET
 		fi
 XXEOFXX
 	STATUS=$?
