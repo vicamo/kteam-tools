@@ -14,6 +14,8 @@ from ktl.kernel_series                          import KernelSeries
 
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
+from .secrets                                   import Secrets
+
 
 # SnapError
 #
@@ -48,6 +50,7 @@ class SnapStore:
         """
         s.snap = snap
         s._versions = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
+        s.secrets = Secrets().get('snaps')
 
     # channel_map
     #
@@ -64,7 +67,12 @@ class SnapStore:
         result = {}
         try:
             headers = s.common_headers
+
             params = urlencode({'fields': 'channel-map,architecture,channel,revision,version,released-at'})
+            store_id = s.secrets.get(s.snap.name, {}).get('store-id')
+            if store_id is not None:
+                cdebug('SnapStore: {} using snap specific store-id')
+                headers['Snap-Device-Store'] = store_id
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
