@@ -26,7 +26,7 @@ from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
 from wfl.launchpad import Launchpad
 #from wfl.log import Clog, cdebug, center, cleave
-from wfl.snap import SnapStore
+from wfl.snap import SnapStore, SnapStoreError
 
 
 class MonitorIncompatible(Exception):
@@ -546,7 +546,12 @@ class MonitorSnapStore:
 
         #print(self.snap)
 
-        data = self.snap_store.channel_map()
+        try:
+            data = self.snap_store.channel_map()
+        except SnapStoreError as e:
+            print("Snap lookup failed: " + str(e))
+            return changed
+
         for arch, tracks in self.snap.publish_to.items():
             for track in tracks:
                 for risk in self.snap.promote_to:
