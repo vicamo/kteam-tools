@@ -827,7 +827,7 @@ class Package():
         -updates first.  Make them wait in -updates for 20 hours.
         '''
         center(s.__class__.__name__ + '.ready_for_security')
-        retval = s.all_built_and_in_pocket_for('Updates', timedelta(hours=20))
+        retval = s.all_built_and_in_pocket_for('Updates', timedelta(hours=12))
         cinfo('        Ready for security: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_security (%s)' % (retval))
         return retval
