@@ -206,11 +206,41 @@ class PromoteFromTo(Promoter):
 
                 # Check if packages were copied to the right pocket->component
                 #
-                if not s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', 'proposed'):
+                (good, mis_lst) = s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', s.pocket_dest)
+                # Not ready to check...
+                if good is None:
+                    cinfo('        packages not ready to check components')
+                    break
+
+                # Checked as bad.
+                elif good is False:
                     s.task.reason = 'Stalled -- packages are in the wrong component'
                     # NOTE: when we update components the package will be republished
                     # which triggers swm-publishing to detect it automatically so we avoid
                     # the need to request a refresh_at.
+
+                    cinfo('checking %s task status is %s' % (s.task.name, s.task.status))
+                    if s.task.status != 'Incomplete':
+                        s.task.status = 'Incomplete'
+                        retval = True
+
+                        body  = "The following packages ended up in the wrong"
+                        body += " component in the %s pocket:\n" % (s.pocket_dest)
+                        for item in mis_lst:
+                            cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
+                            body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
+
+                        subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.bug.lpbug.id)
+                        to_address  = "kernel-team@lists.ubuntu.com"
+                        to_address += ", ubuntu-installer@lists.ubuntu.com"
+                        cinfo('        sending email alert')
+                        s.bug.send_email(subject, body, to_address)
+
+                        body += "\n\nOnce this is fixed, set the "
+                        body += "%s to Fix Released again" % (s.task.name)
+                        s.bug.add_comment('Packages outside of proper component', body)
+
+                    cinfo('        packages ended up in the wrong pocket')
                     break
 
                 # If we've already been through here and already sent out the announcement

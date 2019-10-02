@@ -841,12 +841,21 @@ class Package():
         cdebug('tstamp_prop: ' + tstamp_prop)
         cdebug('     pocket: %s' % pocket)
 
+        # Check if this is a route with components enabled.
+        routing = s.bug.debs.routing(pocket)
+        if routing is None:
+            cleave(s.__class__.__name__ + '.check_component_in_pocket (True) -- no route')
+            return (True, [])
+        if routing[0][0].reference.startswith('~'):
+            cleave(s.__class__.__name__ + '.check_component_in_pocket (True) -- ppa route')
+            return (True, [])
+
         # If the packages are not all built and in -proposed then just bail out of
         # here.
         #
         if not s.ready_for_testing:
             cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
-            return False
+            return (None, [])
 
         check_component = CheckComponent(s.lp, s)
 
@@ -919,38 +928,16 @@ class Package():
             cdebug('missing_pkg is set')
             cinfo('        packages not yet available in pocket')
             cdebug('check_component_in_pocket leave (False)')
-            return False
+            return (None, None)
 
         if mis_lst:
             cdebug('mis_lst is set')
-
-            task_name = 'promote-to-%s' % (pocket,)
-            cinfo('        checking %s task status is %s' % (task_name, s.bug.tasks_by_name[task_name].status))
-            if s.bug.tasks_by_name[task_name].status != 'Incomplete':
-                s.bug.tasks_by_name[task_name].status = 'Incomplete'
-
-                body  = "The following packages ended up in the wrong"
-                body += " component in the -%s pocket:\n" % (pocket)
-                for item in mis_lst:
-                    cdebug('%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3]), 'green')
-                    body += '\n%s %s - is in %s instead of %s' % (item[0], item[1], item[2], item[3])
-
-                subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.bug.lpbug.id)
-                to_address  = "kernel-team@lists.ubuntu.com"
-                to_address += ", ubuntu-installer@lists.ubuntu.com"
-                cinfo('        sending email alert')
-                s.bug.send_email(subject, body, to_address)
-
-                body += "\n\nOnce this is fixed, set the "
-                body += "promote-to-%s to Fix Released again" % (pocket)
-                s.bug.add_comment('Packages outside of proper component', body)
-
             cinfo('        packages ended up in the wrong pocket')
             cdebug('check_component_in_pocket leave (False)')
-            return False
+            return (False, mis_lst)
 
         cleave(s.__class__.__name__ + '.check_component_in_pocket (True)')
-        return True
+        return (True, None)
 
     # send_testing_message
     #
