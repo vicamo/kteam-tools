@@ -2,6 +2,7 @@
 #
 
 from contextlib                         import contextmanager
+from copy                               import copy
 from datetime                           import datetime
 from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 import os
@@ -102,10 +103,21 @@ class WorkflowManager():
         with s.lock_bug(2):
             yield
 
-    def status_set(s, bugid, summary):
+    def status_set(s, bugid, summary, modified=None):
         with s.lock_status():
             status = s.status_load()
             if summary is not None:
+                # Pull forward the existing time stamps.
+                now = datetime.utcnow()
+                for stamp in ('time-scanned', 'time-modified'):
+                    if bugid in status and stamp in status[bugid]:
+                        summary[stamp] = status[bugid][stamp]
+                # Update the scanned/modified times.
+                if modified is not None:
+                    summary['time-scanned'] = copy(now)
+                    if modified is True or 'time-modified' not in summary:
+                        summary['time-modified'] = copy(now)
+
                 status[bugid] = summary
                 s.status_wanted[bugid] = True
             else:
@@ -196,6 +208,31 @@ class WorkflowManager():
 
         return result
 
+    def live_dependants_rescan(s):
+        result = []
+        with s.lock_status():
+            status = s.status_load()
+
+        for child_nr, child_data in status.items():
+            # This tracker has no parent, skip it.
+            parent_nr = str(child_data.get('master-bug'))
+            if parent_nr is None:
+                continue
+            # The parent tracker is closed, skip it.
+            parent_status = status.get(parent_nr)
+            if parent_status is None:
+                continue
+            modified = parent_status.get('time-modified')
+
+            # If our scanned time is before the modified time then we need
+            # to be rescanned.
+            scanned = child_data.get('time-scanned')
+            if scanned is None or modified > scanned:
+                cinfo('    LP: #{} modified since LP: #{} scanned -- triggering ({}, {})'.format(parent_nr, child_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
+                result.append(child_nr)
+
+        return result
+
     @property
     def lp(s):
         if s._lp is None:
@@ -235,17 +272,6 @@ class WorkflowManager():
                 else:
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
                     continue
-
-            if s.args.dependants:
-                bugs_new = set(bugs)
-                bugs_new_len = 0
-                while bugs_new_len != len(bugs_new):
-                    bugs_new_len = len(bugs_new)
-                    changed = False
-                    for srch_bugid, srch_data in s.status_start.items():
-                        if str(srch_data.get('master-bug')) in bugs_new:
-                            bugs_new.add(srch_bugid)
-                bugs = list(bugs_new)
 
             for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
@@ -300,6 +326,12 @@ class WorkflowManager():
                     with s.lock_bug(bugid):
                         buglist_rescan += s.crank(bugid)
 
+                # If we are interested in scanning dependants, trigger them if
+                # they have a parent and that parent has been modified since
+                # they were last scanned.
+                if s.args.dependants:
+                    buglist_rescan += s.live_dependants_rescan()
+
                 cinfo("manage_payload: rescan={}".format(buglist_rescan))
                 buglist = buglist_rescan
 
@@ -335,7 +367,7 @@ class WorkflowManager():
         # If the bug was modified (task status changed) on that crank of the bug then
         # crank it again.
         #
-        modified = True
+        modified = False
         try:
             lpbug = s.lp.default_service.get_bug(bugid)
             if lpbug is None:
@@ -360,12 +392,14 @@ class WorkflowManager():
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
 
-            while modified:
+            recrank = True
+            while recrank:
                 # Reset transient data for each crank run.
                 bug.transient_reset_all()
                 try:
                     cinfo('        ---------------------------------------  c r a n k  ---------------------------------------', 'green')
-                    modified = s.process_bug_tasks(bug)
+                    recrank = s.process_bug_tasks(bug)
+                    modified |= recrank
 
                 # XXX: should be a VariantError or something.
                 except (PackageError, SnapError) as e:
@@ -374,7 +408,7 @@ class WorkflowManager():
             bug.save()
 
             # Update the global status for this bug.
-            s.status_set(bugid, bug.status_summary())
+            s.status_set(bugid, bug.status_summary(), modified=modified)
 
             # If we are a new bug and we have a master bug request that
             # be rescanned to ensure it gains our linkage.
