@@ -77,10 +77,18 @@ def __status_bites(bug):
     thing_prefix = '?:'
     thing_in = []
 
-    # Report Debs release progress.
-    prep_status = __task_status(bug, 'prepare-package')
-    if prep_status == 'Invalid':
-        prep_status = __task_status(bug, 'prepare-package-meta')
+    # Report Debs release progress -- run through the prepare-package
+    # tasks and find the more retrograde one and report on that.
+    prep_status = 'n/a'
+    for prep_task in sorted(bug.get('reason', {}).keys()):
+        if not prep_task.startswith('prepare-package'):
+            continue
+        prep_status = __task_status(bug, prep_task)
+        if prep_status in ('Invalid', 'Fix Released'):
+            continue
+        prep_task = 'prepare-package-meta'
+        prep_status = __task_status(bug, prep_task)
+        break
 
     if bug['variant'] in ('debs', 'combo'):
         thing_prefix = 'd:'
@@ -111,9 +119,9 @@ def __status_bites(bug):
     elif prep_status == 'Confirmed':
         retval = __coloured('Debs ready to be cranked', 'green') #bca136
     elif prep_status == 'In Progress':
-        retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
+        retval = __coloured('Being cranked by: %s' % (__assignee(bug, prep_task)), '#1496bb')
     elif prep_status == 'Fix Committed':
-        retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
+        retval = __coloured('Uploaded by: %s' % (__assignee(bug, prep_task)), '#1496bb')
     if retval != '':
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
