@@ -107,7 +107,7 @@ class Ubuntu:
     content = response.read()
     if type(content) != str:
         content = content.decode('utf-8')
-    data = yaml.load(content)
+    data = yaml.safe_load(content)
 
     db = convert_v2_to_v1(data)
 
