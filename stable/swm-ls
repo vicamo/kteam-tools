@@ -26,7 +26,7 @@ class SwmStatus:
             if not isinstance(data, str):
                 data = data.decode('utf-8')
 
-        self._data = yaml.load(data)
+        self._data = yaml.safe_load(data)
 
     def __iter__(self):
         return iter(self._data)
