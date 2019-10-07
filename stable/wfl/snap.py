@@ -68,7 +68,7 @@ class SnapStore:
         try:
             headers = s.common_headers
 
-            params = urlencode({'fields': 'channel-map,architecture,channel,revision,version,released-at'})
+            params = urlencode({'fields': 'revision,version'})
             store_id = s.secrets.get(s.snap.name, {}).get('store-id')
             if store_id is not None:
                 cdebug('SnapStore: {} using snap specific store-id')
