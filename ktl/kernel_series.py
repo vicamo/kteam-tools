@@ -570,7 +570,7 @@ class KernelSeries:
                 data = data.decode('utf-8')
         else:
             data = self.__load_once(self._url_local if use_local else self._url)
-        self._data = yaml.load(data)
+        self._data = yaml.safe_load(data)
 
         self._development_series = None
         self._codename_to_series = {}
