@@ -176,25 +176,6 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
-        esm:
-            security-test:
-                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
-            build:
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
-                - ['ubuntu', 'Updates']
-            #security:
-            #    - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
-            #    - ['ubuntu', 'Security']
-            release:
-                - ['ubuntu', 'Release']
     sources:
         linux:
             versions: ['5.3.0']
@@ -2169,7 +2150,24 @@
     supported: true
     lts: true
     esm: true
-    routing-table: *routing-table
+    routing-table:
+        <<: *routing-table
+        esm:
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
     sources:
         linux:
             versions: ['3.13.0']
@@ -2410,7 +2408,24 @@
     supported: true
     lts: true
     esm: true
-    routing-table: *routing-table
+    routing-table:
+        <<: *routing-table
+        esm:
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
     sources:
         linux:
             versions: ['3.2.0']
