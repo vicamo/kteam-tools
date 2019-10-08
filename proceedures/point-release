@@ -26,7 +26,7 @@
  - Review linux-*-edge upgrade testing and approve
   - Review all of the ADT and upgrade testing and approve rolls
  - Roll linux-foo to linux-foo-edge package
-  - Move the linux-foo-edge pacakge contents over to linux-foo, adjust as
+  - Move the linux-foo-edge package contents over to linux-foo, adjust as
     needed and merge changelogs.
   - Note: we need to confirm testing and have stakeholder-signoff for
     these.
