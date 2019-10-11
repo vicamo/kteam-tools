@@ -1195,7 +1195,7 @@
                         clouds: ['gke']
             swm:
                 gke-nvidia-packages:
-                    - gke-d1809-0-amd64
+                    - gke-d1903-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-edge:
