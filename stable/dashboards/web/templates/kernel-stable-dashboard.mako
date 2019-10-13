@@ -19,7 +19,7 @@ a:visited {
 __testing_status_colors = {
     'New'           : 'blue',
     'In Progress'   : 'grey', # 'white',
-    'Confirmed'     : '#1496bb', # 'yellow',
+    'Confirmed'     : 'orange', # '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : '#1496bb',
