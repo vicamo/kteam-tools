@@ -117,6 +117,12 @@ class VerificationTesting(TaskHandler):
                 except BugSpamError as e:
                     cerror('            %s' % str(e))
 
+            # If we have managed to spam the bugs then verification is now in-progress.
+            if 'bugs-spammed' in s.bug.bprops:
+                if s.task.status == 'Confirmed':
+                    s.task.status = 'In Progress'
+                    retval = True
+
         if s.task.status == 'Fix Released':
             pass
         elif s.task.status == 'Incomplete':
