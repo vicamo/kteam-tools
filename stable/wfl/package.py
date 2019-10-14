@@ -61,7 +61,7 @@ class Package():
         # archives to real archive objects.
         s._routing = {}
         s.routing_mode = 'None'
-        if s.source.routing:
+        if s.source is not None and s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
                 ('Signing', 'signing'),
