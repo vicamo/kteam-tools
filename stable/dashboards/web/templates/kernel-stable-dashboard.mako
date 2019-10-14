@@ -206,10 +206,10 @@ def __status_bites(bug):
 
     # Run the list of reasons swm is reporting and emit those that do not overlap with testing.
     status_colour = {
-            'Pending': 'green', #'#bca136',
+            'Pending': 'orange', #'#bca136',
             'Ongoing': '#1496bb',
             'Holding': 'grey',
-            'Stalled': 'orange',
+            'Stalled': 'red',
             'Alert':   'red',
         }
     for task in sorted(bug.get('reason', {}).keys()):
