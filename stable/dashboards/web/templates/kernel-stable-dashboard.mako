@@ -19,7 +19,7 @@ a:visited {
 __testing_status_colors = {
     'New'           : 'blue',
     'In Progress'   : 'grey', # 'white',
-    'Confirmed'     : 'orange', # '#1496bb', # 'yellow',
+    'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : '#1496bb',
@@ -117,7 +117,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Debs ready to be cranked', 'green') #bca136
+        retval = __coloured('Debs ready to be cranked', 'darkorange') #bca136
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, prep_task)), '#1496bb')
     elif prep_status == 'Fix Committed':
@@ -165,7 +165,7 @@ def __status_bites(bug):
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
-        retval = __coloured('Snap ready to be cranked', 'green')
+        retval = __coloured('Snap ready to be cranked', 'darkorange')
     elif prep_status == 'In Progress':
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     elif prep_status == 'Fix Committed':
@@ -179,7 +179,7 @@ def __status_bites(bug):
         if promote_status == 'Confirmed':
             promote_to.append(risk)
     if len(promote_to) > 0:
-        retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'green')
+        retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'darkorange')
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
 
@@ -206,10 +206,10 @@ def __status_bites(bug):
 
     # Run the list of reasons swm is reporting and emit those that do not overlap with testing.
     status_colour = {
-            'Pending': 'orange', #'#bca136',
+            'Pending': 'darkorange', #'#bca136',
             'Ongoing': '#1496bb',
             'Holding': 'grey',
-            'Stalled': 'red',
+            'Stalled': 'crimson',
             'Alert':   'red',
         }
     for task in sorted(bug.get('reason', {}).keys()):
