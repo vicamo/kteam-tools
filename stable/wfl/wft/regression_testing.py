@@ -40,7 +40,13 @@ class RegressionTesting(TaskHandler):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
-        if 'qa-testing-failed' in s.bug.tags or 'regression-testing-failed' in s.bug.tags:
+
+        # If we have managed to spam the bugs then verification is now in-progress.
+        if 'proposed-testing-requested' in s.bug.bprops and s.task.status == 'Confirmed':
+            s.task.status = 'In Progress'
+            retval = True
+
+        elif 'qa-testing-failed' in s.bug.tags or 'regression-testing-failed' in s.bug.tags:
             cdebug('Regression Testing tagged as FAIL', 'yellow')
             if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as qa-testing-failed\n'
