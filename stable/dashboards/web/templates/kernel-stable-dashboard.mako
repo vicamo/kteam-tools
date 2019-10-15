@@ -22,7 +22,7 @@ __testing_status_colors = {
     'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
-    'Fix Released'  : '#1496bb',
+    'Fix Released'  : 'green', # '#1496bb',
     'Fix Committed' : '#1496bb',
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
