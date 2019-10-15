@@ -6,7 +6,7 @@ import os
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, WARNING, info, warning, DEBUG
 from ktl.log                            import cdebug, center, cleave
-from ktl.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueueService
 import json
 
 #from lib.grinder                        import JenkinsTestResultsTree, JenkinsTestResultsTreeError
@@ -47,7 +47,7 @@ class TheApp():
 
         try:
             details = {}
-            details['key'] = 'kernel.dashboard.status.bulk'
+            details['key'] = 'status.bulk'
 
             # title stamp warn alert note
 
@@ -77,10 +77,7 @@ class TheApp():
 
             # Submit the message to the Message Queue
             #
-            if s.args.local:
-                mq = MsgQueue(address='localhost', port=9123)
-            else:
-                mq = MsgQueue()
+            mq = MsgQueueService(service='dashboard-dashboard', local=s.args.local, exchange='dashboard')
 
             mq.publish(details['key'], details)
 

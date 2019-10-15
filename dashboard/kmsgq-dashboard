@@ -10,7 +10,7 @@ import threading
 import Queue
 from ktl.log                            import cdebug, center, cleave, cerror
 import ssl
-from ktl.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueueService
 import json
 
 # TheApp
@@ -110,7 +110,7 @@ class TheApp():
     def _handler(s, payload):
         cdebug("TheApp::_handler")
 
-        if payload['key'] == 'kernel.dashboard.status.bulk':
+        if payload['key'] == 'status.bulk':
             s._handler_status_bulk(payload)
         else:
             cerror("Unknown op <{0}>, ignored".format(payload['op']))
@@ -123,11 +123,8 @@ class TheApp():
         retval = 1
 
         try:
-            if args.local:
-                mq = MsgQueue(address='localhost', port=9123)
-            else:
-                mq = MsgQueue()
-            mq.listen(s.args.queue, 'kernel.dashboard.status.bulk', s._handler)
+            mq = MsgQueueService(service='dashboard-dashboard', local=args.local, exchange='dashboard')
+            mq.listen(s.args.queue, 'status.bulk', s._handler)
 
             print("done")
             retval = 0
