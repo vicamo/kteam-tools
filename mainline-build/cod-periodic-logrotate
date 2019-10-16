@@ -16,7 +16,7 @@ EOF
 
 	for log in $(cd "$HOME" && ls -1 "$logs/"*.log)
 	do
-		log="~/$log"
+		log="\"$HOME/$log\""
 
 		case "$host::$log" in
 		*/shank.log)
