@@ -78,6 +78,18 @@ class PromoteToSecurity(Promoter):
             if not s.bug.debs.ready_for_security:
                 break
 
+            if s._kernel_block():
+                s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
+                break
+
+            if s._in_blackout():
+                s.task.reason = 'Holding -- package in development blackout'
+                break
+
+            if not s._cycle_ready():
+                s.task.reason = 'Holding -- cycle not ready to release'
+                break
+
             s.task.status = 'Confirmed'
             retval = True
             break
