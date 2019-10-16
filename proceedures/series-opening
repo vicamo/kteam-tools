@@ -63,3 +63,8 @@
     - NEEDS: britney running
     - NEEDS: autopkgtest running in series
     - remove “opening” from series stanza
+
+== Development Transition ==
+ - Switch development series to stable
+    - In kteam-tools/info/kernel-series.yaml
+       - Mark the series as “supported: true”, “development: false”
