@@ -150,8 +150,8 @@
 # 19.10 (Eoan Eggplant)
 '19.10':
     codename: eoan
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
