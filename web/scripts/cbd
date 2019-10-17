@@ -320,7 +320,8 @@ class CollectRegressionsData(StdApp):
 
             development_series = kernel_series.lookup_series(development=True)
             bugs_db['info'] = {}
-            bugs_db['info']['dev series'] = development_series.codename
+            if development_series is not None:
+                bugs_db['info']['dev series'] = development_series.codename
 
             # Add a list of ESM series
             bugs_db['info']['esm series'] = []
