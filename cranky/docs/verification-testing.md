@@ -71,3 +71,17 @@ should be set to another state (e.g. 'Incomplete').
 Only the master kernels tracking bugs need to have the 'verification-testing'
 task updated. Once its done, SWM copies the status to all its derivatives and
 backports.
+
+## ESM and private kernels
+
+The ESM and private kernels might receive bug fixes that need to be verified
+before the release. Currently the SRU report doesn't include these fixes
+because the kernels are uploaded to private PPA's, and for the same reason
+the bugs are not spammed for verification.
+
+Due to that issue, these kernels (mainly the master kernels of the ESM series)
+need special attention. As of this writing, the only method to check which bugs
+need verification is looking at the packages changelog and check which fixes
+were applied. Note that it's also possible that fixes are applied without a link
+to a public bug report, so following the references to any other report (e.g.
+SalesForce case) might be needed to gather more information.
