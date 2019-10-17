@@ -1235,6 +1235,26 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-aws-5.3:
+            packages:
+                linux-aws-5.3:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.3-next']
+                linux-meta-aws-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-5.3']
+                linux-restricted-modules-aws-5.3:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.3']
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-aws' ]
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']       # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-aws-edge:
             packages:
                 linux-aws-edge:
@@ -1288,6 +1308,32 @@
                         # arches as defined by the testing system
                         #
                         arches: ['amd64']
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-azure-5.3:
+            packages:
+                linux-azure-5.3:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.3-next']
+                linux-meta-azure-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic', 'azure-5.3']
+                linux-signed-azure-5.3:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-5.3']
+                linux-restricted-modules-azure-5.3:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-5.3']
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']       # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -1349,6 +1395,29 @@
                         # arches as defined by the testing system
                         #
                         arches: ['amd64']
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-gcp-5.3:
+            packages:
+                linux-gcp-5.3:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.3-next']
+                linux-meta-gcp-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-5.3']
+                linux-signed-gcp-5.3:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-5.3']
+                linux-restricted-modules-gcp-5.3:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.3']
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-gcp' ]
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']       # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1554,6 +1623,29 @@
             testing:
                 flavours:
                     oracle-edge:
+                        arches: ['amd64']       # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oracle-5.3:
+            packages:
+                linux-oracle-5.3:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.3-next']
+                linux-meta-oracle-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/bionic', 'oracle-5.3']
+                linux-signed-oracle-5.3:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic', 'oracle-5.3']
+                linux-restricted-modules-oracle-5.3:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.3']
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-oracle' ]
+            testing:
+                flavours:
+                    oracle:
                         arches: ['amd64']       # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
