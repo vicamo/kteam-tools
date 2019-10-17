@@ -147,11 +147,12 @@
 #       archive pocket
 #
 
-# 19.10 (Eoan Eggplant)
-'19.10':
-    codename: eoan
-    development: false
-    supported: true
+# 20.04 (Focal Fossa)
+'20.04':
+    codename: focal
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
@@ -176,6 +177,217 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+    sources:
+        linux:
+            versions: ['5.3.0']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+            supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64', 'i386']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            copy-forward: ['19.10', 'linux']
+
+        linux-raspi2:
+            packages:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi2']
+                linux-meta-raspi2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi2']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+            copy-forward: ['19.10', 'linux-raspi2']
+
+        linux-oem:
+            packages:
+                linux-oem:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-next']
+                linux-meta-oem:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem']
+                linux-signed-oem:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    oem:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem' ]
+
+        linux-oem-osp1:
+            packages:
+                linux-oem-osp1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/focal', 'oem-next']
+                linux-meta-oem-osp1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/focal', 'oem']
+                linux-signed-oem-osp1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/focal', 'oem']
+            supported: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    oem-osp1:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['metal']
+            copy-forward: [ '18.04', 'linux-oem-osp1' ]
+
+        linux-aws:
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.10', 'linux-aws']
+
+        linux-azure:
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2018-11-20 00:01', '2018-11-27 10:00']
+                    - ['2018-12-21 00:01', '2019-01-02 10:00']
+                    - ['2019-02-03 16:00', '2019-02-06 16:00']
+            testing:
+                flavours:
+                    azure:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+            copy-forward: ['19.10', 'linux-azure']
+
+        linux-gcp:
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.10', 'linux-gcp']
+
+        linux-kvm:
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/focal', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/focal']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.10', 'linux-kvm']
+
+        linux-oracle:
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal']
+            supported: true
+            derived-from: [ '19.10', 'linux' ]
+            testing:
+                flavours:
+                    oracle:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64']
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: ['19.10', 'linux-oracle']
+
+
+# 19.10 (Eoan Ermine)
+'19.10':
+    codename: eoan
+    development: false
+    supported: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['5.3.0']
