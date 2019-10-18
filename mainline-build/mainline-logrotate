@@ -2,5 +2,13 @@
 #
 # mainline-logrotate -- post logrotate trigger.
 #
-"$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to mainline-todo--`uname -n` mainline-cleaner
-"$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to mainline-todo--`uname -n` quit
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <queue>" 1>&2
+	exit 1
+fi
+queue="$1"
+
+to="$queue--$(uname -n)"
+
+"$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to "$to" mainline-cleaner
+"$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to "$to" quit

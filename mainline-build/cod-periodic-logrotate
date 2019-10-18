@@ -38,7 +38,16 @@ EOF
 			cat - <<EOF
 $log {
    postrotate
-	$HOME/kteam-tools/mainline-build/mainline-logrotate
+	$HOME/kteam-tools/mainline-build/mainline-logrotate mainline-todo
+   endscript
+}
+EOF
+		;;
+		*/cod-queue-worker.log)
+			cat - <<EOF
+$log {
+   postrotate
+	$HOME/kteam-tools/mainline-build/mainline-logrotate mainline-queue
    endscript
 }
 EOF
