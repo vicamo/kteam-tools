@@ -86,7 +86,6 @@ def __status_bites(bug):
         prep_status = __task_status(bug, prep_task)
         if prep_status in ('Invalid', 'Fix Released'):
             continue
-        prep_task = 'prepare-package-meta'
         prep_status = __task_status(bug, prep_task)
         break
 
