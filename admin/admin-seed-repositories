@@ -89,14 +89,25 @@ def initialise_repositories(args):
 
             git_remote_update(tree.directory, remote, tree.package.repo.url)
 
-            if args.new_series not in package.repo.url:
+            destination = package.repo.url
+
+            if args.new_series not in destination:
                 cwarn("{} package url does not reference new series, skipping".format(package.repo.url))
                 continue
+            #if package.type in (None, 'main'):
+            #    git_push(tree.directory, package.repo.url, 'refs/tags/v5.0', 'refs/tags/v5.0')
+            # First push up to a +source/linux/ temporary repository, then rename it over.
+            if package.type in (None, 'main'):
+                bits = destination.split('/')
+                if bits[-3] != 'linux' and bits[-4] == '+source':
+                    bits[-1] += '-' + bits[-3]
+                    bits[-3] = 'linux'
+                    destination = '/'.join(bits)
             branch = package.repo.branch
-            git_push(tree.directory, package.repo.url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+            git_push(tree.directory, destination, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
             if branch.endswith('-next'):
                 branch = branch[:-5]
-                git_push(tree.directory, package.repo.url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
+                git_push(tree.directory, destination, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
             if source.name == 'linux':
                 url = 'git://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/' + package.name + '-' + new_series.codename
                 git_push(tree.directory, url, 'refs/remotes/' + remote + '/' + branch, 'refs/heads/' + branch)
@@ -115,3 +126,7 @@ Initialise all of the repositories for an opening series.
     args = parser.parse_args()
 
     initialise_repositories(args)
+    print("""\
+NOTE: all main repositories are pushed to /linux/ to avoid pushing quite
+so many objects.  You will need to rename those now.
+""")
