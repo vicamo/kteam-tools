@@ -23,16 +23,6 @@ abinum="$3"
 map_series_to_build_series "$series"
 build_release="$RET"
 
-# Arches to build
-case "$series" in
-hardy|lucid)			arches="amd64 i386" ;;
-maverick|natty|oneiric)		arches="amd64 i386 armel" ;;
-precise|quantal)		arches="amd64 i386 armel armhf" ;;
-raring|saucy)			arches="amd64 i386 armhf" ;;
-trusty|utopic|vivid|wily)	arches="amd64 i386 armhf ppc64el" ;;
-*)				arches="amd64 i386 armhf arm64 ppc64el s390x" ;;
-esac
-
 {
 	time=`date +%s`
 	echo "Release: $build_release"
@@ -308,18 +298,27 @@ build_common()
 #dpkg-buildpackage -S -sd -rfakeroot -I.git -I.gitignore -i'\.git.*'
 #dpkg-buildpackage -b
 echo "-+++- begin binary-headers -+++-"
-do_chroot "$build_release-i386" \
+do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean
-do_chroot "$build_release-i386" \
+arches=$(
+	grep Architecture debian/control |
+	awk '{ for (c=2; c <= NF; c++) { print $c } }' |
+	sed -e 's/all/amd64/' |
+	sort -u
+)
+do_chroot "$build_release-amd64" \
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-headers
 echo "-+++- status binary-headers $? -+++-"
 echo "-+++- end binary-headers -+++-"
 for arch in $arches; do
-	if [ "$arch" = 'amd64' -o "$arch" = 'i386' ]; then
+	case "$arch" in
+	all|x32)	continue ;;
+	amd64|i386)
 		carch=$arch
 		cross_prefix=""
 		cross_overrides=""
-	else
+		;;
+	*)
 		carch='amd64'
 		cross_prefix="dpkg-architecture -a$arch -c"
 		cross_overrides=""
@@ -327,7 +326,8 @@ for arch in $arches; do
 		if [ "$arch" = "ppc64el" ]; then
 			cross_overrides="BOOT_TARGETS1=vmlinux.strip"
 		fi
-	fi
+		;;
+	esac
 	echo "-+++- begin $arch -+++-"
 	do_chroot "$build_release-$carch" \
 		$cross_prefix fakeroot debian/rules $cross_overrides clean
