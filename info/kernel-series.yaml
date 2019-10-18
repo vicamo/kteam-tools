@@ -1216,7 +1216,7 @@
                 linux-meta-aws-edge:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-edge']
-            supported: true
+            supported: false
             backport: true
             derived-from: [ '19.04', 'linux-aws' ]
             testing:
