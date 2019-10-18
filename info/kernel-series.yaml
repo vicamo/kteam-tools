@@ -1508,24 +1508,26 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-oracle-edge:
+        linux-oracle-5.0:
             packages:
-                linux-oracle-edge:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-edge']
-                linux-meta-oracle-edge:
+                linux-oracle-5.0:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.0-next']
+                linux-meta-oracle-5.0:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/bionic', 'oracle-edge']
-                linux-signed-oracle-edge:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/bionic', 'oracle-5.0']
+                linux-signed-oracle-5.0:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic', 'oracle-edge']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic', 'oracle-5.0']
+                linux-restricted-modules-oracle-5.0:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.0']
             supported: true
+            backport: true
             derived-from: [ '19.04', 'linux-oracle' ]
             testing:
                 flavours:
                     oracle-edge:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']       # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
