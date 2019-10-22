@@ -544,6 +544,44 @@ class Package():
         cleave('Package::fully_built (%s : %s)' % (pkg, retval))
         return retval
 
+    # in_pocket
+    #
+    def in_pocket(s, pkg, pocket):
+        '''
+        Dependent package is in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.in_pocket')
+        try:
+            pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
+        except KeyError:
+            pkg_seen = False
+
+        if pkg_seen:
+            cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
+        else:
+            cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
+
+        cleave(s.__class__.__name__ + '.in_pocket (%s)' % (pkg_seen))
+        return pkg_seen
+
+    # built_and_in_pocket
+    #
+    def built_and_in_pocket(s, pkg, pocket):
+        '''
+        Dependent package is fully built and in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.built_and_in_pocket')
+        try:
+            pkg_built = s.srcs[pkg][pocket]['built']
+        except KeyError:
+            pkg_built = False
+
+        if not pkg_built:
+            cinfo('        {} is either not fully built yet or not in {}.'.format(pkg, pocket), 'red')
+
+        cleave(s.__class__.__name__ + '.built_and_in_pocket ({})'.format(pkg_built))
+        return pkg_built
+
     # all_in_pocket
     #
     def all_in_pocket(s, pocket):

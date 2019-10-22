@@ -207,6 +207,12 @@ class PreparePackage(TaskHandler):
                 s.task.reason = 'Stalled -- package tag not yet published'
                 break
 
+            # If we are a master kernel wait for main package builds to complete.
+            if (pkg == 'main' and not s.bug.is_derivative_package and
+                    not s.bug.debs.built_and_in_pocket(pkg, 'ppa')):
+                s.task.reason = 'Ongoing -- {} package not yet fully built'
+                break
+
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
