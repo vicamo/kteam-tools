@@ -193,7 +193,7 @@ class PreparePackage(TaskHandler):
             if s.task.status != 'Fix Committed':
                 s.task.status = 'Fix Committed'
                 try:
-                    s.task.assignee = s.bug.debs.creator(pkg)
+                    s.task.assignee = creator
                 except KeyError:
                     # It doesn't matter if we set the assignee, that's just a nice
                     # to have.
@@ -210,7 +210,7 @@ class PreparePackage(TaskHandler):
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
-                s.task.assignee = s.bug.debs.creator(pkg)
+                s.task.assignee = creator
             except KeyError:
                 # It doesn't matter if we set the assignee, that's just a nice
                 # to have.
