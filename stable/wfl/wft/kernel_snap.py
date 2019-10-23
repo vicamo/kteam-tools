@@ -128,20 +128,32 @@ class SnapReleaseToBeta(KernelSnapBase):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        # Check if this snap is valid in this risk.
-        if not s.bug.snap.promote_to_risk('beta'):
+        while not retval:
+            # Check if this snap is valid in this risk.
+            if s.bug.snap.promote_to_risk('beta'):
+                break
+
             cinfo('    snap not valid in beta risk', 'yellow')
             s.task.status = 'Invalid'
             retval = True
+            break
 
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
-        elif s.debs_bug.tasks_by_name['promote-to-proposed'].status == 'Fix Released':
+        while not retval:
+            if s.bug.tasks_by_name['snap-release-to-edge'].status != 'Fix Released':
+                cinfo('    task snap-release-to-edge is not \'Fix Released\'', 'yellow')
+                break
+
+            if s.debs_bug.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
+                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
+
             retval = True
-        else:
-            cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+            break
 
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
         return retval
