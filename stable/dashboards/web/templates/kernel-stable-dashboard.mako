@@ -219,9 +219,6 @@ def __status_bites(bug):
             continue
         if task.endswith('-testing'):
             continue
-        if bug.get('master-bug') is not None:
-            if task == 'security-signoff':
-                continue
         (state, _, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
         retval = '{}: {}'.format(task, reason)
