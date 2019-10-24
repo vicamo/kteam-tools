@@ -12,6 +12,10 @@
           - 'In Progress'
           - 'For Review'
           - 'Done'
+          - 'Retrospective: What worked?'
+          - 'Retrospective: What did not work?'
+          - 'Retrospective: Unsure'
+          - 'Retrospective: Actions'
         default_list: 'Backlog'
         admin_members:
           - 'andywhitcroft'
@@ -37,6 +41,9 @@
     cards:
         - name: 'Cycle Lead: <insert name>'
           description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.'
+          list: 'Cycle Roles'
+        - name: 'Mailing List Lead: <insert name>'
+          description: 'A Mailing List Lead should:\n\n* Try to stay on top of patches that are ACKed to apply them early.\n* Nag for reviews if/when necessary.'
           list: 'Cycle Roles'
         - name: 'Crankers Pool'
           description: 'All potential crankers (whoever is supposed to participate in this cycle) to be assigned as members to this card.'
