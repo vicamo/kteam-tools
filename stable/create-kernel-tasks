@@ -496,7 +496,7 @@ Examples:
     parser.add_argument('--source', action='append', default=[], metavar='<source',
                         help='limit task creation to the provided sources')
     parser.add_argument('--spin', action='store', metavar='<spin nr>', default=None, type=int,
-                        help='override the spin number to be used. Only new tasks are allowed in this mode!')
+                        help='Specify which spin (starting with 1) to use.')
     parser.add_argument('--test', action='store_true', default=False,
                         help='create test tracking bugs (using a different live tag)')
     parser.add_argument('--debug', action='store_true', default=False,
@@ -513,12 +513,12 @@ Examples:
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-    if args.force_nocards and args.force_nobugs:
-        cerror('Forcing no cards and no tracking bugs is not allowed')
+    if args.spin is None:
+        cerror('The spin number must be specified (--spin)!')
         sys.exit(1)
 
-    if args.force_nobugs and args.spin is None:
-        cerror('Forcing no tracking bugs requires a spin number!')
+    if args.force_nocards and args.force_nobugs:
+        cerror('Forcing no cards and no tracking bugs is not allowed')
         sys.exit(1)
 
     # Prepare a list of (originating) series to work on
