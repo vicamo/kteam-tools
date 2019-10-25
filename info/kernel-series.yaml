@@ -1931,6 +1931,34 @@
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
 
+        # Kernel for Tillamook (Rigado) Cascade-500 IoT GW
+        linux-cascade:
+            routing:
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:tillamook-team/ubuntu/build', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/rigado-cascade', 'Release']
+                proposed:
+                    - ['ppa:tillamook-team/ubuntu/proposed', 'Release']
+                updates:
+                    - ['ppa:tillamook-team/ubuntu/tillamook', 'Release']
+            packages:
+                linux-cascade:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-cascade', 'master-next']
+                linux-meta-cascade:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-cascade']
+                linux-signed-cascade:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-cascade']
+            supported: true
+            private: true
+            derived-from: [ '16.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+
         linux-euclid:
             packages:
                 linux-euclid:
