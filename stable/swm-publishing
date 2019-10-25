@@ -699,10 +699,20 @@ class MonitorFactory:
 
         monitors = []
         for archive_name in archive_names:
+            monitor = None
             try:
-                monitors.append(MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
+                monitor = MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs)
             except MonitorIncompatible:
-                monitors.append(MonitorLaunchpadArchivePrivate(archive_name, lp=self.lp, ks=self.ks, bs=self.bs))
+                pass
+            if monitor is None:
+                try:
+                    monitor = MonitorLaunchpadArchivePrivate(archive_name, lp=self.lp, ks=self.ks, bs=self.bs)
+                except MonitorIncompatible:
+                    pass
+            if monitor is not None:
+                monitors.append(monitor)
+            else:
+                print("WARNING: {}: archive cannot be scanned", archive_name)
 
         return monitors
 
