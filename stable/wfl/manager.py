@@ -246,6 +246,36 @@ class WorkflowManager():
 
         return result
 
+    def live_duplicates_mark(s, old, new):
+        with s.lock_status():
+            status = s.status_load()
+            modified = False
+            for child_nr, child_data in status.items():
+                # This tracker has no parent, skip it.
+                parent_nr = str(child_data.get('master-bug'))
+                if parent_nr is None:
+                    continue
+                # Unrelated to the duplication in process.
+                if parent_nr != old:
+                    continue
+
+                # Ignore snap-debs variants as those should remain tightly
+                # coupled with their parent.
+                child_variant = child_data.get('variant')
+                if child_varient == 'snap-debs':
+                    continue
+
+                # Our parent is being duplicated, record the new one so we can apply it
+                # on our next scan.
+                child_data['manager']['fix-master'] = str(new)
+
+                # Mark this child as needing scanning by removing its scan time.
+                child_data['manager']['time-scanned'] = None
+                modified = True
+
+            if modified:
+                s.status_save(status)
+
     # Some changes to a tracker can only safely be applied while we have the
     # lock for that bug.  The easiest way to do that is trigger scanning of
     # that bug and apply them when we encounter the bug.  Such fixes are marked
@@ -265,6 +295,14 @@ class WorkflowManager():
 
             bug_modified = False
             status_modified = False
+            if 'fix-master' in manager:
+                cinfo("{}: fix-master present master={}->{} applying".format(
+                    bug_id, bug.master_bug_id, manager['fix-master']))
+                if bug.master_bug_id != manager['fix-master']:
+                    bug.master_bug_id = manager['fix-master']
+                    bug_modified = True
+                del manager['fix-master']
+                status_modified = True
 
             # Commit the changes to the bug.
             if bug_modified:
@@ -417,6 +455,7 @@ class WorkflowManager():
             if lpbug.duplicate_of is not None:
                 cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
                 s.status_set(bugid, None)
+                s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
             bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series)
             if bug.is_closed:
