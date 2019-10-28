@@ -424,7 +424,9 @@ class MonitorLaunchpadProject:
             if dup is not None:
                 dup_id = bug.duplicate_of.id
                 print("D", dup_id, '<-', bug_id)
+                # Add both ends as SWM may have triggered the duplication.
                 changed.add(str(dup_id))
+                changed.add(str(bug_id))
             for activity in bug.activity:
                 activity_date = activity.datechanged
 
