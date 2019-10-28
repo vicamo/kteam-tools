@@ -107,16 +107,15 @@ class WorkflowManager():
         with s.lock_status():
             status = s.status_load()
             if summary is not None:
-                # Pull forward the existing time stamps.
-                now = datetime.utcnow()
-                for stamp in ('time-scanned', 'time-modified'):
-                    if bugid in status and stamp in status[bugid]:
-                        summary[stamp] = status[bugid][stamp]
+                # Pull forward persistent swm related state.
+                manager = summary['manager'] = status.get(bugid, {}).get('manager', {})
+
                 # Update the scanned/modified times.
                 if modified is not None:
-                    summary['time-scanned'] = copy(now)
-                    if modified is True or 'time-modified' not in summary:
-                        summary['time-modified'] = copy(now)
+                    now = datetime.utcnow()
+                    manager['time-scanned'] = copy(now)
+                    if modified is True or 'time-modified' not in manager:
+                        manager['time-modified'] = copy(now)
 
                 status[bugid] = summary
                 s.status_wanted[bugid] = True
@@ -149,6 +148,17 @@ class WorkflowManager():
         if os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
                 status = yaml.safe_load(rfd)
+
+        # Migration: pull all manager related items into a shared manager
+        # sub-key.  This allows simpler forward migration when updating status.
+        for child_nr, child_data in status.items():
+            if 'manager' not in child_data:
+                manager = child_data['manager'] = {}
+                for stamp in ('time-scanned', 'time-modified'):
+                    if stamp in child_data:
+                        manager[stamp] = child_data[stamp]
+                        del child_data[stamp]
+
         return status
 
     def status_save(s, status):
@@ -219,14 +229,17 @@ class WorkflowManager():
             if parent_nr is None:
                 continue
             # The parent tracker is closed, skip it.
-            parent_status = status.get(parent_nr)
-            if parent_status is None:
+            parent_data = status.get(parent_nr)
+            if parent_data is None:
                 continue
-            modified = parent_status.get('time-modified')
+
+            child_manager = child_data['manager']
+            parent_manager = parent_data['manager']
+            modified = parent_manager.get('time-modified')
 
             # If our scanned time is before the modified time then we need
             # to be rescanned.
-            scanned = child_data.get('time-scanned')
+            scanned = child_manager.get('time-scanned')
             if scanned is None or modified > scanned:
                 cinfo('    LP: #{} modified since LP: #{} scanned -- triggering ({}, {})'.format(parent_nr, child_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
                 result.append(child_nr)
