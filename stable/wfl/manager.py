@@ -246,6 +246,33 @@ class WorkflowManager():
 
         return result
 
+    # Some changes to a tracker can only safely be applied while we have the
+    # lock for that bug.  The easiest way to do that is trigger scanning of
+    # that bug and apply them when we encounter the bug.  Such fixes are marked
+    # in the live status manager attributes, as fix-* markers.  Apply those now
+    # and commit them to the persistent state.  Do all of this under the status
+    # lock so setting/clearing the fix-* markers is atomic.
+    def apply_fixes(s, bugid, bug):
+        with s.lock_status():
+            status_all = s.status_load()
+
+            status = status_all.get(bugid)
+            if status is None:
+                return
+            manager = status.get('manager')
+            if manager is None:
+                return
+
+            bug_modified = False
+            status_modified = False
+
+            # Commit the changes to the bug.
+            if bug_modified:
+                bug.save()
+
+            if status_modified:
+                s.status_save(status_all)
+
     @property
     def lp(s):
         if s._lp is None:
@@ -401,6 +428,9 @@ class WorkflowManager():
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
+
+            # Now we have a valid bug, see if we have any fixes to apply.
+            s.apply_fixes(bugid, bug)
 
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
