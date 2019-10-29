@@ -11,28 +11,29 @@
     - NEEDS: final name set and archive accepting uploads
     - OPENING: opening: archive-open: true
  - Create new primary repositories
-    - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel
+    - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel/canonical-kernel-security-team
     - run the admin/admin-seed-repositories script to initialise
       the primary and security repositories
-    - XXX: permissions
     - OPENING: opening: repositories: true
+    - run the admin/admin-lp-git-permissions sync-primary to add acls to the new repositories
  - Add repositories to wani mirroring
     - NEEDS: repos
     - Wait for mirroring to create repos
     - add symlinks to ubuntu directory to expose them for legacy user
- - Create new security git repositories
-    - NEEDS: launchpad group admin for canonical-kernel-security-team
-    - git remote add security lp-private:...
-    - git push security master
-    - Repeat for linux-signed and linux-meta
  - Create new linux-snap git repository
     - NEEDS: launchpad admin for ubuntu-kernel
-    - NOTE: Only needed on LTSs
+    - NOTE: Only needed on LTSs for their corresponding ucNN
+    - NOTE: Likely is already created so we can test against development.
     - git fetch origin
-    - git push lp:lp:~ubuntu-kernel/+git/linux-snap-<series> refs/remotes/origin/master:heads/refs/master
+    - git push lp:~ubuntu-kernel/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
+ - Request new snap tracks
+    - NOTE: Only needed on LTSs for their corresponding ucNN
+    - NOTE: Likely is already created so we can test against development.
+    - Email snap-store-admins@lists.canonical.com requesting all the new tracks needed,
+      should mirror those in previous ucNN mostly.
  - Create snap build recipies
     - NEEDS: linux-snap git repository created
-    - NEEDS: collaborator on the snaps to be added
+    - NEEDS: new series tracks created
     - Create recipies (Producing snaps documentation)
  - Prime builder-extras for the new series
     - NEEDS: series open in launchpad and launchpad builders valid
