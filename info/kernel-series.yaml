@@ -156,6 +156,7 @@
         repositories: true
         archive-closed: true
         debootstrap: true
+        chroots: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
