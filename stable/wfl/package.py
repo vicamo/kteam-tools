@@ -808,6 +808,11 @@ class Package():
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
 
+        # We are ready to go but proposed is not clear.  Consider any
+        # bug we are marked as replacing.
+        if not retval:
+            s.bug.dup_replaces()
+
         # If proposed is not clear, consider if it is full due to a bug
         # which has been duplicated against me.
         if not retval:
