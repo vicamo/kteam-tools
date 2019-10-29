@@ -318,6 +318,13 @@ class WorkflowBug():
         '''
         return s.bprops[s.master_bug_property_name]
 
+    @master_bug_id.setter
+    def master_bug_id(s, bugid):
+        '''
+        '''
+        s.bprops[s.master_bug_property_name] = bugid
+        s._master_bug = None
+
     # master_bug
     #
     @property
