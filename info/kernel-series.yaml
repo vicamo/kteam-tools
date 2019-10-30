@@ -1101,6 +1101,8 @@
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
                     - ['ppa:munich-team/ubuntu/munich-test', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/e.on-munich', 'Release']
                 proposed:
                     - ['ppa:munich-team/ubuntu/munich-proposed', 'Release']
                 updates:
