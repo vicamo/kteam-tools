@@ -15,17 +15,13 @@ from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cinfo
 
 class UpdateSnap():
-    def __init__(self, updates=False, no_tag=False, dry_run=False):
+    def __init__(self, pocket='proposed', no_tag=False, dry_run=False):
         self.ks = KernelSeries()
         self.scy_file_name = "snapcraft.yaml"
         self.no_tag = no_tag
         self.dry_run = dry_run
         self.scy = None
-
-        if updates:
-            self.pocket = "updates"
-        else:
-            self.pocket = "proposed"
+        self.pocket = pocket
 
     @property
     def series(self):
@@ -59,8 +55,10 @@ class UpdateSnap():
         Use 'rmadison' to get the package version published for the given
         series/pocket.
         '''
-        component = "%s-%s" % (series, pocket)
-        ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', component, pkg_name])
+        suite = series
+        if pocket != 'release':
+            suite += '-' + pocket
+        ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', suite, pkg_name])
         if not ret:
             cerror("ERROR: No version available in -%s" % self.pocket)
             sys.exit(1)
@@ -181,11 +179,18 @@ Examples:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", default=False,
                         help="do not make any changes, just show what would be done")
+    parser.add_argument("-r", "--release", action="store_true", default=False,
+                        help="get version from -release instead of -proposed")
     parser.add_argument("-u", "--updates", action="store_true", default=False,
                         help="get version from -updates instead of -proposed")
     parser.add_argument("-t", "--no-tag", action="store_true", default=False,
                         help="do not automatically tag the commit")
     args = parser.parse_args()
 
-    update_snap = UpdateSnap(args.updates, args.no_tag, args.dry_run)
+    pocket = 'proposed'
+    if args.updates:
+        pocket = 'updates'
+    if args.release:
+        pocket = 'release'
+    update_snap = UpdateSnap(pocket, args.no_tag, args.dry_run)
     update_snap.main()
