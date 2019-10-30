@@ -1094,6 +1094,23 @@
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-mt8516:
+            routing:
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:munich-team/ubuntu/munich-test', 'Release']
+                proposed:
+                    - ['ppa:munich-team/ubuntu/munich-proposed', 'Release']
+                updates:
+                    - ['ppa:ibm-cloud/ubuntu/munich', 'Release']
+            packages:
+                linux-mt8516:
+                linux-signed-mt8516:
+                    type: signed
+            supported: false
+
         linux-raspi2:
             packages:
                 linux-raspi2:
