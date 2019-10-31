@@ -69,6 +69,13 @@ def bite_format(thing_prefix, payload, thing_in):
         bite += 'in: ' + ','.join(thing_in)
     return bite
 
+# tagged_block
+#
+def tagged_block(key, value):
+    retval = '<span style="display: inline-block; min-width: 20px; width=20px;">{}</span>'.format(key)
+    retval += '<span style="display: inline-block; min-width: 80px; width=80px;">{}</span>'.format(value)
+    return retval
+
 # status_bites
 #
 def __status_bites(bug):
@@ -144,16 +151,16 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[automated_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">at: %-26s</span>' % (__coloured(automated_testing_status, color))
+        retval += tagged_block('at:', __coloured(automated_testing_status, color))
 
         color = __testing_status_colors[certification_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">ct: %-26s</span>' % (__coloured(certification_testing_status, color))
+        retval += tagged_block('ct:', __coloured(certification_testing_status, color))
 
         color = __testing_status_colors[regression_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">rt: %-26s</span>' % (__coloured(regression_testing_status, color))
+        retval += tagged_block('rt:', __coloured(regression_testing_status, color))
 
         color = __testing_status_colors[verification_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">vt: %-26s</span>' % (__coloured(verification_testing_status, color))
+        retval += tagged_block('vt:', __coloured(verification_testing_status, color))
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
@@ -195,10 +202,10 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[certification_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">ct: %-26s</span>' % (__coloured(certification_testing_status, color))
+        retval += tagged_block('ct:', __coloured(certification_testing_status, color))
 
         color = __testing_status_colors[qa_testing_status]
-        retval += '<span style="display: inline-block; min-width: 100px; width=100px;">qa: %-26s</span>' % (__coloured(qa_testing_status, color))
+        retval += tagged_block('qa:', __coloured(qa_testing_status, color))
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
