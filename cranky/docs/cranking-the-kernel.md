@@ -229,6 +229,22 @@ https://USER:PASS@private-ppa.launchpad.net/ubuntu-advantage/fips-kernel-source/
 The username and password can be obtained from
 <https://launchpad.net/~/+archivesubscriptions>.
 
+
+### Include any necessary changes from the base kernel into the derivatives - `cranky review-master-changes`
+
+Derivatives receive most of the changes from its base kernel via the
+rebase. However we need to manually review changes that are applied to
+debian.BRANCH in the base kernel.
+
+Run `cranky review-master-changes` and review if any of the listed
+changes need to be applied to the derivative.
+
+<!--cheatsheet-->
+```
+cranky review-master-changes
+```
+<!--/cheatsheet-->
+
 ### Link to tracker - `cranky link-tb`
 <!--cheatsheet-->
 ```
