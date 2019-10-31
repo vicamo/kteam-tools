@@ -231,10 +231,10 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[security_signoff_status]
-        retval += tagged_block_valid('ss:', security_signoff_status, color)
+        retval += tagged_block_valid('<span title="Security Signoff">ss:</span>', security_signoff_status, color)
 
         color = __testing_status_colors[stakeholder_signoff_status]
-        retval += tagged_block_valid('Ss:', stakeholder_signoff_status, color)
+        retval += tagged_block_valid('<span title="Stakeholder Signoff">Ss:</span>', stakeholder_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
