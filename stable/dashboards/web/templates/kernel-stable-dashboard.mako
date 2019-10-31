@@ -210,6 +210,27 @@ def __status_bites(bug):
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
 
+    # signoffs: report signoffs together..
+    security_signoff_status = __task_status(bug, 'security-signoff')
+    stakeholder_signoff_status = __task_status(bug, 'stakeholder-signoff')
+    signoff_valid = (
+            security_signoff_status not in ('n/a', 'New', 'Invalid') or
+            stakeholder_signoff_status not in ('n/a', 'New', 'Invalid'))
+    signoff_complete = (
+            security_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
+            stakeholder_signoff_status in ('n/a', 'Invalid', 'Fix Released'))
+    if signoff_valid and not signoff_complete:
+        retval = ''
+
+        color = __testing_status_colors[security_signoff_status]
+        retval += tagged_block('ss:', __coloured(security_signoff_status, color))
+
+        color = __testing_status_colors[stakeholder_signoff_status]
+        retval += tagged_block('Ss:', __coloured(stakeholder_signoff_status, color))
+
+        bites.append(bite_format(thing_prefix, retval, thing_in))
+        thing_in = []
+
     # Run the list of reasons swm is reporting and emit those that do not overlap with testing.
     status_colour = {
             'Pending': 'darkorange', #'#bca136',
@@ -224,7 +245,7 @@ def __status_bites(bug):
                 task.startswith('snap-release-to-')) and
                 not reason.startswith('Stalled -- ')):
             continue
-        if task.endswith('-testing'):
+        if task.endswith('-testing') or task.endswith('-signoff'):
             continue
         (state, _, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
