@@ -76,6 +76,14 @@ def tagged_block(key, value):
     retval += '<span style="display: inline-block; min-width: 80px; width=80px;">{}</span>'.format(value)
     return retval
 
+# tagged_block_valid
+#
+def tagged_block_valid(key, value, colour):
+    if value in ('n/a', 'Invalid'):
+        return tagged_block(__coloured(key, 'silver'), __coloured('n/a', 'silver'))
+    else:
+        return tagged_block(key, __coloured(value, colour))
+
 # status_bites
 #
 def __status_bites(bug):
@@ -151,16 +159,16 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[automated_testing_status]
-        retval += tagged_block('at:', __coloured(automated_testing_status, color))
+        retval += tagged_block_valid('at:', automated_testing_status, color)
 
         color = __testing_status_colors[certification_testing_status]
-        retval += tagged_block('ct:', __coloured(certification_testing_status, color))
+        retval += tagged_block_valid('ct:', certification_testing_status, color)
 
         color = __testing_status_colors[regression_testing_status]
-        retval += tagged_block('rt:', __coloured(regression_testing_status, color))
+        retval += tagged_block_valid('rt:', regression_testing_status, color)
 
         color = __testing_status_colors[verification_testing_status]
-        retval += tagged_block('vt:', __coloured(verification_testing_status, color))
+        retval += tagged_block_valid('vt:', verification_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
@@ -202,10 +210,10 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[certification_testing_status]
-        retval += tagged_block('ct:', __coloured(certification_testing_status, color))
+        retval += tagged_block_valid('ct:', certification_testing_status, color)
 
         color = __testing_status_colors[qa_testing_status]
-        retval += tagged_block('qa:', __coloured(qa_testing_status, color))
+        retval += tagged_block_valid('qa:', qa_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
@@ -223,10 +231,10 @@ def __status_bites(bug):
         retval = ''
 
         color = __testing_status_colors[security_signoff_status]
-        retval += tagged_block('ss:', __coloured(security_signoff_status, color))
+        retval += tagged_block_valid('ss:', security_signoff_status, color)
 
         color = __testing_status_colors[stakeholder_signoff_status]
-        retval += tagged_block('Ss:', __coloured(stakeholder_signoff_status, color))
+        retval += tagged_block_valid('Ss:', stakeholder_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
         thing_in = []
