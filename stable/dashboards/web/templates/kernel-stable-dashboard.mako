@@ -82,11 +82,14 @@ def tagged_block_valid(key, value, colour):
     if value in ('n/a', 'Invalid'):
         return tagged_block(__coloured(key, 'silver'), __coloured('n/a', 'silver'))
     else:
-        return tagged_block(key, __coloured(value, colour))
+        block = tagged_block(key, __coloured(value, colour))
+        if key in attrs:
+            block = '<a href="{}">{}</a>'.format(attrs[key], block)
+        return block
 
 # status_bites
 #
-def __status_bites(bug):
+def __status_bites(bug, attrs):
     bites = []
 
     thing_prefix = '?:'
@@ -317,27 +320,18 @@ for bid in sorted(data['swm']):
     if package not in cadence[cycle][sn]:
         cadence[cycle][sn][package] = []
 
-    status_list = __status_bites(b)
+    # Pull together any suplemental links etc we need.
+    attrs = {}
+    try:
+        attrs['rt:'] = data['testing']['regression'][package]
+    except KeyError:
+        pass
+    attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
+    attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html'
+
+    status_list = __status_bites(b, attrs)
     first = True
     for status in status_list:
-        # Fixup the link to the regression testing if this is 'testing' status.
-        #
-        if 'rt:' in status:
-            try:
-                status = re.sub(r'(rt: *<span.*?</span>)', r'<a href="%s">\1</a>' % data['testing']['regression'][package], status)
-            except KeyError:
-                pass
-
-        # Fixup the link to the automated testing results
-        #
-        if 'at:' in status:
-            status = re.sub(r'(at: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://people.canonical.com/~kernel/status/adt-matrix/%s-%s.html' % (sn, package.replace('linux', 'linux-meta')), status)
-
-        # Fixup the link to the sru-report with verification status
-        #
-        if 'vt:' in status:
-            status = re.sub(r'(vt: *<span.*?</span>)', r'<a href="%s">\1</a>' % 'http://kernel.ubuntu.com/reports/sru-report.html', status)
-
         if first:
             cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status, 'spin': spin })
             first = False
