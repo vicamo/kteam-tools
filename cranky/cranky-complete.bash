@@ -31,6 +31,7 @@ _cranky() {
 		"pull-source -h --help"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"promote-snap -h --help --dry-run --debug"
+		"review-master-changes -h --help"
 	)
 	if [ "$COMP_CWORD" -eq 1 ]; then
 		for cmd in "${cmds[@]}"; do
