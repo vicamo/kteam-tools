@@ -2,6 +2,9 @@
 export LC_ALL=C.UTF-8
 
 cranky_cmd="${P:-$(basename "$0")}"
+default_git_cmd="git log --oneline"
+default_exclude="UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"
+
 usage() {
 	cat << EOF
 Usage: ${cranky_cmd} [-h|--help]
@@ -12,20 +15,44 @@ should be used as a guide for things that might need to be ported to a
 derivative.
 
 Optional arguments:
+  -g, --git-cmd         Git command used to list the changes (default:
+                        "$default_git_cmd")
+  -x, --exclude         Extended regular expression to exclude commits
+                        by commit message (default: "$default_exclude")
+  -a, --all             Show all commits (same as -x "").
   -h, --help            Show this help message and exit.
 
 Examples:
   List changes in the base kernel since the last release:
     \$ ${cranky_cmd}
 
+  Do not exclude changes as "Start new release" and "link-to-tracker":
+    \$ ${cranky_cmd} -a
+
+  Use tig to navigate through the listed commits:
+    \$ ${cranky_cmd} -g tig
+
 EOF
 }
 
+git_cmd="$default_git_cmd"
+exclude="$default_exclude"
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 		-h|--help)
 			usage
 			exit 0
+			;;
+		-g|--git_cmd)
+			shift
+			git_cmd="$1"
+			;;
+		-x|--exclude)
+			shift
+			exclude="$1"
+			;;
+		-a|--all)
+			exclude=""
 			;;
 		*)
 			usage
@@ -117,5 +144,9 @@ fi
 
 echo "Listing changes in \"${DEBIAN_MASTER}/\" since $base_tag..."
 echo
-git log --oneline FETCH_HEAD.. -- "${DEBIAN_MASTER}/" |
-	grep -vP 'UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)'
+
+exclude_arg=()
+if [ "$exclude" != '' ]; then
+	exclude_arg=('--invert-grep' '-E' "--grep=$exclude")
+fi
+$git_cmd "${exclude_arg[@]}" FETCH_HEAD.. -- "${DEBIAN_MASTER}/"
