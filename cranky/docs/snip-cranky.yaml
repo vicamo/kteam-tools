@@ -30,6 +30,13 @@ base-path: '~/canonical/kernel/ubuntu'
   # The directory where the logfiles are written to
   #logdir: /path/to/logdir
 
+# cranky-review-master-changes
+#review-master-changes
+  # Extended regular expression to exclude commits based on the commit message
+  #exclude: "UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"
+  # Command used to list the master kernel commits
+  #git-cmd: "git log --oneline"
+
 # Path to source code directories
 #
 # The relative paths to the git repos of the different packages. The paths can

@@ -32,11 +32,27 @@ Examples:
   Use tig to navigate through the listed commits:
     \$ ${cranky_cmd} -g tig
 
+Configuration file:
+  ~/.cranky is a yaml format configuration file where the optional commandline
+  options can be specified. Note that options specified via the commandline
+  take precedence over options from the configuration file.
+
+  Example ~/.cranky section:
+  ---
+    review-master-changes:
+      git-cmd: '$default_git_cmd'
+      exclude: '$default_exclude'
+
 EOF
 }
 
-git_cmd="$default_git_cmd"
-exclude="$default_exclude"
+# Load values from the config file and fallback to the default values
+here=$(dirname "$(readlink -f "$0")")
+git_cmd=$("$here/cranky-shell-helper" review-master-changes git-cmd)
+git_cmd="${git_cmd:-$default_git_cmd}"
+exclude=$("$here/cranky-shell-helper" review-master-changes exclude)
+exclude="${exclude:-$default_exclude}"
+
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 		-h|--help)

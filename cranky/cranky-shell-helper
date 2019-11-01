@@ -140,7 +140,7 @@ Helper program for getting cranky config and handle data from shell scripts.
     subparser.set_defaults(func=list_handles)
 
     # cranky-<foo> config options subparser
-    for command in ("clone", "test-build"):
+    for command in ("clone", "test-build", "review-master-changes"):
         subparser = subparsers.add_parser(command,
                                           help="Print config options for cranky-%s" % command)
         subparser.add_argument("key", nargs='?', help="Print only the specified config key")
