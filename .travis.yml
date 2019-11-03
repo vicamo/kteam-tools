@@ -11,6 +11,7 @@ env:
   - SUITE=bionic ARCH=amd64
   - SUITE=disco ARCH=amd64
   - SUITE=eoan ARCH=amd64 REMOVE_SNAPCRAFT=1
+  - SUITE=focal ARCH=amd64 REMOVE_SNAPCRAFT=1
 
 branches:
   only:
