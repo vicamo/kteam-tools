@@ -1255,6 +1255,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
+            routing: prerelease
             packages:
                 linux-aws-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.3-next']
@@ -1647,6 +1648,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
+            routing: prerelease
             packages:
                 linux-oracle-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.3-next']
