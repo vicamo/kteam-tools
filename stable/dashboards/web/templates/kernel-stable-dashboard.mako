@@ -66,7 +66,7 @@ def bite_format(thing_prefix, payload, thing_in):
     if len(thing_in) != 0:
         if payload[-2:] not in ('', '  '):
             bite += '  '
-        bite += 'in: ' + ','.join(thing_in)
+        bite += 'in: ' + __coloured('/', 'silver').join(thing_in)
     return bite
 
 # tagged_block
@@ -87,6 +87,20 @@ def tagged_block_valid(key, value, colour):
             block = '<a href="{}">{}</a>'.format(attrs[key], block)
         return block
 
+def add_in(thing_in, where, state):
+    in_colours = {
+        'New'           : 'silver',
+        'Confirmed'     : 'silver',
+        'In Progress'   : 'orange',
+        'Fix Committed' : 'orange',
+        'Fix Released'  : 'default',
+    }
+    colour = in_colours.get(state)
+    if colour is not None:
+        if colour != 'default':
+            where = __coloured(where, colour)
+        thing_in.append(where)
+
 # status_bites
 #
 def __status_bites(bug, attrs):
@@ -97,37 +111,31 @@ def __status_bites(bug, attrs):
 
     # Report Debs release progress -- run through the prepare-package
     # tasks and find the more retrograde one and report on that.
-    prep_status = 'n/a'
-    for prep_task in sorted(bug.get('reason', {}).keys()):
-        if not prep_task.startswith('prepare-package'):
-            continue
-        prep_status = __task_status(bug, prep_task)
-        if prep_status in ('Invalid', 'Fix Released'):
-            continue
-        prep_status = __task_status(bug, prep_task)
-        break
+    prep_states = {}
+    for task, task_data in bug.get('task', {}).items():
+        if task.startswith('prepare-package'):
+            prep_states[task_data['status']] = task
+    for prep_status in ['In Progress', 'Fix Committed', 'Confirmed', 'New', 'Fix Released']:
+        if prep_status in prep_states:
+            prep_task = prep_states[prep_status]
+            break
 
     if bug['variant'] in ('debs', 'combo'):
         thing_prefix = 'd:'
         security_status = __task_status(bug, 'promote-to-security')
         updates_status  = __task_status(bug, 'promote-to-updates')
         proposed_status = __task_status(bug, 'promote-to-proposed')
-        if prep_status in ('Fix Committed', 'Fix Released'):
-            thing_in.append('ppa')
-        if proposed_status in ('Fix Released'):
-            thing_in.append('proposed')
-        if updates_status in ('Fix Released'):
-            thing_in.append('updates')
-        if security_status in ('Fix Released'):
-            thing_in.append('security')
+        add_in(thing_in, 'ppa', prep_status)
+        add_in(thing_in, 'proposed', proposed_status)
+        add_in(thing_in, 'updates', updates_status)
+        add_in(thing_in, 'security', security_status)
 
     # Report Snap release progress.
     if bug['variant'] == 'snap-debs':
         thing_prefix = 's:'
         for risk in ['edge', 'beta', 'candidate', 'stable']:
             status = __task_status(bug, 'snap-release-to-' + risk)
-            if status == 'Fix Released':
-                thing_in.append(risk)
+            add_in(thing_in, risk, status)
 
     # debs: being prepared?
     retval = ''
