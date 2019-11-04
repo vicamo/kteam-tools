@@ -67,6 +67,8 @@ def bite_format(thing_prefix, payload, thing_in):
         if payload[-2:] not in ('', '  '):
             bite += '  '
         bite += 'in: ' + __coloured('/', 'silver').join(thing_in)
+        # We have consumed the thing_in specifier, clear it out.
+        thing_in[:] = []
     return bite
 
 # tagged_block
@@ -149,7 +151,6 @@ def __status_bites(bug, attrs):
         retval = __coloured('Uploaded by: %s' % (__assignee(bug, prep_task)), '#1496bb')
     if retval != '':
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     # debs: testing status mashup.
     automated_testing_status = __task_status(bug, 'automated-testing')
@@ -182,7 +183,6 @@ def __status_bites(bug, attrs):
         retval += tagged_block_valid('vt:', verification_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     # snaps: being prepared?
     retval = ''
@@ -197,7 +197,6 @@ def __status_bites(bug, attrs):
         retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
     if retval != '':
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
     promote_to = []
     for risk in ('beta', 'candidate', 'stable'):
         promote_status = __task_status(bug, 'snap-release-to-' + risk)
@@ -206,7 +205,6 @@ def __status_bites(bug, attrs):
     if len(promote_to) > 0:
         retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'darkorange')
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     # snaps: testing status mashup.
     certification_testing_status = __task_status(bug, 'snap-certification-testing')
@@ -227,7 +225,6 @@ def __status_bites(bug, attrs):
         retval += tagged_block_valid('qa:', qa_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     # signoffs: report signoffs together..
     security_signoff_status = __task_status(bug, 'security-signoff')
@@ -248,7 +245,6 @@ def __status_bites(bug, attrs):
         retval += tagged_block_valid('<span title="Stakeholder Signoff">Ss:</span>', stakeholder_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     # Run the list of reasons swm is reporting and emit those that do not overlap with testing.
     status_colour = {
@@ -275,7 +271,6 @@ def __status_bites(bug, attrs):
                  line= line[:80] + '...'
             line = __coloured(line, colour)
             bites.append(bite_format(thing_prefix_wrap, line, thing_in))
-            thing_in = []
             thing_prefix_wrap = ''
 
     # We have nothing to say ... so use the phase as a hint.
@@ -286,7 +281,6 @@ def __status_bites(bug, attrs):
         retval = __coloured(retval, colour)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
-        thing_in = []
 
     return bites
 
