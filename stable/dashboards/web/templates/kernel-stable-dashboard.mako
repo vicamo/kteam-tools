@@ -52,7 +52,7 @@ def __assignee(bug, task_name):
 <%
 
 def __coloured(msg, colour='black'):
-    return '<span style="color: %s;font-weight: bold">%s</span>' % (colour, msg)
+    return '<span style="color: %s">%s</span>' % (colour, msg)
 
 %>
 <%
