@@ -10,7 +10,7 @@ env:
   - SUITE=xenial ARCH=amd64
   - SUITE=bionic ARCH=amd64
   - SUITE=disco ARCH=amd64
-  - SUITE=eoan ARCH=amd64
+  - SUITE=eoan ARCH=amd64 REMOVE_SNAPCRAFT=1
 
 branches:
   only:
@@ -29,6 +29,9 @@ addons:
 
 install:
 - git clone git://kernel.ubuntu.com/ubuntu/kteam-tools ~/kteam-tools
+- if test -n "$REMOVE_SNAPCRAFT"; then
+    cat patches/chroot-setup-remove-snapcraft-from-deps.patch | (cd ~/kteam-tools; patch -p1);
+  fi
 
 before_script:
 - cat /proc/sys/fs/binfmt_misc/qemu-*
