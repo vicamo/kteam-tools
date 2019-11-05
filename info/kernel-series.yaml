@@ -1498,28 +1498,6 @@
                     - gke-d1903-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-gcp-edge:
-            packages:
-                #linux-gcp-edge:
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-edge-next']
-                linux-meta-gcp-edge:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-edge']
-                #linux-signed-gcp-edge:
-                #    type: signed
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-edge']
-            supported: true
-            #backport: true
-            derived-from: [ '18.04', 'linux-gcp' ]
-            testing:
-                flavours:
-                    gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
-                        clouds: ['gcp']
-            invalid-tasks: [ 'certification-testing' ]
-
         linux-kvm:
             packages:
                 linux-kvm:
