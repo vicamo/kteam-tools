@@ -11,6 +11,7 @@ env:
   - SUITE=bionic ARCH=amd64
   - SUITE=disco ARCH=amd64
   - SUITE=eoan ARCH=amd64 REMOVE_SNAPCRAFT=1
+  - SUITE=focal ARCH=amd64 REMOVE_SNAPCRAFT=1
 
 branches:
   only:
@@ -35,6 +36,7 @@ install:
 
 before_script:
 - cat /proc/sys/fs/binfmt_misc/qemu-*
+- test -e "/usr/share/debootstrap/scripts/${SUITE}" || sudo ln -sf gutsy "/usr/share/debootstrap/scripts/${SUITE}"
 
 script:
 - sudo mkdir -p /usr3/chroots
