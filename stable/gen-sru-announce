@@ -66,7 +66,8 @@ class TheApp(object):
         length = release_end - cycle_start
         length = int(length.days / 7)
 
-        return (release_end.strftime('%Y.%m.%d'),
+        return (cycle_start,
+                cycle_end,
                 cycle_start.strftime('%d-%b'),
                 cycle_end.strftime('%d-%b'),
                 length,
@@ -81,7 +82,7 @@ class TheApp(object):
     # print_cycle
     #
     def print_cycle(s, layout):
-        (_, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+        (_, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
         print('')
         print('cycle: %s through %s (%s weeks)' % (cycle_start, cycle_end, length))
@@ -94,16 +95,16 @@ class TheApp(object):
 
     # Print the cycle dates as HTML table
     #
-    def print_cycle_html(s, layout):
-        (_, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+    def print_cycle_html(s, layout, variant=''):
+        (_, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
-        print('        <td width="50%">')
+        print('        <td width="33%">')
         print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4"><h2>%s through %s (%s weeks)<h2></td></tr>' % (cycle_start, cycle_end, length))
-        print('                <tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>&nbsp;</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (patch_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>%s</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (prep_start, prep_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>%s</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % (test_start, test_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="12%%"><h3>&nbsp;</h3></td>   <td width="12%%"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % (release_end))
+        print('                <tr> <td colspan="4" style="text-align: center"><h2>%s through %s<br>%s (%s weeks)</h2></td></tr>' % (cycle_start, cycle_end, variant, length))
+        print('                <tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>&nbsp;</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (patch_end))
+        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (prep_start, prep_end))
+        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % (test_start, test_end))
+        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>&nbsp;</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % (release_end))
         print('            </table>')
         print('        </td>')
 
@@ -122,27 +123,42 @@ class TheApp(object):
     def main(s, args):
         retval = 0
 
-        layout = s.layout_cycle(args.date)
-        layout2 = s.layout_cycle(layout[0])
+        sc = SruCycle()
 
-        sd = s.sd(args.date)
+        layout_curr = s.layout_cycle(args.date)
+        days_prev = 0
+        while days_prev < 70:
+            days_prev += 7
+            date_prev = (layout_curr[0] - timedelta(days=days_prev)).strftime('%Y.%m.%d')
+            sru_cycle = sc.lookup_cycle(date_prev)
+            if sru_cycle:
+                break
+        if sru_cycle:
+            layout_prev = s.layout_cycle(date_prev)
+        else:
+            layout_prev = None
+            print("WARNING: no previous cycle\n", file=sys.stderr)
+        date_next = (layout_curr[1] + timedelta(days=1)).strftime('%Y.%m.%d')
+        layout_next = s.layout_cycle(date_next)
 
         if args.html:
             print('<table border="0" width="100%"> <!-- -->')
             print('    <tr>')
-            s.print_cycle_html(layout)
-            s.print_cycle_html(layout2)
+            if layout_prev is not None:
+                s.print_cycle_html(layout_prev)
+            s.print_cycle_html(layout_curr, 'Current Cycle')
+            s.print_cycle_html(layout_next)
             print('    </tr>')
             print('</table>')
         else:
             print('To: Kernel SRU Announcements <kernel-sru-announce@lists.ubuntu.com>, '
                   'Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>')
             print('Subject: A new SRU cycle started...')
-            s.print_cycle(layout)
+            s.print_cycle(layout_curr)
             print('')
             s.print_kernel_versions()
             print('')
-            s.print_cycle(layout2)
+            s.print_cycle(layout_next)
 
         return retval
 
