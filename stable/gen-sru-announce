@@ -100,11 +100,11 @@ class TheApp(object):
 
         print('        <td width="33%">')
         print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4" style="text-align: center"><h2>%s through %s<br>%s (%s weeks)</h2></td></tr>' % (cycle_start, cycle_end, variant, length))
-        print('                <tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>&nbsp;</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Last day for kernel commits for this cycle</h3></td> </tr>' % (patch_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Kernel prep week</h3></td>                           </tr>' % (prep_start, prep_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Bug verification & Regression testing</h3></td>      </tr>' % (test_start, test_end))
-        print('<tr> <td width="5%%">&nbsp;</td>   <td width="15%%" style="white-space:nowrap;"><h3>&nbsp;</h3></td>   <td width="15%%" style="white-space:nowrap;"><h3>%s</h3></td>   <td><h3>Release to -updates</h3></td>                        </tr>' % (release_end))
+        print('                <tr> <td colspan="4" class="sru-title">%s through %s<br>%s (%s weeks)</td></tr>' % (cycle_start, cycle_end, variant, length))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td>   <td>Last day for kernel commits for this cycle</td> </tr>' % (patch_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>   <td>Kernel prep week</td>                           </tr>' % (prep_start, prep_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>   <td>Bug verification & Regression testing</td>      </tr>' % (test_start, test_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td>   <td>Release to -updates</td>                        </tr>' % (release_end))
         print('            </table>')
         print('        </td>')
 
