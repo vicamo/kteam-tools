@@ -96,6 +96,7 @@ def add_in(thing_in, where, state):
         'In Progress'   : 'orange',
         'Fix Committed' : 'orange',
         'Fix Released'  : 'default',
+        'Incomplete'    : 'red',
     }
     colour = in_colours.get(state)
     if colour is not None:
