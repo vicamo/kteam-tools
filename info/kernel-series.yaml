@@ -152,6 +152,7 @@
     codename: focal
     development: true
     supported: false
+    lts: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
