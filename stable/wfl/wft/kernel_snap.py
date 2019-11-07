@@ -90,6 +90,7 @@ class SnapReleaseToEdge(KernelSnapBase):
             retval = True
         else:
             cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+            s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
 
         cleave(s.__class__.__name__ + '._new (%s)' % (retval))
         return retval
@@ -147,6 +148,7 @@ class SnapReleaseToBeta(KernelSnapBase):
 
             if s.debs_bug.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
                 cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
                 break
 
             s.task.status = 'Confirmed'
@@ -282,6 +284,7 @@ class SnapReleaseToStable(KernelSnapBase):
 
             if s.debs_bug.tasks_by_name['promote-to-updates'].status not in ['Fix Released', 'Invalid']:
                 cinfo('    task promote-to-updates is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-to-updates'
                 break
 
             if (s.debs_bug.tasks_by_name['promote-to-updates'].status == 'Invalid'
