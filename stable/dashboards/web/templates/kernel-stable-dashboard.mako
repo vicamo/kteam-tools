@@ -257,8 +257,7 @@ def __status_bites(bug, attrs):
         }
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
-        if ((task.startswith('prepare-package') or
-                task.startswith('snap-release-to-')) and
+        if (task.startswith('prepare-package') and
                 not reason.startswith('Stalled -- ')):
             continue
         if task.endswith('-testing') or task.endswith('-signoff'):
