@@ -188,6 +188,13 @@ class PromoteFromTo(Promoter):
                     s.task.reason = '{} -- review in progress'.format(
                         s.task.reason_state('Ongoing', timedelta(hours=4)))
                 break
+
+            # If we are marked broken report this and hold.
+            if s.task.status == 'Incomplete':
+                s.task.reason = 'Stalled -- copy FAILED'
+                break
+
+            # If they are now all built ...
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
                 failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
                 state = 'Ongoing'
