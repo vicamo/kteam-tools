@@ -42,9 +42,9 @@ addons:
 
 install:
 - git clone git://kernel.ubuntu.com/ubuntu/kteam-tools ~/kteam-tools
-- if test -n "$REMOVE_SNAPCRAFT"; then
-    cat patches/chroot-setup-remove-snapcraft-from-deps.patch | (cd ~/kteam-tools; patch -p1);
-  fi
+- PATCHES=$(find patches/common -name \*.patch);
+  test -z "${REMOVE_SNAPCRAFT}" || PATCHES="${PATCHES} patches/chroot-setup-remove-snapcraft-from-deps.patch";
+  for patch in ${PATCHES}; do cat ${patch} | (cd ~/kteam-tools; patch -p1); done
 
 before_script:
 - cat /proc/sys/fs/binfmt_misc/qemu-*
