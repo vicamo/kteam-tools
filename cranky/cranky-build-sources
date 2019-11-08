@@ -98,6 +98,10 @@ while [ ${#} -gt 0 ] ; do
 		--build-opts)
 			shift
 			IFS=':' read -r type opts <<< "$1"
+			if [ -v "build_opts[$type]" ]; then
+				echo "$P: Only a single --build-opts per type should be provided!" >&2
+				exit 2
+			fi
 			build_opts[$type]="$opts"
 			;;
 		-*)
