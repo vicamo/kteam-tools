@@ -594,6 +594,12 @@ class MonitorStatusRefreshTime:
     def __init__(self, status_path, bs=None):
         self.status_path = status_path
 
+    def status_key(self, item):
+        (bug_id, bug_data) = item
+
+        # Sort by lowest last scanned date.
+        return (bug_data.get('manager', {}).get('time-scanned', ''), bug_id)
+
     def changed(self):
         changed = set()
         start_date = datetime.utcnow() # - timedelta(minutes=60)
@@ -601,7 +607,8 @@ class MonitorStatusRefreshTime:
         with open(self.status_path) as rfd:
             status = yaml.safe_load(rfd)
 
-        for bug_id, bug_data in status.items():
+        scanned_limit = 8
+        for bug_id, bug_data in sorted(status.items(), key=self.status_key):
             if 'refresh' in bug_data:
                 (when, why) = bug_data['refresh']
                 print("REFRESH", bug_id, when, when - start_date, when < start_date, "({})".format(why))
@@ -614,8 +621,9 @@ class MonitorStatusRefreshTime:
             scanned = bug_data.get('manager', {}).get('time-scanned')
             if scanned is not None:
                 scan_refresh = scanned + timedelta(hours=4)
-                if scan_refresh < start_date:
+                if scan_refresh < start_date and scanned_limit > 0:
                     print("SCANNED", bug_id, scan_refresh, scan_refresh - start_date, scan_refresh < start_date)
+                    scanned_limit -= 1
                     changed.add(bug_id)
 
         #print("REFRESH", changed)
