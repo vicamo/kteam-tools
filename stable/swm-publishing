@@ -7,7 +7,7 @@
 
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from subprocess import Popen
 #from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.parse import urlsplit, urlunsplit
@@ -609,6 +609,13 @@ class MonitorStatusRefreshTime:
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
+                    changed.add(bug_id)
+
+            scanned = bug_data.get('manager', {}).get('time-scanned')
+            if scanned is not None:
+                scan_refresh = scanned + timedelta(hours=4)
+                if scan_refresh < start_date:
+                    print("SCANNED", bug_id, scan_refresh, scan_refresh - start_date, scan_refresh < start_date)
                     changed.add(bug_id)
 
         #print("REFRESH", changed)
