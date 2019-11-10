@@ -106,7 +106,7 @@ class SruCycle:
             data = response.read()
             if not isinstance(data, str):
                 data = data.decode('utf-8')
-            cls._data = yaml.load(data)
+            cls._data = yaml.safe_load(data)
 
     def __init__(self, url=None, data=None, use_local=False):
         if data or url:
@@ -115,7 +115,7 @@ class SruCycle:
                 data = response.read()
             if not isinstance(data, str):
                 data = data.decode('utf-8')
-            self._data = yaml.load(data)
+            self._data = yaml.safe_load(data)
         else:
             self.__load_once(self._url_local if use_local else self._url)
 
