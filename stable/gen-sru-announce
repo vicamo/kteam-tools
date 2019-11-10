@@ -93,18 +93,35 @@ class TheApp(object):
         print('         %s   Release to -updates.' % (release_end))
         print('')
 
+
+    # print_cycle_phases_html
+    #
+    def print_cycle_phases_html(s):
+        print('        <td width="15%">')
+        print('            <table width="100%" class="sru-caption"> <!-- -->')
+        print('                <tr> <td colspan="4" class="sru-title">&nbsp;</td>       </tr>')
+        print('                <tr> <td>Last day for kernel commits for this cycle</td> </tr>')
+        print('                <tr> <td>Kernel prep week</td>                           </tr>')
+        print('                <tr> <td>Bug verification &amp; Regression testing</td>  </tr>')
+        print('                <tr> <td>Release to -updates</td>                        </tr>')
+        print('            </table>')
+        print('        </td>')
+
     # Print the cycle dates as HTML table
     #
-    def print_cycle_html(s, layout, variant=''):
-        (_, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
+    def print_cycle_html(s, layout, current=False):
+        (cycle_date, _, cycle_start, cycle_end, length, patch_end, prep_start, prep_end, test_start, test_end, release_end) = layout
 
-        print('        <td width="33%">')
-        print('            <table width="100%"> <!-- -->')
-        print('                <tr> <td colspan="4" class="sru-title">%s through %s<br>%s (%s weeks)</td></tr>' % (cycle_start, cycle_end, variant, length))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td>   <td>Last day for kernel commits for this cycle</td> </tr>' % (patch_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>   <td>Kernel prep week</td>                           </tr>' % (prep_start, prep_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>   <td>Bug verification & Regression testing</td>      </tr>' % (test_start, test_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td>   <td>Release to -updates</td>                        </tr>' % (release_end))
+        cycle_title = cycle_date.strftime('%Y.%m.%d')
+        cycle_class = "sru-current" if current else "sru-other"
+
+        print('        <td width="12%">')
+        print('            <table width="100%%" class="%s"> <!-- -->' % cycle_class)
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td colspan="2" class="sru-title">%s<br>(%s weeks)</td>         </tr>' % (cycle_title, length))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td> </tr>' % (patch_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (prep_start, prep_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (test_start, test_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td> </tr>' % (release_end))
         print('            </table>')
         print('        </td>')
 
@@ -142,11 +159,12 @@ class TheApp(object):
         layout_next = s.layout_cycle(date_next)
 
         if args.html:
-            print('<table border="0" width="100%"> <!-- -->')
-            print('    <tr>')
+            print('<table border="0" class="sru"> <!-- -->')
+            print('    <tr style="text-align: center;">')
+            s.print_cycle_phases_html()
             if layout_prev is not None:
                 s.print_cycle_html(layout_prev)
-            s.print_cycle_html(layout_curr, 'Current Cycle')
+            s.print_cycle_html(layout_curr, current=True)
             s.print_cycle_html(layout_next)
             print('    </tr>')
             print('</table>')
