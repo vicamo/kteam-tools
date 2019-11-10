@@ -13,7 +13,7 @@ import re
 import sys
 import yaml
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from trellotool.trellotool import TrelloTool
 
@@ -155,6 +155,17 @@ if __name__ == '__main__':
                 ##print("UNKNOWN TRACKER", tracker_key)
                 dest_list = ['Done', 'lost+found']
                 dest_why = 'Unknown Tracker'
+
+                # We create cards before the associated trackers, therefore we should
+                # leave cards be if they are shiney.  Sadly the cards have no creation
+                # date, so we use the modification time.  If the card was changed in the
+                # last 30m we will leave it alone.
+                modified = datetime.strptime(card_entry['dateLastActivity'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                now = datetime.utcnow()
+                age = now - modified
+                if age < timedelta(minutes=30):
+                    print("IGNORE: '{}' {} lost+found candidate too new ({})".format(card_name, list_name, age))
+                    continue
 
             # deb-prepare tasks
             elif which == 'debs-prepare':
