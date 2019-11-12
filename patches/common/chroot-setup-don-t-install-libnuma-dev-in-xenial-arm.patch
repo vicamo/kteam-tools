@@ -1,0 +1,31 @@
+From 6466495e509770bc0af01c1adab8e3999d7b5b1c Mon Sep 17 00:00:00 2001
+From: You-Sheng Yang <vicamo@gmail.com>
+Date: Fri, 8 Nov 2019 16:37:11 +0800
+Subject: [PATCH] chroot-setup: don't install libnuma-dev in xenial-armhf
+
+libnuma-dev is not available in xenial-armhf. Skip it.
+
+See: https://packages.ubuntu.com/xenial/libnuma-dev
+---
+ chroot-setup/scripts/build-mkschroot | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/chroot-setup/scripts/build-mkschroot b/chroot-setup/scripts/build-mkschroot
+index 3e3c4957..87bb556f 100755
+--- a/chroot-setup/scripts/build-mkschroot
++++ b/chroot-setup/scripts/build-mkschroot
+@@ -191,7 +191,10 @@ xenial|bionic|cosmic|disco)
+ esac
+ case "$SUITE" in
+ xenial)
+-	ADDPKG="$ADDPKG libnuma-dev"
++	# libnuma-dev does not exist in xenial armhf
++	if [ "$ARCH" != "armhf" ] ; then
++		ADDPKG="$ADDPKG libnuma-dev"
++	fi
+ 	;;
+ esac
+ 
+-- 
+2.20.1
+
