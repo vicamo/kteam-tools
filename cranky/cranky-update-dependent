@@ -15,17 +15,22 @@ directory and executes it. It parses the output of 'update-version' to extract
 the 'git commit' line and runs that command to commit the changes.
 
 Optional arguments:
-  -h, --help  Show this help text and exit.
+  -h, --help            Show this help text and exit.
+  --ignore-abi-check    Ignore ABI check (when preparing re-spins).
 EOF
 }
 
 here=$(dirname "$(readlink -f "${0}")")
 
+ignore_abi_check=
 while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
 			exit
+			;;
+		--ignore-abi-check)
+			ignore_abi_check=1
 			;;
 		*)
 			echo "Unexpected argument: ${1}" >&2
@@ -79,13 +84,26 @@ if [ "${main_distro}" != "${dep_distro}" ] ; then
 fi
 
 # Sanity check: The main package ABI version must be higher
+upload_bump=0
 if dpkg --compare-versions "${main_abi}" le "${dep_abi_dash}" ; then
 	echo "Main package ABI version is not higher: ${main_abi} (<= ${dep_abi})" >&2
-	exit 1
+	if [ -z "$ignore_abi_check" ]; then
+		echo "Use --ignore-abi-check to proceed anyway."
+		exit 1
+	fi
+	upload_bump=1
 fi
 
 # Update the changelog and capture stdout
 readarray -t stdout < <(./update-version "${main_path}")
+
+# Usually `update-version' will produce a changelog version without entries
+# for a re-spin (new version with the same ABI). In that case, add a generic
+# changelog entry.
+if [ "$upload_bump" -gt 0 ]; then
+	echo -e "\\033[1;31mWarning: Please review the changelog and add a new entry if applicable!\\033[0m" >&2
+	dch -a 'Bump upload number.'
+fi
 
 # Cycle through stdout, print each line and look for the 'git commit' line
 commit_cmd=

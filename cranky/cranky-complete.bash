@@ -25,7 +25,7 @@ _cranky() {
 		"spin -h --help -d --dry-run --devel HANDLE"
 		"tag -h --help -v --verbose -f --force"
 		"test-build -h --help -a --arch -c --commit -d --dry-run -f --fail -p --purge -t --target"
-		"update-dependent -h --help"
+		"update-dependent -h --help --ignore-abi-check"
 		"update-snap -h --help --dry-run -u --updates -t --no-tags"
 		"updateconfigs -h --help -c --clean"
 		"pull-source -h --help"
