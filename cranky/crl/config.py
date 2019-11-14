@@ -24,7 +24,7 @@ class Config:
                 data = yfd.read()
 
         if data is not None:
-            data = yaml.load(data)
+            data = yaml.safe_load(data)
         else:
             data = {}
 
