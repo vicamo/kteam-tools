@@ -115,7 +115,7 @@ class UpdateSnap():
         # open and parse the local snapcraft.yaml file
         try:
             with open(self.scy_file_name, 'r') as scy_file:
-                self.scy = yaml.load(scy_file)
+                self.scy = yaml.safe_load(scy_file)
         except:
             cerror("ERROR: Could not open and parse file %s" % self.scy_file_name)
             sys.exit(1)
