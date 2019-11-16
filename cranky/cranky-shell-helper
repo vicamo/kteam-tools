@@ -88,6 +88,16 @@ def list_handles(args):
                 continue
             print("{}:{}".format(series.codename, source.name))
 
+def list_variants(args):
+    try:
+        handle = Handle().lookup_set(args.handle)
+    except HandleError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+    if handle.source.variants is not None:
+        for variant in handle.source.variants:
+            print(variant)
+
 if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
@@ -138,6 +148,13 @@ Helper program for getting cranky config and handle data from shell scripts.
     subparser = subparsers.add_parser("list-handles",
                                       help="Print the list of supported handles")
     subparser.set_defaults(func=list_handles)
+
+    # list variants
+    subparser = subparsers.add_parser("list-variants",
+                                      help="Print variants for the given handle")
+    subparser.add_argument("handle",
+                           help="<series>:<package> handle, or path to source tree.")
+    subparser.set_defaults(func=list_variants)
 
     # cranky-<foo> config options subparser
     for command in ("clone", "test-build", "review-master-changes"):
