@@ -302,6 +302,21 @@ class KernelSourceEntry:
         return versions[-1]
 
     @property
+    def variants(self):
+        if 'variants' in self._data:
+            return self._data['variants']
+
+        derived_from = self.derived_from
+        if derived_from is not None:
+            return derived_from.variants
+
+        copy_forward = self.copy_forward
+        if copy_forward is not None:
+            return copy_forward.variants
+
+        return None
+
+    @property
     def development(self):
         return self._data.get('development', self.series.development)
 
