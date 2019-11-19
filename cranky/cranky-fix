@@ -46,6 +46,11 @@ if [ "$type" != 'main' ]; then
 	fi
 fi
 
+if ! variants=$("$here/cranky-shell-helper" list-variants "."); then
+       echo "cranky-shell-helper failed"
+       exit 1
+fi
+
 bug="1786013"
 FIX_VERBOSE="0" \
 FIX_BUG="$bug" \
@@ -56,4 +61,5 @@ FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
 FIX_SERIES="$series" \
 FIX_SOURCE="$source" \
+FIX_VARIANTS="$variants" \
 	run-parts --regex '\.fix$' --exit-on-error --verbose "$here/fixes.d"

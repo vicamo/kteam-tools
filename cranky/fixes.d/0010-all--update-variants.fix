@@ -1,0 +1,33 @@
+#!/bin/bash -eu
+# update debian/variants
+
+# shellcheck disable=SC2046 source=./cranky/fixes.d/lib.sh
+. $(dirname "$0")/lib.sh
+
+# Only applies to main/meta trees.
+case "$FIX_TYPE" in
+main)
+	if [ ! -f debian/debian.env ] ; then
+		echo "${PWD} does not look like a kernel directory"
+		exit 1
+	fi
+	source debian/debian.env
+	VARIANTS="$DEBIAN/variants"
+	;;
+*)
+	VARIANTS="debian/variants"
+	;;
+esac
+
+if [ -n "$FIX_VARIANTS" ] ; then
+	TMP=$(mktemp "$VARIANTS".XXX)
+	echo "$FIX_VARIANTS" > "$TMP"
+	mv "$TMP" "$VARIANTS"
+else
+	# The new config is empty, purge any existing contents.
+	rm -f "$VARIANTS"
+fi
+
+msg="UBUNTU: [Packaging] update variants"
+commit "$msg" "$VARIANTS"
+exit 0
