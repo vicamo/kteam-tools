@@ -2022,7 +2022,7 @@
                 #linux-signed-azure-edge:
                 #    type: signed
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial', 'azure-edge']
-            supported: true
+            supported: false
             backport: true
             derived-from: [ '16.04', 'linux-azure' ]
             testing:
