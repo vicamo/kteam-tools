@@ -40,6 +40,12 @@ class HandleCore:
         self.base_path = os.path.expanduser(self.config.lookup('base-path',
                                 self.config.lookup('package-path.base-path', '')))   # noqa: E128
 
+        if self.base_path == '':
+            # Bail out if base-path is not set
+            raise HandleError("No 'base-path' option found in your .cranky config file. "
+                              "Check the config example in kteam-tools/cranky/docs/"
+                              "snip-cranky.yaml for more information.")
+
     def encode_directory(self, package):
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
