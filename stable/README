@@ -25,6 +25,15 @@ used.
 2. Install the wrapper:
     cd python-launchpadlib-toolkit;sudo ./setup.py install
 
+3. Install so-trello:
+   a) via snap (so-trello by shadowen)
+   b) via git clone lp:~apw/+git/so-trello
+4. Authenticate trellotool:
+   a) so-trello authenticate
+   b) visit the URL that gets printed copy that number
+   c) create ~/.trellotool with the following content:
+      trello_token: <number copied>
+
 
 Scripts
 ----------------------
