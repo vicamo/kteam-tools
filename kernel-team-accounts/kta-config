@@ -44,6 +44,8 @@ elif mode == 'repositories':
         for source in sorted(series.sources, key=lambda x: x.name):
             if not source.supported:
                 continue
+            if source.private:
+                continue
             if source.name == 'linux':
                 form = 'ubuntu-{series}{type}.git'
                 variant = ''
@@ -57,6 +59,9 @@ elif mode == 'repositories':
                 if url in url_seen:
                     continue
                 url_seen[url] = True
+
+                if '~ubuntu-kernel' not in url and '~canonical-kernel' not in url:
+                    continue
 
                 type = '-' + package.type if package.type is not None else ''
                 name = form.format(
