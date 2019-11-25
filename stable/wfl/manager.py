@@ -103,9 +103,12 @@ class WorkflowManager():
         with s.lock_bug(2):
             yield
 
-    def status_set(s, bugid, summary, modified=None):
+    def status_set(s, bugid, summary=False, modified=None):
         with s.lock_status():
             status = s.status_load()
+            # If we supply no summary assume we want it unchanged.
+            if not summary:
+                summary = status.get(bugid)
             if summary is not None:
                 # Pull forward persistent swm related state.
                 manager = summary['manager'] = status.get(bugid, {}).get('manager', {})
@@ -501,6 +504,7 @@ class WorkflowManager():
             modified = False
             for l in e.args:
                 cerror(e.__class__.__name__ + ': ' + l)
+            s.status_set(bugid, modified=False)
 
         cleave('WorkflowManager.crank')
         return rescan
