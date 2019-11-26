@@ -95,6 +95,10 @@ class SnapReleaseToEdge(KernelSnapBase):
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
             retval = True
+
+            # Attempt to apply replaces as we are ready to promote.
+            s.bug.dup_replaces()
+
         else:
             cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
             s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
