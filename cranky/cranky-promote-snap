@@ -230,7 +230,7 @@ Example: cranky-snap-promote bionic/linux-raspi2/pi-kernel
                 if rev == 'None':
                     cerror('# {}/{} needs to be produced'.format(snapname, channel))
                     continue
-                if scd[snapname].data[arch][channel][1] == rev:
+                if scd[snapname].data[arch].get(channel, [None, None])[1] == rev:
                     cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
                     continue
                 todo.setdefault(snapname, dict())
