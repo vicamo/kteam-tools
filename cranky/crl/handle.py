@@ -108,13 +108,16 @@ class HandleCore:
         except (DebianError, GitError) as e:
             raise HandleError("{}: bad directory handle -- {}".format(directory, e))
 
+        # Always use topmost entry for package name, even if unreleased
+        package = changelog[0]['package']
+
         if len(changelog) > 0 and changelog[0]['series'] == 'UNRELEASED':
             changelog.pop(0)
 
         if len(changelog) == 0:
             raise HandleError("{}: Unable to identify directory handle".format(directory))
 
-        return (changelog[0]['series'], changelog[0]['package'])
+        return (changelog[0]['series'], package)
 
 
 class HandleTree(HandleCore):
