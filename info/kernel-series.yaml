@@ -413,7 +413,7 @@
             snaps:
                 pc-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/+git/kernel-snaps-uc20', 'pc']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
                     gated: false
                     stable: true
                     qa: false
@@ -423,7 +423,7 @@
                         i386: ['20']
                         armhf: ['20']
                 pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/+git/kernel-snaps/uc20', 'pc-lowlatency']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
                     gated: false
                     stable: false
                     promote-to: [ 'edge' ]
@@ -454,7 +454,7 @@
             snaps:
                 pi-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/+git/kernel-snaps-uc20', 'pi']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
                     gated: false
                     stable: true
                     qa: false
