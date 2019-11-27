@@ -104,14 +104,15 @@ class Task():
             cinfo('  + created LP: #{}'.format(new_tbid))
 
             if old_tb is not None:
-                # Inherit all the derivatives set in tracking bug being replaced
-                for tbid in old_tb.derivative_bug_ids:
-                    if tbid not in ts.tbs:
-                        ts.tbs.add(tbid)
-                    tb = ts.tbs[tbid]
-                    cinfo('  + derivative {}/{}'.format(tb.target_series, tb.target_package))
-                    if dryrun is False:
-                        self.tb.derivative_add(tb)
+                # Initially, when we took care of all the parent/child linkage while the
+                # new tracking bugs were created, it made sense to inherit all childs of
+                # a tracking bug which was about to be replaced (duplicated). And since
+                # any childs of the new tracking bug were already created and had replaced
+                # the linkage in the old master bug already, this was the right thing.
+                # But now, the duplication is not done, so the old tracking bug can have
+                # children which the new tracking bug has replacements for.
+                # Apparently SWM does all this now when the actual duplication is done.
+                # So this gets no longer done here.
 
                 # We used to remove the old tracking bug as a derivative from the (old)
                 # master bug. This used to update the forward links in the master and
