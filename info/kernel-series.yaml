@@ -1723,6 +1723,26 @@
                         clouds: ['aws']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-fde:
+            routing:
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:canonical-kernel-team/uc18-fde-build', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/uc18-fde', 'Release']
+                proposed:
+                    - ['ppa:canonical-kernel-team/uc18-fde-proposed', 'Release']
+            packages:
+                linux-fde:
+                linux-meta-fde:
+                    type: meta
+                linux-signed-fde:
+                    type: signed
+            supported: false
+            private: true
+
 # 17.10 (artful)
 '17.10':
     codename: artful
