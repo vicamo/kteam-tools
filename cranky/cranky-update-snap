@@ -68,6 +68,9 @@ class UpdateSnap():
         # If we have no source yet, find it using the series and snap name.
         if self.source is None:
             for source in ks_series.sources:
+                copy_forward = source.copy_forward
+                if copy_forward is not None:
+                    source = copy_forward
                 snap = source.lookup_snap(self.name)
                 if snap is not None:
                     self.source = source.name
@@ -83,10 +86,16 @@ class UpdateSnap():
             sys.exit(1)
 
         # VALIDATION: confirm snap.
+        copy_forward = ks_source.copy_forward
+        if copy_forward is not None:
+            ks_source = copy_forward
         snap = ks_source.lookup_snap(self.name)
         if snap is None:
             cerror("ERROR: {} snap not found on {}:{}".format(self.name, self.series, self.source))
             sys.exit(1)
+
+        # Record the series in which we should look for the version.
+        self.series_version = ks_source.series.codename
 
     def get_published_ver(self, pkg_name, series, pocket):
         '''
@@ -98,7 +107,7 @@ class UpdateSnap():
             suite += '-' + pocket
         ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', suite, pkg_name])
         if not ret:
-            cerror("ERROR: No version available in -%s" % self.pocket)
+            cerror("ERROR: No version available in {}".format(suite))
             sys.exit(1)
 
         return ret.decode().strip().split('|')[1].strip()
@@ -148,7 +157,7 @@ class UpdateSnap():
         '''
         main method.
         '''
-        proposed_ver = self.get_published_ver(self.source, self.series, self.pocket)
+        proposed_ver = self.get_published_ver(self.source, self.series_version, self.pocket)
         if self.scy['version'] == proposed_ver:
             cerror("ERROR: No new version available in -%s" % self.pocket)
             sys.exit(1)
