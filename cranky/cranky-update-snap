@@ -23,6 +23,14 @@ class UpdateSnap():
         self.scy = None
         self.pocket = pocket
 
+        # open and parse the local snapcraft.yaml file
+        try:
+            with open(self.scy_file_name, 'r') as scy_file:
+                self.scy = yaml.safe_load(scy_file)
+        except:
+            cerror("ERROR: Could not open and parse file %s" % self.scy_file_name)
+            sys.exit(1)
+
     @property
     def series(self):
         return self.scy['parts']['kernel']['source'].rpartition('/')[2]
@@ -110,14 +118,6 @@ class UpdateSnap():
         '''
         main method.
         '''
-        # open and parse the local snapcraft.yaml file
-        try:
-            with open(self.scy_file_name, 'r') as scy_file:
-                self.scy = yaml.safe_load(scy_file)
-        except:
-            cerror("ERROR: Could not open and parse file %s" % self.scy_file_name)
-            sys.exit(1)
-
         source_package = self.lookup_source_package()
         if source_package is None:
             cerror("ERROR: Could not find source package for snap '%s'" % self.scy['name'])
