@@ -23,40 +23,59 @@ class UpdateSnap():
         self.scy = None
         self.pocket = pocket
 
+        self.name = None
+        self.series = None
+        self.source = None
+
         # open and parse the local snapcraft.yaml file
         try:
             with open(self.scy_file_name, 'r') as scy_file:
                 self.scy = yaml.safe_load(scy_file)
         except:
-            cerror("ERROR: Could not open and parse file %s" % self.scy_file_name)
+            cerror("ERROR: Could not open and parse file {}".format(self.scy_file_name))
             sys.exit(1)
 
-    @property
-    def series(self):
-        return self.scy['parts']['kernel']['source'].rpartition('/')[2]
+        # Pull out the name name.
+        self.name = self.scy['name']
 
-    def lookup_source_package(self):
-        '''
-        Lookup on the kernel series object for the source package of the kernel
-        snap by its name.
-        '''
-        series = self.ks.lookup_series(codename=self.series)
-        source_name = None
-
-        # If the same snap is produced by multiple sources, we set the name
-        # of the source in the make parameter section.
+        # Lookup the KERNEL_SOURCE identifier.  This is an (optional) source
+        # package name.
         for param in self.scy['parts']['kernel']['make-parameters']:
             if param.startswith('KERNEL_SOURCE='):
-                source_name = param.split('=', 1)[1]
+                self.source = param.split('=', 1)[1]
                 break
 
-        for source in series.sources:
-            if source_name is not None and source.name != source_name:
-                continue
-            snap = source.lookup_snap(self.scy['name'])
-            if snap is not None:
-                return source.name
-        return None
+        # Try and intuit it from the source git URL /+git/<series> data.
+        self.series = self.scy['parts']['kernel']['source'].rpartition('/')[2]
+
+        # VALIDATION: confirm series.
+        ks_series = self.ks.lookup_series(codename=self.series)
+        if ks_series is None:
+            cerror("ERROR: {} invalid series specified".format(self.series))
+            sys.exit(1)
+
+        # If we have no source yet, find it using the series and snap name.
+        if self.source is None:
+            for source in ks_series.sources:
+                snap = source.lookup_snap(self.name)
+                if snap is not None:
+                    self.source = source.name
+                    break
+            if self.source is None:
+                cerror("ERROR: {} snap not found in {}".format(self.name, self.series))
+                sys.exit(1)
+
+        # VALIDATION: confirm source.
+        ks_source = ks_series.lookup_source(self.source)
+        if ks_source is None:
+            cerror("ERROR: {} source not found in {}".format(self.source, self.series))
+            sys.exit(1)
+
+        # VALIDATION: confirm snap.
+        snap = ks_source.lookup_snap(self.name)
+        if snap is None:
+            cerror("ERROR: {} snap not found on {}:{}".format(self.name, self.series, self.source))
+            sys.exit(1)
 
     def get_published_ver(self, pkg_name, series, pocket):
         '''
@@ -118,12 +137,7 @@ class UpdateSnap():
         '''
         main method.
         '''
-        source_package = self.lookup_source_package()
-        if source_package is None:
-            cerror("ERROR: Could not find source package for snap '%s'" % self.scy['name'])
-            sys.exit(1)
-
-        proposed_ver = self.get_published_ver(source_package, self.series, self.pocket)
+        proposed_ver = self.get_published_ver(self.source, self.series, self.pocket)
         if self.scy['version'] == proposed_ver:
             cerror("ERROR: No new version available in -%s" % self.pocket)
             sys.exit(1)
