@@ -12,7 +12,7 @@ import logging
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
 from ktl.kernel_series import KernelSeries
-from ktl.log import cerror, cinfo
+from ktl.log import cerror, cwarn, cinfo
 
 class UpdateSnap():
     def __init__(self, pocket='proposed', no_tag=False, dry_run=False):
@@ -89,8 +89,8 @@ class UpdateSnap():
         copy_forward = ks_source.copy_forward
         if copy_forward is not None:
             ks_source = copy_forward
-        snap = ks_source.lookup_snap(self.name)
-        if snap is None:
+        self.snap = ks_source.lookup_snap(self.name)
+        if self.snap is None:
             cerror("ERROR: {} snap not found on {}:{}".format(self.name, self.series, self.source))
             sys.exit(1)
 
@@ -112,22 +112,27 @@ class UpdateSnap():
 
         return ret.decode().strip().split('|')[1].strip()
 
-    def update_snap_ver(self, version):
+    def update_snap(self, version, url):
         '''
         Update the snapcraft yaml file with the new version.
         '''
         with open(self.scy_file_name, 'r') as scy_file:
             scy_content = scy_file.read()
 
+        if self.scy['version'] != version:
+            scy_content = re.sub(r'version: .*', 'version: {}'.format(version), scy_content)
+            cinfo("INFO: update version from %s to %s" %
+                  (self.scy['version'], version))
+        if self.scy['parts']['kernel']['source'] != self.snap.repo.url:
+            scy_content = re.sub(r'( *source: ) *{}'.format(
+                re.escape(self.scy['parts']['kernel']['source'])),
+                r'\1{}'.format(url), scy_content)
+            cinfo("INFO: update url:\n      %s\n      %s" %
+                  (self.scy['parts']['kernel']['source'], self.snap.repo.url))
+
         if not self.dry_run:
-            scy_content = re.sub(r'version: .*', 'version: %s' % version, scy_content)
             with open(self.scy_file_name, 'w') as scy_file:
                 scy_file.write(scy_content)
-        else:
-            match = re.search(r'version: (.*)', scy_content)
-            curr_version = match.group(1)
-            cinfo("INFO: Dry run: would update %s from version '%s' to version '%s'" %
-                  (self.scy_file_name, curr_version, version))
 
     def get_commit_subject(self, version):
         '''
@@ -158,11 +163,12 @@ class UpdateSnap():
         main method.
         '''
         proposed_ver = self.get_published_ver(self.source, self.series_version, self.pocket)
-        if self.scy['version'] == proposed_ver:
-            cerror("ERROR: No new version available in -%s" % self.pocket)
+        if (self.scy['version'] == proposed_ver and
+                self.scy['parts']['kernel']['source'] == self.snap.repo.url):
+            cerror("ERROR: No new version available in -{}".format(self.pocket))
             sys.exit(1)
 
-        self.update_snap_ver(proposed_ver)
+        self.update_snap(proposed_ver, self.snap.repo.url)
         commit_msg = self.get_commit_subject(proposed_ver)
         (tag_name, tag_msg) = self.get_tag_from_commit(commit_msg)
         commit_cmd = "git commit -s -m '%s' -- %s" % (commit_msg, self.scy_file_name)
