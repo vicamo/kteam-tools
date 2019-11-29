@@ -492,6 +492,15 @@ class WorkflowManager():
                         cinfo(l, 'red')
             bug.save()
 
+            # Catch direct modification of the bug.  We would be asked to scan
+            # the bug but not ourselves modify it.
+            # XXX: do we need to track modified other than this?
+            if not modified:
+                modified_time = s.status_start.get(bugid, {}).get('manager', {}).get('time-modified')
+                if modified_time is not None and modified_time < lpbug.date_last_updated.replace(tzinfo=None):
+                    cinfo('    LP: #{} modified directly -- marking modified'.format(bugid), 'magenta')
+                    modified = True
+
             # Update the global status for this bug.
             s.status_set(bugid, bug.status_summary(), modified=modified)
 
