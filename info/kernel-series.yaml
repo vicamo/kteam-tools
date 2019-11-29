@@ -202,12 +202,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
             copy-forward: ['19.10', 'linux']
 
@@ -238,9 +236,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
 
@@ -259,9 +255,7 @@
             testing:
                 flavours:
                     oem-osp1:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
@@ -280,9 +274,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: ['19.10', 'linux-aws']
@@ -310,9 +302,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -336,9 +326,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: ['19.10', 'linux-gcp']
@@ -355,9 +343,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: ['19.10', 'linux-kvm']
@@ -380,9 +366,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: ['19.10', 'linux-oracle']
@@ -435,12 +419,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -480,9 +462,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
 
@@ -501,9 +481,7 @@
             testing:
                 flavours:
                     oem-osp1:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
@@ -522,9 +500,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -548,9 +524,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -573,9 +547,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -591,9 +563,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -615,9 +585,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -646,12 +614,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -680,9 +646,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
 
@@ -701,9 +665,7 @@
             testing:
                 flavours:
                     oem-osp1:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
@@ -719,9 +681,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -742,9 +702,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -764,9 +722,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -782,9 +738,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -803,9 +757,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -841,12 +793,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -875,9 +825,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem' ]
 
@@ -896,9 +844,7 @@
             testing:
                 flavours:
                     oem-osp1:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
@@ -914,9 +860,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -937,9 +881,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -959,9 +901,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -977,9 +917,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -998,9 +936,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: [ '18.04', 'linux-oracle' ]
@@ -1053,12 +989,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
@@ -1077,9 +1011,7 @@
             testing:
                 flavours:
                     hwe:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
         linux-hwe-edge:
@@ -1100,9 +1032,7 @@
             testing:
                 flavours:
                     hwe-edge:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1186,9 +1116,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
         linux-oem-osp1:
@@ -1210,9 +1138,7 @@
             testing:
                 flavours:
                     oem-osp1:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
         linux-aws:
@@ -1240,9 +1166,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1262,7 +1186,7 @@
             testing:
                 flavours:
                     aws:
-                        arches: ['amd64'] # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1283,7 +1207,7 @@
             testing:
                 flavours:
                     aws:
-                        arches: ['amd64']       # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1300,9 +1224,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1337,9 +1259,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -1365,7 +1285,7 @@
             testing:
                 flavours:
                     azure:
-                        arches: ['amd64']       # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -1399,9 +1319,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1424,7 +1342,7 @@
             testing:
                 flavours:
                     gcp:
-                        arches: ['amd64']       # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1453,9 +1371,7 @@
             testing:
                 flavours:
                     gke:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gke']
             swm:
                 gke-nvidia-packages:
@@ -1490,9 +1406,7 @@
             testing:
                 flavours:
                     gke:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gke']
             swm:
                 gke-nvidia-packages:
@@ -1511,9 +1425,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1559,9 +1471,7 @@
             testing:
                 flavours:
                     ibm-gt:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'ppc64el', 's390x.LPAR']
+                        arches: ['amd64', 'ppc64el', 's390x.LPAR']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -1583,9 +1493,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1608,7 +1516,7 @@
             testing:
                 flavours:
                     oracle-edge:
-                        arches: ['amd64']       # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1632,7 +1540,7 @@
             testing:
                 flavours:
                     oracle:
-                        arches: ['amd64']       # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1672,9 +1580,7 @@
             testing:
                 flavours:
                     fips:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 's390x.LPAR', 's390x.KVM']
+                        arches: ['amd64', 's390x.LPAR', 's390x.KVM']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -1717,9 +1623,7 @@
             testing:
                 flavours:
                     aws-fips:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -1765,12 +1669,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -1816,12 +1718,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-goldfish:
@@ -1873,12 +1773,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -1945,12 +1843,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-aws:
@@ -1974,9 +1870,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -1993,9 +1887,7 @@
             testing:
                 flavours:
                     aws:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2025,9 +1917,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -2048,9 +1938,7 @@
             testing:
                 flavours:
                     azure-edge:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2135,9 +2023,7 @@
             testing:
                 flavours:
                     gcp:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2153,9 +2039,7 @@
             testing:
                 flavours:
                     gke:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['gke']
 
         linux-goldfish:
@@ -2183,9 +2067,7 @@
             testing:
                 flavours:
                     hwe:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
         linux-joule:
@@ -2209,9 +2091,7 @@
             testing:
                 flavours:
                     kvm:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2239,9 +2119,7 @@
             testing:
                 flavours:
                     oem:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
         linux-oracle:
@@ -2260,9 +2138,7 @@
             testing:
                 flavours:
                     oracle:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2342,9 +2218,7 @@
             testing:
                 flavours:
                     fips:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'ppc64el', 's390x.LPAR', 's390x.KVM']
+                        arches: ['amd64', 'ppc64el', 's390x.LPAR', 's390x.KVM']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -2387,9 +2261,7 @@
             testing:
                 flavours:
                     fips:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64'] # fips-recert is amd64 only
+                        arches: ['amd64']        # test system arch names // fips-recert is amd64 only
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -2422,9 +2294,7 @@
             testing:
                 flavours:
                     deeplens:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'regression-testing']
 
@@ -2535,12 +2405,10 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf']
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']
+                        arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
@@ -2573,9 +2441,7 @@
             testing:
                 flavours:
                     azure:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
@@ -2793,9 +2659,7 @@
             testing:
                 flavours:
                     generic:
-                        # arches as defined by the testing system
-                        #
-                        arches: ['amd64']
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
