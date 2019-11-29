@@ -1,4 +1,6 @@
 == Backlog ==
+ - Identify formal EOL data
+    - Liase with Foundations to get the official EOL date.
  - Pick last SRU cycle and announce
     - Pick a likely last SRU cycle announce this via email
  - Review CVEs for must haves
@@ -6,10 +8,6 @@
  - Mark series as unsupported in Ubuntu KTL
     - NEEDS: EOL date formally past
     - kteam-tools/info/kernel-series.yaml
- - Drop series from CVE autotriage
-    - NEEDS REVIEW (kernel-series changes may moot this)
-    - cve-matrix/Makefile.combo
-       - Remove from relevant matrix definitions
  - Disable chroots
     - kteam-tools/chroot-setup
     - Add series to expired_releases list in scripts/chroots-defs.conf
