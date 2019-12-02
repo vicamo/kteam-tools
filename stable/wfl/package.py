@@ -658,7 +658,9 @@ class Package():
                 else:
                     if date_available is None or bi[d][pocket]['most_recent_build'] > date_available:
                         date_available = bi[d][pocket]['most_recent_build']
-            now = datetime.utcnow()
+
+            date_available = date_available.replace(tzinfo=timezone.utc)
+            now = datetime.now(timezone.utc)
             comp_date = date_available + period
             if comp_date < now:
                 retval = True
@@ -668,7 +670,7 @@ class Package():
                 cinfo('       now: %s' % now)
 
                 # Record when it makes sense to check again.
-                s.bug.refresh_at(now.replace(tzinfo=timezone.utc) + period, 'package publication to {} for {}'.format(pocket, period))
+                s.bug.refresh_at(comp_date, 'package publication to {} for {}'.format(pocket, period))
 
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
