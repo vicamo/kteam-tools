@@ -69,8 +69,8 @@ class PromoteToSecurity(Promoter):
                 break
 
             # We can consider moving Confirmed as soon as promote-to-updates
-            # moves out of 'New', then we will follow the packages separatly.
-            if s.bug.tasks_by_name['promote-to-updates'].status == 'New':
+            # moves past 'Confirmed', then we will follow the packages separatly.
+            if s.bug.tasks_by_name['promote-to-updates'].status in ('New', 'Confirmed'):
                 break
 
             # Check we meet the release criteria for -security; currently
