@@ -27,6 +27,7 @@ __testing_status_colors = {
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
+    "Won't Fix"     : 'red',
 }
 %>
 <%
