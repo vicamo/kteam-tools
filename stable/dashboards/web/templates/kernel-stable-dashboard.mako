@@ -213,6 +213,8 @@ def __status_bites(bug, attrs):
     if len(promote_to) > 0:
         retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'darkorange')
         bites.append(bite_format(thing_prefix, retval, thing_in))
+    # If we have recorded the snap as prepping we can elide all snap-release-to-* tasks.
+    snap_prepping = prep_status in ('New', 'Confirmed', 'In Progress')
 
     # snaps: testing status mashup.
     certification_testing_status = __task_status(bug, 'snap-certification-testing')
@@ -265,6 +267,9 @@ def __status_bites(bug, attrs):
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
         if (task.startswith('prepare-package') and
+                not reason.startswith('Stalled -- ')):
+            continue
+        if (snap_prepping and task.startswith('snap-release-to-') and
                 not reason.startswith('Stalled -- ')):
             continue
         if task.endswith('-testing') or task.endswith('-signoff'):
