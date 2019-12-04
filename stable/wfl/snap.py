@@ -189,9 +189,9 @@ class SnapDebs:
         center(s.__class__.__name__ + '.is_in_tracks')
         missing = []
 
+        partial = False
         publish_to = s.snap_info.publish_to
         if publish_to is not None:
-            retval = True
             for arch in sorted(publish_to):
                 # Find the highest revision in the highest risk.  This is will
                 # then be used to validate the publications in the appropriate
@@ -223,6 +223,8 @@ class SnapDebs:
                         if s.bug.version == version and revision is not None:
                             entry += ':badrev={}'.format(revision)
                         missing_arch.append(entry)
+                    else:
+                        partial = True
                 missing += missing_arch
         else:
             missing.append("UNKNOWN")
@@ -230,7 +232,7 @@ class SnapDebs:
         retval = len(missing) == 0
 
         cleave(s.__class__.__name__ + '.is_in_tracks')
-        return retval, missing
+        return retval, partial, missing
 
     def channel_revisions_consistent(s, min_risk=None):
         center(s.__class__.__name__ + '.channel_revisions_consistent')

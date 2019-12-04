@@ -30,16 +30,23 @@ class KernelSnapBase(TaskHandler):
         retval = False
 
         try:
-            good, reasons = s.bug.snap.is_in_tracks(risk)
+            good, partial, reasons = s.bug.snap.is_in_tracks(risk)
+            # Everything is fully published into all expected tracks.
             if good is True:
                 if s.task.status != 'Fix Released':
                     s.task.status = 'Fix Released'
                     s.task.timestamp('finished')
                     retval = True
             else:
-                if s.task.status == 'Fix Released':
-                    s.task.status = 'New'
-                    retval = True
+                # Something is published into some of the tracks at least.
+                if partial is True:
+                    if s.task.status != 'Fix Committed':
+                        s.task.status = 'Fix Committed'
+                        retval = True
+                else:
+                    if s.task.status == 'Fix Released':
+                        s.task.status = 'New'
+                        retval = True
                 issue = 'snap {} not in expected channel(s): {}'.format(s.bug.snap.name, ' '.join(reasons))
                 s.task.reason = 'Pending -- {}'.format(issue)
                 cinfo('    {}'.format(issue), 'yellow')
@@ -142,7 +149,7 @@ class SnapReleaseToBeta(KernelSnapBase):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
-            if s.bug.tasks_by_name['snap-release-to-edge'].status != 'Fix Released':
+            if s.bug.tasks_by_name['snap-release-to-edge'].status not in ('Fix Committed', 'Fix Released'):
                 cinfo('    task snap-release-to-edge is not \'Fix Released\'', 'yellow')
                 break
 
