@@ -200,9 +200,9 @@ def __status_bites(bug, attrs):
     elif prep_status == 'Confirmed':
         retval = __coloured('Snap ready to be cranked', 'darkorange')
     elif prep_status == 'In Progress':
-        retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
+        retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'snap-release-to-edge')), '#1496bb')
     elif prep_status == 'Fix Committed':
-        retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'prepare-package')), '#1496bb')
+        retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'snap-release-to-edge')), '#1496bb')
     if retval != '':
         bites.append(bite_format(thing_prefix, retval, thing_in))
     promote_to = []
