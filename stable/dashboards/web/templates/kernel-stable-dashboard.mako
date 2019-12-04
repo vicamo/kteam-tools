@@ -84,6 +84,8 @@ def tagged_block(key, value):
 def tagged_block_valid(key, value, colour):
     if value in ('n/a', 'Invalid'):
         return tagged_block(__coloured(key, 'silver'), __coloured('n/a', 'silver'))
+    elif value == "Won't Fix":
+        return tagged_block(__coloured(key, 'silver'), __coloured('Skipped', 'silver'))
     else:
         block = tagged_block(key, __coloured(value, colour))
         if key in attrs:
@@ -141,6 +143,10 @@ def __status_bites(bug, attrs):
             status = __task_status(bug, 'snap-release-to-' + risk)
             add_in(thing_in, risk, status)
 
+    # State sets.
+    test_set_invalid = ('n/a', 'New', 'Invalid')
+    test_set_complete = ('n/a', 'Invalid', 'Fix Released', "Won't Fix")
+
     # debs: being prepared?
     retval = ''
     if prep_status == 'New':
@@ -160,15 +166,15 @@ def __status_bites(bug, attrs):
     regression_testing_status = __task_status(bug, 'regression-testing')
     verification_testing_status = __task_status(bug, 'verification-testing')
     testing_valid = (
-            automated_testing_status not in ('n/a', 'New', 'Invalid') or
-            certification_testing_status not in ('n/a', 'New', 'Invalid') or
-            regression_testing_status not in ('n/a', 'New', 'Invalid') or
-            verification_testing_status not in ('n/a', 'New', 'Invalid'))
+            automated_testing_status not in test_set_invalid or
+            certification_testing_status not in test_set_invalid or
+            regression_testing_status not in test_set_invalid or
+            verification_testing_status not in test_set_invalid)
     testing_complete = (
-            automated_testing_status in ('n/a', 'Invalid', 'Fix Released') and
-            certification_testing_status in ('n/a', 'Invalid', 'Fix Released') and
-            regression_testing_status in ('n/a', 'Invalid', 'Fix Released') and
-            verification_testing_status in ('n/a', 'Invalid', 'Fix Released'))
+            automated_testing_status in test_set_complete and
+            certification_testing_status in test_set_complete and
+            regression_testing_status in test_set_complete and
+            verification_testing_status in test_set_complete)
     if testing_valid and not testing_complete:
         retval = ''
 
@@ -212,11 +218,11 @@ def __status_bites(bug, attrs):
     certification_testing_status = __task_status(bug, 'snap-certification-testing')
     qa_testing_status = __task_status(bug, 'snap-qa-testing')
     testing_valid = (
-            certification_testing_status not in ('n/a', 'New', 'Invalid') or
-            qa_testing_status not in ('n/a', 'New', 'Invalid'))
+            certification_testing_status not in test_set_invalid or
+            qa_testing_status not in test_set_invalid)
     testing_complete = (
-            certification_testing_status in ('n/a', 'Invalid', 'Fix Released') and
-            qa_testing_status in ('n/a', 'Invalid', 'Fix Released'))
+            certification_testing_status in test_set_complete and
+            qa_testing_status in test_set_complete)
     if testing_valid and not testing_complete:
         retval = ''
 
