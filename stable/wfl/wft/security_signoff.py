@@ -81,7 +81,9 @@ class SecuritySignoff(TaskHandler):
         s.task.reason = '{} -- waiting for signoff'.format(
             s.task.reason_state('Pending', timedelta(hours=48)))
 
-        if s.bug.is_derivative_package:
+        # For backport kernels the security signoff in the master is valid in the
+        # derivative.  Copy it over if different.
+        if s.bug.is_derivative_package and s.bug.source.backport:
             master = s.bug.master_bug
             try:
                 if s.task.status != master.tasks_by_name['security-signoff'].status:
