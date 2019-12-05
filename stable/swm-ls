@@ -65,6 +65,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--separate-target', help='Display full target information',
         action='store_true', default=False)
+    parser.add_argument('--show-assignee', help='Display task assignee',
+        action='store_true', default=False)
     args = parser.parse_args()
 
     # Ask for nothing, get reasons only.
@@ -96,6 +98,7 @@ if __name__ == '__main__':
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task,
                     'phase_status':     bug_data['task'][task]['status'],
+                    'assignee':         bug_data['task'][task].get('assignee', 'unassigned'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -111,6 +114,7 @@ if __name__ == '__main__':
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task,
                     'phase_status':     bug_data['reason'][task],
+                    'assignee':         bug_data['task'].get(task, {}).get('assignee', 'unassigned'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -125,6 +129,7 @@ if __name__ == '__main__':
                 'version':          bug_data.get('version', '--not-specified--'),
                 'phase':            'overall',
                 'phase_status':     bug_data.get('phase', 'Not Ready'),
+                'assignee':         '--',
                 }
             results.append((generate_sort(entry), entry))
 
@@ -147,6 +152,8 @@ if __name__ == '__main__':
         fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {source:{len_source}} {target:{len_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
     else:
         fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {full_target:{len_full_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
+    if args.show_assignee:
+        fmt += ' {assignee:20}'
     sort_prev = None
     count = 0
     for (sort, entry) in results:
