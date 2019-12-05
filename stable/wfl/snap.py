@@ -223,7 +223,7 @@ class SnapDebs:
                         if s.bug.version == version and revision is not None:
                             entry += ':badrev={}'.format(revision)
                         missing_arch.append(entry)
-                    else:
+                    elif revision != None:
                         partial = True
                 missing += missing_arch
         else:
