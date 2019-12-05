@@ -5,6 +5,7 @@
         lists:
           - 'Notice'
           - 'Cycle Roles'
+          - 'For Next Cycle'
           - 'Backlog'
           - 'Backlog (manual)'
           - 'Blocked'
@@ -16,6 +17,8 @@
           - 'Retrospective: What did not work?'
           - 'Retrospective: Unsure'
           - 'Retrospective: Actions'
+          - 'Retrospective: Done'
+          - 'lost+found'
         default_list: 'Backlog'
         admin_members:
           - 'andywhitcroft'
@@ -39,6 +42,7 @@
           - 'sultanalsawaf1'
           - 'tjaalton'
           - 'tyhicks'
+          - 'manojiyer3'
     cards:
         - name: 'Cycle Lead: <insert name>'
           description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.'
@@ -64,9 +68,6 @@
         - name: 'Create tracking bugs'
           description: 'For each series for which kernels should be cranked, run "create-kernel-tasks --series <series> --spin 1 <cycle date>".'
           list: 'On Deck'
-        - name: 'Create "lost+found"'
-          description: 'Once the initial tracking bugs have been created and are showing up on the Kernel SRU Team Dashboard, create a new list on this board called "lost+found". This is the place where SWM moves cards for which it finds no active tracking bug.'
-          list: 'Backlog (manual)'
         - name: 'Turn the crank'
         - name: 'SRU -proposed announcement'
           description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content).'
