@@ -404,7 +404,7 @@
                     hw-cert: true
                     publish-to:
                         amd64: ['20']
-                        i386: ['20']
+                        arm64: ['20']
                         armhf: ['20']
                 pc-lowlatency-kernel:
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
@@ -415,7 +415,6 @@
                     hw-cert: false
                     publish-to:
                         amd64: ['20']
-                        i386: ['20']
             testing:
                 flavours:
                     generic:
