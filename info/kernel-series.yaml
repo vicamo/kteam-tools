@@ -410,7 +410,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
                     gated: false
                     stable: false
-                    promote-to: [ 'edge' ]
+                    promote-to: [ 'edge', 'beta' ]
                     qa: false
                     hw-cert: false
                     publish-to:
