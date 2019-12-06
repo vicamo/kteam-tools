@@ -185,7 +185,7 @@
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
     sources:
         linux:
-            versions: ['5.3.0']
+            versions: ['5.4.0']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
@@ -207,7 +207,6 @@
                     lowlatency:
                         arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            copy-forward: ['19.10', 'linux']
 
         linux-raspi2:
             packages:
