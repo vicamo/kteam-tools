@@ -219,9 +219,10 @@ Examples:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", default=False,
                         help="do not make any changes, just show what would be done")
-    parser.add_argument("-r", "--release", action="store_true", default=False,
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-r", "--release", action="store_true", default=False,
                         help="get version from -release instead of -proposed")
-    parser.add_argument("-u", "--updates", action="store_true", default=False,
+    group.add_argument("-u", "--updates", action="store_true", default=False,
                         help="get version from -updates instead of -proposed")
     parser.add_argument("-t", "--no-tag", action="store_true", default=False,
                         help="do not automatically tag the commit")
