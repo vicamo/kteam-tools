@@ -1,0 +1,143 @@
+#!/usr/bin/python3 
+import os
+import sys
+from copy import copy
+
+from launchpadlib.launchpad             import Launchpad
+
+## Add ../libs to the Python search path
+#sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
+#                                              os.pardir, 'libs')))
+#
+#from ktl.kernel_series                  import KernelSeries
+
+
+lp = Launchpad.login_with('admin-lp-groups-validate', 'production', version='devel')
+
+teams = [
+    'canonical-kernel-crankers',
+    'canonical-kernel-committers',
+    'canonical-kernel-uploaders',
+    'ubuntu-kernel-uploaders',
+]
+
+
+class Member:
+
+    def __init__(self, lp_membership):
+        lp_member = lp_membership.member
+        self.name = lp_member.name
+        self.is_team = lp_member.is_team
+        self.is_admin = lp_membership.status == 'Administrator'
+
+
+class Team:
+
+    def __init__(self, lp_team, factory=None):
+        self.name = lp_team.name
+        self.factory = factory
+
+        self.team = lp_team
+
+        self._direct_members = None
+        self._indirect_members = None
+
+    @property
+    def direct_members(self):
+        if self._direct_members is None:
+            self._direct_members = {}
+            for member_detail in self.team.members_details:
+                ##print("APW", member_detail, member_detail.status)
+                member = Member(member_detail)
+                self._direct_members[member.name] = member
+        return self._direct_members
+
+    @property
+    def indirect_members(self):
+        if self._indirect_members is None:
+            self._indirect_members = {}
+            for name, member in self.direct_members.items():
+                if member.is_team:
+                    for t_name, t_member in self.factory.lookup_team(name).members.items():
+                        self._indirect_members[t_name] = copy(t_member)
+                        if member.is_admin:
+                            t_member.is_admin = True
+        return self._indirect_members
+
+    @property
+    def members(self):
+        result = {}
+        result.update(self.direct_members)
+        result.update(self.indirect_members)
+        return result
+
+
+class TeamFactory:
+
+    def __init__(self, lp=None):
+        self.lp = lp
+
+        self.teams = {}
+
+    def lookup_team(self, team):
+        if team not in self.teams:
+            ##print("lookup_team (new)", team)
+            lp_team = lp.people[team]
+            self.teams[team] = Team(lp_team, factory=self)
+
+        return self.teams[team]
+
+factory = TeamFactory(lp=lp)
+
+crankers = factory.lookup_team('canonical-kernel-crankers')
+committers = factory.lookup_team('canonical-kernel-committers')
+uploaders = factory.lookup_team('canonical-kernel-uploaders')
+ubuntu = factory.lookup_team('ubuntu-kernel-uploaders')
+ckt = factory.lookup_team('canonical-kernel-team')
+
+# CRANKERS:
+#  check direct members are not also indirect
+for name, member in crankers.direct_members.items():
+    #print("CRANKERS", name, member.is_admin)
+    if member.is_admin:
+        continue
+    if name in crankers.indirect_members:
+        print("WARNING: {}: {} is a direct and indirect member".format(crankers.name, name))
+#  should contain a pointer to committers.
+if committers.team.name not in crankers.direct_members:
+    print("WARNING: canonical-kernel-committers not a member of canonical-kernel-crankers")
+
+# COMMITTERS:
+#  check direct members are not also indirect
+for name, member in committers.direct_members.items():
+    #print("COMMITTERS", name, member.is_admin)
+    if member.is_admin:
+        continue
+    if name in committers.indirect_members:
+        print("WARNING: {}: {} is a direct and indirect member".format(committers.name, name))
+#  should contain a pointer to uploaders.
+if uploaders.team.name not in committers.direct_members:
+    print("WARNING: canonical-kernel-uploaders not a member of canonical-kernel-committers")
+
+# UPLOADERS:
+#  check direct members are not also indirect
+#  all direct uploaders on canonical-kernel-uploaders should be on ubuntu-kernel-uploaders
+for name, member in uploaders.direct_members.items():
+    #print("UPLOADERS", name, member.is_admin)
+    if member.is_admin:
+        continue
+    if name in uploaders.indirect_members:
+        print("WARNING: {}: {} is a direct and indirect member".format(committers.name, name))
+    if name not in ubuntu.direct_members:
+        print("WARNING: {}: {} is a direct member and not a member of {}".format(committers.name, name, ubuntu.name))
+# Check that everyone on ubuntu-kernel-uploaders who is also a member of canonical-kernel-team
+# is on canonical-kernel-uploaders
+for name, member in ubuntu.direct_members.items():
+    #print("UBUNTU", name, member.is_admin)
+    if member.is_admin:
+        continue
+    if name not in ckt.members:
+        print("UBUNTU {} not in ckt ... ignored".format(name))
+        continue
+    if name not in uploaders.members:
+        print("WARNING: {}: {} is a direct member and not a member of {}".format(ubuntu.name, name, uploaders.name))
