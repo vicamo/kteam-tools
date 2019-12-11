@@ -1981,7 +1981,7 @@
             supported: true
             private: true
             derived-from: [ '16.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'automated-testing', 'certification-testing']
 
         linux-euclid:
             packages:
