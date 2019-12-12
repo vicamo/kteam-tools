@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+#
+
+import argparse
+import os
+import re
+import sys
+import yaml
+
+from datetime import datetime, timedelta
+from textwrap import dedent
+from urllib.request import urlopen
+
+from trellotool.trellotool import TrelloTool
+
+
+class StatusHtml:
+
+    def __init__(self):
+        self.entries = []
+
+    def record(self, group, name, url, color, outdated, status):
+        group_map = {
+            'tools': (50, 'Tools and Infrastructure'),
+            'customer': (50, 'Commercial Kernels'),
+            'commercial': (50, 'Commercial Kernels'),
+            'projects': (50, 'Projects'),
+            'development': (10, 'Development'),
+            'stable': (20, 'Stable'),
+            'admin': (30, 'Administrivia'),
+            'obsolete': (90, 'Obsolete Boards (for closure)'),
+        }
+        (order, group) = group_map.get(group, (80, group))
+
+        self.entries.append([order, group, name, url, color, outdated, status])
+
+    def emit(self, out):
+        self.entries.sort()
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        print(dedent("""\
+            <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+            <head>
+            <title>Kernel Project Dashboard</title>
+            <link rel="stylesheet" href="http://kernel.ubuntu.com/sru/dashboards/web/media/dashboard.css" type="text/css" media="screen" />
+            </head>
+            <body class="dash-body">
+            <div class="dash-center-wrap">
+            <div class="dash-center">
+            <div class="dash-center-content">
+            <div id="dash-header">
+            <div id="dash-timestamp">
+            <p>Generated on {}</p>
+            </div>
+            <h1>Kernel Project Dashboard</h1>
+            </div> <!-- dash-header -->
+            <div class="dash-section">
+            <table width="100%"> <!-- style="font-size: 0.8em"> <!-- SRU Data -->
+            """.format(now)), file=out)
+
+        current_group = None
+        for order, group, name, url, bg_color, outdated, status in self.entries:
+            flag = '&odash;' if outdated else ''
+            fg_color = 'color: white' if bg_color in ('purple', 'green') else ''
+            if group != current_group:
+                if current_group != None:
+                    print('<tr><td colspan="3">&nbsp;</td></tr>', file=out)
+                print('<tr><td colspan="3" style="background: #e9e7e5; font-size: 140%;">{}</td></tr>'.format(group), file=out)
+                current_group = group
+            print('<tr style="background-color: {};{}"><td width="30%"><a href="{}"><span style="{}">{}</span></a></td><td width="80%">{}</td><td>{}</td></tr>'.format(bg_color, fg_color, url, fg_color, name, status, flag), file=out)
+
+        print(dedent("""\
+            </table>
+            </div> <!-- dash-section -->
+            </div>
+            </div>
+            </div>
+            </body>
+            </html>
+            """), file=out)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Trello status extractor')
+    parser.add_argument('dashboard', help='Dashboard html filename')
+    args = parser.parse_args()
+
+    # Connect us to trello.
+    tt = TrelloTool()
+    tt.assert_authenticated()
+
+    # Look up the kernelteam2.
+    trello_team = tt.trello.organization_record('kernelteam2')
+    trello_team_id = trello_team['id']
+
+    # Status page.
+    page = StatusHtml()
+
+    # Run the list of boards on the team and look for a status card
+    # on each.
+    for board_entry in tt.trello.organization_boards(trello_team_id):
+        board_id = board_entry['id']
+        board_name = board_entry['name']
+        board_closed = board_entry['closed']
+
+        #if (board_id not in [
+        #        '59317fdc88d66ea91ccec852',
+        #        '5b4c58525527f679c719809a',
+        #        '59317f7e33bcf0bec85ce99c',
+        #        '59ce55f638461613d272b47a',
+        #        '5b64bb7d7cb5e537d3257756',
+        #        '5b17ee4d9a8210560bb1b102',
+        #        '5df15738baeb0a302c6f6d40',
+        #        ] and not board_name.startswith('Tools:')):
+        #    continue
+
+        if board_closed or board_name.startswith('Personal'):
+            continue
+
+        #print("Scanning", board_name)
+
+        # Look through all of the cards on this board and see if there
+        # is a health card for it.
+        card_health = None
+        for card_entry in sorted(tt.trello.board_cards(board_id),
+                key=lambda x: x['id']):
+            card_id = card_entry['id']
+            card_name = card_entry['name']
+
+            if card_name in ('Board Health Status', 'Project Status'):
+                card_health = card_entry
+                break
+
+        if card_health is None:
+            continue
+
+        # Card found analyse it.
+        ##print(board_name, card_name)
+        ##print(card_health)
+        health_desc = card_health['desc']
+
+        # Work out what colors labels are on the board.
+        colors = {}
+        for label_entry in card_health['labels']:
+            ##print(label_entry['color'])
+            colors[label_entry['color']] = True
+
+        # Pick the 'worst' colour.  Note: orange is deliberatly duplicated
+        # so we default to orange.
+        for color in ('red', 'orange', 'yellow', 'green', None):
+            if color in colors:
+                break
+        if color == 'yellow':
+            color = 'orange'
+        elif color is None:
+            color = 'yellow'
+
+        # Record if we are expecting an update.
+        outdated = 'purple' in colors
+
+        # Decode the description.
+        health_attr = {}
+        try:
+            health_attrs = yaml.safe_load(health_desc.split('--\n')[-1])
+        except:
+            pass
+        if health_attrs is None:
+            health_attrs = {}
+
+        # Add defaults:
+        health_attrs.setdefault('group', 'Unclassified')
+        health_attrs.setdefault('status', '--')
+
+        ##print(health_attrs)
+        page.record(health_attrs['group'], board_entry['name'], board_entry['shortUrl'], color, outdated, health_attrs['status'])
+
+    with open(args.dashboard + '.new', 'w') as dfd:
+        page.emit(dfd)
+    os.rename(args.dashboard + '.new', args.dashboard)
