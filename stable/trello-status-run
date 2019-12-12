@@ -1,0 +1,10 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+export http_proxy="http://squid.internal:3128"
+export https_proxy="https://squid.internal:3128"
+export no_proxy=".launchpad.net,kernel.ubuntu.com"
+
+set -o pipefail
+"$here/trello-status" "/var/www/html/reports/project-dashboard.html" 2>&1 | tee -a "$HOME/logs/trello-status.log"
