@@ -1075,6 +1075,18 @@
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
+        linux-raspi2-5.3:
+            packages:
+                linux-raspi2-5.3:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'raspi2-5.3']
+                linux-meta-raspi2-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2-5.3']
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-raspi2' ]
+            invalid-tasks: [ 'regression-testing' ]
+
         linux-snapdragon:
             packages:
                 linux-snapdragon:
