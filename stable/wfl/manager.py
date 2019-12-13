@@ -9,6 +9,7 @@ import os
 import yaml
 
 from ktl.kernel_series                  import KernelSeries
+from ktl.sru_cycle                      import SruCycle
 
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
@@ -24,7 +25,7 @@ import wfl.wft
 class WorkflowManager():
     # __init__
     #
-    def __init__(s, args, test_mode=False, ks=None):
+    def __init__(s, args, test_mode=False, ks=None, sru_cycle=None):
         center('WorkflowManager.__init__')
         s.test_mode = test_mode
         s.args = args
@@ -58,6 +59,7 @@ class WorkflowManager():
             'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
         }
         s.kernel_series = KernelSeries() if ks is None else ks
+        s.sru_cycle = SruCycle() if sru_cycle is None else sru_cycle
 
         WorkflowBug.sauron            = s.args.sauron
         WorkflowBug.dryrunn           = s.args.dryrun
@@ -466,7 +468,7 @@ class WorkflowManager():
                 s.status_set(bugid, None)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series)
+            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle)
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))

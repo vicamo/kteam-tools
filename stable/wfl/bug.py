@@ -46,7 +46,7 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid=None, bug=None, ks=None):
+    def __init__(s, lp, bugid=None, bug=None, ks=None, sru_cycle=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
@@ -74,6 +74,7 @@ class WorkflowBug():
         WorkflowBugTask.no_timestamps = WorkflowBug.no_timestamps
 
         s.kernel_series = KernelSeries() if ks is None else ks
+        s.sc = SruCycle() if sru_cycle is None else sru_cycle
 
         s.title = s.lpbug.title
         s._tags = None
@@ -335,13 +336,13 @@ class WorkflowBug():
         if s._master_bug is False:
             if s.is_derivative_package:
                 try:
-                    s._master_bug = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series)
+                    s._master_bug = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series, sru_cycle=s.sc)
                     if not s._master_bug.is_crankable and not s._master_bug.is_closed:
                         # check if our master is a duplicte, and if so follow the chain.
                         duplicate_of = s._master_bug.lpbug.lpbug.duplicate_of
                         if duplicate_of is not None:
                             cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, s._master_bug.lpbug.lpbug.id))
-                            s._master_bug = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series)
+                            s._master_bug = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series, sru_cycle=s.sc)
                 except:
                     raise WorkflowBugError("invalid master bug link")
             else:
@@ -362,7 +363,7 @@ class WorkflowBug():
             return
         dup_id = dup_pointer.split()[1]
         try:
-            dup_wb = WorkflowBug(s.lp, dup_id, ks=s.kernel_series)
+            dup_wb = WorkflowBug(s.lp, dup_id, ks=s.kernel_series, sru_cycle=s.sc)
         except WorkflowBugError:
             raise WorkflowBugError("invalid replaces pointer {}".dup_id)
 
@@ -753,7 +754,7 @@ class WorkflowBug():
                 if t.startswith('kernel-sru-cycle-'):
                     spin = t.replace('kernel-sru-cycle-', '')
             if spin is not None:
-                spin = SruCycle().lookup_spin(spin, allow_missing=True)
+                spin = s.sc.lookup_spin(spin, allow_missing=True)
             s._sru_spin = spin
 
         return s._sru_spin
@@ -878,7 +879,7 @@ class WorkflowBug():
         duplicates = s.lpbug.lpbug.duplicates
         #duplicates = [ s.lp.get_bug('1703532') ]
         for dup in duplicates:
-            dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series)
+            dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series, sru_cycle=s.sc)
             if not dup_wb.is_workflow or not dup_wb.is_valid:
                 continue
             retval.append(dup_wb)
