@@ -262,7 +262,7 @@ class WorkflowManager():
                 # Ignore snap-debs variants as those should remain tightly
                 # coupled with their parent.
                 child_variant = child_data.get('variant')
-                if child_varient == 'snap-debs':
+                if child_variant == 'snap-debs':
                     continue
 
                 # Our parent is being duplicated, record the new one so we can apply it
@@ -297,7 +297,7 @@ class WorkflowManager():
             status_modified = False
             if 'fix-master' in manager:
                 cinfo("{}: fix-master present master={}->{} applying".format(
-                    bug_id, bug.master_bug_id, manager['fix-master']))
+                    bugid, bug.master_bug_id, manager['fix-master']))
                 if bug.master_bug_id != manager['fix-master']:
                     bug.master_bug_id = manager['fix-master']
                     bug_modified = True
