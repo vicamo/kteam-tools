@@ -674,7 +674,8 @@ class MonitorStatusRefreshTime:
         (bug_id, bug_data) = item
 
         # Sort by lowest last scanned date.
-        return (bug_data.get('manager', {}).get('time-scanned', ''), bug_id)
+        return (bug_data.get('manager', {}).get('time-scanned') or
+            datetime.utcnow() - timedelta(days=10*365), bug_id)
 
     def changed(self):
         changed = set()
