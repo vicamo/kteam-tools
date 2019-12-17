@@ -1978,6 +1978,13 @@
                 linux-signed-cascade:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-cascade']
+            snaps:
+                cascade-kernel:
+                    primary: true
+                    gated: false
+                    qa: false
+                    hw-cert: true
+                    arches: ['armhf']
             supported: true
             private: true
             derived-from: [ '16.04', 'linux' ]
