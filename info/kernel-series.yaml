@@ -1981,6 +1981,7 @@
             snaps:
                 cascade-kernel:
                     primary: true
+                    repo: ['git://git.launchpad.net/~tillamook-team/tillamook/+git/cascade-uc16-snap', 'cascade']
                     gated: false
                     qa: false
                     hw-cert: true
