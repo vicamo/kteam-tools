@@ -258,6 +258,27 @@
                         clouds: ['metal']
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
+        linux-oem-5.4:
+            packages:
+                linux-oem-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.4-next']
+                linux-meta-oem-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.4']
+                linux-signed-oem-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.4']
+                linux-restricted-modules-oem-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.4']
+            supported: true
+            derived-from: [ '20.04', 'linux-5.4' ]
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-aws:
             packages:
                 linux-aws:
