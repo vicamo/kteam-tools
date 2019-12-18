@@ -259,7 +259,7 @@
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
         linux-oem-5.4:
-            variants: ['-oem']
+            variants: ['-oem-20.04']
             packages:
                 linux-oem-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.4-next']
