@@ -47,7 +47,7 @@ class SwmStatus:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='SWM trellow card syncer')
+    parser = argparse.ArgumentParser(description='SWM trello card syncer')
     args = parser.parse_args()
 
     # Load up the Swm Status data.  This tells us what trackers exist
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
         #print(bug_id, cycle, spin, bug_data['phase'])
 
-        trackers[(bug_data['cycle'], bug_data['series'], bug_data['source'], bug_data['target'])] = bug_data
+        trackers[(bug_data['cycle'], bug_data.get('series', '-'), bug_data.get('source', '-'), bug_data.get('target', '-'))] = bug_data
 
     # Connect us to trello.
     tt = TrelloTool()
