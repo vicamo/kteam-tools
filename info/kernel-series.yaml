@@ -199,6 +199,27 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
             supported: true
+            snaps:
+                pc-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['20']
+                        arm64: ['20']
+                        armhf: ['20']
+                pc-lowlatency-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['20']
             testing:
                 flavours:
                     generic:
@@ -467,27 +488,6 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/eoan']
             supported: true
-            snaps:
-                pc-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        amd64: ['20']
-                        arm64: ['20']
-                        armhf: ['20']
-                pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['20']
             testing:
                 flavours:
                     generic:
