@@ -25,6 +25,9 @@ for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if not source.supported:
             continue
 
+        if source.private:
+            continue
+
         # Find the matching package for this source.
         primary = None
         meta = None
