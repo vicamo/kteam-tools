@@ -177,8 +177,8 @@ def sync_primary():
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
-            #if series.codename != 'bionic':
-            #    continue
+            if series.codename != 'focal':
+                continue
 
             for package in source.packages:
                 if package.repo is None:
@@ -229,6 +229,7 @@ def sync_primary():
                 branches.append(branch[:-5])
                 if package.type in (None, 'main'):
                     branches.append(branches[-1] + '-current')
+            print(package, branch)
             branches.append(branch)
             for branch in branches:
                 if package.series.development:

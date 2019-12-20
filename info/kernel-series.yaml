@@ -418,16 +418,16 @@
             variants: ['--']
             packages:
                 linux-5.4:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-5.4-next']
                 linux-meta-5.4:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'master-5.4']
                 linux-signed-5.4:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'master-5.4']
                 linux-restricted-modules-5.4:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'master-5.4']
             supported: true
             testing:
                 flavours:
