@@ -214,7 +214,7 @@ def sync_primary():
 
             people = ['/~canonical-kernel-committers']
             # XXX: we need a better way to control this.
-            if package.source.name in ('linux-oem', 'linux-oem-osp1', 'linux-cascade'):
+            if package.source.name == 'linux-cascade' or '-oem' in package.source.name:
                 people.append('/~canonical-kernel-hwe-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
