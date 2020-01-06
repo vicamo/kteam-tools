@@ -9,6 +9,7 @@ import os
 import sys
 from copy import copy
 from datetime import datetime, timedelta, timezone
+from math import ceil
 from subprocess import Popen
 #from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.parse import urlsplit, urlunsplit
@@ -684,11 +685,13 @@ class MonitorStatusRefreshTime:
         with open(self.status_path) as rfd:
             status = yaml.safe_load(rfd)
 
-        scanned_limit = 8
+        # Scan the live trackers and trigger any which have past their refresh
+        # time.  Also accumulate any which have not been scanned for 4 hours.
+        lagging = []
         for bug_id, bug_data in sorted(status.items(), key=self.status_key):
             if 'refresh' in bug_data:
                 (when, why) = bug_data['refresh']
-                print("REFRESH", bug_id, when, when - start_date, when < start_date, "({})".format(why))
+                print("REFRESH {} time={} delta={} trigger={} reason={}".format(bug_id, when, when - start_date, when < start_date, why))
                 #print("APW", bug_id, bug_data['refresh-time'], start_date)
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
@@ -697,11 +700,25 @@ class MonitorStatusRefreshTime:
 
             scanned = bug_data.get('manager', {}).get('time-scanned')
             if scanned is not None:
-                scan_refresh = scanned + timedelta(hours=4)
-                if scan_refresh < start_date and scanned_limit > 0:
-                    print("SCANNED", bug_id, scan_refresh, scan_refresh - start_date, scan_refresh < start_date)
-                    scanned_limit -= 1
-                    changed.add(bug_id)
+                scan_refresh = scanned + timedelta(hours=3, minutes=30)
+                if scan_refresh < start_date:
+                    delta = scan_refresh - start_date
+                    print("LAGGING {} time={} delta={} trigger={}".format(bug_id, scan_refresh, delta, scan_refresh < start_date))
+                    lagging.append((scan_refresh, delta, bug_id))
+
+        # Run the list of lagging trackers and try and spread them out over the cycle without
+        # letting them lag too long.  Try not to batch up too many updates either as a timeout
+        # in a batch is fatal.  Basically, spread out the entire pending pile over the 'next'
+        # hour.
+        limit = ceil(len(lagging) / (60/5))
+        print("SCANNER trackers={} lagging={} limit={}".format(len(status), len(lagging), limit))
+        for scan_refresh, delta, bug_id in sorted(lagging):
+            print("LAGGER {} time={} delta={}".format(bug_id, scan_refresh, delta))
+            changed.add(bug_id)
+
+            limit -= 1
+            if limit == 0:
+                break
 
         #print("REFRESH", changed)
 
