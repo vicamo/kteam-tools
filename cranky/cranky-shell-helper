@@ -64,18 +64,13 @@ def tree_type(args):
 
 def tree_main_path(args):
     try:
-        tree = Handle().lookup_tree(args.handle)
+        handle = Handle().lookup_set(args.handle)
     except HandleError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
-    for package in tree.package.source.packages:
-        ptype = package.type
+    for tree in handle.trees:
+        ptype = tree.package.type
         if ptype in (None, "main"):
-            try:
-                tree = Handle().lookup_package(package)
-            except HandleError as e:
-                print(str(e), file=sys.stderr)
-                sys.exit(1)
             print(tree.directory)
             break
 
