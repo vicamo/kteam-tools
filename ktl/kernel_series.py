@@ -306,10 +306,6 @@ class KernelSourceEntry:
         if 'variants' in self._data:
             return self._data['variants']
 
-        derived_from = self.derived_from
-        if derived_from is not None:
-            return derived_from.variants
-
         copy_forward = self.copy_forward
         if copy_forward is not None:
             return copy_forward.variants
