@@ -1136,22 +1136,22 @@ class TrackingBugs():
         retval = False
         ks_series = ks_source.series
 
-        #
-        # FIXME: This probably should be taken from workflow
-        #   s.__wf.devel_workflow['default']['task_assignment'].keys()
-        #
-        # There is one difference stakeholder-signoff is not there and
-        # prepare-package-lbm is not here.
-        valid_dev_tasks = [
-            'automated-testing',
-            'prepare-package',
-            'prepare-package-meta',
-            'prepare-package-signed',
-            'promote-to-proposed',
-            'promote-to-release',
-            'regression-testing',
-            'stakeholder-signoff',
-        ]
+        # Some tasks only really make sense in development or stable series.
+        if ks_series.development is True:
+            exclude = 'devel'
+            exclusions = {
+                    'promote-to-updates': True,
+                    'promote-to-security': True,
+                    'certification-testing': True,
+                    'validation-testing': True,
+                    'security-signoff': True,
+                    'stakeholder-signoff': True,
+                }
+        else:
+            exclude = 'stable'
+            exclusions = {
+                    'promote-to-release': True,
+                }
 
         while True:
             if not wf_series.active:
@@ -1161,8 +1161,8 @@ class TrackingBugs():
             if wf_series.name.endswith('-dnu'):
                 cdebug('    {} marked "do not use"'.format(wf_series.name[:-4]), 'yellow')
                 break
-
-            if ks_series.development and wf_series.name not in valid_dev_tasks:
+            if wf_series.name in exclusions:
+                cdebug('    off-{} no {} '.format(exclude, wf_series.name), 'yellow')
                 break
 
             # SELECT: drop any series for a different variant.
@@ -1200,9 +1200,6 @@ class TrackingBugs():
                 if ks_dst is None:
                     cdebug('    no promote-signing-to-proposed', 'yellow')
                     break
-
-            if wf_series.name == 'promote-to-release' and ks_series.development is False:
-                break
 
             # SNAPS: exclusions related to snaps.
             if wf_series.name.startswith('snap-'):
