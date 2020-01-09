@@ -1500,6 +1500,39 @@
                     - gke-d1903-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gke-5.3:
+            packages:
+                linux-gke-5.3:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.3-next']
+                linux-meta-gke-5.3:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/bionic', 'gke-5.3']
+                linux-signed-gke-5.3:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic', 'gke-5.3']
+            snaps:
+                gke-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke-5.3']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: [ '18-5.3' ]
+            supported: true
+            backport: true
+            derived-from: [ '19.10', 'linux-gcp' ]
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
+            swm:
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
+
         linux-kvm:
             packages:
                 linux-kvm:
