@@ -184,28 +184,77 @@
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
     sources:
-        linux:
+        linux-5.4:
             versions: ['5.4.0']
+            variants: ['--']
             packages:
-                linux:
+                linux-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
-                linux-meta:
+                linux-meta-5.4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
-                linux-signed:
+                linux-signed-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
-                linux-restricted-modules:
+                linux-restricted-modules-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+            supported: true
+            snaps:
+                pc-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['20']
+                        arm64: ['20']
+                        armhf: ['20']
+                pc-lowlatency-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['20']
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+
+        linux-5.5:
+            versions: ['5.5.0']
+            variants: ['-wip']
+            packages:
+                linux-5.5:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
+                linux-meta-5.5:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
+                linux-signed-5.5:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
+                linux-restricted-modules-5.5:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
             supported: true
             testing:
                 flavours:
                     generic:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']        # test system arch names
+                        arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-raspi2:
@@ -391,79 +440,6 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
             copy-forward: ['19.10', 'linux-oracle']
-
-        linux-5.4:
-            versions: ['5.4.0']
-            variants: ['--']
-            packages:
-                linux-5.4:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-5.4-next']
-                linux-meta-5.4:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'master-5.4']
-                linux-signed-5.4:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'master-5.4']
-                linux-restricted-modules-5.4:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'master-5.4']
-            supported: true
-            snaps:
-                pc-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        amd64: ['20']
-                        arm64: ['20']
-                        armhf: ['20']
-                pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['20']
-            testing:
-                flavours:
-                    generic:
-                        # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-                    lowlatency:
-                        arches: ['amd64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-
-        linux-5.5:
-            versions: ['5.5.0']
-            variants: ['-wip']
-            packages:
-                linux-5.5:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
-                linux-meta-5.5:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
-                linux-signed-5.5:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
-                linux-restricted-modules-5.5:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
-            supported: true
-            testing:
-                flavours:
-                    generic:
-                        # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-                    lowlatency:
-                        arches: ['amd64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
 
 # 19.10 (Eoan Ermine)
