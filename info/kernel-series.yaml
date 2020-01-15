@@ -269,44 +269,6 @@
             invalid-tasks: [ 'regression-testing' ]
             copy-forward: ['19.10', 'linux-raspi2']
 
-        linux-oem:
-            packages:
-                linux-oem:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-next']
-                linux-meta-oem:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem']
-                linux-signed-oem:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem']
-            supported: true
-            derived-from: [ '18.04', 'linux' ]
-            testing:
-                flavours:
-                    oem:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
-            copy-forward: [ '18.04', 'linux-oem' ]
-
-        linux-oem-osp1:
-            packages:
-                linux-oem-osp1:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/focal', 'oem-next']
-                linux-meta-oem-osp1:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem-osp1/+git/focal', 'oem']
-                linux-signed-oem-osp1:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/focal', 'oem']
-            supported: true
-            derived-from: [ '19.04', 'linux' ]
-            testing:
-                flavours:
-                    oem-osp1:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
-            copy-forward: [ '18.04', 'linux-oem-osp1' ]
-
         linux-oem-5.4:
             variants: ['-oem-20.04']
             packages:
