@@ -186,7 +186,7 @@ xenial|bionic|cosmic|disco|eoan)
 esac
 case "$SUITE" in
 xenial|bionic|cosmic|disco)
-	ADDPKG="$ADDPKG dkms wget"
+	ADDPKG="$ADDPKG dkms wget curl"
 	;;
 esac
 case "$SUITE" in
