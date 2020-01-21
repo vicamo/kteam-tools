@@ -5,6 +5,7 @@
 
 import glob
 import os
+import re
 import sys
 
 # Add ../libs to the Python search path
@@ -37,16 +38,16 @@ print("RELEASE_REPO=" + parent_package.repo.url)
 if parent_package.repo.branch:
     print("SOURCE_RELEASE_BRANCH=" + parent_package.repo.branch)
 
-# Retrieve DEBIAN_MASTER directly kernel-series.yaml instead
+# Retrieve DEBIAN_MASTER directly from kernel-series.yaml instead
 # of spinning over the debian.*/ directories. Checking the local
 # directories doesn't work well, since we might need to rebase the
 # kernel first to get the updated DEBIAN_MASTER value and we need to
 # update DEBIAN_MASTER in order to rebase it with cranky-rebase.
 #
 # We check the parent kernel's name and assume "debian.master" for
-# "linux" and "debian.BRANCH" for "linux-BRANCH":
+# "linux" or "linux-NN.MM" and "debian.BRANCH" for "linux-BRANCH":
 parent_name=parent_source.name.split("-", 1) # ['linux', 'BRANCH']
-if len(parent_name) <= 1:
+if len(parent_name) <= 1 or re.match("\d+\.\d+$", parent_name[1]):
     master_branch="master"
 else:
     master_branch=parent_name[1]
