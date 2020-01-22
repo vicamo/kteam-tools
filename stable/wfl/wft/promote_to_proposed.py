@@ -239,7 +239,6 @@ class PromoteFromTo(Promoter):
 
                         subject = '[ShankBot] [bug %s] Packages copied to the wrong component' % (s.bug.lpbug.id)
                         to_address  = "kernel-team@lists.ubuntu.com"
-                        to_address += ", ubuntu-installer@lists.ubuntu.com"
                         cinfo('        sending email alert')
                         s.bug.send_email(subject, body, to_address)
 

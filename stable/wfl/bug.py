@@ -790,7 +790,6 @@ class WorkflowBug():
         cdebug('Sending upload announcement')
 
         to_address  = "kernel-team@lists.ubuntu.com"
-        to_address += ", ubuntu-installer@lists.ubuntu.com"
 
         abi_bump = s.has_new_abi()
 
