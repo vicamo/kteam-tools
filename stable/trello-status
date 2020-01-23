@@ -19,7 +19,13 @@ class StatusHtml:
     def __init__(self):
         self.entries = []
 
-    def record(self, group, name, url, color, outdated, status):
+    cache_member = {}
+    def map_member(self, ident):
+        if ident not in self.cache_member:
+            self.cache_member[ident] = tt.trello.member_record(ident)
+        return self.cache_member[ident]
+
+    def record(self, group, name, url, color, outdated, status, owner):
         group_map = {
             'tools': (50, 'Tools and Infrastructure'),
             'customer': (50, 'Commercial Kernels'),
@@ -32,7 +38,7 @@ class StatusHtml:
         }
         (order, group) = group_map.get(group, (80, group))
 
-        self.entries.append([order, group, name, url, color, outdated, status])
+        self.entries.append([order, group, name, url, color, outdated, status, owner])
 
     def emit(self, out):
         self.entries.sort()
@@ -60,15 +66,15 @@ class StatusHtml:
             """.format(now)), file=out)
 
         current_group = None
-        for order, group, name, url, bg_color, outdated, status in self.entries:
+        for order, group, name, url, bg_color, outdated, status, owner in self.entries:
             flag = '&odash;' if outdated else ''
             fg_color = 'color: white' if bg_color in ('purple', 'green') else ''
             if group != current_group:
                 if current_group != None:
-                    print('<tr><td colspan="3">&nbsp;</td></tr>', file=out)
-                print('<tr><td colspan="3" style="background: #e9e7e5; font-size: 140%;">{}</td></tr>'.format(group), file=out)
+                    print('<tr><td colspan="4">&nbsp;</td></tr>', file=out)
+                print('<tr><td colspan="4" style="background: #e9e7e5; font-size: 140%;">{}</td></tr>'.format(group), file=out)
                 current_group = group
-            print('<tr style="background-color: {};{}"><td width="30%"><a href="{}"><span style="{}">{}</span></a></td><td width="80%">{}</td><td>{}</td></tr>'.format(bg_color, fg_color, url, fg_color, name, status, flag), file=out)
+            print('<tr style="background-color: {};{}"><td width="30%"><a href="{}"><span style="{}">{}</span></a></td><td width="60%">{}</td><td>{}</td><td>{}</td></tr>'.format(bg_color, fg_color, url, fg_color, name, status, owner, flag), file=out)
 
         print(dedent("""\
             </table>
@@ -136,6 +142,12 @@ if __name__ == '__main__':
             continue
 
         # Card found analyse it.
+        if len(card_health['idMembers']) > 0:
+            trello_owner = page.map_member(card_health['idMembers'][0])
+            owner = trello_owner['username']
+        else:
+            owner = '-'
+
         ##print(board_name, card_name)
         ##print(card_health)
         health_desc = card_health['desc']
@@ -173,7 +185,7 @@ if __name__ == '__main__':
         health_attrs.setdefault('status', '--')
 
         ##print(health_attrs)
-        page.record(health_attrs['group'], board_entry['name'], board_entry['shortUrl'], color, outdated, health_attrs['status'])
+        page.record(health_attrs['group'], board_entry['name'], board_entry['shortUrl'], color, outdated, health_attrs['status'], owner)
 
     with open(args.dashboard + '.new', 'w') as dfd:
         page.emit(dfd)
