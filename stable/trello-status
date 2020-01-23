@@ -26,6 +26,9 @@ class StatusHtml:
         return self.cache_member[ident]
 
     def record(self, group, name, url, color, outdated, status, owner):
+        if status.strip().lower() == 'complete':
+            group = 'archive'
+
         group_map = {
             'tools': (50, 'Tools and Infrastructure'),
             'customer': (50, 'Commercial Kernels'),
@@ -35,6 +38,7 @@ class StatusHtml:
             'stable': (20, 'Stable'),
             'admin': (30, 'Administrivia'),
             'obsolete': (90, 'Obsolete Boards (for closure)'),
+            'archive': (95, 'For Archiving'),
         }
         (order, group) = group_map.get(group, (80, group))
 
