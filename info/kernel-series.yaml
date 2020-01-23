@@ -1794,7 +1794,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/zesty']
-            supported: true
             testing:
                 flavours:
                     generic:
@@ -1819,7 +1818,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'raspi2']
-            supported: true
             derived-from: [ '17.04', 'linux' ]
 
         linux-snapdragon:
@@ -1829,7 +1827,6 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/zesty', 'snapdragon']
-            supported: true
             copy-forward: [ '16.04', 'linux-snapdragon' ]
 
 # 16.10 (yakkety)
