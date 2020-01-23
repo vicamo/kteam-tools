@@ -35,6 +35,7 @@ class StatusHtml:
             'commercial': (50, 'Commercial Kernels'),
             'projects': (50, 'Projects'),
             'testing': (50, 'Testing and Infrastructure'),
+            'security': (50, 'Security'),
             'development': (10, 'Development'),
             'stable': (20, 'Stable'),
             'admin': (30, 'Administrivia'),
