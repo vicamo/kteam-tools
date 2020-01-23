@@ -614,7 +614,7 @@
 '19.04':
     codename: disco
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
@@ -648,7 +648,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'raspi2']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
@@ -662,7 +661,6 @@
                 linux-signed-oem:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco', 'oem']
-            supported: true
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
@@ -681,7 +679,6 @@
                 linux-signed-oem-osp1:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem-osp1/+git/disco', 'oem']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
@@ -697,7 +694,6 @@
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/disco']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
@@ -716,7 +712,6 @@
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/disco']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -738,7 +733,6 @@
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/disco']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
@@ -754,7 +748,6 @@
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/disco']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
@@ -773,7 +766,6 @@
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/disco']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
@@ -789,7 +781,6 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/disco', 'snapdragon']
-            supported: true
             derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
