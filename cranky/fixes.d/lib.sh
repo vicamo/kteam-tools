@@ -94,3 +94,70 @@ resync_main()
 
 	commit "$msg" "${files[@]}"
 }
+
+resync_batch_start()
+{
+	__fix_batch=()
+}
+
+__resync_batch_sync_if_here()
+{
+	local base="$1"
+	local from="$2"
+	local to="$3"
+
+	[ -z "$to" ] && to="$from"
+	from="$base/$from"
+
+	if [ -f "$from" ] && [ -f "$to" ]; then
+		cp -p "$from" "$to"
+		__fix_batch+=("$to")
+	fi
+}
+resync_batch_master_sync_if_here()
+{
+	__resync_batch_sync_if_here "$FIX_MASTER" "$@"
+}
+resync_batch_main_sync_if_here()
+{
+	__resync_batch_sync_if_here "$FIX_MAIN_PATH" "$@"
+}
+
+__resync_batch_master_sync()
+{
+	local base="$1"
+	local from="$2"
+	local to="$3"
+
+	[ -z "$to" ] && to="$from"
+	from="$base/$from"
+
+	if [ -f "$from" ]; then
+		cp -p "$from" "$to"
+		__fix_batch+=("$to")
+
+	elif [ ! -f "$from" ] && [ -f "$to" ]; then
+		rm -f "$to"
+		__fix_batch+=("$to")
+	fi
+}
+resync_batch_master_sync()
+{
+	__resync_batch_master_sync "$FIX_MASTER" "$@"
+}
+resync_batch_main_sync()
+{
+	__resync_batch_master_sync "$FIX_MAIN_PATH" "$@"
+}
+
+resync_batch_changed()
+{
+	__fix_batch+=("$1")
+}
+
+resync_batch_commit()
+{
+	local msg="$1"
+
+	commit "$msg" "${__fix_batch[@]}"
+}
