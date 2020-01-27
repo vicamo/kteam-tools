@@ -1756,7 +1756,6 @@
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/artful']
-            supported: true
             testing:
                 flavours:
                     generic:
@@ -1773,7 +1772,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'raspi2']
-            supported: true
             derived-from: [ '17.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
@@ -1784,7 +1782,6 @@
                 linux-meta-snapdragon:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/artful', 'snapdragon']
-            supported: true
             copy-forward: [ '16.04', 'linux-snapdragon' ]
 
 # 17.04 (zesty)
