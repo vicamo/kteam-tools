@@ -1602,8 +1602,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.0']
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux-oracle' ]
+            backport: false
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     oracle-edge:
