@@ -1239,8 +1239,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.0']
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux-aws' ]
+            backport: false
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     aws:
