@@ -1459,8 +1459,8 @@
                     publish-to:
                         amd64: [ '18-5.0' ]
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux-gcp' ]
+            backport: false
+            derived-from: [ '19.04', 'linux' ]
             testing:
                 flavours:
                     gke:
