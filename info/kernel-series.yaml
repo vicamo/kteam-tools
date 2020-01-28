@@ -1310,8 +1310,8 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux-azure' ]
+            backport: false
+            derived-from: [ '19.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
             testing:
