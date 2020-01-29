@@ -3,8 +3,50 @@
 # shellcheck source=./cranky/fixes.d/lib.sh
 . "$(dirname "$0")"/lib.sh
 
-# update dkms-build components
-msg="UBUNTU: [Packaging] resync dkms-build"
-resync_main "$msg" debian/scripts/dkms-build debian/scripts/dkms-build--nvidia-390 debian/scripts/fix-filenames.c
+control=''
+case "$FIX_TYPE" in
+main)
+	. debian/debian.env
+	if [ -f "debian/scripts/file-downloader" ]; then
+		control="$DEBIAN/control.stub.in"
+	fi
+	;;
+lrm)
+	for control in "debian/control.stub" "debian/control.common" ""
+	do
+		[ -f "$control" ] && break
+	done
+	;;
+*)
+	fix_verbose "$FIX_TYPE does not consume dkms-build"
+	exit 0
+	;;
+esac
+
+resync_batch_start
+
+# Check and fix the wget/curl dependencies.
+if [ -n "$control" ] && [ -f "${FIX_MAIN_PATH:-.}/debian/scripts/file-downloader" ]; then
+	fix_verbose "checking for Build-Depends: curl"
+	curl=$(grep -c curl "$control")
+	if [ "$curl" = 0 ]; then
+		sed -i 's/wget/curl/' "$control"
+		resync_batch_changed "$control"
+	fi
+fi
+
+case "$FIX_TYPE" in
+main)
+	;;
+*)
+	# update dkms-build components as found in the main package.
+	for file in debian/scripts/dkms-build debian/scripts/file-downloader debian/scripts/dkms-build--nvidia-N debian/scripts/fix-filenames.c
+	do
+		resync_batch_main_sync "$file"
+	done
+	;;
+esac
+
+resync_batch_commit "UBUNTU: [Packaging] resync dkms-build and family"
 
 exit 0
