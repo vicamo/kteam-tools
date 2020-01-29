@@ -280,6 +280,7 @@
             copy-forward: ['19.10', 'linux-raspi2']
 
         linux-raspi2-5.4:
+            variants: ['--']
             packages:
                 linux-raspi2-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi2-5.4']
