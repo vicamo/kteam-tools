@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
                 # Not yet ready for packaging -- Backlog
                 if phase == 'Holding before Packaging':
-                    dest_list = ['In Progress', 'Backlog']
+                    dest_list = ['Backlog']
 
                 # Ready to package -- On Deck
                 elif phase == 'Ready for Packaging':
