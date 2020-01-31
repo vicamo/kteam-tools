@@ -141,10 +141,12 @@ def review(prev_dsc_dir='', changes_files=[], output=None):
             sys.exit(1)
 
         (source_pkg, version) = dsc_source_version(changes_file)
+        source_pkg = re.sub('-[0-9]+\.[0-9]+$', '', source_pkg)
 
         (prev_dsc_file, prev_version) = (None, None)
         for dsc_file in prev_dscs:
             (dsc_source, dsc_version) = dsc_source_version(dsc_file)
+            dsc_source = re.sub('-[0-9]+\.[0-9]+$', '', dsc_source)
 
             # Don't consider files for other source packages ...
             if dsc_source != source_pkg:
