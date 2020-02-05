@@ -187,6 +187,12 @@ if __name__ == '__main__':
                 # Otherwise we are beyond packaging.
                 else:
                     dest_list = ['Done']
+
+                    # A final check for rejection.
+                    task_state = tracker['task'].get('promote-to-proposed', {}).get('status', 'unknown')
+                    if task_state == 'Incomplete':
+                        dest_list = ['For Review', 'Review', 'In Progress', 'Rejected']
+
                 dest_why = phase
 
                 #for task_name, task_data in tracker['task']:
