@@ -287,6 +287,17 @@
                 linux-meta-raspi2-5.4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi2-5.4']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi-5.4']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        armhf: [ '20-pi' ]
+                        arm64: [ '20-pi' ]
             supported: true
             derived-from: [ '20.04', 'linux-5.4' ]
             invalid-tasks: [ 'regression-testing' ]
