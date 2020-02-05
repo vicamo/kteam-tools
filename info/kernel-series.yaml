@@ -1563,6 +1563,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
             supported: true
             derived-from: [ '19.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-ibm-gt:
             routing:
