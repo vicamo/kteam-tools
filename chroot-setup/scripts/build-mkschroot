@@ -180,6 +180,11 @@ esac
 #            XXX: we should use kernel series to instantiate the
 #            full list of packages in the series.
 case "$SUITE" in
+eoan|focal)
+	ADDPKG="$ADDPKG curl"
+	;;
+esac
+case "$SUITE" in
 xenial|bionic|cosmic|disco|eoan)
 	ADDPKG="$ADDPKG default-jdk-headless java-common"
 	;;
