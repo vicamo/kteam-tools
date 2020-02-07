@@ -58,6 +58,9 @@ if [ -z "${main_path}" ] ; then
 	exit 1
 fi
 
+# Run cranky fix as step 1.
+"$here/cranky" fix
+
 # Get main package details (distro, version, ABI, ...)
 # shellcheck disable=SC1090
 . "${main_path}"/debian/debian.env
