@@ -1,0 +1,15 @@
+Deployment
+----------
+In order to use the contained scripting some additional external
+dependencies are required.  To fetch and attache these dependencies run
+the deploy script:
+
+    ./deploy
+
+This will clone any external repositories and link any libraries into
+the consuming tools.
+
+Currently this fetches and installs the following dependencies:
+
+1) so-trello -- used to interact with the trello API.  This is used
+   by kernel-various swm related tools.
