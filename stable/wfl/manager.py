@@ -411,7 +411,10 @@ class WorkflowManager():
                 buglist_rescan = []
                 # Make sure that each bug only appears once.
                 buglist = list(set(buglist))
-                for bugid in list(sorted(buglist, key=s.tracker_key)):
+                # Order such that parents are handled before their children.
+                buglist = list(sorted(buglist, key=s.tracker_key))
+                cinfo("manage_payload: scan={}".format(buglist))
+                for bugid in buglist:
                     with s.lock_bug(bugid):
                         buglist_rescan += s.crank(bugid)
 
@@ -421,7 +424,6 @@ class WorkflowManager():
                 if s.args.dependants:
                     buglist_rescan += s.live_dependants_rescan()
 
-                cinfo("manage_payload: rescan={}".format(buglist_rescan))
                 buglist = buglist_rescan
 
             if not s.args.bugs:
