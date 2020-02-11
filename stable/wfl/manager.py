@@ -113,7 +113,7 @@ class WorkflowManager():
         with s.lock_status():
             status = s.status_load()
             # If we supply no summary assume we want it unchanged.
-            if not summary:
+            if summary is False:
                 summary = status.get(bugid)
             if summary is not None:
                 # Pull forward persistent swm related state.
