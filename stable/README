@@ -75,12 +75,7 @@ create-sru-cards.py:
     YYYY.MM.DD format.
 
     Setup:
-      - git clone https://git.launchpad.net/~apw/+git/so-trello
-      - cd <kteam-tools-repo>/stable && \
-        ln -s <so-trello-repo>/trellotool .
-        or
-        add "export PYTHONPATH=<so-trello-repo>:$PYTHONPATH" to .profile
-        / <shell>rc
+      - ./deploy
       - first time run ($HOME/.trellotool does not exist): run
         create-sru-cards <any YYYY.MM.DD date>, this will print an
         authentication link
