@@ -1449,15 +1449,6 @@
                     - '1.12'
                     - '1.13'
                     - '1.14'
-                gke-nvidia-packages:
-                    - gke-1.11-stable-amd64
-                    - gke-1.11-amd64
-                    - gke-1.12-stable-amd64
-                    - gke-1.12-amd64
-                    - gke-1.13-stable-amd64
-                    - gke-1.13-amd64
-                    - gke-1.14-stable-amd64
-                    - gke-1.14-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
@@ -1491,9 +1482,6 @@
             swm:
                 gke-releases:
                     - '1.15'
-                gke-nvidia-packages:
-                    - gke-1.15-stable-amd64
-                    - gke-1.15-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
@@ -1529,11 +1517,6 @@
                 gke-releases:
                     - '1.16'
                     - '1.17'
-                gke-nvidia-packages:
-                    - gke-1.16-stable-amd64
-                    - gke-1.16-amd64
-                    - gke-1.17-stable-amd64
-                    - gke-1.17-amd64
 
         linux-kvm:
             packages:
