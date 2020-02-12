@@ -1445,9 +1445,14 @@
                         clouds: ['gke']
             swm:
                 gke-nvidia-packages:
-                    - gke-amd64
-                    - gke-d1703-0-amd64
-                    - gke-d1809-0-amd64
+                    - gke-1.11-stable-amd64
+                    - gke-1.11-amd64
+                    - gke-1.12-stable-amd64
+                    - gke-1.12-amd64
+                    - gke-1.13-stable-amd64
+                    - gke-1.13-amd64
+                    - gke-1.14-stable-amd64
+                    - gke-1.14-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
@@ -1480,7 +1485,8 @@
                         clouds: ['gke']
             swm:
                 gke-nvidia-packages:
-                    - gke-d1903-0-amd64
+                    - gke-1.15-stable-amd64
+                    - gke-1.15-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
@@ -1514,7 +1520,10 @@
             invalid-tasks: [ 'certification-testing' ]
             swm:
                 gke-nvidia-packages:
-                    - gke-d1903-0-amd64
+                    - gke-1.16-stable-amd64
+                    - gke-1.16-amd64
+                    - gke-1.17-stable-amd64
+                    - gke-1.17-amd64
 
         linux-kvm:
             packages:
