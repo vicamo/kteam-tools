@@ -1444,11 +1444,11 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['gke']
             swm:
-                gke-releases:
-                    - '1.11'
-                    - '1.12'
-                    - '1.13'
-                    - '1.14'
+                #gke-releases:
+                #    - '1.11'
+                #    - '1.12'
+                #    - '1.13'
+                #    - '1.14'
                 gke-nvidia-packages:
                     - gke-amd64
                     - gke-d1703-0-amd64
@@ -1520,9 +1520,9 @@
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
             swm:
-                gke-releases:
-                    - '1.16'
-                    - '1.17'
+                #gke-releases:
+                #    - '1.16'
+                #    - '1.17'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
 
