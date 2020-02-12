@@ -214,7 +214,15 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '._prerequisites_released')
         retval = True
 
-        gke_nvidia_packages = s.bug.swm_config.gke_nvidia_packages
+        # Build a list of packages we are expecting.
+        gke_nvidia_packages = []
+        gke_releases = s.bug.swm_config.gke_releases
+        if gke_releases:
+            for release in gke_releases:
+                gke_nvidia_packages.append('gke-{}-stable-amd64'.format(release))
+        gke_nvidia_packages += s.bug.swm_config.gke_nvidia_packages
+
+        # Check the list of artifacts.
         if gke_nvidia_packages:
             missing = []
             for flavour in gke_nvidia_packages:
