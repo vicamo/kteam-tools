@@ -1061,6 +1061,29 @@
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
+        linux-hwe-5.0:
+            variants: [ '-gkeop-5.0' ]
+            packages:
+                linux-hwe-5.0:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.0']
+                linux-meta-hwe-5.0:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe-5.0']
+                linux-signed-hwe-5.0:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-5.0']
+                linux-restricted-modules-hwe-5.0:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.0']
+            supported: true
+            backport: true
+            derived-from: [ '19.04', 'linux' ]
+            testing:
+                flavours:
+                    hwe:
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+
         linux-hwe-edge:
             packages:
                 linux-hwe-edge:
