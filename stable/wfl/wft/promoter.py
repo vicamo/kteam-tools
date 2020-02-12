@@ -242,6 +242,8 @@ class Promoter(TaskHandler):
                     cdebug("missing {}".format(obj))
                     missing.append(obj)
             if len(missing) > 0:
+                if len(missing) > 3:
+                    missing = missing[0:2] + ['(+{} others)'.format(len(missing) - 2)]
                 s.task.reason = "Pending -- Nvidia objects not found -- {}".format(','.join(missing))
                 s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(hours=1),
                     'polling for nvidia objects {}'.format(','.join(missing)))
