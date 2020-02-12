@@ -59,7 +59,11 @@ class SwmConfig:
 
     @property
     def gke_nvidia_packages(self):
-        return self._data.get('gke-nvidia-packages', None)
+        return self._data.get('gke-nvidia-packages', [])
+
+    @property
+    def gke_releases(self):
+        return self._data.get('gke-releases', [])
 
     def in_blackout(self, when):
         for blackout in self._blackouts:
