@@ -1449,6 +1449,10 @@
                     - '1.12'
                     - '1.13'
                     - '1.14'
+                gke-nvidia-packages:
+                    - gke-amd64
+                    - gke-d1703-0-amd64
+                    - gke-d1809-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
@@ -1482,6 +1486,8 @@
             swm:
                 gke-releases:
                     - '1.15'
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
@@ -1517,6 +1523,8 @@
                 gke-releases:
                     - '1.16'
                     - '1.17'
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
 
         linux-kvm:
             packages:
