@@ -278,7 +278,7 @@ class WorkflowManager():
 
                 # Our parent is being duplicated, record the new one so we can apply it
                 # on our next scan.
-                child_data['manager']['fix-master'] = str(new)
+                child_data['manager']['fix-master'] = int(new)
 
                 # Mark this child as needing scanning by removing its scan time.
                 child_data['manager']['time-scanned'] = None
