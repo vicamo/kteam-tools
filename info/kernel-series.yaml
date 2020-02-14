@@ -241,22 +241,22 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
-        linux-5.5:
-            versions: ['5.5.0']
+        linux-5.6:
+            versions: ['5.6.0']
             variants: ['-wip']
             packages:
-                linux-5.5:
+                linux-5.6:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
-                linux-meta-5.5:
+                linux-meta-5.6:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
-                linux-signed-5.5:
+                linux-signed-5.6:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
-                linux-restricted-modules-5.5:
+                linux-restricted-modules-5.6:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
-            supported: true
+            supported: false
             testing:
                 flavours:
                     generic:
