@@ -85,7 +85,7 @@ class PromoteFromTo(Promoter):
                     reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
                     if failures is not None:
                         reason += ' ' + ','.join(failures)
-                    s.task.reason = reason
+                    s.bug.reasons['build-packages'] = reason
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
