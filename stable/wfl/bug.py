@@ -79,7 +79,7 @@ class WorkflowBug():
         s.title = s.lpbug.title
         s._tags = None
         s.bprops = s.load_bug_properties()
-        s.overall_reason = None
+        s.reasons = {}
         s._refresh = [None, None]
         s.is_development_series = False
         s._master_bug = False
@@ -114,7 +114,7 @@ class WorkflowBug():
             # Report why we are not valid.
             for l in e.args:
                 cinfo(l, 'red')
-            s.overall_reason = e.args[0]
+            s.reasons['overall'] = e.args[0]
             s.is_valid = False
             s.debs = None
 
@@ -434,7 +434,9 @@ class WorkflowBug():
         newd = ''
 
         if len(s.bprops) > 0:
-            new_props = yaml.safe_dump(s.bprops, default_flow_style=False).strip()
+            status = s.bprops
+            status.setdefault('reason', {}).update(s.reasons)
+            new_props = yaml.safe_dump(status, default_flow_style=False).strip()
 
             description = s.lpbug.description
             for l in description.split('\n'):
@@ -492,6 +494,7 @@ class WorkflowBug():
         Return the current reason set for this bug.
         '''
         status = s.bprops
+        status.setdefault('reason', {}).update(s.reasons)
 
         # Check if we are actually fully complete, if so then
         # we can delete this entry from status.
@@ -516,8 +519,6 @@ class WorkflowBug():
                 s.snap.name != s.name):
                 task[taskname]['target'] = s.snap.name
 
-        if s.overall_reason is not None:
-            status.setdefault('reason', {})['overall'] = s.overall_reason
         if s.refresh[0] is not None:
             status['refresh'] = s.refresh
 
