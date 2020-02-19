@@ -194,19 +194,19 @@
             security:
             release:
     sources:
-        linux-5.4:
+        linux:
             versions: ['5.4.0']
             variants: ['--']
             packages:
-                linux-5.4:
+                linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
-                linux-meta-5.4:
+                linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
-                linux-signed-5.4:
+                linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
-                linux-restricted-modules-5.4:
+                linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
             supported: true
@@ -279,14 +279,14 @@
             invalid-tasks: [ 'regression-testing' ]
             copy-forward: ['19.10', 'linux-raspi2']
 
-        linux-raspi2-5.4:
+        linux-raspi2:
             variants: ['--']
             packages:
-                linux-raspi2-5.4:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi2-5.4']
-                linux-meta-raspi2-5.4:
+                linux-raspi2:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi2']
+                linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi2-5.4']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi2']
             snaps:
                 pi-kernel:
                     primary: true
@@ -299,7 +299,7 @@
                         armhf: [ '20-pi' ]
                         arm64: [ '20-pi' ]
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem-5.4:
@@ -324,19 +324,19 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
-        linux-aws-5.4:
+        linux-aws:
             variants: ['--']
             packages:
-                linux-aws-5.4:
+                linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal']
-                linux-meta-aws-5.4:
+                linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal']
-                linux-restricted-modules-aws-5.4:
+                linux-restricted-modules-aws:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             testing:
                 flavours:
                     aws:
@@ -344,22 +344,22 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-azure-5.4:
+        linux-azure:
             variants: ['--']
             packages:
-                linux-azure-5.4:
+                linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'master-next']
-                linux-meta-azure-5.4:
+                linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal']
-                linux-signed-azure-5.4:
+                linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal']
-                linux-restricted-modules-azure-5.4:
+                linux-restricted-modules-azure:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             swm:
                 deployment-blackout: &swm-azure-blackout
                     - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
@@ -373,22 +373,22 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
-        linux-gcp-5.4:
+        linux-gcp:
             variants: ['--']
             packages:
-                linux-gcp-5.4:
+                linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'master-next']
-                linux-meta-gcp-5.4:
+                linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal']
-                linux-signed-gcp-5.4:
+                linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal']
-                linux-restricted-modules-gcp-5.4:
+                linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             testing:
                 flavours:
                     gcp:
@@ -396,16 +396,16 @@
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-kvm-5.4:
+        linux-kvm:
             variants: ['--']
             packages:
-                linux-kvm-5.4:
+                linux-kvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/focal', 'master-next']
-                linux-meta-kvm-5.4:
+                linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/focal']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             testing:
                 flavours:
                     kvm:
@@ -413,22 +413,22 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-oracle-5.4:
+        linux-oracle:
             variants: ['--']
             packages:
-                linux-oracle-5.4:
+                linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'master-next']
-                linux-meta-oracle-5.4:
+                linux-meta-oracle:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal']
-                linux-signed-oracle-5.4:
+                linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal']
-                linux-restricted-modules-oracle-5.4:
+                linux-restricted-modules-oracle:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             testing:
                 flavours:
                     oracle:
