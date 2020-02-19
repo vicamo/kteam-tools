@@ -1072,9 +1072,9 @@
                 linux-signed-hwe-5.0:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-5.0']
-                linux-restricted-modules-hwe-5.0:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.0']
+                #linux-restricted-modules-hwe-5.0:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.0']
             supported: true
             backport: true
             derived-from: [ '19.04', 'linux' ]
