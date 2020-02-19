@@ -1635,7 +1635,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.0:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-oracle-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.0-next']
@@ -1659,8 +1659,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
-            routing: prerelease
-            variants: [ '-wip' ]
+            variants: [ '-edge' ]
             packages:
                 linux-oracle-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.3-next']
