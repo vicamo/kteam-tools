@@ -317,7 +317,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.4']
             supported: true
-            derived-from: [ '20.04', 'linux-5.4' ]
+            derived-from: [ '20.04', 'linux' ]
             testing:
                 flavours:
                     oem:
