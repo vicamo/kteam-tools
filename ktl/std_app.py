@@ -4,7 +4,7 @@
 from os                                 import path
 from os                                 import _exit
 import json
-from utils                              import stdo
+from .utils                             import stdo
 
 # StdApp
 #
