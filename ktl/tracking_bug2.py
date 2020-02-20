@@ -1126,7 +1126,7 @@ class TrackingBugs():
         cleave(s.__class__.__name__ + '.get_series_package')
         return bug_list
 
-    def __wf_task_valid(s, wf_series, ks_source, variant):
+    def __wf_task_valid(s, wf_series, ks_source, variant, snap_name=None):
         '''
         Internal helper to decide whether a certain workflow task should be
         added to a launchpad bug.
@@ -1208,7 +1208,7 @@ class TrackingBugs():
             if wf_series.name.startswith('snap-'):
                 snap = None
                 for entry in ks_source.snaps:
-                    if entry.primary:
+                    if entry.name == snap_name or (snap_name is None and entry.primary):
                         snap = entry
                         break
                 if snap is None:
@@ -1244,13 +1244,17 @@ class TrackingBugs():
             tracking bug is for.
         :type: str
 
-        :param pkg_name: The name of the package/snap
+        :param pkg_name: The name of the source (for combo and debs tracking bugs
+          this is the same as the package name).
+        :type: str
+
+        :param name: Optional name of snap in case of a snap-debs tracking bug
+          (will be ignored for combo and debs tracking bugs).
         :type: str
 
         :param variant: What kind of package is tracked by this tracking
             bug. Currently there are 'combo', 'debs', and 'snap-debs'
             tracker.
-
         :type: str
 
         :returns: New tracking bug object (added to the set as well).
@@ -1311,7 +1315,7 @@ class TrackingBugs():
 
         # First add all of the workflow tasks
         for wf_task in wf_project.lp_project.series_collection:
-            if s.__wf_task_valid(wf_task, ks_source, variant):
+            if s.__wf_task_valid(wf_task, ks_source, variant, snap_name=name):
                 cdebug('    adding: %s' % wf_task.display_name)
                 nomination = lp_bug.addNomination(target=wf_task)
                 if nomination.canApprove():
