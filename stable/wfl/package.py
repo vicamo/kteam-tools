@@ -96,7 +96,10 @@ class Package():
                 for route in pocket_data:
                     cinfo('        {}: {} {}'.format(pocket, route[0].reference, route[1]), 'blue')
 
-        s.pkgs = s.dependent_packages
+        if s.source is not None:
+            s.pkgs = s.dependent_packages
+        else:
+            s.pkgs = None
         if s.pkgs == None:
             raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
