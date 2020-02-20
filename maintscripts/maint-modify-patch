@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 from sys                                import argv, stdin
@@ -178,7 +178,7 @@ class Cmdline:
                     self.cfg['modify-operation'] = True
                     self.cfg['patch-files'] = args
 
-        except GetoptError, error:
+        except GetoptError as error:
             print(error, defaults)
             raise CmdlineError('')
 
@@ -357,7 +357,7 @@ class ModifyPatch(StdApp):
         sob_insertion_point               = False
         just_copy                         = False
 
-        with patch as src, NamedTemporaryFile(dir='./', delete=False) as dst:
+        with patch as src, NamedTemporaryFile(dir='./', delete=False, mode='w') as dst:
             temp = dst.name
             try:
                 for line in src:
