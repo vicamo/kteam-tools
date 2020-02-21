@@ -290,6 +290,28 @@
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
+        linux-oem-5.6:
+            variants: ['-oem-20.04-edge']
+            packages:
+                linux-oem-5.6:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.6-next']
+                linux-meta-oem-5.6:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.6']
+                linux-signed-oem-5.6:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.6']
+                linux-restricted-modules-oem-5.6:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.6']
+            supported: true
+            derived-from: [ '20.04', 'linux-5.6' ]
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-oem-5.4:
             variants: ['-oem-20.04']
             packages:
