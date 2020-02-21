@@ -104,7 +104,7 @@
           list: 'On Deck'
         - name: 'Review CVE matrix'
           list: 'On Deck'
-        - name: 'Apply upstream stable updates'
+        - name: 'Prepare upstream stable updates'
           list: 'On Deck'
         - name: 'Apply patches from the ML'
           list: 'On Deck'
