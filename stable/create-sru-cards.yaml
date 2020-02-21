@@ -12,6 +12,7 @@
           - 'On Deck'
           - 'In Progress'
           - 'For Review'
+          - 'Rejected'
           - 'Done'
           - 'Retrospective: What worked?'
           - 'Retrospective: What did not work?'
