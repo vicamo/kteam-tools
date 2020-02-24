@@ -879,7 +879,15 @@ class WorkflowBug():
         duplicates = s.lpbug.lpbug.duplicates
         #duplicates = [ s.lp.get_bug('1703532') ]
         for dup in duplicates:
-            dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series, sru_cycle=s.sc)
+            cdebug("workflow_duplicates: checking {}".format(dup.id))
+            try:
+                dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series, sru_cycle=s.sc)
+            except WorkflowBugError as e:
+                cinfo("workflow_duplicates: duplicate {} threw a {} exception, ignored".format(dup.id, e.__class__.__name__))
+                for l in e.args:
+                    cinfo(l, 'red')
+                continue
+
             if not dup_wb.is_workflow or not dup_wb.is_valid:
                 continue
             retval.append(dup_wb)
