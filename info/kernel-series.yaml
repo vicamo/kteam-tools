@@ -673,6 +673,7 @@
                     lowlatency:
                         arches: ['amd64', 'i386']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            invalid-tasks: [ 'regression-testing', 'automated-testing', 'certification-testing']
 
         linux-raspi2:
             routing: eol
