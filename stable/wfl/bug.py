@@ -88,10 +88,14 @@ class WorkflowBug():
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
-        (s.is_workflow, s.is_crankable, s.is_closed) = s.check_is_valid(s.lpbug)
+        (s.is_workflow, s.is_crankable, s.is_closed, s.is_gone) = s.check_is_valid(s.lpbug)
         if not s.is_workflow:
             raise WorkflowBugError('Bug is not a workflow bug')
         s.properties = s.lpbug.properties
+
+        # If this tracker is_closed drop out quietly and quickly.
+        if s.is_gone:
+            return
 
         # Instantiate this variant.
         try:
@@ -258,7 +262,7 @@ class WorkflowBug():
     #
     def _remove_live_tag(s):
         # If this task is now closed, also drop the live tag.
-        if s.is_valid and s.tasks_by_name[s.workflow_project].status == 'Fix Released':
+        if s.is_valid and s.is_closed:
             if s._dryrun:
                 cinfo('    dryrun - workflow task is closed -- removing -live tag', 'red')
             else:
@@ -550,6 +554,7 @@ class WorkflowBug():
         workflow = False
         valid = False
         closed = False
+        gone = False
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
@@ -560,9 +565,11 @@ class WorkflowBug():
                     valid = True
                 elif t.status == 'Fix Released':
                     closed = True
+                elif t.status == 'Invalid':
+                    gone = True
                 break
 
-        return (workflow, valid, closed)
+        return (workflow, valid, closed, gone)
 
     # _create_tasks_by_name_mapping
     #

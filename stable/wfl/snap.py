@@ -139,6 +139,8 @@ class SnapDebs:
             # We take our version from the debs we are snapping up
             # so grab the version data from there and update the bug
             # title to match as needed.
+            if not s.bug.is_derivative_package:
+                raise SnapError("snap-debs requires a master bug pointing at the deb builds to be snapped")
             s.bug.version_from_master()
 
             # Expect this bug to have the data we need to identify the
