@@ -13,4 +13,4 @@ case "$HOME" in
 */shankbot)	HOME="${HOME%/shankbot}" ;;
 esac
 
-HOME=$HOME/shankbot "$here/swm-publishing" "$@" 2>&1 | tee -a "$HOME/logs/swm-publishing.log"
+HOME=$HOME/shankbot timeout 3600 "$here/swm-publishing" "$@" 2>&1 | tee -a "$HOME/logs/swm-publishing.log"
