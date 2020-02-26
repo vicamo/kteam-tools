@@ -30,11 +30,14 @@ class GcpBucketObject:
 
     # __init__
     #
-    def __init__(self, bucket, obj):
+    def __init__(self, bucket, obj, prefix=False):
         """
         :param url: GCP bucket object url
         """
         center(self.__class__.__name__ + '.__init__')
+
+        if prefix:
+            obj = '?prefix=' + obj
 
         url = 'https://www.googleapis.com/storage/v1/b/{bucket}/o/{object}'.format(bucket=bucket, object=obj)
 
@@ -49,6 +52,12 @@ class GcpBucketObject:
             req = Request(url)
             with opener.open(req) as resp:
                 self._data = json.loads(resp.read().decode('utf-8'))
+            if prefix:
+                items = self._data.get('items', [])
+                if len(items) > 0:
+                    self._data = items[0]
+                else:
+                    self._present = False
         except HTTPError as e:
             if hasattr(e, 'code') and e.code == 404:
                 self._data = json.loads(e.read().decode('utf-8'))
