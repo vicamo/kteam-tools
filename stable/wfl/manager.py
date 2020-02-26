@@ -229,6 +229,33 @@ class WorkflowManager():
 
         return result
 
+    def cycle_key(s, entry):
+        cycle = entry[1].get('cycle', '-')
+        if cycle != '-':
+            cycle_bits = cycle.split('-')
+            cycle_bits[-1] = '{:03}'.format(int(cycle_bits[-1]))
+            cycle = '-'.join(cycle_bits)
+        return cycle
+
+    def live_trackers_for_target(s, series, source, target):
+        result = []
+        with s.lock_status():
+            status = s.status_load()
+
+        for tracker_nr, tracker_data in status.items():
+            t_series = tracker_data.get('series', 'unknown')
+            t_source = tracker_data.get('source', 'unknown')
+            t_target = tracker_data.get('target', 'unknown')
+            t_phase = tracker_data.get('phase', 'unknown')
+
+            if (series == t_series and
+                source == t_source and
+                target == t_target and
+                t_phase != 'Complete'):
+                    result.append((tracker_nr, tracker_data))
+
+        return sorted(result, key=s.cycle_key)
+
     def live_dependants_rescan(s):
         result = []
         with s.lock_status():
@@ -470,7 +497,7 @@ class WorkflowManager():
                 s.status_set(bugid, None)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle)
+            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle, manager=s)
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))

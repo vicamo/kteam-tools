@@ -46,7 +46,7 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid=None, bug=None, ks=None, sru_cycle=None):
+    def __init__(s, lp, bugid=None, bug=None, ks=None, sru_cycle=None, manager=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
@@ -75,6 +75,7 @@ class WorkflowBug():
 
         s.kernel_series = KernelSeries() if ks is None else ks
         s.sc = SruCycle() if sru_cycle is None else sru_cycle
+        s.manager = manager
 
         s.title = s.lpbug.title
         s._tags = None
@@ -85,6 +86,7 @@ class WorkflowBug():
         s._master_bug = False
         s._sru_spin = False
         s.is_valid = True
+        s._target_trackers = None
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -911,5 +913,14 @@ class WorkflowBug():
                 target = variant_obj.name
                 break
         return target
+
+    # target_trackers
+    #
+    @property
+    def target_trackers(s):
+        if s._target_trackers is None:
+            cinfo("APW lookup target_trackers")
+            s._target_trackers = s.manager.live_trackers_for_target(s.series, s.name, s.target)
+        return s._target_trackers
 
 # vi:set ts=4 sw=4 expandtab:
