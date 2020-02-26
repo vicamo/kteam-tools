@@ -65,6 +65,10 @@ class SwmConfig:
     def gke_releases(self):
         return self._data.get('gke-releases', [])
 
+    @property
+    def nvidia_releases(self):
+        return self._data.get('nvidia-releases', [])
+
     def in_blackout(self, when):
         for blackout in self._blackouts:
             if when >= blackout[0] and when < blackout[1]:
