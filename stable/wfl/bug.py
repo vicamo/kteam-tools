@@ -530,10 +530,9 @@ class WorkflowBug():
             if s.version is not None:
                 status['version'] = s.version
             # Identify the target of this bug.
-            for target in (s.debs, s.snap):
-                if target is not None:
-                    status['target'] = target.name
-                    break
+            target = s.target
+            if target is not None:
+                status['target'] = target
         except Exception as e:
             cerror("status failed {}".format(e))
 
@@ -901,5 +900,16 @@ class WorkflowBug():
             retval.append(dup_wb)
 
         return retval
+
+    # target
+    #
+    @property
+    def target(s):
+        target = None
+        for variant_obj in (s.debs, s.snap):
+            if variant_obj is not None:
+                target = variant_obj.name
+                break
+        return target
 
 # vi:set ts=4 sw=4 expandtab:
