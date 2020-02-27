@@ -210,7 +210,7 @@ class PreparePackage(TaskHandler):
             # If we are a master kernel wait for main package builds to complete.
             if (pkg == 'main' and not s.bug.is_derivative_package and
                     not s.bug.debs.built_and_in_pocket(pkg, 'ppa')):
-                s.task.reason = 'Ongoing -- {} package not yet fully built'
+                s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
                 break
 
             s.task.status = 'Fix Released'
