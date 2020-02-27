@@ -392,8 +392,13 @@ class WorkflowBug():
             dup_wb.lpbug.lpbug.duplicate_of = s.lpbug.lpbug
             dup_wb.lpbug.lpbug.lp_save()
 
-            # Now that we have duplicated the bug, drop the replaces.
             del s.bprops['replaces']
+
+            # Now we are duplicated to that bug consider any replaces it
+            # also expresses.
+            if 'replaces' in dup_wb.bprops:
+                s.bprops['replaces'] = dup_wb.bprops['replaces']
+                s.dup_replaces(inactive_only)
 
         cleave(s.__class__.__name__ + '.dup_replaces')
 
