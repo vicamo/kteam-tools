@@ -365,7 +365,7 @@ class TrackingBug(object):
     @target_version.setter
     def target_version(s, version):
         s._target_version = version
-        s.__bug.title = '{}: {} -proposed tracker'.format(s._target_package, version)
+        s.__bug.title = '{}/{}: {} -proposed tracker'.format(s._target_series, s._target_package, version)
 
     @property
     def target_series(s):
@@ -1299,7 +1299,7 @@ class TrackingBugs():
             description = '-proposed tracker'
         else:
             description = variant
-        title = '{}: {} {}'.format(pkg_name, s.__tbd.no_version, description)
+        title = '{}/{}: {} {}'.format(series_name, pkg_name, s.__tbd.no_version, description)
         # Initial description
         desc  = s.__tbd.desc_tmpl
 
