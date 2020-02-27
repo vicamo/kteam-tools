@@ -34,12 +34,15 @@ class PromoteToRelease(Promoter):
             if not s.bug.debs.all_in_pocket('Proposed'):
                 break
 
-            if not s._prerequisites_released():
-                # Note this will set an appropriate reason.
-                break
+            # Note this will set appropriate reasons.
+            prerequisites = s._prerequisites_released()
 
             # If testing is not complete, we are not ready to release.
             if not s._testing_completed():
+                break
+
+            if not prerequisites:
+                s.task.reason = 'Pending -- prerequisites not ready'
                 break
 
             if s._kernel_block():
