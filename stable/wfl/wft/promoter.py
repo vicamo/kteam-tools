@@ -216,19 +216,19 @@ class Promoter(TaskHandler):
         # Check the list of artifacts.
         if gke_nvidia_packages or nvidia_releases:
             missing = []
-            for flavour in gke_nvidia_packages:
-                obj = 'current-driver-{}-{}-{}'.format(s.bug.kernel, s.bug.abi, flavour)
-                cdebug("checking {}".format(obj))
-                gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
-                if gke_object.present is False:
-                    cdebug("missing {}".format(obj))
-                    missing.append(obj)
             for release in nvidia_releases:
                 obj = 'nvidia-driver-gke_{}-{}-gke-{}.'.format(s.bug.kernel, s.bug.abi, release)
                 cdebug("checking prefix {}".format(obj))
                 gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj, prefix=True)
                 if gke_object.present is False:
                     obj += '*'
+                    cdebug("missing {}".format(obj))
+                    missing.append(obj)
+            for flavour in gke_nvidia_packages:
+                obj = 'current-driver-{}-{}-{}'.format(s.bug.kernel, s.bug.abi, flavour)
+                cdebug("checking {}".format(obj))
+                gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
+                if gke_object.present is False:
                     cdebug("missing {}".format(obj))
                     missing.append(obj)
             if len(missing) > 0:
