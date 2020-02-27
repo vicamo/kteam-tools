@@ -95,6 +95,7 @@ if ! [ -e "${dsc}" ] ; then
 	variant=${src_pkg#linux-}
 	variant=${variant#meta-}
 	variant=${variant#signed-}
+	variant=${variant#restricted-modules-}
 
 	getabis=${HOME}/.getabis.${release}-${variant}
 	if ! [ -e "${getabis}" ] ; then
