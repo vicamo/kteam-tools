@@ -159,6 +159,9 @@ def __status_bites(bug, attrs):
         retval = __coloured('Being cranked by: %s' % (__assignee(bug, prep_task)), '#1496bb')
     elif prep_status == 'Fix Committed':
         retval = __coloured('Uploaded by: %s' % (__assignee(bug, prep_task)), '#1496bb')
+        build_packages = bug.get('reason', {}).get('build-packages-ppa')
+        if build_packages is not None:
+            retval = ''
     if retval != '':
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
