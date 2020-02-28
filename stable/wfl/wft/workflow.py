@@ -144,6 +144,27 @@ class Workflow(TaskHandler):
                     s.task.reason = "snap channel revisions inconsistent {}".format(",".join(reasons))
                     break
 
+            if s.bug.is_valid and s.bug.debs:
+                for pocket in ('ppa', 'Signing', 'Proposed'):
+                    failures = s.bug.debs.all_failures_in_pocket(pocket, ignore_all_missing=True)
+                    if failures is None:
+                        continue
+                    building = False
+                    state = 'Ongoing'
+                    for failure in failures:
+                        if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                            state = 'Pending'
+                        if failure.endswith(':building'):
+                            building = True
+                    # If something is building elide any depwaits.  These are almost cirtainly waiting
+                    # for that build to complete.  Only show them when nothing else is showing.
+                    if building:
+                        failures = [failure for failure in failures if not failure.endswith(':depwait')]
+                    reason = '{} -- building in {}'.format(state, pocket)
+                    if failures is not None:
+                        reason += ' ' + ' '.join(failures)
+                    s.bug.reasons['build-packages-' + pocket.lower()] = reason
+
             #
             # FINAL VALIDATION:
             #

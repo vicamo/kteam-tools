@@ -73,19 +73,19 @@ class PromoteFromTo(Promoter):
                 break
 
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
-                # Report PPA build status because there are no other open tasks monitoring
-                # that segment.  For signing -> proposed the promote-to-proposed task is
-                # already monitoring in its destination before closing.
-                if s.pocket_src == 'ppa':
-                    failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
-                    state = 'Ongoing'
-                    for failure in failures:
-                        if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                            state = 'Pending'
-                    reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
-                    if failures is not None:
-                        reason += ' ' + ' '.join(failures)
-                    s.bug.reasons['build-packages'] = reason
+                ## Report PPA build status because there are no other open tasks monitoring
+                ## that segment.  For signing -> proposed the promote-to-proposed task is
+                ## already monitoring in its destination before closing.
+                #if s.pocket_src == 'ppa':
+                #    failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
+                #    state = 'Ongoing'
+                #    for failure in failures:
+                #        if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                #            state = 'Pending'
+                #    reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
+                #    if failures is not None:
+                #        reason += ' ' + ' '.join(failures)
+                #    s.bug.reasons['build-packages'] = reason
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -175,15 +175,16 @@ class PromoteFromTo(Promoter):
                 elif s.task.status == 'Incomplete':
                     s.task.reason = 'Stalled -- review FAILED'
                 elif s.task.status == 'Fix Committed':
-                    failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
-                    state = s.task.reason_state('Ongoing', timedelta(hours=4))
-                    for failure in failures:
-                        if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                            state = 'Pending'
-                    reason = '{} -- package copies requested to {}'.format(state, s.pocket_dest)
-                    if failures is not None:
-                        reason += ' ' + ' '.join(failures)
-                    s.task.reason = reason
+                    #failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                    #state = s.task.reason_state('Ongoing', timedelta(hours=4))
+                    #for failure in failures:
+                    #    if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                    #        state = 'Pending'
+                    #reason = '{} -- package copies requested to {}'.format(state, s.pocket_dest)
+                    #if failures is not None:
+                    #    reason += ' ' + ' '.join(failures)
+                    s.task.reason = '{} -- package copies requested to {}'.format(
+                        s.task.reason_state('Ongoing', timedelta(hours=4)), s.pocket_dest)
                 else:
                     s.task.reason = '{} -- review in progress'.format(
                         s.task.reason_state('Ongoing', timedelta(hours=4)))
@@ -196,15 +197,17 @@ class PromoteFromTo(Promoter):
 
             # If they are now all built ...
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
-                failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
-                state = 'Ongoing'
-                for failure in failures:
-                    if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                        state = 'Pending'
-                reason = '{} -- package copied to {}'.format(state, s.pocket_dest)
-                if failures is not None:
-                    reason += ' ' + ' '.join(failures)
-                s.task.reason = reason
+                #failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                #state = 'Ongoing'
+                #for failure in failures:
+                #    if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                #        state = 'Pending'
+                #reason = '{} -- package copied to {}'.format(state, s.pocket_dest)
+                #if failures is not None:
+                #    reason += ' ' + ' '.join(failures)
+                #s.task.reason = reason
+                s.task.reason = '{} -- packages copying to {}'.format(
+                    s.task.reason_state('Ongoing', timedelta(hours=4)), s.pocket_dest)
                 break
             if s.pocket_dest == 'Proposed':
                 if not s.bug.debs.ready_for_testing:

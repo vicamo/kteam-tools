@@ -698,8 +698,9 @@ class Package():
 
     # all_failures_in_pocket
     #
-    def all_failures_in_pocket(s, pocket):
+    def all_failures_in_pocket(s, pocket, ignore_all_missing=False):
         failures = []
+        missing = 0
         for pkg in s.srcs:
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
@@ -712,12 +713,16 @@ class Package():
                     failures.append("{}:failed".format(pkg))
             elif status == '':
                 failures.append("{}:missing".format(pkg))
+                missing += 1
             elif status == 'FULLYBUILT_PENDING':
                 failures.append("{}:queued".format(pkg))
 
         if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
                 s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
             failures.append("signed:retry-needed")
+
+        if ignore_all_missing and len(failures) == missing:
+                failures = []
 
         return sorted(failures) if len(failures) > 0 else None
 
