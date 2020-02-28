@@ -84,7 +84,7 @@ class PromoteFromTo(Promoter):
                             state = 'Pending'
                     reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
                     if failures is not None:
-                        reason += ' ' + ','.join(failures)
+                        reason += ' ' + ' '.join(failures)
                     s.bug.reasons['build-packages'] = reason
                 break
 
@@ -182,7 +182,7 @@ class PromoteFromTo(Promoter):
                             state = 'Pending'
                     reason = '{} -- package copies requested to {}'.format(state, s.pocket_dest)
                     if failures is not None:
-                        reason += ' ' + ','.join(failures)
+                        reason += ' ' + ' '.join(failures)
                     s.task.reason = reason
                 else:
                     s.task.reason = '{} -- review in progress'.format(
@@ -203,7 +203,7 @@ class PromoteFromTo(Promoter):
                         state = 'Pending'
                 reason = '{} -- package copied to {}'.format(state, s.pocket_dest)
                 if failures is not None:
-                    reason += ' ' + ','.join(failures)
+                    reason += ' ' + ' '.join(failures)
                 s.task.reason = reason
                 break
             if s.pocket_dest == 'Proposed':
