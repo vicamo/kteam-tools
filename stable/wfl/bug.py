@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 from datetime                           import datetime, timedelta, timezone
+from textwrap                           import fill
 import yaml
 import re
 from lib.utils                          import date_to_string, string_to_date
@@ -441,6 +442,32 @@ class WorkflowBug():
         cleave(s.__class__.__name__ + '.load_bug_properties')
         return retval
 
+    # properties_for_description
+    #
+    # Turn the properties into a valid yaml representation but formatted at a
+    # pleasant width so it will not be wrapped further by launchpad.  We have
+    # to do this ourselves because width restrtictions are soft in the
+    # yaml.safe_dump() call.  We attempt to build the representation and parse
+    # it back, if that fails for any reason fall back to the native form rather
+    # than corrupt the contents.
+    #
+    def properties_for_description(s, props):
+        lines = yaml.safe_dump(props, default_flow_style=False, width=10000).split('\n')
+        props_bits = []
+        for line in lines:
+            prefix = (len(line) - len(line.lstrip()) + 2) * ' '
+            line = fill(line, subsequent_indent=prefix, break_on_hyphens=False)
+            props_bits.append(line)
+        props_wrapped = '\n'.join(props_bits)
+
+        cinfo(props_wrapped)
+        props_new = yaml.safe_load(props_wrapped)
+        if props != props_new:
+            cinfo("properties_for_description: falling back to default")
+            props_wrapped = yaml.safe_dump(status, default_flow_style=False, width=65)
+
+        return props_wrapped.strip()
+
     # save_bug_properties
     #
     def save_bug_properties(s):
@@ -452,7 +479,7 @@ class WorkflowBug():
         if len(s.bprops) > 0:
             status = s.bprops
             status.setdefault('reason', {}).update(s.reasons)
-            new_props = yaml.safe_dump(status, default_flow_style=False).strip()
+            new_props = s.properties_for_description(status)
 
             description = s.lpbug.description
             for l in description.split('\n'):
