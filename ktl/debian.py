@@ -377,18 +377,4 @@ class Debian:
                 return status
         return 0
 
-    # is_backport
-    #
-    @classmethod
-    def is_backport(cls):
-        # Check each possible directory for an update script
-        debian_dirs = cls.debian_directories()
-        for debdir in debian_dirs:
-            flag = debdir + '/backport'
-            if path.exists(flag):
-                # It is a backport kernel
-                return True
-        # Not there anywhere, it's a regular kernel
-        return False
-
 # vi:set ts=4 sw=4 expandtab:
