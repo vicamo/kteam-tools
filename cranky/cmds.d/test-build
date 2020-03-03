@@ -6,8 +6,6 @@
 # Juerg Haefliger <juergh@canonical.com>
 #
 
-here=$(dirname "$(readlink -f "$0")")
-
 function cleanup()
 {
 	trap "" EXIT INT TERM HUP
@@ -263,7 +261,7 @@ pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
 git branch "${BUILD_BRANCH}" "${commit}"
 
 # Get the logdir from the config file and create it if it doesn't exist
-logdir=$("$here/cranky-shell-helper" test-build logdir)
+logdir=$("$C" shell-helper test-build logdir)
 logdir=${logdir/#\~\//${HOME}/}   # Replace ~/ with ${HOME}/
 logdir=${logdir:-.}
 if ! [ -d "${logdir}" ] ; then

@@ -2,19 +2,16 @@
 #
 # cranky-helper-wrapper
 #
-C=${C-cranky}
-P=${P-$0}
 
-here=$(dirname "$(readlink -f "${0}")")
-
-cmd=${0##*/}
+cmd=$(basename "$0")
+cranky_root=$(dirname "$C")
 
 if [ ! -d debian ]; then
 	echo "$P: should be run in a source package tree" 1>&2
 	exit 1
 fi
 
-SCRIPTS="debian/scripts/helpers/$cmd $here/master-helpers/$cmd"
+SCRIPTS="debian/scripts/helpers/$cmd $cranky_root/master-helpers/$cmd"
 if [ -f debian/debian.env ] ; then
 	# shellcheck disable=SC1091
 	. debian/debian.env
@@ -35,7 +32,7 @@ if [ -z "$script" ] ; then
 fi
 
 # Assemble the schroot command
-session=$("$here/cranky" chroot map-session configs .)
+session=$("$C" chroot map-session configs .)
 chroot_cmd=
 if [ "$session" = "$(printf '%q' "$session")" ]; then
 	chroot_cmd="schroot -r -c $session --"
@@ -49,4 +46,4 @@ fi
 # $CHROOT is supposed to be used unquoted at the beginning of every
 # commands that needs to run inside the corresponding chroot.
 #
-C="$0" P="cranky $cmd" CHROOT="$chroot_cmd" exec "$script" "$@"
+C="$C" P="$P" CHROOT="$chroot_cmd" exec "$script" "$@"

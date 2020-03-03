@@ -4,9 +4,8 @@ export LC_ALL=C.UTF-8
 # Check if the script was invoked via an symlink (ie:
 # cranky-updateconfigs):
 alias=
-P="${P:-$(basename "$0")}"
-if [ "${P#cranky[- ]}" != 'fdr' ]; then
-	alias="${P#cranky[- ]}"
+if [ "${P#cranky }" != 'fdr' ]; then
+	alias="${P#cranky }"
 fi
 
 usage() {
@@ -60,6 +59,5 @@ if [ ! -e debian/rules ]; then
 	exit 1
 fi
 
-here=$(dirname "$(readlink -f "${0}")")
-echo "Running: \"$here/cranky\" chroot run -- fakeroot debian/rules ${targets[*]}"
-"$here/cranky" chroot run -- fakeroot debian/rules "${targets[@]}"
+echo "Running: \"$C\" chroot run -- fakeroot debian/rules ${targets[*]}"
+"$C" chroot run -- fakeroot debian/rules "${targets[@]}"

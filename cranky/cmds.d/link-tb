@@ -66,5 +66,5 @@ while [ "${#}" -gt 0 ] ; do
 	shift
 done
 
-here=$(dirname "$(readlink -f "${0}")")
-"$here"/../stable/link-to-tracker "${args[@]}"
+cranky_root=$(dirname "$C")
+"$cranky_root/../stable/link-to-tracker" "${args[@]}"

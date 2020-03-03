@@ -14,19 +14,13 @@ EOM
 	exit 1
 fi
 
-here=$(dirname "$0")
-case "$here" in
-/*) ;;
-*)  here="$(pwd)/$here" ;;
-esac
-
 # Locate the debian directory taking into accout debian.env if present.
 debian="debian"
 if [ -f "debian/debian.env" ]; then
 	debian=$(awk -F= '($1 == "DEBIAN") { print $2 }' <debian/debian.env)
 fi
 # Idenfify the tree package type.
-type=$("$here/cranky-shell-helper" tree-type ".")
+type=$("$C" shell-helper tree-type .)
 if [ "$type" = "" ]; then
 	echo "$0: unable to identify repository type -- assuming other" 1>&2
 	type='other'
@@ -40,26 +34,28 @@ fi
 
 main_path=""
 if [ "$type" != 'main' ]; then
-	main_path="$("$here/cranky-shell-helper" tree-main-path ".")"
+	main_path=$("$C" shell-helper tree-main-path .)
 	if [ "$main_path" = '' ]; then
 		exit 1
 	fi
 fi
 
-if ! variants=$("$here/cranky-shell-helper" list-variants "."); then
+if ! variants=$("$C" shell-helper list-variants .); then
        echo "cranky-shell-helper failed"
        exit 1
 fi
+
+cranky_root=$(dirname "$C")
 
 bug="1786013"
 FIX_VERBOSE="0" \
 FIX_BUG="$bug" \
 FIX_BUGLINK="BugLink: https://bugs.launchpad.net/bugs/$bug" \
-FIX_MASTER="$here/master" \
+FIX_MASTER="$cranky_root/master" \
 FIX_MAIN_PATH="$main_path" \
 FIX_DEBIAN="$debian" \
 FIX_TYPE="$type" \
 FIX_SERIES="$series" \
 FIX_SOURCE="$source" \
 FIX_VARIANTS="$variants" \
-	run-parts --regex '\.fix$' --exit-on-error --verbose "$here/fixes.d"
+	run-parts --regex '\.fix$' --exit-on-error --verbose "$cranky_root/fixes.d"

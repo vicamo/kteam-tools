@@ -3,11 +3,6 @@
 # Upload a set of kernel source packages to a PPA
 #
 
-C=${C-cranky}
-P=${P-$0}
-
-here=$(dirname "$(readlink -f "${0}")")
-
 function out()
 {
 	local rc=$?
@@ -188,8 +183,7 @@ fi
 trap out EXIT INT TERM HUP
 
 # Get the PPA for the given upload destination
-ppa=$("${here}"/cranky-list-routing "${handle}" | \
-		  awk '$1 == "'"${dest}"'" { print $3 }')
+ppa=$("$C" list-routing "${handle}" | awk '$1 == "'"${dest}"'" { print $3 }')
 if [ -z "${ppa}" ] ; then
 	echo "No PPA found for destination ${dest}" >&2
 	exit 1
@@ -198,8 +192,7 @@ fi
 echo "PPA: ${ppa}"
 
 # Get the source directories for the package set
-readarray -t srcs < <("${here}"/cranky-shell-helper source-packages-path \
-							   "${handle}")
+readarray -t srcs < <("$C" shell-helper source-packages-path "${handle}")
 if [ "${#srcs[@]}" -eq 0 ] ; then
 	exit 1
 fi

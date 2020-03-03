@@ -79,7 +79,7 @@ fi
 args+=('--source' "$sourcename")
 args+=('--spin' "$spinnr" "$cycledate")
 
-here=$(dirname "$(readlink -f "$0")")
-"$here"/../stable/create-kernel-tasks "${args[@]}"
+cranky_root=$(dirname "$C")
+"$cranky_root/../stable/create-kernel-tasks" "${args[@]}"
 
 exit 0
