@@ -37,7 +37,7 @@ function build_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky build-sources [-c] [-h] [--build-opts OPTS ...] [handle]
+Usage: cranky build-sources [-c] [-h] [--no-orig] [--build-opts OPTS ...] [handle]
 
 Build all source packages for the specified series and source as specified in
 kernel-series.yaml.
@@ -51,6 +51,8 @@ Optional arguments:
   -c, --current  Only build the source package for the current working
                  directory.
   -h, --help     Show this help message and exit.
+
+  --no-orig      Does not require an orig file.
 
   --build-opts   Supply additional options for dpkg-buildpackage when building
                  the specified source package type. OPTS is a string of the
@@ -77,6 +79,7 @@ Examples:
 EOF
 }
 
+require_orig="--source-option=-sp"
 current=0
 handle=${PWD}
 declare -A build_opts=()
@@ -89,6 +92,9 @@ while [ ${#} -gt 0 ] ; do
 		-h|--help)
 			usage
 			exit
+			;;
+		--no-orig)
+			require_orig=""
 			;;
 		--build-opts)
 			shift
@@ -134,5 +140,6 @@ do
 	IFS=' ' read -r type path <<< "$source"
 	opts=""
 	[ ! -z ${build_opts[$type]+x} ] && opts="${build_opts[$type]}"
+	if [ "$type" -eq "main" ]; then opts="$opts $require_orig" ; fi
 	build_src "$path" "$session" "$current" "$opts"
 done <<< "$sources"
