@@ -1,17 +1,18 @@
 #!/bin/bash
 
-here=$(dirname "$(readlink -f "${0}")")
+cranky=$(readlink -f "$0")
+cranky_root=$(dirname "$cranky")
 
 if [ "$#" -lt 1 ]; then
-	echo "Usage: $0 <cmd> ..." 1>&2
+	echo "Usage: $cranky <cmd> ..." 1>&2
 	exit 1
 fi
 cmd="$1"
 shift
 
-if [ ! -f "$here/cmds.d/$cmd" ]; then
-	echo "$0: $cmd: command unknown" 1>&2
+if ! [ -f "$cranky_root/cmds.d/$cmd" ]; then
+	echo "$cranky: $cmd: command unknown" 1>&2
 	exit 1
 fi
 
-C="$0" P="cranky $cmd" exec "$here/cmds.d/$cmd" "$@"
+C="$cranky" P="cranky $cmd" exec "$cranky_root/cmds.d/$cmd" "$@"
