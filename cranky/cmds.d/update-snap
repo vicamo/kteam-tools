@@ -8,9 +8,6 @@ import subprocess
 import re
 import logging
 
-# Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
-
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cwarn, cinfo
 

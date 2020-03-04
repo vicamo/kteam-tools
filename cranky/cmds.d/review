@@ -13,9 +13,6 @@ from glob import glob
 import tempfile
 import re
 
-# Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
-
 from ktl.log import cerror, cnotice
 
 def dpkg_compare_versions(v1, op, v2):

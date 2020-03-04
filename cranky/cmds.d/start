@@ -6,9 +6,6 @@ import argparse
 import subprocess
 import logging
 
-sys.path.append(os.path.realpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, "libs")))
-
 from ktl.debian import Debian
 from ktl.log import Clog, cerror, cinfo, cdebug
 from ktl.utils import run_command

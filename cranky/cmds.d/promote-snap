@@ -5,9 +5,6 @@ import sys
 import argparse
 import logging
 
-sys.path.append(os.path.realpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
-
 from ktl.log import Clog, cerror, cinfo, cdebug
 from ktl.utils import run_command
 

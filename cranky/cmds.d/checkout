@@ -9,10 +9,6 @@ import os
 from subprocess             import run, PIPE
 import sys
 
-# Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                              os.pardir, 'libs')))
-
 from crl.config             import Config
 from crl.handle             import Handle, HandleError
 from ktl.log                import cerror, cnotice, cwarn

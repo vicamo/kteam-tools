@@ -16,10 +16,6 @@ import sys
 
 from launchpadlib.launchpad import Launchpad
 
-# Add ../libs to the Python search path
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                              os.pardir, 'libs')))
-
 from crl.handle import Handle, HandleError
 from ktl.log import cerror
 
