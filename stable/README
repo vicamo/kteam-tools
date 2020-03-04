@@ -68,6 +68,13 @@ generate-meeting-report
         sru-report > srus.json
 	generate-meeting-report srus.json
 
+create-respin-card:
+    Find out which is the highest respin card number on a given SRU
+    board (identified by giving the cycle date) and creates a template
+    card for the next respin which has to be filled in.
+
+    Setup: same as for create-sru-cards
+
 create-sru-cards.py:
     Create a Trello board for a SRU cycle and add cards for the tasks
     which need to be done.
