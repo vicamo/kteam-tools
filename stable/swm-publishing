@@ -479,7 +479,7 @@ class MonitorLaunchpadProject:
         start_date = self.last_date
 
         tasks = self.project.searchTasks(
-            status=['Confirmed', 'In Progress', 'Incomplete', 'Fix Committed', 'Fix Released', 'Invalid'],
+            status=['In Progress', 'Incomplete', 'Fix Committed', 'Fix Released', 'Invalid'],
             omit_duplicates=False,
             modified_since=self.last_date)
         for task in tasks:
