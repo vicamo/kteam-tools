@@ -14,7 +14,7 @@
 #
 base-path: '~/canonical/kernel/ubuntu'
 
-# cranky-checkout
+# cranky checkout
 #checkout:
   # A local reference kernel repo used for cloning the Ubuntu kernel repo.
   # Using this speeds up the cloning process considerably. See
@@ -25,12 +25,12 @@ base-path: '~/canonical/kernel/ubuntu'
   # --dissociate, for more details.
   #dissociate: True
 
-# cranky-test-build
+# cranky test-build
 #test-build:
   # The directory where the logfiles are written to
   #logdir: /path/to/logdir
 
-# cranky-review-master-changes
+# cranky review-master-changes
 #review-master-changes
   # Extended regular expression to exclude commits based on the commit message
   #exclude: "UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"

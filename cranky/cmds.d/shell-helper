@@ -98,7 +98,8 @@ if __name__ == "__main__":
 Helper program for getting cranky config and handle data from shell scripts.
 """
     parser = argparse.ArgumentParser(description=desc,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     prog="cranky shell-helper")
     subparsers = parser.add_subparsers(help="commands", dest="command")
     subparsers.required = True
 
@@ -151,10 +152,10 @@ Helper program for getting cranky config and handle data from shell scripts.
                            help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=list_variants)
 
-    # cranky-<foo> config options subparser
+    # cranky <foo> config options subparser
     for command in ("clone", "test-build", "review-master-changes"):
         subparser = subparsers.add_parser(command,
-                                          help="Print config options for cranky-%s" % command)
+                                          help="Print config options for cranky %s" % command)
         subparser.add_argument("key", nargs='?', help="Print only the specified config key")
         subparser.set_defaults(func=print_configs)
 

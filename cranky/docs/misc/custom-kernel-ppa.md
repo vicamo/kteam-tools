@@ -62,7 +62,7 @@ Build the source packages using the following commands:
 ```
 $ pwd
 $ cd ~/canonical/kernel/ubuntu/disco/linux
-$ cranky-build-sources
+$ cranky build-sources
 ```
 
 If the command completes successfully you should see something like the following:

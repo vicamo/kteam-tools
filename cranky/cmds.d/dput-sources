@@ -83,7 +83,7 @@ function dput_src()
 function usage()
 {
 	cat <<EOF
-Usage: cranky-dput-sources [-h] [-f|--force] [-c|--current] [-e EMAIL] DESTINATION [HANDLE]
+Usage: cranky dput-sources [-h] [-f|--force] [-c|--current] [-e EMAIL] DESTINATION [HANDLE]
 
 Sign and upload the kernel source packages specified by HANDLE to the
 DESTINATION PPA. The script will show the details of the destination PPA
@@ -91,7 +91,7 @@ and list the source packages that it wants to upload and wait for user
 confirmation before doing the actual sign and upload.
 
 Positional arguments:
-  DESTINATION  An upload destination as listed by cranky-list-routing.
+  DESTINATION  An upload destination as listed by cranky list-routing.
   HANDLE       Handle to a kernel source tree, either a path to a kernel
                source tree or a handle in <series>:<package> format. If not
                given the current working directory is used.
@@ -109,19 +109,19 @@ Optional arguments:
                  email address.
 
 Example:
-  $ cranky-dput-sources build
+  $ cranky dput-sources build
       Sign and upload the kernel source packages of the current directory
       to the standard builder PPA for that kernel.
 
-  $ cranky-dput-sources -e kernel.developer@canonical.com build2
+  $ cranky dput-sources -e kernel.developer@canonical.com build2
       Re-sign the source packages of the current directory using the email
       address provided and upload it to ppa2 builder PPA.
 
-  $ cranky-dput-sources --force security-build xenial:linux
+  $ cranky dput-sources --force security-build xenial:linux
       Sign and upload the Xenial linux kernel source packages to the
       security builder PPA without asking for confirmation.
 
-  $ cranky-dput-sources --current test-build
+  $ cranky dput-sources --current test-build
       Upload only the kernel source package for the current working directory
       to the test builder PPA for that kernel.
 EOF

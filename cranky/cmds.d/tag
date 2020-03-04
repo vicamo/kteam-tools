@@ -67,7 +67,7 @@ debug_log "Changelog file: $changelog_file"
 # Check if changelog is open
 series=$(dpkg-parsechangelog -l"$changelog_file" -SDistribution)
 if [ "$series" = 'UNRELEASED' ]; then
-        echo "error: changelog isn't properly closed. Do you need to run cranky-close first?" >&2
+        echo "error: changelog isn't properly closed. Do you need to run cranky close first?" >&2
         exit 1
 fi
 

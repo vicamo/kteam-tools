@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# cranky-fix -- identify the current repository and attempt to apply fixes to
+# cranky fix -- identify the current repository and attempt to apply fixes to
 #               it against the primary copies of repositories.
 #
 
@@ -41,7 +41,7 @@ if [ "$type" != 'main' ]; then
 fi
 
 if ! variants=$("$C" shell-helper list-variants .); then
-       echo "cranky-shell-helper failed"
+       echo "cranky shell-helper failed"
        exit 1
 fi
 

@@ -1,8 +1,7 @@
 #!/bin/bash -eu
 export LC_ALL=C.UTF-8
 
-# Check if the script was invoked via an symlink (ie:
-# cranky-updateconfigs):
+# Check if the script was invoked via a symlink (ie: updateconfigs -> fdr):
 alias=
 if [ "${P#cranky }" != 'fdr' ]; then
 	alias="${P#cranky }"

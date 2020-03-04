@@ -146,7 +146,7 @@ of tracks.
 '''
 
     epilog = '''
-Example: cranky-snap-promote bionic/linux-raspi2/pi-kernel
+Example: cranky snap-promote bionic/linux-raspi2/pi-kernel
 
   This will execute all promotions needed for the pi-kernel
   snap which is based on bionic/linux-raspi2.
@@ -158,7 +158,8 @@ Example: cranky-snap-promote bionic/linux-raspi2/pi-kernel
 
     formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=desc, epilog=epilog,
-                                     formatter_class=formatter)
+                                     formatter_class=formatter,
+                                     prog="cranky promote-snap")
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='do not make any changes, ' +
                         'just show what would be done')

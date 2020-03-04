@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# cranky-helper-wrapper
+# cranky helper-wrapper
 #
 
 cmd=$(basename "$0")

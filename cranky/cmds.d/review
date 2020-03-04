@@ -191,7 +191,7 @@ Examples:
 
     parser = argparse.ArgumentParser(description=desc, formatter_class=
                                      argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog)
+                                     epilog=epilog, prog="cranky review")
     parser.add_argument("changes_files", nargs="+",
                         help=".changes files for the package set")
     parser.add_argument("-p", "--prev-dsc-dir", default=".",

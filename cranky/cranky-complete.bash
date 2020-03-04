@@ -72,7 +72,7 @@ _cranky_get_handles() {
 	base_dir="$(dirname "$script_file")"
 	local cache_dir=~/.cache/cranky
 	local cache_file="$cache_dir/handles"
-	local shell_helper="$base_dir/cranky-shell-helper"
+	local cranky="$base_dir/cranky"
 	local yaml_file="$base_dir/../info/kernel-series.yaml"
 
 	if [ ! -e "$yaml_file" ] || [ ! -x "$shell_helper" ]; then
@@ -87,7 +87,7 @@ _cranky_get_handles() {
 			mkdir -p "$cache_dir"
 		fi
 		# Escape colons:
-		"$shell_helper" list-handles | sed -e 's/:/\\\\&/g' > "$cache_file"
+		"$cranky" shell-helper list-handles | sed -e 's/:/\\\\&/g' > "$cache_file"
 	fi
 	tr '\n' ' ' < "$cache_file"
 }
