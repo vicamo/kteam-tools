@@ -93,6 +93,14 @@ def list_variants(args):
         for variant in handle.source.variants:
             print(variant)
 
+def config(args):
+    try:
+        handle = Handle().lookup_set(args.handle)
+    except HandleError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+    print(handle.lookup_config(args.key, ''))
+
 if __name__ == "__main__":
     desc = """
 Helper program for getting cranky config and handle data from shell scripts.
@@ -158,6 +166,15 @@ Helper program for getting cranky config and handle data from shell scripts.
                                           help="Print config options for cranky %s" % command)
         subparser.add_argument("key", nargs='?', help="Print only the specified config key")
         subparser.set_defaults(func=print_configs)
+
+    # config subparser
+    subparser = subparsers.add_parser("config",
+                                      help="Print a config option")
+    subparser.add_argument("key",
+                           help="The key name of the config option, in the form of <key>[.<key>].")
+    subparser.add_argument("handle",
+                           help="<series>:<package> handle, or path to source tree.")
+    subparser.set_defaults(func=config)
 
     args = parser.parse_args()
     args.func(args)
