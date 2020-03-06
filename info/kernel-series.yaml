@@ -1333,6 +1333,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            variants: [ '--' ]
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'master-next']
@@ -1368,7 +1369,35 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-4.15:
+            variants: [ '-lts-18.04' ]
+            packages:
+                linux-azure-4.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-4.15-next']
+                linux-meta-azure-4.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic', 'azure-4.15']
+                linux-signed-azure-4.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-4.15']
+                linux-restricted-modules-azure-4.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-4.15']
+            supported: true
+            backport: false
+            derived-from: [ '18.04', 'linux' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
         linux-azure-5.3:
+            variants: [ '-edge' ]
             packages:
                 linux-azure-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.3-next']
