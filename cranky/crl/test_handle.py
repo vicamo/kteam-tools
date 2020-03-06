@@ -48,6 +48,7 @@ class TestHandle(unittest.TestCase):
     """
 
     path_config_yaml = """
+    base-path:                      '/src'
     package-path:
         artful--linux--linux-meta:  artful/meta
         artful--linux:              'artful/{package}'
@@ -107,8 +108,8 @@ class TestHandleSeries(TestHandle):
         hdl = Handle(ks=ks, config=config).lookup_set('bionic:linux')
 
         trees_match = [
-            [ 'bionic', 'linux', os.path.abspath('bionic/linux') ],
-            [ 'bionic', 'linux-meta', os.path.abspath('bionic/linux-meta') ],
+            [ 'bionic', 'linux', '/src/bionic/linux' ],
+            [ 'bionic', 'linux-meta', '/src/bionic/linux-meta' ],
             ]
         self.assertEqualTrees(trees_match, hdl.trees)
 
@@ -118,8 +119,8 @@ class TestHandleSeries(TestHandle):
         hdl = Handle(ks=ks, config=config).lookup_set('artful:linux')
 
         trees_match = [
-            [ 'artful', 'linux', os.path.abspath('artful/linux') ],
-            [ 'artful', 'linux-meta', os.path.abspath('artful/meta') ],
+            [ 'artful', 'linux', '/src/artful/linux' ],
+            [ 'artful', 'linux-meta', '/src/artful/meta' ],
             ]
         self.assertEqualTrees(trees_match, hdl.trees)
 
@@ -151,6 +152,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
     def test_encode_directory_series(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{series}'
         """
@@ -160,10 +162,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'bionic')
+        self.assertEqual(directory, '/src/bionic')
 
     def test_encode_directory_source(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{source}'
         """
@@ -173,10 +176,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'linux')
+        self.assertEqual(directory, '/src/linux')
 
     def test_encode_directory_package(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{package}'
         """
@@ -186,10 +190,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'linux-meta')
+        self.assertEqual(directory, '/src/linux-meta')
 
     def test_encode_directory_type_main(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{type}'
         """
@@ -199,10 +204,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'main')
+        self.assertEqual(directory, '/src/main')
 
     def test_encode_directory_type_meta(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{type}'
         """
@@ -212,10 +218,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'meta')
+        self.assertEqual(directory, '/src/meta')
 
     def test_encode_directory_typesuffix_main(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{type_suffix}'
         """
@@ -225,10 +232,11 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, '')
+        self.assertEqual(directory, '/src/')
 
     def test_encode_directory_typesuffix_meta(self):
         config_yaml = """
+        base-path:      '/src'
         package-path:
             default:    '{type_suffix}'
         """
@@ -238,7 +246,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, '-meta')
+        self.assertEqual(directory, '/src/-meta')
 
     def test_encode_directory_bionic_linux(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -247,8 +255,8 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'bionic/linux')
-        self.assertEqual(hdl.directory, os.path.abspath('bionic/linux'))
+        self.assertEqual(directory, '/src/bionic/linux')
+        self.assertEqual(hdl.directory, '/src/bionic/linux')
 
     def test_encode_directory_bionic_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -257,8 +265,8 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'bionic/linux-meta')
-        self.assertEqual(hdl.directory, os.path.abspath('bionic/linux-meta'))
+        self.assertEqual(directory, '/src/bionic/linux-meta')
+        self.assertEqual(hdl.directory, '/src/bionic/linux-meta')
 
     def test_encode_directory_artful_linux(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -267,7 +275,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'artful/linux')
+        self.assertEqual(directory, '/src/artful/linux')
 
     def test_encode_directory_artful_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -276,7 +284,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'artful/meta')
+        self.assertEqual(directory, '/src/artful/meta')
 
     def test_encode_directory_xenial_linux(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -285,7 +293,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'xenial-old/linux')
+        self.assertEqual(directory, '/src/xenial-old/linux')
 
     def test_encode_directory_xenial_linux_meta(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -294,7 +302,7 @@ class TestHandleDirectoryEncode(TestHandle):
 
         directory = hdl.encode_directory(hdl.package)
 
-        self.assertEqual(directory, 'xenial-old/linux-meta')
+        self.assertEqual(directory, '/src/xenial-old/linux-meta')
 
 
 class TestHandleDirectory(TestHandle):
@@ -341,15 +349,10 @@ class TestHandleDirectory(TestHandle):
 
     def test_directory_source_noconfig(self):
         ks = KernelSeries(data=self.data_yaml)
-        with TempDirectory() as d:
-            self.setUpSourceMain(d, 'bionic/linux', 'master', 'bionic', 'linux')
+        config = Config(data="")
 
-            config = Config(data="")
-
-            hdl = Handle(ks=ks, config=config).lookup_set(d.getpath('bionic/linux'))
-
-            self.assertEqual(hdl.series.codename, 'bionic')
-            self.assertEqual(hdl.source.name, 'linux')
+        with self.assertRaises(HandleError):
+            hdl = Handle(ks=ks, config=config)
 
     def test_directory_source_config_bionic_linux(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -559,8 +562,9 @@ class TestHandleTreeRemote(TestHandle):
     """
 
     path_config_one_yaml = """
+    base-path:                      'foo'
     package-path:
-        default:                    ubuntu
+        default:                    'ubuntu'
     """
     def test_remote_one_xenial_main(self):
         ks = KernelSeries(data=self.data_yaml)
@@ -619,6 +623,7 @@ class TestHandleTreeRemote(TestHandle):
         self.assertEqual('bionic', hdl.remote)
 
     path_config_crossseries_yaml = """
+    base-path:                      'foo'
     package-path:
         default:                    '{package}'
     """
@@ -679,6 +684,7 @@ class TestHandleTreeRemote(TestHandle):
         self.assertEqual('origin', hdl.remote)
 
     path_config_crosspackage_yaml = """
+    base-path:                      'foo'
     package-path:
         default:                    '{series}'
     """
@@ -739,6 +745,7 @@ class TestHandleTreeRemote(TestHandle):
         self.assertEqual('origin', hdl.remote)
 
     path_config_separate_yaml = """
+    base-path:                      'foo'
     package-path:
         default:                    '{series}/{source}{type_suffix}'
     """
