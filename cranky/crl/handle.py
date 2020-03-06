@@ -46,6 +46,23 @@ class HandleCore:
                               "Check the config example in kteam-tools/cranky/docs/"
                               "snip-cranky.yaml for more information.")
 
+    def lookup_config(self, key, default=None):
+        """
+        Lookup a config option and encode it if necessary
+        """
+        # TODO: Remove lookup of deprecated option package-path.base-path
+        if key == 'base-path' or key == 'package-path.base-path':
+            return self.base_path
+
+        val = self.config.lookup(key, default=default)
+
+        if val and key.endswith('-path'):
+            # It's a path so we need to encode it and make it absolute
+            val = val.format(series=self.series.codename)
+            return os.path.join(self.base_path, val)
+
+        return val
+
     def encode_directory(self, package):
         which = package.type if package.type else 'main'
         which_suffix = '-' + package.type if package.type else ''
