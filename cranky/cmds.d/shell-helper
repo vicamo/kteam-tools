@@ -3,7 +3,6 @@
 import sys
 import argparse
 
-from crl.config import Config
 from crl.handle import Handle, HandleError
 
 from ktl.kernel_series import KernelSeries
@@ -41,18 +40,6 @@ def source_packages_path(args):
             type = tree_package_type(tree)
             print("%s " % (type), end='')
         print(tree.directory)
-
-def print_configs(args):
-    # Lookup the config options for the given command
-    config = Config().lookup(args.command, {})
-    if args.key:
-        # Print the specified config key
-        if args.key in config:
-            print(config[args.key])
-    else:
-        # Print all configs
-        for key in sorted(config):
-            print("{}: {}".format(key, config[key]))
 
 def tree_type(args):
     try:
@@ -159,13 +146,6 @@ Helper program for getting cranky config and handle data from shell scripts.
     subparser.add_argument("handle",
                            help="<series>:<package> handle, or path to source tree.")
     subparser.set_defaults(func=list_variants)
-
-    # cranky <foo> config options subparser
-    for command in ("clone", "test-build", "review-master-changes"):
-        subparser = subparsers.add_parser(command,
-                                          help="Print config options for cranky %s" % command)
-        subparser.add_argument("key", nargs='?', help="Print only the specified config key")
-        subparser.set_defaults(func=print_configs)
 
     # config subparser
     subparser = subparsers.add_parser("config",
