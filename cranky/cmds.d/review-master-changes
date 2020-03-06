@@ -47,9 +47,9 @@ EOF
 }
 
 # Load values from the config file and fallback to the default values
-git_cmd=$("$C" shell-helper review-master-changes git-cmd)
+git_cmd=$("$C" shell-helper config review-master-changes.git-cmd .)
 git_cmd="${git_cmd:-$default_git_cmd}"
-exclude=$("$C" shell-helper review-master-changes exclude)
+exclude=$("$C" shell-helper config review-master-changes.exclude .)
 exclude="${exclude:-$default_exclude}"
 
 while [ "$#" -gt 0 ]; do
