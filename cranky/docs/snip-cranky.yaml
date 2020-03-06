@@ -27,8 +27,8 @@ base-path: '~/canonical/kernel/ubuntu'
 
 # cranky test-build
 #test-build:
-  # The directory where the logfiles are written to
-  #logdir: /path/to/logdir
+  # The relative path of the directory where the logfiles are written to.
+  #log-path: relative/path/to/logdir
 
 # cranky review-master-changes
 #review-master-changes

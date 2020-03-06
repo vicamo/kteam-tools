@@ -37,6 +37,12 @@ class Config:
             print("Deprecated 'package-path.base-path' option found in "
                   ".cranky config file.", file=sys.stderr)
             print("You should rename it to 'base-path'.", file=sys.stderr)
+        if self.lookup("test-build.logdir", None) is not None:
+            warn = True
+            print("Deprecated 'test-build.logdir' option found in "
+                  ".cranky config file.", file=sys.stderr)
+            print("You should rename it to 'test-build.log-path' and make it "
+                  "relative to 'base-path'.", file=sys.stderr)
         if warn:
             print("Check the config example in kteam-tools/cranky/docs/"
                   "snip-cranky.yaml for more information.", file=sys.stderr)

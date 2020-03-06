@@ -265,8 +265,11 @@ else
 fi
 
 # Get the logdir from the config file and create it if it doesn't exist
-logdir=$("$C" shell-helper test-build logdir)
-logdir=${logdir/#\~\//${HOME}/}   # Replace ~/ with ${HOME}/
+logdir=$("$C" shell-helper config test-build.log-path .)
+if [ -z "${logdir}" ] ; then
+    # TODO: Remove deprecated option
+    logdir=$("$C" shell-helper config test-build.logdir .)
+fi
 logdir=${logdir:-.}
 if ! [ -d "${logdir}" ] ; then
 	mkdir -p "${logdir}"
