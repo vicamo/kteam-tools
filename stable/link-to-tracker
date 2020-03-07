@@ -240,7 +240,7 @@ class Tracking():
                     lpbug.lp_save()
                 return 0
 
-            cmd = "%s/cranky-rmadison" % os.path.join(os.path.dirname(__file__), "..", "cranky")
+            cmd = "%s/cranky rmadison" % os.path.join(os.path.dirname(__file__), "..", "cranky")
             retval, out = sh("%s %s:%s" % (cmd, target_series, target_package), quiet=True)
             if retval != 0:
                 raise AppError('Error while checking currently released versions')
