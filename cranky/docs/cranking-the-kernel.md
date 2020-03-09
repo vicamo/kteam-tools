@@ -117,9 +117,9 @@ cranky fix
 <!--/cheatsheet-->
 
 This updates the local (in-tree) helper scripts which cranky uses to the latest
-version and also can update/create the "debian./etc/update.conf" file and
-commits those changes. In case of a rebase tree, the changes to the helpers may
-vanish on rebase if those were already done there.
+version and also can update/create the "debian.<variant>/etc/update.conf" file
+and commits those changes. In case of a rebase tree, the changes to the helpers
+may vanish on rebase if those were already done there.
 ```
 cd xenial/linux-oracle
 cranky fix
@@ -152,7 +152,7 @@ the network traffic. But working on embargoed CVEs will require using the
 options because that process requires private repositories.
 
 Should there be any conflicts during the rebase, normal git conflict resolution
-steps "git rebase ---skip, git rebase --continue, ..." have to be taken.
+steps "git rebase --skip, git rebase --continue, ..." have to be taken.
 
 Example:
 ```
@@ -195,12 +195,11 @@ cranky open
 ```
 <!--/cheatsheet-->
 
-When a new release is in the plans, a starting commit should be created. That
-historically has been done with "maint-startnewrelease". Now, it's done by
-running `cranky open`. This step should be done after rebasing, because it's
-needed on backports as well, where the "update-from-master" script is called,
-but the changelog is opened just for inclusions.  The insertion of changelog
-entries is done by the cranky close stage.
+When a new release is in the plans, a starting commit should be created. This
+is done by running `cranky open`. For derivatives and backports this step needs
+to be done after rebasing because the new package version and the content of
+some files under `debian.<variant>` depend on the new master version. The
+insertion of changelog entries is done by the `cranky close` stage.
 ```
 $ cranky open
 ```
