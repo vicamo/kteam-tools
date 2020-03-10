@@ -2,6 +2,8 @@
 #
 
 from ktl.kernel_series                  import KernelSeries
+from ktl.log                            import cdebug
+
 import re
 
 # UbuntuError
@@ -305,6 +307,110 @@ class Workflow:
             return False
         version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
         return (version in version_list)
+
+    def is_task_valid(s, wf_series, ks_source, variant, snap_name=None):
+        '''
+        Internal helper to decide whether a certain workflow task should be
+        added to a launchpad bug.
+
+        Returns: True (task is valid) or False (otherwise)
+        '''
+        retval = False
+        ks_series = ks_source.series
+
+        # Some tasks only really make sense in development or stable series.
+        if ks_series.development is True:
+            exclude = 'devel'
+            exclusions = {
+                    'promote-to-updates': True,
+                    'promote-to-security': True,
+                    'certification-testing': True,
+                    'verification-testing': True,
+                    'security-signoff': True,
+                    'stakeholder-signoff': True,
+                }
+        else:
+            exclude = 'stable'
+            exclusions = {
+                    'promote-to-release': True,
+                }
+
+        task_name = wf_series.name
+        while True:
+            if not wf_series.active:
+                break
+            if task_name in ['trunk', 'latest']:
+                break
+            if task_name.endswith('-dnu'):
+                cdebug('    {} marked "do not use"'.format(task_name[:-4]), 'yellow')
+                break
+            if task_name in exclusions:
+                cdebug('    off-{} no {} '.format(exclude, task_name), 'yellow')
+                break
+
+            # SELECT: drop any series for a different variant.
+            if variant in ("debs"):
+                if task_name.startswith('snap-'):
+                    cdebug('    off-variant no {} '.format(task_name), 'yellow')
+                    break
+            elif variant in ("snap-debs"):
+                if not task_name.startswith('snap-'):
+                    cdebug('    off-variant no {}'.format(task_name), 'yellow')
+                    break
+
+            # DEBS: exclusions related to debs.
+            if task_name.startswith('prepare-package-'):
+                pkg_type = task_name.replace('prepare-package-', '')
+                ks_pkg = None
+                for entry in ks_source.packages:
+                    if entry.type == pkg_type:
+                        ks_pkg = entry
+                        break
+                if ks_pkg is None:
+                    cdebug('    no {}'.format(task_name), 'yellow')
+                    break
+            if task_name == 'stakeholder-signoff':
+                if ks_source.stakeholder is None:
+                    cdebug('    no stakeholder-signoff', 'yellow')
+                    break
+            elif task_name == 'promote-signing-to-proposed':
+                ks_route = ks_source.routing
+                if ks_route is not None:
+                    ks_dst = ks_route.lookup_destination('signing')
+                else:
+                    ks_dst = None
+
+                if ks_dst is None:
+                    cdebug('    no promote-signing-to-proposed', 'yellow')
+                    break
+
+            # SNAPS: exclusions related to snaps.
+            if task_name.startswith('snap-'):
+                snap = None
+                for entry in ks_source.snaps:
+                    if entry.name == snap_name or (snap_name is None and entry.primary):
+                        snap = entry
+                        break
+                if snap is None:
+                    cdebug('    no {}'.format(task_name), 'yellow')
+                    break
+                if task_name == 'snap-certification-testing':
+                    if not snap.hw_cert:
+                        cdebug('    no {}'.format(task_name), 'yellow')
+                        break
+                elif task_name == 'snap-qa-testing':
+                    if not snap.qa:
+                        cdebug('    no {}'.format(task_name), 'yellow')
+                        break
+                elif task_name == 'snap-publish':
+                    if not snap.gated:
+                        cdebug('    no {}'.format(task_name), 'yellow')
+                        break
+
+            retval = True
+            break
+
+        return retval
 
 if __name__ == '__main__':
     workflow = Workflow()
