@@ -82,6 +82,7 @@ class Task():
             sn = self.ks_source.name
             bv = 'debs'
         else:
+            srcn = self.ks_source.name
             sn = self.ks_snap.name
             bv = 'snap-debs'
 
@@ -96,9 +97,9 @@ class Task():
                 ts.fake_id += 1
             else:
                 if bv == 'debs':
-                    self.tb = ts.tbs.create(cn, sn, variant=bv)
+                    self.tb = ts.tbs.create_minimal(cn, sn, variant=bv)
                 else:
-                    self.tb = ts.tbs.create(cn, self.ks_source.name, variant=bv, name=sn)
+                    self.tb = ts.tbs.create_minimal(cn, srcn, variant=bv, snap_name=sn)
                 self.tb.set_cycle_and_spin(ts.cycletag, ts.spin_nr)
                 new_tbid = self.tb.id
             cinfo('  + created LP: #{}'.format(new_tbid))
@@ -156,9 +157,9 @@ class Task():
                 sn = self.ks_source.name
             else:
                 sn = self.ks_snap.name
-            cinfo('Setting {}/{} workflow status in-progress.'.format(cn, sn))
+            cinfo('Setting {}/{} workflow status confirmed.'.format(cn, sn))
             if dryrun is False:
-                self.tb.wf_status_set('In Progress')
+                self.tb.wf_status_set('Confirmed')
 
     def CreateCards(self, dryrun=False):
         if self.create is True:
