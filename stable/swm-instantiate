@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+#
+# SWM - SRU Workflow Manager  (aka: shankbot)
+#
+# swm-publishing -- monitor publishing of things.
+#
+
+import os
+import re
+import sys
+from logging                            import basicConfig
+
+import yaml
+
+# Add ../libs to the Python search path
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.kernel_series import KernelSeries
+from ktl.log                            import cdebug, cinfo, cerror, cwarn, center, cleave
+from ktl.workflow import Workflow, DefaultAssigneeMissing
+from lazr.restfulclient.errors import BadRequest
+from wfl.launchpad import Launchpad
+
+
+class TrackerProduction:
+
+    def __init__(self, project, lp=None, ks=None, wf=None):
+        if lp is None:
+            lp = Launchpad(False).default_service.launchpad
+        if ks is None:
+            ks = KernelSeries()
+        if wf is None:
+            wf = Workflow()
+
+        self.lp = lp
+        self.ks = ks
+        self.wf = wf
+        self.project_name = project
+        self.project = self.lp_project(project)
+
+    title2sp_rc = re.compile(r'^([^/]*)/?(\S+):')
+
+    def lookup_source(self, bug_id, bug):
+        title = bug.title
+        match = self.title2sp_rc.match(title)
+        if not match:
+            raise ValueError("{}: title not parsable".format(bug_id))
+
+        (series_name, source_name) = (match.group(1), match.group(2))
+
+        cinfo("series_name<{}> source_name<{}>".format(series_name, source_name))
+
+        series = self.ks.lookup_series(codename=series_name)
+        if series is None:
+            raise ValueError("{}: series not in kernel-series".format(bug_id))
+        source = series.lookup_source(source_name)
+        if series is None:
+            raise ValueError("{}: source not found in series".format(bug_id))
+
+        cinfo(source)
+
+        return source
+
+    def load_properties(self, bug):
+        description = bug.description
+        return yaml.safe_load(description.split('-- swm properties --')[-1])
+
+    cache_lp_person = {}
+    def lp_person(self, person):
+        if person not in self.cache_lp_person:
+            self.cache_lp_person[person] = self.lp.people[person]
+        return self.cache_lp_person[person]
+
+    cache_lp_project = {}
+    def lp_project(self, project):
+        if project not in self.cache_lp_project:
+            self.cache_lp_project[project] = self.lp.projects[project]
+        return self.cache_lp_project[project]
+
+    def lp_task_update(self, lp_task, status=None, importance=None, assignee=None):
+        changed = []
+        if status is not None and lp_task.status != status:
+            lp_task.status = status
+            changed.append('status {}'.format(status))
+
+        if importance is not None and lp_task.importance != importance:
+            lp_task.importance = importance
+            changed.append('importance {}'.format(status))
+
+        if assignee is not None:
+            lp_assignee = self.lp_person(assignee)
+            if lp_task.assignee != lp_assignee:
+                lp_task.assignee = lp_assignee
+                changed.append('assignee {}'.format(assignee))
+
+        if len(changed) > 0:
+            cinfo("task updated: " + ', '.join(changed))
+            lp_task.lp_save()
+
+    def instantiate(self, bug_id, lp_bug):
+        cinfo("INSTANTIATE {}".format(bug_id))
+
+        # Can we add assignees and subscribers.
+        is_private = lp_bug.private
+        is_mute = False
+        for tag in lp_bug.tags:
+            if tag == 'kernel-release-tracking-bug-test':
+                is_mute = True
+                break
+
+        # Figure out the package we are instantiating for.
+        ks_source = self.lookup_source(bug_id, lp_bug)
+        swm_props = self.load_properties(lp_bug)
+        variant = swm_props.get('variant', 'combo')
+
+        # Pick up the invalidation hints from kernel-series.
+        ks_invalid_tasks = []
+        if ks_source.invalid_tasks is not None:
+            ks_invalid_tasks = ks_source.invalid_tasks
+
+        # Run the existing tags and record them by self_link.
+        lp_tasks = {}
+        for lp_task in lp_bug.bug_tasks:
+            lp_tasks[lp_task.target.self_link] = lp_task
+
+        # First add all of the required workflow tasks
+        for wf_task in self.project.series_collection:
+            cinfo(wf_task)
+            if not self.wf.is_task_valid(wf_task, ks_source, variant, snap_name=swm_props.get('snap-name')):
+                continue
+            wf_name = wf_task.display_name
+            cdebug('    adding: %s' % wf_name)
+            if wf_task.self_link not in lp_tasks:
+                lp_tasks[wf_task.self_link] = lp_bug.addTask(target=wf_task)
+            lp_task = lp_tasks[wf_task.self_link]
+
+            status = 'New'
+            if wf_name in ks_invalid_tasks:
+                status = 'Invalid'
+
+            assignee = None
+            if status != 'Invalid' and not is_private:
+                try:
+                    assignee = self.wf.assignee_ex(ks_source.series.codename, ks_source.name, wf_task.display_name, ks_source.development)
+                except DefaultAssigneeMissing:
+                    pass
+
+            self.lp_task_update(lp_task, status=status, importance='Medium', assignee=assignee)
+
+        # Subscribers.
+        if not is_private and not is_mute:
+            subscriber_present = {}
+            for subscriber in lp_bug.subscriptions:
+                subscriber_present[subscriber.person.self_link] = True
+            for subscriber in self.wf.subscribers(ks_source.name, ks_source.development):
+                lp_subscriber = self.lp_person(subscriber)
+                if lp_subscriber.self_link in subscriber_present:
+                    continue
+                cdebug('    subscriber {}'.format(subscriber))
+                lp_bug.subscribe(person=lp_subscriber)
+
+
+        # Add the package/series nomination.
+        if variant in ('debs', 'combo'):
+            cdebug("series/package task")
+            lp_ubuntu = self.lp_project('ubuntu')
+            lp_series = lp_ubuntu.getSeries(name_or_version=ks_source.series.codename)
+            lp_package = lp_series.getSourcePackage(name=ks_source.name)
+
+            lp_task = None
+            if lp_package is not None and lp_package.self_link not in lp_tasks:
+                try:
+                    lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+                except BadRequest:
+                    lp_package = lp_series.getSourcePackage(name='linux')
+                    lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+
+            if lp_package is not None:
+                lp_task = lp_tasks.get(lp_package.self_link)
+            if lp_task is not None:
+                self.lp_task_update(lp_task, status='New', importance='Medium')
+
+        # All done, mark ready.
+        lp_task = lp_tasks[self.project.self_link]
+        cdebug("liven workflow task")
+
+        self.lp_task_update(lp_task, status='In Progress', importance='Medium')
+
+    def instantiate_all(self):
+        bugs = {}
+
+        tasks = self.project.searchTasks(
+            status=['Confirmed'],
+            omit_duplicates=False)
+        for task in tasks:
+            bug = task.bug
+            bugs[bug.id] = bug
+
+        cinfo("Run found {} trackers".format(len(bugs)))
+
+        for bug_id, bug in sorted(bugs.items()):
+            self.instantiate(bug_id, bug)
+
+if __name__ == '__main__':
+    log_format = "%(levelname)05s - %(message)s"
+    basicConfig(level='DEBUG', format=log_format)
+
+    line = TrackerProduction('kernel-sru-workflow')
+    line.instantiate_all()
