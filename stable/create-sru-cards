@@ -253,7 +253,9 @@ class SRUCardsCreator:
 
             card_desc = None
             if 'description' in card:
-                card_desc = card['description']
+                # Fields in the yaml file get encoded with escapes when it's loaded.
+                # Un-escape the card description so they have the desired formatting.
+                card_desc = card['description'].encode().decode('unicode_escape')
 
             card_list = None
             if 'list' in card:
