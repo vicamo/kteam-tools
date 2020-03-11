@@ -177,8 +177,8 @@ def sync_primary():
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
-            if series.codename != 'focal':
-                continue
+            #if series.codename != 'focal':
+            #    continue
 
             for package in source.packages:
                 if package.repo is None:
