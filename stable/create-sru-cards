@@ -251,13 +251,6 @@ class SRUCardsCreator:
                             board.add_card(card_name, card_desc)
                 continue
 
-            card_names = []
-            if 'suffixes' in card:
-                for suffix in card['suffixes']:
-                    card_names.append("%s - %s" % (card['name'], suffix))
-            else:
-                card_names.append(card['name'])
-
             card_desc = None
             if 'description' in card:
                 card_desc = card['description']
@@ -266,8 +259,7 @@ class SRUCardsCreator:
             if 'list' in card:
                 card_list = card['list']
 
-            for card_name in card_names:
-                board.add_card(card_name, card_desc, card_list)
+            board.add_card(card['name'], card_desc, card_list)
 
         if self.args.dry_run:
             print("This was a dry-run - board was NOT created")
