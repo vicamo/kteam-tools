@@ -43,7 +43,6 @@
           - 'seanfeole'
           - 'sultanalsawaf1'
           - 'tjaalton'
-          - 'tyhicks'
     cards:
         - name: 'Cycle Lead: <insert name>'
           description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.'
