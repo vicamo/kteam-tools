@@ -75,7 +75,7 @@ _cranky_get_handles() {
 	local cranky="$base_dir/cranky"
 	local yaml_file="$base_dir/../info/kernel-series.yaml"
 
-	if [ ! -e "$yaml_file" ] || [ ! -x "$shell_helper" ]; then
+	if [ ! -e "$yaml_file" ]; then
 		return
 	fi
 
