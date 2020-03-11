@@ -75,6 +75,7 @@
         - name: 'Review regression tests results'
           list: 'Backlog (manual)'
         - name: 'Review automated (ADT) tests results'
+          description: '**Documentation:** https://docs.google.com/document/d/1vFddb7K1TarlQY9pqyH4_DJ6uKHlCaT1ovzdHjUW5gs/\n\n**Note:** the main and HWE kernels should be reviewed and hinted only by team members with upload rights.'
           list: 'Backlog (manual)'
         - name: 'Review verification tests'
           description: 'Nag bug reporters if needed'
