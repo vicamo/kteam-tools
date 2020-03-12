@@ -191,7 +191,7 @@ Example: cranky snap-promote bionic/linux-raspi2/pi-kernel
             cerror(e)
             sys.exit(1)
 
-    cmd = os.path.join(os.path.dirname(__file__), '..', 'stable', 'swm-ls')
+    cmd = os.path.join(os.path.dirname(__file__), '..', '..', 'stable', 'swm-ls')
     rc, output = run_command(cmd)
     if rc != 0:
         cerror('Failed to retrieve workflow data (RC={})'.format(rc))
