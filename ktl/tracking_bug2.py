@@ -82,11 +82,15 @@ class TrackingBug(object):
         Internal helper to replace a tag that starts with <prefix> with
         a <new_tag>.
         '''
+        present = False
         for tag in s.__bug.tags:
-            if tag.startswith(prefix):
+            if tag == new_tag:
+                present = True
+            elif tag.startswith(prefix):
                 s.__bug.tags.remove(tag)
                 # Not stopping here so duplicates get removed, too
-        s.__bug.tags.append(new_tag)
+        if not present:
+            s.__bug.tags.append(new_tag)
 
     def __parse_lpbug(s):
         '''
