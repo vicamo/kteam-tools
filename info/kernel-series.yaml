@@ -2305,6 +2305,29 @@
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
+        linux-hwe-edge:
+            packages:
+                #linux-hwe-edge:
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'hwe-edge']
+                linux-meta-hwe-edge:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'hwe-edge']
+                #linux-signed-hwe-edge:
+                #    type: signed
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe-edge']
+            supported: false
+            backport: true
+            #derived-from: [ '18.04', 'linux' ]
+            derived-from: [ '16.04', 'linux-hwe' ]
+            testing:
+                flavours:
+                    hwe-edge:
+                        # arches as defined by the testing system
+                        #
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-joule:
             packages:
                 linux-joule:
