@@ -1049,6 +1049,12 @@ class Package():
             "flavour"        : flavour,
         }
 
+        # Construct the appropriate testing meta package.
+        # XXX: note this is currently limited to those packages which are
+        #      converted to have the new interfaces.
+        if s.bug.swm_config.hack_kernel_testing:
+            msg['meta-pkg'] = 'kernel-testing--{}--full--{}'.format(s.name, flavour)
+
         # Add the kernel-sru-cycle identifier to the message
         #
         msg['sru-cycle'] = s.bug.sru_cycle
