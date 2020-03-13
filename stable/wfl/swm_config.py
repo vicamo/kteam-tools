@@ -76,5 +76,9 @@ class SwmConfig:
         return False
 
     @property
+    def hack_kernel_testing(self):
+        return self._data.get('kernel-testing', False)
+
+    @property
     def need_master_in_proposed(self):
         return self._data.get('need-promote-to-proposed', False)
