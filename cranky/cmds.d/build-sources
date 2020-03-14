@@ -140,6 +140,6 @@ do
 	IFS=' ' read -r type path <<< "$source"
 	opts=""
 	[ ! -z ${build_opts[$type]+x} ] && opts="${build_opts[$type]}"
-	if [ "$type" -eq "main" ]; then opts="$opts $require_orig" ; fi
+	if [ "$type" = "main" ]; then opts="$opts $require_orig" ; fi
 	build_src "$path" "$session" "$current" "$opts"
 done <<< "$sources"
