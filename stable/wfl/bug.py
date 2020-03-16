@@ -720,6 +720,8 @@ class WorkflowBug():
         '''
         Flag information from kernel-series.
         '''
+        if s.source is None:
+            return None
         return SwmConfig(s.source.swm_data)
 
     @property

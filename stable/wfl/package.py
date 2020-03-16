@@ -1109,6 +1109,9 @@ class Package():
     # test_flavours
     #
     def test_flavours(s):
+        if s.bug.swm_config is not None and s.bug.swm_config.hack_kernel_testing:
+            return sorted([x.name for x in s.source.testable_flavours])
+
         # XXX: this makes no sense at all to be limited to xenial.
         generic = (s.name == 'linux' or
                    s.name.startswith('linux-hwe') or
