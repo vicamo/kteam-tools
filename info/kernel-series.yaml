@@ -1722,6 +1722,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oracle:
