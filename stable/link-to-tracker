@@ -199,6 +199,9 @@ class Tracking():
                 # Ignore this bug if it is not a 'debs' variant.
                 if ' -proposed tracker' not in lpbug.title:
                     continue
+                # Ignore this bug if it was created for tests
+                if 'kernel-release-tracking-bug-test' in lpbug.tags:
+                    continue
                 if not s.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
                 if s.args.sru_cycle and s.bug_to_sru_cycle(lpbug) != s.args.sru_cycle:
