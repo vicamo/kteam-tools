@@ -1089,6 +1089,8 @@
             supported: true
             backport: true
             derived-from: [ '19.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     hwe:
