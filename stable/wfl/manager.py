@@ -515,6 +515,13 @@ class WorkflowManager():
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
 
+            # Catch direct modification of the bug.  We would be asked to scan
+            # the bug but not ourselves modify it.
+            modified_time = s.status_get(bugid).get('manager', {}).get('time-modified')
+            if modified_time is not None and modified_time < lpbug.date_last_updated.replace(tzinfo=None):
+                cinfo('    LP: #{} modified directly -- marking modified'.format(bugid), 'magenta')
+                modified = True
+
             recrank = True
             while recrank:
                 # Reset transient data for each crank run.
@@ -529,15 +536,6 @@ class WorkflowManager():
                     for l in e.message:
                         cinfo(l, 'red')
             bug.save()
-
-            # Catch direct modification of the bug.  We would be asked to scan
-            # the bug but not ourselves modify it.
-            # XXX: do we need to track modified other than this?
-            if not modified:
-                modified_time = s.status_get(bugid).get('manager', {}).get('time-modified')
-                if modified_time is not None and modified_time < lpbug.date_last_updated.replace(tzinfo=None):
-                    cinfo('    LP: #{} modified directly -- marking modified'.format(bugid), 'magenta')
-                    modified = True
 
             # Update the global status for this bug.
             s.status_set(bugid, bug.status_summary(), modified=modified)
