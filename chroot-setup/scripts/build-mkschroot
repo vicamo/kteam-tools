@@ -138,6 +138,7 @@ powerpc		gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
 arm64		gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 ppc64el		gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 s390x		gcc-s390x-linux-gnu libc6-dev-s390x-cross
+riscv64		gcc-riscv64-linux-gnu libc6-dev-riscv64-cross
 EOL
 
 case $SUITE in
