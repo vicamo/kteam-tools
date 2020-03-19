@@ -1248,6 +1248,7 @@
                         clouds: ['metal']
 
         linux-aws:
+            variants: ['--', '-lts-18.04']
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic']
@@ -1277,6 +1278,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.0:
+            variants: ['-edge']
             packages:
                 linux-aws-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.0-next']
@@ -1297,6 +1299,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
+            variants: ['-wip']
             routing: prerelease
             packages:
                 linux-aws-5.3:
