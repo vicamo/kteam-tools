@@ -198,6 +198,10 @@ class AutoPackageTest(object):
                                 source = self.source.replace('linux-meta', 'linux')
                                 for arg in args[2:]:
                                     bits = arg.split('/') + ['all']
+                                    if len(bits) < 3:
+                                        print("WARNING: hints syntax error: britney force-badtest <arg>...")
+                                        print("         " + line.strip())
+                                        continue
                                     if bits[0] in (source, self.source):
                                         continue
                                     description = 'britney -- force-badtest ' + '/'.join(bits[0:2])
