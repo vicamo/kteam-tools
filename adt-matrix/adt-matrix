@@ -206,6 +206,18 @@ class AutoPackageTest(object):
                                         continue
                                     description = 'britney -- force-badtest ' + '/'.join(bits[0:2])
                                     self.hint_test[bits[0], bits[1], bits[2]] = ('SKIP', description)
+                            elif args[1] == 'force-reset-test':
+                                source = self.source.replace('linux-meta', 'linux')
+                                for arg in args[2:]:
+                                    bits = arg.split('/') + ['all']
+                                    if len(bits) < 3:
+                                        print("WARNING: hints syntax error: britney force-reset-test <arg>...")
+                                        print("         " + line.strip())
+                                        continue
+                                    if bits[0] in (source, self.source):
+                                        continue
+                                    description = 'britney -- force-badtest ' + '/'.join(bits[0:2])
+                                    self.hint_test[bits[0], bits[1], bits[2]] = ('FAIL', description)
             #print(self.hint_status, file=sys.stderr)
             #print(self.hint_test, file=sys.stderr)
 
