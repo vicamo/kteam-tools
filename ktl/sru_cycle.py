@@ -108,7 +108,7 @@ class SruCycle:
                 data = data.decode('utf-8')
             cls._data = yaml.safe_load(data)
 
-    def __init__(self, url=None, data=None, use_local=False):
+    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_SRU_CYCLE_YAML", False)):
         if data or url:
             if url:
                 response = urlopen(url)
