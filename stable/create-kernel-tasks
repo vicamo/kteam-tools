@@ -495,7 +495,7 @@ Examples:
                       help='run task creation in development mode')
     grp1.add_argument('--series', action='append', default=[], metavar='<series>',
                       help='limit task creation to the provided series. This means the series which a master is in, so limiting to one series might also create tasks in a different series if a source is a derivative of the master in the specified one')
-    parser.add_argument('--source', action='append', default=[], metavar='<source',
+    parser.add_argument('--source', action='append', default=[], metavar='<source>',
                         help='limit task creation to the provided sources')
     parser.add_argument('--spin', action='store', metavar='<spin nr>', default=None, type=int,
                         help='Specify which spin (starting with 1) to use.')
