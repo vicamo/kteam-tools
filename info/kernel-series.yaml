@@ -1434,6 +1434,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp:
+            variants: ['--']
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'master-next']
@@ -1467,6 +1468,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.3:
+            variants: ['-edge']
             packages:
                 linux-gcp-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.3-next']
@@ -1490,6 +1492,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-4.15:
+            variants: ['-lts-18.04']
             packages:
                 linux-gke-4.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'master-next']
@@ -1532,6 +1535,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
+            variants: ['--']
             packages:
                 linux-gke-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.0-next']
@@ -1569,6 +1573,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
+            variants: ['-edge']
             packages:
                 linux-gke-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.3-next']
