@@ -394,6 +394,10 @@ class WorkflowBug():
                         (['Confirmed', 'Triaged', 'In Progress',
                         'Fix Committed'])):
                     keep = True
+                elif (taskname == 'promote-to-proposed' and task.status in
+                        (['Confirmed', 'Triaged', 'In Progress',
+                        'Fix Committed'])):
+                    keep = True
 
         # If we deem this ready for duplication wack it.
         if not keep:
