@@ -257,8 +257,12 @@ fi
 # we build the different arches from the same commit in case someone mucks
 # around with the local repo in the meantime.
 BUILD_BRANCH="gbk-$(git rev-parse --short "${commit}")"
-pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
-git branch "${BUILD_BRANCH}" "${commit}"
+if git show-ref --verify --quiet "refs/heads/${BUILD_BRANCH}"; then
+	pr_info "Build branch ${BUILD_BRANCH} already exists"
+else
+	pr_info "Creating a temporary build branch ${BUILD_BRANCH}"
+	git branch "${BUILD_BRANCH}" "${commit}"
+fi
 
 # Get the logdir from the config file and create it if it doesn't exist
 logdir=$("$C" shell-helper test-build logdir)
