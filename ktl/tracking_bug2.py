@@ -1147,7 +1147,7 @@ class TrackingBugs():
                     'promote-to-updates': True,
                     'promote-to-security': True,
                     'certification-testing': True,
-                    'validation-testing': True,
+                    'verification-testing': True,
                     'security-signoff': True,
                     'stakeholder-signoff': True,
                 }
