@@ -267,6 +267,29 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        armhf: [ '20-pi' ]
+                        arm64: [ '20-pi' ]
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+
         linux-raspi2:
             variants: ['--']
             packages:
@@ -286,7 +309,7 @@
                     publish-to:
                         armhf: [ '20-pi' ]
                         arm64: [ '20-pi' ]
-            supported: true
+            supported: false
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
