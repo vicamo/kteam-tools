@@ -278,7 +278,7 @@
             snaps:
                 pi-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi-5.4']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
                     gated: false
                     stable: true
                     qa: false
