@@ -82,6 +82,7 @@ class WorkflowBug():
         s.bprops = s.load_bug_properties()
         s.reasons = {}
         s._refresh = [None, None]
+        s._maintenance = []
         s.is_development_series = False
         s._master_bug = False
         s._sru_spin = False
@@ -477,6 +478,7 @@ class WorkflowBug():
         if 'reason' in s.bprops:
             del s.bprops['reason']
         s._refresh = [None, None]
+        s._maintenance = []
 
     @property
     def refresh(s):
@@ -488,6 +490,13 @@ class WorkflowBug():
         (current_when, _) = s._refresh
         if current_when is None or when < current_when:
             s._refresh = [when, why]
+
+    @property
+    def maintenance(s):
+        return s._maintenance
+
+    def maintenance_add(s, what):
+        s._maintenance.append(what)
 
     def add_live_children(s, children):
         new_children = {}
@@ -528,6 +537,9 @@ class WorkflowBug():
 
         if s.refresh[0] is not None:
             status['refresh'] = s.refresh
+
+        if len(s.maintenance) > 0:
+            status['maintenance'] = s.maintenance
 
         try:
             status['cycle'] = s.sru_cycle
