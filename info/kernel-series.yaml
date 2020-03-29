@@ -180,7 +180,7 @@
         devel:
             <<:             *routing-table-default
             security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/devel', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
