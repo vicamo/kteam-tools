@@ -30,6 +30,12 @@ class PromoteToUpdates(Promoter):
         retval = False
 
         while True:
+            # If we have no routing for updates then we are invalid.
+            if s.bug.debs.routing('Updates') is None:
+                cinfo("promote-to-updates invalid with no Updates route")
+                s.task.status = 'Invalid'
+                retval = True
+                break
 
             # The kernels below are in evaluation.  These only get as far
             # as -proposed and will not be promoted further:

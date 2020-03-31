@@ -308,6 +308,12 @@ class PromoteToProposed(PromoteFromTo):
         else:
             s.pocket_dest = 'Proposed'
             s.pocket_after = 'Release/Updates'
+
+        # If we have no source pocket, then there can be nothing to copy.
+        if s.bug.debs.routing(s.pocket_src) is None:
+            cinfo("prepare-package invalid with no source routing")
+            s.pocket_src = None
+
         cdebug("promote-to-proposed: pocket_dest={}".format(s.pocket_dest))
 
         cleave(s.__class__.__name__ + '.__init__')

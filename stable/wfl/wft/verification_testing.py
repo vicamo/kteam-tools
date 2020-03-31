@@ -87,9 +87,20 @@ class VerificationTesting(TaskHandler):
     def _new(s):
         center(s.__class__.__name__ + '._new')
         retval = False
-        if s.bug.debs.ready_for_testing:
+
+        while not retval:
+            # This test requires the sources to be prepared.
+            if s.bug.tasks_by_name['prepare-package'].status != 'Fix Released':
+                break
+
+            # And where builds exist for them to be in -proposed.
+            if s.bug.debs.routing('Proposed') is not None and not s.bug.debs.ready_for_testing:
+                break
+
             s.task.status = 'Confirmed'
             retval = True
+            break
+
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 

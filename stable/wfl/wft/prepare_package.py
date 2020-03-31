@@ -180,38 +180,49 @@ class PreparePackage(TaskHandler):
                 s.task.status = 'In Progress'
                 retval = True
 
-            # Confirm that this package is uploaded.
-            if not s.bug.debs.uploaded(pkg):
-                s.task.reason = 'Pending -- package not yet uploaded'
-                break
+            # XXX: likely this is not part of prepare-package and we should be
+            # tracking those either in workflow as virtual tasks like
+            # build-packages or a real task.  Once we have fuller automation we
+            # will count these done as soon as we have valid tags.
+            #
+            # If we have a ppa route, then we should check these packages were
+            # uploaded.
+            if s.bug.debs.routing('ppa'):
+                # Confirm that this package is uploaded.
+                if not s.bug.debs.uploaded(pkg):
+                    s.task.reason = 'Pending -- package not yet uploaded'
+                    break
 
-            # If we have uploaded packages we have a creator.
-            creator = s.bug.debs.creator(pkg)
+                # If we have uploaded packages we have a creator.
+                creator = s.bug.debs.creator(pkg)
 
-            # We have uploads so we are at least Fix Committed.
-            # NOTE: we do not break so we can upgrade to later states.
-            if s.task.status != 'Fix Committed':
-                s.task.status = 'Fix Committed'
-                try:
-                    s.task.assignee = creator
-                except KeyError:
-                    # It doesn't matter if we set the assignee, that's just a nice
-                    # to have.
-                    #
-                    pass
+                # We have uploads so we are at least Fix Committed.
+                # NOTE: we do not break so we can upgrade to later states.
+                if s.task.status != 'Fix Committed':
+                    s.task.status = 'Fix Committed'
+                    try:
+                        s.task.assignee = creator
+                    except KeyError:
+                        # It doesn't matter if we set the assignee, that's just a nice
+                        # to have.
+                        #
+                        pass
 
-                retval = True
+                    retval = True
 
             # Check the package tag has been published.
             if not s.bug.published_tag(pkg):
                 s.task.reason = 'Stalled -- package tag not yet published'
                 break
 
-            # If we are a master kernel wait for main package builds to complete.
-            if (pkg == 'main' and not s.bug.is_derivative_package and
-                    not s.bug.debs.built_and_in_pocket(pkg, 'ppa')):
-                s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
-                break
+            # If we have a ppa route, then we should check these packages were
+            # uploaded.
+            if s.bug.debs.routing('ppa'):
+                # If we are a master kernel wait for main package builds to complete.
+                if (pkg == 'main' and not s.bug.is_derivative_package and
+                        not s.bug.debs.built_and_in_pocket(pkg, 'ppa')):
+                    s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
+                    break
 
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')

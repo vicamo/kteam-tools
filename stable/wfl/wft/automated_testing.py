@@ -30,11 +30,25 @@ class AutomatedTesting(TaskHandler):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        if s.bug.tasks_by_name['prepare-package'].status == 'Invalid':
-            s.task.status = 'Invalid'
+        while not retval:
+            # If we have no routing for Proposed then there is nothing to test.
+            if s.bug.debs.routing('Proposed') is None:
+                cinfo("automated-testing invalid with no Proposed route")
+                s.task.status = 'Invalid'
+                retval = True
+                break
 
-        if s.bug.debs.ready_for_testing:
+            if s.bug.tasks_by_name['prepare-package'].status == 'Invalid':
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
+            if not s.bug.debs.ready_for_testing:
+                break
+
             s.task.status = 'Confirmed'
+            retval = True
+            break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval

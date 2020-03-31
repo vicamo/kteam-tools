@@ -27,8 +27,20 @@ class CertificationTesting(TaskHandler):
         center(s.__class__.__name__ + '._new')
         retval = False
 
-        if s.bug.debs.ready_for_testing:
+        while not retval:
+            # If we have no routing for Proposed then there is nothing to test.
+            if s.bug.debs.routing('Proposed') is None:
+                cinfo("certification-testing invalid with no Proposed route")
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
+            if not s.bug.debs.ready_for_testing:
+                break
+
             s.task.status = 'Confirmed'
+            retval = True
+            break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
