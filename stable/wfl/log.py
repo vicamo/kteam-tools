@@ -36,7 +36,7 @@ def centerleaveargs(func):
             args = args[:100] + '...'
         center(func.__qualname__ + ': ' + args)
         retval = func(*params,**kwargs)
-        cleave(func.__qualname__ + ': ' + repr(retval))
+        cleave(func.__qualname__ + ': ' + repr(retval)[250])
         return retval
     return payload
 
@@ -44,7 +44,7 @@ def centerleave(func):
     def payload(*params, **kwargs):
         center(func.__qualname__)
         retval = func(*params,**kwargs)
-        cleave(func.__qualname__ + ': ' + repr(retval))
+        cleave(func.__qualname__ + ': ' + repr(retval)[:250])
         return retval
     return payload
 
