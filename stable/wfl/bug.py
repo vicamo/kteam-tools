@@ -330,7 +330,7 @@ class WorkflowBug():
         '''
         '''
         s.bprops[s.master_bug_property_name] = bugid
-        s._master_bug = None
+        s._master_bug = False
 
     # master_bug
     #
