@@ -401,6 +401,15 @@ class Package():
 
             elif build.buildstate == 'Dependency wait':
                 status.add('DEPWAIT')
+                s.bug.maintenance_add({
+                    'type': 'deb-build',
+                    'target': s.bug.target,
+                    'detail': {
+                        'state': build.buildstate,
+                        'package': build.source_package_name,
+                        'url': build.web_link,
+                        'lp-api': build.self_link,
+                    }})
 
             elif build.buildstate == 'Successfully built':
                 status.add('FULLYBUILT')
@@ -415,6 +424,15 @@ class Package():
                 #  Cancelling build
                 #  Cancelled build
                 status.add('FAILEDTOBUILD')
+                s.bug.maintenance_add({
+                    'type': 'deb-build',
+                    'target': s.bug.target,
+                    'detail': {
+                        'state': build.buildstate,
+                        'package': build.source_package_name,
+                        'url': build.web_link,
+                        'lp-api': build.self_link,
+                    }})
 
             # Accumulate the latest build completion.
             if build.datebuilt is not None and latest_build < build.datebuilt:
