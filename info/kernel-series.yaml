@@ -185,6 +185,10 @@
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
         eol:
+            proposed:
+            updates:
+            security:
+            release:
             #<<:             *routing-table-default
             #proposed:
             #    - ['ppa:canonical-kernel-team/ubuntu/eol-proposed', 'Release']
