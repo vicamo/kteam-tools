@@ -185,15 +185,15 @@
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
         eol:
-            <<:             *routing-table-default
-            proposed:
-                - ['ppa:canonical-kernel-team/ubuntu/eol-proposed', 'Release']
-                - ['ubuntu', 'Proposed']
-            updates:
-                - ['ppa:canonical-kernel-team/ubuntu/eol-updates', 'Release']
-                - ['ubuntu', 'Proposed']
-            security:
-            release:
+            #<<:             *routing-table-default
+            #proposed:
+            #    - ['ppa:canonical-kernel-team/ubuntu/eol-proposed', 'Release']
+            #    - ['ubuntu', 'Proposed']
+            #updates:
+            #    - ['ppa:canonical-kernel-team/ubuntu/eol-updates', 'Release']
+            #    - ['ubuntu', 'Proposed']
+            #security:
+            #release:
     sources:
         linux:
             versions: ['5.4.0']
