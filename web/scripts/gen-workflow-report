@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #
+from __future__ import print_function
 
 from sys                                import argv
 from os                                 import path
@@ -306,13 +307,13 @@ class GenWorkflowReport():
         retval += '    <tr>\n'
 
         title = bug['title']
-        package, other = title.split(':')[:2]
+        package, other = (title.split(':') + ['?a', '?b'])[:2]
         if '/' in package:
             (_, package) = package.split('/')
         other = other.strip()
         # Extract the extra detail from the title to help identify the bug.
-        detail = (title.split(None, 2) + [ '???', '????' ])[2]
-        version, other = other.split(' ', 1)
+        detail = (title.split(None, 2) + [ '?c', '?d' ])[2]
+        version, other = (other.split(' ', 1) + ['?e', '?f'])[:2]
         retval += '        <td width="210" style="font-weight: bold; font-size:14px;" >%s &nbsp; %s &nbsp; (%s)</td>\n' % (package, version, detail)
 
         retval += '        <td width="30"><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
@@ -342,7 +343,7 @@ class GenWorkflowReport():
         retval += '                                        <tr style="font-weight: bold;">\n'
         retval += '                                            <td width="30" align="right"> Tags: </td>\n'
         retval += '                                            <td width="2">&nbsp;</td>\n'
-        retval += '                                            <td> %s </td>\n' % ', '.join(bug['tags'])
+        retval += '                                            <td> %s </td>\n' % ', '.join(bug.get('tags', []))
         retval += '                                        </tr>\n'
         retval += '                                    </table>\n'
         retval += '                                </td>\n'
