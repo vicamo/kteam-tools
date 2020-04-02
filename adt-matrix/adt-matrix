@@ -1147,7 +1147,7 @@ table.matrix td {{
         else:
             key2 = series + '-linux-meta'
             if key2 in package_cache['seeds']:
-                seed = package_cache['seeds'][key2]
+                seed = copy.copy(package_cache['seeds'][key2])
             else:
                 seed = []
 
