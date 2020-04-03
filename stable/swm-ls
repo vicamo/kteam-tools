@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     results = []
 
-    for (bug_id, bug_data) in status.items():
+    for (bug_id, bug_data) in status.trackers.items():
         for key in bug_data.keys():
             if ord(key[0]) == 160:
                 print(bug_id, bug_data)

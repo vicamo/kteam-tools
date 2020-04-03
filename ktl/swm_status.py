@@ -28,14 +28,6 @@ class SwmStatus:
 
         self._data = yaml.safe_load(data)
 
-    def __iter__(self):
-        return iter(self._data)
-
-    def items(self):
-        return self._data.items()
-
-    def __getitem__(self, *args, **kwargs):
-        return self._data.__getitem__(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        return self._data.get(*args, **kwargs)
+    @property
+    def trackers(self):
+        return self._data.get('trackers', self._data)
