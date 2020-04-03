@@ -26,6 +26,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 
 from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
+from ktl.swm_status import SwmStatus
 from wfl.launchpad import Launchpad
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
@@ -696,13 +697,12 @@ class MonitorStatusSwmStatus:
         changed = set()
         start_date = datetime.utcnow() # - timedelta(minutes=60)
 
-        with open(self.status_path) as rfd:
-            status = yaml.safe_load(rfd)
+        status = SwmStatus(self.status_path)
 
         # Scan the live trackers and trigger any which have past their refresh
         # time.  Also accumulate any which have not been scanned for 4 hours.
         lagging = []
-        for bug_id, bug_data in sorted(status.items(), key=self.status_key):
+        for bug_id, bug_data in sorted(status.trackers.items(), key=self.status_key):
             if 'refresh' in bug_data:
                 (when, why) = bug_data['refresh']
                 print("REFRESH {} time={} delta={} trigger={} reason={}".format(bug_id, when, when - start_date, when < start_date, why))
@@ -725,7 +725,7 @@ class MonitorStatusSwmStatus:
         # in a batch is fatal.  Basically, spread out the entire pending pile over the 'next'
         # hour.
         limit = ceil(len(lagging) / (60/5))
-        print("SCANNER trackers={} lagging={} limit={}".format(len(status), len(lagging), limit))
+        print("SCANNER trackers={} lagging={} limit={}".format(len(status.trackers), len(lagging), limit))
         for scan_refresh, delta, bug_id in sorted(lagging):
             print("LAGGER {} time={} delta={}".format(bug_id, scan_refresh, delta))
             changed.add(bug_id)
@@ -752,14 +752,14 @@ class MonitorStatusSwmStatus:
 
             # If we have it in status we are good to ignore it.
             bug_id = str(bug.id)
-            if bug_id in status:
+            if bug_id in status.trackers:
                 continue
 
             print("NEW-ADDED", bug_id)
             self.new_bugs[bug_id] = True
         # Drop any which have now been seen.
         for bug_id in list(self.new_bugs):
-            if bug_id in status:
+            if bug_id in status.trackers:
                 print("NEW-REMOVED", bug_id)
                 del self.new_bugs[bug_id]
                 continue
