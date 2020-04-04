@@ -27,10 +27,21 @@ class TestSwmStatus(TestSwmStatusCore):
             cycle: 2020.03.16-1
             package: linux-deriv
     """
+    data_raw = {
+            'trackers': {
+                '123': None,
+                '124': None,
+            }
+        }
     data_trackers = ['123', '124']
 
-    def test_initialisation_data(self):
+    def test_initialisation_data_yaml(self):
         ss = SwmStatus(data=self.data_yaml)
+
+        self.assertEqual(sorted(ss.trackers.keys()), self.data_trackers)
+
+    def test_initialisation_data_raw(self):
+        ss = SwmStatus(data=self.data_raw)
 
         self.assertEqual(sorted(ss.trackers.keys()), self.data_trackers)
 

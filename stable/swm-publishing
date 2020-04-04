@@ -697,7 +697,7 @@ class MonitorStatusSwmStatus:
         changed = set()
         start_date = datetime.utcnow() # - timedelta(minutes=60)
 
-        status = SwmStatus(self.status_path)
+        status = SwmStatus(path=self.status_path)
 
         # Scan the live trackers and trigger any which have past their refresh
         # time.  Also accumulate any which have not been scanned for 4 hours.
