@@ -492,17 +492,6 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'raspi2']
             supported: true
-            snaps:
-                pi-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        armhf: [ '20-pi3', '20-cm3', '20-pi2' ]
-                        arm64: [ '20-pi3' ]
             derived-from: [ '19.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
