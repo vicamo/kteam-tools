@@ -2701,7 +2701,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-trusty']
             supported: true
             backport: true
-            derived-from: [ '16.04', 'linux-azure' ]
+            derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
             testing:
