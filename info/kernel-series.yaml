@@ -452,6 +452,22 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-riscv:
+            variants: ['--', '-hwe-20.04']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'regression-testing', 'certification-testing']
+
 
 # 19.10 (Eoan Ermine)
 '19.10':
