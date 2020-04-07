@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+import argparse
+import os
+import sys
+import yaml
+
+from launchpadlib.launchpad import Launchpad
+
+from ktl.swm_status import SwmStatus
+
+
+class SwmMaintenance:
+
+    _lp = None
+    @property
+    def lp(self):
+        if self._lp is None:
+            self._lp = Launchpad.login_with('swm-maintenance', 'production', version='devel')
+
+        return self._lp
+
+    def bug_prefix(self, bugid):
+        if bugid != '':
+            bugid = 'LP: #' + str(bugid)
+        else:
+            bugid = '--  --'
+        return bugid
+
+    def main(self):
+        parser = argparse.ArgumentParser(description='SWM maintenance tool')
+        parser.add_argument('--list', help='Display maintenance records',
+            action='store_true', default=False)
+        parser.add_argument('--retry-builds', help='Retry build failure records for a tracker',
+            action='append')
+
+        # XXX: exclusive group
+        args = parser.parse_args()
+
+        self.status = SwmStatus()
+
+        results = []
+
+        for bug_id, bug_data in self.status.trackers.items():
+            maint_records = bug_data.get('maintenance')
+            if maint_records is None:
+                continue
+
+            for maint in maint_records:
+                if args.list:
+                    fmt = "{bug_id:13} {cycle:15} {what:25} {type:10}"
+                    detail = {}
+                    for key, value in sorted(maint.get('detail', {}).items()):
+                        if key in ('lp-api'):
+                            continue
+                        if ' ' in value:
+                            fmt += " {0}<{{detail-{0}}}>".format(key)
+                        else:
+                            fmt += " {0}={{detail-{0}}}".format(key)
+                        detail['detail-' + key] = value
+
+                    what = "{}:{}".format(bug_data['series'], bug_data['source'])
+                    if maint['target'] != bug_data['source']:
+                        what += ':' + maint['target']
+                    print(fmt.format(
+                            bug_id=self.bug_prefix(bug_id),
+                            cycle=bug_data['cycle'],
+                            what=what,
+                            type=maint['type'],
+                            **detail))
+
+                elif len(args.retry_builds):
+                    if bug_id not in args.retry_builds:
+                        continue
+
+                    if maint['type'] != 'deb-build':
+                        continue
+
+                    detail = maint.get('detail', {})
+
+                    #if detail['state'] == 'Dependency wait':
+                    #    continue
+
+                    if 'lp-api' not in detail:
+                        continue
+                    build = self.lp.load(detail['lp-api'])
+
+                    notes = ''
+                    if build.can_be_retried:
+                        notes += ' (retrying)'
+
+                    fmt = "{bug_id:13} {cycle:15} {what:25} {type:10} {package} {arch} {buildstate}{notes}"
+                    what = "{}:{}".format(bug_data['series'], bug_data['source'])
+                    if maint['target'] != bug_data['source']:
+                        what += ':' + maint['target']
+                    print(fmt.format(
+                            bug_id=self.bug_prefix(bug_id),
+                            cycle=bug_data['cycle'],
+                            what=what,
+                            package=build.source_package_name,
+                            arch=build.arch_tag,
+                            buildstate=build.buildstate,
+                            notes=notes,
+                            **maint))
+                    if build.can_be_retried:
+                        build.retry()
+
+if __name__ == '__main__':
+    SwmMaintenance().main()
