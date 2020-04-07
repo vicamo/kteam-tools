@@ -263,24 +263,33 @@ class WorkflowManager():
             status = s.status_load()
 
         for child_nr, child_data in status.items():
-            # This tracker has no parent, skip it.
-            parent_nr = str(child_data.get('master-bug'))
-            if parent_nr is None:
-                continue
-            # The parent tracker is closed, skip it.
-            parent_data = status.get(parent_nr)
-            if parent_data is None:
-                continue
-
+            rescan = False
             child_manager = child_data['manager']
-            parent_manager = parent_data['manager']
-            modified = parent_manager.get('time-modified')
-
-            # If our scanned time is before the modified time then we need
-            # to be rescanned.
             scanned = child_manager.get('time-scanned')
-            if scanned is None or modified > scanned:
-                cinfo('    LP: #{} modified since LP: #{} scanned -- triggering ({}, {})'.format(parent_nr, child_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
+
+            # If a bug has been marked needing a scan, scan it.
+            if scanned is None:
+                cinfo('    LP: #{} marked for rescan/fix -- triggering'.format(child_nr), 'magenta')
+                rescan = True
+
+            if not rescan:
+                # This tracker has no parent, skip it.
+                parent_nr = str(child_data.get('master-bug'))
+                if parent_nr is None:
+                    continue
+
+                parent_data = status.get(parent_nr)
+                if parent_data is not None:
+                    parent_manager = parent_data['manager']
+                    modified = parent_manager.get('time-modified')
+
+                    # If our scanned time is before the modified time then we need
+                    # to be rescanned.
+                    if scanned < modified:
+                        cinfo('    LP: #{} parent LP: #{} modified since scanned -- triggering ({}, {})'.format(child_nr, parent_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
+                        rescan = True
+
+            if rescan:
                 result.append(child_nr)
 
         return result
