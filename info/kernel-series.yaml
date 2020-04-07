@@ -289,8 +289,8 @@
                     qa: false
                     hw-cert: true
                     publish-to:
-                        armhf: [ '20-pi' ]
-                        arm64: [ '20-pi' ]
+                        armhf: [ '20' ]
+                        arm64: [ '20' ]
             supported: true
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
@@ -312,8 +312,8 @@
                     qa: false
                     hw-cert: true
                     publish-to:
-                        armhf: [ '20-pi' ]
-                        arm64: [ '20-pi' ]
+                        armhf: [ '20' ]
+                        arm64: [ '20' ]
             supported: false
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
