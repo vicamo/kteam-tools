@@ -259,36 +259,41 @@ class Promoter(TaskHandler):
                 cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
                 return retval
 
-        # Check if the master bug could release.
-        required_sru_tasks = {
-            'prepare-package'            : ['Fix Released'],
-            'prepare-package-lbm'        : ['Fix Released', 'Invalid'],
-            'prepare-package-meta'       : ['Fix Released', 'Invalid'],
-            'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
-            'prepare-package-signed'     : ['Fix Released'],
-            'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
-            'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
-            'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
-        }
+        if master.debs.routing('Updates') is None and master.debs.routing('Release') is None:
+            retval = True
+            cinfo('master bug has no routing for Updates/Release ignoring', 'yellow')
 
-        if 'testing-override' not in master.tags:
-            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
-            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
+        else:
+            # Check if the master bug could release.
+            required_sru_tasks = {
+                'prepare-package'            : ['Fix Released'],
+                'prepare-package-lbm'        : ['Fix Released', 'Invalid'],
+                'prepare-package-meta'       : ['Fix Released', 'Invalid'],
+                'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
+                'prepare-package-signed'     : ['Fix Released'],
+                'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
+                'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
+                'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
+            }
 
-            if not master.is_development_series:
-                required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
-                required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+            if 'testing-override' not in master.tags:
+                required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
+                required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
 
-        tasks = required_sru_tasks
-        retval = True
-        for t in tasks:
-            try:
-                if master.tasks_by_name[t].status not in tasks[t]:
-                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
-                    retval = False
-                    break
-            except KeyError:
-                cdebug('master bug does not contain the %s task' % t)
+                if not master.is_development_series:
+                    required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
+                    required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+
+            tasks = required_sru_tasks
+            retval = True
+            for t in tasks:
+                try:
+                    if master.tasks_by_name[t].status not in tasks[t]:
+                        cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                        retval = False
+                        break
+                except KeyError:
+                    cdebug('master bug does not contain the %s task' % t)
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval
@@ -305,16 +310,22 @@ class Promoter(TaskHandler):
 
         master = s.bug.master_bug
 
-        tasks = required_sru_tasks
-        retval = True
-        for t in tasks:
-            try:
-                if master.tasks_by_name[t].status not in tasks[t]:
-                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
-                    retval = False
-                    break
-            except KeyError:
-                cdebug('master bug does not contian the %s task' % t)
+        # If the master bug does not have routing for -proposed we should not block on it.
+        if master.debs.routing('Proposed') is None:
+            retval = True
+            cinfo('master bug has no routing for Proposed ignoring', 'yellow')
+
+        else:
+            tasks = required_sru_tasks
+            retval = True
+            for t in tasks:
+                try:
+                    if master.tasks_by_name[t].status not in tasks[t]:
+                        cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                        retval = False
+                        break
+                except KeyError:
+                    cdebug('master bug does not contian the %s task' % t)
 
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval
