@@ -321,14 +321,18 @@ class SnapReleaseToStable(KernelSnapBase):
                 cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
                 break
 
-            if s.debs_bug.tasks_by_name['promote-to-updates'].status not in ['Fix Released', 'Invalid']:
-                cinfo('    task promote-to-updates is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-to-updates'
+            promote_to = 'promote-to-updates'
+            if 'promote-to-release' in s.debs_bug.tasks_by_name:
+                promote_to = 'promote-to-release'
+            if s.debs_bug.tasks_by_name[promote_to].status not in ['Fix Released', 'Invalid']:
+                cinfo('    task promote-to-updates/release is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
                 break
 
-            if (s.debs_bug.tasks_by_name['promote-to-updates'].status == 'Invalid'
-                    and s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
-                cinfo('    task promote-to-updates is \'Invalid\' and promote-to-security is neither \'Fix Released\''
+            if (s.debs_bug.tasks_by_name[promote_to].status == 'Invalid' and
+                    'promote-to-security' in s.bug.tasks_by_name and
+                    s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
+                cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
                       ' nor \'Invalid\'', 'yellow')
                 break
 
