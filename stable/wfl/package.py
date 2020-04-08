@@ -235,7 +235,7 @@ class Package():
 
     # __is_fully_built
     #
-    def __is_fully_built(s, package, abi, archive, release=None, pocket=''):
+    def __is_fully_built(s, package, abi, archive, release, pocket):
         '''
         Have the source package specified been fully built?
         '''
@@ -249,7 +249,7 @@ class Package():
         # Do a loose match, we will select for the specific version we wanted
         # in __find_matches but this way we have the published version for
         # pocket emptyness checks.
-        ps = s.__get_published_sources(package, abi, archive, pocket=pocket)
+        ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', pocket=pocket)
         matches = s.__find_matches(ps, abi, release)
         if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
@@ -268,51 +268,6 @@ class Package():
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
         return fullybuilt, creator, signer, published, most_recent_build, status, version
-
-    # __get_published_sources
-    #
-    def __get_published_sources(s, package, abi, archive, release=None, pocket=''):
-        """
-        The parameters are:
-          package   - the package name
-          release   - the version or version-abi number to match
-          abi       - if provided, indicates that release is not an exact version number,
-                      and we must do an ABI check
-          archive   - launchpad archive to look into
-          pocket    - optional, if we want only results of the archive from
-                      the specified pocket
-        """
-        center(s.__class__.__name__ + '.__get_published_sources')
-        cdebug('package: %s' % package, 'yellow')
-        cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('archive: %s' % archive.reference, 'yellow')
-        cdebug(' series: %s' % s.distro_series, 'yellow')
-        cdebug('release: %s' % release, 'yellow')
-        if pocket == '':
-            cdebug(' pocket: ppa', 'yellow')
-        else:
-            cdebug(' pocket: %s' % pocket, 'yellow')
-        cdebug('')
-
-        if pocket and not abi:
-            # If the abi is not specified then we are looking for an explicit release in a specific
-            # pocket.
-            #
-            cdebug('getPublishedSources: rule 1')
-            ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', version=release, pocket=pocket)
-        elif not pocket and not abi:
-            cdebug('getPublishedSources: rule 2')
-            ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', version=release)
-        elif pocket and abi:
-            cdebug('getPublishedSources: rule 3')
-            ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', pocket=pocket)
-        else:
-            cdebug('getPublishedSources: rule 4')
-            ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published')
-
-        cdebug('records: %d' % len(ps), 'yellow')
-        cleave(s.__class__.__name__ + '.__get_published_sources')
-        return ps
 
     # __find_matches
     #
