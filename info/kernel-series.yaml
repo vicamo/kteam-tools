@@ -1454,7 +1454,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp:
-            variants: ['--']
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'master-next']
@@ -1467,17 +1466,7 @@
                 linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic']
-            snaps:
-                gcp-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '19.04', 'linux' ]
             testing:
@@ -1488,7 +1477,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.3:
-            variants: ['-edge']
+            variants: ['--','-edge']
             packages:
                 linux-gcp-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.3-next']
@@ -1501,6 +1490,16 @@
                 linux-restricted-modules-gcp-5.3:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.3']
+            snaps:
+                gcp-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                    track: '18'
             supported: true
             backport: true
             derived-from: [ '19.10', 'linux-gcp' ]
