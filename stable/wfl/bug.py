@@ -166,6 +166,10 @@ class WorkflowBug():
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
 
+        if 'versions' in s.bprops and 'main' in s.bprops['versions'] and s.bprops['versions']['main'] != s.version:
+            cinfo("tracker version has changed dropping package version data")
+            del s.bprops['versions']
+
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
     def version_from_title(s):
@@ -676,7 +680,7 @@ class WorkflowBug():
                 package_package = package
                 break
         if package_package is not None:
-            version = s.debs.upload_version(pkg)
+            version = s.debs.package_version(pkg)
             if version is None:
                 published = False
             else:

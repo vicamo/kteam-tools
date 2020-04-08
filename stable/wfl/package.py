@@ -11,6 +11,7 @@ from lib.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
 from .errors                            import ShankError, ErrorExit
+from .git_tag                           import GitTag, GitTagError
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
 
 # PackageError
@@ -104,6 +105,8 @@ class Package():
             raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
         s._cache = None
+        s._version_tried = {}
+
         cleave('package::__init__')
 
     def routing(self, pocket):
@@ -111,6 +114,46 @@ class Package():
         routes = self._routing.get(pocket)
         cleave(self.__class__.__name__ + '.routing')
         return routes
+
+    def package_version(s, pkg):
+        # Look up the specific version of a package for this tracker.
+        version = s.bug.bprops.get('versions', {}).get(pkg)
+        if version is None and s._version_tried.get(pkg) is None:
+            s._version_tried[pkg] = True
+
+            # Lookup the kernel-series package we are referring to.
+            package_package = None
+            for package in s.source.packages:
+                if (package.type == pkg or (
+                    package.type is None and pkg == 'main')
+                    ):
+                    package_package = package
+                    break
+            if not package_package:
+                return None
+
+            # Work out the package version form based on its type.
+            if pkg == 'lbm':
+                version_lookup, version_sloppy = (s.bug.kernel + '-' + s.bug.abi, '.')
+            elif pkg in ('meta', 'ports-meta'):
+                version_lookup, version_sloppy = (s.bug.kernel + '.' + s.bug.abi, '.')
+            else:
+                version_lookup, version_sloppy = (s.bug.version, '+')
+
+            # Try and find a matching
+            try:
+                git_tag = GitTag(package_package, version_lookup, version_sloppy)
+                if git_tag.verifiable and git_tag.present:
+                    version = git_tag.version
+            except GitTagError as e:
+                cerror("{} {} ({}): Tag lookup failed -- {}".format(
+                    package_package, version_lookup, version_sloppy, e))
+
+            # Cache any positive version matches.
+            if version:
+                s.bug.bprops.setdefault('versions', {})[pkg] = version
+
+        return version
 
     # __determine_build_status
     #
@@ -130,15 +173,25 @@ class Package():
                 break
             Clog.indent += 4
 
+            # Lookup the package version we are expecting -- if we have it match on explicit version.
+            version = s.package_version(dep)
+            cinfo("APW: package_version({}) = {}".format(dep, version))
+            if version is not None:
+                abi = None
+                sloppy = False
+
             # For the linux and linux-signed packages the versions must be an exact match for the other
             # packages only the abi needs to match the linux packages abi number.
             #
-            if dep in ['lbm', 'meta', 'ports-meta'] and s.abi:
+            elif dep in ['lbm', 'meta', 'ports-meta'] and s.abi:
                 abi = s.abi
                 version = s.kernel
+                sloppy = True
+
             else:
                 abi = None
                 version = s.version
+                sloppy = True
 
             s._cache[dep] = {}
             if not s.bug.is_development_series:
@@ -160,7 +213,7 @@ class Package():
 
                 publications = []
                 for (src_archive, src_pocket) in s._routing[pocket]:
-                    info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket)
+                    info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket, sloppy)
                     publications.append(info)
                     # If this archive pocket contains the version we are looking for then scan
                     # no further.
@@ -235,7 +288,7 @@ class Package():
 
     # __is_fully_built
     #
-    def __is_fully_built(s, package, abi, archive, release, pocket):
+    def __is_fully_built(s, package, abi, archive, release, pocket, sloppy):
         '''
         Have the source package specified been fully built?
         '''
@@ -245,12 +298,13 @@ class Package():
         cdebug('archive: %s' % archive.reference, 'yellow')
         cdebug('release: %s' % release, 'yellow')
         cdebug(' pocket: %s' % pocket, 'yellow')
+        cdebug(' sloppy: %s' % pocket, 'yellow')
 
         # Do a loose match, we will select for the specific version we wanted
         # in __find_matches but this way we have the published version for
         # pocket emptyness checks.
         ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', pocket=pocket)
-        matches = s.__find_matches(ps, abi, release)
+        matches = s.__find_matches(ps, abi, release, sloppy)
         if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
@@ -271,10 +325,11 @@ class Package():
 
     # __find_matches
     #
-    def __find_matches(s, ps, abi, release):
+    def __find_matches(s, ps, abi, release, sloppy):
         center('Sources::__find_matches')
         cdebug('    abi: %s' % abi,     'yellow')
         cdebug('release: %s' % release, 'yellow')
+        cdebug(' sloppy: %s' % release, 'yellow')
         cdebug('records: %d' % len(ps), 'yellow')
 
         match = False
@@ -295,7 +350,7 @@ class Package():
             for p in ps:
                 src_ver = p.source_package_version
                 # Exact match or exact prefix plus '+somethingN'
-                if src_ver == release or src_ver.startswith(release + '+'):
+                if src_ver == release or (sloppy and src_ver.startswith(release + '+')):
                     cdebug('adding: %s' % src_ver, 'green')
                     matches.append(p)
                     match = True
