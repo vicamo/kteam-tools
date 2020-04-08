@@ -1742,7 +1742,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.0:
-            variants: [ '--' ]
             packages:
                 linux-oracle-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.0-next']
@@ -1755,7 +1754,7 @@
                 linux-restricted-modules-oracle-5.0:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.0']
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '19.04', 'linux' ]
             testing:
@@ -1766,7 +1765,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-oracle-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.3-next']
