@@ -132,11 +132,14 @@ def __status_bites(bug, attrs):
         updates_status  = __task_status(bug, 'promote-to-updates')
         proposed_status = __task_status(bug, 'promote-to-proposed')
         release_status = __task_status(bug, 'promote-to-release')
-        add_in(thing_in, 'ppa', prep_status)
-        add_in(thing_in, 'proposed', proposed_status)
-        add_in(thing_in, 'updates', updates_status)
-        add_in(thing_in, 'security', security_status)
-        add_in(thing_in, 'release', release_status)
+        if proposed_status in ('n/a', 'Invalid'):
+            add_in(thing_in, 'source-only', prep_status)
+        else:
+            add_in(thing_in, 'ppa', prep_status)
+            add_in(thing_in, 'proposed', proposed_status)
+            add_in(thing_in, 'updates', updates_status)
+            add_in(thing_in, 'security', security_status)
+            add_in(thing_in, 'release', release_status)
 
     # Report Snap release progress.
     if bug['variant'] == 'snap-debs':
