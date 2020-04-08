@@ -1,3 +1,5 @@
+from datetime                           import datetime, timedelta, timezone
+
 from ktl.kernel_series                          import KernelSeries
 
 from wfl.log                                    import center, cleave, cdebug, cinfo
@@ -180,39 +182,55 @@ class PreparePackage(TaskHandler):
                 s.task.status = 'In Progress'
                 retval = True
 
-            # XXX: likely this is not part of prepare-package and we should be
-            # tracking those either in workflow as virtual tasks like
-            # build-packages or a real task.  Once we have fuller automation we
-            # will count these done as soon as we have valid tags.
-            #
+            creator = None
+
+            # Keep track of whether we had any versions before we started.
+            versions_present = 'versions' in s.bug.bprops
+
+            # Check the package tag has been published -- this may populate versions.
+            tag_present = s.bug.published_tag(pkg)
+
             # If we have a ppa route, then we should check these packages were
-            # uploaded.
+            # uploaded.  Default to present when we are source-only.
+            upload_present = True
             if s.bug.debs.routing('ppa'):
                 # Confirm that this package is uploaded.
-                if not s.bug.debs.uploaded(pkg):
-                    s.task.reason = 'Pending -- package not yet uploaded'
-                    break
+                upload_present = s.bug.debs.uploaded(pkg)
+                if upload_present:
+                    # If we have any uploads create an empty versions dictionary
+                    # which will escalate all miss messages.
+                    if 'versions' not in s.bug.bprops and s.bug.debs.uploaded(pkg):
+                        s.bug.bprops['versions'] = {}
 
-                # If we have uploaded packages we have a creator.
-                creator = s.bug.debs.creator(pkg)
+                    # If we have uploaded packages we have a creator.
+                    creator = s.bug.debs.creator(pkg)
 
-                # We have uploads so we are at least Fix Committed.
-                # NOTE: we do not break so we can upgrade to later states.
-                if s.task.status != 'Fix Committed':
-                    s.task.status = 'Fix Committed'
-                    try:
-                        s.task.assignee = creator
-                    except KeyError:
-                        # It doesn't matter if we set the assignee, that's just a nice
-                        # to have.
-                        #
-                        pass
+                    # We have uploads so we are at least Fix Committed.
+                    # NOTE: we do not break so we can upgrade to later states.
+                    if s.task.status != 'Fix Committed':
+                        s.task.status = 'Fix Committed'
+                        try:
+                            s.task.assignee = creator
+                        except KeyError:
+                            # It doesn't matter if we set the assignee, that's just a nice
+                            # to have.
+                            #
+                            pass
+                        retval = True
 
-                    retval = True
+            # If we created the versions dictionary then we need to trigger a recrank.
+            if not versions_present and 'versions' in s.bug.bprops:
+                retval = True
 
-            # Check the package tag has been published.
-            if not s.bug.published_tag(pkg):
-                s.task.reason = 'Stalled -- package tag not yet published'
+            # If we are missing tags or uploads report same.
+            if not tag_present or not upload_present:
+                reason_state = 'Stalled' if 'versions' in s.bug.bprops else 'Pending'
+                missing = []
+                if not tag_present:
+                    missing.append('tag not published')
+                if not upload_present:
+                    missing.append('package not uploaded')
+                s.task.reason = '{} -- {}'.format(reason_state, ' and '.join(missing))
                 break
 
             # If we have a ppa route, then we should check these packages were
@@ -227,7 +245,8 @@ class PreparePackage(TaskHandler):
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
-                s.task.assignee = creator
+                if creator is not None:
+                    s.task.assignee = creator
             except KeyError:
                 # It doesn't matter if we set the assignee, that's just a nice
                 # to have.
