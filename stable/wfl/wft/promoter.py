@@ -121,43 +121,33 @@ class Promoter(TaskHandler):
 
         cleave(s.__class__.__name__ + '.remove_block_proposed')
 
-    def _security_signoff_verified(s):
+    def _signoff_verified(s, which):
         '''
-        Check if the security-signoff task has been set to 'Fix Released'. Development
+        Check if the *-signoff task has been set to 'Fix Released'. Development
         series tracking bugs do not have this task and should always return True.
         '''
-        center(s.__class__.__name__ + '.security_signoff_verified')
+        center(s.__class__.__name__ + '._signoff_verified({})'.format(which))
         retval = False
-        try:
-            if s.bug.tasks_by_name['security-signoff'].status in ['Fix Released', 'Invalid']:
-                retval = True
-            else:
-                cinfo('            security-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
-        except KeyError:
-            # security-signoff doesn't exist on this tracking bug.
-            #
+        if which not in s.bug.tasks_by_name:
             retval = True
-        cleave(s.__class__.__name__ + '.security_signoff_verified (%s)' % retval)
+        elif s.bug.tasks_by_name[which].status in ('Fix Released', 'Invalid'):
+            retval = True
+        else:
+            cinfo('            {} is neither "Fix Released" nor "Invalid" ({})'.format(
+                which, s.bug.tasks_by_name[which].status), 'yellow')
+        cleave(s.__class__.__name__ + '._signoff_verified ({})'.format(retval))
         return retval
 
-    def _stakeholder_signoff_verified(s):
-        '''
-        Check if the stakeholder-signoff task has been set to 'Fix Released'. Development
-        series tracking bugs do not have this task and should always return True.
-        '''
-        center(s.__class__.__name__ + '.stakeholder_signoff_verified')
-        retval = False
-        try:
-            if s.bug.tasks_by_name['stakeholder-signoff'].status in ['Fix Released', 'Invalid']:
-                retval = True
-            else:
-                cinfo('            stakeholder-signoff is neither "Fix Released" nor "Invalid" (%s)' % (s.bug.tasks_by_name['security-signoff'].status), 'yellow')
-        except KeyError:
-            # stakeholder-signoff must not exist
-            #
-            retval = True
-        cleave(s.__class__.__name__ + '.stakeholder_signoff_verified (%s)' % retval)
-        return retval
+    def _all_signoffs_verified(s):
+        missing = []
+        for signoff in ('stakeholder-signoff', 'kernel-signoff', 'security-signoff'):
+            if not s._signoff_verified(signoff):
+                missing.append(signoff)
+
+        if len(missing):
+            s.task.reason = 'Holding -- waiting for signoffs: {}'.format(' '.join(missing))
+
+        return len(missing) == 0
 
     # _testing_completed
     #

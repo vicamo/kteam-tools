@@ -49,8 +49,8 @@ class PromoteToRelease(Promoter):
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
-            if not s._security_signoff_verified():
-                s.task.reason = 'Holding -- security signoff not verified'
+            if not s._all_signoffs_verified():
+                # Note this will set an appropriate reason.
                 break
 
             if s.bug.is_derivative_package:

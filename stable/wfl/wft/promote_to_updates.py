@@ -63,12 +63,8 @@ class PromoteToUpdates(Promoter):
                 s.task.reason = 'Holding -- package in development blackout'
                 break
 
-            if not s._stakeholder_signoff_verified():
-                s.task.reason = 'Holding -- stakeholder signoff not verified'
-                break
-
-            if not s._security_signoff_verified():
-                s.task.reason = 'Holding -- security signoff not verified'
+            if not s._all_signoffs_verified():
+                # Note this will set an appropriate reason.
                 break
 
             if not s._cycle_ready():
