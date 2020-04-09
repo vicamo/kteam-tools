@@ -57,6 +57,7 @@ class WorkflowManager():
             'snap-certification-testing': wfl.wft.SnapCertificationTesting,
             'snap-publish'              : wfl.wft.SnapPublish,
             'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
+            'kernel-signoff'            : wfl.wft.StakeholderSignoff,
         }
         s.kernel_series = KernelSeries() if ks is None else ks
         s.sru_cycle = SruCycle() if sru_cycle is None else sru_cycle
