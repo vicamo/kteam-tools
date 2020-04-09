@@ -145,7 +145,13 @@ class Workflow(TaskHandler):
                     break
 
             if s.bug.is_valid and s.bug.debs:
-                for pocket in ('ppa', 'Signing', 'Proposed'):
+                pockets = []
+                if s.bug.phase in ('Packaging', 'Holding before Promote to Proposed'):
+                    pockets.append('ppa')
+                elif s.bug.phase == 'Promote to Proposed':
+                    pockets.append('Signing')
+                    pockets.append('Proposed')
+                for pocket in pockets:
                     failures = s.bug.debs.all_failures_in_pocket(pocket, ignore_all_missing=True)
                     if failures is None:
                         continue
