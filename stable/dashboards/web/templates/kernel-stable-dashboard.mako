@@ -17,7 +17,7 @@ a:visited {
 # https://www.viget.com/articles/color-contrast/
 
 __testing_status_colors = {
-    'New'           : 'blue',
+    'New'           : 'grey',
     'In Progress'   : 'grey', # 'white',
     'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
