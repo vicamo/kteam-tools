@@ -238,12 +238,15 @@ def __status_bites(bug, attrs):
 
     # signoffs: report signoffs together..
     security_signoff_status = __task_status(bug, 'security-signoff')
+    kernel_signoff_status = __task_status(bug, 'kernel-signoff')
     stakeholder_signoff_status = __task_status(bug, 'stakeholder-signoff')
     signoff_valid = (
             security_signoff_status not in ('n/a', 'New', 'Invalid') or
+            kernel_signoff_status not in ('n/a', 'New', 'Invalid') or
             stakeholder_signoff_status not in ('n/a', 'New', 'Invalid'))
     signoff_complete = (
             security_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
+            kernel_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
             stakeholder_signoff_status in ('n/a', 'Invalid', 'Fix Released'))
     if signoff_valid and not signoff_complete:
         retval = ''
@@ -253,6 +256,9 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[stakeholder_signoff_status]
         retval += tagged_block_valid('<span title="Stakeholder Signoff">Ss:</span>', stakeholder_signoff_status, color)
+
+        color = __testing_status_colors[kernel_signoff_status]
+        retval += tagged_block_valid('<span title="Kernel Signoff">ks:</span>', kernel_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
