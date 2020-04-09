@@ -200,6 +200,11 @@ xenial)
 	ADDPKG="$ADDPKG libnuma-dev"
 	;;
 esac
+case "$SUITE" in
+xenial|bionic|disco|eoan|focal)
+	ADDPKG="$ADDPKG libcap-dev"
+	;;
+esac
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
