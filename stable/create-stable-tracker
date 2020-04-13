@@ -221,9 +221,12 @@ class CreateTrackingBug(StdApp):
             sc = ubuntu.series_collection
             for s in sc:
                 if s.name == series_name:
-                    nomination = bug.lpbug.addNomination(target=s)
-                    if nomination.canApprove():
-                        nomination.approve()
+                    try:
+                        nomination = bug.lpbug.addNomination(target=s)
+                        if nomination.canApprove():
+                            nomination.approve()
+                    except:
+                        print("WARNING: Bug created, but series nomination failed!")
 
             if 'staging' in self.cfg:
                 print("https://bugs.%s.launchpad.net/bugs/%s" % (self.defaults['launchpad_services_root'], bug.id))
