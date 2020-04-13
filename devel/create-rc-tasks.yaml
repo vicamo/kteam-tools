@@ -1,0 +1,23 @@
+---
+    board:
+        prefix_name: 'Linux '
+        default_list: 'TODO'
+    cards:
+        - name: '%v: rebase'
+          description: 'Rebase unstable to -%v'
+          list: 'TODO'
+        - name: '%v: config update and review'
+          description: 'Update and review configs. Update annotations.'
+          list: 'TODO'
+        - name: '%v: test build'
+          description: 'Test build.'
+          list: 'TODO'
+        - name: '%v: upload to unstable ppa'
+          description: 'Upload to unstable ppa.'
+          list: 'TODO'
+        - name: '%v: start tests'
+          description: 'Start ADT/SRU testing.'
+          list: 'TODO'
+        - name: '%v: review test results'
+          description: 'Review test results and create bugs/cards as needed.'
+          list: 'TODO'
