@@ -465,7 +465,7 @@
                 flavours:
                     generic:
                         arches: ['riscv64']        # test system arch names
-            invalid-tasks: [ 'regression-testing', 'certification-testing']
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
 
 
 # 19.10 (Eoan Ermine)
