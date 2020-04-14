@@ -1175,6 +1175,7 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-raspi2-5.3:
+            variants: ['-hwe-18.04']
             packages:
                 linux-raspi2-5.3:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'raspi2-5.3']
