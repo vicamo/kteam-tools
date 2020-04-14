@@ -1607,7 +1607,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
-            variants: ['-edge']
+            variants: ['-5.3']
             packages:
                 linux-gke-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.3-next']
