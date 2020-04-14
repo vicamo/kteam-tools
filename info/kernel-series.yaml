@@ -2164,6 +2164,7 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
+            backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
