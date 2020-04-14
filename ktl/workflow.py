@@ -369,10 +369,13 @@ class Workflow:
                 if ks_pkg is None:
                     cdebug('    no {}'.format(task_name), 'yellow')
                     break
-            if task_name == 'stakeholder-signoff':
+            elif task_name == 'stakeholder-signoff':
                 if ks_source.stakeholder is None:
                     cdebug('    no stakeholder-signoff', 'yellow')
                     break
+            elif task_name == 'kernel-signoff':
+                cdebug('    no kernel-signoff (always manual)', 'yellow')
+                break
             elif task_name == 'promote-signing-to-proposed':
                 ks_route = ks_source.routing
                 if ks_route is not None:
