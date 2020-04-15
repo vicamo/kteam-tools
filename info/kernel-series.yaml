@@ -1570,7 +1570,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
-            variants: ['--']
+            variants: ['-5.0']
             packages:
                 linux-gke-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.0-next']
