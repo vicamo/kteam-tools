@@ -1538,6 +1538,30 @@
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gcp-4.15:
+            variants: ['-lts-18.04']
+            packages:
+                linux-gcp-4.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-4.15-next']
+                linux-meta-gcp-4.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-4.15']
+                linux-signed-gcp-4.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-4.15']
+                #linux-restricted-modules-gcp-4.15:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-4.15']
+            supported: true
+            backport: false
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gcp-5.3:
             variants: ['--','-edge']
             packages:
@@ -2326,8 +2350,8 @@
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            backport: false
-            derived-from: [ '18.04', 'linux' ]
+            backport: true
+            derived-from: [ '18.04', 'linux-gcp-4.15' ]
             testing:
                 flavours:
                     gcp:
