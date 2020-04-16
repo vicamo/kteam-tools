@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")"/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+resync_batch_start
+
+# Check and fix the wget/curl dependencies.
+control="$FIX_DEBIAN/control.stub.in"
+
+fix_verbose "checking Build-Depends: libcap-dev in $control"
+if [ -n "$control" ] && [ -f "tools/power/x86/turbostat/Makefile" ]; then
+	using_lcap=$(grep -c -- -lcap "tools/power/x86/turbostat/Makefile")
+	if [ "$using_lcap" != 0 ]; then
+		fix_verbose "checking for Build-Depends: libcap-dev in $control"
+		libcap_dev=$(grep -c libcap-dev "$control")
+		if [ "$libcap_dev" = 0 ]; then
+			"$(dirname "$0")/helpers/dependency-mangler" add "$control" 'Source' 'Build-Depends' "libcap-dev <!stage1>"
+			resync_batch_changed "$control"
+		fi
+	fi
+fi
+resync_batch_commit "UBUNTU: [Packaging] add libcap-dev dependency"
+
+exit 0
