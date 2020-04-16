@@ -29,7 +29,7 @@ commit()
 	local file
 	msg="$msg
 
-$FIX_BUGLINK
+$FIX_BUGLINK/$FIX_BUG
 "
 	if [ "$#" -eq 0 ]; then
 		fix_verbose "no files present"
