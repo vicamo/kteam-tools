@@ -217,7 +217,10 @@ show_elapsed &
 		then
 		    debuild $srcpkg_debopts -S -I -i -uc -us
 		else
-		    $BUILD_FAKEROOT debian/rules $BUILD_TARGET
+		    # the selftests targets don't have a build target
+		    if [ -n "${TARGET##*selftests}" ]; then
+		        $BUILD_FAKEROOT debian/rules $BUILD_TARGET
+		    fi
 		    fakeroot debian/rules $TARGET
 		fi
 XXEOFXX
