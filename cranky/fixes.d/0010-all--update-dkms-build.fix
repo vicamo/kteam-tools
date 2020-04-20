@@ -7,9 +7,7 @@ control=''
 case "$FIX_TYPE" in
 main)
 	. debian/debian.env
-	if [ -f "debian/scripts/file-downloader" ]; then
-		control="$DEBIAN/control.stub.in"
-	fi
+	control="$DEBIAN/control.stub.in"
 	;;
 lrm)
 	for control in "debian/control.stub" "debian/control.common" ""
@@ -25,16 +23,6 @@ esac
 
 resync_batch_start
 
-# Check and fix the wget/curl dependencies.
-if [ -n "$control" ] && [ -f "${FIX_MAIN_PATH:-.}/debian/scripts/file-downloader" ]; then
-	fix_verbose "checking for Build-Depends: curl"
-	curl=$(grep -c curl "$control")
-	if [ "$curl" = 0 ]; then
-		sed -i 's/wget/curl/' "$control"
-		resync_batch_changed "$control"
-	fi
-fi
-
 case "$FIX_TYPE" in
 main)
 	;;
@@ -46,6 +34,29 @@ main)
 	done
 	;;
 esac
+
+# Check and fix the wget/curl dependencies.
+if [ -f "debian/scripts/dkms-build" ] && [ -n "$control" ]; then
+	if [ -f "debian/scripts/file-downloader" ]; then
+		dont="wget"
+		want="curl"
+	else
+		dont="curl"
+		want="wget"
+	fi
+	fix_verbose "checking removal of Build-Depends: $dont"
+	seen=$(grep -c "$dont" "$control")
+	if [ "$seen" != 0 ]; then
+		"$(dirname "$0")/helpers/dependency-mangler" remove "$control" 'Source' 'Build-Depends' "$dont <!stage1>"
+		resync_batch_changed "$control"
+	fi
+	fix_verbose "checking addition of Build-Depends: $want"
+	seen=$(grep -c "$want" "$control")
+	if [ "$seen" = 0 ]; then
+		"$(dirname "$0")/helpers/dependency-mangler" add "$control" 'Source' 'Build-Depends' "$want <!stage1>"
+		resync_batch_changed "$control"
+	fi
+fi
 
 resync_batch_commit "UBUNTU: [Packaging] resync dkms-build and family"
 
