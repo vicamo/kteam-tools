@@ -1,0 +1,267 @@
+#!/usr/bin/python3
+
+import argparse
+import os
+import sys
+
+
+class ControlManglerError(Exception):
+    pass
+
+
+class ControlField:
+
+    # XXX: uses within so we can make Package: sections a separate
+    #      object and use this same ControlField within.
+    def __init__(self, within, element, content):
+        self.within = within
+        self.element = element
+        self.content = content
+
+    def save(self):
+        self.within.field_update(self)
+
+    # XXX: only works on entries which are split one per line.
+    def sort(self):
+        self.content = [self.content[0]] + sorted(self.content[1:])
+
+    def reformat_relation(self):
+        current = list(self.content)
+
+        # First line may have relations on the end, drop the prefix.
+        (field, deps) = current[0].split(':', 1)
+        current[0] = deps
+
+        # Rebuild the content as initially empty.
+        self.content = [ field + ':\n']
+        for line in current:
+            for dep in line.split(','):
+                dep = dep.strip()
+                if dep != '':
+                    self.insert_relation(dep)
+
+    def insert(self, entry):
+        for pos in range(1, len(self.content)):
+            line = self.content[pos]
+            if entry == line:
+                return
+        pos = 0
+        for pos in range(1, len(self.content)):
+            line = self.content[pos]
+            if entry < line:
+                break
+        else:
+            pos += 1
+        self.content.insert(pos, entry)
+
+    def remove(self, entry):
+        for pos in range(1, len(self.content)):
+            line = self.content[pos]
+            if entry == line:
+                self.content.pop(pos)
+                break
+
+    def insert_relation(self, entry):
+        self.insert(' ' + entry + ',\n')
+
+    def remove_relation(self, entry):
+        self.remove(' ' + entry + ',\n')
+
+    def __str__(self):
+        if self.content is None:
+            return "--empty--"
+        return ''.join(self.content)
+
+
+class ControlStanza:
+
+    def __init__(self, within, element, content):
+        self.within = within
+        self.element = element
+        self.content = content
+
+    def save(self):
+        self.within.stanza_update(self)
+
+    # XXX: this should have range limits so we can search within a
+    #      package etc.
+    def _field_range(self, field):
+        find = field + ':'
+        find_start = None
+        find_end = -1
+        for pos in range(0, len(self.content)):
+            line = self.content[pos]
+            if line.startswith(find):
+                find_start = pos
+                continue
+            if find_start is not None and not line.startswith(' '):
+                find_end = pos
+                break
+
+        return find_start, find_end
+
+    def field_lookup(self, field):
+        find_start, find_end = self._field_range(field)
+        if find_start is None:
+            return None
+        return ControlField(self, field, self.content[find_start:find_end])
+
+    def field_update(self, entry):
+        field = entry.element
+        find_start, find_end = self._field_range(field)
+        if find_start is None:
+            raise ValueError("{} not found".format(field))
+        content = self.content[:find_start]
+        if entry.content is not None:
+            content += entry.content
+        if find_start != -1:
+            content += self.content[find_end:]
+        self.content = content
+
+
+class ControlFile:
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.content = []
+
+    def load(self):
+        with open(self.filename) as fd:
+            self.content = fd.readlines()
+
+    def _stanza_range(self, stanza):
+        if stanza == 'Source':
+            find = 'Source:'
+        else:
+            find = 'Package: ' + stanza + '\n'
+        find_start = None
+        find_end = -1
+        for pos in range(0, len(self.content)):
+            line = self.content[pos]
+            if line.startswith(find):
+                find_start = pos
+                continue
+            if find_start is not None and line == '\n':
+                find_end = pos
+                break
+
+        return find_start, find_end
+
+    def stanza_lookup(self, stanza):
+        find_start, find_end = self._stanza_range(stanza)
+        if find_start is None:
+            return None
+        return ControlStanza(self, stanza, self.content[find_start:find_end])
+
+    def stanza_update(self, entry):
+        stanza = entry.element
+        find_start, find_end = self._stanza_range(stanza)
+        if find_start is None:
+            raise ValueError("{} not found".format(stanza))
+        content = self.content[:find_start]
+        if entry.content is not None:
+            content += entry.content
+        if find_start != -1:
+            content += self.content[find_end:]
+        self.content = content
+
+    def save(self):
+        with open(self.filename + '.new', 'w') as fd:
+            for line in self.content:
+                print(line, end='', file=fd)
+        os.rename(self.filename + '.new', self.filename)
+
+
+class ControlMangler:
+
+    def __init__(self):
+        pass
+
+    def entry_add(self, args):
+        filename, stanza, field, entry = args.filename, args.stanza, args.field, args.entry
+
+        cf = ControlFile(filename)
+        cf.load()
+        cf_stanza = cf.stanza_lookup(stanza)
+        if cf_stanza is None:
+            raise ControlMangerError("{}: stanza not found".format(stanza))
+        cf_entry = cf_stanza.field_lookup(field)
+        if cf_entry is None:
+            raise ControlMangerError("{}: field not found".format(field))
+        cf_entry.insert_relation(entry)
+        cf_entry.save()
+        cf_stanza.save()
+        cf.save()
+
+    def entry_remove(self, args):
+        filename, stanza, field, entry = args.filename, args.stanza, args.field, args.entry
+
+        cf = ControlFile(filename)
+        cf.load()
+        cf_stanza = cf.stanza_lookup(stanza)
+        if cf_stanza is None:
+            raise ControlMangerError("{}: stanza not found".format(stanza))
+        cf_entry = cf_stanza.field_lookup(field)
+        if cf_entry is None:
+            raise ControlMangerError("{}: field not found".format(field))
+        cf_entry.remove_relation(entry)
+        cf_entry.save()
+        cf_stanza.save()
+        cf.save()
+
+    def entry_reformat(self, args):
+        filename, stanza, field = args.filename, args.stanza, args.field
+
+        cf = ControlFile(filename)
+        cf.load()
+        cf_stanza = cf.stanza_lookup(stanza)
+        if cf_stanza is None:
+            raise ControlManglerError("{}: stanza not found".format(stanza))
+        cf_entry = cf_stanza.field_lookup(field)
+        if cf_entry is None:
+            raise ControlManglerError("{}: field not found".format(field))
+        cf_entry.reformat_relation()
+        cf_entry.save()
+        cf_stanza.save()
+        cf.save()
+
+    def main(self):
+        parser = argparse.ArgumentParser(description='Control Field Mangler')
+        subparsers = parser.add_subparsers(metavar='COMMAND',
+            title='command', help='add -h for command help')
+        # Work around http://bugs.python.org/issue9253
+        subparsers.required = True
+
+        # add command
+        subcmd = subparsers.add_parser('add', help='Add Entry')
+        subcmd.set_defaults(func=self.entry_add)
+        subcmd.add_argument('filename')
+        subcmd.add_argument('stanza')
+        subcmd.add_argument('field')
+        subcmd.add_argument('entry')
+
+        # remove command
+        subcmd = subparsers.add_parser('remove', help='Remove Entry')
+        subcmd.set_defaults(func=self.entry_remove)
+        subcmd.add_argument('filename')
+        subcmd.add_argument('stanza')
+        subcmd.add_argument('field')
+        subcmd.add_argument('entry')
+
+        # reformat command
+        subcmd = subparsers.add_parser('reformat', help='Reformat Entry')
+        subcmd.set_defaults(func=self.entry_reformat)
+        subcmd.add_argument('filename')
+        subcmd.add_argument('stanza')
+        subcmd.add_argument('field')
+
+        args = parser.parse_args()
+        try:
+            args.func(args)
+        except ControlManglerError as e:
+            for arg in e.args:
+                print(arg, file=sys.stderr)
+            sys.exit(1)
+
+if __name__ == '__main__':
+    ControlMangler().main()
