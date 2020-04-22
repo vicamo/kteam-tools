@@ -2,7 +2,7 @@
 #
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, INFO
+from logging                            import basicConfig, INFO, warning
 from ktl.log                            import Clog
 from datetime                           import datetime, timedelta, timezone
 from launchpadlib.launchpad             import Launchpad as _Launchpad
@@ -69,6 +69,9 @@ class ThisApp():
         now = datetime.now(timezone.utc)
 
         source_package = s.distro.getSourcePackage(name=package_name)
+        if source_package is None:
+            warning('No source package found for "%s"' % (package_name))
+            return
         tasks = source_package.searchTasks(status=s.search_status, modified_since=s.search_since)
         for task in tasks:
             delta = now - task.date_created
