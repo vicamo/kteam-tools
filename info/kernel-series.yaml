@@ -1337,6 +1337,30 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-aws-5.4:
+            routing: prerelease
+            variants: ['-wip']
+            packages:
+                linux-aws-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.4-next']
+                linux-meta-aws-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-5.4']
+                linux-restricted-modules-aws-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.4']
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-aws-edge:
             packages:
                 linux-aws-edge:
