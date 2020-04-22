@@ -242,6 +242,10 @@ class PreparePackage(TaskHandler):
                     s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
                     break
 
+            # If we have a no ppa route, then we should consider duplicates now.
+            if not s.bug.debs.routing('ppa'):
+                s.bug.dup_replaces()
+
             s.task.status = 'Fix Released'
             s.task.timestamp('finished')
             try:
