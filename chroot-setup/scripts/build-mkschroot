@@ -205,6 +205,16 @@ xenial|bionic|disco|eoan|focal)
 	ADDPKG="$ADDPKG libcap-dev"
 	;;
 esac
+case "$SUITE" in
+xenial|bionic|disco|eoan|focal)
+	ADDPKG="$ADDPKG pkg-config libfuse-dev"
+	;;
+esac
+case "$SUITE" in
+bionic|disco|eoan|focal)
+	ADDPKG="$ADDPKG clang libelf-dev llvm"
+	;;
+esac
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
