@@ -1990,6 +1990,31 @@
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oracle-5.4:
+            variants: [ '-wip' ]
+            routing: prerelease
+            packages:
+                linux-oracle-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.4-next']
+                linux-meta-oracle-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/bionic', 'oracle-5.4']
+                linux-signed-oracle-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/bionic', 'oracle-5.4']
+                linux-restricted-modules-oracle-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.4']
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux-oracle' ]
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-fips:
             routing:
                 test-build:
