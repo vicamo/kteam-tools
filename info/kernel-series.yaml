@@ -1514,6 +1514,34 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-5.4:
+            variants: [ '-wip' ]
+            routing: prerelease
+            packages:
+                linux-azure-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.4-next']
+                linux-meta-azure-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/bionic', 'azure-5.4']
+                linux-signed-azure-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-5.4']
+                linux-restricted-modules-azure-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-5.4']
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
         linux-azure-edge:
             packages:
                 #linux-azure-edge:
