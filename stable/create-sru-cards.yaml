@@ -58,7 +58,7 @@
           description: 'Whenever someone from the pool starts working, one should make oneself member of the active card. And remove oneself, at the end of the working day (or if moving to other duties for the rest of the day).'
           list: 'Cycle Roles'
         - name: 'Get pre-cycle boot tests done'
-          description: 'Someone should generate dirty (not finalized) test builds for the main kernels so they can be quick tested over the weekend. Obviously this should happen on the Friday before the cycle starts.'
+          description: 'Someone should crank the main kernels on the Friday before the cycle starts so they can be boot tested over the weekend.'
           list: 'Backlog (manual)'
         - name: 'Update IRC topic(s)'
           description: 'Update the topic of #stable-kernel at Canonical with the current cycle date and lead.'
