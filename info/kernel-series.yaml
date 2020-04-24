@@ -1648,6 +1648,31 @@
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gcp-5.4:
+            variants: ['-wip']
+            routing: prerelease
+            packages:
+                linux-gcp-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.4-next']
+                linux-meta-gcp-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/bionic', 'gcp-5.4']
+                linux-signed-gcp-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/bionic', 'gcp-5.4']
+                linux-restricted-modules-gcp-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.4']
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux-gcp' ]
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gke-4.15:
             variants: ['--','-4.15']
             packages:
