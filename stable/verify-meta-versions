@@ -22,7 +22,7 @@ def get_meta_version(handle, dbg=False):
 
     for line in out:
         parts = line.rstrip().split()
-        if 'meta' not in parts[0]:
+        if len(parts) < 1 or 'meta' not in parts[0]:
             continue
         version = parts[1]
 
@@ -68,7 +68,20 @@ than those of the respective master.
                 continue
             ks_source2 = ks_source1.derived_from
 
-            if ks_source1.name != ks_source2.name:
+            variants1 = ks_source1.variants
+            variants2 = ks_source2.variants
+
+            if not ks_source1.supported:
+                continue
+
+            if ks_source1.name == 'linux-hwe' or ks_source1.name.startswith('linux-lts-'):
+                continue
+
+            #print(ks_source1.name, variants1, ks_source2.name, variants2)
+            if ((variants1 is None or '--' in variants1) and
+                    (variants2 is None or '--' in variants2)):
+                pass
+            else:
                 continue
 
             src_handle = '{}:{}'.format(ks_source1.series.codename, ks_source1.name)
@@ -77,6 +90,10 @@ than those of the respective master.
             cinfo('Gathering versions for {} and {}'.format(src_handle, tgt_handle))
             src_version = get_meta_version(src_handle)
             tgt_version = get_meta_version(tgt_handle)
+
+            if src_version is None or tgt_version is None:
+                cwarn('WARN: {} ?? {} (no version)'.format(src_version, tgt_version), 'yellow')
+                continue
 
             bits = src_version.split('.')
             src_base = '.'.join(bits[0:3])
