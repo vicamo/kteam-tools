@@ -35,8 +35,13 @@ main)
 	;;
 esac
 
-# Check and fix the wget/curl dependencies.
+# Check and fix the dkms/wget/curl dependencies.
 if [ -f "debian/scripts/dkms-build" ] && [ -n "$control" ]; then
+	seen=$(grep -c "dkms" "$control")
+	if [ "$seen" = 0 ]; then
+		"$(dirname "$0")/helpers/dependency-mangler" add "$control" 'Source' 'Build-Depends' "dkms <!stage1>"
+		resync_batch_changed "$control"
+	fi
 	if [ -f "debian/scripts/file-downloader" ]; then
 		dont="wget"
 		want="curl"
