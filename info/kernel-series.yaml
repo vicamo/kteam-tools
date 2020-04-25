@@ -150,8 +150,8 @@
 # 20.04 (Focal Fossa)
 '20.04':
     codename: focal
-    development: true
-    supported: false
+    development: false
+    supported: true
     lts: true
     routing-table: &routing-table
         default: &routing-table-default
