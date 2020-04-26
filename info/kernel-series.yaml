@@ -147,12 +147,12 @@
 #       archive pocket
 #
 
-# 20.04 (Focal Fossa)
-'20.04':
-    codename: focal
-    development: false
-    supported: true
-    lts: true
+# 20.10 (Groovy Gorilla)
+'20.10':
+    codename: groovy
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
@@ -189,15 +189,270 @@
             updates:
             security:
             release:
-            #<<:             *routing-table-default
-            #proposed:
-            #    - ['ppa:canonical-kernel-team/ubuntu/eol-proposed', 'Release']
-            #    - ['ubuntu', 'Proposed']
-            #updates:
-            #    - ['ppa:canonical-kernel-team/ubuntu/eol-updates', 'Release']
-            #    - ['ubuntu', 'Proposed']
-            #security:
-            #release:
+    sources:
+        linux:
+            versions: ['5.4.0']
+            variants: ['--', '-hwe-20.04']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+            supported: true
+            snaps:
+                pc-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['20']
+                        arm64: ['20']
+                        armhf: ['20']
+                pc-lowlatency-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['20']
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            copy-forward: [ '20.04', 'linux' ]
+
+        linux-5.6:
+            versions: ['5.6.0']
+            variants: ['-wip']
+            packages:
+                linux-5.6:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
+                linux-meta-5.6:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
+                linux-signed-5.6:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
+                linux-restricted-modules-5.6:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
+            supported: false
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            copy-forward: [ '20.04', 'linux-5.6' ]
+
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        armhf: [ '20' ]
+                        arm64: [ '20' ]
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            invalid-tasks: [ 'regression-testing' ]
+            copy-forward: [ '20.04', 'linux-raspi' ]
+
+        linux-oem-5.6:
+            variants: ['-oem-20.04']
+            packages:
+                linux-oem-5.6:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.6-next']
+                linux-meta-oem-5.6:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.6']
+                linux-signed-oem-5.6:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.6']
+                linux-restricted-modules-oem-5.6:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.6']
+            supported: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            copy-forward: [ '20.04', 'linux-oem-5.6' ]
+
+        linux-aws:
+            variants: ['--']
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '20.04', 'linux-aws' ]
+
+        linux-azure:
+            variants: ['--']
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
+                    - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
+                    - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+            copy-forward: [ '20.04', 'linux-azure' ]
+
+        linux-gcp:
+            variants: ['--']
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '20.04', 'linux-gcp' ]
+
+        linux-kvm:
+            variants: ['--']
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/focal', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '20.04', 'linux-kvm' ]
+
+        linux-oracle:
+            variants: ['--']
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+            copy-forward: [ '20.04', 'linux-oracle' ]
+
+        linux-riscv:
+            variants: ['--', '-hwe-20.04']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
+            copy-forward: [ '20.04', 'linux-riscv' ]
+
+
+# 20.04 (Focal Fossa)
+'20.04':
+    codename: focal
+    development: false
+    supported: true
+    lts: true
+    routing-table: *routing-table
     sources:
         linux:
             versions: ['5.4.0']
@@ -376,10 +631,7 @@
             supported: true
             derived-from: [ '20.04', 'linux' ]
             swm:
-                deployment-blackout: &swm-azure-blackout
-                    - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
-                    - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
-                    - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+                deployment-blackout: *swm-azure-blackout
             testing:
                 flavours:
                     azure:
