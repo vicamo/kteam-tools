@@ -196,16 +196,16 @@
             variants: ['--', '-hwe-20.04']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/groovy', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/groovy']
                 linux-signed:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/groovy']
                 linux-restricted-modules:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/groovy']
             supported: true
             snaps:
                 pc-kernel:
@@ -270,10 +270,10 @@
             variants: ['--']
             packages:
                 linux-raspi:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'raspi']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/groovy', 'raspi']
                 linux-meta-raspi:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'raspi']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/groovy', 'raspi']
             snaps:
                 pi-kernel:
                     primary: true
@@ -294,16 +294,16 @@
             variants: ['-oem-20.04']
             packages:
                 linux-oem-5.6:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.6-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/groovy', 'oem-5.6-next']
                 linux-meta-oem-5.6:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.6']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/groovy', 'oem-5.6']
                 linux-signed-oem-5.6:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.6']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/groovy', 'oem-5.6']
                 linux-restricted-modules-oem-5.6:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.6']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/groovy', 'oem-5.6']
             supported: true
             testing:
                 flavours:
@@ -316,13 +316,13 @@
             variants: ['--']
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/groovy']
                 linux-meta-aws:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/groovy']
                 linux-restricted-modules-aws:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -337,16 +337,16 @@
             variants: ['--']
             packages:
                 linux-azure:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/groovy', 'master-next']
                 linux-meta-azure:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/groovy']
                 linux-signed-azure:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/groovy']
                 linux-restricted-modules-azure:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             swm:
@@ -367,16 +367,16 @@
             variants: ['--']
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/groovy', 'master-next']
                 linux-meta-gcp:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/groovy']
                 linux-signed-gcp:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/groovy']
                 linux-restricted-modules-gcp:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -391,10 +391,10 @@
             variants: ['--']
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/groovy', 'master-next']
                 linux-meta-kvm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -409,16 +409,16 @@
             variants: ['--']
             packages:
                 linux-oracle:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/groovy', 'master-next']
                 linux-meta-oracle:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/groovy']
                 linux-signed-oracle:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/groovy']
                 linux-restricted-modules-oracle:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -433,10 +433,10 @@
             variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/groovy']
                 linux-meta-riscv:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
