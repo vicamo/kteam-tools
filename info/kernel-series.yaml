@@ -154,7 +154,7 @@
     supported: false
     opening:
         archive-closed: true
-        respositories: true
+        repositories: true
         archive-open: true
         debootstrap: true
     routing-table: &routing-table
