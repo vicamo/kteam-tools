@@ -295,6 +295,10 @@ class Promoter(TaskHandler):
                 except KeyError:
                     cdebug('master bug does not contain the %s task' % t)
 
+        if 'kernel-block' in master.tags or 'kernel-block-proposed' in master.tags:
+            cinfo('master bug is blocked')
+            retval = False
+
         cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
         return retval
 
