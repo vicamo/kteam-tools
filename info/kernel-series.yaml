@@ -696,6 +696,48 @@
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
 
+        linux-fips:
+            routing:
+                test-build:
+                    - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
+                test:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                signing:
+                    - ['ppa:canonical-signing/ubuntu/fips', 'Release']
+                proposed:
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                updates:
+                    - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+                #security:
+                #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+                release:
+                    - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+            packages:
+                linux-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'master-next']
+                linux-meta-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips']
+                linux-signed-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips']
+                linux-restricted-modules-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips']
+            supported: true
+            private: true
+            derived-from: ['20.04', 'linux']
+            testing:
+                flavours:
+                    fips:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
 
 # 19.10 (Eoan Ermine)
 '19.10':
