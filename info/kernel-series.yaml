@@ -155,6 +155,7 @@
     opening:
         archive-closed: true
         respositories: true
+        archive-open: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
