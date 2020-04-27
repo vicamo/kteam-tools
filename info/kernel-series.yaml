@@ -1703,7 +1703,7 @@
                 proposed:
                     - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 updates:
-                    - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+                    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
                 #security:
                 #    - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
                 release:
