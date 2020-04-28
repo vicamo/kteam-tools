@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from math import ceil
 from subprocess import Popen
 #from logging import DEBUG, INFO, WARNING, basicConfig
+from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
 from urllib.request import (HTTPBasicAuthHandler,
                             HTTPPasswordMgrWithDefaultRealm,
@@ -393,10 +394,17 @@ class MonitorLaunchpadArchivePrivate:
             opener = build_opener(handler)
 
             # Grab the InRelease file using a URL without password.
-            inrelease = opener.open(clean_url)
+            status_code = None
+            try:
+                inrelease = opener.open(clean_url)
+                status_code = inrelease.status
+            except HTTPError as e:
+                status_code = e.code
+
+            print("APW status_code={}".format(status_code))
 
             # If we are unable to obtain the series InRelease file assume it is changed.
-            if inrelease.status != 200:
+            if status_code != 200:
                 series_changed.add(series)
                 continue
 
