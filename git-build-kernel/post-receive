@@ -49,7 +49,7 @@ do
 	delete_ref_after_build=1
 	case "$ref_p2" in
 	    source)		arch="source"; fdr_targets=""; ;;
-	    binary*)		fdr_targets="$ref_p2" ;;
+	    binary*|*selftests)	fdr_targets="$ref_p2" ;;
 	    *)
 				### trigger only on predefined names
 				[ $option_only_build_predefined_refs = 1 ] && \

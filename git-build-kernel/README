@@ -31,6 +31,10 @@ push "yourbranch:binary" or likewise "yourbranch:binary-server".
 
 If you want the source package (.dsc file set), then push "yourbranch:source".
 
+If you run to compile/run the kernel selftests, then push
+"yourbranch:compileselftests" or "yourbranch:runselftests". These targets must
+be implemented by the package debian/rules.
+
 Any local branch will work, so all of these are valid:
 
 	git push tangerine master:binary-generic	# a branch
@@ -41,6 +45,7 @@ Any local branch will work, so all of these are valid:
 	git push tangerine mybranch:binary-generic	# another branch
 	git push tangerine mybranch:binary-server	# server pkgs
 	git push tangerine mybranch:binary		# all binary pkgs
+	git push tangerine mybranch:compileselftests	# compile selftests
 
 	git push tangerine Ubuntu-3.8.0-1.5:binary	# a tag, all pkgs
 
