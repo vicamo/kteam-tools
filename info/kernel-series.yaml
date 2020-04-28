@@ -242,19 +242,19 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
             copy-forward: [ '20.04', 'linux' ]
 
-        linux-5.6:
-            versions: ['5.6.0']
+        linux-5.7:
+            versions: ['5.7.0']
             variants: ['-wip']
             packages:
-                linux-5.6:
+                linux-5.7:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
-                linux-meta-5.6:
+                linux-meta-5.7:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
-                linux-signed-5.6:
+                linux-signed-5.7:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
-                linux-restricted-modules-5.6:
+                linux-restricted-modules-5.7:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
             supported: false
@@ -267,7 +267,6 @@
                     lowlatency:
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            copy-forward: [ '20.04', 'linux-5.6' ]
 
         linux-raspi:
             variants: ['--']
