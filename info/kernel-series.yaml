@@ -1364,7 +1364,7 @@
             testing:
                 flavours:
                     virtual:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
