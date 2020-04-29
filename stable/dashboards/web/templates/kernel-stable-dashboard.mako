@@ -303,7 +303,11 @@ def __status_bites(bug, attrs):
     if len(bites) == 0:
         retval = bug.get('phase', 'Holding not ready')
         state = retval.split(' ', 1)[0]
-        colour = status_colour.get(state, 'blue')
+        if state == 'Complete':
+            colour = 'blue'
+        else:
+            colour = 'red'
+        #colour = status_colour.get(state, 'blue')
         retval = __coloured(retval, colour)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
