@@ -210,27 +210,6 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/groovy']
             supported: true
-            snaps:
-                pc-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        amd64: ['20']
-                        arm64: ['20']
-                        armhf: ['20']
-                pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['20']
             testing:
                 flavours:
                     generic:
@@ -276,17 +255,6 @@
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/groovy', 'raspi']
-            snaps:
-                pi-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        armhf: [ '20' ]
-                        arm64: [ '20' ]
             supported: true
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
