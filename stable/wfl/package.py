@@ -701,7 +701,9 @@ class Package():
     def all_failures_in_pocket(s, pocket, ignore_all_missing=False):
         failures = []
         missing = 0
+        sources = 0
         for pkg in s.srcs:
+            sources += 1
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 failures.append("{}:building".format(pkg))
@@ -721,7 +723,7 @@ class Package():
                 s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
             failures.append("signed:retry-needed")
 
-        if ignore_all_missing and len(failures) == missing:
+        if ignore_all_missing and sources == missing:
                 failures = []
 
         return sorted(failures) if len(failures) > 0 else None
