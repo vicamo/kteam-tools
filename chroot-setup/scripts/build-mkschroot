@@ -349,6 +349,17 @@ if $DOINSTALL; then
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
 fi
 
+# Remove packages which are problematic.
+RMPKG=snapcraft
+for i in ${ADDPKG}
+do
+	installed=$( ${SCHROOTCMD} -- dpkg -l $i | grep '^ii' | wc -l )
+	if [ "$installed" -ne 0 ]; then
+		echo Removing $i
+		${SCHROOTCMD} -- apt-get -y --force-yes remove $i
+	fi
+done
+
 # Install build-essentials ...
 ${SCHROOTCMD} -- apt-get -y --force-yes --no-install-recommends install build-essential
 
