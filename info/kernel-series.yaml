@@ -897,6 +897,7 @@
     codename: disco
     development: false
     supported: true
+    old-releases: true
     routing-table: *routing-table
     sources:
         linux:
