@@ -1301,7 +1301,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
-            variants: [ '-hwe-18.04' ]
+            variants: [ '-hwe-18.04', '-hwe-18.04-edge', '-gkeop-5.3' ]
             packages:
                 linux-hwe:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe']
