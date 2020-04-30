@@ -115,7 +115,7 @@ fi
 #------------------------------------------------------------------------------
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
-ADDPKG="fakeroot vim git-core devscripts lzop u-boot-tools snapcraft patchutils"
+ADDPKG="fakeroot vim git-core devscripts lzop u-boot-tools patchutils"
 get_build_dep "${SUITE}"
 echo "Build dep: $BUILD_DEP"
 ADDPKGDEP=${BUILD_DEP}
