@@ -19,7 +19,9 @@ if cmd == 'release':
         if not series.opening_ready('archive-closed', 'debootstrap'):
             continue
         expired = ''
-        if not series.supported and not series.development:
+        if series.old_releases:
+            expired=' old'
+        elif not series.supported and not series.development:
             expired=' expired'
 
         print("release {series}{expired};".format(series=series.codename, expired=expired))
