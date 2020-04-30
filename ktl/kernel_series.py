@@ -527,6 +527,10 @@ class KernelSeriesEntry:
     def esm(self):
         return self._data.get('esm', False)
 
+    @property
+    def old_releases(self):
+        return self._data.get('old-releases', False)
+
     def __str__(self):
         return "{} ({})".format(self.name, self.codename)
 
