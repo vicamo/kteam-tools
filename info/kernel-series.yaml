@@ -1375,8 +1375,8 @@
             testing:
                 flavours:
                     virtual:
-                        arches: ['amd64', 'arm64']        # test system arch names
-                        clouds: ['metal']
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-edge:
