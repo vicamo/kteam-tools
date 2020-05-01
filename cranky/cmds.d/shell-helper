@@ -83,7 +83,7 @@ def list_variants(args):
 
 def config(args):
     try:
-        handle = Handle().lookup_set(args.handle)
+        handle = Handle().lookup_set(args.handle, validate=False)
     except HandleError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)

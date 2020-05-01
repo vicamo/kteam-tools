@@ -4,6 +4,7 @@
         trello_organization: 'kernelteam2'
         lists:
           - 'TODO'
+          - 'Dropped Patches'
           - 'Test failures'
           - 'In Progress'
           - 'Done'
