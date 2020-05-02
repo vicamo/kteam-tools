@@ -204,8 +204,10 @@ class Tracking():
                     continue
                 if not s.args.re_run and '<version to be filled>' not in lpbug.title:
                     continue
-                if s.args.sru_cycle and s.bug_to_sru_cycle(lpbug) != s.args.sru_cycle:
-                    continue
+                if s.args.sru_cycle:
+                    cycle = s.bug_to_sru_cycle(lpbug)
+                    if cycle != s.args.sru_cycle and cycle.split('-')[0] != s.args.sru_cycle:
+                        continue
                 found.append((bugid, tasks_by_name, lpbug))
 
             if len(found) == 0:
