@@ -87,6 +87,24 @@ Id: $id
 Committed: $cts
 Start: $time
 EOL
+
+barch='amd64'
+arch="$barch--self-tests"
+echo "build $arch on $barch ..."
+{
+
+	# Make things shiney.
+	git clean -x -f -d
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean
+	do_chroot "$build_release-$barch" \
+		fakeroot debian/rules compileselftests
+	rc="$?"
+	echo "$rc" >"$result/$arch.status"
+} 2>&1 | tee -a "$result/$arch.log"
+echo "Status: $arch $rc" >>"$result/SUMMARY"
+echo "build $arch on $barch ... rc=$rc"
+
 for arch in $archs
 do
 	case "$arch" in
