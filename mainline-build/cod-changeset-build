@@ -102,6 +102,7 @@ echo "build $arch on $barch ..."
 	rc="$?"
 	echo "$rc" >"$result/$arch.status"
 } 2>&1 | tee -a "$result/$arch.log"
+read rc <"$result/$arch.status"
 echo "Status: $arch $rc" >>"$result/SUMMARY"
 echo "build $arch on $barch ... rc=$rc"
 
