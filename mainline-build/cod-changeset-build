@@ -88,24 +88,6 @@ Committed: $cts
 Start: $time
 EOL
 
-barch='amd64'
-arch="$barch--self-tests"
-echo "build $arch on $barch ..."
-{
-
-	# Make things shiney.
-	git clean -x -f -d
-	do_chroot "$build_release-amd64" \
-		fakeroot debian/rules clean
-	do_chroot "$build_release-$barch" \
-		fakeroot debian/rules compileselftests
-	rc="$?"
-	echo "$rc" >"$result/$arch.status"
-} 2>&1 | tee -a "$result/$arch.log"
-read rc <"$result/$arch.status"
-echo "Status: $arch $rc" >>"$result/SUMMARY"
-echo "build $arch on $barch ... rc=$rc"
-
 for arch in $archs
 do
 	case "$arch" in
@@ -141,6 +123,25 @@ do
 	read rc <"$result/$arch.status"
 	echo "Status: $arch $rc" >>"$result/SUMMARY"
 	echo "build $arch on $barch ... rc=$rc"
+
+	# On non-crosscompiled architectures build the selftests.
+	if [ "$arch" = "$barch" ]; then
+		what="$arch--self-tests"
+		echo "build $what on $barch ..."
+		{
+			# Make things shiney.
+			git clean -x -f -d
+			do_chroot "$build_release-amd64" \
+				fakeroot debian/rules clean
+			do_chroot "$build_release-$barch" \
+				fakeroot debian/rules compileselftests
+			rc="$?"
+			echo "$rc" >"$result/$what.status"
+		} 2>&1 | tee -a "$result/$what.log"
+		read rc <"$result/$what.status"
+		echo "Status: $what $rc" >>"$result/SUMMARY"
+		echo "build $what on $barch ... rc=$rc"
+	fi
 done
 
 time=$( date +%s )
