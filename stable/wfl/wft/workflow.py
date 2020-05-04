@@ -141,8 +141,7 @@ class Workflow(TaskHandler):
             if s.bug.snap:
                 (consistent, reasons) = s.bug.snap.channel_revisions_consistent()
                 if consistent is False:
-                    s.task.reason = "snap channel revisions inconsistent {}".format(",".join(reasons))
-                    break
+                    s.bug.reasons['snap-publishing'] = "snap channel revisions inconsistent {}".format(",".join(reasons))
 
             if s.bug.is_valid and s.bug.debs:
                 pockets = []
