@@ -175,9 +175,12 @@ Conflicts that cannot be resolve this way, must be resolved manually.
 
 **Note** Continue until the rebase completes without any conflicts and re-run
 `cranky fix` at the end to make sure the helper scripts are correct.
+
+<!--cheatsheet-->
 ```
 $ cranky fix
 ```
+<!--/cheatsheet-->
 
 At this point you should double check that the version number at the top of
 "debian.master/changelog" matches the version that you see on the dashboard:
