@@ -103,6 +103,9 @@ do
 
 	echo "build $arch on $barch ..."
 
+	# Work out if this is thin architecture.
+	thin_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
+
 	# Make things shiney.
 	git clean -x -f -d
 	do_chroot "$build_release-amd64" \
@@ -125,7 +128,7 @@ do
 	echo "build $arch on $barch ... rc=$rc"
 
 	# On non-crosscompiled architectures build the selftests.
-	if [ "$arch" = "$barch" ]; then
+	if [ "$arch" = "$barch" -a "$thin_arch" -eq 0 ]; then
 		what="$arch--self-tests"
 		echo "build $what on $barch ..."
 		{
