@@ -130,9 +130,6 @@ class Workflow(TaskHandler):
                 if task_section < phase_section:
                     (phase_section, phase_text) = (task_section, task_text)
 
-            if phase_text is not None:
-                s.bug.phase = phase_text
-
             # SAFETY CHECKS:
             #
             # Things which if found are worthy of reporting even if we are not yet trying
@@ -145,9 +142,9 @@ class Workflow(TaskHandler):
 
             if s.bug.is_valid and s.bug.debs:
                 pockets = []
-                if s.bug.phase in ('Packaging', 'Holding before Promote to Proposed'):
+                if phase_text in ('Packaging', 'Holding before Promote to Proposed'):
                     pockets.append('ppa')
-                elif s.bug.phase == 'Promote to Proposed':
+                elif phase_text == 'Promote to Proposed':
                     pockets.append('Signing')
                     pockets.append('Proposed')
                 for pocket in pockets:
@@ -169,6 +166,13 @@ class Workflow(TaskHandler):
                     if failures is not None:
                         reason += ' ' + ' '.join(failures)
                     s.bug.reasons['build-packages-' + pocket.lower()] = reason
+
+                    # Update the phase when we are building in a pocket and packaging is complete.
+                    if phase_text != 'Packaging':
+                        phase_text = 'Building in {}'.format(pocket)
+
+            if phase_text is not None:
+                s.bug.phase = phase_text
 
             #
             # FINAL VALIDATION:
