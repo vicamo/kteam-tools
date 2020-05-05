@@ -251,10 +251,10 @@
             variants: ['--']
             packages:
                 linux-raspi:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/groovy', 'raspi']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/groovy', 'master-next']
                 linux-meta-raspi:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/groovy', 'raspi']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
