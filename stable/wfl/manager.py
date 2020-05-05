@@ -223,10 +223,7 @@ class WorkflowManager():
             series = child_data.get('series', 'unknown')
             source = child_data.get('source', 'unknown')
             target = child_data.get('target', 'unknown')
-            key = "{}/{}".format(series, source)
-            if source != target:
-                key += "/{}".format(target)
-            result.append((key, child_nr))
+            result.append((series, source, target, child_nr, child_data))
 
         return result
 

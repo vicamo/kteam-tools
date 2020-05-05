@@ -543,10 +543,13 @@ class WorkflowBug():
 
     def add_live_children(s, children):
         new_children = {}
-        for (target, child_id) in children:
-            new_children.setdefault(target, []).append("bug " + child_id)
-        for target, target_ids in new_children.items():
-            s.bprops.setdefault('trackers', {})[target] = ", ".join(target_ids)
+        for (series, source, target, child_id, child_data) in children:
+            key = "{}/{}".format(series, source)
+            if source != target:
+                key += "/{}".format(target)
+            new_children.setdefault(key, []).append("bug " + child_id)
+        for key, key_ids in new_children.items():
+            s.bprops.setdefault('trackers', {})[key] = ", ".join(key_ids)
 
     def status_summary(s):
         '''
