@@ -24,8 +24,8 @@ mkdir -p "$master_tags"
 #
 wget -q -O "$tags_list.new" "$url" || exit 1
 
-count=$( wc -l "$tags_list.new" )
-if [ "$count" = 0 ]; then
+count=$(wc -l <"$tags_list.new")
+if [ "$count" -eq 0 ]; then
 	echo "$P: empty tags list ignored." 1>&2
 	exit 1
 fi
