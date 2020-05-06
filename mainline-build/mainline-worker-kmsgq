@@ -29,7 +29,7 @@ class TheApp():
         '''
         s.args = args
 
-        s.admin = s.args.queue + '--' + s.args.name
+        s.direct = s.args.queue + '--' + s.args.name
         #s.admin = 'admin-' + s.args.name
 
     # _announce
@@ -50,21 +50,12 @@ class TheApp():
             error("invalid work request form, ignored")
             return
 
-        if payload['key'] == s.admin:
-            if payload['cmd'][0] == 'quit':
-                s.mq.listen_stop()
-                return
-            elif payload['cmd'][0] not in s.args.admin:
-                error("invalid admin request cmd, ignored")
-                return
+        if payload['cmd'][0] == 'quit':
+            s.mq.listen_stop()
+            return
 
-        elif payload['key'] == s.args.queue:
-            if payload['cmd'][0] not in s.args.command:
-                error("invalid work request cmd, ignored")
-                return
-
-        else:
-            error("work for another player '" + payload['key'] + "', ignored")
+        if payload['cmd'][0] not in s.valid:
+            error("invalid work request cmd, ignored")
             return
 
         job_tag = ' '.join(payload['cmd'])
@@ -117,8 +108,16 @@ class TheApp():
         '''
         retval = 1
 
+        regular = ['todo.{}'.format(cmd) for cmd in s.args.command]
+        regular += ['todo.quit']
+
+        direct = [ 'direct.{}.{}'.format(s.args.name, cmd) for cmd in regular ]
+
+        valid = s.args.command
+        s.valid = valid
+
         try:
-            if args.local:
+            if s.args.local:
                 s.mq = MsgQueueService(service='kernel-mainline', host='localhost', port=9123, exchange='mainline-todo', heartbeat_interval=60)
             else:
                 s.mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo', heartbeat_interval=60)
@@ -129,8 +128,8 @@ class TheApp():
             s._announce('cod-job-control', 'start')
 
             q_args = {'x-max-priority': 7}
-            s.mq.listen_worker(s.args.queue, s.args.queue, s._handler, queue_arguments=q_args)
-            s.mq.listen_worker(s.admin, s.admin, s._handler, auto_delete=True)
+            s.mq.listen_worker(s.args.queue, regular, s._handler, queue_arguments=q_args)
+            s.mq.listen_worker(s.direct, direct, s._handler, auto_delete=True)
 
             s.mq.listen_start()
 
@@ -160,7 +159,7 @@ examples:
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('--command', action='append', default=[], help='Add a valid command to the validator.')
-    parser.add_argument('--admin', action='append', default=[], help='Add a valid admin command to the validator.')
+    parser.add_argument('--admin', action='append', dest='command')
     parser.add_argument('--prefix-arg', action='append', default=[], help='Add a valid command to the validator.')
     parser.add_argument('name', help='Name of this instance in the admin domain')
     parser.add_argument('queue', help='Name of the queue to use')
