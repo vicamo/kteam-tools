@@ -53,7 +53,7 @@ class TheApp():
             # Submit the message to the Message Queue
             #
             if s.args.local:
-                mq = MsgQueueService(service='kernel-mainline', address='localhost', port=9123, exchange='mainline-todo')
+                mq = MsgQueueService(service='kernel-mainline', host='localhost', port=9123, exchange='mainline-todo')
             else:
                 mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo')
 

@@ -119,7 +119,7 @@ class TheApp():
 
         try:
             if args.local:
-                s.mq = MsgQueueService(service='kernel-mainline', address='localhost', port=9123, exchange='mainline-todo', heartbeat_interval=60)
+                s.mq = MsgQueueService(service='kernel-mainline', host='localhost', port=9123, exchange='mainline-todo', heartbeat_interval=60)
             else:
                 s.mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo', heartbeat_interval=60)
 
