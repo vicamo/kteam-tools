@@ -54,12 +54,15 @@ class TheApp():
             s.mq.listen_stop()
             return
 
-        if payload['cmd'][0] not in s.valid:
+        if payload['cmd'][0] not in s.valid or '/' in payload['cmd'][0]:
             error("invalid work request cmd, ignored")
             return
 
         job_tag = ' '.join(payload['cmd'])
         s._announce('cod-job-start', 'starting ' + job_tag)
+
+        # Qualfied commands.  Pull the qualifier(s) off.
+        payload['cmd'][0] = payload['cmd'][0].split('.')[0]
 
         # Ensure we look in the current directory for these commands.
         payload['cmd'][0] = './' + payload['cmd'][0]
