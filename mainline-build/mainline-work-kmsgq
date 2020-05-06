@@ -47,7 +47,12 @@ class TheApp():
 
         try:
             details = {}
-            details['key'] = s.args.to
+            key = ''
+            if s.args.to is not None:
+                key += 'admin.{}.'.format(s.args.to)
+            key += 'todo.' + s.args.command[0]
+
+            details['key'] = key
             details['cmd'] = s.args.command
 
             # Submit the message to the Message Queue
@@ -96,7 +101,7 @@ examples:
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--priority', action='store', default=4, help='Queue priority for this message.')
-    parser.add_argument('--to', action='store', default='mainline-todo', help='Target of this message.')
+    parser.add_argument('--to', action='store', help='Target of this message (defaults to command)')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('command', nargs='+')
 
