@@ -9,7 +9,6 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, DEBUG, WARNING, error
 import socket
 import threading
-import Queue
 from ktl.log                            import cdebug, center, cleave, cerror
 from ktl.msgq                           import MsgQueueService
 import time
