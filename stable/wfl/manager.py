@@ -521,12 +521,17 @@ class WorkflowManager():
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
 
+            tracker_status = s.status_get(bugid)
+
             # Catch direct modification of the bug.  We would be asked to scan
             # the bug but not ourselves modify it.
-            modified_time = s.status_get(bugid).get('manager', {}).get('time-modified')
+            modified_time = tracker_status.get('manager', {}).get('time-modified')
             if modified_time is not None and modified_time < lpbug.date_last_updated.replace(tzinfo=None):
                 cinfo('    LP: #{} modified directly -- marking modified'.format(bugid), 'magenta')
                 modified = True
+
+            # Record existing interlocks to allow modifications to be detected.
+            interlocks_before = tracker_status.get('interlocks', {})
 
             recrank = True
             while recrank:
@@ -549,6 +554,13 @@ class WorkflowManager():
             # If we are a new bug and we have a master bug request that
             # be rescanned to ensure it gains our linkage.
             if bugid not in s.status_start and bug.is_derivative_package:
+                cinfo("new derivative -- triggering master tracker")
+                rescan.append(str(bug.master_bug_id))
+
+            # If our interlocks have changed and we have a master bug request
+            # a rescan to ensure it has seen the latest interlocks.
+            if bug.interlocks != interlocks_before and bug.is_derivative_package:
+                cinfo("interlocks changed -- triggering master tracker")
                 rescan.append(str(bug.master_bug_id))
 
         except (SeriesLookupFailure, WorkflowBugError) as e:
