@@ -57,6 +57,13 @@ class PromoteToUpdates(Promoter):
             if not s._testing_completed():
                 break
 
+            # See if we are blocked by a derivative.
+            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            if blocks is not None:
+                cinfo("promote-to-updates held {}".format(blocks))
+                s.task.reason = blocks
+                break
+
             if not prerequisites:
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break

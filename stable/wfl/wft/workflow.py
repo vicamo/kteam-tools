@@ -186,6 +186,8 @@ class Workflow(TaskHandler):
                 if task is not None:
                     if task.status not in ('New', 'Invalid', 'Fix Released'):
                         s.bug.interlocks['snap-not-in-candidate'] = 'Pending -- snap not yet in candidate'
+                    if task.status not in ('Invalid', 'Fix Released'):
+                        s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- snap not yet in candidate'
 
             #
             # Check interlock blocks.
