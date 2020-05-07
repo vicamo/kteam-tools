@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave, cinfo, cerror
+from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 from wfl.snap                                   import SnapStoreError
 from .base                                      import TaskHandler
 
@@ -445,6 +445,19 @@ class SnapCertificationTesting(KernelSnapBase):
     def _status_check(s):
         center(s.__class__.__name__ + '._status_check')
         retval = False
+
+        if 'certification-testing-failed' in s.bug.tags:
+            cdebug('Certification Testing tagged as FAIL', 'yellow')
+            if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
+                msgbody = 'The bug was tagged as certification-testing-failed\n'
+                s.bug.add_comment('Certification Testing FAILURE', msgbody)
+                s.task.status = 'Incomplete'
+                retval = True
+
+        elif 'certification-testing-passed' in s.bug.tags:
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
 
         if s.task.status == 'Fix Released':
             pass
