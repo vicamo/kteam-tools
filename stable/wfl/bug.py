@@ -84,6 +84,8 @@ class WorkflowBug():
         s.reasons = {}
         s._refresh = [None, None]
         s._maintenance = []
+        s.interlocks = {}
+        s.blockers = None
         s.is_development_series = False
         s._master_bug = False
         s._sru_spin = False
@@ -522,6 +524,7 @@ class WorkflowBug():
             del s.bprops['reason']
         s._refresh = [None, None]
         s._maintenance = []
+        s.interlocks = {}
 
     @property
     def refresh(s):
@@ -542,14 +545,19 @@ class WorkflowBug():
         s._maintenance.append(what)
 
     def add_live_children(s, children):
+        blockers = {}
         new_children = {}
         for (series, source, target, child_id, child_data) in children:
             key = "{}/{}".format(series, source)
             if source != target:
                 key += "/{}".format(target)
             new_children.setdefault(key, []).append("bug " + child_id)
+            # Accumulate any interlock data from our children.
+            blockers.update(child_data.get('interlocks', {}))
         for key, key_ids in new_children.items():
             s.bprops.setdefault('trackers', {})[key] = ", ".join(key_ids)
+
+        s.blockers = blockers
 
     def status_summary(s):
         '''
@@ -586,6 +594,9 @@ class WorkflowBug():
 
         if len(s.maintenance) > 0:
             status['maintenance'] = s.maintenance
+
+        if len(s.interlocks) > 0:
+            status['interlocks'] = s.interlocks
 
         try:
             status['cycle'] = s.sru_cycle
