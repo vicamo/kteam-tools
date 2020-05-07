@@ -38,7 +38,7 @@ if [ "$results" = 1 ]; then
 	rsync --remove-source-files -e "ssh -i $key" -a -v \
 		$HOME/public_html/* kernel-ppa@kernel.ubuntu.com:incoming/ && \
 	    find "$HOME/public_html/"* -empty -type d -delete
-	"$here/cod-enqueue" --to mainline-queue cod-queue-publish
+	"$here/cod-enqueue" cod-queue-publish
 fi
 
 rm -f "$HOME/COD/.runner.state"

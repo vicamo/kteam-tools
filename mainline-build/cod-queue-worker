@@ -18,4 +18,4 @@ exec ./mainline-worker-kmsgq \
 	--prefix-arg ./cod-queue-runner \
 	--admin mainline-cleaner \
 	--command cod-queue-publish \
-	`hostname` mainline-queue
+	`hostname` mainline-todo

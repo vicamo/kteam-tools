@@ -8,7 +8,7 @@ if [ "$#" != 1 ]; then
 fi
 queue="$1"
 
-to="$queue--$(uname -n)"
+to="$(uname -n)"
 
 "$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to "$to" mainline-cleaner
 "$HOME/kteam-tools/mainline-build/mainline-work-kmsgq" --to "$to" quit
