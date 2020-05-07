@@ -1353,6 +1353,33 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-hwe-5.4:
+            variants: [ '-hwe-18.04-wip']
+            routing: prerelease
+            packages:
+                linux-hwe-5.4:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.4']
+                linux-meta-hwe-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe-5.4']
+                linux-signed-hwe-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-5.4']
+                linux-restricted-modules-hwe-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.4']
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    lowlatency:
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+
         linux-hwe-edge:
             packages:
                 linux-hwe-edge:
