@@ -197,7 +197,7 @@ xenial|bionic|cosmic|disco)
 esac
 case "$SUITE" in
 xenial)
-	ADDPKG="$ADDPKG libnuma-dev"
+	ADDPKG="$ADDPKG libnuma-dev python-sphinx"
 	;;
 esac
 case "$SUITE" in
