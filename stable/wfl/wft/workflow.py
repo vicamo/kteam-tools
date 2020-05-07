@@ -175,6 +175,37 @@ class Workflow(TaskHandler):
                 s.bug.phase = phase_text
 
             #
+            # Calculate interlock blocks.
+            #
+            if s.bug.is_valid and s.bug.snap:
+                task = s.bug.tasks_by_name.get('snap-release-to-beta')
+                if task is not None:
+                    if task.status not in ('New', 'Invalid', 'Fix Released'):
+                        s.bug.interlocks['snap-not-in-beta'] = 'Pending -- snap not yet in beta'
+                task = s.bug.tasks_by_name.get('snap-release-to-candidate')
+                if task is not None:
+                    if task.status not in ('New', 'Invalid', 'Fix Released'):
+                        s.bug.interlocks['snap-not-in-candidate'] = 'Pending -- snap not yet in candidate'
+
+            #
+            # Check interlock blocks.
+            #
+            if s.bug.is_valid and s.bug.debs:
+                task = s.bug.tasks_by_name.get('promote-to-proposed')
+                if task is not None and task.status == 'Fix Released':
+                    blocks = s.bug.blockers.get('snap-not-in-beta')
+                    if blocks is not None:
+                        cinfo("snap-not-in-beta snap-lagging {}".format(blocks))
+                        s.bug.reasons['snap-lagging'] = blocks
+                for task_name in ('promote-to-updates', 'promote-to-release'):
+                    task = s.bug.tasks_by_name.get(task_name)
+                    if task is not None and task.status != 'New':
+                        blocks = s.bug.blockers.get('snap-not-in-candidate')
+                        if blocks is not None:
+                            cinfo("snap-not-in-candidate snap-lagging {}".format(blocks))
+                            s.bug.reasons['snap-lagging'] = blocks
+
+            #
             # FINAL VALIDATION:
             #
             # In principle all of the tasks are now reporting complete, do final validation
