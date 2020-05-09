@@ -49,7 +49,7 @@ class TheApp():
             details = {}
             key = ''
             if s.args.to is not None:
-                key += 'admin.{}.'.format(s.args.to)
+                key += 'direct.{}.'.format(s.args.to)
             key += 'todo.' + s.args.command[0]
 
             details['key'] = key
