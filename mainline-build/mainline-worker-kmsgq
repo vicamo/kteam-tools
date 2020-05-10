@@ -131,8 +131,8 @@ class TheApp():
             s._announce('cod-job-control', 'start')
 
             q_args = {'x-max-priority': 7}
-            s.mq.listen_worker(s.args.queue, regular, s._handler, queue_arguments=q_args)
-            s.mq.listen_worker(s.direct, direct, s._handler, auto_delete=True)
+            s.mq.listen_queues(s.args.queue, regular, s._handler, queue_arguments=q_args)
+            s.mq.listen_worker(s.direct, direct, s._handler, queue_arguments=q_args, auto_delete=True)
 
             s.mq.listen_start()
 
