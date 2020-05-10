@@ -52,6 +52,21 @@ class MsgQueue(object):
         s.channel.basic_qos(prefetch_count=1)
         s.channel.basic_consume(queue=queue_name, auto_ack=False, on_message_callback=wrapped_handler)
 
+    def listen_queues(s, queue_name, routing_key, handler_function, queue_durable=True, auto_delete=False, queue_arguments=None):
+        def wrapped_handler(channel, method, properties, body):
+            payload = json.loads(body)
+            handler_function(payload)
+            channel.basic_ack(method.delivery_tag)
+
+        s.channel.basic_qos(prefetch_count=1, global_qos=True)
+
+        if isinstance(routing_key, str):
+            routing_key = [routing_key]
+        for key in routing_key:
+            queue_key = queue_name + '.' + key
+            s.channel.queue_declare(queue_key, durable=queue_durable, auto_delete=auto_delete, arguments=queue_arguments)
+            s.channel.queue_bind(exchange=s.exchange_name, queue=queue_key, routing_key=key)
+            s.channel.basic_consume(queue=queue_key, auto_ack=False, on_message_callback=wrapped_handler)
 
     def listen_start(s):
         s.channel.start_consuming()
