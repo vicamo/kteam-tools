@@ -79,6 +79,11 @@ class PreparePackage(TaskHandler):
             return True
 
         master = s.bug.master_bug
+
+        if s.bug.swm_config.need_master_in_proposed:
+            if master.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
+                return False
+
         if master.tasks_by_name['prepare-package'].status == 'Fix Released':
             return True
 

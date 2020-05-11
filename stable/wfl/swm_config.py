@@ -74,3 +74,7 @@ class SwmConfig:
             if when >= blackout[0] and when < blackout[1]:
                 return True
         return False
+
+    @property
+    def need_master_in_proposed(self):
+        return self._data.get('need-promote-to-proposed', False)
