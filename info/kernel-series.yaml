@@ -175,6 +175,13 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
+        uc20:
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/uc20', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
         prerelease:
             <<:             *routing-table-default
             updates:
@@ -441,6 +448,26 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
             supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+
+        linux-uc20-efi:
+            routing: uc20
+            packages:
+                linux-uc20-efi:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-efi/+git/focal', 'master-next']
+                linux-signed-uc20-efi:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-uefi/+git/focal']
+            swm:
+                need-promote-to-proposed: true
+            supported: true
             snaps:
                 pc-kernel:
                     primary: true
@@ -462,15 +489,7 @@
                     hw-cert: false
                     publish-to:
                         amd64: ['20']
-            testing:
-                flavours:
-                    generic:
-                        # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-                    lowlatency:
-                        arches: ['amd64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            derived-from: [ '20.04', 'linux' ]
 
         linux-raspi:
             variants: ['--']
