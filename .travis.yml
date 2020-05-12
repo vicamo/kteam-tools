@@ -12,12 +12,12 @@ env:
   - SUITE=xenial ARCH=i386
   - SUITE=bionic ARCH=amd64
   - SUITE=bionic ARCH=i386
-  - SUITE=eoan ARCH=amd64 REMOVE_SNAPCRAFT=1
-  - SUITE=eoan ARCH=i386 REMOVE_SNAPCRAFT=1
-  - SUITE=focal ARCH=amd64 REMOVE_SNAPCRAFT=1
-  - SUITE=focal ARCH=i386 REMOVE_SNAPCRAFT=1
-  - SUITE=groovy ARCH=amd64 REMOVE_SNAPCRAFT=1
-  - SUITE=groovy ARCH=i386 REMOVE_SNAPCRAFT=1
+  - SUITE=eoan ARCH=amd64
+  - SUITE=eoan ARCH=i386
+  - SUITE=focal ARCH=amd64
+  - SUITE=focal ARCH=i386
+  - SUITE=groovy ARCH=amd64
+  - SUITE=groovy ARCH=i386
 
 branches:
   only:
@@ -37,7 +37,6 @@ addons:
 install:
 - git clone git://kernel.ubuntu.com/ubuntu/kteam-tools ~/kteam-tools
 - PATCHES=$(find patches/common -name \*.patch);
-  test -z "${REMOVE_SNAPCRAFT}" || PATCHES="${PATCHES} patches/chroot-setup-remove-snapcraft-from-deps.patch";
   for patch in ${PATCHES}; do echo "== ${patch} =="; cat ${patch} | (cd ~/kteam-tools; patch -p1); done
 
 before_script:
