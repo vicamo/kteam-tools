@@ -12,8 +12,6 @@ env:
   - SUITE=xenial ARCH=i386
   - SUITE=bionic ARCH=amd64
   - SUITE=bionic ARCH=i386
-  - SUITE=disco ARCH=amd64
-  - SUITE=disco ARCH=i386
   - SUITE=eoan ARCH=amd64 REMOVE_SNAPCRAFT=1
   - SUITE=eoan ARCH=i386 REMOVE_SNAPCRAFT=1
   - SUITE=focal ARCH=amd64 REMOVE_SNAPCRAFT=1
