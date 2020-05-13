@@ -1,18 +1,16 @@
-This document describes the local host configuration required to setup the
-local host environment for turning the crank during an SRU cycle for
-Ubuntu kernels.
+This document describes what needs to be done to properly configure the local
+host environment for turning the crank.
 
-The following configuration steps make cranking kernels easier, whether an
-engineer is new to Canonical or experienced. All crank-turning documentation
-and example commands depend on this config setup to work properly.
+Everyone that intends to use the kernel cranking tools is expected to follow
+the instructions in this document. All crank-turning documentation and example
+commands depend on this config setup to work properly.
 
-**Note** This is a one-time process to initialize your workstation to use all
+**Note** This is a one-time process to initialize your local host to use all
 the cranky tools required to produce all the Canonical kernels.
 
 ## Dependencies
 
-You will need to install/update the following packages on your local host to
-crank kernels:
+You will need to install/update the following packages:
 ```
 sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python-launchpadlib-toolkit python3-launchpadlib wget
 ```
