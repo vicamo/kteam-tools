@@ -124,7 +124,6 @@ class TheApp():
             direct.append('direct.{}.todo.{}'.format(s.args.name, command))
             valid.append(command)
 
-        valid = s.args.command
         s.valid = valid
 
         try:
@@ -140,7 +139,7 @@ class TheApp():
 
             q_args = {'x-max-priority': 7}
             for group, group_cmds in grouped.items():
-                s.mq.listen_worker('{}.{}'.format(s.queue, group), group_cmds, s._handler, queue_arguments=q_args, auto_delete=True)
+                s.mq.listen_worker('{}.{}'.format(s.queue, group), group_cmds, s._handler, queue_arguments=q_args)
             s.mq.listen_worker(s.direct, direct, s._handler, queue_arguments=q_args, auto_delete=True)
 
             s.mq.listen_start()
