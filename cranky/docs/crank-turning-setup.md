@@ -15,13 +15,7 @@ You will need to install/update the following packages:
 sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python3-launchpadlib wget
 ```
 
-Also make sure to download the Trello tools (this is required because some of
-the cranky tools require to interact with Trello):
-```
-mkdir $HOME/canonical
-cd $HOME/canonical
-git clone https://git.launchpad.net/~apw/+git/so-trello
-```
+Read and follow the directions in ../../README.deploy.
 
 ## Environment setup
 
@@ -48,11 +42,4 @@ kteam-tools already, otherwise you wouldn't be reading this document :-):
 ```
 cd $HOME/canonical
 git clone lps:~canonical-kernel/+git/kteam-tools
-```
-
-Connect the kteam-tools with Trello tools:
-```
-git clone lps:~apw/+git/so-trello
-cd $HOME/canonical/kteam-tools
-ln -s $HOME/canonical/so-trello/trellotool .
 ```
