@@ -29,6 +29,7 @@ class TheApp():
         '''
         s.args = args
 
+        s.queue = s.args.queue
         s.direct = s.args.queue + '--' + s.args.name
         #s.admin = 'admin-' + s.args.name
 
@@ -111,10 +112,14 @@ class TheApp():
         '''
         retval = 1
 
-        regular = ['todo.{}'.format(cmd) for cmd in s.args.command]
-        regular += ['todo.quit']
-
-        direct = [ 'direct.{}.{}'.format(s.args.name, cmd) for cmd in regular ]
+        direct = []
+        grouped = {}
+        for cmd in s.args.command:
+            (group, command) = (['legacy'] + cmd.split(':', 1))[-2:]
+            grouped.setdefault(group, []).append('todo.{}'.format(command))
+            direct.append('direct.{}.todo.{}'.format(s.args.name, command))
+        for cmd in s.args.admin:
+            direct.append('direct.{}.todo.{}'.format(s.args.name, cmd))
 
         valid = s.args.command
         s.valid = valid
@@ -131,7 +136,8 @@ class TheApp():
             s._announce('cod-job-control', 'start')
 
             q_args = {'x-max-priority': 7}
-            s.mq.listen_queues(s.args.queue, regular, s._handler, queue_arguments=q_args)
+            for group, group_cmds in grouped.items():
+                s.mq.listen_worker('{}.{}'.format(s.queue, group), group_cmds, s._handler, queue_arguments=q_args, auto_delete=True)
             s.mq.listen_worker(s.direct, direct, s._handler, queue_arguments=q_args, auto_delete=True)
 
             s.mq.listen_start()
@@ -162,7 +168,7 @@ examples:
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
     parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
     parser.add_argument('--command', action='append', default=[], help='Add a valid command to the validator.')
-    parser.add_argument('--admin', action='append', dest='command')
+    parser.add_argument('--admin', action='append', default=['quit'], help='Add an admin (direct only) command to the validator.')
     parser.add_argument('--prefix-arg', action='append', default=[], help='Add a valid command to the validator.')
     parser.add_argument('name', help='Name of this instance in the admin domain')
     parser.add_argument('queue', help='Name of the queue to use')
