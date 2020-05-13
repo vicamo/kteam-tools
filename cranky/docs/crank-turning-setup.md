@@ -1,5 +1,3 @@
-#		          crank-turning-setup.md
-
 This document describes the local host configuration required to setup the
 local host environment for turning the crank during an SRU cycle for
 Ubuntu kernels.
@@ -56,6 +54,7 @@ git clone lps:~canonical-kernel/+git/kteam-tools
 
 Connect the kteam-tools with Trello tools:
 ```
+git clone lps:~apw/+git/so-trello
 cd $HOME/canonical/kteam-tools
 ln -s $HOME/canonical/so-trello/trellotool .
 ```
