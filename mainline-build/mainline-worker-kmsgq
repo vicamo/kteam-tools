@@ -112,14 +112,17 @@ class TheApp():
         '''
         retval = 1
 
+        valid = []
         direct = []
         grouped = {}
         for cmd in s.args.command:
             (group, command) = (['legacy'] + cmd.split(':', 1))[-2:]
             grouped.setdefault(group, []).append('todo.{}'.format(command))
             direct.append('direct.{}.todo.{}'.format(s.args.name, command))
-        for cmd in s.args.admin:
-            direct.append('direct.{}.todo.{}'.format(s.args.name, cmd))
+            valid.append(command)
+        for command in s.args.admin:
+            direct.append('direct.{}.todo.{}'.format(s.args.name, command))
+            valid.append(command)
 
         valid = s.args.command
         s.valid = valid
