@@ -17,5 +17,5 @@ echo "Starting `date`"
 exec ./mainline-worker-kmsgq \
 	--prefix-arg ./cod-queue-runner \
 	--admin mainline-cleaner \
-	--command cod-queue-publish \
+	--command publishing:cod-queue-publish \
 	`hostname` mainline-todo

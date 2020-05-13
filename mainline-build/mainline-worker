@@ -14,11 +14,9 @@ exec ./mainline-worker-kmsgq \
 	--admin mainline-cleaner \
 	--admin mainline-flush \
 	--admin cod-static-analysis-collect \
-	--command mainline-test \
-	--command cod-source \
-	--command cod-ubuntu-config \
-	--command mainline-build \
-	--command cod-mainline-native-source \
-	--command cod-changeset-build \
+	--command any:mainline-test \
+	--command any:mainline-build \
+	--command any:cod-ubuntu-config \
+	--command any:cod-changeset-build \
 	`hostname` mainline-todo \
 	"$@"
