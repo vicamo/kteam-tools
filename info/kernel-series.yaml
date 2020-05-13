@@ -157,6 +157,7 @@
         repositories: true
         archive-open: true
         debootstrap: true
+        chroots: true
         britney: true
     routing-table: &routing-table
         default: &routing-table-default
