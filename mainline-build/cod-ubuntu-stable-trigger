@@ -1,0 +1,58 @@
+#!/bin/bash
+P="cod-tags-trigger"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+
+. "$here/lib-build"
+
+master_tags="$master_state/ubuntu-stable"
+tags_list="$master_tags/TAGS"
+
+# Ensure our master state exists.
+mkdir -p "$master_tags"
+[ ! -f "$tags_list" ] && touch "$tags_list"
+
+# We are going to use the master linux build tree.
+master_tree_select
+
+# Pull in all trees containing tags we wish to build.
+for stable_tree in /srv/kernel.ubuntu.com/git/ubuntu-stable/ubuntu-stable-*.git
+do
+	series=$(echo "$stable_tree" | sed -e 's@.*/ubuntu-stable-@@' -e 's@\.git$@@')
+	echo "stable_tree<$stable_tree> series<$series>" 1>&2
+	(
+		cd "$stable_tree" || exit 1
+		git tag -l --format="$stable_tree %(refname:strip=2)" "$series-*"
+	)
+done >"$tags_list.new"
+
+# Work out where we are going to push the tags et al to.
+repo_remote_url "crack-push"; push_url="$RET"
+
+diff "$tags_list" "$tags_list.new" | \
+	awk '/>/ { $1=""; print }' | tac >"$tags_list.added"
+
+# Commit the list.
+# mv "$tags_list.new" "$tags_list"
+
+# Run the list.
+while read repo commit
+do
+	# Note if this fails the job will fail, but it is better that the job
+	# is created and logged so we can rerun it rather than never knowing
+	# about it.
+	echo "pushing $(basename $repo):$commit to crack ..."
+	(cd "$repo" && git push "$push_url" tag "$commit")
+
+	echo "$here/cod-enqueue" "mainline-build" "crack" "$commit"
+done <"$tags_list.added"
+
+rm -f "$tags_list.added"

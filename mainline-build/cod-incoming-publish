@@ -227,6 +227,37 @@ if [ -d "$incoming/test-build" ]; then
 	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
 fi
 
+if [ -d "$incoming/ubuntu-stable" ]; then
+	echo "Scanning ubuntu-stable ..."
+	(cd "$incoming/ubuntu-stable" && find . -name .result) | \
+	while read result
+	do
+		build=`dirname "$result"`
+		build=${build#./}
+
+		echo "$P: $build: ubuntu-stable publishing ..."
+		submit_archs=
+		if [ -f "$build/core.summary" ]; then
+			submit_archs=$(awk '/^Archs:/ { $1=""; print }' <"$build/core.summary")
+			if [ -d "$out/ubuntu-stable/$build" ]; then
+				echo "$P: $build: result already published, removing previous ..."
+				rm -rf "$out/ubunu-stable/$build"
+			fi
+		fi
+		mkdir -p "$out/ubuntu-stable/$build"
+		mv "$incoming/ubuntu-stable/$build"/* "$out/ubuntu-stable/$build"
+		rm -f "$incoming/ubuntu-stable/$build/.result"
+		if [ "$submit_archs" != '' ]; then
+			# Now we have installed the core result, submit our builds.
+			while read command
+			do
+				"$here/cod-enqueue" $command
+			done <"$out/ubuntu-stable/$build/REBUILD.submit"
+		fi
+	done
+	find "$incoming/ubuntu-stable" -empty -type d -delete
+fi
+
 if [ -d "$incoming/static-analysis" ]; then
 	echo "Scanning static-analysis ..."
 	rsync -v -a --remove-source-files "$incoming/static-analysis/" "$out/static-analysis/"

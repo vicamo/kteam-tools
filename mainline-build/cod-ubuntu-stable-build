@@ -1,0 +1,141 @@
+#!/bin/bash
+P='cod-ubuntu-stable-arch'
+
+# Options.
+
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $0 <series> <remote> <commit-ish> <arch>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+. "$here/lib-build"
+. "$here/lib-chroot"
+
+series="$1"
+remote="$2"
+commit="$3"
+arch="$4"
+
+build_release="$series"
+id="$commit"
+
+master_tree_select
+
+result="../RESULT"
+rm -rf "$result"
+mkdir -p "$result"
+
+echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD.$arch"
+
+host=$( hostname )
+start_time=$( date +%s )
+
+# Ensure we have the commit identified.
+repo_remote_update_list $remote
+
+# Make sure git is ready for anything...
+rm -rf .git/rebase-apply
+git reset --hard HEAD
+git clean -x -f -d
+
+# Make a branch at the specified commit.
+git checkout HEAD^ --
+git branch -D "tip-$id" || true
+git checkout -b "tip-$id" "$commit"
+
+# Lookup the sha we are building so we can validate the combined results.
+sha=$( git log -1 --pretty=format:%H "$commit" )
+
+# Clean the tree.
+git clean -x -f -d
+
+build()
+{
+	local build_release="$1"
+	local arch="$2"
+	local result="$3"
+
+	local opts
+	local barch
+	local what
+
+	case "$arch" in
+	all|x32)	return ;;
+	amd64)		build=-b ;;
+	*)		build=-B ;;
+	esac
+
+	case "$arch" in
+	amd64|i386)	barch="$arch" ;;
+	*)		barch="amd64" ;;
+	esac
+
+	echo "build $arch on $barch ..."
+
+	# Make things shiney.
+	git clean -x -f -d
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean
+
+	# Work out if this is fat architecture.
+	fat_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
+
+	{
+		version=$(do_chroot_quiet "$build_release-$barch" dpkg-buildpackage --version | \
+			awk '(found == 1) {next;} {found=1; print $NF;}')
+		echo "dpkg-buildpackage version=$version"
+		opts="-uc"
+		if dpkg --compare-versions "$version" ge "1.18.19"; then
+			opts="$opts -ui"
+		fi
+		do_chroot "$build_release-$barch" \
+			dpkg-buildpackage $opts -a"$arch" "$build" -d
+		rc="$?"
+		echo "$rc" >"$result/$arch.status"
+	} 2>&1 | tee -a "$result/$arch.log"
+	read rc <"$result/$arch.status"
+	echo "build $arch on $barch ... rc=$rc"
+
+	# On non-crosscompiled architectures build the selftests.
+	if [ "$arch" = "$barch" -a "$fat_arch" -ne 0 ]; then
+		what="$arch--self-tests"
+		echo "build $what on $barch ..."
+		{
+			# Make things shiney.
+			git clean -x -f -d
+			do_chroot "$build_release-amd64" \
+				fakeroot debian/rules clean
+			do_chroot "$build_release-$barch" \
+				fakeroot debian/rules compileselftests
+			rc="$?"
+			echo "$rc" >"$result/$what.status"
+		} 2>&1 | tee -a "$result/$what.log"
+		read rc <"$result/$what.status"
+		echo "build $what on $barch ... rc=$rc"
+	fi
+}
+
+build "$build_release" "$arch" "$result"
+
+end_time=$( date +%s )
+cat - <<EOL >"$result/$arch.summary"
+Host: $host
+Series: $series
+Hash: $sha
+Start: $start_time
+End: $end_time
+EOL
+
+# Finally mark this as a partial result.
+touch "$result/.result"
+
+# Output.
+publish="$HOME/public_html/ubuntu-stable/$series/$commit"
+mkdir -p "$publish"
+mv "$result"/* "$publish"
