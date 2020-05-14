@@ -392,7 +392,7 @@ cranky tag
 <!--/cheatsheet-->
 
 Currently this step must be done manually, calling the scripts from
-"linux-meta", "linux-signed" and "linux-lrm" (the additional repositories
+"linux-meta", "linux-signed" and "linux-restricted-modules" (the additional repositories
 cloned via `cranky checkout`).
 
 Example:
@@ -411,10 +411,10 @@ cranky tag
 ```
 
 It is mandatory to run "cranky update-dependent" and "cranky tag" from the
-"linux-meta", "linux-signed" and "linux-lrm" directories, not from the kernel
+"linux-meta", "linux-signed" and "linux-restricted-modules" directories, not from the kernel
 source directory.
 
-**Note** In certain releases "linux-signed" and "linux-lrm" are missing, for
+**Note** In certain releases "linux-signed" and "linux-restricted-modules" are missing, for
 example "linux-kvm". To show the list of packages that are part of a certain
 kernel set, you can use the command `cranky rmadison`, example:
 ```
