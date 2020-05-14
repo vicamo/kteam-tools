@@ -1466,6 +1466,30 @@
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
+        linux-raspi-5.4:
+            variants: ['-hwe-18.04-edge']
+            packages:
+                linux-raspi-5.4:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi-5.4/+git/bionic', 'master-next']
+                linux-meta-raspi-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi-5.4/+git/bionic']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi-5.4']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        armhf: [ '18-pi' ]
+                        arm64: [ '18-pi' ]
+            supported: false
+            backport: true
+            derived-from: [ '20.04', 'linux-raspi' ]
+            invalid-tasks: [ 'regression-testing' ]
+
         linux-raspi2-5.3:
             variants: ['-hwe-18.04']
             packages:
