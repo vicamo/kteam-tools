@@ -18,5 +18,8 @@ exec ./mainline-worker-kmsgq \
 	--command any:mainline-build \
 	--command any:cod-ubuntu-config \
 	--command any:cod-changeset-build \
+	--command any:cod-ubuntu-stable-core \
+	--command x86:cod-ubuntu-stable-build.amd64 \
+	--command x86:cod-ubuntu-stable-build.i386 \
 	`hostname` mainline-todo \
 	"$@"
