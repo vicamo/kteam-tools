@@ -178,7 +178,7 @@ Conflicts that cannot be resolve this way, must be resolved manually.
 
 <!--cheatsheet-->
 ```
-$ cranky fix
+cranky fix
 ```
 <!--/cheatsheet-->
 
@@ -424,10 +424,10 @@ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-$ cd linux-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-$ cd linux-meta-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-$ cd linux-signed-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-$ cd linux-lrm-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+cd linux-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+cd linux-meta-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+cd linux-signed-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+cd linux-lrm-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
 ```
 <!--/cheatsheet-->
 
