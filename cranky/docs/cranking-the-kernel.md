@@ -377,15 +377,15 @@ cranky tag
 ### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
 <!--cheatsheet-->
 ```
-cd ../linux-meta-RELEASE
+cd ../linux-meta-DERIVATIVE
 cranky update-dependent
 cranky tag
 
-cd ../linux-signed-RELEASE
+cd ../linux-signed-DERIVATIVE
 cranky update-dependent
 cranky tag
 
-cd ../linux-lrm-RELEASE
+cd ../linux-restricted-modules-DERIVATIVE
 cranky update-dependent
 cranky tag
 ```
@@ -405,7 +405,7 @@ cd ../linux-signed-oracle
 cranky update-dependent
 cranky tag
 
-cd ../linux-lrm-oracle
+cd ../linux-restricted-modules-oracle
 cranky update-dependent
 cranky tag
 ```
@@ -424,10 +424,10 @@ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-cd linux-RELEASE && verify-release-ready
-cd linux-meta-RELEASE && verify-release-ready
-cd linux-signed-RELEASE && verify-release-ready
-cd linux-lrm-RELEASE && verify-release-ready
+cd linux-DERIVATIVE && verify-release-ready
+cd linux-meta-DERIVATIVE && verify-release-ready
+cd linux-signed-DERIVATIVE && verify-release-ready
+cd linux-restricted-modules-DERIVATIVE && verify-release-ready
 ```
 <!--/cheatsheet-->
 
