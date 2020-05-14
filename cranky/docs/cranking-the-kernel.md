@@ -377,15 +377,15 @@ cranky tag
 ### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
 <!--cheatsheet-->
 ```
-cd ../linux-meta-oracle
+cd ../linux-meta-RELEASE
 cranky update-dependent
 cranky tag
 
-cd ../linux-signed-oracle
+cd ../linux-signed-RELEASE
 cranky update-dependent
 cranky tag
 
-cd ../linux-lrm-oracle
+cd ../linux-lrm-RELEASE
 cranky update-dependent
 cranky tag
 ```
@@ -424,10 +424,10 @@ cranky rmadison xenial:linux-oracle
 ### Verify preparation
 <!--cheatsheet-->
 ```
-cd linux-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-cd linux-meta-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-cd linux-signed-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
-cd linux-lrm-oracle && ~/canonical/kteam-tools/maintscripts/verify-release-ready
+cd linux-RELEASE && verify-release-ready
+cd linux-meta-RELEASE && verify-release-ready
+cd linux-signed-RELEASE && verify-release-ready
+cd linux-lrm-RELEASE && verify-release-ready
 ```
 <!--/cheatsheet-->
 
