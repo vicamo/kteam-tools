@@ -229,7 +229,7 @@ fi
 
 if [ -d "$incoming/ubuntu-stable" ]; then
 	echo "Scanning ubuntu-stable ..."
-	(cd "$incoming/ubuntu-stable" && find . -name .result) | \
+	(cd "$incoming/ubuntu-stable" && find . -name @publish@) | \
 	while read result
 	do
 		build=`dirname "$result"`
@@ -245,8 +245,8 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 			fi
 		fi
 		mkdir -p "$out/ubuntu-stable/$build"
+		rm -f "$incoming/ubuntu-stable/$build/@publish@"
 		mv "$incoming/ubuntu-stable/$build"/* "$out/ubuntu-stable/$build"
-		rm -f "$incoming/ubuntu-stable/$build/.result"
 		if [ "$submit_archs" != '' ]; then
 			# Now we have installed the core result, submit our builds.
 			while read command

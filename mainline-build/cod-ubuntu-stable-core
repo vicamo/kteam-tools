@@ -96,7 +96,7 @@ do
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
-touch "$result/.result"
+touch "$result/@publish@"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"

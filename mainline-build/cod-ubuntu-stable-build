@@ -133,7 +133,7 @@ End: $end_time
 EOL
 
 # Finally mark this as a partial result.
-touch "$result/.result"
+touch "$result/@publish@"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"
