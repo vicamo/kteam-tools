@@ -2877,10 +2877,10 @@
         linux-raspi2:
             packages:
                 linux-raspi2:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/xenial', 'master-next']
                 linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/xenial']
             snaps:
                 pi2-kernel:
                     primary: true
@@ -2897,10 +2897,10 @@
         linux-snapdragon:
             packages:
                 linux-snapdragon:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'snapdragon']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snapdragon/+git/xenial', 'master-next']
                 linux-meta-snapdragon:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'snapdragon']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-snapdragon/+git/xenial']
             snaps:
                 dragonboard-kernel:
                     primary: true
