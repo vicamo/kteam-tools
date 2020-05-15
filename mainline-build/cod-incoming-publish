@@ -237,7 +237,7 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 
 		echo "$P: $build: ubuntu-stable publishing ..."
 		submit=0
-		if [ -f "$build/core.summary" ]; then
+		if [ -f "$incoming/ubuntu-stable/$build/core.summary" ]; then
 			submit=1
 			if [ -d "$out/ubuntu-stable/$build" ]; then
 				echo "$P: $build: result already published, removing previous ..."
