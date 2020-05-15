@@ -30,7 +30,7 @@ do
 	echo "stable_tree<$stable_tree> series<$series>" 1>&2
 	(
 		cd "$stable_tree" || exit 1
-		git tag -l --format="$stable_tree %(refname:strip=2)" "$series-*"
+		git tag -l --format="$series $stable_tree %(refname:strip=2)" "$series-*"
 	)
 done >"$tags_list.new"
 
@@ -44,7 +44,7 @@ diff "$tags_list" "$tags_list.new" | \
 # mv "$tags_list.new" "$tags_list"
 
 # Run the list.
-while read repo commit
+while read series repo commit
 do
 	# Note if this fails the job will fail, but it is better that the job
 	# is created and logged so we can rerun it rather than never knowing
@@ -52,7 +52,7 @@ do
 	echo "pushing $(basename $repo):$commit to crack ..."
 	(cd "$repo" && git push "$push_url" tag "$commit")
 
-	echo "$here/cod-enqueue" "mainline-build" "crack" "$commit"
+	echo "$here/cod-enqueue" "cod-ubuntu-stable-core" "$series" "crack" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
