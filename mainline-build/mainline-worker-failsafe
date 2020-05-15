@@ -28,7 +28,13 @@ fi
 # Check for long periods of quiet indicative of a hang.
 if [ "$killit" = '' ]; then
 	now=$( date +%s )
+	# During a log-rotate the current log moves to .1 while
+	# the job is running.
 	last_update=$( stat --format=%Z ~/logs/cod-worker.log )
+	last_update2=$( stat --format=%Z ~/logs/cod-worker.log.1 )
+	if [ "$last_update1" -gt "$last_update" ]; then
+		last_update="$last_update1"
+	fi
 	let minutes="($now - $last_update) / 60"
 
 	if [ "$minutes" -ge 30 ]; then
