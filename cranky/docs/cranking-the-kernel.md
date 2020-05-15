@@ -362,6 +362,31 @@ before running the example command: `cranky test-build -f -a all kathleen`
 **Note 2** kathleen in the example above represents both a git remote name,
 which by default matches the name of the remote build host.
 
+### Compile selftests for the master kernels
+
+The kernel selftests are not compiled during a normal build of the packages.
+Our testcases download the kernel source package and compile them from there
+before running the tests. In order to avoid detecting a compilation issue
+only at a later stage, the kernel selftests need to be compile-tested as well
+before uploading the source packages to the PPA.
+
+<!--cheatsheet-->
+```
+cranky test-build [-a ARCH[,ARCH,...]] -t compileselftests HOST
+```
+<!--/cheatsheet-->
+
+This needs to be done only for the master kernels, as the derivatives don't
+have any specific selftests patches applied.
+
+Currently the only architectures supported for this build test is amd64 and
+i386.
+
+Example:
+```
+cranky test-build -f -a amd64,i386 -t compileselftests kathleen
+```
+
 ### Tagging - `cranky tag`
 <!--cheatsheet-->
 ```
