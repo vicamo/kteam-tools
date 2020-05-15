@@ -29,7 +29,7 @@ class MsgQueue(object):
             payload = json.loads(body)
             handler_function(payload)
 
-        s.channel.basic_qos(prefetch_count=1)
+        s.channel.basic_qos(prefetch_count=1, global_qos=True)
 
         if isinstance(routing_key, str):
             routing_key = [routing_key]
@@ -46,7 +46,7 @@ class MsgQueue(object):
             handler_function(payload)
             channel.basic_ack(method.delivery_tag)
 
-        s.channel.basic_qos(prefetch_count=1)
+        s.channel.basic_qos(prefetch_count=1, global_qos=True)
 
         if isinstance(routing_key, str):
             routing_key = [routing_key]
