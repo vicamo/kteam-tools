@@ -127,10 +127,10 @@ rm  "$master_main/"linux-{headers,image,modules}-*.deb
 build "$build_release" "$arch" "$result/$arch"
 
 # Copy the resulting .debs into the results.
-mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
+mv "$master_main/"linux-{headers,image,modules}-*.deb "$result/$arch"
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/$arch.summary"
+cat - <<EOL >"$result/$arch/$arch.summary"
 Host: $host
 Series: $series
 Hash: $sha
