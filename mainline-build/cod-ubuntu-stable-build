@@ -29,9 +29,9 @@ master_tree_select
 
 result="../RESULT"
 rm -rf "$result"
-mkdir -p "$result"
+mkdir -p "$result/$arch"
 
-echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD.$arch"
+echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/$arch/REBUILD.$arch"
 
 host=$( hostname )
 start_time=$( date +%s )
@@ -124,7 +124,7 @@ build()
 # Clean out any existing .debs.
 rm  "$master_main/"linux-{headers,image,modules}-*.deb
 
-build "$build_release" "$arch" "$result"
+build "$build_release" "$arch" "$result/$arch"
 
 # Copy the resulting .debs into the results.
 mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
