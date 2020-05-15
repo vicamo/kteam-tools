@@ -17,16 +17,19 @@ lock="$incoming/.LOCK"
 
 out="$HOME/public_html"
 
-# One at a time please...
 mkdir -p "$incoming"
 
-echo "$$" >"$lock_tmp"
-while ! ln "$lock_tmp" "$lock" 2>/dev/null
-do
-    echo "$P: incoming locked ... waiting" 1>&2
-    sleep 15
-done
-rm -f "$lock_tmp"
+# Locking: we wish to allow multiple results to be pushed in parallel.  But
+# once the publisher starts we want it to preempt any further uploaders
+# starting to push.  We use two lockfiles.  Exclusive lockers (publisher) take
+# an exclusive lock on A and then an exclusive lock on B.  Shared lockers
+# (uploaders) take an exclusive lock on A, then a shared lock on lock on B, and
+# then drop their lock on A.
+echo "LL: $$ aquiring exclusive lock"
+exec 8>>"$lock-A" 9>>"$lock-B"
+flock --verbose --exclusive 8 || exit 1
+flock --verbose --exclusive 9 || exit 1
+echo "LL: $$ aquired exclusive lock"
 
 # Pull out any published images ...
 if [ -d "$incoming/mainline" ]; then
@@ -265,7 +268,7 @@ if [ -d "$incoming/static-analysis" ]; then
 	find "$incoming/static-analysis" -empty -type d -delete
 fi
 
-# We are done.
-rm -f "$lock"
-
+echo "LL: $$ releasing exclusive lock"
+flock --unlock 9 || exit 1
+flock --unlock 8 || exit 1
 echo "$P: publishing run complete"
