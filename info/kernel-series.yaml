@@ -1447,10 +1447,10 @@
         linux-raspi2:
             packages:
                 linux-raspi2:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/bionic', 'master-next']
                 linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/bionic']
             snaps:
                 pi-kernel:
                     primary: true
@@ -1470,10 +1470,10 @@
             variants: ['-hwe-18.04']
             packages:
                 linux-raspi2-5.3:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'raspi2-5.3']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2-5.3/+git/bionic', 'master-next']
                 linux-meta-raspi2-5.3:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'raspi2-5.3']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2-5.3/+git/bionic']
             snaps:
                 pi-kernel:
                     primary: true
@@ -1493,10 +1493,10 @@
         linux-snapdragon:
             packages:
                 linux-snapdragon:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'snapdragon']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snapdragon/+git/bionic', 'master-next']
                 linux-meta-snapdragon:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'snapdragon']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-snapdragon/+git/bionic']
             snaps:
                 dragonboard-kernel:
                     primary: true
