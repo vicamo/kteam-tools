@@ -21,5 +21,9 @@ exec ./mainline-worker-kmsgq \
 	--command any:cod-ubuntu-stable-core \
 	--command x86:cod-ubuntu-stable-build.amd64 \
 	--command x86:cod-ubuntu-stable-build.i386 \
+	--command x86:cod-ubuntu-stable-build.arm64 \
+	--command x86:cod-ubuntu-stable-build.armhf \
+	--command x86:cod-ubuntu-stable-build.ppc64el \
+	--command x86:cod-ubuntu-stable-build.s390x \
 	`hostname` mainline-todo \
 	"$@"
