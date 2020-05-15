@@ -31,7 +31,7 @@ if [ "$killit" = '' ]; then
 	# During a log-rotate the current log moves to .1 while
 	# the job is running.
 	last_update=$( stat --format=%Z ~/logs/cod-worker.log )
-	last_update2=$( stat --format=%Z ~/logs/cod-worker.log.1 )
+	last_update1=$( stat --format=%Z ~/logs/cod-worker.log.1 )
 	if [ "$last_update1" -gt "$last_update" ]; then
 		last_update="$last_update1"
 	fi
