@@ -121,7 +121,13 @@ build()
 	fi
 }
 
+# Clean out any existing .debs.
+rm  "$master_main/"linux-{headers,image,modules}-*.deb
+
 build "$build_release" "$arch" "$result"
+
+# Copy the resulting .debs into the results.
+mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
 
 end_time=$( date +%s )
 cat - <<EOL >"$result/$arch.summary"
