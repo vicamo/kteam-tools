@@ -236,9 +236,9 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 		build=${build#./}
 
 		echo "$P: $build: ubuntu-stable publishing ..."
-		submit_archs=
+		submit=0
 		if [ -f "$build/core.summary" ]; then
-			submit_archs=$(awk '/^Archs:/ { $1=""; print }' <"$build/core.summary")
+			submit=1
 			if [ -d "$out/ubuntu-stable/$build" ]; then
 				echo "$P: $build: result already published, removing previous ..."
 				rm -rf "$out/ubunu-stable/$build"
@@ -247,10 +247,11 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 		mkdir -p "$out/ubuntu-stable/$build"
 		rm -f "$incoming/ubuntu-stable/$build/@publish@"
 		mv "$incoming/ubuntu-stable/$build"/* "$out/ubuntu-stable/$build"
-		if [ "$submit_archs" != '' ]; then
+		if [ "$submit" = 1 ]; then
 			# Now we have installed the core result, submit our builds.
 			while read command
 			do
+				echo "$here/cod-enqueue" $command
 				"$here/cod-enqueue" $command
 			done <"$out/ubuntu-stable/$build/REBUILD.submit"
 		fi
