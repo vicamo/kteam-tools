@@ -51,7 +51,7 @@ git checkout -b "tip-$id" "$commit"
 # Find the commit time.
 sha=$( git log -1 --pretty=format:%H "$commit" )
 cts=$( git log -1 --pretty=format:%ct "$commit" )
-cts="$cts.$order"
+cts="$cts"
 title=$( git log -1 --pretty=format:%s "$commit" )
 
 # Clean the tree so we can tell what architectures need building.
@@ -85,7 +85,7 @@ Subject: $title
 Hash: $sha
 Committed: $cts
 Start: $start_time
-Archs: $build_archs
+Archs:$build_archs
 End: $end_time
 EOL
 
