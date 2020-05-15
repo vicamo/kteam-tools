@@ -1,5 +1,5 @@
 #!/bin/bash
-P="cod-tags-trigger"
+P="cod-ubuntu-stable-trigger"
 
 #set -e
 
@@ -27,7 +27,7 @@ master_tree_select
 for stable_tree in /srv/kernel.ubuntu.com/git/ubuntu-stable/ubuntu-stable-*.git
 do
 	series=$(echo "$stable_tree" | sed -e 's@.*/ubuntu-stable-@@' -e 's@\.git$@@')
-	echo "stable_tree<$stable_tree> series<$series>" 1>&2
+	echo "$P: considering stable_tree=$stable_tree series=$series" 1>&2
 	(
 		cd "$stable_tree" || exit 1
 		git tag -l --format="$series $stable_tree %(refname:strip=2)" "$series-*"
@@ -49,9 +49,10 @@ do
 	# Note if this fails the job will fail, but it is better that the job
 	# is created and logged so we can rerun it rather than never knowing
 	# about it.
-	echo "pushing $(basename $repo):$commit to crack ..."
+	echo "$P: pushing $(basename $repo):$commit to crack ..."
 	(cd "$repo" && git push "$push_url" tag "$commit")
 
+	echo "$P: $here/cod-enqueue cod-ubuntu-stable-core $series crack $commit"
 	"$here/cod-enqueue" "cod-ubuntu-stable-core" "$series" "crack" "$commit"
 done <"$tags_list.added"
 
