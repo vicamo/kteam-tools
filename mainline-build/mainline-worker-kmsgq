@@ -57,6 +57,7 @@ class TheApp():
 
         if payload['cmd'][0] not in s.valid or '/' in payload['cmd'][0]:
             error("invalid work request cmd, ignored")
+            s.mq.listen_stop()
             return
 
         job_tag = ' '.join(payload['cmd'])
