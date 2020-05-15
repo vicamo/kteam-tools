@@ -34,4 +34,9 @@ esac
 #
 "$here/cod-changeset-trigger"
 
+#
+# UBUNTU STABLE: tagged versions in Ubuntu stable trees.
+#
+"$here/cod-ubuntu-stable-trigger"
+
 echo "$P: trigger run complete"

@@ -52,7 +52,7 @@ do
 	echo "pushing $(basename $repo):$commit to crack ..."
 	(cd "$repo" && git push "$push_url" tag "$commit")
 
-	echo "$here/cod-enqueue" "cod-ubuntu-stable-core" "$series" "crack" "$commit"
+	"$here/cod-enqueue" "cod-ubuntu-stable-core" "$series" "crack" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
