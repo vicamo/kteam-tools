@@ -41,7 +41,7 @@ diff "$tags_list" "$tags_list.new" | \
 	awk '/>/ { $1=""; print }' | tac >"$tags_list.added"
 
 # Commit the list.
-# mv "$tags_list.new" "$tags_list"
+mv "$tags_list.new" "$tags_list"
 
 # Run the list.
 while read series repo commit
