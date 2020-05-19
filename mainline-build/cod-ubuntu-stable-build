@@ -97,7 +97,7 @@ build()
 	} 2>&1 | tee -a "$result/$arch.log"
 	read rc <"$result/$arch.status"
 	echo "build $arch on $build_arch ... rc=$rc"
-	echo "Status: $arch $rc" >>"$result/summary"
+	echo "    $arch: $rc" >>"$result/summary.yaml"
 
 	# On non-crosscompiled architectures build the selftests.
 	if [ "$arch" = "$build_arch" -a "$fat_arch" -ne 0 ]; then
@@ -115,20 +115,21 @@ build()
 		} 2>&1 | tee -a "$result/$what.log"
 		read rc <"$result/$what.status"
 		echo "build $what on $build_arch ... rc=$rc"
-		echo "Status: $what $rc" >>"$result/summary"
+		echo "    $what: $rc" >>"$result/summary.yaml"
 	fi
 }
 
 build_arch=$(dpkg --print-architecture)
 
 # Seed the summary.
-cat - <<EOL >"$result/summary"
-Host: $host
-Series: $series
-Hash: $sha
-Start: $start_time
-Arch: $arch
-BuildArch: $build_arch
+cat - <<EOL >"$result/summary.yaml"
+build-host: $host
+build-arch: $build_arch
+arch: $arch
+series: $series
+commit-hash: $sha
+start-time: $start_time
+status:
 EOL
 
 # Clean out any existing .debs.
@@ -140,8 +141,8 @@ build "$build_release" "$build_arch" "$arch" "$result"
 mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
 
 end_time=$( date +%s )
-cat - <<EOL >>"$result/summary"
-End: $end_time
+cat - <<EOL >>"$result/summary.yaml"
+end-time: $end_time
 EOL
 
 # Finally mark this as a partial result.

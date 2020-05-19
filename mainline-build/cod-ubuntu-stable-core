@@ -77,16 +77,16 @@ do
 done
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/summary"
-Host: $host
-Series: $series
-Commit: $commit
-Subject: $title
-Hash: $sha
-Committed: $cts
-Start: $start_time
-Archs:$build_archs
-End: $end_time
+cat - <<EOL >"$result/summary.yaml"
+build-host: $host
+archs: $build_archs
+series: $series
+commit: $commit
+commit-title: $title
+commit-time: $cts
+commit-hash: $sha
+start-time: $start_time
+end-time: $end_time
 EOL
 
 # Drop a set of messages to enqueue.
