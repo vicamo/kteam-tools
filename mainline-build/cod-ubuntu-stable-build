@@ -58,11 +58,11 @@ git clean -x -f -d
 build()
 {
 	local build_release="$1"
-	local arch="$2"
-	local result="$3"
+	local build_arch="$2"
+	local arch="$3"
+	local result="$4"
 
 	local opts
-	local barch
 	local what
 
 	case "$arch" in
@@ -71,75 +71,79 @@ build()
 	*)		build=-B ;;
 	esac
 
-	case "$arch" in
-	amd64|i386)	barch="$arch" ;;
-	*)		barch="amd64" ;;
-	esac
-
-	echo "build $arch on $barch ..."
+	echo "build $arch on $build_arch ..."
 
 	# Make things shiney.
 	git clean -x -f -d
-	do_chroot "$build_release-amd64" \
+	do_chroot "$build_release-$build_arch" \
 		fakeroot debian/rules clean
 
 	# Work out if this is fat architecture.
 	fat_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
 
 	{
-		version=$(do_chroot_quiet "$build_release-$barch" dpkg-buildpackage --version | \
+		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
 			awk '(found == 1) {next;} {found=1; print $NF;}')
 		echo "dpkg-buildpackage version=$version"
 		opts="-uc"
 		if dpkg --compare-versions "$version" ge "1.18.19"; then
 			opts="$opts -ui"
 		fi
-		do_chroot "$build_release-$barch" \
+		do_chroot "$build_release-$build_arch" \
 			dpkg-buildpackage $opts -a"$arch" "$build" -d
 		rc="$?"
 		echo "$rc" >"$result/$arch.status"
 	} 2>&1 | tee -a "$result/$arch.log"
 	read rc <"$result/$arch.status"
-	echo "build $arch on $barch ... rc=$rc"
+	echo "build $arch on $build_arch ... rc=$rc"
 
 	# On non-crosscompiled architectures build the selftests.
-	if [ "$arch" = "$barch" -a "$fat_arch" -ne 0 ]; then
+	if [ "$arch" = "$build_arch" -a "$fat_arch" -ne 0 ]; then
 		what="$arch--self-tests"
-		echo "build $what on $barch ..."
+		echo "build $what on $build_arch ..."
 		{
 			# Make things shiney.
 			git clean -x -f -d
-			do_chroot "$build_release-amd64" \
+			do_chroot "$build_release-$build_arch" \
 				fakeroot debian/rules clean
-			do_chroot "$build_release-$barch" \
+			do_chroot "$build_release-$build_arch" \
 				fakeroot debian/rules compileselftests
 			rc="$?"
 			echo "$rc" >"$result/$what.status"
 		} 2>&1 | tee -a "$result/$what.log"
 		read rc <"$result/$what.status"
-		echo "build $what on $barch ... rc=$rc"
+		echo "build $what on $build_arch ... rc=$rc"
+		echo "Status: $what $rc" >>"$result/summary"
 	fi
 }
+
+build_arch=$(dpkg --print-architecture)
+
+# Seed the summary.
+cat - <<EOL >"$result/$arch/summary"
+Host: $host
+Series: $series
+Hash: $sha
+Start: $start_time
+Arch: $arch
+BuildArch: $build_arch
+EOL
 
 # Clean out any existing .debs.
 rm  "$master_main/"linux-{headers,image,modules}-*.deb
 
-build "$build_release" "$arch" "$result/$arch"
+build "$build_release" "$build_arch" "$arch" "$result/$arch"
 
 # Copy the resulting .debs into the results.
 mv "$master_main/"linux-{headers,image,modules}-*.deb "$result/$arch"
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/$arch/$arch.summary"
-Host: $host
-Series: $series
-Hash: $sha
-Start: $start_time
+cat - <<EOL >"$result/$arch/summary"
 End: $end_time
 EOL
 
 # Finally mark this as a partial result.
-touch "$result/@publish@"
+echo "$build_arch/$arch build" >"$result/@publish@"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"

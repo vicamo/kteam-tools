@@ -77,7 +77,7 @@ do
 done
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/core.summary"
+cat - <<EOL >"$result/summary"
 Host: $host
 Series: $series
 Commit: $commit
@@ -96,7 +96,7 @@ do
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
-touch "$result/@publish@"
+echo "core" >"$result/@publish@"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"
