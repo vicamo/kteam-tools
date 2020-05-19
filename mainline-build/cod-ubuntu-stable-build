@@ -27,11 +27,12 @@ id="$commit"
 
 master_tree_select
 
-result="../RESULT"
-rm -rf "$result"
-mkdir -p "$result/$arch"
+result_topdir="../RESULT"
+rm -rf "$result_topdir"
+result="$result_topdir/$arch"
+mkdir -p "$result"
 
-echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/$arch/REBUILD.$arch"
+echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD"
 
 host=$( hostname )
 start_time=$( date +%s )
@@ -120,7 +121,7 @@ build()
 build_arch=$(dpkg --print-architecture)
 
 # Seed the summary.
-cat - <<EOL >"$result/$arch/summary"
+cat - <<EOL >"$result/summary"
 Host: $host
 Series: $series
 Hash: $sha
@@ -132,13 +133,13 @@ EOL
 # Clean out any existing .debs.
 rm  "$master_main/"linux-{headers,image,modules}-*.deb
 
-build "$build_release" "$build_arch" "$arch" "$result/$arch"
+build "$build_release" "$build_arch" "$arch" "$result"
 
 # Copy the resulting .debs into the results.
-mv "$master_main/"linux-{headers,image,modules}-*.deb "$result/$arch"
+mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/$arch/summary"
+cat - <<EOL >"$result/summary"
 End: $end_time
 EOL
 
@@ -148,4 +149,4 @@ echo "$build_arch/$arch build" >"$result/@publish@"
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"
 mkdir -p "$publish"
-mv "$result"/* "$publish"
+mv "$result_topdir"/* "$publish"
