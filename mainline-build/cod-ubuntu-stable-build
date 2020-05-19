@@ -1,5 +1,5 @@
 #!/bin/bash
-P='cod-ubuntu-stable-arch'
+P='cod-ubuntu-stable-build'
 
 # Options.
 
@@ -32,7 +32,7 @@ rm -rf "$result_topdir"
 result="$result_topdir/$arch"
 mkdir -p "$result"
 
-echo "$P '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD"
+echo "$P.$arch '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD"
 
 host=$( hostname )
 start_time=$( date +%s )
