@@ -97,6 +97,7 @@ build()
 	} 2>&1 | tee -a "$result/$arch.log"
 	read rc <"$result/$arch.status"
 	echo "build $arch on $build_arch ... rc=$rc"
+	echo "Status: $arch $rc" >>"$result/summary"
 
 	# On non-crosscompiled architectures build the selftests.
 	if [ "$arch" = "$build_arch" -a "$fat_arch" -ne 0 ]; then
