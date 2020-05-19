@@ -139,7 +139,7 @@ build "$build_release" "$build_arch" "$arch" "$result"
 mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
 
 end_time=$( date +%s )
-cat - <<EOL >"$result/summary"
+cat - <<EOL >>"$result/summary"
 End: $end_time
 EOL
 
