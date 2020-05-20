@@ -118,7 +118,7 @@ EOL
 	echo "$build_arch/$arch build" >"$result/@publish@"
 }
 
-build_selftest()
+build_selftests()
 {
 	local build_release="$1"
 	local build_arch="$2"
