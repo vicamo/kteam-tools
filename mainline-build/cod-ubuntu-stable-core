@@ -30,7 +30,7 @@ result="../RESULT"
 rm -rf "$result"
 mkdir -p "$result"
 
-echo "$P '$series' '$remote' '$commit'" >"$result/REBUILD"
+echo "$P $series $remote $commit" >"$result/REBUILD"
 
 host=$( hostname )
 start_time=$( date +%s )
