@@ -35,7 +35,6 @@ mkdir -p "$result"
 echo "$P.$arch '$series' '$remote' '$commit' '$arch'" >"$result/REBUILD"
 
 host=$( hostname )
-start_time=$( date +%s )
 
 # Ensure we have the commit identified.
 repo_remote_update_list $remote
@@ -64,7 +63,11 @@ build()
 	local result="$4"
 
 	local opts
-	local what
+	local start_time=$( date +%s )
+	local end_time
+
+	# Clean out any existing .debs.
+	rm  "$master_main/"linux-{headers,image,modules}-*.deb
 
 	case "$arch" in
 	all|x32)	return ;;
@@ -72,17 +75,14 @@ build()
 	*)		build=-B ;;
 	esac
 
-	echo "build $arch on $build_arch ..."
-
-	# Make things shiney.
-	git clean -x -f -d
-	do_chroot "$build_release-$build_arch" \
-		fakeroot debian/rules clean
-
-	# Work out if this is fat architecture.
-	fat_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
-
+	mkdir -p "$result"
+	echo "build $arch/build on $build_arch ..."
 	{
+		# Make things shiney.
+		git clean -x -f -d
+		do_chroot "$build_release-$build_arch" \
+			fakeroot debian/rules clean
+
 		version=$(do_chroot_quiet "$build_release-$build_arch" dpkg-buildpackage --version | \
 			awk '(found == 1) {next;} {found=1; print $NF;}')
 		echo "dpkg-buildpackage version=$version"
@@ -93,16 +93,54 @@ build()
 		do_chroot "$build_release-$build_arch" \
 			dpkg-buildpackage $opts -a"$arch" "$build" -d
 		rc="$?"
-		echo "$rc" >"$result/$arch.status"
-	} 2>&1 | tee -a "$result/$arch.log"
-	read rc <"$result/$arch.status"
-	echo "build $arch on $build_arch ... rc=$rc"
-	echo "    $arch: $rc" >>"$result/summary.yaml"
+		echo "$rc" >"$result/status"
+	} 2>&1 | tee -a "$result/log"
+	read rc <"$result/status"
+	echo "build $arch/build on $build_arch ... rc=$rc"
+
+	# Write the summary YAML.
+	end_time=$( date +%s )
+	cat - <<EOL >"$result/summary.yaml"
+build-host: $host
+build-arch: $build_arch
+arch: $arch
+series: $series
+commit-hash: $sha
+start-time: $start_time
+status: $rc
+end-time: $end_time
+EOL
+
+	# Copy the resulting .debs into the results.
+	mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
+
+	# Finally mark this as a partial result.
+	echo "$build_arch/$arch build" >"$result/@publish@"
+}
+
+build_selftest()
+{
+	local build_release="$1"
+	local build_arch="$2"
+	local arch="$3"
+	local result="$4"
+
+	local start_time=$( date +%s )
+	local end_time
+	local fat_arch
+
+	# Make things shiney -- so we can work out if this is a fat arch.
+	git clean -x -f -d
+	do_chroot "$build_release-$build_arch" \
+		fakeroot debian/rules clean
+
+	# Work out if this is fat architecture.
+	fat_arch=$(grep-dctrl --regex --field Architecture "\(^\| \)$arch\( \|$\)" -s Package debian/control | grep -c -v linux-libc-dev)
 
 	# On non-crosscompiled architectures build the selftests.
 	if [ "$arch" = "$build_arch" -a "$fat_arch" -ne 0 ]; then
-		what="$arch--self-tests"
-		echo "build $what on $build_arch ..."
+		mkdir -p "$result"
+		echo "build $arch/self-tests on $build_arch ..."
 		{
 			# Make things shiney.
 			git clean -x -f -d
@@ -111,42 +149,33 @@ build()
 			do_chroot "$build_release-$build_arch" \
 				fakeroot debian/rules compileselftests
 			rc="$?"
-			echo "$rc" >"$result/$what.status"
-		} 2>&1 | tee -a "$result/$what.log"
-		read rc <"$result/$what.status"
+			echo "$rc" >"$result/status"
+		} 2>&1 | tee -a "$result/log"
+		read rc <"$result/status"
 		echo "build $what on $build_arch ... rc=$rc"
-		echo "    $what: $rc" >>"$result/summary.yaml"
-	fi
-}
 
-build_arch=$(dpkg --print-architecture)
-
-# Seed the summary.
-cat - <<EOL >"$result/summary.yaml"
+		# Write the summary YAML.
+		end_time=$( date +%s )
+		cat - <<EOL >"$result/summary.yaml"
 build-host: $host
 build-arch: $build_arch
 arch: $arch
 series: $series
 commit-hash: $sha
 start-time: $start_time
-status:
-EOL
-
-# Clean out any existing .debs.
-rm  "$master_main/"linux-{headers,image,modules}-*.deb
-
-build "$build_release" "$build_arch" "$arch" "$result"
-
-# Copy the resulting .debs into the results.
-mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
-
-end_time=$( date +%s )
-cat - <<EOL >>"$result/summary.yaml"
+status: $rc
 end-time: $end_time
 EOL
+	fi
 
-# Finally mark this as a partial result.
-echo "$build_arch/$arch build" >"$result/@publish@"
+	# Finally mark this as a partial result.
+	echo "$build_arch/$arch self-test" >"$result/@publish@"
+}
+
+build_arch=$(dpkg --print-architecture)
+
+build "$build_release" "$build_arch" "$arch" "$result/build"
+build_selftests "$build_release" "$build_arch" "$arch" "$result/self-tests"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"
