@@ -76,13 +76,15 @@ do
 	build_archs="$build_archs $arch"
 done
 
+build_archs_list=$(echo "$build_archs" | sed -e 's/^ */[/' -e 's/ *$/]/' -e 's/  */, /g')
+
 end_time=$( date +%s )
 cat - <<EOL >"$result/summary.yaml"
 build-host: $host
-archs: $build_archs
+testsets: $build_archs_list
 series: $series
 commit: $commit
-commit-title: $title
+commit-title: '$title'
 commit-time: $cts
 commit-hash: $sha
 start-time: $start_time
