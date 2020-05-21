@@ -258,8 +258,15 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 				"$here/cod-enqueue" $command
 			done <"$out/ubuntu-stable/$build/REBUILD.submit"
 		fi
+		# Find the containing result and resummarise it.
 		echo "$P: $build: ubuntu-stable summarising ..."
-		"$here/cod-result-summarise" "$out/ubuntu-stable/$build"
+		for relative in . .. ../..
+		do
+			if [ -f "$out/ubuntu-stable/$build/$relative/REBUILD.submit" ]; then
+				"$here/cod-result-summarise" "$out/ubuntu-stable/$build/$relative"
+				break
+			fi
+		done
 	done
 	find "$incoming/ubuntu-stable" -empty -type d -delete
 fi
