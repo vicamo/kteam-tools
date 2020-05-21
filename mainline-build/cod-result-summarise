@@ -136,17 +136,19 @@ class Summary:
 
             for test, test_data in sorted(self.summary['_tests'].items()):
                 test_path = test_data['_path']
+                log = os.path.relpath(os.path.join(test_path, 'log'), self.directory)
                 print('<br>', file=hfd)
                 print('Test {test} {status_text} (rc={status}, log=<a href="{log}">{log}</a>)<br>'.format(
                     status=test_data.get('status', 256),
                     status_text=test_data.get('_status', 'Unknown'),
-                    test=test, log=os.path.join(test_path, 'log')), file=hfd)
+                    test=test, log=log), file=hfd)
                 if os.path.exists(test_path):
                     for path in sorted(os.listdir(test_path)):
                         if not path.endswith('deb'):
                             continue
+                        path = os.path.relpath(os.path.join(test_path, path), self.directory)
                         print('&nbsp;&nbsp;<a href="{path}">{path}</a><br>'.format(
-                            path=os.path.join(test_path, path)), file=hfd)
+                            path=path), file=hfd)
 
             print(dedent('''\
                 </code>
