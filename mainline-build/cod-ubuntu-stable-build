@@ -98,6 +98,9 @@ build()
 	read rc <"$result/status"
 	echo "build $arch/build on $build_arch ... rc=$rc"
 
+	# Copy the resulting .debs into the results.
+	mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
+
 	# Write the summary YAML.
 	end_time=$( date +%s )
 	cat - <<EOL >"$result/summary.yaml"
@@ -107,15 +110,10 @@ arch: $arch
 series: $series
 commit-hash: $sha
 start-time: $start_time
+test: build
 status: $rc
 end-time: $end_time
 EOL
-
-	# Copy the resulting .debs into the results.
-	mv "$master_main/"linux-{headers,image,modules}-*.deb "$result"
-
-	# Finally mark this as a partial result.
-	echo "$build_arch/$arch build" >"$result/@publish@"
 }
 
 build_selftests()
@@ -163,19 +161,20 @@ arch: $arch
 series: $series
 commit-hash: $sha
 start-time: $start_time
+test: self-tests
 status: $rc
 end-time: $end_time
 EOL
 	fi
-
-	# Finally mark this as a partial result.
-	echo "$build_arch/$arch self-test" >"$result/@publish@"
 }
 
 build_arch=$(dpkg --print-architecture)
 
-build "$build_release" "$build_arch" "$arch" "$result/build"
+build "$build_release" "$build_arch" "$arch" "$result"
 build_selftests "$build_release" "$build_arch" "$arch" "$result/self-tests"
+
+# Finally mark this as a partial result.
+echo "ubuntu-stable $arch/$build_arch" >"$result/@publish@"
 
 # Output.
 publish="$HOME/public_html/ubuntu-stable/$series/$commit"
