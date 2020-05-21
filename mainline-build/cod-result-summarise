@@ -138,9 +138,10 @@ class Summary:
                 test_path = test_data['_path']
                 log = os.path.relpath(os.path.join(test_path, 'log'), self.directory)
                 print('<br>', file=hfd)
-                print('Test {test} {status_text} (rc={status}, log=<a href="{log}">{log}</a>)<br>'.format(
+                print('Test {test} {status_text} (rc={status}, on={build_arch}, log=<a href="{log}">{log}</a>)<br>'.format(
                     status=test_data.get('status', 256),
                     status_text=test_data.get('_status', 'Unknown'),
+                    build_arch=test_data.get('build-arch', 'Unknown'),
                     test=test, log=log), file=hfd)
                 if os.path.exists(test_path):
                     for path in sorted(os.listdir(test_path)):
