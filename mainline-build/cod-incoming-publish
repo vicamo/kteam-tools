@@ -258,6 +258,8 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 				"$here/cod-enqueue" $command
 			done <"$out/ubuntu-stable/$build/REBUILD.submit"
 		fi
+		echo "$P: $build: ubuntu-stable summarising ..."
+		"$here/cod-result-summarise" "$out/ubuntu-stable/$build"
 	done
 	find "$incoming/ubuntu-stable" -empty -type d -delete
 fi

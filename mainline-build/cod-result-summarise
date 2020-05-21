@@ -1,0 +1,151 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import yaml
+
+from textwrap import dedent
+
+
+class Summary:
+
+    def fix_summary(self, file):
+        summary = {}
+        with open(file) as sfd:
+            for line in sfd:
+                (key, value) = line.strip().split(':', 1)
+                key = key.lower()
+                value = value.strip()
+                if key in ('archs', 'status'):
+                    value = value.split()
+                elif key in ('start', 'end'):
+                    value = int(value)
+                    key = key + '-time'
+                elif key == 'committed':
+                    key = 'commit-time'
+                    value = int(value)
+                elif key == 'subject':
+                    key = 'commit-title'
+                    value = value.strip()
+                elif key == 'hash':
+                    key = 'commit-hash'
+                    value = value.strip()
+                elif key == 'buildarch':
+                    key = 'build-arch'
+                    value = value.strip()
+                elif key == 'host':
+                    key = 'build-host'
+                    value = value.strip()
+                else:
+                    value = value.strip()
+                if key == 'status':
+                    summary.setdefault(key, {})[value[0]] = int(value[1])
+                else:
+                    summary[key] = value
+        with open(file + '.yaml', 'w') as yfd:
+            yaml.dump(summary, yfd)
+        os.rename(file, file + '.old')
+
+    def load_summary(self, directory):
+        # XXX: fix this summary.
+        #summary = os.path.join(directory, 'summary')
+        #if os.path.exists(summary):
+        #    self.fix_summary(summary)
+        summary = os.path.join(directory, 'summary.yaml')
+        if os.path.exists(summary):
+            with open(summary) as sfd:
+                summary_data = yaml.safe_load(sfd)
+        return summary_data
+
+    def load_section(self):
+        # Find the top of the output directory we are summarising against.
+        section = {}
+        for section_dir in (
+                os.path.join(self.directory, os.path.pardir),
+                os.path.join(self.directory, os.path.pardir, os.path.pardir)):
+            section_path = os.path.join(section_dir, 'section.yaml')
+            if os.path.exists(section_path):
+                with open(section_path) as sfd:
+                    section = yaml.safe_load(sfd)
+                break
+        self.section = section
+
+    def __init__(self, directory):
+        self.directory = directory
+        self.load_section()
+
+    def summarise(self):
+        # Load up the core.summary file which describes the expected
+        # sub-results.
+        self.summary = self.load_summary(self.directory)
+
+        # Extract the list of expected results and see if we have results for
+        # them.
+        self.testsets = self.summary.get('testsets', [])
+        #print(self.summary, self.testsets)
+        for testset in self.testsets:
+            testset_directory = os.path.join(self.directory, testset)
+            if os.path.exists(testset_directory):
+                for test_directory in ['.'] + os.listdir(testset_directory):
+                    test_directory = os.path.normpath(os.path.join(
+                        testset_directory, test_directory))
+                    if not os.path.exists(os.path.join(test_directory, 'summary.yaml')):
+                        continue
+                    test_summary = self.load_summary(test_directory)
+                    # Validation.
+                    if test_summary.get('commit-hash') != self.summary.get('commit-hash'):
+                        status = 'Missmatched'
+                    test_name = test_summary.get('test', 'Unknown')
+                    test_rc = test_summary.get('status', 256)
+                    print(testset, test_name, test_rc)
+                    if test_rc == 0:
+                        status = 'succeeded'
+                    else:
+                        status = 'failed'
+                    name = testset + '/' + test_name
+                    test_summary['_path'] = test_directory
+                    test_summary['_name'] = name
+                    test_summary['_status'] = status
+                    self.summary.setdefault('_tests', {})[name] = test_summary
+
+        #print(self.summary)
+
+        # HTML
+        self.generate_header()
+
+    def generate_header(self):
+        html = os.path.join(self.directory, 'HEADER.html')
+        with open(html + '.new', 'w') as hfd:
+            print(dedent('''\
+                <h1>{commit} {title}</h1>
+                <code>
+                These binary packages represent builds of {title} tree at the commit below:<br>
+                <br>
+                &nbsp;{commit} ({hash})<br>
+                <br>
+                To obtain the source from which they are built fetch the commit below:<br>
+                <br>
+                &nbsp;git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack {commit}<br>
+                '''.format(commit=self.summary.get('commit', 'Unknown'),
+                    hash=self.summary.get('commit-hash', 'Unknown'),
+                    title=self.section.get('title', 'Unknown'))),
+                end='', file=hfd)
+
+            for test, test_data in sorted(self.summary['_tests'].items()):
+                test_path = test_data['_path']
+                print('<br>', file=hfd)
+                print('Test {test} {status_text} (rc={status}, log=<a href="{log}">{log}</a>)<br>'.format(
+                    status=test_data.get('status', 256),
+                    status_text=test_data.get('_status', 'Unknown'),
+                    test=test, log=os.path.join(test_path, 'log')), file=hfd)
+                for path in sorted(os.listdir(test_data['_path'])):
+                    if not path.endswith('deb'):
+                        continue
+                    print('&nbsp;&nbsp;<a href="{path}">{path}</a><br>'.format(
+                        path=os.path.join(test_path, path)), file=hfd)
+
+            print('</code>', file=hfd)
+        os.rename(html + '.new', html)
+
+summary = Summary(sys.argv[1])
+summary.summarise()
