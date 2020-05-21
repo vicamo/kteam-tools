@@ -107,6 +107,9 @@ class Summary:
                     test_summary['_name'] = name
                     test_summary['_status'] = status
                     self.summary.setdefault('_tests', {})[name] = test_summary
+            else:
+                self.summary.setdefault('_tests', {})[testset] = {
+                    '_path': testset_directory, '_status': 'missing'}
 
         #print(self.summary)
 
@@ -138,13 +141,16 @@ class Summary:
                     status=test_data.get('status', 256),
                     status_text=test_data.get('_status', 'Unknown'),
                     test=test, log=os.path.join(test_path, 'log')), file=hfd)
-                for path in sorted(os.listdir(test_data['_path'])):
-                    if not path.endswith('deb'):
-                        continue
-                    print('&nbsp;&nbsp;<a href="{path}">{path}</a><br>'.format(
-                        path=os.path.join(test_path, path)), file=hfd)
+                if os.path.exists(test_path):
+                    for path in sorted(os.listdir(test_path)):
+                        if not path.endswith('deb'):
+                            continue
+                        print('&nbsp;&nbsp;<a href="{path}">{path}</a><br>'.format(
+                            path=os.path.join(test_path, path)), file=hfd)
 
-            print('</code>', file=hfd)
+            print(dedent('''\
+                </code>
+                <br>'''), file=hfd)
         os.rename(html + '.new', html)
 
 summary = Summary(sys.argv[1])
