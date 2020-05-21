@@ -3,7 +3,7 @@ export LC_ALL=C.UTF-8
 
 cranky_cmd="${P:-$(basename "$0")}"
 default_git_cmd="git log --oneline"
-default_exclude="UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"
+default_exclude="UBUNTU: (Ubuntu-|link-to-tracker:|Start new release|upstream stable to)"
 
 usage() {
 	cat << EOF
