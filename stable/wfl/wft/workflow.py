@@ -177,7 +177,7 @@ class Workflow(TaskHandler):
             #
             # Calculate interlock blocks.
             #
-            if s.bug.is_valid and s.bug.snap:
+            if s.bug.snap:
                 task = s.bug.tasks_by_name.get('snap-release-to-beta')
                 if task is not None:
                     if task.status not in ('New', 'Invalid', 'Fix Released'):
@@ -192,7 +192,7 @@ class Workflow(TaskHandler):
             #
             # Check interlock blocks.
             #
-            if s.bug.is_valid and s.bug.debs:
+            if s.bug.debs:
                 task = s.bug.tasks_by_name.get('promote-to-proposed')
                 if task is not None and task.status == 'Fix Released':
                     blocks = s.bug.blockers.get('snap-not-in-beta')
