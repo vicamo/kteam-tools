@@ -731,6 +731,40 @@
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-larch:
+            routing:
+                build:
+                    - ['ppa:larch-carvers/ipoc', 'Release']
+                test:
+                    - ['ppa:larch-carvers/ipoc', 'Release']
+                proposed:
+                    - ['ppa:larch-carvers/ipoc', 'Release']
+                updates:
+                    - ['ppa:larch-carvers/ipoc', 'Release']
+                release:
+                    - ['ppa:larch-carvers/ipoc', 'Release']
+            packages:
+                linux-larch:
+                    repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux/+git/larch', 'master-next']
+                linux-meta-larch:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux-meta/+git/larch', 'master']
+                linux-signed-larch:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux-signed2/+git/larch', 'master']
+                linux-restricted-modules-larch:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux-restricted-modules/+git/larch', 'master']
+            supported: false
+            private: true
+            derived-from: ['20.04', 'linux']
+            testing:
+                flavours:
+                    larch:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
