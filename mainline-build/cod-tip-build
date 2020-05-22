@@ -33,7 +33,7 @@ rm -rf "$result_topdir"
 result="$result_topdir/$arch"
 mkdir -p "$result"
 
-echo "$P.$arch $series $remote $commit $arch" >"$result/REBUILD"
+echo "$P.$arch $series $remote $commit $arch $out" >"$result/REBUILD"
 
 host=$( hostname )
 
