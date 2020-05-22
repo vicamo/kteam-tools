@@ -207,6 +207,14 @@ class Workflow(TaskHandler):
                             cinfo("snap-not-in-candidate snap-lagging {}".format(blocks))
                             s.bug.reasons['snap-lagging'] = blocks
 
+                # Check for cascading blocks -- when we use a two phase snap build it should
+                # block its parent too.
+                # XXX: this is completely the wrong trigger flag.
+                if s.bug.swm_config.need_master_in_proposed:
+                    blocks = s.bug.blockers.get('hold-promote-to-updates')
+                    if blocks:
+                        s.bug.interlocks['hold-promote-to-updates'] = blocks + " (cascaded)"
+
             #
             # FINAL VALIDATION:
             #
