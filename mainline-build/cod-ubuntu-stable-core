@@ -94,7 +94,7 @@ EOL
 # Drop a set of messages to enqueue.
 for arch in $build_archs
 do
-	echo "cod-ubuntu-stable-build.$arch $series $remote $commit $arch"
+	echo "cod-tip-build.$arch $series $remote $commit $arch ubuntu-stable/$series/$commit"
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.

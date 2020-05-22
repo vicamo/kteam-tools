@@ -1,10 +1,10 @@
 #!/bin/bash
-P='cod-ubuntu-stable-build'
+P='cod-tip-build'
 
 # Options.
 
-if [ "$#" -ne 4 ]; then
-	echo "Usage: $0 <series> <remote> <commit-ish> <arch>" 1>&2
+if [ "$#" -ne 5 ]; then
+	echo "Usage: $0 <series> <remote> <commit-ish> <arch> <out>" 1>&2
 	exit 1
 fi
 
@@ -21,6 +21,7 @@ series="$1"
 remote="$2"
 commit="$3"
 arch="$4"
+out="$5"
 
 build_release="$series"
 id="$commit"
@@ -174,9 +175,9 @@ build "$build_release" "$build_arch" "$arch" "$result"
 build_selftests "$build_release" "$build_arch" "$arch" "$result/self-tests"
 
 # Finally mark this as a partial result.
-echo "ubuntu-stable $arch/$build_arch" >"$result/@publish@"
+echo "$out $arch/$build_arch" >"$result/@publish@"
 
 # Output.
-publish="$HOME/public_html/ubuntu-stable/$series/$commit"
+publish="$HOME/public_html/$out"
 mkdir -p "$publish"
 mv "$result_topdir"/* "$publish"
