@@ -89,9 +89,10 @@ commit: $commit
 commit-title: '$title'
 commit-time: $cts
 commit-hash: $sha
+commit-label: $id
 start-time: $start_time
 end-time: $end_time
-changeset-id: $id
+package: $package
 EOL
 
 # Drop a set of messages to enqueue.
