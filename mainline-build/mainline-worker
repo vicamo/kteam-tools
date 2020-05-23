@@ -19,6 +19,7 @@ exec ./mainline-worker-kmsgq \
 	--command any:cod-ubuntu-config \
 	--command any:cod-changeset-build \
 	--command any:cod-ubuntu-stable-core \
+	--command any:cod-changeset-core \
 	--command x86:cod-tip-build.amd64 \
 	--command x86:cod-tip-build.i386 \
 	--command x86:cod-tip-build.arm64 \
