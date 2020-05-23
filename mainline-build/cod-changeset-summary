@@ -6,6 +6,8 @@ import os
 import sys
 from urllib import quote
 
+import yaml
+
 directory = sys.argv[1]
 prefix = sys.argv[2]
 
@@ -15,10 +17,27 @@ latest = os.path.join(prefix, "latest.json.new")
 meta = {}
 results = []
 for (dirname, dirs, files) in os.walk(directory):
-    # Only interested in the leaves.
-    if len(dirs) != 0:
+    if 'aggregate.yaml' in files:
+        with open(os.path.join(dirname, 'aggregate.yaml')) as afd:
+            raw = yaml.safe_load(afd)
+
+        entry = {
+            'directory': os.path.basename(dirname),
+            'host': raw.get('build-host', '-'),
+            'series': raw.get('series', '-'),
+            'package': raw.get('package'),
+            'hash': raw.get('commit-hash'),
+            'subject': raw.get('commit-title'),
+            'id': raw.get('commit-label'),
+            'status': raw.get('overall'),
+            'committed': str(raw.get('commit-time')),
+        }
+        results.append((entry['committed'], entry))
         continue
 
+    # Only interested in the leaves with SUMMARY (legacy form).
+    if len(dirs) != 0:
+        continue
     if 'SUMMARY' not in files:
         continue
 
@@ -56,6 +75,7 @@ with open(html, "w") as html_fd:
 <title>Build Tests for {series}/{package}</title>
 <style>
 .GOOD {{ background-color: green; }}
+.WARN {{ background-color: yellow; }}
 .FAIL {{ background-color: red; }}
 .UBUNTU {{ background-color: #FFFF99; }}
 table.matrix {{
@@ -86,13 +106,21 @@ table.matrix td {{
 <table class="matrix">
 <tr><th>Changeset<th>Builder<th>Status'''.format(**meta), file=html_fd)
     for _, entry in results:
-        status = entry['status']
-
         row_class = 'row'
         if entry['id'].startswith('Ubuntu-'):
             row_class = 'UBUNTU'
 
-        if status == '0':
+        status = entry['status']
+        if status == 'in-progress':
+            status_string = 'IN-PROGRESS'
+            status_class = 'WARN'
+        elif status == 'succeeded':
+            status_string = 'GOOD'
+            status_class = 'GOOD'
+        elif status == 'failed':
+            status_string = 'FAIL'
+            status_class = 'FAIL'
+        elif status == '0':
             status_string = 'GOOD'
             status_class = 'GOOD'
         else:
