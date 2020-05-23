@@ -81,6 +81,8 @@ class Summary:
 
         # Extract the list of expected results and see if we have results for
         # them.
+        failures = False
+        missing = False
         self.testsets = self.summary.get('testsets', [])
         #print(self.summary, self.testsets)
         for testset in self.testsets:
@@ -94,7 +96,7 @@ class Summary:
                     test_summary = self.load_summary(test_directory)
                     # Validation.
                     if test_summary.get('commit-hash') != self.summary.get('commit-hash'):
-                        status = 'Missmatched'
+                        status = 'missmatched'
                     test_name = test_summary.get('test', 'Unknown')
                     test_rc = test_summary.get('status', 256)
                     print(testset, test_name, test_rc)
@@ -102,19 +104,30 @@ class Summary:
                         status = 'succeeded'
                     else:
                         status = 'failed'
+                        failures = True
                     name = testset + '/' + test_name
-                    test_summary['_path'] = test_directory
-                    test_summary['_name'] = name
-                    test_summary['_status'] = status
-                    self.summary.setdefault('_tests', {})[name] = test_summary
+                    test_summary['path'] = test_directory
+                    test_summary['name'] = name
+                    test_summary['status'] = status
+                    self.summary.setdefault('tests', {})[name] = test_summary
             else:
-                self.summary.setdefault('_tests', {})[testset] = {
-                    '_path': testset_directory, '_status': 'missing'}
+                self.summary.setdefault('tests', {})[testset] = {
+                    'path': os.path.normpath(testset_directory), 'status': 'missing'}
+                missing = True
+
+            if failures:
+                self.summary['overall'] = 'failed'
+            elif missing:
+                self.summary['overall'] = 'in-progress'
+            else:
+                self.summary['overall'] = 'succeeded'
 
         #print(self.summary)
 
         # HTML
         self.generate_header()
+
+        self.generate_aggregate()
 
     def generate_header(self):
         html = os.path.join(self.directory, 'HEADER.html')
@@ -134,8 +147,8 @@ class Summary:
                     title=self.section.get('title', 'Unknown'))),
                 end='', file=hfd)
 
-            for test, test_data in sorted(self.summary['_tests'].items()):
-                test_path = test_data['_path']
+            for test, test_data in sorted(self.summary['tests'].items()):
+                test_path = test_data['path']
                 log = os.path.relpath(os.path.join(test_path, 'log'), self.directory)
                 print('<br>', file=hfd)
                 print('Test {test} {status_text} (rc={status}, on={build_arch}, log=<a href="{log}">{log}</a>)<br>'.format(
@@ -155,6 +168,12 @@ class Summary:
                 </code>
                 <br>'''), file=hfd)
         os.rename(html + '.new', html)
+
+    def generate_aggregate(self):
+        aggregate = os.path.join(self.directory, 'aggregate.yaml')
+        with open(aggregate + '.new', 'w') as hfd:
+            print(yaml.dump(self.summary), file=hfd)
+        os.rename(aggregate + '.new', aggregate)
 
 summary = Summary(sys.argv[1])
 summary.summarise()
