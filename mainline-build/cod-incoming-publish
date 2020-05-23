@@ -189,8 +189,57 @@ if [ -d "$incoming/config" ]; then
 	find "$incoming/config" -empty -type d -delete
 fi
 
+publish_tip()
+{
+	local which="$1"
+
+	echo "Scanning $which (tip) ..."
+	(cd "$incoming/$which" && find . -name @publish@) | \
+	while read result
+	do
+		build=`dirname "$result"`
+		build=${build#./}
+
+		echo "$P: $build: $which publishing ..."
+		submit=0
+		if [ -f "$incoming/$which/$build/REBUILD.submit" ]; then
+			submit=1
+			if [ -d "$out/$which/$build" ]; then
+				echo "$P: $build: result already published, removing previous ..."
+				rm -rf "$out/$which/$build"
+			fi
+		fi
+		mkdir -p "$out/$which/$build"
+		rm -f "$incoming/$which/$build/@publish@"
+		mv "$incoming/$which/$build"/* "$out/$which/$build"
+		if [ "$submit" = 1 ]; then
+			# Now we have installed the core result, submit our builds.
+			while read command
+			do
+				echo "$here/cod-enqueue" $command
+				"$here/cod-enqueue" $command
+			done <"$out/$which/$build/REBUILD.submit"
+		fi
+		# Find the containing result and resummarise it.
+		echo "$P: $build: $which summarising ..."
+		for relative in . .. ../..
+		do
+			if [ -f "$out/$which/$build/$relative/REBUILD.submit" ]; then
+				"$here/cod-result-summarise" "$out/$which/$build/$relative"
+				break
+			fi
+		done
+	done
+	find "$incoming/$which" -empty -type d -delete
+}
+
+if [ -d "$incoming/ubuntu-stable" ]; then
+	publish_tip "ubuntu-stable"
+fi
 
 if [ -d "$incoming/test-build" ]; then
+	publish_tip "test-build"
+
 	echo "Scanning test-build ..."
 	(cd "$incoming/test-build" && find . -name SUMMARY) | \
 	while read summary
@@ -228,47 +277,6 @@ if [ -d "$incoming/test-build" ]; then
 	# Rebuild the dashboard.
 	"$here/cod-changeset-dashboard" "$out/test-build"
 	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
-fi
-
-if [ -d "$incoming/ubuntu-stable" ]; then
-	echo "Scanning ubuntu-stable ..."
-	(cd "$incoming/ubuntu-stable" && find . -name @publish@) | \
-	while read result
-	do
-		build=`dirname "$result"`
-		build=${build#./}
-
-		echo "$P: $build: ubuntu-stable publishing ..."
-		submit=0
-		if [ -f "$incoming/ubuntu-stable/$build/REBUILD.submit" ]; then
-			submit=1
-			if [ -d "$out/ubuntu-stable/$build" ]; then
-				echo "$P: $build: result already published, removing previous ..."
-				rm -rf "$out/ubuntu-stable/$build"
-			fi
-		fi
-		mkdir -p "$out/ubuntu-stable/$build"
-		rm -f "$incoming/ubuntu-stable/$build/@publish@"
-		mv "$incoming/ubuntu-stable/$build"/* "$out/ubuntu-stable/$build"
-		if [ "$submit" = 1 ]; then
-			# Now we have installed the core result, submit our builds.
-			while read command
-			do
-				echo "$here/cod-enqueue" $command
-				"$here/cod-enqueue" $command
-			done <"$out/ubuntu-stable/$build/REBUILD.submit"
-		fi
-		# Find the containing result and resummarise it.
-		echo "$P: $build: ubuntu-stable summarising ..."
-		for relative in . .. ../..
-		do
-			if [ -f "$out/ubuntu-stable/$build/$relative/REBUILD.submit" ]; then
-				"$here/cod-result-summarise" "$out/ubuntu-stable/$build/$relative"
-				break
-			fi
-		done
-	done
-	find "$incoming/ubuntu-stable" -empty -type d -delete
 fi
 
 if [ -d "$incoming/static-analysis" ]; then
