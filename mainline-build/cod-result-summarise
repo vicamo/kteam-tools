@@ -62,7 +62,8 @@ class Summary:
         section = {}
         for section_dir in (
                 os.path.join(self.directory, os.path.pardir),
-                os.path.join(self.directory, os.path.pardir, os.path.pardir)):
+                os.path.join(self.directory, os.path.pardir, os.path.pardir),
+                os.path.join(self.directory, os.path.pardir, os.path.pardir, os.path.pardir)):
             section_path = os.path.join(section_dir, 'section.yaml')
             if os.path.exists(section_path):
                 with open(section_path) as sfd:
@@ -133,9 +134,9 @@ class Summary:
         html = os.path.join(self.directory, 'HEADER.html')
         with open(html + '.new', 'w') as hfd:
             print(dedent('''\
-                <h1>{commit} {title}</h1>
+                <h1>{commit_title} {section_title}</h1>
                 <code>
-                These binary packages represent builds of {title} tree at the commit below:<br>
+                These binary packages represent builds of {section_title} tree at the commit below:<br>
                 <br>
                 &nbsp;{commit} ({hash})<br>
                 <br>
@@ -144,7 +145,8 @@ class Summary:
                 &nbsp;git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack {commit}<br>
                 '''.format(commit=self.summary.get('commit', 'Unknown'),
                     hash=self.summary.get('commit-hash', 'Unknown'),
-                    title=self.section.get('title', 'Unknown'))),
+                    commit_title=self.summary.get('commit-label', self.summary.get('commit')),
+                    section_title=self.section.get('title'))),
                 end='', file=hfd)
 
             for test, test_data in sorted(self.summary['tests'].items()):
