@@ -240,6 +240,7 @@ fi
 if [ -d "$incoming/test-build" ]; then
 	publish_tip "test-build"
 
+	mkdir -p "$incoming/test-build"
 	echo "Scanning test-build ..."
 	(cd "$incoming/test-build" && find . -name SUMMARY) | \
 	while read summary
