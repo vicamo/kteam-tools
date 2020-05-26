@@ -10,6 +10,32 @@ esac
 first=false
 [ "$1" = "first" ] && first=true
 
+bodge_many_refs()
+{
+	local url="$1"
+	local alt_url="$2"
+
+	local tmp="/tmp/bodge-many-refs.$$"
+	git ls-remote "$alt_url" >"$tmp"
+	(
+		cd "$repo" || exit 1
+		git for-each-ref | \
+		while read sha type ref
+		do
+			count=$(grep -c "	$ref$" "$tmp")
+			if [ "$count" -eq 0 ]; then
+				echo "$ref:$ref"
+			fi
+		done | xargs --max-args 20 --no-run-if-empty | \
+		while read refs
+		do
+			echo "$refs"
+			git push --no-tags "$alt_url" $refs
+		done
+	)
+	rm -f "$tmp"
+}
+
 # MIRROR wani -> launchpad
 while read url alt_url master flags
 do
@@ -28,7 +54,14 @@ do
     repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/@/srv/kernel.ubuntu.com/git/@' )
     #alt_url=$( echo "$alt_url" | sed -e 's_git://git.launchpad.net/_git+ssh://kernel-ppa@git.launchpad.net/_' )
 
-    (cd "$repo" && git push --mirror "$alt_url")
+    case "$url" in
+    */virgin/testing/crack.git)
+        bodge_many_refs "$repo" "$alt_url"
+        ;;
+    *)
+        (cd "$repo" && git push --mirror "$alt_url")
+        ;;
+    esac
 done <"$here/../info/repositories.txt"
 
 # MIRROR launchpad -> wani
