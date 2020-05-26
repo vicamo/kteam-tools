@@ -70,7 +70,7 @@ do
 			git push --force "$push_url" tag "$tag"
 
 			# Queue up the build.
-			"$here/cod-enqueue" "cod-changeset-build" \
+			"$here/cod-enqueue" "cod-changeset-core" \
 				"$series" "$package" "crack" "$tag" "$changeset" "$order"
 		done
 	)
