@@ -26,7 +26,7 @@ do
 
     echo "*** $url -> $alt_url ..."
     repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/@/srv/kernel.ubuntu.com/git/@' )
-    alt_url=$( echo "$alt_url" | sed -e 's_git://git.launchpad.net/_git+ssh://kernel-ppa@git.launchpad.net/_' )
+    #alt_url=$( echo "$alt_url" | sed -e 's_git://git.launchpad.net/_git+ssh://kernel-ppa@git.launchpad.net/_' )
 
     (cd "$repo" && git push --mirror "$alt_url")
 done <"$here/../info/repositories.txt"
