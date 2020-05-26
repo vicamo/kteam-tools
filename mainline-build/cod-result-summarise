@@ -6,6 +6,8 @@ import yaml
 
 from textwrap import dedent
 
+from ktl.announce import Announce
+
 
 class Summary:
 
@@ -126,10 +128,9 @@ class Summary:
 
         #print(self.summary)
 
-        # HTML
         self.generate_header()
-
         self.generate_aggregate()
+        self.announce_if_complete()
 
     def generate_header(self):
         html = os.path.join(self.directory, 'HEADER.html')
@@ -177,6 +178,57 @@ class Summary:
         with open(aggregate + '.new', 'w') as hfd:
             print(yaml.dump(self.summary), file=hfd)
         os.rename(aggregate + '.new', aggregate)
+
+    def announce_if_complete(self):
+        flag_announce = os.path.join(self.directory, '.flag.announce')
+        if not os.path.exists(flag_announce):
+            return
+
+        with open(flag_announce) as announce_fd:
+            reason = announce_fd.readline().strip()
+
+        for test, test_data in sorted(self.summary.get('tests', {}).items()):
+            if test_data['status'] == 'missing':
+                return
+
+        params = self.summary
+        params['reason'] = reason
+        params['url-path'] = os.path.relpath(os.path.abspath(self.directory), os.path.expanduser("~/public_html"))
+        params['url-summary'] = os.path.relpath(os.path.abspath(os.path.join(self.directory, os.path.pardir)), os.path.expanduser("~/public_html"))
+        params['status-text'] = params['overall']
+        params['url-root'] = "http://kernel.ubuntu.com/~kernel-ppa"
+        params['url-test'] = "{url-root}/{url-path}".format(**params).replace('#', '%23')
+        params['url-summary'] = "{url-root}/{url-summary}".format(**params).replace('#', '%23')
+        params['section-title'] = self.section.get('title', 'Unknown')
+        if 'commit-label' in params:
+            params['id'] = params['commit-label']
+        elif 'package' in params:
+            params['id'] = params.get('series', 'Unknown') + ' ' + params['package']
+        else:
+            params['id'] = params.get('commit', 'Unknown')
+
+        summary = "{section-title}: {id} {reason} complete {status-text} {url-summary}".format(**params)
+        subject = "{section-title} {id} {reason} complete {status-text}".format(**params)
+        body  = dedent("""\
+            The {section-title} {reason} for {id} is now complete ({status-text}) and available\r
+            at the URL below:\r
+            \r
+                {url-test}\r
+            \r
+            Overall status for {id} is available at the URL below:
+            \r
+                {url-summary}\r
+            \r
+            Kernel Team\r
+            """).format(**params)
+
+        announce_to = 'cod-{}-{}'.format(self.section.get('title', 'Unknown').lower().replace(' ', '-'), params['reason'])
+        announce = Announce()
+        announce.send(announce_to, subject=subject, body=body, summary=summary)
+
+        # Announced, remove the flag.
+        os.remove(flag_announce)
+
 
 summary = Summary(sys.argv[1])
 summary.summarise()
