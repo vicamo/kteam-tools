@@ -201,18 +201,23 @@ publish_tip()
 		build=${build#./}
 
 		echo "$P: $build: $which publishing ..."
-		submit=0
+		core=
 		if [ -f "$incoming/$which/$build/REBUILD.submit" ]; then
-			submit=1
+			core='build'
 			if [ -d "$out/$which/$build" ]; then
 				echo "$P: $build: result already published, removing previous ..."
 				rm -rf "$out/$which/$build"
+				core='rebuild'
 			fi
 		fi
 		mkdir -p "$out/$which/$build"
 		rm -f "$incoming/$which/$build/@publish@"
 		mv "$incoming/$which/$build"/* "$out/$which/$build"
-		if [ "$submit" = 1 ]; then
+		if [ "$core" != '' ]; then
+			# Record that this is an unannounced core build.
+			echo "$core" >"$out/$which/$build/.flag.announce"
+		fi
+		if [ -f "$out/$which/$build/REBUILD.submit" ]; then
 			# Now we have installed the core result, submit our builds.
 			while read command
 			do
