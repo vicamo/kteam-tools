@@ -1425,7 +1425,7 @@
                 linux-restricted-modules-hwe-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.4']
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -1699,7 +1699,7 @@
                 linux-restricted-modules-aws-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.4']
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-aws' ]
             swm:
@@ -1860,7 +1860,7 @@
                 linux-restricted-modules-azure-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-5.4']
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
@@ -1994,7 +1994,7 @@
                 linux-restricted-modules-gcp-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.4']
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
             testing:
@@ -2336,7 +2336,7 @@
                 linux-restricted-modules-oracle-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.4']
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-oracle' ]
             testing:
