@@ -1,0 +1,185 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import yaml
+from datetime import datetime, timezone
+from subprocess import run, Popen, PIPE, CalledProcessError
+
+from launchpadlib.launchpad import Launchpad
+from ktl.kernel_series import KernelSeries
+
+from lazr.restfulclient.errors import NotFound
+
+
+class ArchiveVersionsPackage(object):
+
+    def __init__(self, package, lp=None):
+        if lp is None:
+            lp = Launchpad.login_with('ArchivesVersionsPackage', 'production', version='devel')
+        self.lp = lp
+        self.package = package
+
+        self.load_data()
+        self.data = self._data.setdefault('package', {}).setdefault(self.source_key, {})
+
+        destinations = self.data.get('destinations', {})
+        since = self.data.get('published-since')
+        versions = self.data.setdefault('versions', [])
+
+        if package.source.routing is None:
+            return
+        new_versions = []
+        start = since
+        for route_name in ('release', 'security', 'updates', 'proposed', 'build'):
+            routes = package.source.routing.lookup_destination(route_name)
+            if routes is None:
+                continue
+            for route in reversed(routes):
+                (archive_name, pocket_name) = route
+                archive = self.lp_archive(archive_name)
+                pubs = archive.getPublishedSources(pocket=pocket_name,distro_series=self.lp_series(package.series.codename), source_name=package.name, exact_match=True, order_by_date=True, created_since_date=start)
+                for pub in pubs:
+                    published = pub.date_published
+                    if published is not None and (since is None or published > since):
+                        since = published
+                    status = pub.status
+                    version = pub.source_package_version
+                    #print(pub, status, version)
+                    if status in ('Pending', 'Published', 'Superseded'):
+                        if version not in versions and version not in new_versions:
+                            new_versions.insert(0, version)
+                    if status == 'Published':
+                        #print(pub, status, destinations.get(route_name, 'none'), '->', version, 'in', route_name)
+                        destinations[route_name] = version
+
+        self.data['destinations'] = destinations
+        self.data['versions'] = new_versions + versions
+        self.data['published-since'] = since
+
+        self.save_data()
+
+    # YAML saves timestamps always converted to UTC and the loses
+    # this information on load dispite storing +00:00 as the data.
+    # As we know they are all converted to UTC we can simply wack
+    # over them with a UTC timezone.
+    @classmethod
+    def fix_timezones(cls, record):
+        for item, item_data in record.items():
+            if isinstance(item_data, datetime):
+                record[item] = item_data.replace(tzinfo=timezone.utc)
+            elif isinstance(item_data, dict):
+                cls.fix_timezones(item_data)
+
+    # Persistent data store.
+    _data = None
+    @classmethod
+    def load_data(cls):
+        # Load up our persistent data.
+        if cls._data is None:
+            data = {}
+            if os.path.exists('.archive-versions.yaml'):
+                with open('.archive-versions.yaml') as rfd:
+                    data = yaml.safe_load(rfd)
+                    cls.fix_timezones(data)
+            cls._data = data
+
+    @classmethod
+    def save_data(cls):
+        with open('.archive-versions.yaml.new', 'w') as wfd:
+            yaml.dump(cls._data, wfd, default_flow_style=False)
+        os.rename('.archive-versions.yaml.new', '.archive-versions.yaml')
+
+    # Caching mapping series_name to launchpad object.
+    cache_lp_series = {}
+    @classmethod
+    def lp_series(cls, series_name):
+        if series_name not in cls.cache_lp_series:
+            cls.cache_lp_series[series_name] = lp.distributions['ubuntu'].getSeries(name_or_version=series_name)
+        return cls.cache_lp_series[series_name]
+
+    # Caching mapping archive_name to launchpad object.
+    cache_lp_archive = {}
+    @classmethod
+    def lp_archive(cls, archive_name):
+        if archive_name not in cls.cache_lp_archive:
+            cls.cache_lp_archive[archive_name] = lp.archives.getByReference(reference=archive_name)
+        return cls.cache_lp_archive[archive_name]
+
+    @property
+    def source_key(self):
+        return self.package.series.codename + '--' + self.package.name
+
+    @property
+    def versions(self):
+        return self.data['versions']
+
+    @property
+    def destinations(self):
+        return self.data['destinations']
+
+    def __str__(self):
+        return 'ArchiveVersionsPackage<package:{} versions:{} destinations:{}>'.format(self.package, self.versions, self.destinations)
+
+
+class TarballMirror:
+
+    def __init__(self, directory, lp=None, ks=None):
+        if lp is None:
+            lp = Launchpad.login_with('TarballMirror', 'production', version='devel')
+        if ks is None:
+            ks = KernelSeries()
+
+        self.directory = directory
+        self.lp = lp
+        self.ks = ks
+
+    def mirror_tarballs(self):
+        for series in sorted(ks.series, key=ks.key_series_name):
+            for source in sorted(series.sources, key=lambda x: x.name):
+                if source.private or not source.supported or source.series.esm or source.series.old_releases:
+                    continue
+                if source.name != 'linux' and 'linux-hwe' not in source.name:
+                    continue
+
+                #print("INTERESTED", source)
+                main = None
+                for package in source.packages:
+                    if package.type in (None, 'main'):
+                        main = package
+                        break
+                if main is None:
+                    continue
+
+                avp = ArchiveVersionsPackage(main, lp=self.lp)
+                want = set()
+                for version in (avp.destinations.get('proposed'),
+                        avp.destinations.get('updates', avp.destinations.get('release')),
+                        avp.destinations.get('security')):
+                    if version is not None:
+                        want.add(version)
+
+                latest_version = avp.destinations.get('proposed',
+                    avp.destinations.get('updates',
+                    avp.destinations.get('release')))
+
+                for version in sorted(want):
+                    flags = []
+                    if version == latest_version:
+                        flags.append('latest')
+                        version_cmp = [int(x) for x in version.replace('-', '.').split('.')[0:3]]
+                        if version_cmp < [5, 6, 0]:
+                            flags.append('wireguard')
+                    flags_str = ','.join(flags)
+                    tag = 'Ubuntu{}-{}'.format(main.name[5:], version.replace('~', '_'))
+                    repo = main.repo.url
+                    print(series.codename, main.name, version,
+                        flags_str if len(flags_str) > 0 else '-', repo, tag,
+                        '{}_{}.tar.xz'.format(main.name, version))
+
+
+ks = KernelSeries()
+lp = Launchpad.login_with('latest-tarballs-trigger', 'production', version='devel')
+
+tm = TarballMirror(sys.argv[1], lp=lp, ks=ks)
+tm.mirror_tarballs()

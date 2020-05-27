@@ -1,0 +1,69 @@
+#!/bin/bash
+
+here=$(dirname "$0")
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+dir="."
+cd "$dir" || exit 1
+
+date '+Start: %c'
+
+# Grab any missing versions by pulling the .dsc and extracting and repacking it.
+eip="$dir/extract-in-progress"
+tmp="/tmp/latest-tarballs-$$"
+"$here/latest-tarballs-config" "$dir" >"$tmp" || exit 1
+
+count=$(wc -l <"$tmp")
+if [ "$count" -eq 0 ]; then
+	exit 1
+fi
+
+while read series package version flags repo tag tarball_file
+do
+	echo "$series:$package/$version ($flags)"
+
+	[ ! -f "$tarball_file.rebuild" -a -f "$tarball_file" ] && continue
+
+	echo "$series:$package/$version ($flags) -- building"
+
+	package_dir="${package}_${version}"
+	# Extract the source package we use for the repo and use its suffix.
+	suffix=$(echo "$repo" | sed -e 's@.*/+source/@@' -e 's@/.*@@' | sed -e 's/^linux//')
+	git --git-dir "/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/ubuntu-${series}${suffix}.git" archive --prefix "$package_dir/" --format tar "$tag" | xz -c >"$tarball_file.new"
+	mv "$tarball_file.new" "$tarball_file"
+	rm -f "$tarball_file.rebuild"
+done <"$tmp"
+
+# Pull together a kernel list.
+wireguard='wireguard-ci'
+{
+	while read series package version flags repo tag tarball_file
+	do
+		case ",$flags," in
+		*,wireguard,*)	;;
+		*)		continue ;;
+		esac
+		[ ! -f "$tarball_file" ] && continue
+
+		suffix=$(echo "$package" | sed -e 's/^linux//')
+		echo "$version-ubuntu-$series$suffix https://kernel.ubuntu.com/~kernel-ppa/latest-tarballs/$tarball_file"
+	done <"$tmp"
+} >"$wireguard.new"
+mv -f "$wireguard.new" "$wireguard"
+
+# Finally, run the list and clean out any dead ones.
+for existing in *.tar.*
+do
+	count=$(grep -c " $existing\$" "$tmp")
+	if [ "$count" -eq 0 ]; then
+		echo "PURGE $existing"
+		rm "$existing"
+	fi
+done
+
+rm -f "$tmp"
+
+date '+End: %c'
