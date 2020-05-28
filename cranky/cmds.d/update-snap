@@ -7,7 +7,11 @@ import yaml
 import subprocess
 import re
 import logging
+import apt_pkg
 
+from launchpadlib.launchpad import Launchpad
+
+from crl.handle import Handle, HandleError
 from ktl.kernel_series import KernelSeries
 from ktl.log import cerror, cwarn, cinfo
 
@@ -91,23 +95,42 @@ class UpdateSnap():
             cerror("ERROR: {} snap not found on {}:{}".format(self.name, self.series, self.source))
             sys.exit(1)
 
-        # Record the series in which we should look for the version.
-        self.series_version = ks_source.series.codename
+        self.ks_source = ks_source
+
+        logging.disable(logging.INFO)
+        self.lp = Launchpad.login_with('cranky', 'production', version='devel')
+        logging.disable(logging.NOTSET)
 
     def get_published_ver(self, pkg_name, series, pocket):
         '''
-        Use 'rmadison' to get the package version published for the given
+        Use launchpad api to get the package version published for the given
         series/pocket.
         '''
-        suite = series
-        if pocket != 'release':
-            suite += '-' + pocket
-        ret = subprocess.check_output(['rmadison', '-a', 'source', '-s', suite, pkg_name])
-        if not ret:
-            cerror("ERROR: No version available in {}".format(suite))
+        lp_series = self.lp.distributions["ubuntu"].getSeries(name_or_version=series)
+
+        # Search through all routes looking for newest package version
+        version = None
+        routing = self.ks_source.routing[pocket]
+        for (ppa, ppa_pocket) in routing:
+            archive = self.lp.archives.getByReference(reference=ppa)
+            if not archive:
+                continue
+
+            sources = archive.getPublishedSources(source_name=pkg_name, distro_series=lp_series,
+                                                  pocket=ppa_pocket, exact_match=True,
+                                                  order_by_date=True, status="Published")
+            if not sources:
+                continue
+
+            this_ver = sources[0].source_package_version
+            if version is None or apt_pkg.version_compare(this_ver, version) > 0:
+                version = this_ver
+
+        if version is None:
+            cerror("ERROR: No version avaialble for package {} in series {}".format(pkg_name, series))
             sys.exit(1)
 
-        return ret.decode().strip().split('|')[1].strip()
+        return version
 
     def update_snap(self, version, url):
         '''
@@ -159,7 +182,7 @@ class UpdateSnap():
         '''
         main method.
         '''
-        proposed_ver = self.get_published_ver(self.source, self.series_version, self.pocket)
+        proposed_ver = self.get_published_ver(self.source, self.ks_source.series.codename, self.pocket)
         if (self.scy['version'] == proposed_ver and
                 self.scy['parts']['kernel']['source'] == self.snap.repo.url):
             cerror("ERROR: No new version available in -{}".format(self.pocket))
@@ -193,6 +216,7 @@ class UpdateSnap():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(message)s")
+    apt_pkg.init_system()
 
     desc = """
 Update the kernel snap snapcrat.yaml file with the source package version
