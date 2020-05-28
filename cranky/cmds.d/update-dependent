@@ -84,10 +84,10 @@ if [ "${main_distro}" != "${dep_distro}" ] ; then
 	exit 1
 fi
 
-# Sanity check: The main package ABI version must be higher
+# Sanity check: The main package ABI version must not be lower
 upload_bump=0
-if dpkg --compare-versions "${main_abi}" le "${dep_abi_dash}" ; then
-	echo "Main package ABI version is not higher: ${main_abi} (<= ${dep_abi})" >&2
+if dpkg --compare-versions "${main_abi}" lt "${dep_abi_dash}" ; then
+	echo "Main package ABI version is lower: ${main_abi} (< ${dep_abi})" >&2
 	if [ -z "$ignore_abi_check" ]; then
 		echo "Use --ignore-abi-check to proceed anyway."
 		exit 1
