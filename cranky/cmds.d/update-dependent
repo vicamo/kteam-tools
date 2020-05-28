@@ -66,13 +66,13 @@ main_changelog="${main_path}/${DEBIAN}"/changelog
 main_distro=$(dpkg-parsechangelog -l "${main_changelog}" -S Distribution)
 main_version=$(dpkg-parsechangelog -l "${main_changelog}" -S Version)
 main_abi=${main_version%~*}
-main_abi=${main_abi%.*}
+main_abi=$(echo "$main_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*-[0-9]*\)\..*/\1/p')
 
 # Get the dependent package details
 dep_distro=$(dpkg-parsechangelog -S Distribution)
 dep_version=$(dpkg-parsechangelog -S Version)
 dep_abi=${dep_version%~*}
-dep_abi=${dep_abi%.*}
+dep_abi=$(echo "$dep_abi" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*[-\.][0-9]*\)\..*/\1/p')
 
 # Replace last '.' with '-' in -meta package ABI version
 # shellcheck disable=SC2001
