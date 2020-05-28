@@ -69,10 +69,12 @@ if [ -z "${LOCAL_BRANCH}" ]; then
 	LOCAL_BRANCH=FETCH_HEAD
 fi
 
-if [ "$DEBIAN" = "debian.master" ]; then
-	echo "This is a master kernel, no rebase should be needed, please report if otherwise"
+case "$DEBIAN" in
+debian.master|debian.uc20-efi)
+	echo "This is not a rebase kernel, no rebase should be needed, please report if otherwise"
 	exit 0
-fi
+	;;
+esac
 
 if [ "$DEBIAN_MASTER" = "" ]; then
 	echo "DEBIAN_MASTER should be defined either in ${DEBIAN}/etc/update.conf or the environment"
