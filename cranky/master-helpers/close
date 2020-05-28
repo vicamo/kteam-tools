@@ -109,11 +109,13 @@ if [ "$series" != 'UNRELEASED' ]; then
 fi
 
 # Update configs
-chroot_run fakeroot debian/rules clean updateconfigs
-changes=$(git diff HEAD -- "./$DEBIAN/config/")
-if [ "$commit_configs" -eq 0 ] && [ -n "$changes" ]; then
-	echo "Config has changed! please, review it and commit."
-	exit 1
+if [ -d "$DEBIAN/config" ]; then
+	chroot_run fakeroot debian/rules clean updateconfigs
+	changes=$(git diff HEAD -- "./$DEBIAN/config/")
+	if [ "$commit_configs" -eq 0 ] && [ -n "$changes" ]; then
+		echo "Config has changed! please, review it and commit."
+		exit 1
+	fi
 fi
 
 # Derivatives and backports have a master kernel directory (DEBIAN_MASTER).
