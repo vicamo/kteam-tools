@@ -275,7 +275,7 @@ if [ -d "$incoming/test-build" ]; then
 		do
 			[ ! -d "$sp" ] && continue
 
-			"$here/cod-changeset-summary" "$sp" "$sp"
+			"$here/cod-result-index" "$sp" "$sp"
 			mv -f "$sp/index.html.new" "$sp/index.html"
 			mv -f "$sp/latest.json.new" "$sp/latest.json"
 		done
