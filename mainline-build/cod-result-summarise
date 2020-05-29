@@ -90,10 +90,12 @@ class Summary:
         #print(self.summary, self.testsets)
         for testset in self.testsets:
             testset_directory = os.path.join(self.directory, testset)
+            testset_path = os.path.relpath(testset_directory, self.directory)
             if os.path.exists(testset_directory):
                 for test_directory in ['.'] + os.listdir(testset_directory):
                     test_directory = os.path.normpath(os.path.join(
                         testset_directory, test_directory))
+                    test_path = os.path.relpath(os.path.abspath(test_directory), os.path.abspath(self.directory))
                     if not os.path.exists(os.path.join(test_directory, 'summary.yaml')):
                         continue
                     test_summary = self.load_summary(test_directory)
@@ -109,14 +111,14 @@ class Summary:
                         status = 'failed'
                         failures = True
                     name = testset + '/' + test_name
-                    test_summary['path'] = test_directory
+                    test_summary['path'] = test_path
                     test_summary['name'] = name
                     test_summary['status'] = status
                     test_summary['status-rc'] = test_rc
                     self.summary.setdefault('tests', {})[name] = test_summary
             else:
                 self.summary.setdefault('tests', {})[testset] = {
-                    'path': os.path.normpath(testset_directory), 'status': 'missing'}
+                    'path': testset_path, 'status': 'missing'}
                 missing = True
 
             if failures:
@@ -153,7 +155,8 @@ class Summary:
 
             for test, test_data in sorted(self.summary['tests'].items()):
                 test_path = test_data['path']
-                log = os.path.relpath(os.path.join(test_path, 'log'), self.directory)
+                log = os.path.join(test_path, 'log')
+                test_path = os.path.join(self.directory, test_path)
                 print('<br>', file=hfd)
                 print('Test {test} {status_text} (rc={status_rc}, on={build_arch}, log=<a href="{log}">{log}</a>)<br>'.format(
                     status_rc=test_data.get('status-rc', 256),
