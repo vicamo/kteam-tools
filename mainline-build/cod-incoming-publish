@@ -281,7 +281,7 @@ if [ -d "$incoming/test-build" ]; then
 		done
 	)
 	# Rebuild the dashboard.
-	"$here/cod-changeset-dashboard" "$out/test-build"
+	"$here/cod-result-dashboard" "$out/test-build"
 	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
 fi
 
