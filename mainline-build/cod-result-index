@@ -9,70 +9,79 @@ from urllib import quote
 import yaml
 
 directory = sys.argv[1]
-prefix = sys.argv[2]
+directory_title = sys.argv[2]
 
-html = os.path.join(prefix, "index.html.new")
-latest = os.path.join(prefix, "latest.json.new")
+html = os.path.join(directory, "index.html.new")
+latest = os.path.join(directory, "latest.json.new")
+
+section = None
+for relative in (os.path.join(directory, os.path.pardir),
+        os.path.join(directory, os.path.pardir, os.path.pardir),
+        os.path.join(directory, os.path.pardir, os.path.pardir, os.path.pardir)):
+
+    section_path = os.path.join(directory, relative, 'section.yaml')
+    if os.path.exists(section_path):
+        with open(section_path) as sfd:
+            section = yaml.safe_load(sfd)
+            break
 
 meta = {}
 results = []
 for (dirname, dirs, files) in os.walk(directory):
     if 'aggregate.yaml' in files:
         with open(os.path.join(dirname, 'aggregate.yaml')) as afd:
-            raw = yaml.safe_load(afd)
+            entry = yaml.safe_load(afd)
+            entry['directory'] = os.path.basename(dirname)
 
-        entry = {
-            'directory': os.path.basename(dirname),
-            'host': raw.get('build-host', '-'),
-            'series': raw.get('series', '-'),
-            'package': raw.get('package'),
-            'hash': raw.get('commit-hash'),
-            'subject': raw.get('commit-title'),
-            'id': raw.get('commit-label'),
-            'status': raw.get('overall'),
-            'committed': str(raw.get('commit-time')),
-        }
-        results.append((entry['committed'], entry))
-        continue
+        results.append((entry['commit-time'], entry))
 
-    # Only interested in the leaves with SUMMARY (legacy form).
-    if len(dirs) != 0:
-        continue
-    if 'SUMMARY' not in files:
-        continue
+    elif 'SUMMARY' in files:
+        with open(os.path.join(dirname, 'SUMMARY')) as summary_fd:
+            entry = {
+                'directory': os.path.basename(dirname),
+                'build-host': '-',
+            }
+            overall = None
+            for line in summary_fd:
+                bits = line.strip().split(None, 1) + [ '' ]
+                (key, value) = (bits[0][:-1].lower(), bits[1])
+                if key == 'status':
+                    sbits = value.split(None, 1) + [ '256' ]
+                    (arch, value) = sbits[0:2]
+                    key += '/' + arch
+                    if not overall:
+                        overall = value
+                    elif value != '0':
+                        overall = value
+                entry[key] = bits[1]
+            entry['overall'] = overall
 
-    with open(os.path.join(dirname, 'SUMMARY')) as summary_fd:
-        entry = {
-            'directory': os.path.basename(dirname),
-            'host': '-',
-        }
-        overall = None
-        for line in summary_fd:
-            bits = line.strip().split(None, 1) + [ '' ]
-            (key, value) = (bits[0][:-1].lower(), bits[1])
-            if key == 'status':
-                sbits = value.split(None, 1) + [ '256' ]
-                (arch, value) = sbits[0:2]
-                key += '/' + arch
-                if not overall:
-                    overall = value
-                elif value != '0':
-                    overall = value
-            entry[key] = bits[1]
-        entry['status'] = overall
+            for fix_from, fix_to in [
+                    ('host', 'build-host'),
+                    ('hash', 'commit-hash'),
+                    ('subject', 'commit-title'),
+                    ('id', 'commit-label'),
+                    ]:
+                if fix_from not in entry:
+                    continue
+                entry[fix_to] = entry[fix_from]
+                del entry[fix_from]
 
-        if 'committed' in entry:
-            results.append((entry['committed'], entry))
+            if 'committed' in entry:
+                entry['commit-time'] = float(entry['committed'])
+                results.append((entry['commit-time'], entry))
 
 results.sort(reverse=True)
 
+meta = section
 meta['series'] = results[0][1]['series']
 meta['package'] = results[0][1]['package']
+meta['directory_title'] = directory_title
 
 with open(html, "w") as html_fd:
     print('''<html>
 <head>
-<title>Build Tests for {series}/{package}</title>
+<title>{title} for {directory_title}</title>
 <style>
 .GOOD {{ background-color: green; }}
 .WARN {{ background-color: yellow; }}
@@ -102,15 +111,16 @@ table.matrix td {{
 </style>
 </head>
 <body>
-<h1>Build Tests for {series}/{package}</h1>
+<h1>{title} for {directory_title}</h1>
 <table class="matrix">
-<tr><th>Changeset<th>Builder<th>Status'''.format(**meta), file=html_fd)
+<tr><th>{title}<th>Builder<th>Status'''.format(**meta), file=html_fd)
     for _, entry in results:
         row_class = 'row'
-        if entry['id'].startswith('Ubuntu-'):
+        commit_id = entry.get('commit-label', entry.get('commit'))
+        if commit_id.startswith('Ubuntu-'):
             row_class = 'UBUNTU'
 
-        status = entry['status']
+        status = entry['overall']
         if status == 'in-progress':
             status_string = 'IN-PROGRESS'
             status_class = 'WARN'
@@ -126,16 +136,18 @@ table.matrix td {{
         else:
             status_string = 'FAIL rc=' + str(status)
             status_class = 'FAIL'
-        commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={hash}".format(**entry)
-        status_url = "http://kernel.ubuntu.com/~kernel-ppa/test-build/"
+        commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={commit-hash}".format(**entry)
+        status_url = "http://kernel.ubuntu.com/~kernel-ppa/{path}/".format(**section)
         status_url += quote("{series}/{package}/{directory}".format(**entry))
-        print('<tr class="{row_class}"><td><a href="{commit_url}">{id}</a> -- {subject}<td>{host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
+        print('<tr class="{row_class}"><td><a href="{commit_url}">{commit_id}</a> -- {commit_title}<td>{build_host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
             commit_url=commit_url,
             status_string=status_string,
             status_class=status_class,
             status_url=status_url,
             row_class=row_class,
-            **entry
+            commit_id=commit_id,
+            commit_title=entry.get('commit-title'),
+            build_host=entry.get('build-host')
             ), file=html_fd)
     print('''</table>
 <body>
