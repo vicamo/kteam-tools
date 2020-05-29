@@ -240,6 +240,23 @@ publish_tip()
 
 if [ -d "$incoming/ubuntu-stable" ]; then
 	publish_tip "ubuntu-stable"
+
+	# Rebuild the summaries.
+	(
+		cd "$out/ubuntu-stable" || exit 1
+
+		for sp in *
+		do
+			[ ! -d "$sp" ] && continue
+
+			"$here/cod-result-index" "$sp" "$sp"
+			mv -f "$sp/index.html.new" "$sp/index.html"
+			mv -f "$sp/latest.json.new" "$sp/latest.json"
+		done
+	)
+	# Rebuild the dashboard.
+	"$here/cod-result-dashboard" "$out/ubuntu-stable"
+	mv -f "$out/ubuntu-stable/index.html.new" "$out/ubuntu-stable/index.html"
 fi
 
 if [ -d "$incoming/test-build" ]; then
