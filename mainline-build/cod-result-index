@@ -15,10 +15,9 @@ html = os.path.join(directory, "index.html.new")
 latest = os.path.join(directory, "latest.json.new")
 
 section = None
-for relative in (os.path.join(directory, os.path.pardir),
-        os.path.join(directory, os.path.pardir, os.path.pardir),
-        os.path.join(directory, os.path.pardir, os.path.pardir, os.path.pardir)):
-
+for relative in (os.path.curdir, os.path.pardir,
+        os.path.join(os.path.pardir, os.path.pardir),
+        os.path.join(os.path.pardir, os.path.pardir, os.path.pardir)):
     section_path = os.path.join(directory, relative, 'section.yaml')
     if os.path.exists(section_path):
         with open(section_path) as sfd:
@@ -75,7 +74,7 @@ results.sort(reverse=True)
 
 meta = section
 meta['series'] = results[0][1]['series']
-meta['package'] = results[0][1]['package']
+meta['package'] = results[0][1].get('package')
 meta['directory_title'] = directory_title
 
 with open(html, "w") as html_fd:
@@ -136,9 +135,8 @@ table.matrix td {{
         else:
             status_string = 'FAIL rc=' + str(status)
             status_class = 'FAIL'
-        commit_url = "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/{package}/+git/{series}/commit/?id={commit-hash}".format(**entry)
-        status_url = "http://kernel.ubuntu.com/~kernel-ppa/{path}/".format(**section)
-        status_url += quote("{series}/{package}/{directory}".format(**entry))
+        commit_url = section.get('repo', '').format(**entry)
+        status_url = quote("{directory}".format(**entry))
         print('<tr class="{row_class}"><td><a href="{commit_url}">{commit_id}</a> -- {commit_title}<td>{build_host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
             commit_url=commit_url,
             status_string=status_string,
