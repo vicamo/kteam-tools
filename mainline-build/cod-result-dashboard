@@ -87,6 +87,10 @@ table.matrix td {{
         elif status == 'failed':
             status_string = 'FAIL'
             status_class = 'FAIL'
+            for test, test_data in entry.get('tests', {}).items():
+                if test_data.get('status-rc', 0) != 0:
+                    status_string = "TEST {} rc={}".format(test, test_data['status-rc'])
+                    break
         elif status == '0':
             status_string = 'GOOD'
             status_class = 'GOOD'
