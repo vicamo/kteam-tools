@@ -52,7 +52,7 @@ git checkout -b "tip-$id" "$commit"
 # Find the commit time.
 sha=$( git log -1 --pretty=format:%H "$commit" )
 cts=$( git log -1 --pretty=format:%ct "$commit" )
-title=$( git log -1 --pretty=format:%s "$commit" )
+title=$( git log -1 --pretty=format:%s "$commit" | sed -e "s/'/''/g" )
 
 # Clean the tree so we can tell what architectures need building.
 git clean -x -f -d
