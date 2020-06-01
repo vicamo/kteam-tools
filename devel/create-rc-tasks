@@ -133,7 +133,7 @@ class RCCardsCreator:
         if self.args.dry_run:
             print("This was a dry-run - cards were NOT created")
         else:
-            print("Board '{}' created cards".format(self.name))
+            print("Board '{}' created cards".format(board.name))
 
 
 if __name__ == '__main__':
