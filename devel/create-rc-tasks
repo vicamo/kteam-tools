@@ -86,12 +86,11 @@ class RCCardsCreator:
         """
 
         self.args = args
-        match = re.fullmatch('v?([0-9]+\.[0-9]+)(-rc[0-9]+)?', args.version)
+        match = re.fullmatch('v?([0-9]+\.[0-9]+(?:-rc[0-9]+)?)', args.version)
         if match is None:
             print('Error: Invalid version {}'.format(args.version))
             exit(1)
         self.version = match.group(1)
-        self.rc = match.group(2) if match.group(2) is not None else ''
         self.config_file = args.config
         self.config = {}
         self.config_load()
@@ -127,8 +126,8 @@ class RCCardsCreator:
             if 'list' in card:
                 card_list = card['list']
 
-            card_name = card['name'].replace('%v', self.rc)
-            card_desc = card_desc.replace('%v', self.rc)
+            card_name = card['name'].replace('%v', self.version)
+            card_desc = card_desc.replace('%v', self.version)
             board.add_card(card_name, card_desc, card_list)
 
         if self.args.dry_run:

@@ -4,7 +4,7 @@
         default_list: 'TODO'
     cards:
         - name: '%v: rebase'
-          description: 'Rebase unstable to -%v'
+          description: 'Rebase unstable to %v'
           list: 'TODO'
         - name: '%v: config update and review'
           description: 'Update and review configs. Update annotations.'
