@@ -351,7 +351,7 @@ fi
 
 # Remove packages which are problematic.
 RMPKG=snapcraft
-for i in ${ADDPKG}
+for i in ${RMPKG}
 do
 	installed=$( ${SCHROOTCMD} -- dpkg -l $i | grep '^ii' | wc -l )
 	if [ "$installed" -ne 0 ]; then
