@@ -228,6 +228,16 @@ class AutoPackageTest(object):
             #print(self.hint_status, file=sys.stderr)
             #print(self.hint_test, file=sys.stderr)
 
+            # Add packages from seed hints to package list
+            for key in self.hint_status:
+                (verpkg, test_pkg, test_arch) = key
+                (version, kernel_pkg) = verpkg.split()
+                if version != '0' or kernel_pkg != self.source:
+                    continue
+                pkg = self.packages.setdefault(test_pkg, [])
+                if not test_arch in pkg:
+                    pkg.append(test_arch)
+
     def log_error(self, msg):
         if self.verbose:
             print('E: [%s] - %s' % (time.asctime(), msg))
