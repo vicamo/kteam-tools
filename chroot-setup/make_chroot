@@ -26,9 +26,8 @@ fi
 
 if ! check_release_arch ${RELEASE} ${ARCH}
 then
-        echo usage: $0 RELEASE ARCH [MIRROR]
-        echo example: $0 maverick amd64 http://archive.ubuntu.com/ubuntu
-        exit 1
+	echo ${RELEASE}/${ARCH} is incompatible with host.
+	exit 1
 fi
 RELEASE_ARCH=${RELEASE}-${ARCH}
 

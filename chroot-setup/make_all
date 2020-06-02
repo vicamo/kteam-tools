@@ -7,7 +7,13 @@ CDIR="`dirname $0`"
 MIRROR=$1
 PORTS_MIRROR=$2
 
-for i in ${releases[@]}
+for RELEASE in ${releases[@]}
 do
-	${CDIR}/make_release $i ${MIRROR} ${PORTS_MIRROR}
+	if ! not_expired_release ${RELEASE}
+	then
+		echo ${RELEASE} is expired.
+		continue
+	fi
+
+	${CDIR}/make_release ${RELEASE} ${MIRROR} ${PORTS_MIRROR}
 done

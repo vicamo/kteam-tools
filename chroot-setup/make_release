@@ -13,20 +13,32 @@ PORTS_MIRROR=$3
 
 [ -z "${RELEASE}" ] && exit 1
 
-let index=0
+if ! not_expired_release ${RELEASE}
+then
+	echo ${RELEASE} is expired.
+	exit 1
+fi
 
+let index=0
 for i in "${releases[@]}"
 do
 	if [ "$i" = "$RELEASE" ]
 	then
-		for j in ${arches[${index}]}
+		for ARCH in ${build_arches[${index}]}
 		do
+			if ! check_release_arch ${RELEASE} ${ARCH}
+			then
+				echo ${RELEASE}/${ARCH} is incompatible with host.
+				continue
+			fi
+
 			_MIRROR=${MIRROR}
-			if ports_arch $j
+			if ports_arch ${ARCH}
 			then
 				_MIRROR=${PORTS_MIRROR}
 			fi
-			${CDIR}/make_chroot ${RELEASE} $j ${_MIRROR}
+
+			${CDIR}/make_chroot ${RELEASE} ${ARCH} ${_MIRROR}
 		done
 	fi
 	let index=${index}+1
