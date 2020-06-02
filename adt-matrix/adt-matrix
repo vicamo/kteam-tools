@@ -74,7 +74,6 @@ class AutoPackageTest(object):
         self.series = series
         self.source = source
         self.parent = parent
-        self.packages = packages if packages else []
         self.packages_latest = latest
         self.stamp = stamp
         self.live = live
@@ -82,6 +81,14 @@ class AutoPackageTest(object):
         self.tag = tag
         self.archive = archive
         self.migration = migration
+
+        if packages is None:
+            packages = []
+
+        self.packages = {}
+        for pkgarchs in packages:
+            (pkg, archs) = pkgarchs
+            self.packages[pkg] = archs
 
         self.seen = {}
         self.results = {}
@@ -536,8 +543,7 @@ class AutoPackageTest(object):
                     self.first_good[key] = ident
 
     def update(self):
-        for pkgarchs in self.packages:
-            (pkg, archs) = pkgarchs
+        for (pkg, archs) in self.packages.items():
             if self.archs:
                 archs = sorted(list(set(archs) & set(self.archs)))
 
@@ -601,8 +607,7 @@ class AutoPackageTest(object):
         result = {}
         verlist = self.version_list()
         miss = {}
-        for pkgarchs in self.packages:
-            (pkg, archs) = pkgarchs
+        for (pkg, archs) in self.packages.items():
             if self.archs:
                 archs = sorted(list(set(archs) & set(self.archs)))
             some_ever = {}
@@ -745,8 +750,7 @@ class AutoPackageTest(object):
         ver = None
         if len(verlist) > 0:
             ver = verlist[-1]
-            for pkgarchs in self.packages:
-                (pkg, archs) = pkgarchs
+            for (pkg, archs) in self.packages.items():
                 if self.archs:
                     archs = sorted(list(set(archs) & set(self.archs)))
                 for arch in archs:
@@ -835,8 +839,8 @@ table.matrix, table.matrix th, table.matrix td {{
         page += '</tr>\n'
 
         # Data ...
-        for pkgarchs in self.packages:
-            (pkg, archs) = pkgarchs
+        for pkg in sorted(self.packages):
+            archs = self.packages[pkg]
             if self.archs:
                 archs = sorted(list(set(archs) & set(self.archs)))
 
