@@ -3,19 +3,19 @@
 # Add kernel developer accounts according to the information in
 # kernel_devs.conf.
 #
-# useage: [-s] PASSWD
-# -s adds the user to the admin group (for sudo)
+# Usage: [--admins-only] PASSWD
+#  --admins-only	Only create admin capable accounts.
 #
 
-if [ "$1" = "-s" ]
-then
-	SUDO=yes
+admins_only=
+if [ "$1" = "--admins-only" ]; then
+	admins_only=y
 	shift
 fi
 
 if [ "$1" = "" ]
 then
-	echo useage: $0 [-s] PASSWD
+	echo Usage: $0 [-s] PASSWD
 	exit 1
 fi
 PASSWD="$1"
@@ -29,20 +29,25 @@ HOME=/home
 #
 if ! grep sbuild /etc/group >/dev/null
 then
-	addgroup sbuild
+	addgroup --system sbuild
 fi
 
-let index=0
+let index=-1
 for i in ${kdev[@]}
 do
-	#echo "${kdev_obsolete[${index}]:+# }kdev_new ${kdev[${index}]} '${kdev_name[${index}]}' ${kdev_key[${index}]}"
+	let index=${index}+1
+	#echo "${kdev_obsolete[${index}]:+# }kdev_new ${kdev[${index}]} '${kdev_name[${index}]}' ${kdev_key[${index}]} # ${kdev_passwd[${index}]}"
 	#let index=${index}+1
-	#continue
 
-	if [ ! -z "${kdev_obsolete[${index}]}" ]
+	if [ -z "${kdev_passwd[${index}]}" ]; then
+		if [ -n "$admins_only" ]; then
+			continue
+		fi
+	fi
+
+	if [ -n "${kdev_obsolete[${index}]}" ]
 	then
 		echo "${kdev_name[${index}]} is obsolete"
-		let index=${index}+1
 		continue
 	fi
 
@@ -60,18 +65,15 @@ do
 			mkdir -p ${HOME}/${i}
 			chown ${i}.warthogs ${HOME}/${i}
 		fi
-		#
-		# Allow sudo
-		#
+		# Allow sudo -- give this user a real password.
 		if [ ! -z "${kdev_passwd[${index}]}" ]; then
 			(echo ${PASSWD};echo ${PASSWD}) | passwd -q $i
 		fi
 	fi
-	if [ ! -z "$SUDO" ]
-	then
-		adduser $i admin
+	# Allow sudo -- add this user to the sudo group.
+	if [ ! -z "${kdev_passwd[${index}]}" ]; then
+		adduser $i sudo
 	fi
 	adduser $i sbuild
-	let index=${index}+1
 done
 
