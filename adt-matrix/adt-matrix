@@ -1114,7 +1114,7 @@ table.matrix td {{
             if package == pkg:
                 seen = True
         if not seen:
-            seed.append((package, ['amd64', 'i386', 'ppc64el', 'armhf']))
+            seed.append([package, ['amd64', 'i386', 'ppc64el', 'armhf']])
 
         if key in package_cache['seeds-latest']:
             latest = package_cache['seeds-latest'][key]
