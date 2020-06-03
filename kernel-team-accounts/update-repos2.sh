@@ -99,7 +99,7 @@ do
 	esac
 
 	# If this is +source/linux then we should reference linux.git.
-	case "$url" in
+	case "$lp $k_u_c" in
 	*/+source/linux/*)	ref="linux-linus.git" ;;
 	*)			ref="-" ;;
 	esac
