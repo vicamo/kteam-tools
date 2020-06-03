@@ -28,12 +28,11 @@ cmd_args \
 		--prefix-arg ./mainline-worker-kmsgq-runner \
 		--admin mainline-cleaner \
 		--admin mainline-flush \
-		--admin cod-static-analysis-collect \
-		--command any:mainline-test
-	"$@"
+		--admin cod-static-analysis-collect
 case "$build_arch" in
 amd64)
 	cmd_args \
+		--command any:mainline-test \
 		--command any:mainline-build \
 		--command any:cod-ubuntu-config \
 		--command any:cod-changeset-build \
@@ -51,7 +50,7 @@ s390x)
 		--command s390x:cod-tip-build.s390x
 	;;
 esac
-cmd_args $(hostname) mainline-todo
+cmd_args $(hostname) mainline-todo "$@"
 
 #for arg in "${args[@]}"
 #do
