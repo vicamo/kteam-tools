@@ -58,7 +58,7 @@ title=$( git log -1 --pretty=format:%s "$commit" | sed -e "s/'/''/g" )
 
 # Clean the tree so we can tell what architectures need building.
 git clean -x -f -d
-do_chroot "$build_release-amd64" \
+do_chroot "$build_release-$build_arch" \
 	fakeroot debian/rules clean
 archs=$(
 	grep Architecture debian/control |
