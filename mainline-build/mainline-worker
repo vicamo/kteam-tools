@@ -28,16 +28,16 @@ cmd_args \
 		--prefix-arg ./mainline-worker-kmsgq-runner \
 		--admin mainline-cleaner \
 		--admin mainline-flush \
-		--admin cod-static-analysis-collect
+		--admin cod-static-analysis-collect \
+		--command any:mainline-test \
+		--command any:cod-changeset-build \
+		--command any:cod-ubuntu-stable-core \
+		--command any:cod-changeset-core
 case "$build_arch" in
 amd64)
 	cmd_args \
-		--command any:mainline-test \
 		--command legacy:mainline-build \
 		--command legacy:cod-ubuntu-config \
-		--command any:cod-changeset-build \
-		--command any:cod-ubuntu-stable-core \
-		--command any:cod-changeset-core \
 		--command x86:cod-tip-build.amd64 \
 		--command x86:cod-tip-build.i386 \
 		--command x86:cod-tip-build.arm64 \
