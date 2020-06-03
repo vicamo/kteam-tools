@@ -33,8 +33,8 @@ case "$build_arch" in
 amd64)
 	cmd_args \
 		--command any:mainline-test \
-		--command any:mainline-build \
-		--command any:cod-ubuntu-config \
+		--command legacy:mainline-build \
+		--command legacy:cod-ubuntu-config \
 		--command any:cod-changeset-build \
 		--command any:cod-ubuntu-stable-core \
 		--command any:cod-changeset-core \
