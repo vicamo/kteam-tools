@@ -62,15 +62,16 @@ do
 
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
-			git clone $bare --reference "$ref" "$url" "$repo"
+			# Note: we intentionally clone the local ref directly.
+			#git clone $bare --reference "$ref" "$url" "$repo"
+			git clone $bare --reference "$ref" "$ref" "$repo"
 		else
 			git clone $bare "$url" "$repo"
 		fi
-	else
-		(cd "$repo" && 
-			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-			[ -d .git ] && git checkout -qf)
 	fi
+	(cd "$repo" && 
+		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+		[ -d .git ] && git checkout -qf)
 done <<EOL
 linux-linus.git			git://kernel.ubuntu.com/virgin/linux.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
@@ -112,15 +113,16 @@ do
 	echo "Syncing info/repositories.txt $repo ($url) ..."
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
-			git clone $bare --reference "$ref" "$url" "$repo"
+			# Note: we intentionally clone the local ref directly.
+			#git clone $bare --reference "$ref" "$url" "$repo"
+			git clone $bare --reference "$ref" "$ref" "$repo"
 		else
 			git clone $bare "$url" "$repo"
 		fi
-	else
-		(cd "$repo" && 
-			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-			[ -d .git ] && git checkout -qf)
 	fi
+	(cd "$repo" && 
+		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+		[ -d .git ] && git checkout -qf)
 done <"$here/../info/repositories.txt" 
 
 # disco linux-signed-oem ubuntu-oem-disco-signed.git git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/disco
@@ -143,19 +145,16 @@ do
 
 	if [ ! -d "$repo" ]; then
 		if [ "$ref" != "-" ]; then
+			# Note: we intentionally clone the local ref directly.
 			#git clone $bare --reference "$ref" "$url" "$repo"
 			git clone $bare --reference "$ref" "$ref" "$repo"
-			(cd "$repo" && 
-				git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-				[ -d .git ] && git checkout -qf)
 		else
 			git clone $bare "$url" "$repo"
 		fi
-	else
-		(cd "$repo" && 
-			git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
-			[ -d .git ] && git checkout -qf)
 	fi
+	(cd "$repo" && 
+		git fetch -u "$url" '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' &&
+		[ -d .git ] && git checkout -qf)
 done
 
 rm -f $LOCK
