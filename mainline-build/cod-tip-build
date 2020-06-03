@@ -170,6 +170,10 @@ EOL
 }
 
 build_arch=$(dpkg --print-architecture)
+# We can build i386 and amd64 nativly on amd64 hosts.
+case "$build_arch/$arch" in
+amd64/i386)	build_arch='i386' ;;
+esac
 
 build "$build_release" "$build_arch" "$arch" "$result"
 build_selftests "$build_release" "$build_arch" "$arch" "$result/self-tests"
