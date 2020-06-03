@@ -21,10 +21,11 @@ Step by step instructions for setting up a new builder system.
   14d. (add the public above to wani /etc/user-authorized-keys/kernel-ppa)
   14e. ssh kernel.ubuntu.com and accept the host key
   15. exit # return to the account with sudo (ubuntu)
-  16. (cd /usr3/ubuntu/kteam-tools/kernel-team-accounts; sudo ./install_kernel_devs.sh ubuntu)
+  16a. (cd /usr3/ubuntu/kteam-tools/chroot-setup && sudo ./prep_system)
+  16b. (cd /usr3/ubuntu/kteam-tools/kernel-team-accounts && sudo ./install_kernel_devs.sh ubuntu)
   17. echo "apw,bradf,smb,sforshee    ALL=NOPASSWD: /bin/su - kernel" | sudo tee /etc/sudoers.d/99-kernel-users
   18. lock down kernel account; sudo passwd -l kernel
-  19. sudo adduser apw sudo; sudo adduser bradf sudo; sudo adduser smb sudo; sudo adduser sforshee sudo
+  19. --
   20. sudo adduser kernel sbuild
 
   NN. add crontab for root

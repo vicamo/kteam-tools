@@ -8,8 +8,8 @@ esac
 
 cd "$here" || exit 1
 
-#build_arch=$(dpkg --print-architecture)
-build_arch="$IAM"
+build_arch=$(dpkg --print-architecture)
+#build_arch="$IAM"
 
 echo "Starting `date` ($build_arch)"
 
