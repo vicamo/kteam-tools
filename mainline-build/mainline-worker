@@ -8,23 +8,54 @@ esac
 
 cd "$here" || exit 1
 
-echo "Starting `date`"
-exec ./mainline-worker-kmsgq \
-	--prefix-arg ./mainline-worker-kmsgq-runner \
-	--admin mainline-cleaner \
-	--admin mainline-flush \
-	--admin cod-static-analysis-collect \
-	--command any:mainline-test \
-	--command any:mainline-build \
-	--command any:cod-ubuntu-config \
-	--command any:cod-changeset-build \
-	--command any:cod-ubuntu-stable-core \
-	--command any:cod-changeset-core \
-	--command x86:cod-tip-build.amd64 \
-	--command x86:cod-tip-build.i386 \
-	--command x86:cod-tip-build.arm64 \
-	--command x86:cod-tip-build.armhf \
-	--command x86:cod-tip-build.ppc64el \
-	--command x86:cod-tip-build.s390x \
-	`hostname` mainline-todo \
+#build_arch=$(dpkg --print-architecture)
+build_arch="$IAM"
+
+echo "Starting `date` ($build_arch)"
+
+declare -a args
+cmd_args()
+{
+	local arg
+	for arg in "$@"
+	do
+		args[${#args[*]}]="$arg"
+	done
+}
+
+cmd_args \
+	./mainline-worker-kmsgq \
+		--prefix-arg ./mainline-worker-kmsgq-runner \
+		--admin mainline-cleaner \
+		--admin mainline-flush \
+		--admin cod-static-analysis-collect \
+		--command any:mainline-test
 	"$@"
+case "$build_arch" in
+amd64)
+	cmd_args \
+		--command any:mainline-build \
+		--command any:cod-ubuntu-config \
+		--command any:cod-changeset-build \
+		--command any:cod-ubuntu-stable-core \
+		--command any:cod-changeset-core \
+		--command x86:cod-tip-build.amd64 \
+		--command x86:cod-tip-build.i386 \
+		--command x86:cod-tip-build.arm64 \
+		--command x86:cod-tip-build.armhf \
+		--command x86:cod-tip-build.ppc64el \
+		--command x86:cod-tip-build.s390x
+	;;
+s390x)
+	cmd_args \
+		--command s390x:cod-tip-build.s390x-test
+	;;
+esac
+cmd_args $(hostname) mainline-todo
+
+#for arg in "${args[@]}"
+#do
+#	echo "A> $arg"
+#done
+
+exec "${args[@]}"
