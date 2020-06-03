@@ -217,6 +217,13 @@
             <<:             *routing-table-fips
             updates:
                 - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+        fips-recert:
+            build:
+                - ['ppa:fips-cc-stig/ubuntu/fips-recert-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/fips', 'Release']
+            proposed:
+                - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
         eol:
             proposed:
             updates:
