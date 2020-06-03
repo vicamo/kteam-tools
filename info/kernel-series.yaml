@@ -1419,7 +1419,6 @@
 
         linux-hwe-5.4:
             variants: [ '-hwe-18.04-edge' ]
-            routing: prerelease
             packages:
                 linux-hwe-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.4']
