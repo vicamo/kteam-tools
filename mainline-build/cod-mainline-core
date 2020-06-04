@@ -100,7 +100,7 @@ fi
 #  2.6.27.12	02062712
 #  2.6.29-rc3   020629rc3
 #
-abinum=`echo "$full_version" | awk -F'[.-]' '{
+abinum=`echo "$version" | awk -F'[.-]' '{
 	for (i = 1; i <= NF; i++) {
 		if ($i ~ /^[0-9][0-9]*$/) {
 			printf("%02d", $i);
