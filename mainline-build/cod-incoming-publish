@@ -217,6 +217,18 @@ publish_tip()
 			# Record that this is an unannounced core build.
 			echo "$core" >"$out/$which/$build/.flag.announce"
 		fi
+		if [ -f "$out/$which/$build/crack.bundle" ]; then
+			(
+				# Bundle found.
+				cd /srv/kernel.ubuntu.com/git/virgin/testing/crack.git || exit 1
+				git bundle list-heads "$out/$which/$build/crack.bundle" | \
+				while read sha ref
+				do
+					git tag -d "$ref"
+					git fetch "$out/$which/$build/crack.bundle" "$ref:$ref"
+				done
+			)
+		fi
 		if [ -f "$out/$which/$build/REBUILD.submit" ]; then
 			# Now we have installed the core result, submit our builds.
 			while read command
@@ -237,6 +249,10 @@ publish_tip()
 	done
 	find "$incoming/$which" -empty -type d -delete
 }
+
+if [ -d "$incoming/mainline" ]; then
+	publish_tip "mainline"
+fi
 
 if [ -d "$incoming/ubuntu-stable" ]; then
 	publish_tip "ubuntu-stable"
