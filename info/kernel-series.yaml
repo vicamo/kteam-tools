@@ -2375,7 +2375,7 @@
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
-            routing: fips-prerelease
+            routing: fips
             packages:
                 linux-aws-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'aws-fips']
