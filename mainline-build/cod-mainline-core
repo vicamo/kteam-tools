@@ -252,7 +252,7 @@ rm -f "$debian/config/OVERRIDES"
 
 # The sha we are building in the tip builds will be this bundle tip.
 sha=$( git log -1 --pretty=format:%H "HEAD" )
-bundle_tag="cod/bundle/$series/hash-$sha"
+bundle_tag="cod/mainline/$commit"
 
 # Drop a git bundle for this commit.
 git tag -f "$bundle_tag"
@@ -292,7 +292,8 @@ cat - <<EOL >"$result/summary.yaml"
 build-host: $host
 testsets: $build_archs_list
 series: $series
-commit: $commit
+commit: $bundle_tag
+commit-label: $commit
 commit-title: '$title'
 commit-time: $cts
 commit-hash: $sha
