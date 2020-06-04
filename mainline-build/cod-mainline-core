@@ -196,7 +196,7 @@ rm -f "$changelog"
 
 {
 	cat - <<EOL
-linux (${version}-$abinum$upload) $series; urgency=low
+linux (${version}-$abinum$upload) $build_series; urgency=low
 
   Mainline build at commit: $commit
 
@@ -291,7 +291,7 @@ end_time=$( date +%s )
 cat - <<EOL >"$result/summary.yaml"
 build-host: $host
 testsets: $build_archs_list
-series: $series
+series: $build_series
 commit: $bundle_tag
 commit-label: $commit
 commit-title: '$title'
@@ -304,7 +304,7 @@ EOL
 # Drop a set of messages to enqueue.
 for arch in $build_archs
 do
-	echo "cod-tip-build.$arch $series $remote $bundle_tag $arch $publish"
+	echo "cod-tip-build.$arch $build_series $remote $bundle_tag $arch $publish"
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
