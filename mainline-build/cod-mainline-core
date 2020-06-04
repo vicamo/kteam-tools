@@ -110,7 +110,10 @@ abinum=`echo "$full_version" | awk -F'[.-]' '{
 	}
 }'`
 
-# XXX: if we are doing a cod/tip/* we need to add that to abinum here.
+# If we are doing a cod/tip/* we need to add that to abinum here.
+case "$commit" in
+cod/tip/*) abinum="$abinum$(echo "$commit" | sed -e 's@cod/tip/@@' -e 's@[./-]@@g')"
+esac
 
 # Report the head for posterity.
 echo "vvv - build head"
@@ -193,7 +196,7 @@ rm -f "$changelog"
 
 {
 	cat - <<EOL
-linux (${version}-$abinum$upload) $master_series; urgency=low
+linux (${version}-$abinum$upload) $series; urgency=low
 
   Mainline build at commit: $commit
 
