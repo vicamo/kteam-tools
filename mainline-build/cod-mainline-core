@@ -300,7 +300,7 @@ EOL
 # Drop a set of messages to enqueue.
 for arch in $build_archs
 do
-	echo "cod-tip-build.$arch $series $remote $commit $arch $publish"
+	echo "cod-tip-build.$arch $series $remote $bundle_tag $arch $publish"
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
