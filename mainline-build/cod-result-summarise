@@ -140,11 +140,11 @@ class Summary:
                 <code>
                 These binary packages represent builds of {section_title} tree at the commit below:<br>
                 <br>
-                &nbsp;{commit} ({hash})<br>
+                &nbsp;&nbsp;{commit} ({hash})<br>
                 <br>
                 To obtain the source from which they are built fetch the commit below:<br>
                 <br>
-                &nbsp;git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack {commit}<br>
+                &nbsp;&nbsp;git://git.launchpad.net/~ubuntu-kernel-test/ubuntu/+source/linux/+git/mainline-crack {commit}<br>
                 '''.format(commit=self.summary.get('commit', 'Unknown'),
                     hash=self.summary.get('commit-hash', 'Unknown'),
                     commit_title=self.summary.get('commit-label', self.summary.get('commit')),
