@@ -41,7 +41,7 @@ amd64)
 	cmd_args \
 		--command legacy:mainline-build \
 		--command legacy:cod-ubuntu-config \
-		--command any:cod-mainline-core \
+		--command x86:cod-mainline-core \
 		--command x86:cod-tip-build.amd64 \
 		--command x86:cod-tip-build.i386 \
 		--command x86:cod-tip-build.arm64 \
