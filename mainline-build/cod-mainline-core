@@ -88,7 +88,7 @@ upload=".`date +%Y%m%d%H%M`"
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
-version=`echo "$full_version" | cut -d. -f1-3 | cut -d- -f1`
+version=`echo "${full_version#v}" | cut -d. -f1-3 | cut -d- -f1`
 if [ "$(echo $version|cut -d. -f3)" = "" ]; then
 	version="${version}.0"
 fi
