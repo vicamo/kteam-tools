@@ -4,6 +4,7 @@ import sys
 import os
 import yaml
 
+from datetime import timedelta
 from textwrap import dedent
 
 from ktl.announce import Announce
@@ -157,11 +158,16 @@ class Summary:
                 test_path = test_data['path']
                 log = os.path.join(test_path, 'log')
                 test_path = os.path.join(self.directory, test_path)
+                if 'start-time' in test_data and 'end-time' in test_data:
+                    test_time = timedelta(seconds=int(test_data['end-time']) - int(test_data['start-time']))
+                else:
+                    test_time = '-'
                 print('<br>', file=hfd)
-                print('Test {test} {status_text} (rc={status_rc}, on={build_arch}, log=<a href="{log}">{log}</a>)<br>'.format(
+                print('Test {test} {status_text} (rc={status_rc}, on={build_arch}, time={test_time}, log=<a href="{log}">{log}</a>)<br>'.format(
                     status_rc=test_data.get('status-rc', 256),
                     status_text=test_data.get('status', 'Unknown'),
                     build_arch=test_data.get('build-arch', 'Unknown'),
+                    test_time=test_time,
                     test=test, log=log), file=hfd)
                 if os.path.exists(test_path):
                     for path in sorted(os.listdir(test_path)):
