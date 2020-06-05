@@ -40,10 +40,13 @@ class MsgQueue(object):
         s.channel.start_consuming()
 
 
-    def listen_worker(s, queue_name, routing_key, handler_function, queue_durable=True, auto_delete=False, queue_arguments=None):
+    def listen_worker(s, queue_name, routing_key, handler_function=None, handler=None, queue_durable=True, auto_delete=False, queue_arguments=None):
         def wrapped_handler(channel, method, properties, body):
             payload = json.loads(body)
-            handler_function(payload)
+            if handler_function is not None:
+                handler_function(payload)
+            if handler is not None:
+                handler(channel, method, properties, payload)
             channel.basic_ack(method.delivery_tag)
 
         try: 
