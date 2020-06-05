@@ -128,6 +128,13 @@ git checkout "$series/master" -- debian || \
 git checkout "$series/master" -- debian.master || \
 	git checkout "$series/master-next" -- debian.master
 
+# Mark this as a mainline-build.
+cat- <<EOM >>debian.master/rules.d/hooks.mk
+# Mainline Build.
+do_mainline_build=true
+EOM
+git add debian.master/rules.d/hooks.mk
+
 # Disable the ABI, module, and aliases checks.
 for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
 do
