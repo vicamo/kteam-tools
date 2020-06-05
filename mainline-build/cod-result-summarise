@@ -164,9 +164,9 @@ class Summary:
                     test_time = '-'
                 print('<br>', file=hfd)
                 print('Test {test} {status_text} (rc={status_rc}, on={build_arch}, time={test_time}, log=<a href="{log}">{log}</a>)<br>'.format(
-                    status_rc=test_data.get('status-rc', 256),
+                    status_rc=test_data.get('status-rc', '-'),
                     status_text=test_data.get('status', 'Unknown'),
-                    build_arch=test_data.get('build-arch', 'Unknown'),
+                    build_arch=test_data.get('build-arch', '-'),
                     test_time=test_time,
                     test=test, log=log), file=hfd)
                 if os.path.exists(test_path):
