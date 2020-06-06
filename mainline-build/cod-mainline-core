@@ -308,10 +308,16 @@ start-time: $start_time
 end-time: $end_time
 EOL
 
+# Priority inheritance.
+priority=
+if [ -n "$CONTEXT_PRIORITY" ]; then
+	priority="--priority $(($CONTEXT_PRIORITY - 1)) "
+fi
+
 # Drop a set of messages to enqueue.
 for arch in $build_archs
 do
-	echo "cod-tip-build.$arch $build_release $remote $bundle_tag $arch $publish"
+	echo "${priority}cod-tip-build.$arch $build_release $remote $bundle_tag $arch $publish"
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
