@@ -129,7 +129,7 @@ git checkout "$series/master" -- debian.master || \
 	git checkout "$series/master-next" -- debian.master
 
 # Mark this as a mainline-build.
-cat- <<EOM >>debian.master/rules.d/hooks.mk
+cat - <<EOM >>debian.master/rules.d/hooks.mk
 # Mainline Build.
 do_mainline_build=true
 EOM
