@@ -43,7 +43,7 @@ class TheApp():
 
     # _handler
     #
-    def _handler(s, channel, method, properties, payload):
+    def _handler(s, payload):
         cdebug("TheApp::_handler")
 
         if 'key' not in payload or 'cmd' not in payload or \
@@ -75,10 +75,7 @@ class TheApp():
         try:
             print("Starting", payload['cmd'])
             sys.stdout.flush()
-            environ = os.environ
-            if properties.priority is not None:
-                environ['CONTEXT_PRIORITY'] = str(properties.priority)
-            child = Popen(payload['cmd'], env=environ)
+            child = Popen(payload['cmd'])
             iteration = 0
             while True:
                 res = child.poll()
@@ -143,7 +140,7 @@ class TheApp():
 
             q_args = {'x-max-priority': 7}
             for group, group_cmds in grouped.items():
-                s.mq.listen_worker('{}.{}'.format(s.queue, group), group_cmds, handler=s._handler, queue_arguments=q_args)
+                s.mq.listen_worker('{}.{}'.format(s.queue, group), group_cmds, s._handler, queue_arguments=q_args)
             s.mq.listen_worker(s.direct, direct, s._handler, queue_arguments=q_args, auto_delete=True)
 
             s.mq.listen_start()
