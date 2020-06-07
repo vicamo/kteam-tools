@@ -56,7 +56,8 @@ do
         # about it.
         git push "$push_url" tag "$commit"
 
-	"$here/cod-enqueue" "mainline-build" "crack" "$commit"
+	#"$here/cod-enqueue" "mainline-build" "crack" "$commit"
+	"$here/cod-enqueue" "--priority" "5" -- "cod-mainline-core" "--priority" "3" "crack" "$commit" "mainline/$commit"
 
 	# Check this against the live versions, announce if new in those series.
 	eval 'case "$commit" in '"$pattern"') match=1;; *) match=0;; esac'
