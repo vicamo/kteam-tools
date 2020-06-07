@@ -13,7 +13,7 @@ priority=
 while :
 do
 	case "$1" in
-	-p|--priority)	priority="--priority $2"; shift 2 ;;
+	-p|--priority)	priority="$2"; shift 2 ;;
 	--)		shift 1; break ;;
 	*)		break ;;
 	esac
@@ -115,7 +115,7 @@ EOL
 # Drop a set of messages to enqueue.
 for arch in $build_archs
 do
-	echo "${priority}cod-tip-build.$arch $series $remote $commit $arch test-build/$series/$package/$id--$sha"
+	echo "${priority:+--priority $priority }cod-tip-build.$arch $series $remote $commit $arch test-build/$series/$package/$id--$sha"
 done >"$result/REBUILD.submit"
 
 # Finally mark this as a partial result.
