@@ -55,6 +55,11 @@ do
 	(
 		cd "$master_main/$repo" || exit 1
 
+		# The tip is more important than the earlier ones so ensure
+		# we enqueue it with a higher priority.
+		core_priority=6
+		tip_priority=4
+
 		"$here/git-changeset" "$prev" "$tip" | \
 		while read sha1 changeset order title
 		do
@@ -70,8 +75,12 @@ do
 			git push --force "$push_url" tag "$tag"
 
 			# Queue up the build.
-			"$here/cod-enqueue" "cod-changeset-core" \
+			"$here/cod-enqueue" "--priority" "$core_priority" -- \
+				"cod-changeset-core" "--priority" "$tip_priority" \
 				"$series" "$package" "crack" "$tag" "$changeset" "$order"
+
+			core_priority=5
+			tip_priority=3
 		done
 	)
 		
