@@ -2,6 +2,22 @@
 P='cod-ubuntu-stable-core'
 
 # Options.
+TEMP=$(getopt \
+	-n "$P" \
+	-o 'p:' -l "priority:" \
+	-- "$@"
+)
+[ "$?" != 0 ] && exit 1
+eval set -- "$TEMP"
+priority=
+while :
+do
+	case "$1" in
+	-p|--priority)	priority="--priority $2"; shift 2 ;;
+	--)		shift 1; break ;;
+	*)		break ;;
+	esac
+done
 
 if [ "$#" -ne 3 ]; then
 	echo "Usage: $0 <series> <remote> <commit-ish>" 1>&2
@@ -90,12 +106,6 @@ commit-hash: $sha
 start-time: $start_time
 end-time: $end_time
 EOL
-
-# Priority inheritance.
-priority=
-if [ -n "$CONTEXT_PRIORITY" ]; then
-	priority="--priority $(($CONTEXT_PRIORITY - 1)) "
-fi
 
 # Drop a set of messages to enqueue.
 for arch in $build_archs
