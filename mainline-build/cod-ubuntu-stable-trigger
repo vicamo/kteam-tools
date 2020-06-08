@@ -52,8 +52,8 @@ do
 	echo "$P: pushing $(basename $repo):$commit to crack ..."
 	(cd "$repo" && git push "$push_url" tag "$commit")
 
-	echo "$P: $here/cod-enqueue --priority 6 -- cod-ubuntu-stable-core --priority 4 $series crack $commit"
-	"$here/cod-enqueue" "--priority" "6" -- "cod-ubuntu-stable-core" "--priority" "4" "$series" "crack" "$commit"
+	echo "$P: $here/cod-enqueue --priority medium -- cod-ubuntu-stable-core --priority medium $series crack $commit"
+	"$here/cod-enqueue" "--priority" "medium" -- "cod-ubuntu-stable-core" "--priority" "medium" "$series" "crack" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
