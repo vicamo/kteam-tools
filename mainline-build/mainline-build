@@ -22,7 +22,7 @@ base="$4"
 date="$5"
 
 if [ "$#" -eq 2 ]; then
-	exec "$here/cod-mainline-core" -- "--priority" "3" "$remotes" "$commit" "mainline/$commit"
+	exec "$here/cod-mainline-core" "--priority" "3" -- "$remotes" "$commit" "mainline/$commit"
 else
-	exec "$here/cod-mainline-core" -- "--priority" "2" "$remotes" "$commit" "mainline/$base/$date"
+	exec "$here/cod-mainline-core" "--priority" "2" -- "$remotes" "$commit" "mainline/$base/$date"
 fi
