@@ -62,16 +62,7 @@ class TheApp():
             else:
                 mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo')
 
-            if s.args.command[0] == 'queue-status':
-                state = mq.queue_info(s.args.to)
-                print("""\
-Queue:   {0[queue]}
-Pending: {0[message_count]}
-Workers: {0[consumer_count]}\
-""".format(state))
-
-            else:
-                mq.publish(details['key'], details, priority=int(s.args.priority))
+            mq.publish(details['key'], details, priority=int(s.args.priority))
 
             retval = 0
 
