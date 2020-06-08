@@ -139,10 +139,10 @@ echo "^^^ - build head"
 #
 # Pull in the packaging from the head of our tree.
 #
-git checkout "$series/master" -- debian || \
-	git checkout "$series/master-next" -- debian
-git checkout "$series/master" -- debian.master || \
-	git checkout "$series/master-next" -- debian.master
+git checkout "$series/master-next" -- debian || \
+	git checkout "$series/master" -- debian
+git checkout "$series/master-next" -- debian.master || \
+	git checkout "$series/master" -- debian.master
 
 # Mark this as a mainline-build.
 cat - <<EOM >>debian.master/rules.d/hooks.mk
