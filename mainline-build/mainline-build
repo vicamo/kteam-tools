@@ -21,73 +21,8 @@ abi="$3"
 base="$4"
 date="$5"
 
-remotes="${remotes//,/ }"
-
-master_tree_select
-
-# Ensure we have the commit identified.
-repo_remote_update_list $remotes
-
-full_version=`git cat-file -p "$commit:Makefile" | awk '
-	/^VERSION/	{ version=$3 }
-	/^PATCHLEVEL/	{ patchlevel=$3 }
-	/^SUBLEVEL/	{ sublevel=$3 }
-	/^EXTRAVERSION/	{ extraversion=$3 }
-	END		{ print "v" version "." patchlevel "." sublevel extraversion }
-'`
-
-map_version_to_series "${full_version#v}"
-master_release="$RET"
-
-# Ensure we have the latest and greatest code in the master release.
-repo_remote_update "$master_release"
-
-CCACHE_DIR="$master_main/ccache"
-test -d "$CCACHE_DIR" || mkdir -p "$CCACHE_DIR"
-export CCACHE_DIR
-
-# Clean out the rubbish.
-rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES" "$master_main"/*.patch
-
-# We finally have the tree in a consitant state, finally ask for the build
-if [ "$abi" != "" ]; then
-	email=":"
-	"$here/mainline-build-one" "$commit" "$master_release" "$abi" 2>&1 | \
-		tee "$master_main/BUILD.LOG"
-	# If we have an indication of where this was built then sub that for master_release.
-	if [ -f "$master_main/BUILT" ]; then
-		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
-	fi
-	#date="`date +%F`"
-	html="$HOME/public_html/mainline/$base/$date"
-	mkdir -p "$HOME/public_html/mainline/$base"
+if [ "$#" -eq 2 ]; then
+	exec "$here/cod-mainline-core" -- "--priority" "3" "$remotes" "$commit" "mainline/$commit"
 else
-	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
-		tee "$master_main/BUILD.LOG"
-	# If we have an indication of where this was built then sub that for master_release.
-	if [ -f "$master_main/BUILT" ]; then
-		master_release=`awk '/^Release:/ { print $2 }' <"$master_main/BUILT"`
-	fi
-	html="$HOME/public_html/mainline/$commit"
+	exec "$here/cod-mainline-core" -- "--priority" "2" "$remotes" "$commit" "mainline/$base/$date"
 fi
-
-mkdir -p "$html"
-sha1=`git log -1 --pretty=%H "$commit" 2>/dev/null`
-{
-	echo "$commit"
-	echo "$sha1"
-} >"$html/COMMIT"
-echo "mainline-build '$remotes' '$commit'${abi:+ '$abi' '$base' '$date'}" >"$html/REBUILD"
-"$here/mainline-extract-logs" "$master_main/BUILD.LOG" "$html/BUILD.LOG" "$master_main/BUILT"
-mv "$master_main/BUILD.LOG" "$html"
-mv "$master_main/"linux-{headers,image,modules}-*.deb "$html"
-if [ -f "$master_main/CHANGES" ]; then
-	mv "$master_main/CHANGES" "$html"
-fi
-if [ -f "$master_main/BUILT" ]; then
-	mv "$master_main/BUILT" "$html"
-fi
-
-mv "$master_main"/*.patch "$html"
-
-( cd "$html" && "$here/mainline-build-sources" && "$here/mainline-build-checksum" )
