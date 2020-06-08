@@ -109,9 +109,6 @@ class PromoteFromTo(Promoter):
             if s._kernel_block_ppa():
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
-            if s._cycle_hold():
-                s.task.reason = 'Holding -- cycle on hold'
-                break
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
@@ -133,7 +130,7 @@ class PromoteFromTo(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-            if not s._kernel_block_ppa() and not s._cycle_hold():
+            if not s._kernel_block_ppa():
                 break
 
             if s._kernel_block_ppa():
