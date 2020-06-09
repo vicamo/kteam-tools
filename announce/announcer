@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import os
+import sys
+import traceback
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, error
+import socket
+import threading
+from ktl.log                            import cdebug, center, cleave, cerror
+from ktl.msgq                           import MsgQueueService
+import time
+from subprocess                         import Popen
+from ktl.announce                       import AnnounceDeliver
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+        s.queue = s.args.queue
+        s.direct = s.args.queue + '--' + s.args.name
+        #s.admin = 'admin-' + s.args.name
+
+    # _announce
+    #
+    def _announce(s, to, message):
+        message = to + " " + s.args.name + " " + message
+
+        announce = AnnounceDeliver()
+        announce.send(to, message, message)
+
+    def _send(s, key, subject=None, body=None, summary=None):
+        announce = AnnounceDeliver()
+        announce.send(key, subject, body, summary)
+
+    # _handler
+    #
+    def _handler(s, payload):
+        cdebug("TheApp::_handler")
+
+        try:
+            key = payload.get('key')
+            if key is None:
+                raise ValueError('routing key missing')
+
+            s._send(payload.get('key'), payload.get('subject'), payload.get('body'), payload.get('summary'))
+
+        except:
+            error("announcement failed")
+            #print(sys.exc_info()[0])
+            print(traceback.format_exc())
+
+            s._announce('announce-control', 'exploded')
+
+        cdebug(payload)
+
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 1
+
+        try:
+            if s.args.local:
+                s.mq = MsgQueueService(service='kernel-announce', host='localhost', port=9123, exchange='announce-todo', heartbeat_interval=60)
+            else:
+                s.mq = MsgQueueService(service='kernel-announce', exchange='announce-todo', heartbeat_interval=60)
+
+            #s.mq.queue_delete(s.args.queue)
+            #raise "FOO"
+
+            s._announce('announce-control', 'start')
+
+            q_args = {'x-max-priority': 7}
+            s.mq.listen_worker(s.queue, 'announce', s._handler, queue_arguments=q_args)
+            s.mq.listen_worker(s.direct, 'direct.{}.announce'.format(s.args.name), s._handler, queue_arguments=q_args, auto_delete=True)
+
+            s.mq.listen_start()
+
+            s._announce('announce-control', 'quit')
+
+            print("Exiting")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('name', help='Name of this instance in the admin domain')
+    parser.add_argument('queue', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
