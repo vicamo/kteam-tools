@@ -520,6 +520,7 @@
                     publish-to:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-raspi:
             variants: ['--']
