@@ -11,11 +11,25 @@ env:
   - SUITE=xenial ARCH=amd64
   - SUITE=xenial ARCH=i386
   - SUITE=bionic ARCH=amd64
+  - SUITE=bionic ARCH=arm64
+  - SUITE=bionic ARCH=armhf
   - SUITE=bionic ARCH=i386
+  - SUITE=bionic ARCH=ppc64el
+  - SUITE=bionic ARCH=s390x
   - SUITE=eoan ARCH=amd64
   - SUITE=eoan ARCH=i386
   - SUITE=focal ARCH=amd64
+  - SUITE=focal ARCH=arm64
+  - SUITE=focal ARCH=armhf
+  - SUITE=focal ARCH=ppc64el
+  - SUITE=focal ARCH=riscv64
+  - SUITE=focal ARCH=s390x
   - SUITE=groovy ARCH=amd64
+  - SUITE=groovy ARCH=arm64
+  - SUITE=groovy ARCH=armhf
+  - SUITE=groovy ARCH=ppc64el
+  - SUITE=groovy ARCH=riscv64
+  - SUITE=groovy ARCH=s390x
 
 branches:
   only:
