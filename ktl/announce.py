@@ -6,12 +6,12 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request, HTTPError
 
-from .msgq                           import MsgQueue
+from .msgq                           import MsgQueue, MsgQueueService
 from .messaging                      import Email
 from .cfg                            import Cfg
 
 
-class Announce:
+class AnnounceDeliver:
 
     def __init__(self, config=None):
         defaults = {}
@@ -88,4 +88,27 @@ class Announce:
             elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
             elif route.get('type') == 'mattermost':
-                self.__mattermost(key, subject, body, route)
+                self.__mattermost(key, summary, route)
+
+
+class Announce:
+
+    def __init__(self, local=False):
+        if local:
+            self.mq = MsgQueueService(service='kernel-announce', host='localhost', port=9123, exchange='announce-todo', heartbeat_interval=60)
+        else:
+            self.mq = MsgQueueService(service='kernel-announce', exchange='announce-todo', heartbeat_interval=60)
+
+    def send(self, key, subject=None, body=None, summary=None):
+        if subject == None and summary == None:
+            raise ValueError("subject or summary required")
+
+        payload = {'key': key}
+        if subject is not None:
+            payload['subject'] = subject
+        if body is not None:
+            payload['body'] = body
+        if summary is not None:
+            payload['summary'] = summary
+
+        self.mq.publish('announce', payload)

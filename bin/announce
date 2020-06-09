@@ -38,7 +38,7 @@ try:
     else:
         basicConfig(level=INFO, format=log_format)
 
-    announce = Announce()
+    announce = Announce(local=args.local)
 
     body = ''
     if args.body:
