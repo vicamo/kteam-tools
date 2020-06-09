@@ -49,7 +49,7 @@ class Clog:
 
     @classmethod
     def warn(c, msg, color='red'):
-        c.info(colored(msg, color))
+        warning(colored(msg, color))
 
     @classmethod
     def notice(c, msg, color='yellow'):
