@@ -57,14 +57,14 @@ class Announce:
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
 
-    def __mattermost(self, key, subject, body, lcfg):
+    def __mattermost(self, key, summary, lcfg):
         cfg = self.cfg.get('mattermost', {})
         cfg.update(lcfg)
 
         url = cfg['hook']
-        payload = {'text': subject}
-        if body != subject:
-            payload['props'] = {'card': '```\n'+body+'```'}
+        payload = {'text': summary}
+        #if body != subject:
+        #    payload['props'] = {'card': '```\n'+body+'```'}
         headers = {'Content-Type': 'application/json'}
         data = json.dumps(payload).encode('ascii')
 
