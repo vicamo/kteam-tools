@@ -9,7 +9,7 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, DEBUG, WARNING, error
 import socket
 import threading
-from ktl.log                            import cdebug, center, cleave, cerror
+from ktl.log                            import cdebug, center, cleave, cerror, cwarn
 from ktl.msgq                           import MsgQueueService
 import time
 from subprocess                         import Popen
@@ -55,6 +55,7 @@ class TheApp():
             if key is None:
                 raise ValueError('routing key missing')
 
+            cwarn("announcing {} ({})".format(payload.get('key'), payload.get('summary', payload.get('subject'))))
             s._send(payload.get('key'), payload.get('subject'), payload.get('body'), payload.get('summary'))
 
         except:
