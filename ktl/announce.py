@@ -62,7 +62,9 @@ class Announce:
         cfg.update(lcfg)
 
         url = cfg['hook']
-        payload = {'text': subject, 'props': {'card': '```\n'+body+'```'}}
+        payload = {'text': subject}
+        if body != subject:
+            payload['props'] = {'card': '```\n'+body+'```'}
         headers = {'Content-Type': 'application/json'}
         data = json.dumps(payload).encode('ascii')
 
