@@ -1,8 +1,15 @@
 import os
+import json
+try:
+    from urllib.request import urlopen, Request
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import urlopen, Request, HTTPError
 
 from .msgq                           import MsgQueue
 from .messaging                      import Email
 from .cfg                            import Cfg
+
 
 class Announce:
 
@@ -46,9 +53,22 @@ class Announce:
     def __email(self, key, subject, body, lcfg):
         cfg = self.cfg.get('email', {})
         cfg.update(lcfg)
-            
+
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
+
+    def __mattermost(self, key, subject, body, lcfg):
+        cfg = self.cfg.get('mattermost', {})
+        cfg.update(lcfg)
+
+        url = cfg['hook']
+        payload = {'text': subject, 'props': {'card': '```\n'+body+'```'}}
+        headers = {'Content-Type': 'application/json'}
+        data = json.dumps(payload).encode('ascii')
+
+        req = Request(url, headers=headers, data=data)
+        f = urlopen(req)
+        f.close()
 
     def send(self, key, subject=None, body=None, summary=None):
         if subject == None and summary == None:
@@ -65,3 +85,5 @@ class Announce:
                 self.__email(key, subject, body, route)
             elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
+            elif route.get('type') == 'mattermost':
+                self.__mattermost(key, subject, body, route)
