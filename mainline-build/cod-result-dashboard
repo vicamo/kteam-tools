@@ -71,7 +71,7 @@ table.matrix td {{
 <body>
 <h1>{title} Summary</h1>
 <table class="matrix">
-<tr><th>{unit-title}<th>Title<th>Builder<th>Status'''.format(**section), file=html_fd)
+<tr><th>{unit-title}<th>Title<th>Progress<th>Status'''.format(**section), file=html_fd)
     for entry in results:
         row_class = 'row'
         #if entry['id'].startswith('Ubuntu-'):
@@ -98,15 +98,27 @@ table.matrix td {{
             status_string = 'FAIL rc=' + str(status)
             status_class = 'FAIL'
 
+        progress_total = '-'
+        progress_done = '-'
+        if 'testsets' in entry:
+            progress_total = len(entry['testsets'])
+            if 'tests' in entry:
+                progress_done = progress_total
+                for test, test_data in entry['tests'].items():
+                    if test_data['status'] == 'missing':
+                        progress_done -= 1
+        progress = "{}/{}".format(progress_done, progress_total)
+
         commit_url = section.get('repo', '').format(**entry)
         path = os.path.join(entry['_path'], entry['directory'])
         thing = entry['_path']
         id = entry.get('commit-label', entry.get('commit', 'Unknown'))
-        print('<tr class="{row_class}"><td><a href="{thing_url}">{thing}</a><td><a href="{commit_url}">{id}</a> -- {commit-title}<td>{build-host}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
+        print('<tr class="{row_class}"><td><a href="{thing_url}">{thing}</a><td><a href="{commit_url}">{id}</a> -- {commit-title}<td>{progress}<td class="{status_class}"><a href="{status_url}">{status_string}</a>'.format(
             commit_url=commit_url,
             status_string=status_string,
             status_class=status_class,
             status_url=quote(path),
+            progress=progress,
             thing=thing,
             thing_url=quote(thing),
             id=id,
