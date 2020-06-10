@@ -1662,7 +1662,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
-            variants: ['--', '-edge']
+            variants: ['--']
             packages:
                 linux-aws-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.3-next']
@@ -1696,7 +1696,7 @@
 
         linux-aws-5.4:
             routing: prerelease
-            variants: ['-wip']
+            variants: ['-edge']
             packages:
                 linux-aws-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.4-next']
@@ -1817,7 +1817,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.3:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-azure-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.3-next']
@@ -1854,7 +1854,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.4:
-            variants: [ '-wip' ]
+            variants: [ '-edge' ]
             routing: prerelease
             packages:
                 linux-azure-5.4:
@@ -1954,7 +1954,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.3:
-            variants: ['--','-edge']
+            variants: ['--']
             packages:
                 linux-gcp-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.3-next']
@@ -1988,7 +1988,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
-            variants: ['-wip']
+            variants: ['-edge']
             routing: prerelease
             packages:
                 linux-gcp-5.4:
@@ -2306,7 +2306,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-oracle-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.3-next']
@@ -2330,7 +2330,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.4:
-            variants: [ '-wip' ]
+            variants: [ '-edge' ]
             routing: prerelease
             packages:
                 linux-oracle-5.4:
