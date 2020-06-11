@@ -1499,8 +1499,8 @@
                 updates:
                     - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
             packages:
-                linux-mt8516:
-                linux-signed-mt8516:
+                cert-denver:
+                cert-denver-signed:
                     type: signed
             supported: false
 
