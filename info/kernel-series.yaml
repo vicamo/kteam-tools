@@ -1498,11 +1498,6 @@
                     - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
                 updates:
                     - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
-
-    Build PPA: https://launchpad.net/~denver-team/+archive/ubuntu/denver-build
-    Proposed PPA: https://launchpad.net/~denver-team/+archive/ubuntu/denver-proposed
-    Release PPA: https://launchpad.net/~denver-team/+archive/ubuntu/denver-updates
-
             packages:
                 linux-mt8516:
                 linux-signed-mt8516:
