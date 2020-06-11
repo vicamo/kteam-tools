@@ -32,9 +32,7 @@ do
 	package_dir="${package}_${version}"
 	# Extract the source package we use for the repo and use its suffix.
 	suffix=$(echo "$repo" | sed -e 's@.*/+source/@@' -e 's@/.*@@' | sed -e 's/^linux//')
-	git --git-dir "/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/ubuntu-${series}${suffix}.git" archive --prefix "$package_dir/" --format tar "$tag" >"$tarball_file.archive" || continue
-
-	xz -c <"$tarball_file.archive" >"$tarball_file.new" || continue
+	git --git-dir "/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/ubuntu-${series}${suffix}.git" archive --prefix "$package_dir/" --format tar.gz "$tag" >"$tarball_file.new" || continue
 
 	mv "$tarball_file.new" "$tarball_file"
 	rm -f "$tarball_file.archive" "$tarball_file.rebuild"

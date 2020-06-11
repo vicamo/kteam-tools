@@ -175,7 +175,7 @@ class TarballMirror:
                     repo = main.repo.url
                     print(series.codename, main.name, version,
                         flags_str if len(flags_str) > 0 else '-', repo, tag,
-                        '{}_{}.tar.xz'.format(main.name, version))
+                        '{}_{}.tar.gz'.format(main.name, version))
 
 
 ks = KernelSeries()
