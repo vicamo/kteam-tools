@@ -213,6 +213,7 @@ publish_tip()
 		mkdir -p "$out/$which/$build"
 		rm -f "$incoming/$which/$build/@publish@"
 		mv "$incoming/$which/$build"/* "$out/$which/$build"
+		"$here/cod-result-finalise" "$out/$which/$build"
 		if [ "$core" != '' ]; then
 			# Record that this is an unannounced core build.
 			echo "$core" >"$out/$which/$build/.flag.announce"
