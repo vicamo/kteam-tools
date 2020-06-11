@@ -1478,7 +1478,7 @@
                 proposed:
                     - ['ppa:munich-team/ubuntu/munich-proposed', 'Release']
                 updates:
-                    - ['ppa:ibm-cloud/ubuntu/munich', 'Release']
+                    - ['ppa:munich-team/ubuntu/munich', 'Release']
             packages:
                 linux-mt8516:
                 linux-signed-mt8516:
