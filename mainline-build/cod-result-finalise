@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <result>" 1>&2
+	exit 1
+fi
+where="$1"
+
+cd "$where" || exit 1
+
+files=$(ls *.bundle *.deb 2>/dev/null)
+[ "$files" = '' ] && exit 0
+
+{
+    echo "# Checksums, check with the command below:"
+    echo "#     shasum -c CHECKSUMS"
+    echo "#"
+    echo "# Checksums-Sha1:"
+
+    shasum -a 1 $files
+    echo "#"
+    echo "# Checksums-Sha256:"
+    shasum -a 256 $files
+} >CHECKSUMS
+
+gpg -a -b --sign --output CHECKSUMS.gpg CHECKSUMS
