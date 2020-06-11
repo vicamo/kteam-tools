@@ -6,7 +6,7 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-dir="."
+dir="$HOME/public_html/latest-tarballs"
 cd "$dir" || exit 1
 
 date '+Start: %c'
