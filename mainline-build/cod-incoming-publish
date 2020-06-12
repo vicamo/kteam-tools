@@ -31,62 +31,6 @@ flock --verbose --exclusive 8 || exit 1
 flock --verbose --exclusive 9 || exit 1
 echo "LL: $$ aquired exclusive lock"
 
-# Pull out any published images ...
-if [ -d "$incoming/mainline" ]; then
-	echo "Scanning mainline ..."
-	outgoing="$HOME/public_html/mainline"
-	(cd "$incoming/mainline" && find . -name COMMIT) | \
-	while read commit
-	do
-		build=`dirname "$commit"`
-		build=${build#./}
-
-		echo "$P: $build: mainline publishing ..."
-		announce='build'
-		if [ -d "$outgoing/$build" ]; then
-			echo "$P: $build: result already published, removing previous ..."
-			rm -rf "$outgoing/$build"
-			announce='rebuild'
-		fi
-		mkdir -p "$outgoing/`dirname "$build"`"
-		mv "$incoming/mainline/$build" "$outgoing/$build" && \
-		{
-			# Sign the publication.
-			rm -f "$outgoing/$build/CHECKSUMS.gpg"
-			gpg -a -b --sign --output "$outgoing/$build/CHECKSUMS.gpg" "$outgoing/$build/CHECKSUMS"
-
-			# Only announce top level results.
-			case "$build" in
-			*/*)	announce='' ;;
-			esac
-		}
-		if [ "$announce" != '' ]; then
-			echo "$P: $build: announcing ..."
-			"$here/mainline-announce" `head -1 "$outgoing/$build/COMMIT"` "$build" "$announce" "$outgoing/$build/BUILT"
-		fi
-	done
-	find "$incoming/mainline" -empty -type d -delete
-
-	# Re-evaluate any 'current' links.
-	(
-		cd "$outgoing" || exit 1
-
-		find . -name current | \
-		while read current
-		do
-			dir=`dirname "$current"`
-			latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
-
-			is=`readlink "$current"`
-			if [ "$is" != "$latest" ]; then
-				echo "$P: $dir: updating current to $latest"
-				rm -f "$current"
-				ln -s "$latest" "$current"
-			fi
-		done
-	)
-fi
-
 if [ -d "$incoming/upload" ]; then
 	echo "$P: Scanning upload ..."
 	# Look for any uploads for various PPAs.
@@ -257,6 +201,27 @@ publish_tip()
 
 if [ -d "$incoming/mainline" ]; then
 	publish_tip "mainline"
+
+	# Re-evaluate any 'current' links.
+	(
+		cd "$out/mainline" || exit 1
+
+		echo "$P: mainline: rebuilding current links ..."
+
+		find . -name current | \
+		while read current
+		do
+			dir=`dirname "$current"`
+			latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
+
+			is=`readlink "$current"`
+			if [ "$is" != "$latest" ]; then
+				echo "$P: $dir: updating current to $latest"
+				rm -f "$current"
+				ln -s "$latest" "$current"
+			fi
+		done
+	)
 fi
 
 if [ -d "$incoming/ubuntu-stable" ]; then
@@ -282,28 +247,6 @@ fi
 
 if [ -d "$incoming/test-build" ]; then
 	publish_tip "test-build"
-
-	mkdir -p "$incoming/test-build"
-	echo "Scanning test-build ..."
-	(cd "$incoming/test-build" && find . -name SUMMARY) | \
-	while read summary
-	do
-		build=`dirname "$summary"`
-		build=${build#./}
-
-		echo "$P: $build: test-build publishing ..."
-		announce='build'
-		if [ -d "$out/test-build/$build" ]; then
-			echo "$P: $build: result already published, removing previous ..."
-			rm -rf "$out/test-build/$build"
-			announce='rebuild'
-		fi
-		mkdir -p "$out/test-build/`dirname "$build"`"
-		mv "$incoming/test-build/$build" "$out/test-build/$build"
-		echo "$P: $build: announcing ..."
-		"$here/cod-changeset-announce" "$out/test-build/$build" "$announce"
-	done
-	find "$incoming/test-build" -empty -type d -delete
 
 	# Rebuild the summaries.
 	(
