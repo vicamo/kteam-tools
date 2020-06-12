@@ -88,7 +88,7 @@ if [ -d "$incoming/mainline" ]; then
 fi
 
 if [ -d "$incoming/upload" ]; then
-	echo "Scanning upload ..."
+	echo "$P: Scanning upload ..."
 	# Look for any uploads for various PPAs.
 	for ppa in 'test-devel' 'pre-proposed'
 	do
@@ -119,7 +119,7 @@ if [ -d "$incoming/upload" ]; then
 fi
 
 if [ -d "$incoming/native" ]; then
-	echo "Scanning native ..."
+	echo "$P: Scanning native ..."
 	# Look for any source packages for the native PPA builders.
 	(
 		cd "$incoming/native/source" || exit 1
@@ -184,7 +184,7 @@ fi
 # Copy in incoming configuration dumps.
 mkdir -p "$out/config"
 if [ -d "$incoming/config" ]; then
-	echo "Scanning config ..."
+	echo "$P: Scanning config ..."
 	rsync -v -a --remove-source-files "$incoming/config/" "$out/config/"
 	find "$incoming/config" -empty -type d -delete
 fi
@@ -193,14 +193,18 @@ publish_tip()
 {
 	local which="$1"
 
-	echo "Scanning $which (tip) ..."
+	echo "$P: Scanning $which (tip) ..."
 	(cd "$incoming/$which" && find . -name @publish@) | \
 	while read result
 	do
 		build=`dirname "$result"`
 		build=${build#./}
 
-		echo "$P: $build: $which publishing ..."
+		# Finalise the result, adds checksums and signatures for example.
+		echo "$P: $which/$build: finalising ..."
+		"$here/cod-result-finalise" "$incoming/$which/$build"
+
+		echo "$P: $which/$build: publishing ..."
 		core=
 		if [ -f "$incoming/$which/$build/REBUILD.submit" ]; then
 			core='build'
@@ -213,7 +217,6 @@ publish_tip()
 		mkdir -p "$out/$which/$build"
 		rm -f "$incoming/$which/$build/@publish@"
 		mv "$incoming/$which/$build"/* "$out/$which/$build"
-		"$here/cod-result-finalise" "$out/$which/$build"
 		if [ "$core" != '' ]; then
 			# Record that this is an unannounced core build.
 			echo "$core" >"$out/$which/$build/.flag.announce"
@@ -221,6 +224,7 @@ publish_tip()
 		if [ -f "$out/$which/$build/crack.bundle" ]; then
 			(
 				# Bundle found.
+				echo "$P: $which/$build: publishing crack.bundle ..."
 				cd /srv/kernel.ubuntu.com/git/virgin/testing/crack.git || exit 1
 				git bundle list-heads "$out/$which/$build/crack.bundle" | \
 				while read sha ref
@@ -239,7 +243,7 @@ publish_tip()
 			done <"$out/$which/$build/REBUILD.submit"
 		fi
 		# Find the containing result and resummarise it.
-		echo "$P: $build: $which summarising ..."
+		echo "$P: $which/$build: summarising ..."
 		for relative in . .. ../..
 		do
 			if [ -f "$out/$which/$build/$relative/REBUILD.submit" ]; then
@@ -320,7 +324,7 @@ if [ -d "$incoming/test-build" ]; then
 fi
 
 if [ -d "$incoming/static-analysis" ]; then
-	echo "Scanning static-analysis ..."
+	echo "$P: Scanning static-analysis ..."
 	rsync -v -a --remove-source-files "$incoming/static-analysis/" "$out/static-analysis/"
 	find "$incoming/static-analysis" -empty -type d -delete
 fi
