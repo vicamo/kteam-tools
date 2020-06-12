@@ -199,6 +199,31 @@ publish_tip()
 	find "$incoming/$which" -empty -type d -delete
 }
 
+rebuild_indexes()
+{
+	local which="$1"
+	local pattern="$2"
+
+	# Rebuild the indexes.
+	(
+		cd "$out/$which" || exit 1
+
+		for sp in $pattern
+		do
+			[ ! -d "$sp" ] && continue
+
+			echo "$P: $which/$sp: rebuild index ..."
+			"$here/cod-result-index" "$sp" "$sp"
+			mv -f "$sp/index.html.new" "$sp/index.html"
+			mv -f "$sp/latest.json.new" "$sp/latest.json"
+		done
+	)
+	# Rebuild the dashboard.
+	echo "$P: $which: rebuild dashboard ..."
+	"$here/cod-result-dashboard" "$out/$which"
+	mv -f "$out/$which/index.html.new" "$out/$which/index.html"
+}
+
 if [ -d "$incoming/mainline" ]; then
 	publish_tip "mainline"
 
@@ -227,43 +252,13 @@ fi
 if [ -d "$incoming/ubuntu-stable" ]; then
 	publish_tip "ubuntu-stable"
 
-	# Rebuild the summaries.
-	(
-		cd "$out/ubuntu-stable" || exit 1
-
-		for sp in *
-		do
-			[ ! -d "$sp" ] && continue
-
-			"$here/cod-result-index" "$sp" "$sp"
-			mv -f "$sp/index.html.new" "$sp/index.html"
-			mv -f "$sp/latest.json.new" "$sp/latest.json"
-		done
-	)
-	# Rebuild the dashboard.
-	"$here/cod-result-dashboard" "$out/ubuntu-stable"
-	mv -f "$out/ubuntu-stable/index.html.new" "$out/ubuntu-stable/index.html"
+	rebuild_indexes 'ubuntu-stable' '*'
 fi
 
 if [ -d "$incoming/test-build" ]; then
 	publish_tip "test-build"
 
-	# Rebuild the summaries.
-	(
-		cd "$out/test-build" || exit 1
-
-		for sp in */*
-		do
-			[ ! -d "$sp" ] && continue
-
-			"$here/cod-result-index" "$sp" "$sp"
-			mv -f "$sp/index.html.new" "$sp/index.html"
-			mv -f "$sp/latest.json.new" "$sp/latest.json"
-		done
-	)
-	# Rebuild the dashboard.
-	"$here/cod-result-dashboard" "$out/test-build"
-	mv -f "$out/test-build/index.html.new" "$out/test-build/index.html"
+	rebuild_indexes 'test-build' '*/*'
 fi
 
 if [ -d "$incoming/static-analysis" ]; then
