@@ -62,7 +62,7 @@ class TheApp():
             # low, medium, and high priorities and prevent them overlapping.
             priority = s.args.priority
             if priority in (None, 'high', 'medium', 'low'):
-                if s.args.command[0].endswith('-core'):
+                if s.args.command[0].endswith('-core') or s.args.command[0] == 'cod-queue-publish':
                     priority = 5
                 else:
                     priority = 2
