@@ -7,6 +7,7 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, WARNING, info, warning, DEBUG
 from ktl.log                            import cdebug, center, cleave
 from ktl.msgq                           import MsgQueueService
+from ktl.announce                       import Announce
 import json
 
 #from lib.grinder                        import JenkinsTestResultsTree, JenkinsTestResultsTreeError
@@ -79,6 +80,12 @@ class TheApp():
                 mq = MsgQueueService(service='kernel-mainline', exchange='mainline-todo')
 
             mq.publish(details['key'], details, priority=int(priority))
+
+            # Announce this for the logs.
+            announce = Announce()
+            job_tag = ' '.join(details['cmd'])
+            announce.send('cod-job-enqueued', 'cod-job-enqueued queuing {} (priority={} key={})'.format(job_tag, priority, details['key']))
+
 
             retval = 0
 
