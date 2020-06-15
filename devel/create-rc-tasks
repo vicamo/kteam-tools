@@ -86,11 +86,12 @@ class RCCardsCreator:
         """
 
         self.args = args
-        match = re.fullmatch('v?([0-9]+\.[0-9]+(?:-rc[0-9]+)?)', args.version)
+        match = re.fullmatch('v?(([0-9]+\.[0-9]+)(?:-rc[0-9]+)?)', args.version)
         if match is None:
             print('Error: Invalid version {}'.format(args.version))
             exit(1)
         self.version = match.group(1)
+        self.base_version = match.group(2)
         self.config_file = args.config
         self.config = {}
         self.config_load()
@@ -110,7 +111,7 @@ class RCCardsCreator:
         :return: None
         """
         # create the board with the lists on the organization
-        board_title = self.config['board']['prefix_name'] + self.version
+        board_title = self.config['board']['prefix_name'] + self.base_version
         board = UpstreamBoard(self.tt, board_title, dryrun=self.args.dry_run)
         board.lookup_board_id()
 
