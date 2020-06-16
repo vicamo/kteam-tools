@@ -1549,7 +1549,7 @@
                     publish-to:
                         armhf: [ '18-pi' ]
                         arm64: [ '18-pi' ]
-            supported: false
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-raspi' ]
             invalid-tasks: [ 'regression-testing' ]
