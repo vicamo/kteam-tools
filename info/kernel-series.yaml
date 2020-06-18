@@ -1464,6 +1464,8 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
