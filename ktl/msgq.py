@@ -7,7 +7,7 @@ class MsgQueue(object):
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, **kwargs):
+    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, supports_global_qos=False, **kwargs):
         s.exchange_name = exchange
 
         # Address should now be considered deprecated.
@@ -22,6 +22,8 @@ class MsgQueue(object):
         s.connection = pika.BlockingConnection(params)
         s.channel = s.connection.channel()
         s.channel.exchange_declare(exchange=s.exchange_name, exchange_type=exchange_type)
+
+        s.supports_global_qos = supports_global_qos
 
 
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True, queue_arguments=None):
@@ -49,12 +51,10 @@ class MsgQueue(object):
                 handler(channel, method, properties, payload)
             channel.basic_ack(method.delivery_tag)
 
-        try: 
+        if s.supports_global_qos:
             s.channel.basic_qos(prefetch_count=1, global_qos=True)
-        except pika.exceptions.ConnectionClosedByBroker as e:
-            # NOTIMPLEMENTED
-            if e.code == 540:
-                s.channel.basic_qos(prefetch_count=1)
+        else:
+            s.channel.basic_qos(prefetch_count=1)
 
         if isinstance(routing_key, str):
             routing_key = [routing_key]
@@ -119,6 +119,8 @@ class MsgQueueService(MsgQueue):
         # configuration service once it is built.
         if 'credentials' not in kwargs:
             kwargs['credentials'] = pika.PlainCredentials(service, service)
+
+        kwargs['supports_global_qos'] = True
 
         super(MsgQueueService, s).__init__(**kwargs)
 
