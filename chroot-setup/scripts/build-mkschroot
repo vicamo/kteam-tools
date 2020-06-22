@@ -181,6 +181,11 @@ esac
 #            XXX: we should use kernel series to instantiate the
 #            full list of packages in the series.
 case "$SUITE" in
+groovy)
+	ADDPKG="$ADDPKG dwarves"
+	;;
+esac
+case "$SUITE" in
 eoan|focal)
 	ADDPKG="$ADDPKG curl"
 	;;
