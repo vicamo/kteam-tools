@@ -57,6 +57,9 @@ class Cmdline:
         stdo("        --version        Version number of the upstream stable release,                      \n")
         stdo("                         or 'patchset' for an arbitrary set of patches.                      \n")
         stdo("                                                                                             \n")
+        stdo("        --package        Package to use for the bug instead of getting the package from      \n")
+        stdo("                         the changelog.                                                      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --staging --version v4.15.8                                                       \n" % self.cfg['app_name'])
         stdo("        %s --staging --version patchset                                                      \n" % self.cfg['app_name'])
@@ -73,7 +76,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'version=']
+            optsLong  = ['help', 'staging', 'version=', 'package=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -85,6 +88,9 @@ class Cmdline:
 
                 elif (opt == '--version'):
                     self.cfg['version'] = val
+
+                elif (opt == '--package'):
+                    self.cfg['package'] = val
 
         except GetoptError as error:
             print(error, defaults)
@@ -192,8 +198,12 @@ class CreateTrackingBug(StdApp):
 
             """ % (update_desc, repository)
 
+            if 'package' in self.cfg:
+                package = self.cfg['package']
+            else:
+                package = changelog[0]['package']
             description = description + "\n" + log
-            bug = self.lp.create_bug(project='ubuntu', package=changelog[0]['package'], title=title, description=description)
+            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
             # Set the status to 'Confirmed'
             for task in bug.tasks:
