@@ -7,12 +7,16 @@ class MsgQueue(object):
 
     # __init__
     #
-    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, supports_global_qos=False, **kwargs):
+    def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, supports_global_qos=False, local=False, **kwargs):
         s.exchange_name = exchange
 
         # Address should now be considered deprecated.
-        kwargs.setdefault('host', address)
-        kwargs.setdefault('port', 5672)
+        if local:
+            kwargs.setdefault('host', 'localhost')
+            kwargs.setdefault('port', 9123)
+        else:
+            kwargs.setdefault('host', address)
+            kwargs.setdefault('port', 5672)
         kwargs.setdefault('connection_attempts', 3)
 
         # Backwards compatibility with pre-0.11.x pika.
@@ -106,9 +110,13 @@ class MsgQueueService(MsgQueue):
 
     # __init__
     #
-    def __init__(s, service=None, **kwargs):
+    def __init__(s, service=None, local=False, **kwargs):
         # Services are all on the "new" rabbitmq server by default.
-        kwargs.setdefault('host', '10.15.182.2')
+        if local:
+            kwargs.setdefault('host', 'localhost')
+            kwargs.setdefault('port', 9124)
+        else:
+            kwargs.setdefault('host', '10.15.182.2')
 
         # Use the service prefix for the virtual_host name.
         if '-' in service:
