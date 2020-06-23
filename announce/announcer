@@ -76,10 +76,7 @@ class TheApp():
         retval = 1
 
         try:
-            if s.args.local:
-                s.mq = MsgQueueService(service='kernel-announce', host='localhost', port=9123, exchange='announce-todo', heartbeat_interval=60)
-            else:
-                s.mq = MsgQueueService(service='kernel-announce', exchange='announce-todo', heartbeat_interval=60)
+            s.mq = MsgQueueService(service='kernel-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
