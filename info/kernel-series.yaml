@@ -802,6 +802,25 @@
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-bluefield:
+            routing:
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:chelmsford-team/ubuntu/linux-bluefield-build', 'Release']
+                proposed:
+                    - ['ubuntu', 'Proposed']
+                updates:
+                    - ['ppa:oem-archive/ubuntu/chelmsford', 'Release']
+            packages:
+                linux-bluefield:
+                linux-signed-bluefield:
+                    type: signed
+                linux-meta-bluefield:
+                    type: meta
+            supported: false
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
