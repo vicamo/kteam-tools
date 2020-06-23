@@ -801,6 +801,12 @@ class AutoPackageTest(object):
     def matrix(self, results, limit=None, limit_url=None):
         title = self.source + " on " + self.series
 
+        results_data = {
+            'series' : self.series,
+            'source' : self.source,
+            'history': {},
+        }
+
         page = """<html>
 <head>
 <title>ADT Test Matrix -- {0}</title>
@@ -879,6 +885,8 @@ table.matrix, table.matrix th, table.matrix td {{
                         page += "<td>" + race_text
                         continue
 
+                    kernel_version = ver.split()[0]
+
                     if pkg in results[ver] and arch in results[ver][pkg]:
                         (status, status_link, version, lversion) = results[ver][pkg][arch]
                         bits = version.split('\n', 1) + [ '' ]
@@ -897,6 +905,8 @@ table.matrix, table.matrix th, table.matrix td {{
 
                         page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
+                        triggers = archive = None
+
                         # XXX: there is currently no way to specify the PPA for the retry.
                         if status != 'GOOD' and ver == self.trigger:
                             triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
@@ -907,6 +917,18 @@ table.matrix, table.matrix th, table.matrix td {{
                             archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
 
                             page += '&nbsp;<a href="{5}?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
+
+                        annotation = annot.strip()
+                        entry = {
+                            'status': status,
+                            'package': pkg,
+                            'package_version': version,
+                            'arch': arch,
+                            'retry_url': retry_url,
+                            'annotation': annotation
+                        }
+                        results_data['history'].setdefault(kernel_version, [])
+                        results_data['history'][kernel_version].append(entry)
                     else:
                         page += '<td>&nbsp;'
 
@@ -919,7 +941,7 @@ table.matrix, table.matrix th, table.matrix td {{
 </body>
 </html>
 """
-        return page
+        return page, results_data
 
     def hints_raw(self, results):
         verlist = sorted(results.keys(), key=cmp_to_key(apt_pkg.version_compare))
@@ -1093,6 +1115,7 @@ table.matrix td {{
 """.format(stamp), file=indexf)
     
     updated = {}
+    rdata = []
 
     (archive, hints) = sys.argv[1:]
 
@@ -1166,17 +1189,27 @@ table.matrix td {{
         (state, summary, version, count, total) = info
 
         adt.log_verbose('Generating narrow matrix')
-        matrix = adt.matrix(results, limit=6, limit_url=html_all)
+        matrix, results_data = adt.matrix(results, limit=6, limit_url=html_all)
         with open(html + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
         os.rename(html + '.new', html)
 
+        target = series + '-' + package + '-recent-results-data.json'
+        with open(target + '.new', 'w') as fid:
+            print(json.dumps(results_data, sort_keys=True, indent=4), file=fid)
+        os.rename(target + '.new', target)
+
         # Detail matrix ...
         adt.log_verbose('Generating detail matrix')
-        matrix = adt.matrix(results, limit=50)
+        matrix, results_data = adt.matrix(results, limit=50)
         with open(html_all + '.new', 'w') as mfd:
             print(matrix, end=None, file=mfd)
         os.rename(html_all + '.new', html_all)
+
+        target = series + '-' + package + '-detail-results-data.json'
+        with open(target + '.new', 'w') as fid:
+            print(json.dumps(results_data, sort_keys=True, indent=4), file=fid)
+        os.rename(target + '.new', target)
 
         # Latest results (as hints)
         adt.log_verbose('Generating hints')
@@ -1221,6 +1254,20 @@ table.matrix td {{
         mig_url = "http://people.canonical.com/~ubuntu-archive/proposed-migration/" + series + "/update_excuses.html#" + package
         print('<tr class="row"><td>{series}<td>{package}<td>{latest_version}<td>{count}/{total}<td><a href="{detail_url}">{summary}</a><td><a class="nounder" href="{cmds_url}">&rArr;</a><td><a href="{migration_url}">{migration}</a><td class="{state}">{state}</tr>\n'.format(series=series, package=package, detail_url=html, latest_version=version, summary=summary, state=state, count=count, total=total, migration=migration, migration_url=mig_url, cmds_url=series + '-' + package + '.cmds'), file=indexf)
 
+        rdata.append({
+            'series' : series,
+            'package' : package,
+            'detail_url' : html,
+            'latest_version' : version,
+            'summary' : summary,
+            'state' : state,
+            'count' : count,
+            'total' : total,
+            'migration' : migration,
+            'migration_url' : mig_url,
+            'cmds_url' : series + '-' + package + '.cmds',
+        })
+
         print('{series} {package} {latest_version} {state} summary<{summary}>'.format(series=series, package=package.replace('-meta', ''), latest_version=version, state=state.replace('REGN', 'REGR'), summary=summary), file=overallf)
 
         # We are all done with adt so make sure it is saved if changed.
@@ -1237,3 +1284,6 @@ table.matrix td {{
 
 os.rename(index + ".new", index)
 os.rename(overall + ".new", overall)
+
+with open('overall-results-data.json', 'w') as fid:
+    print(json.dumps(rdata, sort_keys=True, indent=4), file=fid)
