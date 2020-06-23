@@ -17,7 +17,7 @@ if [ "$1" = '--update-deps' ]; then
 	update=1
 fi
 
-while read thing url
+while read thing url master
 do
 	dep="deps/$thing"
 	mkdir -p "$dep"
@@ -30,7 +30,9 @@ do
 		(cd "$dep" && git pull)
 	fi
 done <<EOL
-so-trello	git://git.launchpad.net/~apw/+git/so-trello
+so-trello			git://git.launchpad.net/~apw/+git/so-trello
+python-mattermost-driver	git://git.launchpad.net/~canonical-kernel-team/+git/python-mattermost-driver https://github.com/Vaelor/python-mattermost-driver
 EOL
 
 ln -sf $(realpath --relative-to=stable deps/so-trello/trellotool) stable/trellotool
+ln -sf $(realpath --relative-to=announce deps/python-mattermost-driver/src/mattermostdriver) announce/mattermostdriver
