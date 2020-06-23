@@ -1,0 +1,271 @@
+#!/usr/bin/python3
+
+import asyncio
+import json
+import logging
+import os
+import requests
+import threading
+import queue
+
+from argparse import ArgumentParser
+
+from mattermostdriver import Driver
+from mattermostdriver.exceptions import ResourceNotFound
+
+from ktl.announce import Announce
+from ktl.msgq import MsgQueueService
+
+from secrets import Secrets
+
+
+class ClientCommand(object):
+    """
+    A command to the client thread. Each command type has its associated
+    data:
+
+    QUIT:       exception
+    MSGQ_RAW:   full payload
+    MM_RAW:     mattermost event structures
+    """
+    QUIT, MSGQ_RAW, MM_RAW = range(3)
+
+    def __init__(s, type, data=None):
+        s.type = type
+        s.data = data
+
+
+class AuthBearer(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, r=None):
+        # If we are being 'instantiated' then just return ourselves.
+        if r is None:
+            return self
+
+        r.headers['Authorization'] = "Bearer {}".format(self.token)
+        return r
+
+
+class MattermostEvents(threading.Thread):
+
+    def __init__(self, host, cmd_q):
+        super(MattermostEvents, self).__init__()
+
+        self.daemon = True
+
+        self.host = host
+        self.cmd_q = cmd_q
+        self.event_loop = asyncio.new_event_loop()
+
+    async def _handler(self, payload):
+        payload = json.loads(payload)
+        if payload.get('data', {}).get('post') is not None:
+            payload['data']['post'] = json.loads(payload['data']['post'])
+
+        #print("MattermostEvents HANDLER", payload)
+        self.cmd_q.put(ClientCommand(ClientCommand.MM_RAW, payload))
+
+    def run(self):
+        try:
+            asyncio.set_event_loop(self.event_loop)
+
+            host = self.host
+            logger.debug( "Going to set up driver for connection to %s " % (host,) )
+
+            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
+            password = secrets.data['mattermost-token']
+
+            # Setting the 'token' and calling login() should be sufficient to
+            # authenticate us.  However, in this mode the existing request
+            # authenticator will override the driver added Authorization: Bearer
+            # <token> header and replace it with a Authorization: Basic <basic>
+            # header.  Therefore supply an authorization class which simply
+            # supplies the existing bearer token, and login() as if we had not.
+            self.mmDriver = Driver(options={
+                'scheme' : 'https',
+                'url'    : host,
+                'port'   : 443,
+                'auth'   : AuthBearer(password),
+                'token'  : password,
+                #'debug': True,
+            })
+
+
+            me = self.mmDriver.login()
+            print(me)
+            #shiv = 'z7ig89wxwfnzjq574izfjp965r'
+            #channel = self.mmDriver.channels.get_channel_by_name_and_team_name('Canonical', 'Testing')
+            #self.mmDriver.channels.add_user(channel['id'], options={'user_id': shiv})
+            #os.exit(1)
+            websocket = self.mmDriver.init_websocket(self._handler)
+
+        except Exception as e:
+            self.cmd_q.put(ClientCommand(ClientCommand.QUIT, e))
+            raise e
+
+    def send(self, channel, summary, card=None):
+        print("MM send", channel, summary)
+        try:
+            channel = self.mmDriver.channels.get_channel_by_name_and_team_name('Canonical', channel)
+        except ResourceNotFound:
+            logger.error("mattermost channel {} not found".format(channel))
+            return
+
+        options={'channel_id': channel['id'], 'message': summary}
+        if card is not None and card != summary:
+            options.setdefault('props', {})['card'] = card
+
+        self.mmDriver.posts.create_post(options=options)
+
+
+class MsgqReader(threading.Thread):
+
+    def __init__(self, cmd_q, args, mq=None):
+        super().__init__()
+
+        self.daemon = True
+
+        self.cmd_q = cmd_q
+        self.mq = mq
+        self.queue = args.queue
+        self.name = args.name
+        self.direct = self.queue + '--' + args.name
+        self.local = args.local
+
+    # _handler
+    #
+    def _handler(self, payload):
+        #print("MsgqReader _handler", payload)
+        self.cmd_q.put(ClientCommand(ClientCommand.MSGQ_RAW, payload))
+
+    # run
+    #
+    def run(self):
+        try:
+            if self.mq is None:
+                print("APW", self.local)
+                self.mq = MsgQueueService(service='kernel-announce', local=self.local, exchange='announce-todo', heartbeat_interval=60)
+            print("Msgq", self.mq)
+
+            self.mq.listen_worker(self.queue, 'announce.mattermost', self._handler)
+            self.mq.listen_worker(self.direct, 'direct.{}.announce.mattermost'.format(self.name), self._handler, auto_delete=True)
+            print("Listening", self.mq)
+            self.mq.listen_start()
+
+        except Exception as e:
+            self.cmd_q.put(ClientCommand(ClientCommand.QUIT, e))
+            raise e
+
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+    # main
+    #
+    def main(self):
+
+        retval = 1
+
+        try:
+            cmd_q = queue.Queue()
+
+            mm = MattermostEvents('chat.canonical.com', cmd_q)
+            mm.start()
+
+            mq = MsgqReader(cmd_q, args)
+            mq.start()
+
+            while True:
+                cmd = cmd_q.get()
+                print("WORKER:", cmd.type, cmd.data)
+                if cmd.type == ClientCommand.QUIT:
+                    break
+
+                elif cmd.type == ClientCommand.MM_RAW:
+                    if cmd.data.get('event') != 'posted':
+                        continue
+                    channel = cmd.data.get('data', {}).get('channel_name')
+                    message = cmd.data.get('data', {}).get('post', {}).get('message')
+                    if message is None:
+                        continue
+
+                    print("WORKER: POST", channel, message)
+                    if not message.startswith('@shiv '):
+                        continue
+
+                    command = message.strip().split()
+
+                    source = {'type': 'mattermost', 'channel': channel}
+                    destination = {'type': 'shankbot'}
+                    message = {'subject': ' '.join(command[1:])}
+
+                    # Reflect to sender.
+                    if command[1] == 'reflect':
+                        destination = source
+
+                    payload = {'source': source, 'destination': destination, 'message': message}
+                    print("APW: deliver_to", payload)
+
+                    announce = Announce(local=self.args.local)
+                    announce.deliver_to(payload)
+
+                elif cmd.type == ClientCommand.MSGQ_RAW:
+                    print("MSGQ_RAW", cmd.data)
+                    destination = cmd.data.get('destination', {})
+                    message = cmd.data.get('message', {})
+
+                    text = message.get('summary', message.get('subject', '??'))
+                    mm.send(destination.get('channel'), text, card=message.get('body'))
+                cmd_q.task_done()
+
+            #mm.join()
+            #mq.join()
+
+            print("Exiting")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    parser = ArgumentParser(description=app_description)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('--queue', default='announce-mattermost', help='Name of the queue to use')
+
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    logging.basicConfig(format="%(levelname)05s - %(message)s")
+    logger = logging.getLogger('announce-mattermost')
+    logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
