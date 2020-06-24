@@ -12,14 +12,19 @@ class Bug2Card:
         bug = self.lp.bugs[bug_nr]
         return bug.title
 
+    def bug_desc(self, bug_nr):
+        desc = self.lp.bugs[bug_nr]
+        return desc.description
+
     def make_card(self, bug):
         card_name = 'LP #%d - %s' % (bug, self.bug_title(bug))
+        card_desc = self.bug_desc(bug)
 
         argv = [self.so_trello, 'list-addcard',
                 '--board', self.board,
                 '--list', self.list,
                 '--card-name', card_name,
-                '--card-desc', 'https://bugs.launchpad.net/bugs/%d' % (bug),
+                '--card-desc', card_desc,
                 '--format', '{id} {url}',
                ]
         for card_member in self.card_members:
