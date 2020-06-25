@@ -120,7 +120,7 @@ class WorkflowBugTask(object):
             s.lp_task.assignee = val
             s.__assignee = False
             cinfo('    Task %s assigned to %s' % (s.name, val), 'yellow')
-        center(s.__class__.__name__ + '.assignee')
+        cleave(s.__class__.__name__ + '.assignee')
 
     # reason_state
     #
