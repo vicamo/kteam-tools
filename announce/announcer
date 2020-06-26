@@ -38,15 +38,22 @@ class AnnounceDeliver:
 
         self.mq = None
 
+        self.announce_mq = None
+
+    def onward_deliver_to(self, destination, message):
+        if not self.announce_mq:
+            self.announce_mq = MsgQueueService(service='kernel-announce', local=self.cfg.get('local', False), exchange='announce-todo', heartbeat_interval=60)
+
+        key = 'announce.' + destination['type']
+        payload = {'destination': destination, 'message': message}
+        self.announce_mq.publish(key, payload)
+
     def __message(self, key, message, lcfg):
         cfg = self.cfg.get('message', {})
         cfg.update(lcfg)
 
         if not self.mq:
-            if self.cfg.get('local', False):
-                self.mq = MsgQueue(address='localhost', port=9123)
-            else:
-                self.mq = MsgQueue()
+            self.mq = MsgQueue(local=self.cfg.get('local', False))
 
         msg = {
             "key"            : "kernel.irc",
@@ -63,38 +70,36 @@ class AnnounceDeliver:
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
 
-    def __mattermost(self, key, summary, lcfg):
+    def __mattermost(self, destination, message, lcfg):
         cfg = self.cfg.get('mattermost', {})
         cfg.update(lcfg)
 
-        url = cfg['hook']
-        payload = {'text': summary}
-        #if body != subject:
-        #    payload['props'] = {'card': '```\n'+body+'```'}
-        headers = {'Content-Type': 'application/json'}
-        data = json.dumps(payload).encode('ascii')
+        self.onward_deliver_to(cfg, message)
 
-        req = Request(url, headers=headers, data=data)
-        f = urlopen(req)
-        f.close()
+    def deliver_to(self, destination, message):
+        if destination.get('type') != 'key' or 'key' not in destination:
+            raise ValueErorr('invalid destination')
 
-    def send(self, key, subject=None, body=None, summary=None):
-        if subject == None and summary == None:
-            raise ValueError("subject or summary required")
-
-        if summary == None:
+        # XXX: legacy route drivers take various components.
+        subject = message.get('subject')
+        summary = message.get('summary')
+        body = message.get('body')
+        if summary is None:
             summary = subject
-        if body == None:
+        if body is None:
             body = subject
 
+        key = str(destination['key'])
         routing = self.routing.get(key, [])
+        cwarn("key {} routing {}".format(key, routing))
         for route in routing:
+            cwarn("route {}".format(route))
             if route.get('type') == 'email':
                 self.__email(key, subject, body, route)
             elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
             elif route.get('type') == 'mattermost':
-                self.__mattermost(key, summary, route)
+                self.__mattermost(destination, message, route)
 
 
 # TheApp
@@ -120,12 +125,14 @@ class TheApp():
     def _announce(s, to, message):
         message = to + " " + s.args.name + " " + message
 
-        announce = AnnounceDeliver()
-        announce.send(to, message, message)
+        destination = {'type': 'key', 'key': to}
+        message = {'subject': message}
 
-    def _send(s, key, subject=None, body=None, summary=None):
+        s.deliver_to(destination, message)
+
+    def deliver_to(s, destination, message):
         announce = AnnounceDeliver()
-        announce.send(key, subject, body, summary)
+        announce.deliver_to(destination, message)
 
     # _handler
     #
@@ -133,15 +140,33 @@ class TheApp():
         cdebug("TheApp::_handler")
 
         try:
-            key = payload.get('key')
-            if key is None:
-                raise ValueError('routing key missing')
+            # Old format ...
+            if 'key' in payload:
+                payload = {
+                        'destination': {
+                            'type': 'key',
+                            'key': payload['key'],
+                        },
+                        'message': payload,
+                    }
+                del payload['message']['key']
+            if 'destination' not in payload or 'message' not in payload:
+                raise ValueError("invalid message")
 
-            cwarn("announcing {} ({})".format(payload.get('key'), payload.get('summary', payload.get('subject'))))
-            s._send(payload.get('key'), payload.get('subject'), payload.get('body'), payload.get('summary'))
+            destination = payload.get('destination')
+            message = payload.get('message')
 
-        except:
-            error("announcement failed")
+            summary = message.get('summary')
+            if summary is None:
+                summary = message.get('subject')
+
+            cerror("payload {}".format(payload))
+            cwarn("announcing {} ({})".format(destination, summary))
+            s.deliver_to(destination, message)
+
+        except Exception as e:
+            error("announcement failed: {}".format(str(e)))
+            raise
             #print(sys.exc_info()[0])
             print(traceback.format_exc())
 
