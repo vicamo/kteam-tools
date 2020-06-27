@@ -70,8 +70,8 @@ class AnnounceDeliver:
         email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
         email.send(cfg['from'], cfg['to'], subject, body)
 
-    def __mattermost(self, destination, message, lcfg):
-        cfg = self.cfg.get('mattermost', {})
+    def __onward(self, which, destination, message, lcfg):
+        cfg = self.cfg.get(which, {})
         cfg.update(lcfg)
 
         self.onward_deliver_to(cfg, message)
@@ -98,8 +98,8 @@ class AnnounceDeliver:
                 self.__email(key, subject, body, route)
             elif route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
-            elif route.get('type') == 'mattermost':
-                self.__mattermost(destination, message, route)
+            elif route.get('type') in ('irc', 'mattermost'):
+                self.__onward(route.get('type'), destination, message, route)
 
 
 # TheApp
