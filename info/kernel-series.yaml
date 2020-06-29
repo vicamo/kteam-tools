@@ -1765,7 +1765,6 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
-            routing: prerelease
             variants: ['-edge']
             packages:
                 linux-aws-5.4:
@@ -1924,7 +1923,6 @@
 
         linux-azure-5.4:
             variants: [ '-edge' ]
-            routing: prerelease
             packages:
                 linux-azure-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.4-next']
@@ -2058,7 +2056,6 @@
 
         linux-gcp-5.4:
             variants: ['-edge']
-            routing: prerelease
             packages:
                 linux-gcp-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.4-next']
@@ -2400,7 +2397,6 @@
 
         linux-oracle-5.4:
             variants: [ '-edge' ]
-            routing: prerelease
             packages:
                 linux-oracle-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.4-next']
