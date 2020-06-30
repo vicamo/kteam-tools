@@ -272,7 +272,7 @@
                 linux-restricted-modules-5.7:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
-            supported: false
+            supported: true
             testing:
                 flavours:
                     generic:
