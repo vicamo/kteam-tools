@@ -270,9 +270,13 @@ class MonitorLaunchpadArchive:
                 if pub.build_link in things_seen:
                     continue
                 things_seen.add(pub.build_link)
-                print("B", pub, pub.date_published,
-                    pub.distro_arch_series_link, pub.build.source_package_name,
-                    pub.binary_package_version)
+                try:
+                    print("B", pub, pub.date_published,
+                        pub.distro_arch_series_link, pub.build.source_package_name,
+                        pub.binary_package_version)
+                except ValueError:
+                    print("B-", pub, "private?!?")
+                    continue
                 series_name = pub.distro_arch_series_link.split('/')[-2]
                 series_source_key = "{}:{}".format(series_name, pub.build.source_package_name)
                 if series_source_key not in self.source_packages:
