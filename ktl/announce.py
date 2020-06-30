@@ -19,9 +19,8 @@ class Announce:
         else:
             self.mq = MsgQueueService(service='kernel-announce', exchange='announce-todo', heartbeat_interval=60)
 
-    def deliver_to(self, destination, message):
-        key = 'announce.' + destination['type']
-        payload = {'destination': destination, 'message': message}
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
         self.mq.publish(key, payload)
 
     def send(self, key, subject=None, body=None, summary=None):
@@ -29,7 +28,6 @@ class Announce:
             raise ValueError("subject or summary required")
 
         destination = {'type': 'key', 'key': key}
-
         message = {}
         if subject is not None:
             message['subject'] = subject
@@ -38,4 +36,6 @@ class Announce:
         if summary is not None:
             message['summary'] = summary
 
-        self.deliver_to(destination, message)
+        payload = {'destination': destination, 'message': message}
+
+        self.deliver_to(payload)
