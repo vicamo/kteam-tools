@@ -196,8 +196,8 @@ class TheApp():
             s._announce('announce-control', 'start')
 
             q_args = {'x-max-priority': 7}
-            s.mq.listen_worker(s.queue, 'announce', s._handler, queue_arguments=q_args)
-            s.mq.listen_worker(s.direct, 'direct.{}.announce'.format(s.args.name), s._handler, queue_arguments=q_args, auto_delete=True)
+            s.mq.listen_worker(s.queue, 'announce.key', s._handler, queue_arguments=q_args)
+            s.mq.listen_worker(s.direct, 'direct.{}.announce.key'.format(s.args.name), s._handler, queue_arguments=q_args, auto_delete=True)
 
             s.mq.listen_start()
 
