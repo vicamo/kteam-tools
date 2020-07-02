@@ -1602,7 +1602,8 @@
                     primary: true
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi-5.4']
                     gated: false
-                    stable: true
+                    stable: false
+                    promote-to: [ 'edge' ]
                     qa: false
                     hw-cert: true
                     publish-to:
