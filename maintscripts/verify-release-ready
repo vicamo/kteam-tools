@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
@@ -387,7 +387,7 @@ class VerifyReleaseReady():
                        (changelog_series == s.lp_devel_series.displayname.lower()):
                         is_targeted_to_series = True
                         # if we are on a devel or series targeted task check status of that task
-                        if task.status == u'Fix Committed':
+                        if task.status == 'Fix Committed':
                             is_fix_committed = True
 
             # display status based on results
