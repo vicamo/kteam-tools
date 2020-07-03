@@ -1,0 +1,27 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+cmd="$1"
+shift
+
+case "$cmd" in
+testing)
+	case "$1" in
+	exit)		exit "$2" ;;
+	explode)	echo "BOOM"; exit 1 ;;
+	explode-verbose)
+		echo "BOOM";
+		echo "BOOM";
+		echo "BOOM";
+		echo "BOOM";
+		echo "BOOM";
+		exit 1
+		;;
+	esac
+	;;
+*)
+	echo "shankbot: $cmd: unknown command"
+	exit 1
+	;;
+esac

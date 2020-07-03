@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import os
+import sys
+import traceback
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, error
+from ktl.log                            import cdebug, center, cleave, cerror, cwarn
+from ktl.msgq                           import MsgQueueService
+import time
+from subprocess                         import run, PIPE, STDOUT, CalledProcessError
+
+
+# TheApp
+#
+class AnnouncerShankbot():
+
+    def __init__(self, args):
+        '''
+        '''
+        self.args = args
+
+        self.queue = 'announce-shankbot'
+        self.direct = self.queue + '--' + self.args.name
+
+    # _announce
+    #
+    def _announce(self, to, message):
+        message = to + " " + self.args.name + " " + message
+
+        destination = {'type': 'key', 'key': to}
+        message = {'subject': message}
+
+        payload = {'destination': destination, 'message': message}
+
+        self.deliver_to(payload)
+
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq.publish(key, payload)
+
+    # _handler
+    #
+    def _handler(self, payload):
+        cdebug("TheApp::_handler")
+
+        try:
+            if 'source' not in payload or 'message' not in payload:
+                print(payload)
+                raise ValueError("invalid message")
+
+            cwarn("payload {}".format(payload))
+
+            reply = {'destination': payload.get('source')}
+
+            message = payload.get('message')
+            summary = message.get('summary')
+            if summary is None:
+                summary = message.get('subject')
+
+            command = summary.strip().split()
+
+            reply['message'] = {'summary': "shankbot: {} starting".format(summary.strip())}
+            self.deliver_to(reply)
+
+            command.insert(0, os.path.join(os.path.dirname(__file__), "announcer-shankbot-dispatch"))
+            result = run(command, stdout=PIPE, stderr=STDOUT)
+            body = result.stdout.decode("utf-8")
+            if body is not None and body != '':
+                message['body'] = body
+
+            text = "shankbot: {}".format(summary)
+            if result.returncode != 0:
+                text += ' failed (rc={})'.format(result.returncode)
+                body_lines = body.split('\n')
+                if len(body_lines) == 2:
+                    text += ' -- {}'.format(body_lines[0])
+                    del message['body']
+            else:
+                text += ' successful'
+
+            message["summary"] = text
+
+            reply['message'] = message
+            self.deliver_to(reply)
+
+
+        except Exception as e:
+            error("announcement failed: {}".format(str(e)))
+            raise
+            #print(sys.exc_info()[0])
+            print(traceback.format_exc())
+
+            self._announce('announce-control', 'exploded')
+
+        cdebug(payload)
+
+
+    def run(self):
+        '''
+        '''
+        retval = 1
+
+        try:
+            self.mq = MsgQueueService(service='kernel-announce', local=self.args.local, exchange='announce-todo', heartbeat_interval=60)
+
+            self._announce('announce-control', 'shankbot start')
+
+            q_args = {'x-max-priority': 7}
+            self.mq.listen_worker(self.queue, 'announce.shankbot', self._handler, queue_arguments=q_args)
+            self.mq.listen_worker(self.direct, 'direct.{}.announce.shankbot'.format(self.args.name), self._handler, queue_arguments=q_args, auto_delete=True)
+
+            self.mq.listen_start()
+
+            self._announce('announce-control', 'quit')
+
+            print("Exiting")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('--queue', default='announce-shankbot', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = AnnouncerShankbot(args)
+    exit(app.run())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
