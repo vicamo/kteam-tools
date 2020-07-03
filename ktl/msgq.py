@@ -48,6 +48,8 @@ class MsgQueue(object):
 
     def listen_worker(s, queue_name, routing_key, handler_function=None, handler=None, queue_durable=True, auto_delete=False, queue_arguments=None):
         def wrapped_handler(channel, method, properties, body):
+            if isinstance(body, bytes):
+                body = body.decode('utf-8')
             payload = json.loads(body)
             if handler_function is not None:
                 handler_function(payload)
