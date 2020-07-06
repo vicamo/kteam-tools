@@ -20,6 +20,25 @@ testing)
 		;;
 	esac
 	;;
+shank)
+	for arg in "$@"
+	do
+		validator=$(echo "$arg" | sed -e 's/[0-9][0-9]*/0/g')
+		case "$validator" in
+		0|*:*)		;;
+		*)
+			echo "shank $arg: Invalid bug number" 1>&2
+			exit 1
+			;;
+		esac
+	done
+	if [ "$#" -lt 1 ]; then
+		echo "Usage: shank <bug> ..." 1>&2
+		exit 1
+	fi
+
+	"$here/../sbin/oops-run" shiv-shank "$here/../stable/swm-hero" "$@"
+	;;
 *)
 	echo "shankbot: $cmd: unknown command"
 	exit 1
