@@ -31,7 +31,7 @@ base-path: '~/canonical/kernel/ubuntu'
   #log-path: relative/path/to/logdir
 
 # cranky review-master-changes
-#review-master-changes
+#review-master-changes:
   # Extended regular expression to exclude commits based on the commit message
   #exclude: "UBUNTU: (Ubuntu-|link-to-tracker:|Start new release)"
   # Command used to list the master kernel commits
