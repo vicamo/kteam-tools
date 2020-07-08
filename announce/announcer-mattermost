@@ -158,6 +158,10 @@ class MsgqReader(threading.Thread):
             self.cmd_q.put(ClientCommand(ClientCommand.QUIT, e))
             raise e
 
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq.publish_threadsafe(key, payload)
+
 
 # TheApp
 #
@@ -219,8 +223,7 @@ class TheApp():
                     payload = {'source': source, 'destination': destination, 'message': message}
                     print("APW: deliver_to", payload)
 
-                    announce = Announce(local=self.args.local)
-                    announce.deliver_to(payload)
+                    mq.deliver_to(payload)
 
                 elif cmd.type == ClientCommand.MSGQ_RAW:
                     print("MSGQ_RAW", cmd.data)
