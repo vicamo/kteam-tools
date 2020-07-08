@@ -206,7 +206,7 @@ xenial)
 	;;
 esac
 case "$SUITE" in
-xenial|bionic|disco|eoan|focal)
+xenial|bionic|disco|eoan|focal|groovy)
 	ADDPKG="$ADDPKG libcap-dev"
 	;;
 esac
