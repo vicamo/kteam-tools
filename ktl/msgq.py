@@ -1,3 +1,4 @@
+import functools
 import json
 import pika
 
@@ -101,6 +102,10 @@ class MsgQueue(object):
         message_body = json.dumps(payload)
         properties = pika.BasicProperties(delivery_mode=2, priority=priority)
         s.channel.basic_publish(exchange=s.exchange_name, routing_key=routing_key, body=message_body, properties=properties)
+
+    def publish_threadsafe(s, routing_key, payload, priority=None):
+        cb = functools.partial(s.publish, routing_key, payload, priority)
+        s.connection.add_callback_threadsafe(cb)
 
 
 class MsgQueueService(MsgQueue):
