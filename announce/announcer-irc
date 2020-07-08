@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import functools
 import json
 import logging
 import os
@@ -13,7 +14,6 @@ import queue
 from argparse import ArgumentParser
 from string import punctuation
 
-from ktl.announce import Announce
 from ktl.log import cdebug, cinfo, center, cleave
 from ktl.msgq import MsgQueueService
 
@@ -285,6 +285,13 @@ class MsgqReader(threading.Thread):
             self.cmd_q.put(ClientCommand(ClientCommand.QUIT, e))
             raise e
 
+    def deliver_to(self, payload):
+        cb = functools.partial(self.deliver_to_callback, payload)
+        self.mq.connection.add_callback_threadsafe(cb)
+
+    def deliver_to_callback(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq.publish(key, payload)
 
 # TheApp
 #
@@ -367,9 +374,7 @@ class TheApp():
 
                     payload = {'source': source, 'destination': destination, 'message': message}
                     print("APW: deliver_to", payload)
-
-                    announce = Announce(local=self.args.local)
-                    announce.deliver_to(payload)
+                    mq.deliver_to(payload)
 
                 elif cmd.type == ClientCommand.MSGQ_RAW:
                     cinfo("MSGQ_RAW".format(cmd.data))
