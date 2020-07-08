@@ -211,12 +211,12 @@ xenial|bionic|disco|eoan|focal|groovy)
 	;;
 esac
 case "$SUITE" in
-xenial|bionic|disco|eoan|focal)
+xenial|bionic|disco|eoan|focal|groovy)
 	ADDPKG="$ADDPKG pkg-config libfuse-dev"
 	;;
 esac
 case "$SUITE" in
-bionic|disco|eoan|focal)
+bionic|disco|eoan|focal|groovy)
 	ADDPKG="$ADDPKG clang libelf-dev llvm"
 	;;
 esac
