@@ -105,6 +105,10 @@ class AnnounceDeliver:
                 self.__onward(route.get('type'), route, payload)
 
 
+class MessageError(Exception):
+    pass
+
+
 # TheApp
 #
 class TheApp():
@@ -126,7 +130,7 @@ class TheApp():
     # _announce
     #
     def _announce(s, to, message):
-        message = to + " " + s.args.name + " " + message
+        message = to + " " + s.args.name + " announcer " + message
 
         destination = {'type': 'key', 'key': to}
         message = {'subject': message}
@@ -142,43 +146,51 @@ class TheApp():
     # _handler
     #
     def _handler(s, payload):
-        cdebug("TheApp::_handler")
+        center(s.__class__.__name__ + '._handler')
 
         try:
-            # Old format ...
-            if 'key' in payload:
-                payload = {
-                        'destination': {
-                            'type': 'key',
-                            'key': payload['key'],
-                        },
-                        'message': payload,
-                    }
-                del payload['message']['key']
-            if 'destination' not in payload or 'message' not in payload:
-                raise ValueError("invalid message")
+            what = payload.get('type', 'message')
 
-            destination = payload.get('destination')
-            message = payload.get('message')
+            if what == 'message':
+                # Old format ...
+                if 'key' in payload:
+                    payload = {
+                            'destination': {
+                                'type': 'key',
+                                'key': payload['key'],
+                            },
+                            'message': payload,
+                        }
+                    del payload['message']['key']
 
-            summary = message.get('summary')
-            if summary is None:
-                summary = message.get('subject')
+                if 'destination' not in payload or 'message' not in payload:
+                    raise MessageError("invalid message format")
 
-            cerror("payload {}".format(payload))
-            cwarn("announcing {} ({})".format(destination, summary))
-            s.deliver_to(payload)
+                destination = payload.get('destination')
+                message = payload.get('message')
+
+                summary = message.get('summary')
+                if summary is None:
+                    summary = message.get('subject')
+
+                cerror("payload {}".format(payload))
+                cwarn("announcing {} ({})".format(destination, summary))
+                s.deliver_to(payload)
+
+            else:
+                raise MessageError("invalid message type")
+
+        except MessageError as e:
+            error("command {} failed: {}".format(str(payload), str(e)))
+            s._announce('announce-control', 'command failed')
 
         except Exception as e:
-            error("announcement failed: {}".format(str(e)))
-            raise
-            #print(sys.exc_info()[0])
-            print(traceback.format_exc())
+            error("command {} exploded: {}".format(str(payload), str(e)))
 
             s._announce('announce-control', 'exploded')
+            raise e
 
-        cdebug(payload)
-
+        cleave(s.__class__.__name__ + '._handler')
 
     # main
     #
