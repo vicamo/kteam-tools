@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import os
+import sys
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, error
+
+from ktl.log                            import cinfo, cdebug, center, cleave, cerror, cwarn
+from ktl.messaging                      import Email
+from ktl.msgq                           import MsgQueue, MsgQueueService
+
+
+class MessageError(Exception):
+    pass
+
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+        s.queue = s.args.queue
+        s.direct = s.args.queue + '--' + s.args.name
+        #s.admin = 'admin-' + s.args.name
+
+    # _announce
+    #
+    def _announce(s, to, message):
+        message = to + " " + s.args.name + " " + message
+
+        destination = {'type': 'key', 'key': to}
+        message = {'subject': message}
+
+        payload = {'destination': destination, 'message': message}
+
+        s.deliver_to(payload)
+
+    def deliver_to(s, payload):
+        key = 'announce.' + payload['destination']['type']
+        s.mq.publish_threadsafe(key, payload)
+
+    # _handler
+    #
+    def _handler(s, payload):
+        center(s.__class__.__name__ + '._handler')
+
+        try:
+            what = payload.get('type', 'message')
+
+            if what == 'quit':
+                s.mq.listen_stop()
+
+            elif what == 'message':
+                if 'destination' not in payload or 'message' not in payload:
+                    raise MessageError("invalid message format")
+
+                cwarn(payload)
+
+                destination = payload.get('destination')
+                message = payload.get('message')
+
+                try:
+                    email = Email(smtp_server=destination['smtp-server'],
+                        smtp_port=destination['smtp-port'])
+                    email.send(destination['from'], destination['to'],
+                        message.get('subject', '??'), message.get('body', '??'))
+                except Exception as e:
+                    cerror("SEND FAILED: {}".format(str(e)))
+
+            else:
+                raise MessageError("invalid message type")
+
+        except MessageError as e:
+            error("command {} failed: {}".format(str(payload), str(e)))
+            s._announce('announce-control', 'command failed')
+
+        except Exception as e:
+            error("command {} exploded: {}".format(str(payload), str(e)))
+
+            s._announce('announce-control', 'exploded')
+            raise e
+
+        cleave(s.__class__.__name__ + '._handler')
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 1
+
+        try:
+            s.mq = MsgQueueService(service='kernel-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
+
+            #s.mq.queue_delete(s.args.queue)
+            #raise "FOO"
+
+            s._announce('announce-control', 'start')
+
+            q_args = {'x-max-priority': 7}
+            s.mq.listen_worker(s.queue, 'announce.email', s._handler, queue_arguments=q_args)
+            directs = ['direct.{}.{}'.format(s.args.name, key) for key in ['announce.email', 'quit']]
+            s.mq.listen_worker(s.direct, directs, s._handler, queue_arguments=q_args, auto_delete=True)
+
+            s.mq.listen_start()
+
+            s._announce('announce-control', 'quit')
+
+            print("Exiting")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('--queue', default='announce-email', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
