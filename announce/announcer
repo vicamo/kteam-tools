@@ -11,7 +11,6 @@ import socket
 import threading
 from ktl.cfg                            import Cfg
 from ktl.log                            import cdebug, center, cleave, cerror, cwarn
-from ktl.messaging                      import Email
 from ktl.msgq                           import MsgQueue, MsgQueueService
 import time
 from subprocess                         import Popen
@@ -62,13 +61,6 @@ class AnnounceDeliver:
         }
         self.mq.publish(msg['key'], msg)
 
-    def __email(self, key, subject, body, lcfg):
-        cfg = self.cfg.get('email', {})
-        cfg.update(lcfg)
-
-        email = Email(smtp_server=cfg['smtp_server'], smtp_port=cfg['smtp_port'])
-        email.send(cfg['from'], cfg['to'], subject, body)
-
     def __onward(self, which, lcfg, payload):
         cfg = self.cfg.get(which, {})
         cfg.update(lcfg)
@@ -97,11 +89,9 @@ class AnnounceDeliver:
         cwarn("key {} routing {}".format(key, routing))
         for route in routing:
             cwarn("route {}".format(route))
-            if route.get('type') == 'email':
-                self.__email(key, subject, body, route)
-            elif route.get('type') in ('notice', 'message'):
+            if route.get('type') in ('notice', 'message'):
                 self.__message(key, summary, route)
-            elif route.get('type') in ('irc', 'mattermost'):
+            elif route.get('type') in ('irc', 'mattermost', 'email'):
                 self.__onward(route.get('type'), route, payload)
 
 
