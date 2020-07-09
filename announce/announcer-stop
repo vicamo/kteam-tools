@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING, error
+#import Queue
+from ktl.log                            import cdebug, center, cleave, cerror
+from ktl.msgq                           import MsgQueue, MsgQueueService
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    # __init__
+    #
+    def __init__(s, args):
+        '''
+        '''
+        s.args = args
+
+    # main
+    #
+    def main(s):
+        '''
+        '''
+        retval = 1
+
+        try:
+            s.mq = MsgQueueService(service='kernel-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
+
+            payload = {'type': 'quit'}
+            key = 'direct.{}.announce.{}'.format(s.args.name, s.args.variant)
+            print(key, payload)
+            s.mq.publish(key, payload)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('variant', help='Name of this instance in the admin domain')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
