@@ -151,7 +151,10 @@ class TheApp():
         try:
             what = payload.get('type', 'message')
 
-            if what == 'message':
+            if what == 'quit':
+                s.mq.listen_stop()
+
+            elif what == 'message':
                 # Old format ...
                 if 'key' in payload:
                     payload = {
