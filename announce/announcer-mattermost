@@ -227,11 +227,20 @@ class TheApp():
 
                 elif cmd.type == ClientCommand.MSGQ_RAW:
                     print("MSGQ_RAW", cmd.data)
-                    destination = cmd.data.get('destination', {})
-                    message = cmd.data.get('message', {})
 
-                    text = message.get('summary', message.get('subject', '??'))
-                    mm.send(destination.get('channel'), text, card=message.get('body'))
+                    payload = cmd.data
+                    what = payload.get('type', 'message')
+
+                    if what == 'quit':
+                        break
+
+                    elif what == 'message':
+                        destination = payload.get('destination', {})
+                        message = payload.get('message', {})
+
+                        text = message.get('summary', message.get('subject', '??'))
+                        mm.send(destination.get('channel'), text, card=message.get('body'))
+
                 cmd_q.task_done()
 
             #mm.join()
