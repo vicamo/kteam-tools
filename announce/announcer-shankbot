@@ -53,39 +53,44 @@ class AnnouncerShankbot():
 
             cwarn("payload {}".format(payload))
 
-            reply = {'destination': payload.get('source')}
+            what = payload.get('type', 'message')
 
-            message = payload.get('message')
-            summary = message.get('summary')
-            if summary is None:
-                summary = message.get('subject')
+            if what == 'quit':
+                s.mq.listen_stop()
 
-            command = summary.strip().split()
+            elif what == 'message':
+                reply = {'destination': payload.get('source')}
 
-            reply['message'] = {'summary': "shankbot: {} starting".format(summary.strip())}
-            self.deliver_to(reply)
+                message = payload.get('message')
+                summary = message.get('summary')
+                if summary is None:
+                    summary = message.get('subject')
 
-            command.insert(0, os.path.join(os.path.dirname(__file__), "announcer-shankbot-dispatch"))
-            result = run(command, stdout=PIPE, stderr=STDOUT)
-            body = result.stdout.decode("utf-8")
-            if body is not None and body != '':
-                message['body'] = body
+                command = summary.strip().split()
 
-            text = "shankbot: {}".format(summary)
-            if result.returncode != 0:
-                text += ' failed (rc={})'.format(result.returncode)
-                body_lines = body.split('\n')
-                if len(body_lines) == 2:
-                    text += ' -- {}'.format(body_lines[0])
-                    del message['body']
-            else:
-                text += ' successful'
+                reply['message'] = {'summary': "shankbot: {} starting".format(summary.strip())}
+                self.deliver_to(reply)
 
-            message["summary"] = text
+                command.insert(0, os.path.join(os.path.dirname(__file__), "announcer-shankbot-dispatch"))
+                result = run(command, stdout=PIPE, stderr=STDOUT)
+                body = result.stdout.decode("utf-8")
+                if body is not None and body != '':
+                    message['body'] = body
 
-            reply['message'] = message
-            self.deliver_to(reply)
+                text = "shankbot: {}".format(summary)
+                if result.returncode != 0:
+                    text += ' failed (rc={})'.format(result.returncode)
+                    body_lines = body.split('\n')
+                    if len(body_lines) == 2:
+                        text += ' -- {}'.format(body_lines[0])
+                        del message['body']
+                else:
+                    text += ' successful'
 
+                message["summary"] = text
+
+                reply['message'] = message
+                self.deliver_to(reply)
 
         except Exception as e:
             error("announcement failed: {}".format(str(e)))
