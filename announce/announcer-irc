@@ -374,11 +374,20 @@ class TheApp():
 
                 elif cmd.type == ClientCommand.MSGQ_RAW:
                     cinfo("MSGQ_RAW".format(cmd.data))
-                    destination = cmd.data.get('destination', {})
-                    message = cmd.data.get('message', {})
 
-                    text = message.get('summary', message.get('subject', '??'))
-                    irc.send(destination.get('channel'), text)
+                    payload = cmd.data
+                    what = payload.get('type', 'message')
+
+                    if what == 'quit':
+                        break
+
+                    elif what == 'message':
+                        destination = payload.get('destination', {})
+                        message = payload.get('message', {})
+
+                        text = message.get('summary', message.get('subject', '??'))
+                        irc.send(destination.get('channel'), text)
+
                 cmd_q.task_done()
 
             #mm.join()
