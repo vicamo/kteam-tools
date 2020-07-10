@@ -108,6 +108,10 @@ class MsgQueue(object):
         s.connection.add_callback_threadsafe(cb)
 
 
+class MsgQueueCredentials(pika.PlainCredentials):
+    pass
+
+
 class MsgQueueService(MsgQueue):
     """
     Service oriented interface for creating a message queue.  This allows
@@ -132,7 +136,7 @@ class MsgQueueService(MsgQueue):
         # The new server always wants a service specific username.  For now
         # there is effectivly no password on those.  We will add this to a
         # configuration service once it is built.
-        if 'credentials' not in kwargs:
+        if 'credentials' not in kwargs or kwargs['credentials'] is None:
             kwargs['credentials'] = pika.PlainCredentials(service, service)
 
         kwargs['supports_global_qos'] = True
