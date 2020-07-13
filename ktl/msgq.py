@@ -13,8 +13,8 @@ class MsgQueue(object):
 
         # Address should now be considered deprecated.
         if local:
-            kwargs.setdefault('host', 'localhost')
-            kwargs.setdefault('port', 9123)
+            kwargs['host'] = 'localhost'
+            kwargs['port'] = 9123
         else:
             kwargs.setdefault('host', address)
             kwargs.setdefault('port', 5672)
@@ -124,8 +124,8 @@ class MsgQueueService(MsgQueue):
     def __init__(s, service=None, local=False, **kwargs):
         # Services are all on the "new" rabbitmq server by default.
         if local:
-            kwargs.setdefault('host', 'localhost')
-            kwargs.setdefault('port', 9124)
+            kwargs['host'] = 'localhost'
+            kwargs['port'] = 9124
         else:
             kwargs.setdefault('host', '10.15.182.2')
 
