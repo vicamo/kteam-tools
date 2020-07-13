@@ -14,7 +14,7 @@ from mattermostdriver import Driver
 from mattermostdriver.exceptions import ResourceNotFound
 
 from ktl.announce import Announce
-from ktl.msgq import MsgQueueService
+from ktl.msgq import MsgQueueService, MsgQueueCredentials
 
 from secrets import Secrets
 
@@ -50,7 +50,7 @@ class AuthBearer(requests.auth.AuthBase):
 
 class MattermostEvents(threading.Thread):
 
-    def __init__(self, host, cmd_q):
+    def __init__(self, host, cmd_q, secrets=None):
         super(MattermostEvents, self).__init__()
 
         self.daemon = True
@@ -58,6 +58,7 @@ class MattermostEvents(threading.Thread):
         self.host = host
         self.cmd_q = cmd_q
         self.event_loop = asyncio.new_event_loop()
+        self.secrets = secrets
 
     async def _handler(self, payload):
         payload = json.loads(payload)
@@ -74,8 +75,7 @@ class MattermostEvents(threading.Thread):
             host = self.host
             logger.debug( "Going to set up driver for connection to %s " % (host,) )
 
-            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
-            password = secrets.data['mattermost-token']
+            password = self.secrets.data['mattermost-token']
 
             # Setting the 'token' and calling login() should be sufficient to
             # authenticate us.  However, in this mode the existing request
@@ -122,13 +122,15 @@ class MattermostEvents(threading.Thread):
 
 class MsgqReader(threading.Thread):
 
-    def __init__(self, cmd_q, args, mq=None):
+    def __init__(self, cmd_q, args, mq=None, secrets=None):
         super().__init__()
 
         self.daemon = True
 
         self.cmd_q = cmd_q
         self.mq = mq
+        self.secrets = secrets
+
         self.queue = args.queue
         self.name = args.name
         self.direct = self.queue + '--' + args.name
@@ -145,8 +147,15 @@ class MsgqReader(threading.Thread):
     def run(self):
         try:
             if self.mq is None:
-                print("APW", self.local)
-                self.mq = MsgQueueService(service='kernel-announce', local=self.local, exchange='announce-todo', heartbeat_interval=60)
+                # Pass in credentials if we have them, else use the limited defaults.
+                hostname = self.secrets.data.get('amqp-hostname')
+                username = self.secrets.data.get('amqp-username')
+                password = self.secrets.data.get('amqp-password')
+                credentials = None
+                if username is not None and password is not None:
+                    credentials = MsgQueueCredentials(username, password)
+
+                self.mq = MsgQueueService(service='kernel-announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
             print("Msgq", self.mq)
 
             self.mq.listen_worker(self.queue, 'announce.mattermost', self._handler)
@@ -184,12 +193,14 @@ class TheApp():
         retval = 1
 
         try:
+            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
+
             cmd_q = queue.Queue()
 
-            mm = MattermostEvents('chat.canonical.com', cmd_q)
+            mm = MattermostEvents('chat.canonical.com', cmd_q, secrets=secrets)
             mm.start()
 
-            mq = MsgqReader(cmd_q, args)
+            mq = MsgqReader(cmd_q, args, secrets=secrets)
             mq.start()
 
             while True:
