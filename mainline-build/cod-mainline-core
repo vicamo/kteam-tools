@@ -100,6 +100,13 @@ if [ "$?" -eq 0 ]; then
 	git shortlog "$log_from..$commit" >"../CHANGES"
 fi
 
+# The base version is always the first X.Y.Z part of the version number.  If we
+# do not maintain this then the modules directory will not match uname -r.
+version=`echo "${full_version#v}" | cut -d. -f1-3 | cut -d- -f1`
+if [ "$(echo $version|cut -d. -f3)" = "" ]; then
+       version="${version}.0"
+fi
+
 # Encode the real version number as the ABI.  We encode the version
 # number by expanding the numbers to be at least 2 digits and removing the
 # '.' and '-' characters, for example:
