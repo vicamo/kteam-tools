@@ -24,13 +24,6 @@ if [ "$#" -ne 3 ]; then
 	exit 1
 fi
 
-result="../RESULT"
-rm -rf "$result"
-mkdir -p "$result"
-
-# Log all the output from this script
-exec > >(tee -a "$result/log") 2>&1
-
 here=`dirname $0`
 case "$here" in
 /*) ;;
@@ -49,6 +42,12 @@ id="$commit"
 
 master_tree_select
 
+result="../RESULT"
+rm -rf "$result"
+mkdir -p "$result"
+
+# Log all the output from this script
+exec > >(tee -a "$result/log") 2>&1
 
 echo "$P $remote $commit $publish" >"$result/REBUILD"
 
