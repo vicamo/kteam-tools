@@ -76,9 +76,9 @@ full_version=$( awk '
 	/^PATCHLEVEL/	{ patchlevel=$3 }
 	/^SUBLEVEL/	{ sublevel=$3 }
 	/^EXTRAVERSION/	{ extraversion=$3 }
-	END		{ print "v" version "." patchlevel "." sublevel extraversion }
+	END		{ print version "." patchlevel "." sublevel extraversion }
 ' <Makefile )
-map_version_to_series "${full_version#v}"
+map_version_to_series "$full_version"
 series="$RET"
 
 # Find a live series to build it in.
@@ -102,13 +102,6 @@ upload=".`date +%Y%m%d%H%M`"
 #	fi
 #fi
 
-# The base version is always the first X.Y.Z part of the version number.  If we
-# do not maintain this then the modules directory will not match uname -r.
-version=`echo "${full_version#v}" | cut -d. -f1-3 | cut -d- -f1`
-if [ "$(echo $version|cut -d. -f3)" = "" ]; then
-	version="${version}.0"
-fi
-
 # Encode the real version number as the ABI.  We encode the version
 # number by expanding the numbers to be at least 2 digits and removing the
 # '.' and '-' characters, for example:
@@ -116,7 +109,7 @@ fi
 #  2.6.27.12	02062712
 #  2.6.29-rc3   020629rc3
 #
-abinum=`echo "$version" | awk -F'[.-]' '{
+abinum=`echo "$full_version" | awk -F'[.-]' '{
 	for (i = 1; i <= NF; i++) {
 		if ($i ~ /^[0-9][0-9]*$/) {
 			printf("%02d", $i);
