@@ -1847,9 +1847,9 @@
                 linux-signed-azure-4.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/bionic', 'azure-4.15']
-                #linux-restricted-modules-azure-4.15:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-4.15']
+                linux-restricted-modules-azure-4.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-4.15']
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux' ]
