@@ -85,6 +85,8 @@ series="$RET"
 map_series_to_build_series "$series"
 build_release="$RET"
 
+echo "II: repo-series=$series build-series=$build_release"
+
 # Ensure we have the latest and greatest code in the master release.
 repo_remote_update "$series"
 
@@ -97,8 +99,12 @@ if [ "$?" -eq 0 ]; then
 	log_from="${log_from%-*}"
 	log_from="${log_from%-*}"
 
-	git shortlog "$log_from..$commit" >"../CHANGES"
+	git shortlog "$log_from..$commit" >"$result/CHANGES"
 fi
+
+# The short version is used in branch names in unstable.
+short_version=$(echo "${full_version#v}" | cut -d. -f1-2)
+branches="master-$short_version master-next master"
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
@@ -137,10 +143,13 @@ echo "^^^ - build head"
 #
 # Pull in the packaging from the head of our tree.
 #
-git checkout "$series/master-next" -- debian || \
-	git checkout "$series/master" -- debian
-git checkout "$series/master-next" -- debian.master || \
-	git checkout "$series/master" -- debian.master
+echo "II: searching for packaging on $series/{$branches}"
+for branch in $branches
+do
+	git checkout "$series/$branch" -- debian && break
+done
+git checkout "$series/$branch" -- debian.master
+echo "II: found packaging on $series/$branch"
 
 # Mark this as a mainline-build.
 cat - <<EOM >>debian.master/rules.d/hooks.mk
@@ -186,8 +195,9 @@ find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
 
 found="0"
 fbranch=""
-for branch in master-next master
+for branch in $branches
 do
+	echo "II: searching for configs on $series/$branch"
 	let off=-1
 	while :
 	do
@@ -199,6 +209,7 @@ do
 			END				{ print v }
 		'`
 		[ "$fversion" = 'END' ] && break
+		echo "II:  $fversion <=> $find"
 		dpkg --compare-versions "$fversion" lt "$find" && break
 	done
 
@@ -208,6 +219,7 @@ do
 	fbranch="$branch"
 done
 configs="Ubuntu-$found"
+echo "II:  chose $series/$fbranch $found"
 
 #
 # Rebuild the changelog.
