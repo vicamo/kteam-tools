@@ -39,29 +39,12 @@ class AnnounceDeliver:
 
         self.mq = None
 
-        self.announce_mq = None
-
     def onward_deliver_to(self, payload):
-        if not self.announce_mq:
-            self.announce_mq = MsgQueueService(service='kernel-announce', local=self.cfg.get('local', False), exchange='announce-todo', heartbeat_interval=60)
+        if not self.mq:
+            self.mq = MsgQueueService(service='kernel-announce', local=self.cfg.get('local', False), exchange='announce-todo', heartbeat_interval=60)
 
         key = 'announce.' + payload['destination']['type']
-        self.announce_mq.publish(key, payload)
-
-    def __message(self, key, message, lcfg):
-        cfg = self.cfg.get('message', {})
-        cfg.update(lcfg)
-
-        if not self.mq:
-            self.mq = MsgQueue(local=self.cfg.get('local', False))
-
-        msg = {
-            "key"            : "kernel.irc",
-            "op"             : cfg['type'],
-            "channel"        : cfg['channel'],
-            "msg"            : message,
-        }
-        self.mq.publish(msg['key'], msg)
+        self.mq.publish(key, payload)
 
     def __onward(self, which, lcfg, payload):
         cfg = self.cfg.get(which, {})
@@ -91,10 +74,7 @@ class AnnounceDeliver:
         cwarn("key {} routing {}".format(key, routing))
         for route in routing:
             cwarn("route {}".format(route))
-            if route.get('type') in ('notice', 'message'):
-                self.__message(key, summary, route)
-            elif route.get('type') in ('irc', 'mattermost', 'email'):
-                self.__onward(route.get('type'), route, payload)
+            self.__onward(route.get('type'), route, payload)
 
 
 class MessageError(Exception):
