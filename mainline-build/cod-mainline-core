@@ -91,16 +91,14 @@ repo_remote_update "$series"
 # use the date as an upload number so we can tell different builds apart.
 upload=".`date +%Y%m%d%H%M`"
 
-## Produce CHANGES fragment.
-#if [ "$log_enabled" -eq 1 ]; then
-#	log_from=`git describe "$commit^"`
-#	if [ "$?" -eq 0 ]; then
-#		log_from="${log_from%-*}"
-#		log_from="${log_from%-*}"
-#
-#		git shortlog "$log_from..$commit" >"../CHANGES"
-#	fi
-#fi
+# Produce CHANGES fragment.
+log_from=`git describe "$commit^"`
+if [ "$?" -eq 0 ]; then
+	log_from="${log_from%-*}"
+	log_from="${log_from%-*}"
+
+	git shortlog "$log_from..$commit" >"../CHANGES"
+fi
 
 # Encode the real version number as the ABI.  We encode the version
 # number by expanding the numbers to be at least 2 digits and removing the
