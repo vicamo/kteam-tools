@@ -1583,7 +1583,7 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-raspi-5.4:
-            variants: ['-hwe-18.04-edge']
+            variants: ['-hwe-18.04', '-hwe-18.04-edge']
             packages:
                 linux-raspi-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi-5.4/+git/bionic', 'master-next']
