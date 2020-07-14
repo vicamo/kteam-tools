@@ -2436,7 +2436,7 @@
                 linux-signed-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips']
-                linux-restricted-modules-aws-fips:
+                linux-restricted-modules-fips:
                     type: lrm
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-restricted-modules-fips']
             supported: true
