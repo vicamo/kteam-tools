@@ -24,6 +24,13 @@ if [ "$#" -ne 3 ]; then
 	exit 1
 fi
 
+result="../RESULT"
+rm -rf "$result"
+mkdir -p "$result"
+
+# Log all the output from this script
+exec > >(tee -a "$result/log") 2>&1
+
 here=`dirname $0`
 case "$here" in
 /*) ;;
@@ -42,9 +49,6 @@ id="$commit"
 
 master_tree_select
 
-result="../RESULT"
-rm -rf "$result"
-mkdir -p "$result"
 
 echo "$P $remote $commit $publish" >"$result/REBUILD"
 
@@ -236,7 +240,6 @@ linux (${version}-$abinum$upload) $build_release; urgency=low
  -- Mainline Build <$(id -n -u)@$(hostname)>  $(date -R)
 
 EOL
-	cat "$changelog"
 } >"$changelog.new"
 mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"
@@ -245,7 +248,7 @@ git commit -a -m "debian changelog"
 # Pull the specified version of the configs and default any new
 # configuration options.
 #
-echo "$II: locating configs from $configset"
+echo "II: locating configs from $configset"
 for configs in $configset
 do
 	git checkout "$configs" -- debian.master/config && break
