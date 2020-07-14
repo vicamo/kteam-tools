@@ -218,8 +218,8 @@ do
 	found="$fversion"
 	fbranch="$branch"
 done
-configs="Ubuntu-$found"
-echo "II:  chose $series/$fbranch $found"
+configset="Ubuntu-$short_version-$found Ubuntu-$found $series/$fbranch"
+echo "II:  chose $series/$fbranch $found ($configset)"
 
 #
 # Rebuild the changelog.
@@ -245,8 +245,12 @@ git commit -a -m "debian changelog"
 # Pull the specified version of the configs and default any new
 # configuration options.
 #
-echo "*** using configs from $configs ($fbranch) ..."
-git checkout "$configs" -- debian.master/config || git checkout "$series/$fbranch" -- debian.master/config
+echo "$II: locating configs from $configset"
+for configs in $configset
+do
+	git checkout "$configs" -- debian.master/config && break
+done
+echo "II: using configs from $series/$fbranch $configs"
 
 # Take the defaults for the configuration, applying any local
 # overrides for the series and also applying a default =m
