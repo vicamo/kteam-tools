@@ -178,6 +178,8 @@ class Summary:
                             path=path), file=hfd)
 
             print(dedent('''\
+                <br>
+                For further information see: <a href="http://wiki.ubuntu.com/Kernel/MainlineBuilds">http://wiki.ubuntu.com/Kernel/MainlineBuilds</a>
                 </code>
                 <br>'''), file=hfd)
         os.rename(html + '.new', html)
