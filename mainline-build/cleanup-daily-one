@@ -15,7 +15,11 @@ while read which
 do
 	which="$dir/$which"
 
-	if [ ! -f "$which/BUILD.LOG" ]; then
+	if [ -f "$which/aggregate.yaml" ]; then
+		true
+	elif [ -f "$which/BUILT" ]; then
+		true
+	else
 		echo "$P: $which: not a build, ignored" 1>&2
 		continue
 	fi
