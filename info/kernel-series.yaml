@@ -1864,7 +1864,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
-            routing: fips-prerelease
+            routing: fips
             packages:
                 linux-azure-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'azure-fips']
