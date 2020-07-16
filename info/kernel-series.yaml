@@ -952,7 +952,7 @@
 '19.04':
     codename: disco
     development: false
-    supported: true
+    supported: false
     old-releases: true
     routing-table: *routing-table
     sources:
@@ -971,7 +971,7 @@
                 linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/disco']
-            supported: true
+            supported: false
             testing:
                 flavours:
                     generic:
@@ -1385,7 +1385,9 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.0:
-            variants: [ '-gkeop-5.0' ]
+            versions: [ '5.0.0' ]
+            # variants: [ '-gkeop-5.0' ]
+            variants: []
             packages:
                 linux-hwe-5.0:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.0']
@@ -1399,8 +1401,8 @@
                 #    type: lrm
                 #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.0']
             supported: true
-            backport: true
-            derived-from: [ '19.04', 'linux' ]
+            backport: false
+            # derived-from: [ '19.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
@@ -1647,7 +1649,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem-osp1/+git/bionic', 'oem']
             supported: true
             development: true
-            derived-from: [ '19.04', 'linux' ]
+            derived-from: [ '18.04', 'linux-hwe-5.0' ]
             testing:
                 flavours:
                     oem-osp1:
@@ -2117,7 +2119,7 @@
                         amd64: [ '18-5.0' ]
             supported: true
             backport: false
-            derived-from: [ '19.04', 'linux' ]
+            derived-from: [ '18.04', 'linux-hwe-5.0' ]
             testing:
                 flavours:
                     gke:
@@ -2264,7 +2266,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
             supported: true
-            derived-from: [ '19.04', 'linux' ]
+            derived-from: [ '18.04', 'linux-hwe-5.0' ]
             invalid-tasks: [ 'regression-testing' ]
 
         linux-ibm-gt:
