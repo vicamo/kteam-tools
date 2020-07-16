@@ -19,12 +19,12 @@ main)
 	;;
 esac
 
-if [ -n "$FIX_VARIANTS" ] ; then
+if [ "$FIX_VARIANTS" != '--' ] ; then
 	TMP=$(mktemp "$VARIANTS".XXX)
 	echo "$FIX_VARIANTS" > "$TMP"
 	mv "$TMP" "$VARIANTS"
 else
-	# The new config is empty, purge any existing contents.
+	# The new config is the default, purge any existing contents.
 	rm -f "$VARIANTS"
 fi
 

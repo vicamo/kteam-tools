@@ -80,6 +80,8 @@ def list_variants(args):
     if handle.source.variants is not None:
         for variant in handle.source.variants:
             print(variant)
+    else:
+        print('--')
 
 def config(args):
     try:
