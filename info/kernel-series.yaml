@@ -1420,7 +1420,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
-            variants: [ '-gkeop-5.3' ]
+            variants: []
             packages:
                 linux-hwe:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe']
@@ -1430,9 +1430,9 @@
                 linux-signed-hwe:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe']
-                linux-restricted-modules-hwe:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe']
+                # linux-restricted-modules-hwe:
+                #     type: lrm
+                #     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe']
             supported: true
             backport: true
             derived-from: [ '19.10', 'linux' ]
