@@ -14,7 +14,7 @@ from .cfg                            import Cfg
 class Announce:
 
     def __init__(self, local=False):
-        self.mq = MsgQueueService(service='kernel-announce', local=local, exchange='announce-todo')
+        self.mq = MsgQueueService(service='announce-announce', local=local, exchange='announce-todo')
 
     def deliver_to(self, payload):
         key = 'announce.' + payload['destination']['type']
