@@ -861,6 +861,11 @@ class WorkflowBug():
         BugMail.to_address = to
         BugMail.send(subject, body)
 
+    def announce(s, key, subject=None, summary=None, body=None):
+        from ktl.announce import Announce
+        announce = Announce()
+        announce.send(key, subject=subject, summary=summary, body=body)
+
     # send_upload_announcement
     #
     def send_upload_announcement(s, pocket):
