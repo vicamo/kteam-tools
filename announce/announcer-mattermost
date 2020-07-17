@@ -155,7 +155,7 @@ class MsgqReader(threading.Thread):
                 if username is not None and password is not None:
                     credentials = MsgQueueCredentials(username, password)
 
-                self.mq = MsgQueueService(service='kernel-announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
+                self.mq = MsgQueueService(service='announce-announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
             print("Msgq", self.mq)
 
             self.mq.listen_worker(self.queue, 'announce.mattermost', self._handler)

@@ -30,7 +30,7 @@ class TheApp():
         retval = 1
 
         try:
-            s.mq = MsgQueueService(service='kernel-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
+            s.mq = MsgQueueService(service='announce-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
 
             payload = {'type': 'quit'}
             key = 'direct.{}.announce.{}'.format(s.args.name, s.args.variant)

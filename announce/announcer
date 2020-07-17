@@ -185,7 +185,7 @@ class TheApp():
             if username is not None and password is not None:
                 credentials = MsgQueueCredentials(username, password)
 
-            s.mq = MsgQueueService(service='kernel-announce', local=s.args.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
+            s.mq = MsgQueueService(service='announce-announce', local=s.args.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
