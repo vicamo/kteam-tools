@@ -776,7 +776,7 @@
 '19.10':
     codename: eoan
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
@@ -793,7 +793,6 @@
                 linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/eoan']
-            supported: true
             testing:
                 flavours:
                     generic:
@@ -810,7 +809,6 @@
                 linux-meta-raspi2:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'raspi2']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
@@ -862,7 +860,6 @@
                 linux-restricted-modules-aws:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/eoan']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
@@ -884,7 +881,6 @@
                 linux-restricted-modules-azure:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/eoan']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -909,7 +905,6 @@
                 linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/eoan']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
@@ -925,7 +920,6 @@
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/eoan']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
@@ -947,7 +941,6 @@
                 linux-restricted-modules-oracle:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/eoan']
-            supported: true
             derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
@@ -1380,8 +1373,8 @@
                 #     type: lrm
                 #     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe']
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux' ]
+            backport: false
+            # derived-from: [ '19.10', 'linux' ]
             testing:
                 flavours:
                     generic:
@@ -1390,6 +1383,7 @@
                     lowlatency:
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.0:
             variants: [ '-gkeop-5.0' ]
@@ -1458,8 +1452,7 @@
             supported: false
             development: true
             backport: true
-            derived-from: [ '19.10', 'linux' ]
-            #derived-from: [ '18.04', 'linux-hwe' ]
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     hwe-edge:
@@ -1573,8 +1566,8 @@
                         armhf: [ '18-pi' ]
                         arm64: [ '18-pi' ]
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux-raspi2' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             invalid-tasks: [ 'regression-testing' ]
 
         linux-snapdragon:
@@ -1705,8 +1698,8 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux-aws' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             swm:
                 kernel-testing: true
             testing:
@@ -1861,8 +1854,8 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux-azure' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
             testing:
@@ -1997,8 +1990,8 @@
                     arches: ['amd64']
                     track: '18'
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux-gcp' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     gcp:
@@ -2131,7 +2124,7 @@
                         amd64: [ '18-5.3' ]
             supported: true
             backport: true
-            derived-from: [ '19.10', 'linux-gcp' ]
+            derived-from: [ '18.04', 'linux-gcp-5.3' ]
             testing:
                 flavours:
                     gke:
@@ -2335,8 +2328,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.3']
             supported: true
-            backport: true
-            derived-from: [ '19.10', 'linux-oracle' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     oracle:
