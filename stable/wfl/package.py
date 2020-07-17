@@ -6,7 +6,7 @@ from datetime                           import datetime, timedelta, timezone
 import json
 
 from ktl.kernel_series                  import KernelSeries
-from ktl.msgq                           import MsgQueue
+from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from lib.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
@@ -1097,11 +1097,18 @@ class Package():
             for i, v in msg.items():
                 cinfo('        [' + str(i) + '] = ' + str(v), 'red')
         else:
-            if s.bug.local_msgqueue_port:
-                mq = MsgQueue(address='localhost', port=s.bug.local_msgqueue_port)
-            else:
-                mq = MsgQueue()
+            #if s.bug.local_msgqueue_port:
+            #    mq = MsgQueue(address='localhost', port=s.bug.local_msgqueue_port)
+            #else:
 
+            # XXX: HACK, connect to both the old and new rabbitmq services for
+            # ckct and emit the request into both.  The request will either be
+            # understood and consumed or lost in each.  Once we have migrated
+            # everything to the new server we can drop the first of these.
+            mq = MsgQueue()
+            mq.publish(msg['key'], msg)
+
+            mq = MsgQueueCkct()
             mq.publish(msg['key'], msg)
 
         return msg
