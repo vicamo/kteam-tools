@@ -30,6 +30,16 @@ class MsgQueue(object):
 
         s.supports_global_qos = supports_global_qos
 
+    def close(s):
+        if s.channel is not None:
+            s.channel.close()
+            s.channel = None
+        if s.connection is not None:
+            s.connection.close()
+            s.connection = None
+
+    def __del__(s):
+        s.close()
 
     def listen(s, queue_name, routing_key, handler_function, queue_durable=True, queue_arguments=None):
         def wrapped_handler(channel, method, properties, body):
