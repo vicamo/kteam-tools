@@ -124,7 +124,8 @@ class TheApp():
 
         try:
             mq = MsgQueueService(service='dashboard-dashboard', local=args.local, exchange='dashboard')
-            mq.listen(s.args.queue, 'status.bulk', s._handler)
+            mq.listen_worker(s.args.queue, 'status.bulk', s._handler)
+            mq.listen_start()
 
             print("done")
             retval = 0
