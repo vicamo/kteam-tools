@@ -77,7 +77,7 @@ class TheApp():
 
             # Submit the message to the Message Queue
             #
-            mq = MsgQueueService(service='dashboard-dashboard', local=s.args.local, exchange='dashboard')
+            mq = MsgQueueService(service='dashboard', local=s.args.local, exchange='dashboard')
 
             mq.publish(details['key'], details)
 

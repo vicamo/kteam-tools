@@ -123,7 +123,7 @@ class TheApp():
         retval = 1
 
         try:
-            mq = MsgQueueService(service='dashboard-dashboard', local=args.local, exchange='dashboard')
+            mq = MsgQueueService(service='dashboard', local=args.local, exchange='dashboard')
             mq.listen_worker(s.args.queue, 'status.bulk', s._handler)
             mq.listen_start()
 
