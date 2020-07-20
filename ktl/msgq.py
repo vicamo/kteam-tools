@@ -141,7 +141,10 @@ class MsgQueueService(MsgQueue):
 
         # Use the service prefix for the virtual_host name.
         if '-' in service:
-            kwargs.setdefault('virtual_host', service.split('-')[0])
+            vhost = service.split('-')[0]
+        else:
+            vhost = service
+        kwargs.setdefault('virtual_host', vhost)
 
         # The new server always wants a service specific username.  For now
         # there is effectivly no password on those.  We will add this to a
