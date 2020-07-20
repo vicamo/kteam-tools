@@ -74,7 +74,7 @@ class TheApp():
 
             # Submit the message to the Message Queue
             #
-            mq = MsgQueueService(service='mainline-mainline', local=s.args.local, exchange='mainline-todo')
+            mq = MsgQueueService(service='mainline', local=s.args.local, exchange='mainline-todo')
 
             mq.publish(details['key'], details, priority=int(priority))
 

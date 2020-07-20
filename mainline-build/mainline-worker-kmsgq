@@ -128,7 +128,7 @@ class TheApp():
         s.valid = valid
 
         try:
-            s.mq = MsgQueueService(service='mainline-mainline', local=s.args.local, exchange='mainline-todo', heartbeat_interval=60)
+            s.mq = MsgQueueService(service='mainline', local=s.args.local, exchange='mainline-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
