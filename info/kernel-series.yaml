@@ -2119,11 +2119,8 @@
                 #    - '1.13'
                 #    - '1.14'
                 gke-nvidia-packages:
-                    - gke-amd64
-                    - gke-d1703-0-amd64
                     - gke-d1809-0-amd64
                 nvidia-releases:
-                    - 410
                     - 418
             invalid-tasks: [ 'certification-testing' ]
 
