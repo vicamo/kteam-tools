@@ -28,9 +28,9 @@ stamp=0
 for arg in "$@"
 do
 	case "$arg" in
-	*=*)		;;
 	host=*)		host=1 ;;
 	stamp=*)	stamp=1 ;;
+	*=*)		;;
 	*)	echo "$arg: invalid after key=value pair" 1>&2
 		exit 1
 		;;
