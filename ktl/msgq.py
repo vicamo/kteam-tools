@@ -147,7 +147,8 @@ class MsgQueueService(MsgQueue):
         # there is effectivly no password on those.  We will add this to a
         # configuration service once it is built.
         if 'credentials' not in kwargs or kwargs['credentials'] is None:
-            kwargs['credentials'] = pika.PlainCredentials(service, service)
+            cred = '{}-anon'.format(service)
+            kwargs['credentials'] = pika.PlainCredentials(cred, cred)
 
         kwargs['supports_global_qos'] = True
 

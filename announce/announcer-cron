@@ -26,3 +26,8 @@ lck="/tmp/$cmd.lck"
 	echo "Starting `date`"
 	"$here/$cmd" "$@" &
 ) 9>"$lck" >>"$HOME/logs/$cmd.log" 2>&1
+
+# Attempt to re-grab an exclusive lock, if this succeeds then the daemon has
+# failed to start.  Timeout after 5s.
+flock -w 5 -x "$lck" -c "exit 0" || \
+    $HOME/bin/dashboard-status "$cmd" "$@"
