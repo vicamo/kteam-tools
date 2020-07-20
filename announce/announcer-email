@@ -101,7 +101,7 @@ class TheApp():
         retval = 1
 
         try:
-            s.mq = MsgQueueService(service='announce-announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
+            s.mq = MsgQueueService(service='announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"

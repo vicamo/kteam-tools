@@ -109,7 +109,7 @@ class AnnouncerShankbot():
         retval = 1
 
         try:
-            self.mq = MsgQueueService(service='announce-announce', local=self.args.local, exchange='announce-todo', heartbeat_interval=60)
+            self.mq = MsgQueueService(service='announce', local=self.args.local, exchange='announce-todo', heartbeat_interval=60)
 
             self._announce('announce-control', 'shankbot start')
 
