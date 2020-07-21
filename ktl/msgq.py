@@ -23,6 +23,9 @@ class MsgQueue(object):
         # Backwards compatibility with pre-0.11.x pika.
         kwargs.setdefault('heartbeat', heartbeat_interval)
 
+        s.connection = None
+        s.channel = None
+
         params = pika.ConnectionParameters(**kwargs)
         s.connection = pika.BlockingConnection(params)
         s.channel = s.connection.channel()
