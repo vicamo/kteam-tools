@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <log-directory>" 1>&2
+	exit 1
+fi
+logs="$1"
+
+echo "$(date): scanning $logs"
+
+header="$logs/.#defaults.logrotate"
+if [ ! -f "$header" ]; then
+	cat - >"$header" <<EOF
+daily
+create
+compress
+delaycompress
+rotate 14
+EOF
+fi
+
+for log_raw in $(cd "$HOME" && ls -1 "$logs/"*.log)
+do
+	log_config="$logs/.$(basename $log_raw .log).logrotate"
+	#log="\"$(echo "$log_raw" | sed -s "s@^$HOME/@\$HOME/@")\""
+	log="\"$log_raw\""
+
+	echo "log_raw<$log_raw> log_config<$log_config> log<$log>"
+	if [ ! -f "$log_config" ]; then
+		echo "$log {}" >"$log_config"
+	fi
+done
+
+/usr/sbin/logrotate -s "$logs/.logrotate.state" "$logs/".*.logrotate
+
+echo "$(date): complete $logs"
