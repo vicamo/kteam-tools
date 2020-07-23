@@ -34,6 +34,10 @@ if parent_package.repo is None:
     sys.exit(0)
 
 # Emit the parental repository configuration.
+print('# WARNING: we do not create update.conf when we are not a')
+print('# derivative. Various cranky components make use of this.')
+print('# If we start unconditionally creating update.conf we need')
+print('# to fix at least cranky close and cranky rebase.')
 print("RELEASE_REPO=" + parent_package.repo.url)
 if parent_package.repo.branch:
     print("SOURCE_RELEASE_BRANCH=" + parent_package.repo.branch)
