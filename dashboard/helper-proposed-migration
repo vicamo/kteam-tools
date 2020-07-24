@@ -26,11 +26,12 @@ timestamp()
 		mkdir -p "$outd"
 
 		# Get the file update_excuses.yaml iff it has changed.
-		urlt="$url/update_excuses.yaml"
-		fname=`basename "$urlt"`
+		urlt="$url/update_excuses.yaml.xz"
+		fname_xz=`basename "$urlt"`
+		fname=`basename "$urlt" .xz`
 		(cd "$outd" && wget -qN -nd "$urlt")
-		if [ -f "$outd/$fname" ]; then
-			cp -p "$outd/$fname" "$outd/$fname.live"
+		if [ -f "$outd/$fname_xz" ]; then
+			xz --decompress <"$outd/$fname_xz" >"$outd/$fname.live"
 			ln -f "$outd/$fname.live" "$file.migration"
 		fi
 
