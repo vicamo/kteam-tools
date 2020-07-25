@@ -37,6 +37,8 @@ class TheApp():
             print(key, payload)
             s.mq.publish(key, payload)
 
+            retval = 0
+
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
