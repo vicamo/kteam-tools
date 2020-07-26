@@ -53,4 +53,4 @@ lck="/tmp/$name.lck"
 # Attempt to re-grab an exclusive lock, if this succeeds then the daemon has
 # failed to start.  Timeout after 5s.
 flock -w 5 -x "$lck" -c "exit 0" || \
-    $HOME/bin/dashboard-status "cron-start-$name" "$@"
+    $here/../dashboard/dashboard-status "cron-start-$name" "$@"

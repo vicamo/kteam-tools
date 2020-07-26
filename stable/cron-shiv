@@ -12,4 +12,4 @@ flock -nx /tmp/kmsgq-shiv.lck -c "$HOME/shankbot/kteam-tools/stable/shiv kernel-
 # Attempt to re-grab an exclusive lock, if this succeeds
 # then the daemon has failed to start.  Timeout after 5s.
 flock -w 5 -x /tmp/kmsgq-shiv.lck -c "exit 0" || \
-    $HOME/bin/dashboard-status shiv 'Kernel Testing' 'Shiv Ircbot' 5m 30m
+    $here/../dashboard/dashboard-status shiv 'Kernel Testing' 'Shiv Ircbot' 5m 30m

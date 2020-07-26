@@ -15,11 +15,10 @@ Step by step instructions for setting up a new builder system.
   11. sudo su - kernel
   12. git clone git://git.launchpad.net/~canonical-kernel/+git/kteam-tools /usr3/ubuntu/kteam-tools
   13. git clone git://git.launchpad.net/~canonical-kernel/+git/kteam-tools
-  14. kteam-tools/dashboard/dashboard-bin-init kmsgq $HOME/bin
-  14a. mkdir logs
-  14c. ssh-keygen -f $HOME/.ssh/mainline-publish -N ''
-  14d. (add the public above to wani /etc/user-authorized-keys/kernel-ppa)
-  14e. ssh kernel.ubuntu.com and accept the host key
+  14. mkdir logs
+  14a. ssh-keygen -f $HOME/.ssh/mainline-publish -N ''
+  14b. (add the public above to wani /etc/user-authorized-keys/kernel-ppa)
+  14c. ssh kernel.ubuntu.com and accept the host key
   15. exit # return to the account with sudo (ubuntu)
   16a. (cd /usr3/ubuntu/kteam-tools/chroot-setup && sudo ./prep_system)
   16b. (cd /usr3/ubuntu/kteam-tools/kernel-team-accounts && sudo ./install_kernel_devs.sh ubuntu)
@@ -29,8 +28,8 @@ Step by step instructions for setting up a new builder system.
   20. sudo adduser kernel sbuild
 
   NN. add crontab for root
-*/5  *  *   *   *  /usr3/ubuntu/kteam-tools/mainline-build/cod-periodic-root && su -c '"$HOME/bin/dashboard-status" "cod-periodic-root" "Host: `hostname`" "Periodic Update (root)" 10m 15m' kernel
+*/5  *  *   *   *  /usr3/ubuntu/kteam-tools/mainline-build/cod-periodic-root && /usr3/ubuntu/kteam-tools/dashboard/dashboard-status" "cod-periodic-root" "Host: `hostname`" "Periodic Update (root)" 10m 15m
 
   NN. add crontab for kernel
-0    0  *    *   * $HOME/kteam-tools/mainline-build/cod-periodic-logrotate && "$HOME/bin/dashboard-status" "cod-periodic-logrotate" "Host: `hostname`" "Periodic Logrotate (kernel)" 25h 26h
-*/5  *  *    *   * $HOME/kteam-tools/mainline-build/cod-periodic && "$HOME/bin/dashboard-status" "cod-periodic" "Host: `hostname`" "Periodic Update (kernel)" 10m 15m
+0    0  *    *   * $HOME/kteam-tools/mainline-build/cod-periodic-logrotate && "$HOME/kteam-tools/dashboard/dashboard-status" "cod-periodic-logrotate" "Host: `hostname`" "Periodic Logrotate (kernel)" 25h 26h
+*/5  *  *    *   * $HOME/kteam-tools/mainline-build/cod-periodic && "$HOME/kteam-tools/dashboard/dashboard-status" "cod-periodic" "Host: `hostname`" "Periodic Update (kernel)" 10m 15m

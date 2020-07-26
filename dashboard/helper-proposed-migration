@@ -47,7 +47,7 @@ timestamp()
 		echo "$name $file.migration $stamp"
 	done
 } | "$here/helper-proposed-migration-payload" "$out/regressions.txt.new" "$out/overall.txt.new" | \
-    "$HOME/bin/dashboard-status-bulk" "proposed-watcher"
+    "$here/dashboard/dashboard-status-bulk" "proposed-watcher"
 
 mv -f "$out/regressions.txt.new" "$out/regressions.txt"
 mv -f "$out/overall.txt.new" "$out/overall.txt"

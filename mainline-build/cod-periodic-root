@@ -22,14 +22,16 @@ fi
 
 tools='/usr3/ubuntu/kteam-tools'
 
+dashboard_status="$here/../dashboard-status"
+
 case "$1" in
 chroots)
 	"$tools/chroot-setup/make_all" >>~kernel/logs/root-chroots.log 2>&1 && \
-		su -c '"$HOME/bin/dashboard-status" "update-chroots" "Host: `hostname`" "Update Chroots" 25h 26h' kernel
+		"$dashboard_status" "update-chroots" "Host: `hostname`" "Update Chroots" 25h 26h
 	;;
 gkp-cleanup)
 	"$tools/git-build-kernel/gbk-cleanup" --timestamp >>~kernel/logs/root-gbk-cleanup.log 2>&1 && \
-		su -c '"$HOME/bin/dashboard-status" "gbk-cleanup" "Host: `hostname`" "git-build-kernel cleanup" 5h 9h' kernel
+		"$dashboard_status" "gbk-cleanup" "Host: `hostname`" "git-build-kernel cleanup" 5h 9h
 	;;
 esac
 
