@@ -198,7 +198,7 @@ class MonitorLaunchpadArchive:
         #print(self.archive, self.src_date, self.bin_date)
 
         scan_base = self.scan_base - timedelta(hours=1)
-        self.scan_base = datetime.utcnow()
+        scan_base_update = datetime.utcnow()
 
         # Transactions can be assigned a time stamp but not committed and thus
         # not visible within the window we are scanning.  They can then commit
@@ -219,8 +219,17 @@ class MonitorLaunchpadArchive:
         # Accumulate new source package publications.
         changed = self.archive.getPublishedSources(order_by_date=True,
             status='Published', created_since_date=oldest)
-        if len(changed) > 0:
-            self.src_date = changed[0].date_created
+        changed_count = len(changed)
+        replay_count = len(self.src_replay)
+        start = changed_count - replay_count - 2000
+        if start > 0:
+            print("EXCESS SOURCE PUBLICATIONS: changed_count={} replay_count={} start={} handling={}".format(changed_count, replay_count, start, changed_count - start))
+            changed = changed[start:changed_count]
+            changed_count = len(changed)
+            scan_base_update = None
+        if changed_count > 0:
+            if start == 0:
+                self.src_date = changed[0].date_created
             for pub in changed:
                 # Ignore this if this record is a replay.
                 replay = pub.self_link.split('/')[-1]
@@ -254,8 +263,19 @@ class MonitorLaunchpadArchive:
         # Accumulate new binary package publications.
         changed = self.archive.getPublishedBinaries(order_by_date=True,
             status='Published', created_since_date=oldest)
-        if len(changed) > 0:
-            self.bin_date = changed[0].date_created
+        changed_count = len(changed)
+        replay_count = len(self.bin_replay)
+        start = changed_count - replay_count - 2000
+        if start < 0:
+            start = 0
+        if start > 0:
+            print("EXCESS BINARY PUBLICATIONS: changed_count={} replay_count={} start={} handling={}".format(changed_count, replay_count, start, changed_count - start))
+            changed = changed[start:changed_count]
+            changed_count = len(changed)
+            scan_base_update = None
+        if changed_count > 0:
+            if start == 0:
+                self.bin_date = changed[0].date_created
             for pub in changed:
                 # Ignore this if this record is a replay.
                 replay = pub.self_link.split('/')[-1]
@@ -283,6 +303,9 @@ class MonitorLaunchpadArchive:
                     continue
                 sources.add("{}:{}".format(series_name,
                     self.source_packages[series_source_key]))
+
+        if scan_base_update is not None:
+            self.scan_base = scan_base_update
 
         #print("SOURCES", sources)
         #print("APW", self._backing_store)
