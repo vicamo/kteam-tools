@@ -165,7 +165,7 @@ for line in sys.stdin:
 
 
 def genid(*args):
-    return '--'.join(args).replace(' ', '-').replace(':', '-')
+    return '--'.join(args).replace(' ', '-sp-').replace(':', '-co-').replace('/', '-sl-')
 
     
 last_section = ''
@@ -188,7 +188,7 @@ for (gorder, section, order, title, host, delta, mode, message) in entries:
 
     print("<tr id=\"" + genid('entry', section, title) + "\" class=\"" + mode + "\"><td>" + title + "<td>" + host + "<td>" + delta + "<td>" + message + "</tr>")
 
-print("""</table>
+print("""</tbody>
 </table>
 </body>
 </html>""")
