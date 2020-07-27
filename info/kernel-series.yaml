@@ -467,7 +467,7 @@
             copy-forward: [ '20.04', 'linux-oracle' ]
 
         linux-riscv:
-            variants: ['--', '-hwe-20.04']
+            variants: ['-wip']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/groovy']
@@ -475,13 +475,12 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-5.8' ]
             testing:
                 flavours:
                     generic:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
-            copy-forward: [ '20.04', 'linux-riscv' ]
 
 
 # 20.04 (Focal Fossa)
