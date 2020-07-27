@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ "$#" -gt 1 ]; then
+	echo "Usage: [<host>]" 1>&2
+elif [ "$#" -eq 0 ]; then
+	set - $(uname -n)
+fi
+host="$1"
+
+now=$(date +%s)
+
+group="RabbitMQ:%s$host"
+for vhost in $(sudo rabbitmqctl -q list_vhosts)
+do
+	sudo rabbitmqctl -q list_queues -p $vhost messages name | \
+	while read messages name
+	do
+		if [ "$messages" -eq 0 ]; then
+			continue
+		elif [ "$messages" -gt 100000 ]; then
+			state="A"
+			order="50"
+		elif [ "$messages" -gt 10000 ]; then
+			state="W"
+			order="40"
+		else
+			state="G"
+			order="30"
+		fi
+		echo "V2 host=$host group=$group title=Queue:%s$vhost:$name note=Messages:%s$messages state=$state order=$order"
+	done
+done
+echo "V2 host=$host group=$group title=RabbitMQ%sMonitor stamp=$now warning=1200 alert=1800 order=10"
