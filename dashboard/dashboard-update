@@ -82,6 +82,7 @@ parse_emit()
 	case "$R_group" in
 	Dashboard)	gorder="00" ;;
 	Host:*)		gorder="90" ;;
+	Unit:*)		gorder="90" ;;
 	*)		gorder="50" ;;
 	esac
 
