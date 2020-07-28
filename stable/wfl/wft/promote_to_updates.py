@@ -112,6 +112,12 @@ class PromoteToUpdates(Promoter):
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
                     pull_back = True
 
+            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            if blocks is not None:
+                cinfo("promote-to-updates held {}".format(blocks))
+                cinfo('            A hold-promote-to-updates present ({})on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
+                pull_back = True
+
             if s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
