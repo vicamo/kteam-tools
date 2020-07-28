@@ -178,16 +178,22 @@ class Workflow(TaskHandler):
             # Calculate interlock blocks.
             #
             if s.bug.snap:
-                task = s.bug.tasks_by_name.get('snap-release-to-beta')
-                if task is not None:
-                    if task.status not in ('New', 'Invalid', 'Fix Released'):
-                        s.bug.interlocks['snap-not-in-beta'] = 'Pending -- snap not yet in beta'
-                task = s.bug.tasks_by_name.get('snap-release-to-candidate')
-                if task is not None:
-                    if task.status not in ('New', 'Invalid', 'Fix Released'):
-                        s.bug.interlocks['snap-not-in-candidate'] = 'Pending -- snap not yet in candidate'
+                # Report missing snaps in active states.
+                for risk in ('edge', 'beta', 'candidate', 'stable'):
+                    task = s.bug.tasks_by_name.get('snap-release-to-' + risk)
+                    if task is not None and task.status not in ('New', 'Invalid', 'Fix Released'):
+                        s.bug.interlocks['snap-not-in-' + risk] = 'Pending -- snap not yet in ' + risk
+
+                # Block transition to updates if we are not at least in our latest risk
+                # level up to and including candidate.
+                for risk in ('candidate', 'beta', 'edge'):
+                    task = s.bug.tasks_by_name.get('snap-release-to-' + risk)
+                    if task is None:
+                        continue
                     if task.status not in ('Invalid', 'Fix Released'):
-                        s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- snap not yet in candidate'
+                        s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- snap not yet in ' + risk
+                    if task.status != 'Invalid':
+                        break
 
             #
             # Check interlock blocks.
@@ -202,7 +208,7 @@ class Workflow(TaskHandler):
                 for task_name in ('promote-to-updates', 'promote-to-release'):
                     task = s.bug.tasks_by_name.get(task_name)
                     if task is not None and task.status != 'New':
-                        blocks = s.bug.blockers.get('snap-not-in-candidate')
+                        blocks = s.bug.blockers.get('hold-promote-to-updates')
                         if blocks is not None:
                             cinfo("snap-not-in-candidate snap-lagging {}".format(blocks))
                             s.bug.reasons['snap-lagging'] = blocks
