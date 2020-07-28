@@ -28,7 +28,7 @@ def emit(record):
     print(row)
 
 
-state_order = ('UNKNOWN', 'PASS', 'ALWAYSFAIL', 'RUNNING-ALWAYSFAIL', 'IGNORED', 'IGNORE-FAIL', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
+state_order = ('UNKNOWN', 'PASS', 'NEUTRAL', 'ALWAYSFAIL', 'RUNNING-ALWAYSFAIL', 'IGNORED', 'IGNORE-FAIL', 'DEPENDS', 'RUNNING', 'BUILDING', 'NBS', 'REGRESSION')
 def accumulate_state(current, new):
     if state_order.index(current) > state_order.index(new):
         return current
@@ -54,7 +54,7 @@ def result(arg):
         cstate = package_results.get(key, [ 'PASS', [] ])
         if state_order.index(arg[2]) > state_order.index(cstate[0]):
             cstate[0] = arg[2]
-        if arg[2] not in ('PASS', 'ALWAYSFAIL', 'RUNNING', 'DEPENDS'):
+        if arg[2] not in ('PASS', 'NEUTRAL', 'ALWAYSFAIL', 'RUNNING', 'DEPENDS'):
             cstate[1].append(arg[0] + ' ' + arg[1] + ' ' + arg[2])
         
         package_results[key] = cstate
@@ -76,6 +76,9 @@ def get_status(state, record, seen=None):
     #    overall = accumulate_state(overall, 'BUILDING')
     if 'policy_info' in record and 'autopkgtest' in record['policy_info']:
         for pkg in record['policy_info']['autopkgtest']:
+            # XXX: upstream formatting error.
+            if pkg == "verdict":
+                continue
             for arch in record['policy_info']['autopkgtest'][pkg]:
                 overall = accumulate_state(overall, record['policy_info']['autopkgtest'][pkg][arch][0])
     #if 'depends' in record['reason']:
@@ -182,6 +185,9 @@ for line in sys.stdin:
         if 'policy_info' in source:
             if 'autopkgtest' in source['policy_info']:
                 for test_ver in source['policy_info']['autopkgtest']:
+                    # XXX: upstream formatting error.
+                    if test_ver == "verdict":
+                        continue
                     test_result = source['policy_info']['autopkgtest'][test_ver]
                     if '/' in test_ver:
                         (test, tversion) = (test_ver.split('/') + [ '?' ])[0:2]
