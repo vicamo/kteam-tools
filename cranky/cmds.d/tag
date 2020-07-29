@@ -23,7 +23,6 @@ EOF
 
 debug=0
 force=0
-unsigned=0
 while [ "${#}" -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
@@ -34,9 +33,6 @@ while [ "${#}" -gt 0 ] ; do
 			;;
 		-f|--force)
 			force=1
-			;;
-		-u|--unsigned)
-			unsigned=1
 			;;
 		*)
 			echo "error: Unrecognized argument ${1}" >&2
@@ -125,14 +121,8 @@ if git rev-parse "${new_tag_fixed}" >/dev/null 2>&1 ; then
 	fi
 fi
 
-if [ $unsigned -eq 0 ] ; then
-	echo "(not signing tags)"
-	tag_cmd="git tag -f -s -m $new_tag_unfixed $new_tag_fixed"
-else
-	tag_cmd="git tag -f -m $new_tag_unfixed $new_tag_fixed"
-fi
-
 # OK, everything looks good. Tag it.
+tag_cmd="git tag -f -s -m $new_tag_unfixed $new_tag_fixed"
 echo "Tagging with:"
 echo " $tag_cmd"
 
