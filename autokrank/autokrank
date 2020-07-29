@@ -3,8 +3,21 @@
 FDR="run_in_chroot fakeroot debian/rules"
 
 source ~/.autokrankrc
-KRANK_TAGNAME=autokrank-newest-master-tag
-LOGFILE=/tmp/autokrank.log
+WORKDIR=$PWD
+LOGFILE=$WORKDIR/autokrank.log
+BUMP_VERSION_NUMBER=0
+BUMP_BUILD_NUMBER=0
+USESSH=0
+SIGN_TAGS=1
+AUTOINFO=0
+HAS_SIGNED=0
+HAS_LRM=0
+# Build against updates by default
+BUILDV="_UPDATES"
+LINUX_BUILD_AGAINST=$BUILDV
+META_BUILD_AGAINST=$BUILDV
+SIGNED_BUILD_AGAINST=$BUILDV
+LRM_BUILD_AGAINST=$BUILDV
 
 
 function usage {
@@ -44,14 +57,18 @@ function usage {
 	echo -e "\tDisplay this message and exit"
 }
 
+function git_clean {
+	git cherry-pick --abort  &> /dev/null
+	git rebase --abort  &> /dev/null
+	git reset HEAD .
+	git checkout -- .
+	git clean -fxd
+}
+
 function clear_cache {
 	for i in $LINUX_DIR $SIGNED_DIR $META_DIR; do
 		cd $i
-		git cherry-pick --abort  &> /dev/null
-		git rebase --abort  &> /dev/null
-		git reset HEAD .
-		git checkout -- .
-		git clean -fxd
+		git_clean
 		git checkout master
                 for j in `git branch|grep autokrank|grep cache`; do
 			echo deleting cache branch $j
@@ -61,13 +78,9 @@ function clear_cache {
 }
 
 function purge_trees_and_directories {
-	for i in $LINUX_DIR $SIGNED_DIR $META_DIR; do
+	for i in $LINUX_DIR $SIGNED_DIR $META_DIR $LRM_DIR; do
 		cd $i
-		git cherry-pick --abort  &> /dev/null
-		git rebase --abort  &> /dev/null
-		git reset HEAD .
-		git checkout -- .
-		git clean -fxd
+		git_clean
 		git checkout master
                 for j in `git branch|grep -v autokrank-cache|grep -v "* master"`; do
 			echo deleting branch $j
@@ -91,60 +104,361 @@ function purge_trees_and_directories {
 
 function prepare_directory {
 	if [ $1 = 'linux' ] ; then
-		FETCH_SOURCE=$LINUX_FETCH_SOURCE
-		ORIGIN=$LINUX_ORIGIN
+		FETCH_SOURCE="$LINUX_START_FROM"
+		ORIGIN=$LINUX_TAGS_SOURCE
 	elif [ $1 = 'signed' ] ; then
-		FETCH_SOURCE=$SIGNED_FETCH_SOURCE
-		ORIGIN=$SIGNED_ORIGIN
+		FETCH_SOURCE="$SIGNED_START_FROM"
+		ORIGIN=$SIGNED_TAGS_SOURCE
 	elif [ $1 = 'meta' ] ; then
-		FETCH_SOURCE=$META_FETCH_SOURCE
-		ORIGIN=$META_ORIGIN
+		FETCH_SOURCE="$META_START_FROM"
+		ORIGIN=$META_TAGS_SOURCE
 	elif [ $1 = 'lrm' ] ; then
-		FETCH_SOURCE=$LRM_FETCH_SOURCE
-		ORIGIN=$LRM_ORIGIN
+		FETCH_SOURCE="$LRM_START_FROM"
+		ORIGIN=$LRM_TAGS_SOURCE
 	fi
 
-	git cherry-pick --abort  &> /dev/null
-	git rebase --abort  &> /dev/null
-	git reset HEAD .
-	git checkout -- .
-	git clean -fxd
+	git_clean
 	git branch $TEMPBRANCH
 	git checkout $TEMPBRANCH
-	LOG "Resetting branch from: $FETCH_SOURCE"
-	git fetch --tags $ORIGIN
-	git fetch $FETCH_SOURCE
+
+	if [ $USESSH -eq 1 ] ; then
+		LOG "(Using GIT+SSH for connections)"
+		EFFECTIVE_FETCH_SOURCE=$(echo $FETCH_SOURCE | sed -e 's/git:\/\//git+ssh:\/\//g')
+		EFFECTIVE_ORIGIN=$(echo $ORIGIN | sed -e 's/git:\/\//git+ssh:\/\//g')
+	else
+		EFFECTIVE_FETCH_SOURCE=$FETCH_SOURCE
+		EFFECTIVE_ORIGIN=$ORIGIN
+	fi
+
+	LOG "Resetting branch from: $EFFECTIVE_FETCH_SOURCE"
+
+	if [ -n "$EFFECTIVE_ORIGIN" ] ; then
+		LOG "Fetching tags from $EFFECTIVE_ORIGIN"
+		git fetch --tags $EFFECTIVE_ORIGIN
+	fi
+	git fetch $EFFECTIVE_FETCH_SOURCE
 
 
 	git reset --hard FETCH_HEAD
 
 	# Save the branch somewhere to speed up future fetches
-	if [ $TYPE = 'master' ] ; then
-		git branch -D autokrank-cache-$SERIES-master &> /dev/null
-		git branch autokrank-cache-$SERIES-master
-
-	elif [ $TYPE = 'derivative' ] ; then
-		git branch -D autokrank-cache-$SERIES-$VARIANT &> /dev/null
-		git branch autokrank-cache-$SERIES-$VARIANT
-	elif [ $TYPE = 'backport' ] ; then
-		git branch -D autokrank-cache-$SERIES-$VARIANT &> /dev/null
-		git branch autokrank-cache-$SERIES-$VARIANT
-	fi
-	
+	git branch -D autokrank-cache-$KERNEL_NAME &> /dev/null
+	git branch autokrank-cache-$KERNEL_NAME
 }
 
+
+function bump_version_number {
+	source debian/debian.env
+	CHANGELOG_FILE=$DEBIAN/changelog
+	FIRSTLINE=$(head -n 1 $CHANGELOG_FILE)
+	VERSIONS=$(echo $FIRSTLINE|sed -e 's/.*-//g'|sed -e 's/).*//g'|sed -e 's/\./ /g')
+	NUM1=$(echo $VERSIONS|sed -e 's/ .*//')
+	NUM2=$(echo $VERSIONS|sed -e 's/.* //')
+	NUM1=$((NUM1 + 1))
+	NUM2=$((NUM2 + 1))
+
+	PREFIX=$(echo $FIRSTLINE|sed -e 's/0-.*/0-/g')
+	SUFFIX=$(echo $FIRSTLINE|sed -e 's/.*)/)/g')
+	NEWFIRSTLINE="$PREFIX$NUM1.$NUM2$SUFFIX"
+	sed -i $CHANGELOG_FILE -e "s/$FIRSTLINE/$NEWFIRSTLINE/g"
+
+	git add $CHANGELOG_FILE
+	git commit -s --amend --no-edit
+}
+
+function bump_build_number {
+	source debian/debian.env
+	CHANGELOG_FILE=$DEBIAN/changelog
+	FIRSTLINE=$(head -n 1 $CHANGELOG_FILE)
+	VERSIONS=$(echo $FIRSTLINE|sed -e 's/.*-//g'|sed -e 's/).*//g'|sed -e 's/\./ /g')
+	NUM1=$(echo $VERSIONS|sed -e 's/ .*//')
+	NUM2=$(echo $VERSIONS|sed -e 's/.* //')
+	NUM2=$((NUM2 + 1))
+
+	PREFIX=$(echo $FIRSTLINE|sed -e 's/0-.*/0-/g')
+	SUFFIX=$(echo $FIRSTLINE|sed -e 's/.*)/)/g')
+	NEWFIRSTLINE="$PREFIX$NUM1.$NUM2$SUFFIX"
+	sed -i $CHANGELOG_FILE -e "s/$FIRSTLINE/$NEWFIRSTLINE/g"
+
+	git add $CHANGELOG_FILE
+	git commit -s --amend --no-edit
+}
 
 function run_in_chroot {
 	schroot -r --preserve-environment -c $CHROOT -- $@
 }
 
+# Reads the package name from the current tree
+# and sets PKG_NAME accordingly
+function set_package_name {
+	if [ $1 = 'linux' ] ; then
+		source debian/debian.env
+		PKG_NAME=$(head -n 1 $DEBIAN/changelog|sed -e 's/ .*//g')
+	else
+		PKG_NAME=$(head -n 1 debian/changelog|sed -e 's/ .*//g')
+	fi
+}
+
+function print_tasks {
+
+	if [ $TASK_CRANK_LINUX = '1'  ] ; then
+		LOG "    CRANK_LINUX"
+	fi
+	if [ $TASK_BUILD_LINUX = '1'  ] ; then
+		LOG "                BUILD_LINUX"
+	fi
+
+
+	if [ $TASK_CRANK_META = '1'  ] ; then
+		LOG "    CRANK_META"
+	fi
+	if [ $TASK_BUILD_META = '1'  ] ; then
+		LOG "                BUILD_META"
+	fi
+
+	if [ $HAS_SIGNED = '1' ] ; then
+		if [ $TASK_CRANK_SIGNED = '1'  ] ; then
+			LOG "    CRANK_SIGNED"
+		fi
+		if [ $TASK_BUILD_SIGNED = '1'  ] ; then
+			LOG "                BUILD_SIGNED"
+		fi
+	fi
+
+
+	if [ $HAS_LRM = '1' ] ; then
+		if [ $TASK_CRANK_LRM = '1'  ] ; then
+			LOG "    CRANK_LRM"
+		fi
+		if [ $TASK_BUILD_LRM = '1'  ] ; then
+			LOG "                BUILD_LRM"
+		fi
+	fi
+}
+
+# Takes a special string like _UPDATES or _PROPOSED
+# and returns the actual string that should be grepped
+# for
+function find_grep_string {
+	case "$1" in
+		_PROPOSED)
+			echo "proposed"
+			;;
+		_UPDATES)
+			echo "updates"
+			;;
+		*)    # unknown option
+			echo "$1"
+		;;
+	esac
+}
 
 
 function LOG {
 	echo -n "$(date "+%F %T.%N: ")" >> $LOGFILE
-	echo $@ >> $LOGFILE
+	echo "$@" >> $LOGFILE
 }
 
+
+# Takes e.g. "focal/linux-aws"
+# Returns e.g.: 20.04
+function get_kernel_series_number {
+	RELEASE_NAME=$(echo "$@"|sed -e 's/\/.*//g')
+	case $RELEASE_NAME in
+		focal)
+			echo "20.04"
+			;;
+		eoan)
+			echo "19.10"
+			;;
+		disco)
+			echo "19.04"
+			;;
+		bionic)
+			echo "18.04"
+			;;
+		xenial)
+			echo "16.04"
+			;;
+		trusty)
+			echo "14.04"
+			;;
+		*)    # unknown option
+			exit 1
+		;;
+	esac
+}
+
+function get_kernel_info {
+	LOG "Will attempt to automatically derive crank info for $@"
+	#echo KERNEL_NAME is $KERNEL_NAME
+	KERNEL_SERIES_NUMBER=$(get_kernel_series_number "$@")
+	KERNEL_NAME=$(echo "$@"|sed -e 's/.*\///g')
+
+	# KERNEL_SERIES_NUMBER should be e.g. "16.04"
+	if [ -z "$KERNEL_SERIES_NUMBER" ] ; then
+		LOG "FATAL: Can't determine series number"
+		exit 1
+	fi
+
+	# KERNEL_NAME should be e.g. linux-raspi2
+	if [ -z "$KERNEL_NAME" ] ; then
+		LOG "FATAL: Can't determine package name"
+		exit 1
+	fi
+
+	KERNEL_SERIES_YAML=$KTEAMTOOLS/info/kernel-series.yaml
+	# The following grep/sed soup means:
+	#  1) Keep our series section (e.g. the '20.04' section), and everything after it.
+	#  2) Remove our series line (the first line)
+	#  3) Remove any other section (which starts with, e.g. '18.04'), and everything after
+	#  4) Keep only the section of the package we're interested in (e.g., linux-aws), and everything after.
+	#  5) Remove first empty line, and everything after it (so we only keep the linux-aws section)
+	#  6) Grep for 'linux' (all packages have 'linux' in their name)
+	#  7) Remove empty lines (probably unnecessary)
+	#  8) something
+	#  9) something
+	# 10) something
+	PACKAGES=$(cat $KERNEL_SERIES_YAML|grep "^'$KERNEL_SERIES_NUMBER':" -A 1000000|grep -v "^'$KERNEL_SERIES_NUMBER':"|sed -n '/^.[0-9][0-9].[0-9][0-9]/q;p'|grep -A 10000 $KERNEL_NAME:|sed -n '/^$/q;p'|grep linux|grep -v "^$"|grep "linux.*:"|sed 1d|sed -e "s/://g")
+#	echo PACAKGES is $PACKAGES
+
+	PKG_COUNT=$(echo $PACKAGES |wc -w)
+
+	if [ $PKG_COUNT -eq 0 ] ; then
+		LOG "FATAL: No packages found for this series/name"
+		exit 1
+	fi
+
+	LINUX_PKG_NAME=""
+	META_PKG_NAME=""
+	SIGNED_PKG_NAME=""
+	LRM_PKG_NAME=""
+
+	LOG "This kernel produces the following packages:"
+	for pkg in $PACKAGES; do 
+		echo $pkg | grep "^[ ]*#.*"
+
+		if [ $? -eq 0 ] ; then
+			LOG "    $pkg (skipping because it's commented out)"
+			continue;
+		fi
+
+		if [[ $pkg == *meta* ]]; then
+			META_PKG_NAME=$pkg
+			LOG "    $META_PKG_NAME"
+		elif [[ $pkg == *restricted* ]]; then
+			LRM_PKG_NAME=$pkg
+			LOG "    $LRM_PKG_NAME"
+		elif [[ $pkg == *sign* ]]; then
+			SIGNED_PKG_NAME=$pkg
+			LOG "    $SIGNED_PKG_NAME"
+		else
+			LINUX_PKG_NAME=$pkg
+			LOG "    $LINUX_PKG_NAME"
+		fi 
+	done
+
+	LINUX_LINE=$(cat $KERNEL_SERIES_YAML|grep "^'$KERNEL_SERIES_NUMBER':" -A 1000000|grep -v "^'$KERNEL_SERIES_NUMBER':"|sed -n '/^.[0-9][0-9].[0-9][0-9]/q;p'|grep -A 10000 $KERNEL_NAME:|sed -n '/^$/q;p'|grep git.launchpad.net|head -n 1|grep -v "^$")
+
+	if [ -z "$LINUX_LINE" ] ; then
+		echo This kernel dont exist
+		LOG This kernel dont exist
+		exit 1
+	fi
+
+	#echo LINUX_LINE is $LINUX_LINE
+
+	LINUX_TAGS_SOURCE=$(echo $LINUX_LINE|sed -e 's/.*\[.//g'|sed -e "s/'.*//g")
+	#echo LINUX_TAGS_SOURCE is $LINUX_TAGS_SOURCE
+
+	echo $LINUX_LINE | grep , > /dev/null
+	if [ $? -eq 0 ] ; then
+	#	echo This tree has specified a branch
+		LINUX_BRANCH=$(echo $LINUX_LINE|sed -e 's/.*,..//g'|sed -e "s/'.//g")
+	else
+	#	echo No linux branch specified - using 'master'
+		LINUX_BRANCH=master
+	fi
+	#echo LINUX_BRANCH is $LINUX_BRANCH
+
+
+	LINUX_START_FROM="$LINUX_TAGS_SOURCE $LINUX_BRANCH"
+	#echo LINUX_START_FROM is $LINUX_START_FROM
+
+
+
+	META_LINE=$(cat $KERNEL_SERIES_YAML|grep "^'$KERNEL_SERIES_NUMBER':" -A 1000000|grep -v "^'$KERNEL_SERIES_NUMBER':"|sed -n '/^.[0-9][0-9].[0-9][0-9]/q;p'|grep -A 10000 $KERNEL_NAME:|sed -n '/^$/q;p'|grep git.launchpad.net|grep meta)
+	#echo META_LINE is $META_LINE
+
+	META_TAGS_SOURCE=$(echo $META_LINE|sed -e 's/.*\[.//g'|sed -e "s/'.*//g")
+	#echo META_TAGS_SOURCE is $META_TAGS_SOURCE
+
+	echo $META_LINE | grep , > /dev/null
+	if [ $? -eq 0 ] ; then
+	#	echo This tree has specified a branch
+		META_BRANCH=$(echo $META_LINE|sed -e 's/.*,..//g'|sed -e "s/'.//g")
+	else
+	#	echo No META branch specified - using 'master'
+		META_BRANCH=master
+	fi
+	#echo META_BRANCH is $META_BRANCH
+
+	META_START_FROM="$META_TAGS_SOURCE $META_BRANCH"
+	#echo META_START_FROM is $META_START_FROM
+
+
+
+
+	SIGNED_LINE=$(cat $KERNEL_SERIES_YAML|grep "^'$KERNEL_SERIES_NUMBER':" -A 1000000|grep -v "^'$KERNEL_SERIES_NUMBER':"|sed -n '/^.[0-9][0-9].[0-9][0-9]/q;p'|grep -A 10000 $KERNEL_NAME:|sed -n '/^$/q;p'|grep git.launchpad.net|grep signed)
+	#echo SIGNED_LINE is $SIGNED_LINE
+
+	if [ -n "$SIGNED_PKG_NAME" ] ; then
+		HAS_SIGNED=1
+		SIGNED_TAGS_SOURCE=$(echo $SIGNED_LINE|sed -e 's/.*\[.//g'|sed -e "s/'.*//g")
+		#echo SIGNED_TAGS_SOURCE is $SIGNED_TAGS_SOURCE
+
+		echo $SIGNED_LINE | grep , > /dev/null
+		if [ $? -eq 0 ] ; then
+		#	echo This tree has specified a branch
+			SIGNED_BRANCH=$(echo $SIGNED_LINE|sed -e 's/.*,..//g'|sed -e "s/'.//g")
+		else
+		#	echo No SIGNED branch specified - using 'master'
+			SIGNED_BRANCH=master
+		fi
+		#echo SIGNED_BRANCH is $SIGNED_BRANCH
+
+		SIGNED_START_FROM="$SIGNED_TAGS_SOURCE $SIGNED_BRANCH"
+		#echo SIGNED_START_FROM is $SIGNED_START_FROM
+	else
+		HAS_SIGNED=0
+	fi
+
+	LRM_LINE=$(cat $KERNEL_SERIES_YAML|grep "^'$KERNEL_SERIES_NUMBER':" -A 1000000|grep -v "^'$KERNEL_SERIES_NUMBER':"|sed -n '/^.[0-9][0-9].[0-9][0-9]/q;p'|grep -A 10000 $KERNEL_NAME:|sed -n '/^$/q;p'|grep git.launchpad.net|grep restricted-modules)
+	#echo LRM_LINE is $LRM_LINE
+
+	if [ -n "$LRM_PKG_NAME" ] ; then
+		HAS_LRM=1
+		LRM_TAGS_SOURCE=$(echo $LRM_LINE|sed -e 's/.*\[.//g'|sed -e "s/'.*//g")
+		#echo LRM_TAGS_SOURCE is $LRM_TAGS_SOURCE
+
+		echo $LRM_LINE | grep , > /dev/null
+		if [ $? -eq 0 ] ; then
+		#	echo This tree has specified a branch
+			LRM_BRANCH=$(echo $LRM_LINE|sed -e 's/.*,..//g'|sed -e "s/'.//g")
+		else
+		#	echo No LRM branch specified - using 'master'
+			LRM_BRANCH=master
+		fi
+		#echo LRM_BRANCH is $LRM_BRANCH
+
+		LRM_START_FROM="$LRM_TAGS_SOURCE $LRM_BRANCH"
+		#echo LRM_START_FROM is $LRM_START_FROM
+	else
+		HAS_LRM=0
+	fi
+
+		
+}
 
 
 NO_LINKTOTRACKER=1
@@ -165,18 +479,108 @@ case $key in
 		shift # past argument
 		shift # past value
 	;;
+	-S|--use-ssh)
+		USESSH=1
+		shift
+	;;
+	-A|--autoinfo)
+		# automatically derive info from kernel-info.yaml
+		AUTOINFO=1
+		# KERNEL_INDEX should be of the form e.g. "xenial/linux-raspi2"
+		KERNEL_INDEX="$2"
+		shift
+		shift
+	;;
 	-t|--tasks)
 		TASKS="$2"
 		shift # past argument
 		shift # past value
 	;;
-	--master-tag)
-		REBASE_TAG="$2"
+	--rebase-onto)
+		# TODO
 		shift # past argument
 		shift # past value
 	;;
+	--linux-tags-source)
+		LINUX_TAGS_SOURCE="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--linux-start-from)
+		LINUX_START_FROM="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--linux-build-against)
+		LINUX_BUILD_AGAINST="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--meta-tags-source)
+		META_TAGS_SOURCE="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--meta-start-from)
+		META_START_FROM="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--meta-build-against)
+		META_BUILD_AGAINST="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--signed-tags-source)
+		HAS_SIGNED=1
+		SIGNED_TAGS_SOURCE="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--signed-start-from)
+		HAS_SIGNED=1
+		SIGNED_START_FROM="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--signed-build-against)
+		SIGNED_BUILD_AGAINST="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--lrm-tags-source)
+		HAS_LRM=1
+		LRM_TAGS_SOURCE="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--lrm-start-from)
+		HAS_LRM=1
+		LRM_START_FROM="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--lrm-build-against)
+		LRM_BUILD_AGAINST="$2"
+		shift # past argument
+		shift # past value
+	;;
+	--dont-sign-tags)
+		SIGN_TAGS=0
+		shift # past argument
+	;;
 	-c|--clearcache)
 		CLEARCACHE=1
+		shift # past argument
+	;;
+	-V|--bumpversion)
+		BUMP_VERSION_NUMBER=1
+		LOG "Will manually bump version number"
+		shift # past argument
+	;;
+	-B|--bumpbuild)
+		BUMP_BUILD_NUMBER=1
+		LOG "Will manually bump build number"
 		shift # past argument
 	;;
 	-h|--help|-u|--usage)
@@ -191,7 +595,6 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-KRANKFILE=$1
 
 if [ x"$CLEARCACHE" != x'' ] ; then
 	echo "About to clear autokrank cache branches from:"
@@ -248,34 +651,42 @@ LOG ""
 
 
 
-LOG "-- autokranking $KRANKFILE --"
-source $KRANKFILE
-
-DATE_S=$(date +%s)
-if [ $TYPE = 'master' ] ; then
-	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$TYPE
-else
-	TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$SERIES-$VARIANT
-fi
-LOG "Using branch name: $TEMPBRANCH"
-
+LOG "-- autokranking --"
 
 if [ x$TASKS = 'x' ] ; then
 	# If no tasks were specified, then do everything
-	TASKS='111111'
+	TASKS='11111111'
 fi
 
 
-LOG "Tasks are: $TASKS"
 
 TASK_CRANK_LINUX=$(echo $TASKS | grep -o .|head -n 1)
 TASK_BUILD_LINUX=$(echo $TASKS | grep -o .|head -n 2|tail -n 1)
-TASK_CRANK_SIGNED=$(echo $TASKS | grep -o .|head -n 3|tail -n 1)
-TASK_BUILD_SIGNED=$(echo $TASKS | grep -o .|head -n 4|tail -n 1)
-TASK_CRANK_META=$(echo $TASKS | grep -o .|head -n 5|tail -n 1)
-TASK_BUILD_META=$(echo $TASKS | grep -o .|head -n 6|tail -n 1)
+TASK_CRANK_META=$(echo $TASKS | grep -o .|head -n 3|tail -n 1)
+TASK_BUILD_META=$(echo $TASKS | grep -o .|head -n 4|tail -n 1)
+TASK_CRANK_SIGNED=$(echo $TASKS | grep -o .|head -n 5|tail -n 1)
+TASK_BUILD_SIGNED=$(echo $TASKS | grep -o .|head -n 6|tail -n 1)
 TASK_CRANK_LRM=$(echo $TASKS | grep -o .|head -n 7|tail -n 1)
 TASK_BUILD_LRM=$(echo $TASKS | grep -o .|head -n 8|tail -n 1)
+
+LOG "Tasks are: "
+print_tasks
+if [ $AUTOINFO -eq 0 ] ; then
+	if [ -z "$LINUX_START_FROM" ] ; then
+		LOG "FATAL: Must have --linux-start-from or --autoinfo"
+		exit 1
+	fi
+else
+	# KERNEL_INDEX should be of the form: disco/linux-aws
+	get_kernel_info $KERNEL_INDEX
+fi
+
+
+DATE_S=$(date +%s)
+TEMPBRANCH=autokrank-$DATE_S-$SRUCYCLE-$KERNEL_NAME
+LOG "Using branch name: $TEMPBRANCH"
+
+
 
 if [ $NO_LINKTOTRACKER = '1' ] ; then
 	LOG "Will NOT run link-to-tracker (no bug number will appear in the changelog)"
@@ -299,11 +710,6 @@ LOG "chroot session that will be used: $CHROOT"
 
 
 
-if [ $TYPE = 'meta-only' ]; then
-	TASK_CRANK_LINUX=0;
-	TASK_BUILD_LINUX=0;
-fi
-
 if [ $TASK_CRANK_LINUX = '1'  ] ; then
 	LOG "Running cranky-fix"
 	$KTEAMTOOLS/cranky/cranky fix
@@ -313,7 +719,7 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 	RES=$?
 
 	while [ $RES -eq 128 ] ; do
-		git diff --name-only|grep debian.scripts.helpers
+		git diff --name-only|grep -e debian.scripts.helpers -e debian.dkms.versions
 		if [ $? -eq 1 ] ; then
 			LOG "FATAL: rebase failed, needs manual merge"
 			exit 1
@@ -324,106 +730,81 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 		fi
 	done
 
+	LOG "Running cranky-fix (again)"
+	$KTEAMTOOLS/cranky/cranky fix
+
 	LOG "Running cranky-open"
 	RES=$($KTEAMTOOLS/cranky/cranky open)
-	if [ $RES != '0' ] ; then
-		LOG "FATAL: cranky-open failed -- please investigate"
-		exit 1
+
+	if [ $BUMP_VERSION_NUMBER != '0' ] ; then
+		LOG "Incrementing version (and build) number"
+		bump_version_number
+	fi
+
+	if [ $BUMP_BUILD_NUMBER != '0' ] ; then
+		LOG "Incrementing build number"
+		bump_build_number
 	fi
 
 
 	if [ $NO_LINKTOTRACKER != '1' ] ; then
 		LOG "Running cranky-link-tb"
 		$KTEAMTOOLS/cranky/cranky link-tb --re-run -s $SRUCYCLE
+		RES=$?
+		if [ x"$RES" != x"0" ] ; then
+			LOG "WARNING: cranky-link-tb failed -- continuing anyway"
+		fi
 	else
-		LOG "Skipping link-to-tracker!!"
+		LOG "(skipping link-to-tracker)"
 	fi;
 
 	LOG "Running cranky-close"
-	RES=$($KTEAMTOOLS/cranky/cranky close)
-	if [ $RES != '0' ] ; then
+	$KTEAMTOOLS/cranky/cranky close
+	RES=$?
+	if [ x"$RES" != x"0" ] ; then
 		LOG "FATAL: cranky-close failed -- please investigate"
 		exit 1
 	fi
 
 	LOG "Running cranky-tag"
-	$KTEAMTOOLS/cranky/cranky tag
-
-	if [ $TYPE = 'master' ] ; then
-		# if this is master, tag our new commit so that
-		# the derivatives have something on which to rebase
-		# (This is obsoleted by cranky)
-		git tag -d $KRANK_TAGNAME
-		git tag $KRANK_TAGNAME
-		LOG "Generated new autokrank master tag ('$KRANK_TAGNAME' a.k.a '$(git describe $KRANK_TAGNAME)')"
+	if [ $SIGN_TAGS -ne 1 ] ; then
+		LOG "         (not signing tag)"
+		$KTEAMTOOLS/cranky/cranky tag -f --unsigned
+	else
+		$KTEAMTOOLS/cranky/cranky tag -f
 	fi
+
+	$KTEAMTOOLS/maintscripts/verify-release-ready > $WORKDIR/verify-release-ready.txt
+	git show > $WORKDIR/git-show.txt
 fi
 
 
 if [ $TASK_BUILD_LINUX = '1' ] ; then
-	git clean -fxd
+	git_clean
 	$FDR clean
 
 	# Just in case a linux.orig is present from before:
 	rm -rf ../linux.orig
 
-	eval PKG_NAME="$LINUX_PKG_NAME"
+	# Call to set the PKG_NAME variable
+	set_package_name linux
+
 	LOG "PKG_NAME is $PKG_NAME"
-	LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
-	LOG "Last linux version in rmadison -updates: $LASTVER"
-	LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
-	LOG "Version that will be used with debuild: $LASTVER"
-	LOG "Constructing source pkg for linux"
-	run_in_chroot debuild -S -i -I -us -uc -v$LASTVER
-	LOG "Done constructing linux pkgs"
-fi
 
-
-##################
-#
-# SIGNED
-#
-##################
-
-LOG ""
-LOG "SIGNED"
-LOG "------"
-LOG "Switching to $SIGNED_DIR"
-cd $SIGNED_DIR
-prepare_directory signed
-
-if [ x"$SIGNED_PKG_NAME" != "x" ] ; then
-	if [ $TASK_CRANK_SIGNED = '1' ] ; then
-
-		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
-		COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
-		TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
-		LOG "Commit command is: $COMMIT_CMD"
-		echo $COMMIT_CMD | bash
-		LOG "Tag command is: $TAG_CMD"
-		echo $TAG_CMD | bash
-	fi
-
-	if [ $TASK_BUILD_SIGNED = '1' ] ; then
-		git clean -fxd
-		$FDR clean
-
-		eval PKG_NAME="$SIGNED_PKG_NAME"
-		LOG "PKG_NAME is $PKG_NAME"
-		LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
-		LOG "Last linux-signed version in rmadison -updates: $LASTVER"
-
+	GREP_STRING=$(find_grep_string $LINUX_BUILD_AGAINST)
+	LASTVER=$($KTEAMTOOLS/cranky/cranky rmadison | grep "$PKG_NAME "|grep $GREP_STRING|sed -e "s/$PKG_NAME\s*|//g"|sed -e 's/ |.*//g'|sed -e 's/ //g')
+	if [ x"$LASTVER" != "x" ] ; then
+		LOG "Last linux version in rmadison ($LINUX_BUILD_AGAINST): $LASTVER"
 		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
 		LOG "Version that will be used with debuild: $LASTVER"
-		LOG "Constructing source pkg for signed"
-		run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc -v$LASTVER
-		LOG "Done constructing linux-signed pkgs"
+		LOG "Constructing source pkg for linux"
+		run_in_chroot debuild -S -i -I -us -uc -v$LASTVER
+		LOG "Done constructing linux pkgs"
+	else
+		LOG "No prior version found in rmadison - build without -v"
+		run_in_chroot debuild -S -i -I -us -uc
 	fi
-else
-	LOG "This kernel doesn't have a signed pkg - skipping 'signed'"
 fi
-
-
 
 
 
@@ -450,6 +831,12 @@ if [ $TASK_CRANK_META = '1' ] ; then
 	COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
 	COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
 	TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+	TAG_CMD="$TAG_CMD -f"
+	if [ $SIGN_TAGS -ne 1 ] ; then
+		LOG "         (not signing tag)"
+		TAG_CMD=$(echo $TAG_CMD | sed -e 's/ -s//g')
+		COMMIT_CMD=$(echo $COMMIT_CMD | sed -e 's/ -s//g')
+	fi
 	LOG "Commit command is: $COMMIT_CMD"
 	echo $COMMIT_CMD | bash
 	LOG "Tag command is: $TAG_CMD"
@@ -457,17 +844,94 @@ if [ $TASK_CRANK_META = '1' ] ; then
 fi
 
 if [ $TASK_BUILD_META = '1' ] ; then
-	git clean -fxd
+	git_clean
 	$FDR clean
 
-	eval PKG_NAME="$META_PKG_NAME"
+	set_package_name meta
 	LOG "PKG_NAME is $PKG_NAME"
-	LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
-	LOG "Last linux-meta version in rmadison -updates: $LASTVER"
-	LOG "Constructing source pkg for meta"
-	run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
-	LOG "Done constructing linux-meta pkgs"
+	GREP_STRING=$(find_grep_string $META_BUILD_AGAINST)
+	LASTVER=$($KTEAMTOOLS/cranky/cranky rmadison | grep "$PKG_NAME "|grep $GREP_STRING|sed -e "s/$PKG_NAME\s*|//g"|sed -e 's/ |.*//g'|sed -e 's/ //g')
+	if [ x"$LASTVER" != "x" ] ; then
+		LOG "Last linux-meta version in rmadison ($META_BUILD_AGAINST): $LASTVER"
+		LOG "Constructing source pkg for meta"
+		run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
+		LOG "Done constructing linux-meta pkgs"
+	else
+		LOG "No prior version found in rmadison - build without -v"
+		run_in_chroot debuild -S -d -i -I -us -uc
+	fi
 fi
+
+
+
+
+
+
+
+
+
+
+##################
+#
+# SIGNED
+#
+##################
+
+
+if [ $HAS_SIGNED -eq 1 ] ; then
+	LOG ""
+	LOG "SIGNED"
+	LOG "------"
+	LOG "Switching to $SIGNED_DIR"
+	cd $SIGNED_DIR
+	prepare_directory signed
+	if [ $TASK_CRANK_SIGNED = '1' ] ; then
+		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
+		COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
+		TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+		TAG_CMD="$TAG_CMD -f"
+		if [ $SIGN_TAGS -ne 1 ] ; then
+			LOG "         (not signing tag)"
+			TAG_CMD=$(echo $TAG_CMD | sed -e 's/ -s//g')
+			COMMIT_CMD=$(echo $COMMIT_CMD | sed -e 's/ -s//g')
+		fi
+		LOG "Commit command is: $COMMIT_CMD"
+		echo $COMMIT_CMD | bash
+		LOG "Tag command is: $TAG_CMD"
+		echo $TAG_CMD | bash
+	fi
+
+	if [ $TASK_BUILD_SIGNED = '1' ] ; then
+		git_clean
+		$FDR clean
+
+		set_package_name signed
+		LOG "PKG_NAME is $PKG_NAME"
+		GREP_STRING=$(find_grep_string $SIGNED_BUILD_AGAINST)
+		LASTVER=$($KTEAMTOOLS/cranky/cranky rmadison | grep "$PKG_NAME "|grep $GREP_STRING|sed -e "s/$PKG_NAME\s*|//g"|sed -e 's/ |.*//g'|sed -e 's/ //g')
+		if [ x"$LASTVER" != "x" ] ; then
+			LOG "Last linux-signed version in rmadison ($SIGNED_BUILD_AGAINST): $LASTVER"
+			LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+			LOG "Version that will be used with debuild: $LASTVER"
+			LOG "Constructing source pkg for signed"
+			run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc -v$LASTVER
+		else
+			LOG "No prior version found in rmadison - build without -v"
+			run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc
+		fi
+		LOG "Done constructing linux-signed pkgs"
+
+	fi
+fi
+
+
+
+
+
+
+
+
+
 
 
 
@@ -478,11 +942,11 @@ fi
 #
 ##################
 
-LOG ""
-LOG "LRM"
-LOG "----"
-LOG "Switching to $LRM_DIR"
-if [ x"$LRM_PKG_NAME" != "x" ] ; then
+if [ $HAS_LRM -eq 1 ] ; then
+	LOG ""
+	LOG "LRM"
+	LOG "----"
+	LOG "Switching to $LRM_DIR"
 	cd $LRM_DIR
 	prepare_directory lrm
 
@@ -492,6 +956,12 @@ if [ x"$LRM_PKG_NAME" != "x" ] ; then
 		COMMANDS=$(./update-version $LINUX_DIR|tail -n 2 )
 		COMMIT_CMD=$(echo $COMMANDS| sed -e 's/git.tag.*//g' )
 		TAG_CMD=$(echo $COMMANDS| sed -e 's/.*git.tag/git tag/g' )
+		TAG_CMD="$TAG_CMD -f"
+		if [ $SIGN_TAGS -ne 1 ] ; then
+			LOG "         (not signing tag)"
+			TAG_CMD=$(echo $TAG_CMD | sed -e 's/ -s//g')
+			COMMIT_CMD=$(echo $COMMIT_CMD | sed -e 's/ -s//g')
+		fi
 		LOG "Commit command is: $COMMIT_CMD"
 		echo $COMMIT_CMD | bash
 		LOG "Tag command is: $TAG_CMD"
@@ -499,23 +969,27 @@ if [ x"$LRM_PKG_NAME" != "x" ] ; then
 	fi
 
 	if [ $TASK_BUILD_LRM = '1' ] ; then
-		git clean -fxd
+		git_clean
 		$FDR clean
 
-		eval PKG_NAME="$LRM_PKG_NAME"
+		set_package_name lrm
 		LOG "PKG_NAME is $PKG_NAME"
-		LASTVER=$(rmadison -a source $PKG_NAME | grep $SERIES|grep updates|sed -e "s/.$PKG_NAME...//g"|sed -e 's/ .*//g')
-		LOG "Last linux-restricted-modules version in rmadison: $LASTVER"
-		LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
-		LOG "Version that will be used with debuild: $LASTVER"
-		LOG "Constructing source pkg for lrm"
-		run_in_chroot debuild -S -d -i -I -us -uc -v$LASTVER
-		LOG "Done constructing linux-restricted-modules pkgs"
+		GREP_STRING=$(find_grep_string $LRM_BUILD_AGAINST)
+		LASTVER=$($KTEAMTOOLS/cranky/cranky rmadison | grep "$PKG_NAME "|grep $GREP_STRING|sed -e "s/$PKG_NAME\s*|//g"|sed -e 's/ |.*//g'|sed -e 's/ //g')
+		if [ x"$LASTVER" != "x" ] ; then
+			LOG "Last linux-lrm version in rmadison ($LRM_BUILD_AGAINST): $LASTVER"
+			LASTVER=$(echo $LASTVER|sed -e 's/~.*//g')
+			LOG "Version that will be used with debuild: $LASTVER"
+			LOG "Constructing source pkg for lrm"
+			run_in_chroot debuild --no-tgz-check -S -d -i -I -us -uc -v$LASTVER
+			LOG "Done constructing linux-lrm pkg"
+		else
+			LOG "No prior version found in rmadison - build without -v"
+			run_in_chroot debuild -S -d -i -I -us -uc
+		fi
 	fi
-else
-	LOG "This kernel doesn't have a liux-restricted-modules pkg - skipping 'lrm'"
 fi
 
 LOG ""
-LOG "done autokranking $KRANKFILE"
+LOG "done autokranking $@"
 LOG "-------------------------"

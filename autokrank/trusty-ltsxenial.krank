@@ -1,7 +1,0 @@
-source trusty--master.krank
-VARIANT="lts-xenial"
-PKG_NAME_SUFFIX="-$VARIANT"
-
-LINUX_FETCH_SOURCE="$LINUX_ORIGIN lts-backport-xenial"
-SIGNED_FETCH_SOURCE="$SIGNED_ORIGIN lts-backport-xenial"
-META_FETCH_SOURCE="$META_ORIGIN lts-backport-xenial"

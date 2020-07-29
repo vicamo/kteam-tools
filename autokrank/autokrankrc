@@ -1,20 +1,14 @@
 #
 # Copy this file to ~/.autokrankrc and edit it to suit 
 # your paths
-# It is recommended to keep 3 separate repos (linux, signed
-# meta) specifically for autokrank
+# It is recommended to keep 4 separate repos (linux, signed
+# meta, lrm) specifically for autokrank
 # This allows for safe purging (see --purge option)
-# and makes it easier to krank some kernels
+# and is less risky
 #
 BASE=~/repos
 KTEAMTOOLS=$BASE/kteam-tools
 LINUX_DIR=$BASE/autokrank/linux
-SIGNED_DIR=$BASE/autokrank/signed
-META_DIR=$BASE/autokrank/meta
-
-# The names of the schroot environments
-# This is the name that will be used with
-# 'schroot -c <NAME>'
-TRUSTY_CHROOT=trusty
-XENIAL_CHROOT=xenial
-BIONIC_CHROOT=bionic
+SIGNED_DIR=$BASE/autokrank/linux-signed
+META_DIR=$BASE/autokrank/linux-meta
+LRM_DIR=$BASE/autokrank/linux-lrm
