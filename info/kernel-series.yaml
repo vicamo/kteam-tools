@@ -2736,6 +2736,7 @@
                     gated: false
                     qa: false
                     hw-cert: true
+                    promote-to: stable
                     arches: ['armhf']
             supported: true
             private: true
