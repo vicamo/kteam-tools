@@ -30,4 +30,17 @@ do
 		echo "V2 host=$host group=$group title=Queue:%s$vhost:$name note=Messages:%s$messages state=$state order=$order"
 	done
 done
+sudo rabbitmqctl -q list_connections vhost user peer_host peer_port state | \
+while read vhost user peer_host peer_port state
+do
+	state=$(echo "$state" | sed -e 's/%/%p/g' -e 's/ /%s/g')
+	if [ "$state" != 'running' ]; then
+		echo "V2 host=$host group=$group title=Connection:%s$vhost:$user%s$state note=Connection%snot%srunning state=W order=60"
+	fi
+done
+sudo rabbitmqctl -q list_connections vhost | sort | uniq -c | \
+while read count vhost
+do
+	echo "V2 host=$host group=$group title=VHost:%s$vhost note=$count%sconnections state=G order=70"
+done
 echo "V2 host=$host group=$group title=RabbitMQ%sMonitor stamp=$now warning=1200 alert=1800 order=10"
