@@ -1037,9 +1037,16 @@ if [ $HAS_LRM -eq 1 ] ; then
 	fi
 fi
 
-if [ $TASK_BUILD_LRM = '1' -o $TASK_BUILD_LINUX = '1' -o $TASK_BUILD_SIGNED = '1' -o $TAS_BUILD_META = '1' ] ; then
-	LOG "Copying files to: kathleen:/home/kmously/crankmeister/ "
-	scp $(ls -1 ../|grep -v orig) kathleen:/home/kmously/crankmeister/
+if [ $PUSH_TAGS_FOR_REVIEW -eq 1 ] ; then
+	if [ $PREPURGE -eq 1 ] ; then
+		if [[ $TASK_BUILD_LRM = '1' || $TASK_BUILD_LINUX = '1' || $TASK_BUILD_SIGNED = '1' || $TAS_BUILD_META = '1' ]] ; then
+			NUM=$(date +%s)
+			mkdir ../$NUM
+			cp $(find ../ -maxdepth 1 -type f) ../$NUM
+			LOG "Copying build files to: kathleen:/home/kmously/crankmeister/$NUM "
+			scp -r ../$NUM kathleen:/home/kmously/crankmeister/
+		fi
+	fi
 fi
 
 LOG ""
