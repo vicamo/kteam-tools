@@ -469,8 +469,15 @@ do
 key="$1"
 
 case $key in
-	-p|--purge)
+	--purge)
+		# will purge and exit
 		PURGE=1
+		shift # past argument
+	;;
+	--pre-purge)
+		# purge and continue cranking
+		PURGE=1
+		PREPURGE=1
 		shift # past argument
 	;;
 	-s|--sru-cycle)
@@ -583,6 +590,11 @@ case $key in
 		LOG "Will manually bump build number"
 		shift # past argument
 	;;
+	--push-tags-for-review)
+		PUSH_TAGS_FOR_REVIEW=1
+		LOG "Will push tags to kathleen for review"
+		shift # past argument
+	;;
 	-h|--help|-u|--usage)
 		usage
 		exit 0
@@ -625,16 +637,21 @@ if [ x"$PURGE" != x'' ] ; then
 	echo "   $(dirname "$LINUX_DIR")"
 	echo "   $(dirname "$SIGNED_DIR")"
 	echo "   $(dirname "$META_DIR")"
-	read -r -p "Are you sure you want to continue? [y/N] " response
-	case "$response" in
-	    [yY][eE][sS]|[yY]) 
+	if [ $PREPURGE -eq 0 ] ; then
+		read -r -p "Are you sure you want to continue? [y/N] " response
+		case "$response" in
+		    [yY][eE][sS]|[yY]) 
+			purge_trees_and_directories
+			exit 0
+			;;
+		    *)
+			exit 0
+			;;
+		esac
+	else
+		# purge and continue cranking
 		purge_trees_and_directories
-		exit 0
-		;;
-	    *)
-		exit 0
-		;;
-	esac
+	fi
 fi
 
 echo logfile is $LOGFILE
@@ -776,6 +793,15 @@ if [ $TASK_CRANK_LINUX = '1'  ] ; then
 
 	$KTEAMTOOLS/maintscripts/verify-release-ready > $WORKDIR/verify-release-ready.txt
 	git show > $WORKDIR/git-show.txt
+
+
+	rm repo-info.txt
+	if [ $PUSH_TAGS_FOR_REVIEW -eq 1 ] ; then
+		TAG_NAME=$(git tag --points-at HEAD|grep Ubuntu)
+		LOG "Pushing $TAG_NAME to: $(git remote get-url kat) $TAG_NAME"
+		git push -f kat $TAG_NAME
+		echo "$(git remote get-url kat) $TAG_NAME" >> repo-info.txt
+	fi
 fi
 
 
@@ -841,6 +867,13 @@ if [ $TASK_CRANK_META = '1' ] ; then
 	echo $COMMIT_CMD | bash
 	LOG "Tag command is: $TAG_CMD"
 	echo $TAG_CMD | bash
+
+	if [ $PUSH_TAGS_FOR_REVIEW -eq 1 ] ; then
+		TAG_NAME=$(git tag --points-at HEAD|grep Ubuntu)
+		LOG "Pushing $TAG_NAME to: $(git remote get-url kat) $TAG_NAME"
+		git push -f kat $TAG_NAME
+		echo "$(git remote get-url kat) $TAG_NAME" >> repo-info.txt
+	fi
 fi
 
 if [ $TASK_BUILD_META = '1' ] ; then
@@ -899,6 +932,13 @@ if [ $HAS_SIGNED -eq 1 ] ; then
 		echo $COMMIT_CMD | bash
 		LOG "Tag command is: $TAG_CMD"
 		echo $TAG_CMD | bash
+
+		if [ $PUSH_TAGS_FOR_REVIEW -eq 1 ] ; then
+			TAG_NAME=$(git tag --points-at HEAD|grep Ubuntu)
+			LOG "Pushing $TAG_NAME to: $(git remote get-url kat) $TAG_NAME"
+			git push -f kat $TAG_NAME
+			echo "$(git remote get-url kat) $TAG_NAME" >> repo-info.txt
+		fi
 	fi
 
 	if [ $TASK_BUILD_SIGNED = '1' ] ; then
@@ -966,6 +1006,13 @@ if [ $HAS_LRM -eq 1 ] ; then
 		echo $COMMIT_CMD | bash
 		LOG "Tag command is: $TAG_CMD"
 		echo $TAG_CMD | bash
+
+		if [ $PUSH_TAGS_FOR_REVIEW -eq 1 ] ; then
+			TAG_NAME=$(git tag --points-at HEAD|grep Ubuntu)
+			LOG "Pushing $TAG_NAME to: $(git remote get-url kat) $TAG_NAME"
+			git push -f kat $TAG_NAME
+			echo "$(git remote get-url kat) $TAG_NAME" >> repo-info.txt
+		fi
 	fi
 
 	if [ $TASK_BUILD_LRM = '1' ] ; then
@@ -988,6 +1035,11 @@ if [ $HAS_LRM -eq 1 ] ; then
 			run_in_chroot debuild -S -d -i -I -us -uc
 		fi
 	fi
+fi
+
+if [ $TASK_BUILD_LRM = '1' -o $TASK_BUILD_LINUX = '1' -o $TASK_BUILD_SIGNED = '1' -o $TAS_BUILD_META = '1' ] ; then
+	LOG "Copying files to: kathleen:/home/kmously/crankmeister/ "
+	scp $(ls -1 ../|grep -v orig) kathleen:/home/kmously/crankmeister/
 fi
 
 LOG ""
