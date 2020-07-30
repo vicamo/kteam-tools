@@ -213,7 +213,11 @@ class Task():
 
 class TaskSet():
     def __src_wanted(self, ks_source, src_list):
-        return (len(src_list) == 0 or ks_source.name in src_list)
+        if len(src_list) == 0:
+            return True
+        if ks_source.series not in self.ks_series_list:
+            return False
+        return ks_source.name in src_list
 
     def __src_get_origin(self, ks_source):
         origin = ks_source.derived_from
@@ -290,6 +294,7 @@ class TaskSet():
         Internal helper which adds a new task for a source and optionally also creates
         all tasks in its ancestor chain.
         '''
+        print('{}:{}'.format(derivative.series.codename, derivative.name))
         if derivative.derived_from is None:
             # Top-level task (master kernel) if it is not created already, do that
             # here.
@@ -331,10 +336,14 @@ class TaskSet():
         '''
         output = ''
 
-        for ks_series in self.ks_series_list:
-            output += '* {}\n'.format(ks_series.codename)
+        for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
+            cs      = ks_series.codename
+            heading = '* {}\n'.format(cs)
             for tkey in self.tasks.keys():
-                if tkey.split(':', 1)[0] == ks_series.codename:
+                if tkey.startswith(cs + ':'):
+                    if heading != '':
+                        output += heading
+                        heading = ''
                     output += '{}\n'.format(self.tasks[tkey])
 
         return output
@@ -387,7 +396,7 @@ class TaskSet():
                     # had to be created (including main tasks) will not be marked for creation
                     # (so there must be an existing tracking bug for that or verification will
                     # fail).
-                    if origin.series in ks_series_list:
+                    if origin.series in ks_series_list or len(source_name_list) > 0:
                         subtask = self.__add_task_and_ancestors(ks_source)
                         subtask.create = True
                         self.__task_add_snaps(subtask)
@@ -397,10 +406,8 @@ class TaskSet():
 
         cinfo('Fetching existing tracking bugs for reality check...')
 
-        for series in self.ks_series_list:
-            for tkey in self.tasks.keys():
-                if tkey.split(':', 1)[0] == series.codename:
-                    self.__task_match_all_tbs(self.tasks[tkey])
+        for tkey in self.tasks.keys():
+                self.__task_match_all_tbs(self.tasks[tkey])
 
     def ValidateTasks(self):
         # When no spin number is provided on the command-line, then pick the
@@ -434,16 +441,12 @@ class TaskSet():
                 raise ValueError('{}/{} has no tracking bug and is not created!'.format(cn, sn))
 
     def CreateTrackingBugs(self, dryrun=False):
-        for ks_series in self.ks_series_list:
-            for tkey in self.tasks.keys():
-                if tkey.split(':', 1)[0] == ks_series.codename:
-                    self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun)
+        for tkey in self.tasks.keys():
+                self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun)
 
     def FinalizeTrackingBugs(self, dryrun=False):
-        for ks_series in self.ks_series_list:
-            for tkey in self.tasks.keys():
-                if tkey.split(':', 1)[0] == ks_series.codename:
-                    self.tasks[tkey].FinalizeTrackingBugs(dryrun=dryrun)
+        for tkey in self.tasks.keys():
+                self.tasks[tkey].FinalizeTrackingBugs(dryrun=dryrun)
 
     def CreateCards(self, boardname, dryrun=False):
         if dryrun is False and self.board is None:
@@ -454,10 +457,8 @@ class TaskSet():
             except CycleBoardError as e:
                 cerror(e)
                 return
-        for ks_series in self.ks_series_list:
-            for tkey in self.tasks.keys():
-                if tkey.split(':', 1)[0] == ks_series.codename:
-                    self.tasks[tkey].CreateCards(dryrun=dryrun)
+        for tkey in self.tasks.keys():
+            self.tasks[tkey].CreateCards(dryrun=dryrun)
 
 
 if __name__ == '__main__':
