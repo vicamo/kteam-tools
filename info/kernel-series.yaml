@@ -1479,6 +1479,27 @@
                     type: signed
             supported: false
 
+        linux-dell300x:
+            variants: [ '-wip' ]
+            routing: prerelease
+            packages:
+               linux-dell300x:
+                   repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-dell300x/+git/bionic', 'master-next']
+               linux-meta-dell300x:
+                   type: meta
+                   repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-dell300x/+git/bionic' ]
+               linux-signed-dell300x:
+                   type: signed
+                   repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            testing:
+                flavours:
+                    dell300x:
+                        arches: ['amd64']    # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-denver:
             routing:
                 security-build:
