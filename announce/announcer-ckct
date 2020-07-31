@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+#
+
+import os
+import socket
+import ssl
+import sys
+import threading
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from logging                            import basicConfig, DEBUG, WARNING
+
+from ktl.log                            import cdebug, center, cleave
+from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCkct
+from ktl.utils                          import o2ascii
+
+class ListenerCkct(threading.Thread):
+
+    # __init__
+    #
+    def __init__(self, exiting, args, old=False):
+        super().__init__()
+
+        self.name = "ListenerCkct" + ("Old" if old else "")
+        self.daemon = True
+
+        self.exiting = exiting
+
+        self.announce = None
+
+        self.old = old
+        self.aname = args.name
+        self.queue = args.queue if not self.old else args.queue + "-old"
+        self.direct = self.queue + "--" + self.aname
+        self.local = args.local
+
+        self.channel_map = {
+            'kernel.publish'         : ['#kmsgq', 'published'],
+            'kernel.testing.kernel'  : ['#kmsgq', 'test completed'],
+            'kernel.testing.request' : ['#kmsgq', 'requested'],
+            'kernel.maas.job.status' : ['#kmsgq', 'maas daily live image'],
+            'apw.testing.kernel'  : ['#kmsgq', 'test completed'],
+        }
+
+    # run
+    #
+    def run(self):
+        try:
+            # Incoming Ckct data.
+            if self.old:
+                self.mq = MsgQueue(local=self.local)
+            else:
+                self.mq = MsgQueueCkct(local=self.local)
+            print("{} msgq={}".format(self.name, self.mq))
+            bindings = self.channel_map.keys()
+            self.mq.listen_worker(self.queue, bindings, self._handler)
+
+            self.mq.listen_start()
+
+            with self.exiting:
+                self.exiting.notify()
+
+        except Exception as e:
+            with self.exiting:
+                self.exiting.notify()
+            raise e
+
+    # decode_payload
+    #
+    def decode_payload(self, payload):
+        center('TheApp::decode_payload')
+        channel = None
+        retval = []
+        content = ""
+
+        # Look for control messages.
+        what = payload.get('type', 'ckct')
+        if what == 'quit':
+            self.mq.listen_stop()
+            return
+
+        # Determine which channel to post the decoded content to
+        #
+        channel = '#kmsgq'
+        what = 'unknown'
+        for key in self.channel_map:
+            if payload['key'].startswith(key):
+                channel = self.channel_map[key][0]
+                what    = self.channel_map[key][1]
+
+        if what != 'unknown':
+            # Make pretty content.
+            #
+            try:
+                who = payload['who']
+            except KeyError:
+                who = ['kernel']
+            if not who:
+                who = ['kernel']
+            content += ','.join(who) + ', ' + what + ': '
+
+            if 'package' in payload:
+                series = "%s  %s " % (payload.get('series-name', 'unknown'), payload['package'])
+            else:
+                series = "%s " % (payload.get('series-name', 'unknown'))
+
+            if 'test completed' == what:
+                content += '%s-%s' % (series, payload.get('flavour', 'unknown'))
+                if 'kernel-version' in payload:
+                    content += ' %s'     % (payload['kernel-version'])
+                try:
+                    content += ' on %s' % (payload['sut-name'])
+                except KeyError:
+                    content += ' on unknown'
+                try:
+                    content += ' (%s)' % (payload['sut-arch'])
+                except KeyError:
+                    content += ' (unknown)'
+
+                if 'bug-id' in payload:
+                    content += ';  LP: #%d\n' % (payload['bug-id'])
+                retval.append(content)
+
+                if 'results' in payload:
+                    r = payload['results']
+                    content = '        tests ran: %3d, failed: %d;  %s' % (r['ran'], r['failed'], r['url'])
+                    retval.append(content)
+
+            elif 'published' == what:
+                content += '%s-%s %s' % (series, payload['flavour'], payload['kernel-version'])
+                content += ' to -' + payload['pocket']
+                retval.append(content)
+            elif 'requested' == what:
+                if 'systems' in payload:
+                    content += '%s with ' % (','.join(payload['systems']))
+                content += '%s' % (series)
+                if 'arches' in payload:
+                    content += '(%s)' % (','.join(payload['arches']))
+                if 'debs' in payload:
+                    content += ', debs: %s,' % payload['debs']
+                if 'ppa' in payload:
+                    content += ', ppa: %s,' % payload['ppa']
+                content += ' be tested'
+                if 'tests' in payload:
+                    content += ' with %s' % (','.join(payload['tests']))
+                retval.append(content)
+
+            elif 'maas daily live image' == what:
+                if payload['op'] == 'provisioning.failed':
+                    who = ['bjf']
+                    content = ','.join(who) + ', ' + what + ': '
+                    if 'series-name' in payload:
+                        content += payload['series-name']
+                    if 'sut-arch' in payload:
+                        content += ' ' + payload['sut-arch']
+                    if 'op' in payload:
+                        content += ' passed' if payload['op'] == 'provisioning.succeeded' else ' FAILED'
+
+                    retval.append(content)
+
+        cleave('TheApp::decode_payload')
+        return retval
+
+
+    # _handler
+    #
+    def _handler(self, payload):
+        cdebug("TheApp::_handler")
+
+        content = self.decode_payload(payload)
+
+        payload = {
+            'destination': {'type': 'key', 'key': 'ckct-message'},
+            'message': {'summary': '\n'.join(content)},
+        }
+        print(self.name, "SEND", payload)
+
+        self.announce.deliver_to(payload)
+
+
+class ListenerAnnounce(threading.Thread):
+
+    def __init__(self, exiting, args):
+        super().__init__()
+
+        self.name = "ListenerAnnounce"
+        self.daemon = True
+
+        self.exiting = exiting
+
+        self.queue = args.queue
+        self.queue = args.queue
+        self.aname = args.name
+        self.direct = self.queue + '--' + self.aname
+        self.local = args.local
+
+
+    # _handler
+    #
+    def _handler(self, payload):
+        #print("MsgqReader _handler", payload) self.cmd_q.put(ClientCommand(ClientCommand.MSGQ_RAW, payload))
+        what = payload.get('type', 'message')
+
+        if what == 'quit':
+            self.mq.listen_stop()
+
+    # run
+    #
+    def run(self):
+        try:
+            self.mq = MsgQueueService(service='announce', local=self.local, exchange='announce-todo', heartbeat_interval=60)
+            print("{} msgq={}".format(self.name, self.mq))
+
+            self.mq.listen_worker(self.direct, 'direct.{}.announce.ckct'.format(self.aname), self._handler, auto_delete=True)
+            self.mq.listen_start()
+
+            with self.exiting:
+                self.exiting.notify()
+
+        except Exception as e:
+            with self.exiting:
+                self.exiting.notify()
+            raise e
+
+    # NOTE: this implementation must be thread safe as it is called directly
+    # from the Ckct thread.
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq.publish_threadsafe(key, payload)
+
+
+# TheApp
+#
+class TheApp():
+    '''
+    This class is just the engine that makes everything go.
+    '''
+
+    def __init__(self, args):
+        self.args = args
+
+    # deliver_to
+    #
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq_announce.publish(key, payload)
+
+
+    # main
+    #
+    def main(self):
+        '''
+        '''
+        retval = 1
+
+        try:
+            exiting = threading.Condition()
+
+            announce = ListenerAnnounce(exiting, args)
+            ckct = ListenerCkct(exiting, args)
+            if args.old:
+                ckct_old = ListenerCkct(exiting, args, old=True)
+
+            ckct.announce = announce
+            if args.old:
+                ckct_old.announce = announce
+
+            announce.start()
+            ckct.start()
+            if args.old:
+                ckct_old.start()
+
+            with exiting:
+                exiting.wait()
+
+            print("done")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Aborting ...")
+
+        return retval
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+I'm a application skeleton, your job is to make me into something useful.
+    '''
+    app_epilog = '''
+examples:
+    KernelMQ --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('--queue', default='announcer-ckct', help='Name of the queue to use')
+    parser.add_argument('--old', action='store_true', default=False, help='Connect to the old service as well')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    log_format = "%(levelname)s - %(message)s"
+    if args.debug:
+        basicConfig(level=DEBUG, format=log_format)
+    else:
+        basicConfig(level=WARNING, format=log_format)
+
+    app = TheApp(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
