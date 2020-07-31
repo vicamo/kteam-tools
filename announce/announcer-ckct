@@ -11,14 +11,17 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, DEBUG, WARNING
 
 from ktl.log                            import cdebug, center, cleave
-from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCkct
+from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCredentials, MsgQueueCkct
 from ktl.utils                          import o2ascii
+
+from secrets import Secrets
+
 
 class ListenerCkct(threading.Thread):
 
     # __init__
     #
-    def __init__(self, exiting, args, old=False):
+    def __init__(self, exiting, args, old=False, secrets=None):
         super().__init__()
 
         self.name = "ListenerCkct" + ("Old" if old else "")
@@ -27,6 +30,7 @@ class ListenerCkct(threading.Thread):
         self.exiting = exiting
 
         self.announce = None
+        self.secrets = secrets
 
         self.old = old
         self.aname = args.name
@@ -50,7 +54,16 @@ class ListenerCkct(threading.Thread):
             if self.old:
                 self.mq = MsgQueue(local=self.local)
             else:
-                self.mq = MsgQueueCkct(local=self.local)
+                # Pass in credentials if we have them, else use the limited defaults.
+                hostname, username, password = (None, None, None)
+                if self.secrets is not None:
+                    hostname = self.secrets.data.get('amqp-ckct-hostname')
+                    username = self.secrets.data.get('amqp-ckct-username')
+                    password = self.secrets.data.get('amqp-ckct-password')
+                credentials = None
+                if username is not None and password is not None:
+                    credentials = MsgQueueCredentials(username, password)
+                self.mq = MsgQueueCkct(local=self.local, host=hostname, credentials=credentials)
             print("{} msgq={}".format(self.name, self.mq))
             bindings = self.channel_map.keys()
             self.mq.listen_worker(self.queue, bindings, self._handler)
@@ -180,13 +193,14 @@ class ListenerCkct(threading.Thread):
 
 class ListenerAnnounce(threading.Thread):
 
-    def __init__(self, exiting, args):
+    def __init__(self, exiting, args, secrets=None):
         super().__init__()
 
         self.name = "ListenerAnnounce"
         self.daemon = True
 
         self.exiting = exiting
+        self.secrets = secrets
 
         self.queue = args.queue
         self.queue = args.queue
@@ -208,7 +222,16 @@ class ListenerAnnounce(threading.Thread):
     #
     def run(self):
         try:
-            self.mq = MsgQueueService(service='announce', local=self.local, exchange='announce-todo', heartbeat_interval=60)
+            # Pass in credentials if we have them, else use the limited defaults.
+            hostname, username, password = (None, None, None)
+            if self.secrets is not None:
+                hostname = self.secrets.data.get('amqp-announce-hostname')
+                username = self.secrets.data.get('amqp-announce-username')
+                password = self.secrets.data.get('amqp-announce-password')
+            credentials = None
+            if username is not None and password is not None:
+                credentials = MsgQueueCredentials(username, password)
+            self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
             print("{} msgq={}".format(self.name, self.mq))
 
             self.mq.listen_worker(self.direct, 'direct.{}.announce.ckct'.format(self.aname), self._handler, auto_delete=True)
@@ -254,10 +277,12 @@ class TheApp():
         retval = 1
 
         try:
+            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
+
             exiting = threading.Condition()
 
-            announce = ListenerAnnounce(exiting, args)
-            ckct = ListenerCkct(exiting, args)
+            announce = ListenerAnnounce(exiting, args, secrets=secrets)
+            ckct = ListenerCkct(exiting, args, secrets=secrets)
             if args.old:
                 ckct_old = ListenerCkct(exiting, args, old=True)
 
