@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 #
 
+import logging
 import os
 import socket
 import ssl
 import sys
 import threading
+import time
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, WARNING
 
-from ktl.log                            import cdebug, center, cleave
 from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCredentials, MsgQueueCkct
 from ktl.utils                          import o2ascii
 
@@ -64,16 +64,18 @@ class ListenerCkct(threading.Thread):
                 if username is not None and password is not None:
                     credentials = MsgQueueCredentials(username, password)
                 self.mq = MsgQueueCkct(local=self.local, host=hostname, credentials=credentials)
-            print("{} msgq={}".format(self.name, self.mq))
+            logging.info("{} msgq={}".format(self.name, self.mq))
             bindings = self.channel_map.keys()
             self.mq.listen_worker(self.queue, bindings, self._handler)
 
             self.mq.listen_start()
 
+            logging.info("{} exiting".format(self.name))
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
+            logging.info("{} exploding".format(self.name))
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -81,7 +83,7 @@ class ListenerCkct(threading.Thread):
     # decode_payload
     #
     def decode_payload(self, payload):
-        center('TheApp::decode_payload')
+        logging.debug('TheApp::decode_payload')
         channel = None
         retval = []
         content = ""
@@ -171,14 +173,14 @@ class ListenerCkct(threading.Thread):
 
                     retval.append(content)
 
-        cleave('TheApp::decode_payload')
+        logging.debug('TheApp::decode_payload')
         return retval
 
 
     # _handler
     #
     def _handler(self, payload):
-        cdebug("TheApp::_handler")
+        logging.debug("TheApp::_handler")
 
         content = self.decode_payload(payload)
 
@@ -186,7 +188,7 @@ class ListenerCkct(threading.Thread):
             'destination': {'type': 'key', 'key': 'ckct-message'},
             'message': {'summary': '\n'.join(content)},
         }
-        print(self.name, "SEND", payload)
+        logging.info("{} SEND {}".format(self.name, payload))
 
         self.announce.deliver_to(payload)
 
@@ -232,15 +234,17 @@ class ListenerAnnounce(threading.Thread):
             if username is not None and password is not None:
                 credentials = MsgQueueCredentials(username, password)
             self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
-            print("{} msgq={}".format(self.name, self.mq))
+            logging.info("{} msgq={}".format(self.name, self.mq))
 
             self.mq.listen_worker(self.direct, 'direct.{}.announce.ckct'.format(self.aname), self._handler, auto_delete=True)
             self.mq.listen_start()
 
+            logging.info("{} exiting".format(self.name))
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
+            logging.info("{} exploding".format(self.name))
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -298,13 +302,14 @@ class TheApp():
             with exiting:
                 exiting.wait()
 
-            print("done")
+            logging.info("done")
+            time.sleep(5)
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            print("Aborting ...")
+            logging.warn("Aborting ...")
 
         return retval
 
@@ -331,9 +336,9 @@ examples:
     #
     log_format = "%(levelname)s - %(message)s"
     if args.debug:
-        basicConfig(level=DEBUG, format=log_format)
+        logging.basicConfig(level=logging.DEBUG, format=log_format)
     else:
-        basicConfig(level=WARNING, format=log_format)
+        logging.basicConfig(level=logging.INFO, format=log_format)
 
     app = TheApp(args)
     exit(app.main())
