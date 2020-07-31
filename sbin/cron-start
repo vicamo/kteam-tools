@@ -46,6 +46,7 @@ lck="/tmp/$name.lck"
 # which keeps the locks in place.
 (
 	flock -n 9 || exit 1
+	echo "Starting $(date --utc)"
 	"$daemon" "${args[@]}" &
 ) 9>"$lck"
 
