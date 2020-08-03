@@ -50,7 +50,7 @@ class MattermostEvents(threading.Thread):
             asyncio.set_event_loop(self.event_loop)
 
             host = self.host
-            logger.debug( "Going to set up driver for connection to %s " % (host,) )
+            logger.debug("Going to set up driver for connection to {}".format(host))
 
             password = self.secrets.data['mattermost-token']
 
@@ -71,11 +71,9 @@ class MattermostEvents(threading.Thread):
 
 
             me = self.mmDriver.login()
-            print(me)
-            #shiv = 'z7ig89wxwfnzjq574izfjp965r'
-            #channel = self.mmDriver.channels.get_channel_by_name_and_team_name('Canonical', 'Testing')
-            #self.mmDriver.channels.add_user(channel['id'], options={'user_id': shiv})
-            #os.exit(1)
+            logging.info(me)
+
+            logging.info("{} starting mattermost websocket".format(self.name))
             websocket = self.mmDriver.init_websocket(self._handler)
 
             logging.info("{} exiting".format(self.name))
@@ -101,7 +99,7 @@ class MattermostEvents(threading.Thread):
         if message is None:
             return
 
-        print("WORKER: POST", channel, message)
+        logger.info("{} POST {} {}".format(self.name, channel, message))
         if not message.startswith('@shiv '):
             return
 
@@ -116,15 +114,14 @@ class MattermostEvents(threading.Thread):
             destination = source
 
         payload = {'source': source, 'destination': destination, 'message': message}
-        print("APW: deliver_to", payload)
 
+        logger.info("{} delivering {}".format(self.name, payload))
         self.announce.deliver_to(payload)
 
     # NOTE: this implementation must be thread safe.  The mmDriver calls make a new outgoing
     # connection using the associated credentials, they do not use the websocket which the
     # mattermost thread is using.
     def send(self, channel, summary, card=None):
-        print("MM send", channel, summary)
         try:
             channel = self.mmDriver.channels.get_channel_by_name_and_team_name('Canonical', channel)
         except ResourceNotFound:
@@ -160,7 +157,7 @@ class MsgqReader(threading.Thread):
     # _handler
     #
     def _handler(self, payload):
-        print("_handler", payload)
+        logger.debug("{} _handler payload={}".format(self.name, payload))
 
         what = payload.get('type', 'message')
 
@@ -174,6 +171,7 @@ class MsgqReader(threading.Thread):
             message = payload.get('message', {})
 
             text = message.get('summary', message.get('subject', '??'))
+            logger.info("{} delivering {} {}".format(self.name, destination.get('channel'), text))
             self.mattermost.send(destination.get('channel'), text, card=message.get('body'))
 
     # run
@@ -190,11 +188,11 @@ class MsgqReader(threading.Thread):
                     credentials = MsgQueueCredentials(username, password)
 
                 self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
-            print("Msgq", self.mq)
+            logger.info("{} announcer MsgQueue {}".format(self.name, self.mq))
 
             self.mq.listen_worker(self.queue, 'announce.mattermost', self._handler)
             self.mq.listen_worker(self.direct, 'direct.{}.announce.mattermost'.format(self.aname), self._handler, auto_delete=True)
-            print("Listening", self.mq)
+            logger.info("{} listening".format(self.name))
             self.mq.listen_start()
 
             logging.info("{} exiting".format(self.name))
@@ -250,13 +248,13 @@ class TheApp():
             with exiting:
                 exiting.wait()
 
-            print("Exiting")
+            logger.info("Exiting")
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            print("Aborting ...")
+            logger.error("Aborting ...")
 
         return retval
 
