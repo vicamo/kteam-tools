@@ -2385,6 +2385,33 @@
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-fips-recert:
+            routing: fips-recert
+            packages:
+                linux-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'fips-recert']
+                linux-meta-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'fips-recert']
+                linux-signed-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'fips-recert']
+                linux-restricted-modules-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-restricted-modules-fips', 'fips-recert']
+            supported: false # fips-recert isn't cranked every cycle
+            private: true
+            # Handle linux-fips-recert as a backport since it should
+            # be basically be a replica of linux-fips with fewer archs:
+            backport: true
+            derived-from: ['18.04', 'linux-fips']
+            testing:
+                flavours:
+                    fips:
+                        arches: ['amd64']        # test system arch names // fips-recert is amd64 only
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-aws-fips:
             routing: fips
             packages:
