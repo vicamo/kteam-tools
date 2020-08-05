@@ -27,6 +27,8 @@ class ListenerCkct(threading.Thread):
         self.name = "ListenerCkct" + ("Old" if old else "")
         self.daemon = True
 
+        self.log = logger.getChild(self.name)
+
         self.exiting = exiting
 
         self.announce = None
@@ -64,18 +66,18 @@ class ListenerCkct(threading.Thread):
                 if username is not None and password is not None:
                     credentials = MsgQueueCredentials(username, password)
                 self.mq = MsgQueueCkct(local=self.local, host=hostname, credentials=credentials)
-            logging.info("{} msgq={}".format(self.name, self.mq))
+            self.log.info("msgq={}".format(self.mq))
             bindings = self.channel_map.keys()
             self.mq.listen_worker(self.queue, bindings, self._handler)
 
             self.mq.listen_start()
 
-            logging.info("{} exiting".format(self.name))
+            self.log.info("exiting")
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
-            logging.info("{} exploding".format(self.name))
+            self.log.info("exploding")
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -83,7 +85,6 @@ class ListenerCkct(threading.Thread):
     # decode_payload
     #
     def decode_payload(self, payload):
-        logging.debug('TheApp::decode_payload')
         channel = None
         retval = []
         content = ""
@@ -173,14 +174,13 @@ class ListenerCkct(threading.Thread):
 
                     retval.append(content)
 
-        logging.debug('TheApp::decode_payload')
         return retval
 
 
     # _handler
     #
     def _handler(self, payload):
-        logging.debug("TheApp::_handler")
+        self.log.debug("handler payload={}".format(payload))
 
         content = self.decode_payload(payload)
 
@@ -188,7 +188,7 @@ class ListenerCkct(threading.Thread):
             'destination': {'type': 'key', 'key': 'ckct-message'},
             'message': {'summary': '\n'.join(content)},
         }
-        logging.info("{} SEND {}".format(self.name, payload))
+        self.log.info("deliver_to {}".format(payload))
 
         self.announce.deliver_to(payload)
 
@@ -200,6 +200,8 @@ class ListenerAnnounce(threading.Thread):
 
         self.name = "ListenerAnnounce"
         self.daemon = True
+
+        self.log = logger.getChild(self.name)
 
         self.exiting = exiting
         self.secrets = secrets
@@ -234,17 +236,17 @@ class ListenerAnnounce(threading.Thread):
             if username is not None and password is not None:
                 credentials = MsgQueueCredentials(username, password)
             self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
-            logging.info("{} msgq={}".format(self.name, self.mq))
+            self.log.info("msgq={}".format(self.mq))
 
             self.mq.listen_worker(self.direct, 'direct.{}.announce.ckct'.format(self.aname), self._handler, auto_delete=True)
             self.mq.listen_start()
 
-            logging.info("{} exiting".format(self.name))
+            self.log.info("exiting")
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
-            logging.info("{} exploding".format(self.name))
+            self.log.info("exploding")
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -265,6 +267,8 @@ class TheApp():
 
     def __init__(self, args):
         self.args = args
+
+        self.log = logger
 
     # deliver_to
     #
@@ -302,14 +306,14 @@ class TheApp():
             with exiting:
                 exiting.wait()
 
-            logging.info("done")
+            self.log.info("done")
             time.sleep(5)
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            logging.warn("Aborting ...")
+            self.log.warn("Aborting ...")
 
         return retval
 
@@ -334,11 +338,9 @@ examples:
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    log_format = "%(levelname)s - %(message)s"
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format=log_format)
-    else:
-        logging.basicConfig(level=logging.INFO, format=log_format)
+    logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
+    logger = logging.getLogger('app')
+    logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = TheApp(args)
     exit(app.main())
