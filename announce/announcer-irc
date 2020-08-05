@@ -31,6 +31,7 @@ class IrcEvents(threading.Thread):
         self.cfg = cfg
 
         self.announce = None
+        self.alive = threading.Event()
         self.socket = None
 
         cfg['channels'] = cfg['channels'].split()
@@ -234,12 +235,18 @@ class IrcEvents(threading.Thread):
     # send_join
     #
     def send_join(self):
+        # If we have successfully joined all of our channels we can allow
+        # messages to be posted to them.
+        if len(self.irc_joins) == 0:
+            self.alive.set()
+
         if len(self.irc_joins) > 0:
             cmd = self.irc_joins.pop(0)
             logger.debug('send_join: ' + cmd.strip())
             sent = self.raw_send(cmd)
 
     def send(self, channel, line):
+        self.alive.wait()
         logger.info("PRIVMSG {} :{}".format(channel, line))
         sent = self.raw_send('PRIVMSG %s :%s\r\n' % (channel, line))
         #sent = self.raw_send('NOTICE %s :%s\r\n' % (channel, line))
