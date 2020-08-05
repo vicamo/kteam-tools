@@ -2409,15 +2409,15 @@
         linux-fips-recert:
             routing: fips-recert
             packages:
-                linux-fips:
+                linux-fips-recert:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'fips-recert']
-                linux-meta-fips:
+                linux-meta-fips-recert:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'fips-recert']
-                linux-signed-fips:
+                linux-signed-fips-recert:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'fips-recert']
-                linux-restricted-modules-fips:
+                linux-restricted-modules-fips-recert:
                     type: lrm
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-restricted-modules-fips', 'fips-recert']
             supported: false # fips-recert isn't cranked every cycle
