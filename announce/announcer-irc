@@ -8,70 +8,99 @@ import requests
 import socket
 import ssl
 import threading
-import queue
+import time
 
 from argparse import ArgumentParser
 from string import punctuation
 
-from ktl.log import cdebug, cinfo, center, cleave
 from ktl.msgq import MsgQueueService, MsgQueueCredentials
 
 from secrets import Secrets
 
 
-class ClientCommand(object):
-    """
-    A command to the client thread. Each command type has its associated
-    data:
-
-    QUIT:       exception
-    MSGQ_RAW:   full payload
-    MM_RAW:     mattermost event structures
-    """
-    QUIT, MSGQ_RAW, IRC_RAW = range(3)
-
-    def __init__(s, type, data=None):
-        s.type = type
-        s.data = data
-
-
 class IrcEvents(threading.Thread):
     # __init__
     #
-    def __init__(s, cfg={}, cmd_q=queue.Queue()):
+    def __init__(self, exiting, cfg={}):
         super().__init__()
 
-        s.daemon = True
+        self.daemon = True
+        self.name = 'IrcEvents'
 
-        s.cmd_q = cmd_q
-        s.alive = threading.Event()
-        s.alive.set()
-        s.socket = None
+        self.exiting = exiting
+        self.cfg = cfg
 
-        s.cfg = cfg
+        self.announce = None
+        self.socket = None
 
         cfg['channels'] = cfg['channels'].split()
 
-        s.irc_register = [
-            'PASS ' + s.cfg['password'] + '\r\n',
-            'NICK ' + s.cfg['nick'] + '\r\n',
-            'USER %s 0 * :%s\r\n' % (s.cfg['user'], s.cfg['name']),
+        self.irc_register = [
+            'PASS ' + self.cfg['password'] + '\r\n',
+            'NICK ' + self.cfg['nick'] + '\r\n',
+            'USER %s 0 * :%s\r\n' % (self.cfg['user'], self.cfg['name']),
         ]
-        s.irc_joins = [ 'JOIN ' + channel + '\r\n' for channel in s.cfg['channels'] ]
+        self.irc_joins = [ 'JOIN ' + channel + '\r\n' for channel in self.cfg['channels'] ]
+
+    # run
+    #
+    def run(self):
+        try:
+            self._connect(self.cfg['host'], self.cfg['port'], self.cfg['ssl'])
+
+            self.send_registration()
+
+            while True:
+                data = self.socket.recv(4096)
+                if not data:
+                    raise Exception('IrcClientReader: lost connection')
+                logger.debug(data)
+                data = data.decode('utf-8')
+                lines = data.split('\r\n')
+                logger.debug(lines)
+                for line in lines:
+                    # Ignore blank lines
+                    if line == "":
+                        continue
+
+                    #line = line.decode('utf-8')
+                    logger.debug('line: "%s"' % line)
+
+                    # We only care about 3 commands. PING, JOIN and PRIVMSG.
+                    (who, cmd) = self.irc_decode(line)
+                    logger.debug(cmd)
+                    if cmd[0] == '001':
+                        logger.debug('Registration Successful')
+                        self.send_join()
+
+                    if cmd[0] == 'PING':
+                        self.on_ping(line)
+
+                    elif cmd[0] == 'JOIN':
+                        self.on_join(line)
+                        self.send_join()
+
+                    elif cmd[0] == 'PRIVMSG':
+                        # We care that the other end is alive, their version request is sufficient.
+                        self.on_privmsg(line)
+
+        except Exception as e:
+            logger.info("{} exploding".format(self.name))
+            with self.exiting:
+                self.exiting.notify()
+            raise e
 
     # _connect
     #
-    def _connect(s, host, port, use_ssl):
-        center('IrcClient::_connect')
-        s.raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.raw_socket.connect((host, port))
-        s.socket = ssl.wrap_socket(s.raw_socket)
-        #s.client_socket.settimeout(15)
-        cleave('IrcClient::_connect')
+    def _connect(self, host, port, use_ssl):
+        self.raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.raw_socket.connect((host, port))
+        self.socket = ssl.wrap_socket(self.raw_socket)
+        #self.client_socket.settimeout(15)
 
     # irc_decode
     #
-    def irc_decode(s, line):
+    def irc_decode(self, line):
         who = 'UNKNOWN'
         if line[0] == ':':
             (who, line) = line.split(' ', 1)
@@ -86,39 +115,30 @@ class IrcEvents(threading.Thread):
 
     # on_ping
     #
-    def on_ping(s, line):
-        center('IrcClient::on_ping')
-
-        sent = s.raw_send('PONG %s\r\n' % (line.replace('PING :', '')))
-        cdebug('sending PONG')
-        s.sent_pong = True
-
-        cleave('IrcClient::on_ping')
+    def on_ping(self, line):
+        sent = self.raw_send('PONG %s\r\n' % (line.replace('PING :', '')))
+        logger.debug('sending PONG')
+        self.sent_pong = True
 
     # on_join
     #
-    def on_join(s, line):
-        center('IrcClient::on_join')
+    def on_join(self, line):
 
-        (who, cmd) = s.irc_decode(line)
+        (who, cmd) = self.irc_decode(line)
 
-        cdebug('line: "%s"' % line)
-        cdebug('who: "%s"' % who)
-        cdebug('cmd: "%s"' % str(cmd))
+        logger.debug('line: "%s"' % line)
+        logger.debug('who: "%s"' % who)
+        logger.debug('cmd: "%s"' % str(cmd))
 
-        if who == s.cfg['nick']:
-            cdebug('I just joined')
-            sent = s.raw_send('PRIVMSG %s :%s\r\n' % (cmd[1], '\o/'))
+        if who == self.cfg['nick']:
+            logger.debug('I just joined')
+            sent = self.raw_send('PRIVMSG %s :%s\r\n' % (cmd[1], '\o/'))
         else:
-            cdebug('%s just joined' % who)
-
-        cleave('IrcClient::on_join')
+            logger.debug('%s just joined' % who)
 
     # privmsg_parse
     #
-    def privmsg_parse(s, line):
-        center('IrcClient::privmsg_parse')
-
+    def privmsg_parse(self, line):
         cmd  = None
         chan = None
         msg  = None
@@ -126,147 +146,141 @@ class IrcEvents(threading.Thread):
         me   = False
 
         s1 = line.split(':', 2)
-        cdebug('s1: %s' % str(s1))
+        logger.debug('s1: %s' % str(s1))
 
         # If it's not for me, ignore it
         #
         s2 = s1[1].split(' ')
-        if s1[2].startswith(s.cfg['nick']) or s2[2] == s.cfg['nick']:
-            cdebug('s2: %s' % str(s2))
-            cdebug('line: "%s"' % line)
+        if s1[2].startswith(self.cfg['nick']) or s2[2] == self.cfg['nick']:
+            logger.debug('s2: %s' % str(s2))
+            logger.debug('line: "%s"' % line)
 
             cmd  = s2[1]
             chan = s2[2]
-            msg  = s1[2].replace(s.cfg['nick'], '', 1).strip(punctuation + ' ')
+            msg  = s1[2].replace(self.cfg['nick'], '', 1).strip(punctuation + ' ')
 
             who = line.split('!')[0].replace(':', '')
-            cdebug('     cmd: %s' % cmd)
-            cdebug('    chan: %s' % chan)
-            cdebug('     msg: "%s"' % msg)
-            cdebug('     who: %s' % who)
+            logger.debug('     cmd: %s' % cmd)
+            logger.debug('    chan: %s' % chan)
+            logger.debug('     msg: "%s"' % msg)
+            logger.debug('     who: %s' % who)
 
             me = True
 
-        cdebug(' ')
+        logger.debug(' ')
 
-        cleave('IrcClient::privmsg_parse')
         return [me, cmd, chan, msg, who]
 
     # on_privmsg
     #
-    def on_privmsg(s, line):
-        center('IrcClient::on_privmsg')
+    def on_privmsg(self, line):
+        logger.info("INCOMING PRIVMSG" + line)
+        (forme, cmd, chan, msg, who) = self.privmsg_parse(line)
 
-        cinfo("INCOMING PRIVMSG" + line)
-        (forme, cmd, chan, msg, who) = s.privmsg_parse(line)
-
-        cdebug('      me: %s' % forme)
-        cdebug('     cmd: %s' % cmd)
-        cdebug('    chan: %s' % chan)
-        cdebug('     msg: "%s"' % msg)
-        cdebug('     who: %s' % who)
+        logger.debug('      me: %s' % forme)
+        logger.debug('     cmd: %s' % cmd)
+        logger.debug('    chan: %s' % chan)
+        logger.debug('     msg: "%s"' % msg)
+        logger.debug('     who: %s' % who)
 
         if forme:
-            s.cmd_q.put(ClientCommand(ClientCommand.IRC_RAW, {'from': who, 'channel': chan, 'message': msg}))
+            # XXX: conve
+            sender = who
+            channel = chan
+            message = msg
+            if message is None:
+                return
 
-        cleave('IrcClient::on_privmsg')
+            logger.info("{}: POST {} {} {}".format(self.name, sender, channel, message))
 
-    def raw_send(s, data):
-        return s.socket.send(data.encode())
+            nick = self.cfg['nick']
+            if sender in ('StatServ', nick):
+                logger.info("WORKER: POST ignored")
+                return
+
+            if channel == nick:
+                channel = sender
+
+            command = message
+            if command.startswith(nick + ',') or command.startswith(nick + ':'):
+                command = command[len(nick)+1:].strip()
+
+            source = {'type': 'irc', 'channel': channel}
+            destination = {'type': 'shankbot'}
+            message = {'subject': command}
+
+            payload = {'source': source, 'destination': destination, 'message': message}
+            logger.info("{}: deliver_to payload={}".format(self.name, payload))
+            self.announce.deliver_to(payload)
+
+    def raw_send(self, data):
+        return self.socket.send(data.encode())
 
     # privmsg
     #
-    def privmsg(s, chan, msg):
-        sent = s.raw_send('PRIVMSG %s :%s\r\n' % (chan, msg))
+    def privmsg(self, chan, msg):
+        sent = self.raw_send('PRIVMSG %s :%s\r\n' % (chan, msg))
 
     # send_registration
     #
-    def send_registration(s):
-        cdebug('Registration Start')
-        for cmd in s.irc_register:
-            cdebug('send_registration: ' + cmd.split(' ')[0])
-            sent = s.raw_send(cmd)
-            cdebug('send_registration: ' + cmd + " = " + str(sent))
+    def send_registration(self):
+        logger.debug('Registration Start')
+        for cmd in self.irc_register:
+            logger.debug('send_registration: ' + cmd.split(' ')[0])
+            sent = self.raw_send(cmd)
+            logger.debug('send_registration: ' + cmd + " = " + str(sent))
 
 
     # send_join
     #
-    def send_join(s):
-        if len(s.irc_joins) > 0:
-            cmd = s.irc_joins.pop(0)
-            cdebug('send_join: ' + cmd.strip())
-            sent = s.raw_send(cmd)
+    def send_join(self):
+        if len(self.irc_joins) > 0:
+            cmd = self.irc_joins.pop(0)
+            logger.debug('send_join: ' + cmd.strip())
+            sent = self.raw_send(cmd)
 
-    # run
-    #
-    def run(s):
-        s._connect(s.cfg['host'], s.cfg['port'], s.cfg['ssl'])
-
-        s.send_registration()
-
-        while True:
-            data = s.socket.recv(4096)
-            if not data:
-                raise Exception('IrcClientReader: lost connection')
-            cdebug(data)
-            data = data.decode('utf-8')
-            lines = data.split('\r\n')
-            cdebug(lines)
-            for line in lines:
-                # Ignore blank lines
-                if line == "":
-                    continue
-
-                #line = line.decode('utf-8')
-                cdebug('line: "%s"' % line)
-
-                # We only care about 3 commands. PING, JOIN and PRIVMSG.
-                (who, cmd) = s.irc_decode(line)
-                cdebug(cmd)
-                if cmd[0] == '001':
-                    cdebug('Registration Successful')
-                    s.send_join()
-
-                if cmd[0] == 'PING':
-                    s.on_ping(line)
-
-                elif cmd[0] == 'JOIN':
-                    s.on_join(line)
-                    s.send_join()
-
-                elif cmd[0] == 'PRIVMSG':
-                    # We care that the other end is alive, their version request is sufficient.
-                    s.on_privmsg(line)
-
-    def send(s, channel, line):
-        center('IrcClient::send')
-        cinfo("PRIVMSG {} :{}".format(channel, line))
-        sent = s.raw_send('PRIVMSG %s :%s\r\n' % (channel, line))
-        #sent = s.raw_send('NOTICE %s :%s\r\n' % (channel, line))
-        cleave('IrcClient::send')
+    def send(self, channel, line):
+        logger.info("PRIVMSG {} :{}".format(channel, line))
+        sent = self.raw_send('PRIVMSG %s :%s\r\n' % (channel, line))
+        #sent = self.raw_send('NOTICE %s :%s\r\n' % (channel, line))
 
 
 class MsgqReader(threading.Thread):
 
-    def __init__(self, cmd_q, args, mq=None, secrets=None):
+    def __init__(self, exiting, args, mq=None, secrets=None):
         super().__init__()
 
         self.daemon = True
+        self.name = 'MsgqReader'
 
-        self.cmd_q = cmd_q
+        self.exiting = exiting
         self.mq = mq
         self.secrets = secrets
 
+        self.irc = None
+
         self.queue = args.queue
-        self.name = args.name
-        self.direct = self.queue + '--' + args.name
+        self.aname = args.name
+        self.direct = self.queue + '--' + self.aname
         self.local = args.local
 
     # _handler
     #
     def _handler(self, payload):
         #print("MsgqReader _handler", payload)
-        self.cmd_q.put(ClientCommand(ClientCommand.MSGQ_RAW, payload))
+        logger.info("{}: payload={}".format(self.name, payload))
+
+        what = payload.get('type', 'message')
+
+        if what == 'quit':
+            self.listen_stop()
+
+        elif what == 'message':
+            destination = payload.get('destination', {})
+            message = payload.get('message', {})
+
+            text = message.get('summary', message.get('subject', '??'))
+            self.irc.send(destination.get('channel'), text)
 
     # run
     #
@@ -282,15 +296,21 @@ class MsgqReader(threading.Thread):
                     credentials = MsgQueueCredentials(username, password)
 
                 self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
-            print("Msgq", self.mq)
+            logger.info("{}: msgq={}".format(self.name, self.mq))
 
             self.mq.listen_worker(self.queue, 'announce.irc', self._handler)
-            self.mq.listen_worker(self.direct, 'direct.{}.announce.irc'.format(self.name), self._handler, auto_delete=True)
-            print("Listening", self.mq)
+            self.mq.listen_worker(self.direct, 'direct.{}.announce.irc'.format(self.aname), self._handler, auto_delete=True)
+            logger.debug("{}: Listening", self.name)
             self.mq.listen_start()
 
+            logger.info("{} exiting".format(self.name))
+            with self.exiting:
+                self.exiting.notify()
+
         except Exception as e:
-            self.cmd_q.put(ClientCommand(ClientCommand.QUIT, e))
+            logger.info("{} exploding".format(self.name))
+            with self.exiting:
+                self.exiting.notify()
             raise e
 
     def deliver_to(self, payload):
@@ -307,10 +327,10 @@ class TheApp():
 
     # __init__
     #
-    def __init__(s, args):
+    def __init__(self, args):
         '''
         '''
-        s.args = args
+        self.args = args
 
     # main
     #
@@ -319,7 +339,7 @@ class TheApp():
         retval = 1
 
         try:
-            cmd_q = queue.Queue()
+            exiting = threading.Condition()
 
             irc_cfg = {
                 "host"  : "irc.canonical.com",
@@ -339,76 +359,26 @@ class TheApp():
                     continue
                 irc_cfg[key] = value
 
-            irc = IrcEvents(irc_cfg, cmd_q)
-            irc.start()
+            irc = IrcEvents(exiting, irc_cfg)
+            mq = MsgqReader(exiting, args, secrets=secrets)
 
-            mq = MsgqReader(cmd_q, args, secrets=secrets)
+            irc.announce = mq
+            mq.irc = irc
+
+            irc.start()
             mq.start()
 
-            while True:
-                cmd = cmd_q.get()
-                print("WORKER:", cmd.type, cmd.data)
+            with exiting:
+                exiting.wait()
+            time.sleep(2)
 
-                if cmd.type == ClientCommand.QUIT:
-                    break
-
-                elif cmd.type == ClientCommand.IRC_RAW:
-                    sender = cmd.data.get('from')
-                    channel = cmd.data.get('channel')
-                    message = cmd.data.get('message')
-                    if message is None:
-                        continue
-
-                    cinfo("WORKER: POST {} {} {}".format(sender, channel, message))
-
-                    nick = irc.cfg['nick']
-                    if sender in ('StatServ', nick):
-                        cinfo("WORKER: POST ignored")
-                        continue
-
-                    if channel == nick:
-                        channel = sender
-
-                    command = message
-                    if command.startswith(nick + ',') or command.startswith(nick + ':'):
-                        command = command[len(nick)+1:].strip()
-
-                    source = {'type': 'irc', 'channel': channel}
-                    destination = {'type': 'shankbot'}
-                    message = {'subject': command}
-
-                    payload = {'source': source, 'destination': destination, 'message': message}
-                    print("APW: deliver_to", payload)
-                    mq.deliver_to(payload)
-
-                elif cmd.type == ClientCommand.MSGQ_RAW:
-                    cinfo("MSGQ_RAW".format(cmd.data))
-
-                    payload = cmd.data
-                    what = payload.get('type', 'message')
-
-                    if what == 'quit':
-                        break
-
-                    elif what == 'message':
-                        destination = payload.get('destination', {})
-                        message = payload.get('message', {})
-
-                        text = message.get('summary', message.get('subject', '??'))
-                        irc.send(destination.get('channel'), text)
-
-                cmd_q.task_done()
-
-            #mm.join()
-            #mq.join()
-
-            print("Exiting")
+            logger.info("Exiting")
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            print("Aborting ...")
+            logger.error("Aborting ...")
 
         return retval
 
