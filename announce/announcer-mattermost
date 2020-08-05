@@ -39,6 +39,8 @@ class MattermostEvents(threading.Thread):
         self.daemon = True
         self.name = 'MattermostEvents'
 
+        self.log = logger.getChild(self.name)
+
         self.exiting = exiting
         self.host = host
         self.secrets = secrets
@@ -47,10 +49,12 @@ class MattermostEvents(threading.Thread):
 
     def run(self):
         try:
+            self.log.info("Starting")
+
             asyncio.set_event_loop(self.event_loop)
 
             host = self.host
-            logger.debug("Going to set up driver for connection to {}".format(host))
+            self.log.debug("Driver for connection to {}".format(host))
 
             password = self.secrets.data['mattermost-token']
 
@@ -69,19 +73,19 @@ class MattermostEvents(threading.Thread):
                 #'debug': True,
             })
 
-
+            self.log.info("verifying basic API access")
             me = self.mmDriver.login()
-            logging.info(me)
+            self.log.debug(me)
 
-            logging.info("{} starting mattermost websocket".format(self.name))
+            self.log.info("connecting mattermost websocket")
             websocket = self.mmDriver.init_websocket(self._handler)
 
-            logging.info("{} exiting".format(self.name))
+            self.log.info("exiting")
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
-            logging.info("{} exploding".format(self.name))
+            self.log.info("exploding")
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -99,7 +103,7 @@ class MattermostEvents(threading.Thread):
         if message is None:
             return
 
-        logger.info("{} POST {} {}".format(self.name, channel, message))
+        self.log.info("POST {} {}".format(channel, message))
         if not message.startswith('@shiv '):
             return
 
@@ -115,7 +119,7 @@ class MattermostEvents(threading.Thread):
 
         payload = {'source': source, 'destination': destination, 'message': message}
 
-        logger.info("{} delivering {}".format(self.name, payload))
+        self.log.info("delivering {}".format(payload))
         self.announce.deliver_to(payload)
 
     # NOTE: this implementation must be thread safe.  The mmDriver calls make a new outgoing
@@ -125,7 +129,7 @@ class MattermostEvents(threading.Thread):
         try:
             channel = self.mmDriver.channels.get_channel_by_name_and_team_name('Canonical', channel)
         except ResourceNotFound:
-            logger.error("mattermost channel {} not found".format(channel))
+            self.log.error("mattermost channel {} not found".format(channel))
             return
 
         options={'channel_id': channel['id'], 'message': summary}
@@ -143,6 +147,8 @@ class MsgqReader(threading.Thread):
         self.daemon = True
         self.name = 'MsgqReader'
 
+        self.log = logger.getChild(self.name)
+
         self.exiting = exiting
         self.mq = mq
         self.secrets = secrets
@@ -157,12 +163,12 @@ class MsgqReader(threading.Thread):
     # _handler
     #
     def _handler(self, payload):
-        logger.debug("{} _handler payload={}".format(self.name, payload))
+        self.log.debug("_handler payload={}".format(payload))
 
         what = payload.get('type', 'message')
 
         if what == 'quit':
-            logging.info("{} exiting".format(self.name))
+            self.log.info("{} exiting".format(self.name))
             with self.exiting:
                 self.exiting.notify()
 
@@ -171,7 +177,7 @@ class MsgqReader(threading.Thread):
             message = payload.get('message', {})
 
             text = message.get('summary', message.get('subject', '??'))
-            logger.info("{} delivering {} {}".format(self.name, destination.get('channel'), text))
+            self.log.info("delivering {} {}".format(destination.get('channel'), text))
             self.mattermost.send(destination.get('channel'), text, card=message.get('body'))
 
     # run
@@ -188,19 +194,19 @@ class MsgqReader(threading.Thread):
                     credentials = MsgQueueCredentials(username, password)
 
                 self.mq = MsgQueueService(service='announce', local=self.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
-            logger.info("{} announcer MsgQueue {}".format(self.name, self.mq))
+            self.log.info("announcer MsgQueue {}".format(self.mq))
 
             self.mq.listen_worker(self.queue, 'announce.mattermost', self._handler)
             self.mq.listen_worker(self.direct, 'direct.{}.announce.mattermost'.format(self.aname), self._handler, auto_delete=True)
-            logger.info("{} listening".format(self.name))
+            self.log.info("listening")
             self.mq.listen_start()
 
-            logging.info("{} exiting".format(self.name))
+            self.log.info("exiting")
             with self.exiting:
                 self.exiting.notify()
 
         except Exception as e:
-            logging.info("{} exploding".format(self.name))
+            self.log.info("exploding")
             with self.exiting:
                 self.exiting.notify()
             raise e
@@ -220,10 +226,12 @@ class TheApp():
 
     # __init__
     #
-    def __init__(s, args):
+    def __init__(self, args):
         '''
         '''
-        s.args = args
+        self.args = args
+
+        self.log = logger
 
     # main
     #
@@ -248,13 +256,13 @@ class TheApp():
             with exiting:
                 exiting.wait()
 
-            logger.info("Exiting")
+            self.log.info("Exiting")
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            logger.error("Aborting ...")
+            self.log.error("Aborting ...")
 
         return retval
 
@@ -273,8 +281,8 @@ I'm a application skeleton, your job is to make me into something useful.
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    logging.basicConfig(format="%(levelname)05s - %(message)s")
-    logger = logging.getLogger('announce-mattermost')
+    logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
+    logger = logging.getLogger('app')
     logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = TheApp(args)
