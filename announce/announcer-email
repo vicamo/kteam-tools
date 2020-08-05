@@ -2,12 +2,12 @@
 
 from __future__ import print_function
 
+import logging
 import os
 import sys
-from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from logging                            import basicConfig, DEBUG, WARNING, error
 
-from ktl.log                            import cinfo, cdebug, center, cleave, cerror, cwarn
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+
 from ktl.messaging                      import Email
 from ktl.msgq                           import MsgQueue, MsgQueueService
 
@@ -30,14 +30,17 @@ class TheApp():
         '''
         s.args = args
 
-        s.queue = s.args.queue
-        s.direct = s.args.queue + '--' + s.args.name
-        #s.admin = 'admin-' + s.args.name
+        s.log = logger
+
+        s.local = args.local
+        s.queue = args.queue
+        s.direct = args.queue + '--' + args.name
+        s.aname = args.name
 
     # _announce
     #
     def _announce(s, to, message):
-        message = to + " " + s.args.name + " " + message
+        message = to + " " + s.aname + " " + message
 
         destination = {'type': 'key', 'key': to}
         message = {'subject': message}
@@ -53,7 +56,7 @@ class TheApp():
     # _handler
     #
     def _handler(s, payload):
-        center(s.__class__.__name__ + '._handler')
+        self.log.info("handler payload={}".format(payload))
 
         try:
             what = payload.get('type', 'message')
@@ -65,8 +68,6 @@ class TheApp():
                 if 'destination' not in payload or 'message' not in payload:
                     raise MessageError("invalid message format")
 
-                cwarn(payload)
-
                 destination = payload.get('destination')
                 message = payload.get('message')
 
@@ -76,22 +77,20 @@ class TheApp():
                     email.send(destination['from'], destination['to'],
                         message.get('subject', '??'), message.get('body', '??'))
                 except Exception as e:
-                    cerror("SEND FAILED: {}".format(str(e)))
+                    self.log.cerror("SEND FAILED: {}".format(str(e)))
 
             else:
                 raise MessageError("invalid message type")
 
         except MessageError as e:
-            error("command {} failed: {}".format(str(payload), str(e)))
+            self.log.error("command {} failed: {}".format(str(payload), str(e)))
             s._announce('announce-control', 'command failed')
 
         except Exception as e:
-            error("command {} exploded: {}".format(str(payload), str(e)))
+            self.log.error("command {} exploded: {}".format(str(payload), str(e)))
 
             s._announce('announce-control', 'exploded')
             raise e
-
-        cleave(s.__class__.__name__ + '._handler')
 
     # main
     #
@@ -101,29 +100,27 @@ class TheApp():
         retval = 1
 
         try:
-            s.mq = MsgQueueService(service='announce', local=s.args.local, exchange='announce-todo', heartbeat_interval=60)
-
-            #s.mq.queue_delete(s.args.queue)
-            #raise "FOO"
+            s.log.info("Starting")
+            s.mq = MsgQueueService(service='announce', local=s.local, exchange='announce-todo', heartbeat_interval=60)
 
             s._announce('announce-control', 'start')
 
             q_args = {'x-max-priority': 7}
             s.mq.listen_worker(s.queue, 'announce.email', s._handler, queue_arguments=q_args)
-            directs = ['direct.{}.{}'.format(s.args.name, key) for key in ['announce.email', 'quit']]
-            s.mq.listen_worker(s.direct, directs, s._handler, queue_arguments=q_args, auto_delete=True)
+            s.mq.listen_worker(s.direct, 'direct.{}.announce.email'.format(s.aname), s._handler, auto_delete=True)
 
+            s.log.info("Listening")
             s.mq.listen_start()
 
             s._announce('announce-control', 'quit')
 
-            print("Exiting")
+            s.log.info("Exiting")
             retval = 0
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
-            print("Aborting ...")
+            s.log.error("Aborting ...")
 
         return retval
 
@@ -147,11 +144,9 @@ examples:
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    log_format = "%(levelname)s - %(message)s"
-    if args.debug:
-        basicConfig(level=DEBUG, format=log_format)
-    else:
-        basicConfig(level=WARNING, format=log_format)
+    logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
+    logger = logging.getLogger('app')
+    logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = TheApp(args)
     exit(app.main())
