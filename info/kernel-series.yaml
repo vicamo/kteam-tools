@@ -1987,7 +1987,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.3:
-            variants: ['--']
+            variants: []
             packages:
                 linux-gcp-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.3-next']
@@ -2000,17 +2000,7 @@
                 linux-restricted-modules-gcp-5.3:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.3']
-            snaps:
-                gcp-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
             testing:
@@ -2021,7 +2011,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
-            variants: ['-edge']
+            variants: ['--', '-edge']
             packages:
                 linux-gcp-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-5.4-next']
@@ -2034,6 +2024,16 @@
                 linux-restricted-modules-gcp-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.4']
+            snaps:
+                gcp-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                    track: '18'
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
@@ -2144,8 +2144,8 @@
                     publish-to:
                         amd64: [ '18-5.3' ]
             supported: true
-            backport: true
-            derived-from: [ '18.04', 'linux-gcp-5.3' ]
+            backport: false
+            derived-from: [ '18.04', 'linux-hwe' ]
             testing:
                 flavours:
                     gke:
