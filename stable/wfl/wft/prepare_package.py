@@ -73,6 +73,26 @@ class PreparePackage(TaskHandler):
             pkg = 'main'
         return pkg
 
+    @property
+    def older_tracker_in_ppa(s):
+        # The target trackers are returned in cycle order.
+        target_trackers = s.bug.target_trackers
+        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
+
+        for tracker_nr, tracker_data in target_trackers:
+            # If we find ourselves then we have considered everything "older".
+            if tracker_nr == str(s.bug.lpbug.id):
+                return False
+            # Consider if this is a blocker if it promote-to-proposed is not
+            # Fix Released.
+            cinfo("    considering {} {}".format(tracker_nr, tracker_data))
+            ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
+            if ptp_status not in ('Invalid', 'Fix Released'):
+                cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
+                return True
+
+        return False
+
     # master_prepare_ready
     #
     def master_prepare_ready(s):
@@ -101,6 +121,12 @@ class PreparePackage(TaskHandler):
             # Since all the Prepare-package* packagestasks use this same method
             # we need to determine which one we are working this time.
             pkg = s._package_name()
+
+            # Check for blocking trackers in a previous cycle.
+            if s.older_tracker_in_ppa:
+                if pkg == 'main' or not s.bug.valid_package('main'):
+                    s.task.reason = 'Holding -- previous cycle tracker in PPA'
+                break
 
             # For derivative bugs we wait until the parent has at least got its
             # primary package uploaded.  Then we must have something we _could_
@@ -157,17 +183,22 @@ class PreparePackage(TaskHandler):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-            if not s._kernel_block_source() and s.master_prepare_ready():
-                break
 
+            pull_back = False
+            if s.older_tracker_in_ppa:
+                cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
+                pull_back = True
             if s._kernel_block_source():
                 cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+                pull_back = True
             if not s.master_prepare_ready():
                 cinfo('            Master kernel no longer ready pulling back from Confirmed', 'yellow')
+                pull_back = True
 
-            s.task.status = 'New'
+            if pull_back:
+                s.task.status = 'New'
+                retval = True
 
-            retval = True
             break
 
         while not retval:
