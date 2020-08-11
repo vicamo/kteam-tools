@@ -1381,7 +1381,7 @@
                 flavours:
                     gkeop-5.3:
                         arches: ['amd64']        # test system arch names
-                        clouds: ['metal', 'gcp']
+                        clouds: ['metal', 'gke']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.0:
