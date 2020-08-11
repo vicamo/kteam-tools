@@ -42,10 +42,10 @@ class ListenerCkct(threading.Thread):
 
         self.channel_map = {
             'kernel.publish'         : ['#kmsgq', 'published'],
+            'kernel.published'       : ['#kmsgq', 'published'],
             'kernel.testing.kernel'  : ['#kmsgq', 'test completed'],
             'kernel.testing.request' : ['#kmsgq', 'requested'],
             'kernel.maas.job.status' : ['#kmsgq', 'maas daily live image'],
-            'apw.testing.kernel'  : ['#kmsgq', 'test completed'],
         }
 
     # run
@@ -67,7 +67,7 @@ class ListenerCkct(threading.Thread):
                     credentials = MsgQueueCredentials(username, password)
                 self.mq = MsgQueueCkct(local=self.local, host=hostname, credentials=credentials)
             self.log.info("msgq={}".format(self.mq))
-            bindings = self.channel_map.keys()
+            bindings = [key + '.#' for key in self.channel_map.keys()]
             self.mq.listen_worker(self.queue, bindings, self._handler)
 
             self.mq.listen_start()
