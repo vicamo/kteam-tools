@@ -56,7 +56,7 @@ class TheApp():
     # _handler
     #
     def _handler(s, payload):
-        self.log.info("handler payload={}".format(payload))
+        s.log.info("handler payload={}".format(payload))
 
         try:
             what = payload.get('type', 'message')
@@ -76,18 +76,19 @@ class TheApp():
                         smtp_port=destination['smtp-port'])
                     email.send(destination['from'], destination['to'],
                         message.get('subject', '??'), message.get('body', '??'))
+                    s.log.info("Send successfully")
                 except Exception as e:
-                    self.log.cerror("SEND FAILED: {}".format(str(e)))
+                    s.log.cerror("SEND FAILED: {}".format(str(e)))
 
             else:
                 raise MessageError("invalid message type")
 
         except MessageError as e:
-            self.log.error("command {} failed: {}".format(str(payload), str(e)))
+            s.log.error("command {} failed: {}".format(str(payload), str(e)))
             s._announce('announce-control', 'command failed')
 
         except Exception as e:
-            self.log.error("command {} exploded: {}".format(str(payload), str(e)))
+            s.log.error("command {} exploded: {}".format(str(payload), str(e)))
 
             s._announce('announce-control', 'exploded')
             raise e
@@ -146,7 +147,7 @@ examples:
     #
     logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
     logger = logging.getLogger('app')
-    logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
+    logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
 
     app = TheApp(args)
     exit(app.main())
