@@ -379,6 +379,9 @@
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/groovy']
+                linux-signed-kvm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/groovy']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             testing:
