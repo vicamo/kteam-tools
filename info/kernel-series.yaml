@@ -1852,7 +1852,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.3:
-            variants: [ '--' ]
+            variants: []
             packages:
                 linux-azure-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.3-next']
@@ -1865,17 +1865,7 @@
                 linux-restricted-modules-azure-5.3:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-5.3']
-            snaps:
-                azure-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'azure']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
             swm:
@@ -1889,7 +1879,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.4:
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-5.4-next']
@@ -1902,6 +1892,16 @@
                 linux-restricted-modules-azure-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-5.4']
+            snaps:
+                azure-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'azure']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                    track: '18'
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-azure' ]
