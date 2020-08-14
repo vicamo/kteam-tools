@@ -37,7 +37,7 @@ esac
 
 # Check and fix the dkms/wget/curl dependencies.
 if [ -f "debian/scripts/dkms-build" ] && [ -n "$control" ]; then
-	seen=$(grep -c "dkms" "$control")
+	seen=$(egrep -c "[:, ]dkms(,| |\$)" "$control")
 	if [ "$seen" = 0 ]; then
 		"$(dirname "$0")/helpers/dependency-mangler" add "$control" 'Source' 'Build-Depends' "dkms <!stage1>"
 		resync_batch_changed "$control"
@@ -50,13 +50,13 @@ if [ -f "debian/scripts/dkms-build" ] && [ -n "$control" ]; then
 		want="wget"
 	fi
 	fix_verbose "checking removal of Build-Depends: $dont"
-	seen=$(grep -c "$dont" "$control")
+	seen=$(egrep -c "[:, ]$dont(,| |\$)" "$control")
 	if [ "$seen" != 0 ]; then
 		"$(dirname "$0")/helpers/dependency-mangler" remove "$control" 'Source' 'Build-Depends' "$dont <!stage1>"
 		resync_batch_changed "$control"
 	fi
 	fix_verbose "checking addition of Build-Depends: $want"
-	seen=$(grep -c "$want" "$control")
+	seen=$(egrep -c "[:, ]$want(,| |\$)" "$control")
 	if [ "$seen" = 0 ]; then
 		"$(dirname "$0")/helpers/dependency-mangler" add "$control" 'Source' 'Build-Depends' "$want <!stage1>"
 		resync_batch_changed "$control"
