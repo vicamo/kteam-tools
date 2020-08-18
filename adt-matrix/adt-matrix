@@ -881,9 +881,7 @@ table.matrix, table.matrix th, table.matrix td {{
                 if arch == archs_good[0]:
                     autopackage_pkg_test_link = pkg_link(pkg, self.series)
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
-                    page += autopackage_pkg_test_link
-                arch_link += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
-                page += arch_link
+                page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 for ver in verlist:
                     if ver == 'race':
                         page += "<td>" + race_text
@@ -907,7 +905,7 @@ table.matrix, table.matrix th, table.matrix td {{
 
                         status_class = status
 
-                        page = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
+                        page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
                         triggers = archive = None
 
