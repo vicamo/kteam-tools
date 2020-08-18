@@ -1360,6 +1360,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
+            versions: ['5.3.0']
             variants: []
             packages:
                 linux-hwe:
