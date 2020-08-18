@@ -875,11 +875,15 @@ table.matrix, table.matrix th, table.matrix td {{
 
             for arch in archs_good:
                 arch_link = pkg_arch_link(pkg, self.series, arch)
+                simple_arch_link = arch_link
 
                 page += '<tr>'
                 if arch == archs_good[0]:
+                    autopackage_pkg_test_link = pkg_link(pkg, self.series)
                     page += '<th rowspan="{2}"><a href="{1}">{0}</a>'.format(pkg, pkg_link(pkg, self.series), len(archs_good))
-                page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
+                    page += autopackage_pkg_test_link
+                arch_link += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
+                page += arch_link
                 for ver in verlist:
                     if ver == 'race':
                         page += "<td>" + race_text
@@ -903,7 +907,7 @@ table.matrix, table.matrix th, table.matrix td {{
 
                         status_class = status
 
-                        page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
+                        page = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
 
                         triggers = archive = None
 
@@ -923,12 +927,16 @@ table.matrix, table.matrix th, table.matrix td {{
                             'status': status,
                             'package': pkg,
                             'package_version': version,
+                            'autopackage_package_test_link': autopackage_pkg_test_link,
                             'arch': arch,
+                            'arch_link': simple_arch_link,
                             'retry_url': retry_url,
-                            'annotation': annotation
+                            'annotation': annotation,
+                            'status_link': status_link
                         }
-                        results_data['history'].setdefault(kernel_version, [])
-                        results_data['history'][kernel_version].append(entry)
+                        results_data['history'].setdefault(kernel_version, {})
+                        results_data['history'][kernel_version].setdefault(arch, [])
+                        results_data['history'][kernel_version][arch].append(entry)
                     else:
                         page += '<td>&nbsp;'
 
