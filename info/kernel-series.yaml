@@ -2163,7 +2163,7 @@
                     - 418
 
         linux-gke-5.4:
-            variants: ['-wip', '-5.4']
+            variants: ['-5.4-wip']
             routing: prerelease
             packages:
                 linux-gke-5.4:
@@ -2175,16 +2175,16 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic', 'gke-5.4']
             snaps:
-                #gke-kernel:
-                #    primary: true
-                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke-5.4']
-                #    gated: false
-                #    stable: false
-                #    qa: false
-                #    hw-cert: false
-                #    publish-to:
-                #        amd64: [ '18-5.4' ]
-            supported: false
+                gke-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gke-5.4']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: [ '18-5.4' ]
+            supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
             testing:
@@ -2194,9 +2194,10 @@
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
             swm:
-                #gke-releases:
-                #    - '1.16'
+                # gke-releases:
                 #    - '1.17'
+                #    - '1.18'
+                #    - '1.19'
                 #gke-nvidia-packages:
                 #    - gke-d1903-0-amd64
                 #nvidia-releases:
