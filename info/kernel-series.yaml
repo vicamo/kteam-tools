@@ -2198,10 +2198,10 @@
                 #    - '1.17'
                 #    - '1.18'
                 #    - '1.19'
-                #gke-nvidia-packages:
-                #    - gke-d1903-0-amd64
-                #nvidia-releases:
-                #    - 418
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
+                nvidia-releases:
+                    - 418
 
         linux-gcp-edge:
             packages:
