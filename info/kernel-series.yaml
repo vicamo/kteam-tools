@@ -308,14 +308,14 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            backport: true
+            derived-from: [ '20.04', 'linux-aws' ]
             testing:
                 flavours:
                     aws:
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '20.04', 'linux-aws' ]
 
         linux-azure:
             variants: ['--']
