@@ -332,7 +332,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            backport: true
+            derived-from: [ '20.04', 'linux-azure' ]
             swm:
                 deployment-blackout: &swm-azure-blackout
                     - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
@@ -345,7 +346,6 @@
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
-            copy-forward: [ '20.04', 'linux-azure' ]
 
         linux-gcp:
             variants: ['--']
