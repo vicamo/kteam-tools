@@ -407,14 +407,14 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            backport: true
+            derived-from: [ '20.04', 'linux-oracle' ]
             testing:
                 flavours:
                     oracle:
                         arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '20.04', 'linux-oracle' ]
 
         linux-riscv:
             variants: ['-wip']
