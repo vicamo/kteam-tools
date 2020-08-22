@@ -12,8 +12,6 @@ env:
   - SUITE=xenial ARCH=i386
   - SUITE=bionic ARCH=amd64
   - SUITE=bionic ARCH=i386
-  - SUITE=eoan ARCH=amd64
-  - SUITE=eoan ARCH=i386
   - SUITE=focal ARCH=amd64
   - SUITE=groovy ARCH=amd64
 
