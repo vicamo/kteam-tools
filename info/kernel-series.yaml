@@ -362,14 +362,14 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            backport: true
+            derived-from: [ '20.04', 'linux-gcp' ]
             testing:
                 flavours:
                     gcp:
                         arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '20.04', 'linux-gcp' ]
 
         linux-kvm:
             variants: ['--']
