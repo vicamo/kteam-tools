@@ -1497,7 +1497,7 @@
                     dell300x:
                         arches: ['amd64']    # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'regression-testing' ]
 
         linux-denver:
             routing:
