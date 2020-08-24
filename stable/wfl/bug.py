@@ -775,6 +775,13 @@ class WorkflowBug():
                 return True
         return False
 
+    # task_status
+    #
+    def task_status(s, taskname):
+        if taskname in s.tasks_by_name:
+            return s.tasks_by_name[taskname].status
+        return "Invalid"
+
     # phase
     #
     @property

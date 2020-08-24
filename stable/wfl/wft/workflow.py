@@ -144,7 +144,8 @@ class Workflow(TaskHandler):
                 pockets = []
                 if phase_text in ('Packaging', 'Holding before Promote to Proposed'):
                     pockets.append('ppa')
-                elif phase_text == 'Promote to Proposed':
+                elif (s.bug.task_status('promote-to-proposed') not in ('Invalid', 'New', 'Confirmed', 'Fix Released', 'Incomplete') or
+                        s.bug.task_status('promote-signing-to-proposed') not in ('Invalid', 'New', 'Confirmed', 'Fix Released', 'Incomplete')):
                     pockets.append('Signing')
                     pockets.append('Proposed')
                 for pocket in pockets:
