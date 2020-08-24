@@ -289,12 +289,13 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/groovy', 'oem-5.6']
             supported: true
+            backport: true
+            derived-from: [ '20.04', 'linux-oem-5.6' ]
             testing:
                 flavours:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            copy-forward: [ '20.04', 'linux-oem-5.6' ]
 
         linux-aws:
             variants: ['--']
