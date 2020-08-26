@@ -309,8 +309,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/groovy']
             supported: true
-            backport: true
-            derived-from: [ '20.04', 'linux-aws' ]
+            derived-from: [ '20.10', 'linux' ]
             testing:
                 flavours:
                     aws:
@@ -333,8 +332,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/groovy']
             supported: true
-            backport: true
-            derived-from: [ '20.04', 'linux-azure' ]
+            derived-from: [ '20.10', 'linux' ]
             swm:
                 deployment-blackout: &swm-azure-blackout
                     - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
@@ -363,8 +361,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/groovy']
             supported: true
-            backport: true
-            derived-from: [ '20.04', 'linux-gcp' ]
+            derived-from: [ '20.10', 'linux' ]
             testing:
                 flavours:
                     gcp:
@@ -384,14 +381,13 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
+            derived-from: [ '20.10', 'linux' ]
             testing:
                 flavours:
                     kvm:
                         arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
-            copy-forward: [ '20.04', 'linux-kvm' ]
 
         linux-oracle:
             variants: ['--']
@@ -408,8 +404,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/groovy']
             supported: true
-            backport: true
-            derived-from: [ '20.04', 'linux-oracle' ]
+            derived-from: [ '20.10', 'linux' ]
             testing:
                 flavours:
                     oracle:
@@ -418,7 +413,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['-wip']
+            variants: ['--']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/groovy']
