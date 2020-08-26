@@ -82,7 +82,7 @@ clean:
 .PHONY : kernel-sru-workflow.json
 kernel-sru-workflow.json:
 	cp kernel-sru-workflow-bare.json $@.tmp
-	scripts/cbd --db=$@.tmp
+	timeout 1h scripts/cbd --db=$@.tmp
 	mv $@.tmp $@
 
 kernel-sru-workflow.html: kernel-sru-workflow.json
