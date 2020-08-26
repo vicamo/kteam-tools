@@ -1548,17 +1548,17 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi-5.4/+git/bionic']
             snaps:
-                pi-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi-5.4']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge' ]
-                    qa: false
-                    hw-cert: true
-                    publish-to:
-                        armhf: [ '18-pi' ]
-                        arm64: [ '18-pi' ]
+                #pi-kernel:
+                #    primary: true
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pi-5.4']
+                #    gated: false
+                #    stable: false
+                #    promote-to: [ 'edge' ]
+                #    qa: false
+                #    hw-cert: true
+                #    publish-to:
+                #        armhf: [ '18-pi' ]
+                #        arm64: [ '18-pi' ]
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-raspi' ]
