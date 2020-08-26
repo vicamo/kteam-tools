@@ -13,6 +13,7 @@ directory_title = sys.argv[2]
 
 html = os.path.join(directory, "index.html.new")
 latest = os.path.join(directory, "latest.json.new")
+order = os.path.join(directory, "order.new")
 
 section = None
 for relative in (os.path.curdir, os.path.pardir,
@@ -71,6 +72,10 @@ for (dirname, dirs, files) in os.walk(directory):
                 results.append((entry['commit-time'], entry))
 
 results.sort(reverse=True)
+
+with open(order, "w") as order_fd:
+    for _, entry in results:
+        print(entry['directory'], file=order_fd)
 
 meta = section
 meta['series'] = results[0][1]['series']
