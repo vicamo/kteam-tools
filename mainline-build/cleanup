@@ -10,7 +10,21 @@ esac
 for which in "$HOME/public_html/mainline"/*/current
 do
 	which=`dirname "$which"`
-	"$here/cleanup-daily-one" "$which"
+	"$here/cleanup-daily-one" "$which" 10
+done
+
+# Cleanup the test-builds.
+for which in "$HOME/public_html/test-build"/*/*/order
+do
+	which=`dirname "$which"`
+	"$here/cleanup-daily-one" "$which" 50
+done
+
+# Cleanup the ubuntu-stable.
+for which in "$HOME/public_html/ubuntu-stable"/*/order
+do
+	which=`dirname "$which"`
+	"$here/cleanup-daily-one" "$which" 20
 done
 
 exit 0

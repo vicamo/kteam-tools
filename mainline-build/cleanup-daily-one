@@ -2,23 +2,30 @@
 
 P="`basename $0`"
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: $P <directory>" 1>&2
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $P <directory> <count>" 1>&2
 	exit 1
 fi
 dir="$1"
+count="$2"
 
 echo "$P: Cleaning $dir ..."
 
-ls -1 "$dir" | grep -v current | head -n -10 | \
+if [ -f "$dir/order" ]; then
+	tail -n "+$count" "$dir/order"
+else
+	ls -1 "$dir" | grep -v current | head -n "-$count"
+fi | \
 while read which
 do
 	which="$dir/$which"
 
 	if [ -f "$which/aggregate.yaml" ]; then
-		true
+		:
+	elif [ -f "$which/SUMMARY" ]; then
+		:
 	elif [ -f "$which/BUILT" ]; then
-		true
+		:
 	else
 		echo "$P: $which: not a build, ignored" 1>&2
 		continue
