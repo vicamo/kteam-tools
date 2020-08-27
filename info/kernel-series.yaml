@@ -2077,6 +2077,8 @@
                 #    - '1.12'
                 #    - '1.13'
                 #    - '1.14'
+                gke-releases:
+                    - '1.14'
                 gke-nvidia-packages:
                     - gke-d1809-0-amd64
                 nvidia-releases:
@@ -2155,6 +2157,8 @@
                 #gke-releases:
                 #    - '1.16'
                 #    - '1.17'
+                gke-releases:
+                    - '1.16'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
@@ -2196,6 +2200,8 @@
                 #    - '1.17'
                 #    - '1.18'
                 #    - '1.19'
+                gke-releases:
+                    - '1.17'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
