@@ -177,6 +177,8 @@
                 - ['ppa:canonical-signing/ubuntu/uc20', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
         prerelease:
             <<:             *routing-table-default
             updates:
