@@ -66,6 +66,10 @@ class SwmConfig:
         return self._data.get('gke-releases', [])
 
     @property
+    def gke_flavour(self):
+        return self._data.get('gke-flavour', 'gke')
+
+    @property
     def nvidia_releases(self):
         return self._data.get('nvidia-releases', [])
 

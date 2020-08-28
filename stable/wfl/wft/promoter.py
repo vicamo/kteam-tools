@@ -204,12 +204,16 @@ class Promoter(TaskHandler):
         center(s.__class__.__name__ + '._prerequisites_released')
         retval = True
 
+        # Look up the GKE kernel flavour.  Allows us to point
+        # linux-image-gke-5.4 to the gcp kernel binaries.
+        kernel_flavour = s.bug.swm_config.gke_flavour
+
         # Build a list of packages we are expecting.
         gke_nvidia_packages = []
         gke_releases = s.bug.swm_config.gke_releases
         if gke_releases:
             for release in gke_releases:
-                gke_nvidia_packages.append('gke-{}-stable-amd64'.format(release))
+                gke_nvidia_packages.append('{}-{}-stable-amd64'.format(kernel_flavour, release))
         gke_nvidia_packages += s.bug.swm_config.gke_nvidia_packages
         nvidia_releases = s.bug.swm_config.nvidia_releases
 
@@ -217,7 +221,7 @@ class Promoter(TaskHandler):
         if gke_nvidia_packages or nvidia_releases:
             missing = []
             for release in nvidia_releases:
-                obj = 'nvidia-driver-gke_{}-{}-gke-{}.'.format(s.bug.kernel, s.bug.abi, release)
+                obj = 'nvidia-driver-gke_{}-{}-{}-{}.'.format(s.bug.kernel, s.bug.abi, kernel_flavour, release)
                 cdebug("checking prefix {}".format(obj))
                 gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj, prefix=True)
                 if gke_object.present is False:
