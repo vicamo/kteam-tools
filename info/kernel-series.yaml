@@ -2041,6 +2041,14 @@
                     gcp:
                         arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
+            swm:
+                gke-releases:
+                    - '1.17'
+                    - '1.18'
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
+                nvidia-releases:
+                    - 418
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-4.15:
@@ -2202,6 +2210,7 @@
                 #    - '1.19'
                 gke-releases:
                     - '1.17'
+                    - '1.18'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
