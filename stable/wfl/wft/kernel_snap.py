@@ -105,9 +105,14 @@ class SnapReleaseToEdge(KernelSnapBase):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
-            if s.debs_bug.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
+            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                 cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
                 s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                break
+
+            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
                 break
 
             # Attempt to apply replaces as we are ready to promote.
