@@ -329,8 +329,8 @@ class SnapReleaseToStable(KernelSnapBase):
             promote_to = 'promote-to-updates'
             if 'promote-to-release' in s.debs_bug.tasks_by_name:
                 promote_to = 'promote-to-release'
-            if s.debs_bug.tasks_by_name[promote_to].status not in ['Fix Released', 'Invalid']:
-                cinfo('    task promote-to-updates/release is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+            if s.debs_bug.tasks_by_name[promote_to].status in ['New', 'Incomplete']:
+                cinfo('    task promote-to-updates/release is \'{}\''.format(s.debs_bug.tasks_by_name[promote_to].status), 'yellow')
                 s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
                 break
 
