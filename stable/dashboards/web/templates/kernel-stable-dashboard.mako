@@ -203,7 +203,9 @@ def __status_bites(bug, attrs):
 
     # snaps: being prepared?
     retval = ''
-    prep_status = __task_status(bug, 'snap-release-to-edge')
+    prep_status = __task_status(bug, 'snap-prepare')
+    if prep_status == 'n/a':
+        prep_status = __task_status(bug, 'snap-release-to-edge')
     if prep_status == 'New':
         retval = __coloured('Not ready to be cranked', 'grey')
     elif prep_status == 'Confirmed':
@@ -284,8 +286,8 @@ def __status_bites(bug, attrs):
         if (task.startswith('prepare-package') and
                 not reason.startswith('Stalled -- ')):
             continue
-        if (snap_prepping and task.startswith('snap-release-to-') and
-                not reason.startswith('Stalled -- ')):
+        if (snap_prepping and (task.startswith('snap-release-to-') or
+                task == 'snap-prepare') and not reason.startswith('Stalled -- ')):
             continue
         if task.endswith('-testing') or task.endswith('-signoff'):
             continue
