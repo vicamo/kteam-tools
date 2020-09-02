@@ -1249,7 +1249,7 @@ table.matrix td {{
         os.rename(retry_cmds_file + '.new', retry_cmds_file)
 
         # Summary index table.
-        if migration in ('DEPENDS', 'BUILDING', 'NBS'):
+        if migration in ('DEPENDS', 'BUILDING'):
             state = "MISS"
         if not state:
             if total == 0:
