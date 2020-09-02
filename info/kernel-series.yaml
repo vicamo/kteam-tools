@@ -260,19 +260,6 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/groovy']
             supported: true
-            derived-from: [ '20.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
-            copy-forward: [ '20.04', 'linux-raspi' ]
-
-        linux-raspi-5.8:
-            variants: ['--']
-            packages:
-                linux-raspi-5.8:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/unstable', 'master-5.8']
-                linux-meta-raspi-5.8:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/unstable', 'master-5.8']
-            supported: false
             derived-from: [ '20.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
