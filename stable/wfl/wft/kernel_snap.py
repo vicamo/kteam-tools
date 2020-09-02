@@ -184,24 +184,30 @@ class SnapReleaseToEdge(KernelSnapBase):
         # The snap should be released to edge and beta channels after
         # the package hits -proposed.
         while not retval:
-            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
-                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+            if s.bug.task_status('snap-prepare') not in ('Fix Released', 'Invalid'):
+                cinfo('    task snap-prepare is not \'Fix Released\'', 'yellow')
                 break
 
-            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
-                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
-                break
+            # Legacy handling of we have no snap-prepare task.
+            elif s.bug.task_status('snap-prepare') == 'Invalid':
+                if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                    cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                    s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                    break
 
-            # Attempt to apply replaces as we are ready to promote.
-            s.bug.dup_replaces()
+                if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                    cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
+                    s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
+                    break
 
-            # Check if this is the oldest tracker for this target.
-            if not s.oldest_tracker:
-                cinfo('    snap has an older active tracker', 'yellow')
-                s.task.reason = 'Stalled -- tracker for earlier spin still active'
-                break
+                # Attempt to apply replaces as we are ready to promote.
+                s.bug.dup_replaces()
+
+                # Check if this is the oldest tracker for this target.
+                if not s.oldest_tracker:
+                    cinfo('    snap has an older active tracker', 'yellow')
+                    s.task.reason = 'Stalled -- tracker for earlier spin still active'
+                    break
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
