@@ -49,6 +49,7 @@ class WorkflowManager():
             'promote-to-security'       : wfl.wft.PromoteToSecurity,
             'promote-to-release'        : wfl.wft.PromoteToRelease,
             'security-signoff'          : wfl.wft.SecuritySignoff,
+            'snap-prepare'              : wfl.wft.SnapPrepare,
             'snap-release-to-edge'      : wfl.wft.SnapReleaseToEdge,
             'snap-release-to-beta'      : wfl.wft.SnapReleaseToBeta,
             'snap-release-to-candidate' : wfl.wft.SnapReleaseToCandidate,

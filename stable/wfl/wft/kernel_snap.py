@@ -67,6 +67,85 @@ class KernelSnapBase(TaskHandler):
                 return True
             return False
 
+
+class SnapPrepare(KernelSnapBase):
+    '''
+    '''
+
+    # __init__
+    #
+    def __init__(s, lp, task, bug):
+        center(s.__class__.__name__ + '.__init__')
+        super(SnapPrepare, s).__init__(lp, task, bug)
+
+        s.jumper['New']           = s._new
+        s.jumper['Confirmed']     = s._verify_prepared
+        s.jumper['Triaged']       = s._verify_prepared
+        s.jumper['In Progress']   = s._verify_prepared
+        s.jumper['Fix Committed'] = s._verify_prepared
+
+        cleave(s.__class__.__name__ + '.__init__')
+
+    # _new
+    #
+    def _new(s):
+        center(s.__class__.__name__ + '._new')
+        retval = False
+
+        # The snap should be released to edge and beta channels after
+        # the package hits -proposed.
+        while not retval:
+            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                break
+
+            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
+                s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
+                break
+
+            # Attempt to apply replaces as we are ready to promote.
+            s.bug.dup_replaces()
+
+            # Check if this is the oldest tracker for this target.
+            if not s.oldest_tracker:
+                cinfo('    snap has an older active tracker', 'yellow')
+                s.task.reason = 'Stalled -- tracker for earlier spin still active'
+                break
+
+            s.task.status = 'Confirmed'
+            s.task.timestamp('started')
+
+            retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._new (%s)' % (retval))
+        return retval
+
+    # _verify_prepared
+    #
+    def _verify_prepared(s):
+        center(s.__class__.__name__ + '._verify_prepared')
+        retval = False
+
+        while not retval:
+            # Check the tags and tip are prepared and pushed.
+            git_repo = s.bug.snap.git_repo
+            version = git_repo.tip_version
+            if version != s.bug.version:
+                s.task.reason = 'Pending -- snap package tags missing'
+                break
+
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._verify_prepared (%s)' % (retval))
+        return retval
+
+
 class SnapReleaseToEdge(KernelSnapBase):
     '''
     '''
