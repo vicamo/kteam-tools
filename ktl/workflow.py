@@ -125,6 +125,7 @@ class Workflow:
     tdb = {
         'linux' :  {
             'task_assignment' : {
+                'snap-prepare'               : 'canonical-kernel-team',
                 'snap-release-to-beta'       : 'canonical-kernel-team',
                 'snap-release-to-candidate'  : 'canonical-kernel-team',
                 'snap-release-to-edge'       : 'canonical-kernel-team',
@@ -160,6 +161,7 @@ class Workflow:
         },
         'default' :  {
             'task_assignment' : {
+                'snap-prepare'               : 'canonical-kernel-team',
                 'snap-release-to-beta'       : 'canonical-kernel-team',
                 'snap-release-to-candidate'  : 'canonical-kernel-team',
                 'snap-release-to-edge'       : 'canonical-kernel-team',
