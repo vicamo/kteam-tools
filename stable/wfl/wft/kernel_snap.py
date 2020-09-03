@@ -1,4 +1,6 @@
+from datetime                                   import datetime, timedelta, timezone
 
+from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 from wfl.snap                                   import SnapStoreError
 from .base                                      import TaskHandler
@@ -135,6 +137,10 @@ class SnapPrepare(KernelSnapBase):
             version = git_repo.tip_version
             if version != s.bug.version:
                 s.task.reason = 'Pending -- snap package tags missing'
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=15),
+                    '{} {} polling for tag'.format(
+                    s.bug.snap.name, s.bug.version))
+
                 break
 
             if s.task.status != 'Fix Released':
