@@ -2163,8 +2163,7 @@
                     - 418
 
         linux-gke-5.4:
-            variants: ['-5.4-wip']
-            routing: prerelease
+            variants: ['-5.4']
             packages:
                 linux-gke-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/bionic', 'gke-5.4-next']
