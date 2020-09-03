@@ -523,7 +523,6 @@ class WorkflowBug():
         if 'reason' in s.bprops:
             del s.bprops['reason']
         s._refresh = [None, None]
-        s._maintenance = []
         s.interlocks = {}
 
     @property
