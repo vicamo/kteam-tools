@@ -186,6 +186,8 @@ class GitTagsSnap:
                     self._tag_prefix = pv_match.group(1)
                     self._tip_version = pv_match.group(2).replace('_', '~')
 
+        cdebug("tip_name<{}> tip_hash<{}> tip_tag<{}> tag_prefix<{}> tip_version<{}>".format(tip_name, tip_hash, self._tip_tag, self._tag_prefix, self._tip_version))
+
     @property
     def tag_prefix(self):
         if self._tag_prefix is False:
