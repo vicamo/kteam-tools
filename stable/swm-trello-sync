@@ -118,7 +118,7 @@ if __name__ == '__main__':
             if not match:
                 match = snap_produce_re.search(card_name)
                 if match:
-                    which = 'snap-release-to-edge'
+                    which = 'snap-prepare'
                     tracker_key = (board_cycle + '-' + match.group(1),
                         match.group(2), match.group(3), match.group(4))
             if not match:
@@ -197,7 +197,11 @@ if __name__ == '__main__':
 
                 #for task_name, task_data in tracker['task']:
 
-            elif which.startswith('snap-release-'):
+            elif which.startswith('snap-release-') or which == 'snap-prepare':
+                if which not in tracker['task']:
+                    which = 'snap-release-to-edge'
+                    tracker_task_key = tracker_key + (which,)
+
                 task_state = tracker['task'].get(which, {}).get('status', 'unknown')
                 ##print("SNAP RELEASE", tracker_key, which, task_state)
 
