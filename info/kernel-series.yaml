@@ -452,6 +452,34 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-hwe-5.8:
+            variants: [ '-hwe-20.04-edge' ]
+            packages:
+                linux-hwe-5.8:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.8']
+                linux-meta-hwe-5.8:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.8']
+                linux-signed-hwe-5.8:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'hwe-5.8']
+                linux-restricted-modules-hwe-5.8:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.8']
+            supported: true
+            backport: true
+            derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    lowlatency:
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+
         linux-uc20-efi:
             routing: uc20
             packages:
