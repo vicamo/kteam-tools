@@ -583,7 +583,18 @@ scp *4.15.0.1031.31* *4.15.0-1031.31* wani.canonical.com:~/for-review/xenial-lin
 
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, copy the signed packages locally to your host
-and upload them using dput:
+and upload them using cranky dput-sources:
+```
+cranky dput-sources build xenial:linux-oracle
+```
+
+You can find the desired upload destination and archive/ppa information by
+executing the following cranky command:
+```
+cranky list-routing xenial:linux-oracle
+```
+
+Alternatively, you can upload them manually using dput:
 ```
 dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
 dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
