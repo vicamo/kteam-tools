@@ -1071,7 +1071,6 @@ class TrackingBugs():
         #tasks = s.__lps.launchpad.projects[s.project].searchTasks(
         tasks = s.__lps.launchpad.bugs.searchTasks(
                     tags=search_tag,
-                    order_by='id',
                     status=valid_states)
 
         bug_ids = []
