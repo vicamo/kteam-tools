@@ -441,15 +441,26 @@ class WorkflowManager():
         try:
             # Run the list based on the master chain depth, shortest first.
             buglist = s.buglist
+            bugs_pass = 0
+            bugs_total = 0
+            bugs_scanned = 0
             while len(buglist) > 0:
-                buglist_rescan = []
                 # Make sure that each bug only appears once.
                 buglist = list(set(buglist))
+
+                bugs_pass += 1
+                bugs_total += len(buglist)
+                buglist_rescan = []
+
                 # Order such that parents are handled before their children.
                 buglist = list(sorted(buglist, key=s.tracker_key))
                 cinfo("manage_payload: scan={}".format(buglist))
                 for bugid in buglist:
+                    bugs_scanned += 1
                     with s.lock_bug(bugid):
+                        cinfo('')
+                        cinfo("Processing ({}/{} pass={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugid, s.lp.bug_url(bugid)))
+
                         buglist_rescan += s.crank(bugid)
 
                 # If we are interested in scanning dependants, trigger them if
@@ -483,9 +494,8 @@ class WorkflowManager():
         '''
         center('WorkflowManager.crank')
 
-        s.printlink = '%s : (%s)' % (bugid, s.lp.bug_url(bugid))
-        cinfo('')
-        cinfo('Processing: %s' % s.printlink, 'cyan')
+        #s.printlink = '%s : (%s)' % (bugid, s.lp.bug_url(bugid))
+        #cinfo('Processing: %s' % s.printlink, 'cyan')
 
         rescan = []
 
