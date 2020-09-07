@@ -137,10 +137,26 @@ class SnapPrepare(KernelSnapBase):
             version = git_repo.tip_version
             if version != s.bug.version:
                 s.task.reason = 'Pending -- snap package tags missing'
-                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=15),
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
                     '{} {} polling for tag'.format(
                     s.bug.snap.name, s.bug.version))
+                break
 
+            # We have a tag so we are at least Fix Committed.
+            # NOTE: we do not break so we can upgrade to later states.
+            if s.task.status not in ('Fix Committed', 'Fix Released'):
+                s.task.status = 'Fix Committed'
+                retval = True
+
+            # Check for a snap build in this version.
+            sha = git_repo.lookup_version(s.bug.version)[-1]
+            snap_status = s.bug.snap.snap_status(sha)
+            if snap_status != 'UPLOAD-COMPLETE':
+                status_text = ' '.join([x.capitalize() for x in snap_status.split('-')])
+                s.task.reason = 'Pending -- snap package build/upload not complete ({})'.format(status_text)
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
+                    '{} {} polling for snap build/upload to complete'.format(
+                    s.bug.snap.name, s.bug.version))
                 break
 
             if s.task.status != 'Fix Released':
