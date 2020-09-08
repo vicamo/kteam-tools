@@ -451,7 +451,13 @@ class SnapCertificationTesting(KernelSnapBase):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
-        if 'certification-testing-failed' in s.bug.tags:
+        if s.bug.tasks_by_name['snap-release-to-beta'].status != 'Fix Released':
+            if s.task.status not in ('Incomplete', 'Fix Released'):
+                cinfo('    snap no longer present in beta moving Incomplete', 'yellow')
+                s.task.status = 'Incomplete'
+                retval = True
+
+        elif 'certification-testing-failed' in s.bug.tags:
             cdebug('Certification Testing tagged as FAIL', 'yellow')
             if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as certification-testing-failed\n'
