@@ -929,7 +929,7 @@ class Package():
         center(s.__class__.__name__ + '.ready_for_security')
         retval = s.all_built_and_in_pocket('Security')
         if not retval:
-            retval = s.all_built_and_in_pocket_for('Updates', timedelta(hours=12))
+            retval = s.all_built_and_in_pocket_for('Updates', timedelta(hours=4))
         cinfo('        Ready for security: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_security (%s)' % (retval))
         return retval
