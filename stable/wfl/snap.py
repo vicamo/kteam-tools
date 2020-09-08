@@ -12,6 +12,7 @@ from .errors import ShankError
 
 from ktl.kernel_series                          import KernelSeries
 
+from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
 from .secrets                                   import Secrets
@@ -132,6 +133,7 @@ class SnapDebs:
 
         s.snap_info = None
         s._snap_store = None
+        s._git_repo = False
 
         s.kernel_series = KernelSeries() if ks is None else ks
 
@@ -283,3 +285,10 @@ class SnapDebs:
 
     def promote_to_risk(s, risk):
         return s.snap_info.promote_to_risk(risk)
+
+    @property
+    def git_repo(s):
+        if s._git_repo is False:
+            ks_snap = s.snap_info
+            s._git_repo = GitTagsSnap(ks_snap)
+        return s._git_repo
