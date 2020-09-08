@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave, cdebug, cwarn
+from wfl.log                                    import center, cleave, cdebug, cwarn, cinfo
 from .base                                      import TaskHandler
 
 class CertificationTesting(TaskHandler):
@@ -51,7 +51,14 @@ class CertificationTesting(TaskHandler):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
-        if 'certification-testing-failed' in s.bug.tags:
+        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        if not present:
+            if s.task.status not in ('Incomplete', 'Fix Released'):
+                cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
+                s.task.status = 'Incomplete'
+                retval = True
+
+        elif 'certification-testing-failed' in s.bug.tags:
             cdebug('Certification Testing tagged as FAIL', 'yellow')
             if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as certification-testing-failed\n'

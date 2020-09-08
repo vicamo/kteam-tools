@@ -61,12 +61,20 @@ class AutomatedTesting(TaskHandler):
 
         # Start by retrieving regression data
         try:
+            present = s.bug.debs.all_built_and_in_pocket('Proposed')
+
             request = requests.get(s.regressions_url)
             data = request.text.split('\n')
 
             # Check main package
             state = s.check_testing_regression(s.bug.name, s.bug.version, data)
-            if s.test_is_regression(state):
+            if not present:
+                if s.task.status not in ('Incomplete', 'Fix Released'):
+                    cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
+                    s.task.status = 'Incomplete'
+                    retval = True
+
+            elif s.test_is_regression(state):
                 if s.task.status != 'Incomplete':
                     s.task.status = 'Incomplete'
                     retval = True

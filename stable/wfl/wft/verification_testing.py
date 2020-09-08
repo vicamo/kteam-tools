@@ -119,8 +119,15 @@ class VerificationTesting(TaskHandler):
             except KeyError:
                 cinfo('            master bug does not contain a verification-testing task', 'yellow')
         else:
+            present = s.bug.debs.all_built_and_in_pocket('Proposed')
+            if not present:
+                if s.task.status not in ('Incomplete', 'Fix Released'):
+                    cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
+                    s.task.status = 'Incomplete'
+                    retval = True
+
             # Spam bugs from the main package if they haven't been spammed already
-            if 'bugs-spammed' not in s.bug.bprops:
+            elif 'bugs-spammed' not in s.bug.bprops:
                 cinfo('            Spamming bugs for verification', 'yellow')
                 try:
                     s._spam_bugs()

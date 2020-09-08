@@ -1,5 +1,5 @@
 
-from wfl.log                                    import center, cleave, cdebug
+from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 
 class RegressionTesting(TaskHandler):
@@ -51,9 +51,15 @@ class RegressionTesting(TaskHandler):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
+        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        if not present:
+            if s.task.status not in ('Incomplete', 'Fix Released'):
+                cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
+                s.task.status = 'Incomplete'
+                retval = True
 
         # If we have managed to spam the bugs then verification is now in-progress.
-        if 'proposed-testing-requested' in s.bug.bprops and s.task.status == 'Confirmed':
+        elif 'proposed-testing-requested' in s.bug.bprops and s.task.status == 'Confirmed':
             s.task.status = 'In Progress'
             retval = True
 
