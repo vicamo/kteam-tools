@@ -227,7 +227,7 @@
     sources:
         linux:
             versions: ['5.8.0']
-            variants: ['--']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/groovy', 'master-next']
