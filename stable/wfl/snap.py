@@ -292,3 +292,109 @@ class SnapDebs:
             ks_snap = s.snap_info
             s._git_repo = GitTagsSnap(ks_snap)
         return s._git_repo
+
+    # snap_status
+    #
+    def snap_status(s, sha):
+        lp = s.bug.lp.launchpad
+        ks_snap = s.snap_info
+
+        # Find the snap repository in launchpad.
+        path = '~' + ks_snap.repo.url.split('~')[1]
+        lp_repo = lp.git_repositories.getByPath(path=path)
+        lp_ref = lp_repo.getRefByPath(path='refs/heads/' + ks_snap.repo.branch)
+        cinfo("snap_status: ks_snap={} sha={} lp_repo={} lp_ref={}".format(ks_snap, sha, lp_repo, lp_ref))
+
+        # Lookup our team snap recipies.
+        cks = lp.people['canonical-kernel-snaps']
+        for lp_snap in lp.snaps.findByOwner(owner=cks):
+            if lp_snap.git_ref == lp_ref:
+                cdebug("snap_status: snap found {}".format(lp_snap))
+                break
+        else:
+            return 'SNAP-MISSING'
+
+        # Run the list of builds for this snap and see if we have one for the sha
+        # we care about.  If so take the first build in each arch as the current
+        # status.  Accumulate the build and upload stati into a single status
+        # for this snap build and upload phase.
+        status = set()
+        status.add('BUILD-MISSING')
+        arches_seen = {}
+
+        # Assume we are incomplete if there are any build pending as we have no way
+        # to know which revision they will refer supply for once built.
+        for build in lp_snap.pending_builds:
+            cinfo("snap build pending: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
+            arch_tag = build.arch_tag
+            arches_seen[arch_tag] = True
+
+            status.add('BUILD-PENDING')
+
+        for build in lp_snap.builds:
+            cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
+            # If we haven't seen the revision we want skip.
+            if build.revision_id != sha:
+                # Before our sha, continue scanning.
+                if len(arches_seen) == 0:
+                    continue
+                # Leaving our revision, stop scanning.
+                break
+
+            # Take only the latest status for an architecture.
+            arch_tag = build.arch_tag
+            if arch_tag in arches_seen:
+                continue
+            arches_seen[arch_tag] = True
+            #print(build, arch_tag, build.revision_id, build.buildstate, build.store_upload_status)
+
+            if build.buildstate in (
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build'):
+                status.add('BUILD-ONGOING')
+
+            elif build.buildstate == 'Dependency wait':
+                status.add('BUILD-DEPWAIT')
+
+            elif build.buildstate == 'Successfully built':
+                status.add('BUILD-COMPLETE')
+
+            else:
+                status.add('BUILD-FAILED')
+                # Anything else is a failure, currently:
+                #  Failed to build
+                #  Dependency wait
+                #  Chroot problem
+                #  Build for superseded Source
+                #  Failed to upload
+                #  Cancelling build
+                #  Cancelled build
+
+            if build.store_upload_status in (
+                    'Pending',
+                    'Unscheduled'):
+                status.add('UPLOAD-PENDING')
+
+            elif build.store_upload_status == 'Uploaded':
+                status.add('UPLOAD-COMPLETE')
+
+            else:
+                status.add('UPLOAD-FAILED')
+                # Anything else is a failure, currently:
+                #  Failed to upload
+                #  Failed to release to channels
+
+        # Find the 'worst' state and report that for everything.
+        for state in (
+                'BUILD-FAILED', 'UPLOAD-FAILED',                                     # Errors: earliest first
+                'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
+                'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
+                'BUILD-MISSING'):
+            if state in status:
+                break
+
+        cdebug("snap_status: build/upload stati {} {}".format(status, state))
+
+        return state
+
