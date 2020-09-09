@@ -144,18 +144,6 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
-            if s.task.status in ('Fix Committed', 'Incomplete'):
-                break
-
-            if not s.bug.debs.all_in_pocket(s.pocket_dest):
-                break
-
-            s.task.status = 'Fix Committed'
-
-            retval = True
-            break
-
-        while not retval:
             # Check if the packages are published completely yet.
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 # Confirm the packages remain available to copy.
@@ -169,23 +157,20 @@ class PromoteFromTo(Promoter):
                 if s.task.status == 'Confirmed':
                     state = s.task.reason_state('Pending', timedelta(hours=12))
                     s.task.reason = '{} -- ready for review'.format(state)
+                    break
+
                 elif s.task.status == 'Incomplete':
                     s.task.reason = 'Stalled -- review FAILED'
-                elif s.task.status == 'Fix Committed':
-                    #failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
-                    #state = s.task.reason_state('Ongoing', timedelta(hours=4))
-                    #for failure in failures:
-                    #    if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                    #        state = 'Pending'
-                    #reason = '{} -- package copies requested to {}'.format(state, s.pocket_dest)
-                    #if failures is not None:
-                    #    reason += ' ' + ' '.join(failures)
-                    s.task.reason = '{} -- package copies requested to {}'.format(
-                        s.task.reason_state('Ongoing', timedelta(hours=4)), s.pocket_dest)
-                else:
+                    break
+
+                elif s.task.status == 'In Progress':
                     s.task.reason = '{} -- review in progress'.format(
                         s.task.reason_state('Ongoing', timedelta(hours=4)))
-                break
+                    break
+
+            elif s.task.status not in ('Fix Committed', 'Incomplete'):
+                s.task.status = 'Fix Committed'
+                retval = True
 
             # If we are marked broken report this and hold.
             if s.task.status == 'Incomplete':
@@ -194,18 +179,17 @@ class PromoteFromTo(Promoter):
 
             # If they are now all built ...
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
-                #failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
-                #state = 'Ongoing'
-                #for failure in failures:
-                #    if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                #        state = 'Pending'
-                #reason = '{} -- package copied to {}'.format(state, s.pocket_dest)
-                #if failures is not None:
-                #    reason += ' ' + ' '.join(failures)
-                #s.task.reason = reason
-                s.task.reason = '{} -- packages copying to {}'.format(
-                    s.task.reason_state('Ongoing', timedelta(hours=4)), s.pocket_dest)
+                failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+                state = s.task.reason_state('Ongoing', timedelta(hours=4))
+                for failure in failures:
+                    if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                        state = 'Pending'
+                reason = '{} -- packages copying to {}'.format(state, s.pocket_dest)
+                if failures is not None:
+                    reason += ' ' + ' '.join(failures)
+                s.task.reason = reason
                 break
+
             if s.pocket_dest == 'Proposed':
                 if not s.bug.debs.ready_for_testing:
                     s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
