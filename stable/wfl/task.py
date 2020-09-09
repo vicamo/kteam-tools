@@ -161,4 +161,41 @@ class WorkflowBugTask(object):
 
         cleave(s.__class__.__name__ + '.timestamp')
 
+
+# WorkflowBugTaskSynthetic
+#
+class WorkflowBugTaskSynthetic(WorkflowBugTask):
+
+    # __init__
+    #
+    def __init__(self, task_name, bug):
+        self.bug = bug
+        self.name = task_name
+
+        self.__status   = None
+        self.__assignee = None
+        self.importance = 'Medium'
+        self.lp_task = None
+        self.__modified = False
+
+    # status
+    #
+    @property
+    def status(self):
+        return self.__status
+
+    @status.setter
+    def status(self, val):
+        self.__status = val
+
+    # assignee
+    #
+    @property
+    def assignee(self):
+        return self.__assignee
+
+    @assignee.setter
+    def assignee(self, val):
+        self.__assignee = val
+
 # vi:set ts=4 sw=4 expandtab:
