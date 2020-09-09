@@ -275,9 +275,13 @@ def __status_bites(bug, attrs):
             continue
         if task.endswith('-testing') or task.endswith('-signoff'):
             continue
-        (state, _, reason) = reason.split(' ', 2)
+        (state, flags, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
-        retval = '{}: {}'.format(task, reason)
+        # Initial tasks are emitted without their task name.
+        if 'b' in flags:
+            retval = reason
+        else:
+            retval = '{}: {}'.format(task, reason)
         thing_prefix_wrap = thing_prefix
         for line in textwrap.wrap(retval, width=80):
             if len(line) > 83:
