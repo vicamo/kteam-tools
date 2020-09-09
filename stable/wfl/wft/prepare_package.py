@@ -105,7 +105,14 @@ class PreparePackage(TaskHandler):
             if master.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
                 return False
 
-        if master.tasks_by_name['prepare-package'].status == 'Fix Released':
+        # If our master package is a leader (no master of its own) then we want
+        # to wait for it to be successfully built.  Otherwise just for it to be
+        # tagged and uploaded.
+        if not master.is_derivative_package:
+            wait_for = ['Fix Released']
+        else:
+            wait_for = ['Fix Committed', 'Fix Released']
+        if master.tasks_by_name['prepare-package'].status in wait_for:
             return True
 
         return False
@@ -248,18 +255,19 @@ class PreparePackage(TaskHandler):
                     # If we have uploaded packages we have a creator.
                     creator = s.bug.debs.creator(pkg)
 
-                    # We have uploads so we are at least Fix Committed.
-                    # NOTE: we do not break so we can upgrade to later states.
-                    if s.task.status != 'Fix Committed':
-                        s.task.status = 'Fix Committed'
-                        try:
-                            s.task.assignee = creator
-                        except KeyError:
-                            # It doesn't matter if we set the assignee, that's just a nice
-                            # to have.
-                            #
-                            pass
-                        retval = True
+            if tag_present and upload_present:
+                # We have uploads and tags so we are at least Fix Committed.
+                # NOTE: we do not break so we can upgrade to later states.
+                if s.task.status != 'Fix Committed':
+                    s.task.status = 'Fix Committed'
+                    try:
+                        s.task.assignee = creator
+                    except KeyError:
+                        # It doesn't matter if we set the assignee, that's just a nice
+                        # to have.
+                        #
+                        pass
+                    retval = True
 
             # If we created the versions dictionary then we need to trigger a recrank.
             if not versions_present and 'versions' in s.bug.bprops:
@@ -279,9 +287,8 @@ class PreparePackage(TaskHandler):
             # If we have a ppa route, then we should check these packages were
             # uploaded.
             if s.bug.debs.routing('ppa'):
-                # If we are a master kernel wait for main package builds to complete.
-                if (pkg == 'main' and not s.bug.is_derivative_package and
-                        not s.bug.debs.built_and_in_pocket(pkg, 'ppa')):
+                # Hold prepare-package open until the package is built.
+                if not s.bug.debs.built_and_in_pocket(pkg, 'ppa'):
                     s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
                     break
 
