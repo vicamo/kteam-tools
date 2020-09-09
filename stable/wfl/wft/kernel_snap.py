@@ -151,7 +151,10 @@ class SnapPrepare(KernelSnapBase):
             # Check for a snap build in this version.
             sha = git_repo.lookup_version(s.bug.version)[-1]
             snap_status = s.bug.snap.snap_status(sha)
-            if snap_status != 'UPLOAD-COMPLETE':
+            if snap_status == 'SNAP-MISSING':
+                pass
+
+            elif snap_status != 'UPLOAD-COMPLETE':
                 status_text = ' '.join([x.capitalize() for x in snap_status.split('-')])
                 s.task.reason = 'Pending -- snap package build/upload not complete ({})'.format(status_text)
                 s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
