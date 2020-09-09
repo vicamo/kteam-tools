@@ -198,4 +198,38 @@ class WorkflowBugTaskSynthetic(WorkflowBugTask):
     def assignee(self, val):
         self.__assignee = val
 
+
+class WorkflowBugTaskSynPreparePackages(WorkflowBugTaskSynthetic):
+
+    @property
+    def status(self):
+        stati = set()
+        stati.add('Invalid')
+        for task_name, task in self.bug.tasks_by_name.items():
+            if task_name.startswith('prepare-package'):
+                stati.add(task.status)
+            if task_name == 'prepare-package':
+                self.assignee = task.assignee
+
+        # Find the most retrograde status.
+        for status in (
+                'Opinion',
+                'Incomplete',
+                'Confirmed',
+                'Triaged',
+                'In Progress',
+                'Fix Committed',
+                'Fix Released',
+                'New',
+                'Invalid',
+            ):
+            if status in stati:
+                break
+
+        return status
+
+    @status.setter
+    def status(self, val):
+        raise ValueError()
+
 # vi:set ts=4 sw=4 expandtab:

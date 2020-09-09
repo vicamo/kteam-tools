@@ -56,7 +56,9 @@ class Workflow(TaskHandler):
 
                 if s.bug.variant in ('debs', 'combo'):
                     # 1: Packaging
-                    if taskname.startswith('prepare-package'):
+                    if taskname == ':prepare-packages':
+                        if task.status == 'Fix Committed':
+                            continue
                         (task_section, task_text) = (1, 'Packaging')
 
                     # 2: Promote to Proposed

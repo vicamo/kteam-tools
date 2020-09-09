@@ -1,0 +1,78 @@
+from wfl.log                                    import center, cleave, cdebug, cinfo
+from .base                                      import TaskHandler
+
+
+class SynPreparePackages(TaskHandler):
+    '''
+    A Task Handler for the set-prepare-package pseudo task.
+    '''
+
+    # __init__
+    #
+    def __init__(s, lp, task, bug):
+        center(s.__class__.__name__ + '.__init__')
+        super(SynPreparePackages, s).__init__(lp, task, bug)
+
+        # The tracking bug should start this task out as 'Confirmed'
+        # for primary packages.  Derivatives should flip to 'Confirmed'
+        # as soon as their primary is uploaded.
+        #
+        s.jumper['New']           = s._common
+        s.jumper['Opinion']       = s._common
+        s.jumper['Confirmed']     = s._common
+        s.jumper['Triaged']       = s._common
+        s.jumper['In Progress']   = s._common
+        s.jumper['Fix Committed'] = s._common
+        s.jumper['Fix Released']  = s._common
+
+        cleave(s.__class__.__name__ + '.__init__')
+
+    # evaluate_state
+    #
+    def evaluate_status(s, state):
+        # We ARE aware of invalid bugs ... but need a valid package.
+        if not s.bug.has_package:
+            return False
+        return s.jumper[state]()
+
+    # _common
+    #
+    def _common(s):
+        '''
+        Look to see if the packages have been fully built. This is our indication that the
+        packages have been prepared and we can close this task.
+        '''
+        center(s.__class__.__name__ + '._common')
+        retval = False
+
+        status = s.task.status
+        if status == 'New':
+            s.task.reason = 'Holding -- Not ready to be cranked'
+
+        elif status == 'Confirmed':
+            s.task.reason = 'Pending -- Debs ready to be cranked'
+
+        elif status in ('In Progress', 'Fix Committed'):
+            failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
+            if failures is None:
+                s.task.reason = 'Ongoing -- Being cranked by: {}'.format(s.task.assignee.username)
+                return
+            building = False
+            state = 'Ongoing'
+            for failure in failures:
+                if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                    state = 'Pending'
+                if failure.endswith(':building'):
+                    building = True
+            # If something is building elide any depwaits.  These are almost cirtainly waiting
+            # for that build to complete.  Only show them when nothing else is showing.
+            if building:
+                failures = [failure for failure in failures if not failure.endswith(':depwait')]
+            reason = '{} -- building in {}'.format(state, "ppa")
+            if failures is not None:
+                reason += ' ' + ' '.join(failures)
+            s.task.reason = reason
+
+        return retval
+
+# vi: set ts=4 sw=4 expandtab syntax=python

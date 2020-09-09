@@ -39,6 +39,7 @@ class WorkflowManager():
             'prepare-package-meta'      : wfl.wft.PreparePackage,
             'prepare-package-ports-meta': wfl.wft.PreparePackage,
             'prepare-package-signed'    : wfl.wft.PreparePackage,
+            ':prepare-packages'         : wfl.wft.SynPreparePackages,
             'automated-testing'         : wfl.wft.AutomatedTesting,
             'promote-to-proposed'       : wfl.wft.PromoteToProposed,
             'promote-signing-to-proposed': wfl.wft.PromoteSigningToProposed,

@@ -11,7 +11,7 @@ from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
-from .task                              import WorkflowBugTask
+from .task                              import WorkflowBugTask, WorkflowBugTaskSynPreparePackages
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 from .swm_config                        import SwmConfig
@@ -658,6 +658,8 @@ class WorkflowBug():
         cinfo('')
         cinfo('    Scanning bug tasks:', 'cyan')
 
+        synthesise = set()
+
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
@@ -665,9 +667,19 @@ class WorkflowBug():
                 if '/' in task_name:
                     task_name = task_name[len(s.workflow_project) + 1:].strip()
                 tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
+
+                # Synthetic tasks.
+                if task_name.startswith('prepare-package'):
+                    synthesise.add(':prepare-packages')
+
             else:
                 cinfo('        %-25s' % (task_name), 'magenta')
                 cinfo('            Action: Skipping non-workflow task', 'magenta')
+
+        # Add our synthetic tasks.
+        if ':prepare-packages' in synthesise:
+            task = WorkflowBugTaskSynPreparePackages(':prepare-packages', s)
+            tasks_by_name[task.name] = task
 
         return tasks_by_name
 
