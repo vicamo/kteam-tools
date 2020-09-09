@@ -142,38 +142,6 @@ class Workflow(TaskHandler):
                 if consistent is False:
                     s.bug.reasons['snap-publishing'] = "snap channel revisions inconsistent {}".format(",".join(reasons))
 
-            if s.bug.is_valid and s.bug.debs:
-                pockets = []
-                if phase_text in ('Packaging', 'Holding before Promote to Proposed'):
-                    pockets.append('ppa')
-                elif (s.bug.task_status('promote-to-proposed') not in ('Invalid', 'New', 'Confirmed', 'Fix Released', 'Incomplete') or
-                        s.bug.task_status('promote-signing-to-proposed') not in ('Invalid', 'New', 'Confirmed', 'Fix Released', 'Incomplete')):
-                    pockets.append('Signing')
-                    pockets.append('Proposed')
-                for pocket in pockets:
-                    failures = s.bug.debs.all_failures_in_pocket(pocket, ignore_all_missing=True)
-                    if failures is None:
-                        continue
-                    building = False
-                    state = 'Ongoing'
-                    for failure in failures:
-                        if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                            state = 'Pending'
-                        if failure.endswith(':building'):
-                            building = True
-                    # If something is building elide any depwaits.  These are almost cirtainly waiting
-                    # for that build to complete.  Only show them when nothing else is showing.
-                    if building:
-                        failures = [failure for failure in failures if not failure.endswith(':depwait')]
-                    reason = '{} -- building in {}'.format(state, pocket)
-                    if failures is not None:
-                        reason += ' ' + ' '.join(failures)
-                    s.bug.reasons['build-packages-' + pocket.lower()] = reason
-
-                    # Update the phase when we are building in a pocket and packaging is complete.
-                    if phase_text != 'Packaging':
-                        phase_text = 'Building in {}'.format(pocket)
-
             if phase_text is not None:
                 s.bug.phase = phase_text
 
