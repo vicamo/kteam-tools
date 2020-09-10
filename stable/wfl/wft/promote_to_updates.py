@@ -45,6 +45,10 @@ class PromoteToUpdates(Promoter):
                 retval = True
                 break
 
+            # Confirm we think we are in proposed.
+            if s.bug.task_status('promote-to-proposed') != 'Fix Released':
+                break
+
             # There is no point in considering prerequisites before we are
             # at least in proposed.
             if not s.bug.debs.all_in_pocket('Proposed'):
