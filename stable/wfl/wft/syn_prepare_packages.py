@@ -47,15 +47,15 @@ class SynPreparePackages(TaskHandler):
 
         status = s.task.status
         if status == 'New':
-            s.task.reason = 'Holding -- Not ready to be cranked'
+            s.task.reason = 'Holding -b Not ready to be cranked'
 
         elif status == 'Confirmed':
-            s.task.reason = 'Pending -- Debs ready to be cranked'
+            s.task.reason = 'Pending -b Debs ready to be cranked'
 
         elif status in ('In Progress', 'Fix Committed'):
             failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
             if failures is None:
-                s.task.reason = 'Ongoing -- Being cranked by: {}'.format(s.task.assignee.username)
+                s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
                 return
             building = False
             state = 'Ongoing'
