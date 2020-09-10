@@ -187,19 +187,6 @@ def __status_bites(bug, attrs):
 
     # snaps: being prepared?
     retval = ''
-    prep_status = __task_status(bug, 'snap-prepare')
-    if prep_status == 'n/a':
-        prep_status = __task_status(bug, 'snap-release-to-edge')
-    if prep_status == 'New':
-        retval = __coloured('Not ready to be cranked', 'grey')
-    elif prep_status == 'Confirmed':
-        retval = __coloured('Snap ready to be cranked', 'darkorange')
-    elif prep_status == 'In Progress':
-        retval = __coloured('Being cranked by: %s' % (__assignee(bug, 'snap-release-to-edge')), '#1496bb')
-    elif prep_status == 'Fix Committed':
-        retval = __coloured('Uploaded by: %s' % (__assignee(bug, 'snap-release-to-edge')), '#1496bb')
-    if retval != '':
-        bites.append(bite_format(thing_prefix, retval, thing_in))
     promote_to = []
     for risk in ('beta', 'candidate', 'stable'):
         promote_status = __task_status(bug, 'snap-release-to-' + risk)
@@ -208,8 +195,6 @@ def __status_bites(bug, attrs):
     if len(promote_to) > 0:
         retval = __coloured("Snap ready to promote to: " + ', '.join(promote_to), 'darkorange')
         bites.append(bite_format(thing_prefix, retval, thing_in))
-    # If we have recorded the snap as prepping we can elide all snap-release-to-* tasks.
-    snap_prepping = prep_status in ('New', 'Confirmed', 'In Progress')
 
     # snaps: testing status mashup.
     certification_testing_status = __task_status(bug, 'snap-certification-testing')
@@ -269,9 +254,6 @@ def __status_bites(bug, attrs):
         reason = bug['reason'][task]
         if (task.startswith('prepare-package') and
                 not reason.startswith('Stalled -- ')):
-            continue
-        if (snap_prepping and (task.startswith('snap-release-to-') or
-                task == 'snap-prepare') and not reason.startswith('Stalled -- ')):
             continue
         if task.endswith('-testing') or task.endswith('-signoff'):
             continue
