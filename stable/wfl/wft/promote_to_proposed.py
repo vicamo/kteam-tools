@@ -57,6 +57,9 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
+            if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
+                break
+
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 break
 
@@ -69,23 +72,10 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
-            if not s.bug.debs.all_in_pocket(s.pocket_src):
+            if s.bug.task_status(':prepare-packages') != 'Fix Released':
                 break
 
             if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
-                ## Report PPA build status because there are no other open tasks monitoring
-                ## that segment.  For signing -> proposed the promote-to-proposed task is
-                ## already monitoring in its destination before closing.
-                #if s.pocket_src == 'ppa':
-                #    failures = s.bug.debs.all_failures_in_pocket(s.pocket_src)
-                #    state = 'Ongoing'
-                #    for failure in failures:
-                #        if not failure.endswith(':building') and not failure.endswith(':depwait'):
-                #            state = 'Pending'
-                #    reason = '{} -- builds not complete in {}'.format(state, s.pocket_src)
-                #    if failures is not None:
-                #        reason += ' ' + ' '.join(failures)
-                #    s.bug.reasons['build-packages'] = reason
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
