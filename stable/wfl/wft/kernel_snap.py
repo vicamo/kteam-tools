@@ -88,6 +88,12 @@ class SnapPrepare(KernelSnapBase):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    # evaluate_state
+    #
+    def evaluate_status(s, state):
+        # We ARE aware of invalid bugs.
+        return s.jumper[state]()
+
     # _new
     #
     def _new(s):
@@ -99,12 +105,12 @@ class SnapPrepare(KernelSnapBase):
         while not retval:
             if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                 cinfo('    task promote-to-proposed is not \'Fix Released\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-to-proposed'
+                s.task.reason = 'Holding -b Not ready to be cranked'
                 break
 
             if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
                 cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\'', 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to promote-signing-to-proposed'
+                s.task.reason = 'Holding -b Not ready to be cranked'
                 break
 
             # Attempt to apply replaces as we are ready to promote.
@@ -136,7 +142,10 @@ class SnapPrepare(KernelSnapBase):
             git_repo = s.bug.snap.git_repo
             version = git_repo.tip_version
             if version != s.bug.version:
-                s.task.reason = 'Pending -- snap package tags missing'
+                if s.task.status == 'Confirmed':
+                    s.task.reason = 'Pending -b Snap ready to be cranked'
+                else:
+                    s.task.reason = 'Pending -- snap package tags missing'
                 s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
                     '{} {} polling for tag'.format(
                     s.bug.snap.name, s.bug.version))
