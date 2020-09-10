@@ -108,7 +108,7 @@ class PreparePackage(TaskHandler):
         # If our master package is a leader (no master of its own) then we want
         # to wait for it to be successfully built.  Otherwise just for it to be
         # tagged and uploaded.
-        if not master.is_derivative_package:
+        if not master.is_derivative_package and 'kernel-unblock-derivatives' not in master.tags:
             wait_for = ['Fix Released']
         else:
             wait_for = ['Fix Committed', 'Fix Released']
