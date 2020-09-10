@@ -263,7 +263,8 @@ def __status_bites(bug, attrs):
         if 'b' in flags:
             retval = reason
         else:
-            retval = '{}: {}'.format(task, reason)
+            human_task = task[1:] if task[0] == ':' else task
+            retval = '{}: {}'.format(human_task, reason)
         thing_prefix_wrap = thing_prefix
         for line in textwrap.wrap(retval, width=80):
             if len(line) > 83:
