@@ -1714,7 +1714,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
-            variants: ['--']
+            variants: []
             packages:
                 linux-aws-5.3:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.3-next']
@@ -1724,17 +1724,7 @@
                 linux-restricted-modules-aws-5.3:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.3']
-            snaps:
-                aws-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'aws']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
             swm:
@@ -1747,7 +1737,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
-            variants: ['-edge']
+            variants: ['--', '-edge']
             packages:
                 linux-aws-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.4-next']
@@ -1757,6 +1747,16 @@
                 linux-restricted-modules-aws-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.4']
+            snaps:
+                aws-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'aws']
+                    gated: false
+                    stable: false
+                    qa: false
+                    hw-cert: false
+                    arches: ['amd64']
+                    track: '18'
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-aws' ]
