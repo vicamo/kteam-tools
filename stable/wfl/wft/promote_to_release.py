@@ -15,6 +15,7 @@ class PromoteToRelease(Promoter):
 
         s.jumper['New']           = s._ready_for_release
         s.jumper['Confirmed']     = s._verify_promotion
+        s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
 
@@ -29,6 +30,17 @@ class PromoteToRelease(Promoter):
         retval = False
 
         while True:
+            # If we have no routing for release then we are invalid.
+            if s.bug.debs.routing('Release') is None:
+                cinfo("promote-to-release invalid with no Release route")
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
+            # Confirm we think we are in proposed.
+            if s.bug.task_status('promote-to-proposed') != 'Fix Released':
+                break
+
             # There is no point in considering prerequisites before we are
             # at least in proposed.
             if not s.bug.debs.all_in_pocket('Proposed'):
@@ -41,12 +53,23 @@ class PromoteToRelease(Promoter):
             if not s._testing_completed():
                 break
 
+            # See if we are blocked by a derivative.
+            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            if blocks is not None:
+                cinfo("promote-to-release held {}".format(blocks))
+                s.task.reason = blocks
+                break
+
             if not prerequisites:
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break
 
             if s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
+                break
+
+            if s._in_blackout():
+                s.task.reason = 'Holding -- package in development blackout'
                 break
 
             if not s._all_signoffs_verified():
@@ -68,28 +91,51 @@ class PromoteToRelease(Promoter):
     # _verify_promotion
     #
     def _verify_promotion(s):
-        """
-        """
         center(s.__class__.__name__ + '._verify_promotion')
         retval = False
 
-        while True:
+        while not retval:
+            if s.task.status not in ('Confirmed'):
+                break
 
+            pull_back = False
+            if s.bug.is_derivative_package:
+                if not s.master_bug_ready():
+                    cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
+                    pull_back = True
+
+            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            if blocks is not None:
+                cinfo("promote-to-release held {}".format(blocks))
+                cinfo('            A hold-promote-to-updates present ({})on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
+                pull_back = True
+
+            if s._kernel_block():
+                cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
+                pull_back = True
+
+            if s._in_blackout():
+                cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
+                pull_back = True
+
+            if pull_back:
+                s.task.status = 'New'
+                retval = True
+
+            break
+
+        while not retval:
+            # Check if packages were copied to the right pocket->component
+            #
             if s._block_proposed():
                 s._remove_block_proposed()
                 cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
 
-            # Check if packages were copied to the right pocket->component
-            #
             if not s.bug.debs.packages_released:
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
-                elif s.task.status == 'Incomplete':
-                    s.task.reason = 'Stalled -- copy FAILED'
-                elif s.task.status == 'Fix Committed':
-                    s.task.reason = 'Ongoing -- packages not yet published'
                 else:
-                    s.task.reason = 'Ongoing -- copy in progress'
+                    s.task.reason = 'Ongoing -- packages not yet published'
                 break
 
             cinfo('    All components are now in -release', 'magenta')
