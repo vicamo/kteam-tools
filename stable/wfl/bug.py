@@ -718,7 +718,7 @@ class WorkflowBug():
                         package_package, version, e))
                     published = False
                 if published is False:
-                    s.refresh_at(datetime.now(timezone.utc) + timedelta(hours=1),
+                    s.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
                         '{} {} polling for tag'.format(
                         package_package, version))
 
