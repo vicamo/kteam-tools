@@ -1496,7 +1496,7 @@
             supported: false
 
         linux-dell300x:
-            variants: [ '-wip' ]
+            variants: ['--']
             routing: prerelease
             packages:
                linux-dell300x:
