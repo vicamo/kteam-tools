@@ -534,6 +534,7 @@ class WorkflowBug():
             raise ValueError("refresh_at needs an offset-aware datetime")
         (current_when, _) = s._refresh
         if current_when is None or when < current_when:
+            cinfo("refresh_at {} {}".format(when, why))
             s._refresh = [when, why]
 
     @property
@@ -718,6 +719,7 @@ class WorkflowBug():
                         package_package, version, e))
                     published = False
                 if published is False:
+                    cinfo("tag missing refresh_at triggered")
                     s.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
                         '{} {} polling for tag'.format(
                         package_package, version))
