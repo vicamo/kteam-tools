@@ -117,10 +117,11 @@ class AutomatedTesting(TaskHandler):
             if (len(l.split()) > 3):
                 # line format:
                 # series package version state notes (optional)
-                res = l.split()
+                res = l.split(None, 4)
                 if res[0] == s.bug.series and res[1] == package and res[2] == version:
                     state = res[3]
-                    cinfo('            State for %s %s in %s: %s' % (package, version, s.bug.series, state))
+                    notes = res[4]
+                    cinfo('            State for %s %s in %s: %s (%s)' % (package, version, s.bug.series, state, notes))
 
                     if s.test_is_regression(state):
                         if s.task.status != 'Incomplete':
