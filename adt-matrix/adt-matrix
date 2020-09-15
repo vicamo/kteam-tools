@@ -1082,7 +1082,7 @@ with open(index + ".new", "w") as indexf, open(overall + ".new", "w") as overall
 <title>ADT Test Matrix</title>
 <style>
 .MIGRATED {{ background-color: darkgray; }}
-.GOOD, .PASS {{ background-color: green; }}
+.GOOD, .PASS, .NONE {{ background-color: green; }}
 .BUILDING {{ background-color: yellow; }}
 .RUNNING {{ background-color: yellow; }}
 .MISS, .SKIP, .MISSING {{ background-color: yellow; }}
