@@ -811,7 +811,7 @@ class AutoPackageTest(object):
 <head>
 <title>ADT Test Matrix -- {0}</title>
 <style>
-.GOOD {{ background-color: green; }}
+.GOOD, .NONE {{ background-color: green; }}
 .RUN {{ background-color: yellow; }}
 .MISS, .SKIP {{ background-color: yellow; }}
 .FAIL, .NEUTRAL {{ background-color: orange; }}
@@ -1253,7 +1253,7 @@ table.matrix td {{
             state = "MISS"
         if not state:
             if total == 0:
-                state = "GOOD"
+                state = "NONE"
             else:
                 state = "MISS"
 
