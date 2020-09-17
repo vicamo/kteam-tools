@@ -229,15 +229,15 @@
             versions: ['5.9.0']
             variants: ['-wip']
             packages:
-                linux:
+                linux-5.9:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
-                linux-meta:
+                linux-meta-5.9:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
-                linux-signed:
+                linux-signed-5.9:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
-                linux-restricted-modules:
+                linux-restricted-modules-5.9:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
             supported: false
