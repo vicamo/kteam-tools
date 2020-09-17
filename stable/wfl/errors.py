@@ -41,3 +41,7 @@ class ErrorExit(ShankError):
     exception is raised.
     '''
     pass
+
+
+class WorkflowCrankError(ShankError):
+    pass

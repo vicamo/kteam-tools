@@ -8,7 +8,7 @@ from lib.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
-from .errors                            import ShankError
+from .errors                            import ShankError, WorkflowCrankError
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
 from .task                              import WorkflowBugTask, WorkflowBugTaskSynPreparePackages
@@ -351,6 +351,8 @@ class WorkflowBug():
             if s.is_derivative_package:
                 try:
                     master = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series, sru_cycle=s.sc)
+                    if master.is_gone:
+                        raise WorkflowCrankError("master tracker link points to invalidated tracker")
                     if not master.is_crankable and not master.is_closed:
                         # check if our master is a duplicte, and if so follow the chain.
                         duplicate_of = master.lpbug.lpbug.duplicate_of
@@ -358,15 +360,15 @@ class WorkflowBug():
                             cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, master.lpbug.lpbug.id))
                             master = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series, sru_cycle=s.sc)
                         else:
-                            raise WorkflowBugError("uninstantiated tracker")
-                except Exception as e:
+                            raise WorkflowCrankError("master tracker link points to uninstantiated tracker")
+                except WorkflowBugError as e:
                     # Mark this as known to fail.
                     master = WorkflowBugError("invalid master bug link -- {}".format(e.args[0]))
                 s._master_bug = master
             else:
                 s._master_bug = None
 
-        if type(s._master_bug) is WorkflowBugError:
+        if isinstance(s._master_bug, WorkflowBugError):
             raise s._master_bug
 
         return s._master_bug
@@ -565,6 +567,10 @@ class WorkflowBug():
         '''
         status = s.bprops
         status.setdefault('reason', {}).update(s.reasons)
+
+        # Ensure we do not modify the bug when adding the
+        # remainder of the status data.
+        status = dict(status)
 
         # Check if we are actually fully complete, if so then
         # we can delete this entry from status.

@@ -11,6 +11,7 @@ import yaml
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 
+from .errors                            import WorkflowCrankError
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
@@ -19,6 +20,7 @@ from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
 from .bugmail                           import BugMailConfigFileMissing
 import wfl.wft
+
 
 # WorkflowManager
 #
@@ -505,6 +507,7 @@ class WorkflowManager():
         # crank it again.
         #
         modified = False
+        bug = None
         try:
             lpbug = s.lp.default_service.get_bug(bugid)
             if lpbug is None:
@@ -579,7 +582,16 @@ class WorkflowManager():
             modified = False
             for l in e.args:
                 cerror(e.__class__.__name__ + ': ' + l)
-            s.status_set(bugid, modified=False)
+
+        except WorkflowCrankError as e:
+            modified = False
+            for l in e.args:
+                cerror(e.__class__.__name__ + ': ' + l)
+            if bug is not None:
+                bug.reasons['crank-failure'] = 'Stalled -- ' + e.args[0]
+                status = bug.status_summary()
+                bug.save()
+                s.status_set(bugid, status, modified=False)
 
         cleave('WorkflowManager.crank')
         return rescan
@@ -621,7 +633,7 @@ class WorkflowManager():
                 if cls.evaluate_status(task.status) and not s.args.dryrun:
                     retval = True
                     cinfo('        True')
-            except (PackageError, WorkflowBugError) as e:
+            except (PackageError, SnapError) as e:
                 for l in e.args:
                     cerror(e.__class__.__name__ + ': ' + l)
                 task.reason = 'Stalled -- ' + e.__class__.__name__ + ': ' + e.args[0]
