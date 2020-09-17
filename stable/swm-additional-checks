@@ -1,0 +1,143 @@
+#!/usr/bin/python3
+
+import sys
+
+from datetime import datetime, timedelta, timezone
+
+import lazr
+from launchpadlib.launchpad import Launchpad
+
+from ktl.kernel_series import KernelSeries
+from ktl.swm_status import SwmStatus
+
+#parser = argparse.ArgumentParser()
+#parser.add_argument('--no-header', action='store_true')
+#parser.add_argument('--no-queue', action='store_true')
+#parser.add_argument('pocket')
+#args = parser.parse_args()
+
+#pocket = args.pocket
+
+lp = Launchpad.login_with('test-lp', 'production', version='devel')
+lp_distro = lp.distributions['ubuntu']
+lp_archive = lp_distro.getArchive(name='primary')
+lp_ckt = lp.people['canonical-kernel-team']
+#print(lp_archive, lp_ckt)
+
+lp_wf_project = lp.projects['kernel-sru-workflow']
+lp_wf_kernel_signoff = lp_wf_project.getSeries(name='kernel-signoff')
+#print(lp_wf_project, lp_wf_kernel_signoff)
+
+ks = KernelSeries()
+
+
+# Scan the existing variants and identify the primary variants; those which
+# "roll".  These are characterised by having and '-edge' form.'
+primary_variants = set()
+for series in ks.series:
+    if not series.supported and not series.development:
+        continue
+    for source in series.sources:
+        if not source.supported:
+            continue
+        if source.variants is None:
+            continue
+        for variant in source.variants:
+            if variant.endswith('-edge'):
+                variant = variant[:-5]
+                primary_variants.add(variant if variant != '' else '--')
+
+bumping = []
+for series in ks.series:
+    #if series.codename != 'bionic':
+    #    continue
+    if not series.supported and not series.development:
+        continue
+
+    # Grab the launchpad series and live architectures.
+    lp_series = lp_distro.getSeries(name_or_version=series.codename)
+    lp_series_archs = lp_series.architectures
+
+    for source in series.sources:
+        #if '-aws' not in source.name:
+        #    continue
+        if source.private:
+            continue
+        if not source.supported:
+            continue
+        if source.variants is None:
+            continue
+        interesting_variants = primary_variants.intersection(set(source.variants))
+        if len(interesting_variants) == 0:
+            continue
+        if len(source.testable_flavours) == 0:
+            continue
+        print(source.series.codename, source.name, source.variants)
+        flavours = source.testable_flavours
+        for flavour in flavours:
+            for variant in interesting_variants:
+                metapkg = 'linux-image-' + flavour.name + (variant if variant != '--' else '')
+                print(" ", source.series.codename, metapkg)
+
+                pubs = lp_archive.getPublishedBinaries(binary_name=metapkg, exact_match=True, status='Published')
+                found = {}
+                for pub in pubs:
+                    if pub.distro_arch_series not in lp_series_archs:
+                        continue
+                    pocket = pub.pocket
+                    if pocket not in ('Release', 'Updates', 'Proposed'):
+                        continue
+                    if pocket in found:
+                        continue
+
+                    #print(pub, pub.binary_package_name, pub.binary_package_version, pub.pocket, pub.status)
+                    found[pocket] = pub.binary_package_version
+                    if len(found) == 2:
+                        break
+                version_released = found.get('Updates', found.get('Release', '0.0'))
+                version_proposed = found.get('Proposed')
+                print(" Released: ", version_released)
+                print(" Proposed: ", version_proposed)
+                if version_proposed is None:
+                    continue
+
+                if version_released.split('.')[0:2] != version_proposed.split('.')[0:2]:
+                    print("  Major version bump detected -- kernel-signoff warranted")
+                    bumping.append([source, version_released, version_proposed])
+
+trackers = SwmStatus().trackers
+
+for ks_source, version_released, version_proposed in bumping:
+    print("Major version bump", ks_source, version_released, version_proposed)
+
+    # Find an swm-status record which points to this version of meta.
+    for tracker_id, tracker in trackers.items():
+        if tracker['series'] != ks_source.series.codename or tracker['source'] != ks_source.name:
+            continue
+        version_meta = tracker.get('versions', {}).get('meta', '0.0')
+        if version_meta != version_proposed:
+            continue
+
+        # Found a relevant tracker, ensure it has a kernel-signoff.
+        #print(tracker['task'])
+        if 'kernel-signoff' in tracker.get('task', {}):
+            continue
+
+        print(" kernel-signoff missing -- adding")
+        lp_tracker = lp.bugs[tracker_id]
+        lp_task = None
+        try:
+            lp_task = lp_tracker.addTask(target=lp_wf_kernel_signoff)
+        except lazr.restfulclient.errors.BadRequest:
+            pass
+
+        if lp_task is not None:
+            lp_task.importance = 'Medium'
+            lp_task.assignee = lp_ckt
+            lp_task.lp_save()
+
+            if version_released == '0.0':
+                message = "New kernel requires kernel-signoff before publishing"
+            else:
+                message = "Major kernel version bump; requires kernel-signoff when additional upgrade testing is complete."
+            lp_tracker.newMessage(content=message)
