@@ -63,6 +63,7 @@ if __name__ == '__main__':
 
         if args.tasks is True:
             for task in sorted(bug_data.get('task', {}).keys()):
+                task_name = ('' if task[0] == ':' else ' ') + task
                 entry = {
                     'bugid':            bug_prefix(bug_id),
                     'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
@@ -71,7 +72,7 @@ if __name__ == '__main__':
                     'source':           bug_data.get('source', '-'),
                     'target':           bug_data['task'][task].get('target', bug_data.get('target', '-')),
                     'version':          bug_data.get('version', '--not-specified--'),
-                    'phase':            task,
+                    'phase':            task_name,
                     'phase_status':     bug_data['task'][task]['status'],
                     'assignee':         bug_data['task'][task].get('assignee', 'unassigned'),
                     }
@@ -79,6 +80,7 @@ if __name__ == '__main__':
 
         if args.reasons is True:
             for task in sorted(bug_data.get('reason', {}).keys()):
+                task_name = ('' if task[0] == ':' else ' ') + task
                 entry = {
                     'bugid':            bug_prefix(bug_id),
                     'bugid_parent':     bug_prefix(bug_data.get('master-bug', '')),
@@ -87,7 +89,7 @@ if __name__ == '__main__':
                     'source':           bug_data.get('source', '-'),
                     'target':           bug_data['task'].get(task, {}).get('target', bug_data.get('target', '-')),
                     'version':          bug_data.get('version', '--not-specified--'),
-                    'phase':            task,
+                    'phase':            task_name,
                     'phase_status':     bug_data['reason'][task],
                     'assignee':         bug_data['task'].get(task, {}).get('assignee', 'unassigned'),
                     }
