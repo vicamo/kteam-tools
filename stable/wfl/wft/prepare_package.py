@@ -105,13 +105,19 @@ class PreparePackage(TaskHandler):
             if master.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
                 return False
 
+        # If our master is marked to block derivatives block on it.
+        if 'kernel-block-derivatives' in master.tags and 'kernel-unblock-derivatives' not in master.tags:
+            wait_for = []
+
         # If our master package is a leader (no master of its own) then we want
-        # to wait for it to be successfully built.  Otherwise just for it to be
-        # tagged and uploaded.
-        if not master.is_derivative_package and 'kernel-unblock-derivatives' not in master.tags:
+        # to wait for it to be successfully built (Fix Released).
+        elif not master.is_derivative_package and 'kernel-unblock-derivatives' not in master.tags:
             wait_for = ['Fix Released']
+
+        # Otherwise wait for it to be tagged and uploaded (Fix Committed or later).
         else:
             wait_for = ['Fix Committed', 'Fix Released']
+
         if master.tasks_by_name['prepare-package'].status in wait_for:
             return True
 
