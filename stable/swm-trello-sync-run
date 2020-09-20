@@ -2,6 +2,9 @@
 
 here=$(dirname "$(readlink -f "${0}")")
 
+# We are meant to run in the swm directory.
+cd "$here" || exit 1
+
 export http_proxy="http://squid.internal:3128"
 export https_proxy="https://squid.internal:3128"
 export no_proxy=".launchpad.net,kernel.ubuntu.com"

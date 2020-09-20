@@ -54,6 +54,9 @@ if __name__ == '__main__':
     # and provides us with status information for each.
     status = SwmStatus()
 
+    # Record card dispositions.
+    disposition = {}
+
     # Run the list of tracks and extract the live cycles and create
     # a tracker mapping.  Ensure this is done in bug_id order so
     # we use a consistent tracker.
@@ -67,6 +70,7 @@ if __name__ == '__main__':
 
         #print(bug_id, cycle, spin, bug_data['phase'])
 
+        bug_data['_id'] = bug_id
         trackers[(bug_data['cycle'], bug_data.get('series', '-'), bug_data.get('source', '-'), bug_data.get('target', '-'))] = bug_data
 
     # Connect us to trello.
@@ -235,16 +239,27 @@ if __name__ == '__main__':
                     list_name = 'Done'
 
                 #print("CHECK", card_name, dest_list, list_name)
-                if list_name == 'Blocked':
-                    print("BLOCKED: '{}' {} -> -- ({} {})".format(card_name, list_name, dest_why, dest_list))
+                if list_name in ('Blocked', 'For Review', 'Review'):
+                    print("{}: '{}' {} -> -- ({} {})".format(list_name, card_name, list_name, dest_why, dest_list))
 
                 elif list_name not in dest_list:
                     dest_where = 'top' if list_name in ('In Progress', 'Done') else 'bottom'
                     print("MOVE: '{}' {} -> {} ({} {} {})".format(card_name, list_name, dest_list[-1], dest_why, dest_list, dest_where))
-                    dest_list_id = list_name_id.get(dest_list[-1])
+                    dest_list_name = dest_list[-1]
+                    dest_list_id = list_name_id.get(dest_list_name)
                     if dest_list_id is not None:
-                        card = tt.trello.card_update(card_id, idList=list_name_id[dest_list[-1]], pos=dest_where)
+                        card = tt.trello.card_update(card_id, idList=list_name_id[dest_list_name], pos=dest_where)
+                        list_name = dest_list_name
                     else:
                         print("ERROR: MOVE destination list does not exist")
+
+                if tracker is not None:
+                    state_list = disposition.setdefault(list_name, [])
+                    state_list.append({'id': tracker['_id'], 'cycle': tracker['cycle'], 'task': which})
+
+    with open("swm-trello.yaml.new", "w") as sfd:
+        state = {'disposition': disposition}
+        yaml.dump(state, sfd, default_flow_style=False)
+    os.rename("swm-trello.yaml.new", "swm-trello.yaml")
 
     print(datetime.now())
