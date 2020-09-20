@@ -50,6 +50,13 @@ class PreparePackage(TaskHandler):
             return False
         return s.jumper[state]()
 
+    # _trello_block_source
+    #
+    def _trello_block_source(s):
+        if 'kernel-trello-blocked-debs-prepare' in s.bug.tags or 'kernel-trello-blocked-prepare-packages' in s.bug.tags:
+            return True
+        return False
+
     # _kernel_block_source
     #
     def _kernel_block_source(s):
@@ -156,6 +163,12 @@ class PreparePackage(TaskHandler):
                 break
 
             # Are we blocked.
+            if s._trello_block_source():
+                if pkg == 'main' or not s.bug.valid_package('main'):
+                    s.task.reason = 'Stalled -- blocked on SRU board'
+                break
+
+            # Are we blocked.
             if s.task.status == 'Opinion':
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Stalled -- currently blocked'
@@ -200,6 +213,9 @@ class PreparePackage(TaskHandler):
             pull_back = False
             if s.older_tracker_in_ppa:
                 cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s._trello_block_source():
+                cinfo('            Blocked on the SRU board pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s._kernel_block_source():
                 cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
