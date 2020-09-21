@@ -62,7 +62,7 @@ class PromoteToUpdates(Promoter):
                 break
 
             # See if we are blocked by a derivative.
-            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            blocks = s.bug.block_present('hold-promote-to-updates')
             if blocks is not None:
                 cinfo("promote-to-updates held {}".format(blocks))
                 s.task.reason = blocks
@@ -116,10 +116,10 @@ class PromoteToUpdates(Promoter):
                     cinfo('            Master bug no longer ready pulling back from Confirmed', 'yellow')
                     pull_back = True
 
-            blocks = s.bug.blockers.get('hold-promote-to-updates', None)
+            blocks = s.bug.block_present('hold-promote-to-updates')
             if blocks is not None:
                 cinfo("promote-to-updates held {}".format(blocks))
-                cinfo('            A hold-promote-to-updates present ({})on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
+                cinfo('            A hold-promote-to-updates present ({}) on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
                 pull_back = True
 
             if s._kernel_block():

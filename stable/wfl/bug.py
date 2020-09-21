@@ -561,6 +561,16 @@ class WorkflowBug():
 
         s.blockers = blockers
 
+    def block_present(s, block):
+        if block not in s.blockers:
+            return None
+
+        if 'kernel-unblock-' + block in s.tags:
+            cinfo("blocker {} present but hinted unblock".format(block))
+            return None
+
+        return s.blockers[block]
+
     def status_summary(s):
         '''
         Return the current reason set for this bug.
