@@ -94,6 +94,11 @@ class SnapPrepare(KernelSnapBase):
         # We ARE aware of invalid bugs.
         return s.jumper[state]()
 
+    # kernel_block_source
+    #
+    def kernel_block_source(s):
+        return 'kernel-block' in s.bug.tags or 'kernel-block-source' in s.bug.tags
+
     # _new
     #
     def _new(s):
@@ -122,6 +127,12 @@ class SnapPrepare(KernelSnapBase):
                 s.task.reason = 'Stalled -- tracker for earlier spin still active'
                 break
 
+            # Are we blocked.
+            if s.kernel_block_source():
+                cinfo('    A kernel-block/kernel-block-source tag exists on this tracking bug', 'yellow')
+                s.task.reason = 'Stalled -- manual kernel-block/kernel-block-source present'
+                break
+
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
 
@@ -144,6 +155,9 @@ class SnapPrepare(KernelSnapBase):
             pull_back = False
             if not s.oldest_tracker:
                 cinfo('            A previous cycle tracker is active pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.kernel_block_source():
+                cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                 cinfo('    task promote-to-proposed is not \'Fix Released\' pulling back from Confirmed', 'yellow')
