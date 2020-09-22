@@ -116,7 +116,7 @@ if __name__ == '__main__':
             which = None
             match = debs_crank_re.search(card_name)
             if match:
-                which = 'debs-prepare'
+                which = ':prepare-packages'
                 tracker_key = (board_cycle + '-' + match.group(1),
                     match.group(2), match.group(3), match.group(3))
             if not match:
@@ -171,35 +171,27 @@ if __name__ == '__main__':
                     print("IGNORE: '{}' {} lost+found candidate too new ({})".format(card_name, list_name, age))
                     continue
 
-            # deb-prepare tasks
-            elif which == 'debs-prepare':
-                phase = tracker['phase']
-                ##print("DEBS PREPARE", tracker_key, phase)
+            elif which == ':prepare-packages':
+                task_state = tracker['task'].get(which, {}).get('status', 'unknown')
 
                 # Not yet ready for packaging -- Backlog
-                if phase == 'Holding before Packaging':
-                    dest_list = ['Backlog']
+                if task_state == 'New':
+                    dest_list = ['In Progress', 'Backlog']
 
                 # Ready to package -- On Deck
-                elif phase == 'Ready for Packaging':
+                elif task_state == 'Confirmed':
                     dest_list = ['For Review', 'Review', 'In Progress', 'On Deck']
 
                 # Packaging -- In Progress
-                elif phase == 'Packaging':
+                elif task_state == 'In Progress':
                     dest_list = ['For Review', 'Review', 'In Progress']
 
                 # Otherwise we are beyond packaging.
+                #  Fix Committed implies we have tags and all packages are uploaded.
+                #  Fix Released implies everything is also built.
                 else:
                     dest_list = ['Done']
-
-                    # A final check for rejection.
-                    task_state = tracker['task'].get('promote-to-proposed', {}).get('status', 'unknown')
-                    if task_state == 'Incomplete':
-                        dest_list = ['For Review', 'Review', 'In Progress', 'Rejected']
-
-                dest_why = phase
-
-                #for task_name, task_data in tracker['task']:
+                dest_why = which + ':' + task_state
 
             elif which.startswith('snap-release-') or which == 'snap-prepare':
                 if which not in tracker['task']:
