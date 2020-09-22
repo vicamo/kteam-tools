@@ -55,7 +55,10 @@ class SynPreparePackages(TaskHandler):
         elif status in ('In Progress', 'Fix Committed'):
             failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
             if failures is None:
-                s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
+                if 'kernel-trello-review-debs-prepare' in s.bug.tags:
+                    s.task.reason = 'Stalled -b Debs waiting for peer-review on SRU board'
+                else:
+                    s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
                 return
             building = False
             state = 'Ongoing'
