@@ -674,6 +674,7 @@ class MonitorTrelloDisposition:
                 print("CHECKING", lane, tracker)
                 tracker_id = tracker['id']
                 tracker_task = tracker['task']
+                tracker_task = tracker_task[1:] if tracker_task[0] == ':' else tracker_task
                 tracker_tag = tag_prefix + tracker_task
                 tracker_key = tracker_id + '-' + tracker_tag
                 new_tagged[tracker_key] = True
