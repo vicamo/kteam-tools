@@ -76,7 +76,8 @@ class PromoteToSecurity(Promoter):
             # Check we meet the release criteria for -security; currently
             # that we have given the packages sufficient time to replicate.
             if not s.bug.debs.ready_for_security:
-                s.task.reason = 'Holding -- not ready for security (replication dwell)'
+                if s.bug.tasks_by_name['promote-to-updates'].status == 'Fix Released':
+                    s.task.reason = 'Holding -- not ready for security (replication dwell)'
                 break
 
             if s._kernel_block():
