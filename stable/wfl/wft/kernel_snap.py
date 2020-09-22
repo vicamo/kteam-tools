@@ -138,6 +138,29 @@ class SnapPrepare(KernelSnapBase):
         retval = False
 
         while not retval:
+            if s.task.status not in ('Confirmed'):
+                break
+
+            pull_back = False
+            if not s.oldest_tracker:
+                cinfo('            A previous cycle tracker is active pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
+                cinfo('    task promote-to-proposed is not \'Fix Released\' pulling back from Confirmed', 'yellow')
+                pull_back = True
+                break
+            if s.debs_bug.task_status('promote-signing-to-proposed') not in ('Fix Released', 'Invalid'):
+                cinfo('    task promote-signing-to-proposed is not \'Fix Released\' or \'Invalid\' pulling back from Confirmed', 'yellow')
+                pull_back = True
+                break
+
+            if pull_back:
+                s.task.status = 'New'
+                retval = True
+
+            break
+
+        while not retval:
             # Check the tags and tip are prepared and pushed.
             git_repo = s.bug.snap.git_repo
             version = git_repo.tip_version
