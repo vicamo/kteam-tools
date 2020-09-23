@@ -7,4 +7,5 @@ export https_proxy="https://squid.internal:3128"
 export no_proxy=".launchpad.net,kernel.ubuntu.com"
 
 set -o pipefail
-"$here/trello-status" "/var/www/html/reports/project-dashboard.html" 2>&1 | tee -a "$HOME/logs/trello-status.log"
+mkdir -p "$HOME/kernel-trello-dashboard/reports"
+"$here/trello-status" "$HOME/kernel-trello-dashboard/reports/project-dashboard.html" 2>&1 | tee -a "$HOME/logs/trello-status.log"
