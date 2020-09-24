@@ -1,0 +1,5 @@
+#!/bin/bash
+
+here=$(dirname "$(readlink -f "${0}")")
+
+"$here/../sbin/cron-start" "$here/webhooks-run" -- 'Webhooks' 'Handler' 5m 10m "host=$1" >>$HOME/logs/webhooks.log 2>&1
