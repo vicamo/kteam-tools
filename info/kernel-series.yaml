@@ -820,11 +820,11 @@
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 build:
-                    - ['ppa:denver-team/ubuntu/denver-build', 'Released']
+                    - ['ppa:denver-team/ubuntu/denver-build', 'Release']
                 signing:
-                    - ['ppa:canonical-signingubuntu/ke-denver', 'Released']
+                    - ['ppa:canonical-signingubuntu/ke-denver', 'Release']
                 proposed:
-                    - ['ppa:denver-team/ubuntu/denver-proposed', 'Released']
+                    - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
                 updates:
                     - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
             packages:
