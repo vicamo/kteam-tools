@@ -814,6 +814,27 @@
                     type: meta
             supported: false
 
+        linux-denver:
+            routing:
+                security-build:
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                build:
+                    - ['ppa:denver-team/+archive/ubuntu/denver-build', 'Released']
+                signing:
+                    - ['ppa:canonical-signing/+archive/ubuntu/ke-denver', 'Released']
+                proposed:
+                    - ['ppa:denver-team/+archive/ubuntu/denver-proposed', 'Released']
+                updates:
+                    - ['ppa:denver-team/+archive/ubuntu/denver-updates', 'Release']
+            packages:
+                linux-denver:
+                linux-signed-denver:
+                    type: signed
+                linux-meta-denver:
+                    type: meta
+            supported: false
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
