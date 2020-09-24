@@ -822,7 +822,7 @@
                 build:
                     - ['ppa:denver-team/ubuntu/denver-build', 'Release']
                 signing:
-                    - ['ppa:canonical-signingubuntu/ke-denver', 'Release']
+                    - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
                 proposed:
                     - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
                 updates:
