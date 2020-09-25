@@ -24,7 +24,7 @@ _cranky() {
 		"reorder -h --help -d --dry-run"
 		"review -h --help -p --prev-dsc-dir -o --output"
 		"review-master-changes -h --help"
-		"rmadison -h --help -a --show-all -e --show-extended HANDLE"
+		"rmadison -h --help -a --show-all -e --show-extended -p --pocket release updates security proposed HANDLE"
 		"shell-helper -h handle-to-series-source series-codename source-packages-path tree-type tree-main-path list-handles list-variants clone test-build review-master-changes"
 		"spin -h --help -d --dry-run --devel HANDLE"
 		"tag -h --help -v --verbose -f --force"

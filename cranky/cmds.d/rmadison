@@ -33,7 +33,7 @@ def pocket_order(val):
     return 0
 
 
-def rmadison_lp(handle_set, show_all=False, show_ext=False):
+def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
     """
     Query Launchpad for source package information
     """
@@ -60,6 +60,10 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False):
                  not show_all)):
                 # This is a non-standard PPA and we didn't ask for it, so
                 # skip it
+                continue
+
+            if show_pocket and dest != show_pocket:
+                # Skip it if a pocket was provided but the route doesn't match
                 continue
 
             lp_archive = lp.archives.getByReference(reference=ppa)
@@ -154,6 +158,10 @@ Examples:
 
   $ cranky rmadison -e -a bionic:linux-ibm-gt
       Print all information from all archives and PPAs.
+
+  $ cranky rmadison -p updates groovy:linux-aws
+      Print information for the source packages that make up the set of Groovy
+      linux-aws kernel packages from the -updates pocket.
 """
 
     parser = argparse.ArgumentParser(description=desc,
@@ -173,6 +181,10 @@ Examples:
                         help="Dump the data in a format suitable for "
                         "subsequent consumption by a script, i.e., don't "
                         "render a fancy table")
+    parser.add_argument('-p', '--pocket', choices=['release', 'security',
+                                                   'updates', 'proposed'],
+                        help='Only show source package information from the '
+                        'provided pocket.')
     args = parser.parse_args()
 
     try:
@@ -185,5 +197,6 @@ Examples:
     # Query the Launchpsd PPAs for the packages referenced by the provided
     # handle and print the result in an 'rmadison'-like table
     print_table(rmadison_lp(handle_set, show_all=args.show_all,
-                            show_ext=args.show_extended),
+                            show_ext=args.show_extended,
+                            show_pocket=args.pocket),
                 show_ext=args.show_extended, script=args.script)
