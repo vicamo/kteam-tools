@@ -832,9 +832,12 @@
                     - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
             packages:
                 linux-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-denver']
                 linux-signed-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-signed-denver']
                     type: signed
                 linux-meta-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
                     type: meta
             supported: false
 
