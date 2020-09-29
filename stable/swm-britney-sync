@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+import argparse
+import os
+import sys
+import yaml
+from subprocess                 import Popen, PIPE, run
+
+from ktl.kernel_series import KernelSeries
+from ktl.swm_status import SwmStatus
+
+class AppError(Exception):
+    pass
+
+
+def record(result):
+    lines = result.stdout.decode('utf-8').strip().split('\n')
+    while len(lines) > 0 and lines[0] == '':
+        lines.pop(0)
+
+    for line in lines:
+        print(" |{}".format(line))
+
+
+if __name__ == '__main__':
+    try:
+        parser = argparse.ArgumentParser(description='SWM britney sync tool')
+        parser.add_argument('git_url', help='remote git repository URL')
+        parser.add_argument('git_repo', help='local git repository directory')
+        args = parser.parse_args()
+
+        ks = KernelSeries()
+        swm = SwmStatus()
+
+        # Ensure we have a local repository.
+        if not os.path.exists(args.git_repo):
+            print("cloning {} from {}".format(args.git_repo, args.git_url))
+            cmd = [ "git", "clone", args.git_url, args.git_repo ]
+            result = run(cmd, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+
+        else:
+            print("updating {} from {}".format(args.git_repo, args.git_url))
+            cmd = [ "git", "config", "remote.origin.url", args.git_url ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+            cmd = [ "git", "fetch", "origin" ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+
+        for series in ks.series:
+            if not series.supported and not series.development:
+                continue
+            if series.esm:
+                continue
+
+            branch = "ubuntu/" + series.codename
+            if series.development:
+                branch = "ubuntu/devel"
+
+            print("checking out {}".format(branch))
+            cmd = [ "git", "checkout", "-f", branch ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+
+            with open(os.path.join(args.git_repo, "release"), "w") as rfd:
+                print("# Block all kernels from migrating.", file=rfd)
+                for source in sorted(series.sources, key=lambda x: x.name):
+                    if not source.supported:
+                        continue
+                    if source.private:
+                        continue
+
+                    print("block {}".format(source.name), file=rfd)
+
+                print("", file=rfd)
+                print("# Unblock all kernels which are ready to promote.", file=rfd)
+                unblocks = []
+                for tracker, tracker_data in swm.trackers.items():
+                    if tracker_data['series'] != series.codename:
+                        continue
+                    task = tracker_data.get('task', {}).get('promote-to-updates')
+                    if task is None:
+                        task = tracker_data.get('task', {}).get('promote-to-release')
+                    if task is None:
+                        continue
+                    status = task.get('status', 'Invalid')
+                    if status in ('Invalid', 'New', 'Fix Released'):
+                        continue
+                    unblocks.append((tracker_data.get('source', '??'), tracker_data.get('version', '??')))
+                for source, version in sorted(unblocks):
+                    print("unblock {}/{}".format(source, version), file=rfd)
+
+            cmd = [ "git", "diff", "--quiet" ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode not in (0, 1):
+                raise AppError(result.stderr.decode('utf-8').strip())
+
+            elif result.returncode == 0:
+                continue
+
+            print("committing to {}".format(branch))
+            cmd = [ "git", "commit", "-s", "-m", "Automated SWM sync", "release" ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+
+            print("pushing {} to {}".format(branch, args.git_url))
+            cmd = [ "git", "push", "origin", branch ]
+            result = run(cmd, cwd=args.git_repo, stdout=PIPE, stderr=PIPE)
+            if result.returncode != 0:
+                raise AppError(result.stderr.decode('utf-8').strip())
+            record(result)
+
+    except AppError as e:
+        for arg in e.args:
+            print(arg, file=sys.stderr)
+        sys.exit(1)
