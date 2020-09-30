@@ -287,6 +287,7 @@ class WorkflowBug():
     def save(s):
         s.save_bug_properties()
         s._remove_live_tag()
+        s.lpbug.lpbug.lp_save()
 
     @property
     def _dryrun(s):
