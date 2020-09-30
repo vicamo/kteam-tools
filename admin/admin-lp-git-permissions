@@ -85,6 +85,28 @@ def update_subscriptions(git_repo, crankers):
                 max_diff_lines="Don't send diffs",
                 notification_level='No email')
 
+webhook_url = 'http://10.15.182.10/webhooks'
+webhook_events = ['git:push:0.1']
+def update_webhooks(git_repo):
+    live_hook = None
+    for hook in git_repo.webhooks:
+        print(hook, hook.delivery_url, hook.event_types, hook.active)
+        if hook.delivery_url == webhook_url:
+            live_hook = hook
+            break
+    else:
+        live_hook = git_repo.newWebhook(delivery_url=webhook_url, event_types=webhook_events, active=True)
+
+    update_hook = False
+    if live_hook.active != True:
+        live_hook.active = True
+        update_hook = True
+    if live_hook.event_types != webhook_events:
+        live_hook.event_types = webhook_events
+        update_hook = True
+    if update_hook:
+        live_hook.lp_save()
+
 def sync_misc():
     admins = '/~canonical-kernel-repo-admins-active'
 
@@ -118,6 +140,7 @@ def sync_misc():
         print(git_repo)
         update_rules(git_repo, rules)
         update_subscriptions(git_repo, crankers)
+        update_webhooks(git_repo)
         sys.stdout.flush()
 
 def sync_esm():
@@ -152,6 +175,7 @@ def sync_esm():
             print(git_repo, 'ESM')
             update_rules(git_repo, rules)
             update_subscriptions(git_repo, crankers)
+            update_webhooks(git_repo)
             sys.stdout.flush()
 
 def sync_primary():
@@ -316,7 +340,7 @@ def sync_primary():
         print(git_repo)
         update_rules(git_repo, rules)
         update_subscriptions(git_repo, crankers)
-
+        update_webhooks(git_repo)
         sys.stdout.flush()
 
 
