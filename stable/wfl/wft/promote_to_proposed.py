@@ -66,8 +66,6 @@ class PromoteFromTo(Promoter):
             s.task.status = 'Fix Committed'
             s.task.timestamp('started')
 
-            s._add_block_proposed()
-
             retval = True
             break
 
@@ -102,8 +100,6 @@ class PromoteFromTo(Promoter):
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
-
-            s._add_block_proposed()
 
             retval = True
             break

@@ -127,10 +127,6 @@ class PromoteToRelease(Promoter):
         while not retval:
             # Check if packages were copied to the right pocket->component
             #
-            if s._block_proposed():
-                s._remove_block_proposed()
-                cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
-
             if not s.bug.debs.packages_released:
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'

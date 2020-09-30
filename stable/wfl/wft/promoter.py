@@ -87,40 +87,6 @@ class Promoter(TaskHandler):
         cleave(s.__class__.__name__ + '.block_proposed (%s)' % retval)
         return retval
 
-    def _add_block_proposed(s):
-        '''
-        Add the block proposed tags
-        '''
-        center(s.__class__.__name__ + '._add_block_proposed')
-        retval = False
-
-        try:
-            series_tag = 'block-proposed-%s' % s.bug.series
-            s.bug.lpbug.tags.append(series_tag)
-            s.bug.lpbug.tags.append('block-proposed')
-        except:
-            pass
-
-        cleave(s.__class__.__name__ + '._add_block_proposed (%s)' % retval)
-        return retval
-
-    def _remove_block_proposed(s):
-        '''
-        Remove 'block-proposed' tags in order to signal britney.
-        '''
-        center(s.__class__.__name__ + '.remove_block_proposed')
-
-        try:
-            series_tag = 'block-proposed-%s' % s.bug.series
-            if series_tag in s.bug.lpbug.tags:
-                s.bug.lpbug.tags.remove(series_tag)
-            if 'block-proposed' in s.bug.lpbug.tags:
-                s.bug.lpbug.tags.remove('block-proposed')
-        except:
-            pass
-
-        cleave(s.__class__.__name__ + '.remove_block_proposed')
-
     def _signoff_verified(s, which):
         '''
         Check if the *-signoff task has been set to 'Fix Released'. Development
@@ -176,19 +142,6 @@ class Promoter(TaskHandler):
                 elif s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
                     cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (task, s.bug.tasks_by_name[task].status), 'yellow')
                     tested = False
-
-            if not tested and 'testing-override' not in s.bug.tags:
-
-                if s.bug.tasks_by_name['promote-to-proposed'] in ['Fix Released']:
-                    # Make sure the block-proposed tag is on while testing is still happening.
-                    #
-                    if s.bug.is_development_series:
-                        if 'block-proposed' not in s.bug.tags:
-                            s.bug.lpbug.tags.append('block-proposed')
-                    else:
-                        if 'block-proposed-%s' % s.bug.series not in s.bug.tags:
-                            s.bug.lpbug.tags.append('block-proposed-%s' % s.bug.series)
-                    break
 
                 break
 

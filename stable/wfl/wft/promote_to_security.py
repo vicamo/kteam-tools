@@ -124,10 +124,6 @@ class PromoteToSecurity(Promoter):
             break
 
         while not retval:
-            if s._block_proposed():
-                s._remove_block_proposed()
-                cinfo('            Removing block-proposed tag on this tracking bug', 'yellow')
-
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.debs.packages_released_to_security:
