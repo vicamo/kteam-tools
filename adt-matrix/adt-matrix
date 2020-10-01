@@ -463,11 +463,10 @@ class AutoPackageTest(object):
                     if key not in self.latest or self.latest[key] == 'unknown' or apt_pkg.version_compare(self.latest[key], ver) < 0:
                         self.latest[key] = ver
 
-                # XXX: until we have a "latest" column we need to discard these results.
+                # Report that this is a special result.
                 if is_proposed:
                     self.log_error('%s is a result for package %s in -proposed' %
                                    (url, ressrc))
-                    return
 
                 # If this is testing a kernel package it should be for that package.
                 #if ressrc.startswith('linux'):
@@ -548,11 +547,12 @@ class AutoPackageTest(object):
                 self.kernel_abi[key] = kernel_ver
 
             # Add this result.
+            arch_key = arch + '+' if is_proposed else arch
             results = self.results.setdefault(kernel_ver + ' ' + kernel_pkg, {}).setdefault(src, {})
-            results[arch] = (passed, ver, os.path.dirname(url) + '/', ident)
+            results[arch_key] = (passed, ver, os.path.dirname(url) + '/', ident)
 
             # Record the first good test.
-            if passed is True:
+            if not is_proposed and passed is True:
                 key = ' '.join((series, kernel_pkg, arch, src))
                 if key not in self.first_good:
                     self.first_good[key] = ident
@@ -641,7 +641,7 @@ class AutoPackageTest(object):
                 if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
                     DBG += ' ' + key + ' ' + self.latest[key]
                     latest = self.latest[key]
-                
+
             for arch in archs:
                 prev_status = None
                 good_ever = False
@@ -759,6 +759,21 @@ class AutoPackageTest(object):
                     if self.live and ver == verlist[-1] and status:
                         miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
 
+            # Copy over any proposed package stati in the latest version.
+            for arch in archs:
+                ver = verlist[-1]
+                if (ver in self.results and
+                        pkg in self.results[ver] and
+                        arch + '+' in self.results[ver][pkg]):
+                    (tstatus, version, rurl, ident) = self.results[ver][pkg][arch + '+']
+                    # Elide if the version in -updates covers this.
+                    if arch in self.results[ver][pkg]:
+                        (_, updates_version, _, _) = self.results[ver][pkg][arch]
+                        if apt_pkg.version_compare(updates_version, version) >= 0:
+                            continue
+                    tmp = result.setdefault(ver, {}).setdefault(pkg, {})
+                    vstatus = 'GOOD' if tstatus else 'FAIL'
+                    tmp[arch + '+'] = (vstatus, rurl, version, version)
 
         # Record the missing status for later use.
         if self.series + '-' + self.source not in self.current or \
@@ -807,6 +822,40 @@ class AutoPackageTest(object):
         ### counts are in <jobs>/<packages> which really do not make sense
         return ((primary_state, summary_str, version, count, total), result)
 
+    def format_cell(self, result_data, arch, pkg, width, show_retry):
+        (status, status_link, version, lversion) = result_data
+
+        bits = version.split('\n', 1) + [ '' ]
+        (version, annot) = bits[0:2]
+        if annot != '':
+            annot = '\n' + annot
+        if status_link:
+            status_link += 'log.gz'
+            fmt = '<td colspan={5} class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
+        else:
+            fmt = '<td colspan={5} class="{0}">{1}'
+        if version != lversion:
+            annot += '\npackage updated to ' + str(lversion)
+
+        status_class = status
+        cell = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
+
+        triggers = archive = None
+
+        # XXX: there is currently no way to specify the PPA for the retry.
+        if status != 'GOOD' and show_retry:
+            triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+            # XXX: if we specify a test package trigger this is assumed as -proposed.
+            #if lversion and version != lversion:
+            #    pver = pkg + '/' + lversion
+            #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
+            archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
+
+            cell += '&nbsp;<a href="{5}?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
+        cell += '</span>'
+
+        return cell, retry_url, annot
+
     # XXX: this is really a separate results object ...
     def matrix(self, results, limit=None, limit_url=None):
         title = self.source + " on " + self.series
@@ -834,6 +883,10 @@ table.matrix {{
 table.matrix, table.matrix th, table.matrix td {{
    border: 1px solid black;
 }} 
+wide {{
+    display: block;
+    width: 100%;
+}}
 </style>
 </head>
 <body>
@@ -851,7 +904,7 @@ table.matrix, table.matrix th, table.matrix td {{
                 race_text='<a href="' + limit_url + '">' + race_text + '</a>'
 
         # Title ...
-        page += '<tr><th rowspan="2" colspan="2"><th colspan="{0}">{1}<th rowspan="2" colspan="2"></tr>\n'.format(len(verlist), title)
+        page += '<tr><th rowspan="2" colspan="2"><th colspan="{0}">{1}<th rowspan="2" colspan="2"></tr>\n'.format(len(verlist) * 2, title)
 
         # Versions ...
         page += '<tr>'
@@ -861,7 +914,7 @@ table.matrix, table.matrix th, table.matrix td {{
                 continue
 
             (version, flavour) = verflav.split()
-            page += '<th>' + version if version != '0' else '<th>Reference'
+            page += '<th colspan=2>' + version if version != '0' else '<th>Reference'
         page += '</tr>\n'
 
         # Data ...
@@ -899,36 +952,18 @@ table.matrix, table.matrix th, table.matrix td {{
 
                     kernel_version = ver.split()[0]
 
+                    width = 1 if ver == verlist[-1] else 2
                     if pkg in results[ver] and arch in results[ver][pkg]:
+                        #width = 1 if (arch + '+') in results[ver][pkg] else 2
+                        cell, retry_url, annot = self.format_cell(results[ver][pkg][arch], arch, pkg, width, ver == self.trigger)
+                        page += cell
+                        if arch + '+' in results[ver][pkg]:
+                            cell, _, _ = self.format_cell(results[ver][pkg][arch + '+'], arch, pkg, 1, False)
+                            page += cell
+                        elif width == 1:
+                            page += '<td colspan=1>'
+
                         (status, status_link, version, lversion) = results[ver][pkg][arch]
-                        bits = version.split('\n', 1) + [ '' ]
-                        (version, annot) = bits[0:2]
-                        if annot != '':
-                            annot = '\n' + annot
-                        if status_link:
-                            status_link += 'log.gz'
-                            fmt = '<td class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
-                        else:
-                            fmt = '<td class="{0}">{1}'
-                        if version != lversion:
-                            annot += '\npackage updated to ' + str(lversion)
-
-                        status_class = status
-
-                        page += fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '')
-
-                        triggers = archive = None
-
-                        # XXX: there is currently no way to specify the PPA for the retry.
-                        if status != 'GOOD' and ver == self.trigger:
-                            triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
-                            # XXX: if we specify a test package trigger this is assumed as -proposed.
-                            #if lversion and version != lversion:
-                            #    pver = pkg + '/' + lversion
-                            #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
-                            archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
-
-                            page += '&nbsp;<a href="{5}?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
 
                         annotation = annot.strip()
                         entry = {
@@ -946,7 +981,10 @@ table.matrix, table.matrix th, table.matrix td {{
                         results_data['history'][kernel_version].setdefault(arch, [])
                         results_data['history'][kernel_version][arch].append(entry)
                     else:
-                        page += '<td>&nbsp;'
+                        if width == 2:
+                            page += '<td colspan=2>&nbsp;'
+                        else:
+                            page += '<td colspan=1>&nbsp;<td colspan=1>&nbsp;'
 
                 page += '<td><a href={1}>{0}</a>'.format(arch, arch_link)
                 if arch == archs_good[0]:
