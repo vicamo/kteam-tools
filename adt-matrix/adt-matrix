@@ -39,6 +39,8 @@ from functools import cmp_to_key
 from datetime import datetime
 import shlex
 
+from ktl.kernel_series import KernelSeries
+
 retry_url = "https://autopkgtest.ubuntu.com/request.cgi"
 
 def srchash(src):
@@ -67,12 +69,13 @@ class AutoPackageTest(object):
     accepted.
     """
 
-    def __init__(self, series=None, source=None, parent=None, packages=None, stamp=None, live=False, latest=None, triggers=None, tag='', archive=None, hints=None, migration=None, swift_scanned=None):
+    def __init__(self, series=None, source=None, source_packages=None, parent=None, packages=None, stamp=None, live=False, latest=None, triggers=None, tag='', archive=None, hints=None, migration=None, swift_scanned=None):
         self.cache = {}
         self.dirty = False
 
         self.series = series
         self.source = source
+        self.source_packages = source_packages
         self.parent = parent
         self.packages_latest = latest
         self.stamp = stamp
@@ -428,7 +431,10 @@ class AutoPackageTest(object):
                                     if tver == 'None':
                                         pass # causes this to be ignored.
 
-                                    elif tpkg not in self.packages and tpkg == ressrc:
+                                    # If the package which is triggered is not one of the packages which make up the
+                                    # kernel itself and is the package we are testing then this result is for a version
+                                    # of this package which is in -proposed.
+                                    elif tpkg not in self.source_packages and tpkg == ressrc:
                                         is_proposed = True
 
                                     elif tpkg.startswith('linux-meta'):
@@ -1069,6 +1075,7 @@ table.matrix, table.matrix th, table.matrix td {{
 
 
 apt_pkg.init_system()
+ks = KernelSeries()
 
 # Read in the package/architecture relationships.
 with open("package-relation.json") as seedf:
@@ -1171,10 +1178,25 @@ table.matrix td {{
         live = True
         #if migration == 'MIGRATED':
         #    live = False
+
+        # Find the source packages which make up this package.
+        series_ks = ks.lookup_series(codename=series)
+        if series_ks is None:
+            adt.log_verbose('{} series not present in kernel-series, skipped'.format(series))
+            continue
+        # XXX: we should be using series+source and not the meta name.
+        source_name = package.replace('linux-meta', 'linux')
+        source_ks = series_ks.lookup_source(source_name)
+        if source_ks is None:
+            adt.log_verbose('{}:{} source not present in kernel-series, skipped'.format(series, source_name))
+            continue
+        source_packages = sorted([package_ks.name for package_ks in source_ks.packages])
+
         adt = AutoPackageTest(
                 stamp = stamp,
                 series = series,
                 source = package,
+                source_packages = source_packages,
                 parent = parent,
                 packages = seed,
                 latest = latest,
