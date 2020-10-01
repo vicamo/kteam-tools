@@ -113,7 +113,11 @@ class KernelPackages:
             sver = pub.source_package_version
             key = seriesname + ' ' + sourcename
             key2 = seriesname + ' ' + sourcename.replace('linux', 'linux-meta')
+
+            print("  {}:{} found pocket={} version={} cache={}".format(seriesname, sourcename, pocket, sver, s.cache_version.get(key, '0.0')))
+
             if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) > 0:
+                print("  scanning")
                 # If this build is complete we no longer need to scan it.
 
                 complete = True
