@@ -418,7 +418,7 @@ class AutoPackageTest(object):
                     modern = False
                     for varval in testinfo['custom_environment']:
                         (var, val) = varval.split('=', 1)
-                    
+
                         if var == 'ADT_TEST_TRIGGERS':
                             for tpkgtver in val.split():
                                 if '/' in tpkgtver:
@@ -442,12 +442,11 @@ class AutoPackageTest(object):
                                         kernel_ver_rough = self.kernel_abi[key]
 
                                     # XXX: possible first stanza is sufficient.
-                                    elif tpkg in self.packages or tpkg == 'linux' or \
-                                         tpkg.startswith('linux-lts-'):
-                                        kernel_pkg = tpkg.replace('linux', 'linux-meta')
-                                        kernel_ver_rough = tver
+                                    #elif tpkg in self.packages or tpkg == 'linux' or \
+                                    #     tpkg.startswith('linux-lts-'):
+                                    #    kernel_pkg = tpkg.replace('linux', 'linux-meta')
+                                    #    kernel_ver_rough = tver
 
-        
                     # This is a triggered event not for linux, ignore.
                     if modern and not kernel_pkg:
                         return
