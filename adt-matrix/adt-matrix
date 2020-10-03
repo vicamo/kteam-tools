@@ -776,8 +776,21 @@ class AutoPackageTest(object):
                         (_, updates_version, _, _) = self.results[ver][pkg][arch]
                         if apt_pkg.version_compare(updates_version, version) >= 0:
                             continue
+                    if tstatus:
+                        vstatus = 'GOOD'
+                    else:
+                        vstatus = 'FAIL'
+                        if len(verlist) > 1:
+                            pver = verlist[-2]
+                            if (pver in result and
+                                    pkg in result[pver] and
+                                    arch in result[pver][pkg]):
+                                (pstatus, _, _, _) = result[pver][pkg][arch]
+                                if pstatus == 'GOOD':
+                                    vstatus = 'REGN'
+                                elif pstatus in ('REGR', 'REGN'):
+                                    vstatus = 'REGR'
                     tmp = result.setdefault(ver, {}).setdefault(pkg, {})
-                    vstatus = 'GOOD' if tstatus else 'FAIL'
                     tmp[arch + '+'] = (vstatus, rurl, version, version)
 
         # Record the missing status for later use.
