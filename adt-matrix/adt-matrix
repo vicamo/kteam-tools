@@ -665,6 +665,18 @@ class AutoPackageTest(object):
                     mark = None
 
                 for ver in verlist:
+                    # If this is the latest version and we do not have a result
+                    # for the latest version on this architecture, check if we
+                    # have a -proposed result at the expected version.  If we
+                    # do upgrade it to a full result.
+                    if (ver == verlist[-1] and latest != None and
+                            self.results.get(ver, {}).get(pkg, {}).get(arch, (None, None))[1] != latest and
+                            self.results.get(ver, {}).get(pkg, {}).get(arch + '+', (None, None))[1] == latest):
+                        self.log_verbose("Upgrading {} -proposed result for version {} to a full result".format(pkg, latest))
+                        tmp = self.results.setdefault(ver, {}).setdefault(pkg, {})
+                        tmp[arch] = tmp[arch + '+']
+                        self.dirty = True
+
                     (status, rurl, version, lversion) = (None, None, "None", None)
                     if ver in self.results and \
                        pkg in self.results[ver] and \
