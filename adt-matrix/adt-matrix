@@ -769,33 +769,34 @@ class AutoPackageTest(object):
                         miss.setdefault(status, {}).setdefault(pkg, {})[arch] = True
 
             # Copy over any proposed package stati in the latest version.
-            for arch in archs:
-                ver = verlist[-1]
-                if (ver in self.results and
-                        pkg in self.results[ver] and
-                        arch + '+' in self.results[ver][pkg]):
-                    (tstatus, version, rurl, ident) = self.results[ver][pkg][arch + '+']
-                    # Elide if the version in -updates covers this.
-                    if arch in self.results[ver][pkg]:
-                        (_, updates_version, _, _) = self.results[ver][pkg][arch]
-                        if apt_pkg.version_compare(updates_version, version) >= 0:
-                            continue
-                    if tstatus:
-                        vstatus = 'GOOD'
-                    else:
-                        vstatus = 'FAIL'
-                        if len(verlist) > 1:
-                            pver = verlist[-2]
-                            if (pver in result and
-                                    pkg in result[pver] and
-                                    arch in result[pver][pkg]):
-                                (pstatus, _, _, _) = result[pver][pkg][arch]
-                                if pstatus == 'GOOD':
-                                    vstatus = 'REGN'
-                                elif pstatus in ('REGR', 'REGN'):
-                                    vstatus = 'REGR'
-                    tmp = result.setdefault(ver, {}).setdefault(pkg, {})
-                    tmp[arch + '+'] = (vstatus, rurl, version, version)
+            if len(verlist) > 0:
+                for arch in archs:
+                    ver = verlist[-1]
+                    if (ver in self.results and
+                            pkg in self.results[ver] and
+                            arch + '+' in self.results[ver][pkg]):
+                        (tstatus, version, rurl, ident) = self.results[ver][pkg][arch + '+']
+                        # Elide if the version in -updates covers this.
+                        if arch in self.results[ver][pkg]:
+                            (_, updates_version, _, _) = self.results[ver][pkg][arch]
+                            if apt_pkg.version_compare(updates_version, version) >= 0:
+                                continue
+                        if tstatus:
+                            vstatus = 'GOOD'
+                        else:
+                            vstatus = 'FAIL'
+                            if len(verlist) > 1:
+                                pver = verlist[-2]
+                                if (pver in result and
+                                        pkg in result[pver] and
+                                        arch in result[pver][pkg]):
+                                    (pstatus, _, _, _) = result[pver][pkg][arch]
+                                    if pstatus == 'GOOD':
+                                        vstatus = 'REGN'
+                                    elif pstatus in ('REGR', 'REGN'):
+                                        vstatus = 'REGR'
+                        tmp = result.setdefault(ver, {}).setdefault(pkg, {})
+                        tmp[arch + '+'] = (vstatus, rurl, version, version)
 
         # Record the missing status for later use.
         if self.series + '-' + self.source not in self.current or \
