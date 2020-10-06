@@ -949,7 +949,7 @@ wide {{
                 continue
 
             (version, flavour) = verflav.split()
-            page += '<th colspan=2>' + version if version != '0' else '<th>Reference'
+            page += '<th colspan=2>' + version if version != '0' else '<th colspan=2>Reference'
         page += '</tr>\n'
 
         # Data ...
