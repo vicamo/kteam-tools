@@ -767,15 +767,15 @@
         linux-larch:
             routing:
                 build:
-                    - ['ppa:larch-carvers/ipoc', 'Release']
+                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
                 test:
-                    - ['ppa:larch-carvers/ipoc', 'Release']
+                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
                 proposed:
-                    - ['ppa:larch-carvers/ipoc', 'Release']
+                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
                 updates:
-                    - ['ppa:larch-carvers/ipoc', 'Release']
+                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
                 release:
-                    - ['ppa:larch-carvers/ipoc', 'Release']
+                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
             packages:
                 linux-larch:
                     repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux/+git/larch', 'master-next']
