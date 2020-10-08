@@ -129,7 +129,7 @@ class PromoteToRelease(Promoter):
             #
             if not s.bug.debs.packages_released:
                 if s.task.status == 'Confirmed':
-                    s.task.reason = 'Pending -- ready to copy'
+                    s.task.reason = 'Pending -- britney unblocked'
                 else:
                     s.task.reason = 'Ongoing -- packages not yet published'
                 break
