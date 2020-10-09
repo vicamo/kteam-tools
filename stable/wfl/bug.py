@@ -133,7 +133,7 @@ class WorkflowBug():
         if s.source is None:
             raise WorkflowBugError('Source not found in kernel-series')
         s.is_development_series = s.source.series.development
-        s.is_development = s.source.development
+        s.is_development = s.source.development or s.sru_cycle[0] == 'd'
 
         # If we have no version after instantiation of the variant,
         # this is not generally crankable.
