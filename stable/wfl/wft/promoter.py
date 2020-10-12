@@ -143,6 +143,7 @@ class Promoter(TaskHandler):
                     cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (task, s.bug.tasks_by_name[task].status), 'yellow')
                     tested = False
 
+            if not tested:
                 break
 
             retval = True
@@ -233,13 +234,12 @@ class Promoter(TaskHandler):
                 'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
             }
 
-            if 'testing-override' not in master.tags:
-                required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
-                required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
+            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
+            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
 
-                if not master.is_development_series:
-                    required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
-                    required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+            if not master.is_development_series:
+                required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
+                required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
 
             tasks = required_sru_tasks
             retval = True
