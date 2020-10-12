@@ -330,6 +330,7 @@ class Workflow:
                     'verification-testing': True,
                     'security-signoff': True,
                     'stakeholder-signoff': True,
+                    'kernel-signoff': True,
                 }
         else:
             exclude = 'stable'
@@ -376,8 +377,9 @@ class Workflow:
                     cdebug('    no stakeholder-signoff', 'yellow')
                     break
             elif task_name == 'kernel-signoff':
-                cdebug('    no kernel-signoff (always manual)', 'yellow')
-                break
+                if ks_source.derived_from is not None:
+                    cdebug('    no kernel-signoff (manual for derivatives)', 'yellow')
+                    break
             elif task_name == 'promote-signing-to-proposed':
                 ks_route = ks_source.routing
                 if ks_route is not None:
