@@ -465,6 +465,33 @@ class SnapReleaseToStable(KernelSnapBase):
 
         cleave(s.__class__.__name__ + '.__init__')
 
+    def _ready_for_confirmed(s):
+        if s.bug.tasks_by_name['snap-release-to-candidate'].status != 'Fix Released':
+            cinfo('    task snap-release-to-candidate is not \'Fix Released\'', 'yellow')
+            return False
+
+        if (s.bug.tasks_by_name.get('snap-qa-testing', None) is not None
+                and s.bug.tasks_by_name['snap-qa-testing'].status not in ['Fix Released', 'Invalid']):
+            cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
+            return False
+
+        promote_to = 'promote-to-updates'
+        if 'promote-to-release' in s.debs_bug.tasks_by_name:
+            promote_to = 'promote-to-release'
+        if s.debs_bug.tasks_by_name[promote_to].status in ['New', 'Incomplete']:
+            cinfo('    task promote-to-updates/release is \'{}\''.format(s.debs_bug.tasks_by_name[promote_to].status), 'yellow')
+            s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
+            return False
+        if (s.debs_bug.tasks_by_name[promote_to].status == 'Invalid' and
+                'promote-to-security' in s.bug.tasks_by_name and
+                s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
+            cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
+                  ' nor \'Invalid\'', 'yellow')
+            s.task.reason = 'Holding -- waiting for debs to promote-to-security'
+            return False
+
+        return True
+
     # _new
     #
     def _new(s):
@@ -485,28 +512,7 @@ class SnapReleaseToStable(KernelSnapBase):
         # passes QA tests (or the task is set to invalid) and the deb is promoted
         # to -updates or -security.
         while not retval:
-            if s.bug.tasks_by_name['snap-release-to-candidate'].status != 'Fix Released':
-                cinfo('    task snap-release-to-candidate is not \'Fix Released\'', 'yellow')
-                break
-
-            if (s.bug.tasks_by_name.get('snap-qa-testing', None) is not None
-                    and s.bug.tasks_by_name['snap-qa-testing'].status not in ['Fix Released', 'Invalid']):
-                cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
-                break
-
-            promote_to = 'promote-to-updates'
-            if 'promote-to-release' in s.debs_bug.tasks_by_name:
-                promote_to = 'promote-to-release'
-            if s.debs_bug.tasks_by_name[promote_to].status in ['New', 'Incomplete']:
-                cinfo('    task promote-to-updates/release is \'{}\''.format(s.debs_bug.tasks_by_name[promote_to].status), 'yellow')
-                s.task.reason = 'Holding -- waiting for debs to {}'.format(promote_to)
-                break
-
-            if (s.debs_bug.tasks_by_name[promote_to].status == 'Invalid' and
-                    'promote-to-security' in s.bug.tasks_by_name and
-                    s.bug.tasks_by_name['promote-to-security'].status not in ['Fix Released', 'Invalid']):
-                cinfo('    task promote-to-updates/release is \'Invalid\' and promote-to-security is neither \'Fix Released\''
-                      ' nor \'Invalid\'', 'yellow')
+            if not s._ready_for_confirmed():
                 break
 
             s.task.status = 'Confirmed'
@@ -522,7 +528,16 @@ class SnapReleaseToStable(KernelSnapBase):
     #
     def _verify_release(s):
         center(s.__class__.__name__ + '._verify_release')
-        retval = s.do_verify_release('stable')
+        retval = False
+
+        if s.task.status == 'Confirmed' and not s._ready_for_confirmed():
+            cinfo('    snap no-longer ready for Confirmed, pulling back to New')
+            s.task.status = 'New'
+            retval = True
+
+        if not retval:
+             retval = s.do_verify_release('stable')
+
         cleave(s.__class__.__name__ + '._verify_release (%s)' % (retval))
         return retval
 
