@@ -34,7 +34,6 @@ class PreparePackage(TaskHandler):
         # as soon as their primary is uploaded.
         #
         s.jumper['New']           = s._new
-        s.jumper['Opinion']       = s._new
         s.jumper['Confirmed']     = s._common
         s.jumper['Triaged']       = s._common
         s.jumper['In Progress']   = s._common
@@ -166,12 +165,6 @@ class PreparePackage(TaskHandler):
             if s._trello_block_source():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Stalled -- blocked on SRU board'
-                break
-
-            # Are we blocked.
-            if s.task.status == 'Opinion':
-                if pkg == 'main' or not s.bug.valid_package('main'):
-                    s.task.reason = 'Stalled -- currently blocked'
                 break
 
             # If we are not the primary-package and there is a primary package
