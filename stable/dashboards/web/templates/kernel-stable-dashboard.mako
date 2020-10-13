@@ -18,7 +18,6 @@ a:visited {
 
 __testing_status_colors = {
     'New'           : 'grey',
-    'Opinion'       : 'darkorange',
     'In Progress'   : 'grey', # 'white',
     'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
     'Incomplete'    : 'red',
@@ -122,7 +121,7 @@ def __status_bites(bug, attrs):
     for task, task_data in bug.get('task', {}).items():
         if task.startswith('prepare-package'):
             prep_states[task_data['status']] = task
-    for prep_status in ['In Progress', 'Fix Committed', 'Confirmed', 'Opinion', 'New', 'Fix Released']:
+    for prep_status in ['In Progress', 'Fix Committed', 'Confirmed', 'New', 'Fix Released']:
         if prep_status in prep_states:
             prep_task = prep_states[prep_status]
             break
