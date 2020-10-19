@@ -189,7 +189,7 @@ class Workflow(TaskHandler):
                 for task_name in ('promote-to-updates', 'promote-to-release'):
                     task = s.bug.tasks_by_name.get(task_name)
                     if task is not None and task.status != 'New':
-                        blocks = s.bug.blockers.get('hold-promote-to-updates')
+                        blocks = s.bug.block_present('hold-promote-to-updates')
                         if blocks is not None:
                             cinfo("snap-not-in-candidate snap-lagging {}".format(blocks))
                             s.bug.reasons['snap-lagging'] = blocks
@@ -198,7 +198,7 @@ class Workflow(TaskHandler):
                 # block its parent too.
                 # XXX: this is completely the wrong trigger flag.
                 if s.bug.swm_config.need_master_in_proposed:
-                    blocks = s.bug.blockers.get('hold-promote-to-updates')
+                    blocks = s.bug.block_present('hold-promote-to-updates')
                     if blocks:
                         s.bug.interlocks['hold-promote-to-updates'] = blocks + " (cascaded)"
 
