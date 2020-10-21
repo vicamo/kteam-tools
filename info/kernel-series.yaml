@@ -150,8 +150,8 @@
 # 20.10 (Groovy Gorilla)
 '20.10':
     codename: groovy
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
