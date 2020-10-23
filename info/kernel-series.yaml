@@ -147,11 +147,12 @@
 #       archive pocket
 #
 
-# 20.10 (Groovy Gorilla)
-'20.10':
-    codename: groovy
-    development: false
-    supported: true
+# 21.04 (Hirsute Hanimal)
+'21.04':
+    codename: hirsute
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
@@ -224,6 +225,219 @@
             updates:
             security:
             release:
+    sources:
+        linux-5.9:
+            versions: ['5.9.0']
+            variants: ['-wip']
+            packages:
+                linux-5.9:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
+                linux-meta-5.9:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
+                linux-signed-5.9:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
+                linux-restricted-modules-5.9:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
+            supported: false
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'kvm', 'aws']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+
+        linux:
+            versions: ['5.8.0']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hirsute', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hirsute']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/hirsute']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/hirsute']
+            supported: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            derived-from: [ '20.10', 'linux' ]
+
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/hirsute', 'master-next']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-raspi' ]
+            invalid-tasks: [ 'regression-testing' ]
+
+        linux-aws:
+            variants: ['--']
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/hirsute']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/hirsute']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-aws' ]
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-azure:
+            variants: ['--']
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/hirsute', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/hirsute']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/hirsute']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-azure' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
+                    - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
+                    - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-gcp:
+            variants: ['--']
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/hirsute', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/hirsute']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/hirsute']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-gcp' ]
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-kvm:
+            variants: ['--']
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/hirsute', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/hirsute']
+                linux-signed-kvm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-kvm' ]
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oracle:
+            variants: ['--']
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/hirsute', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/hirsute']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/hirsute']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-oracle' ]
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-riscv:
+            variants: ['--']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/hirsute']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/hirsute']
+            supported: true
+            #derived-from: [ '21.04', 'linux' ]
+            derived-from: [ '20.10', 'linux-riscv' ]
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
+
+# 20.10 (Groovy Gorilla)
+'20.10':
+    codename: groovy
+    development: false
+    supported: true
+    routing-table: *routing-table
     sources:
         linux-5.9:
             versions: ['5.9.0']
@@ -445,7 +659,6 @@
                     generic:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing']
-
 
 # 20.04 (Focal Fossa)
 '20.04':
