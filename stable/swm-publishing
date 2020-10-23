@@ -234,7 +234,7 @@ class MonitorLaunchpadArchive:
                 # Ignore this if this record is a replay.
                 replay = pub.self_link.split('/')[-1]
                 if replay in self.src_replay:
-                    print("S", pub, "replay")
+                    print("S", replay, "replay")
                     continue
                 self.src_replay[replay] = pub.date_created
 
@@ -280,7 +280,7 @@ class MonitorLaunchpadArchive:
                 # Ignore this if this record is a replay.
                 replay = pub.self_link.split('/')[-1]
                 if replay in self.bin_replay:
-                    print("B", pub, "replay")
+                    print("B", replay, "replay")
                     continue
                 self.bin_replay[replay] = pub.date_created
 
