@@ -66,6 +66,9 @@
     - remove “opening” from series stanza
 
 == Development Transition ==
+ - ubuntu-kernel-release: add stable series branch
+    - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
+       - create the new ubuntu/<stable-series> branch off of the devel branch
  - Switch development series to stable
     - In kteam-tools/info/kernel-series.yaml
        - Mark the series as “supported: true”, “development: false”
