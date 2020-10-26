@@ -231,19 +231,19 @@
             security:
             release:
     sources:
-        linux-5.9:
-            versions: ['5.9.0']
+        linux-5.10:
+            versions: ['5.10.0']
             variants: ['-wip']
             packages:
-                linux-5.9:
+                linux-5.10:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
-                linux-meta-5.9:
+                linux-meta-5.10:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable']
-                linux-signed-5.9:
+                linux-signed-5.10:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable']
-                linux-restricted-modules-5.9:
+                linux-restricted-modules-5.10:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable']
             supported: false
