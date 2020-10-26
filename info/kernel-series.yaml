@@ -822,6 +822,28 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
+        linux-oem-5.9:
+            versions: ['5.9.0']
+            variants: ['-oem-20.04-edge']
+            packages:
+                linux-oem-5.9:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.9-next']
+                linux-meta-oem-5.9:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.9']
+                linux-signed-oem-5.9:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.9']
+                linux-restricted-modules-oem-5.9:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.9']
+            supported: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-aws:
             variants: ['--']
             packages:
