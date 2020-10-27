@@ -1,25 +1,12 @@
-== Backlog ==
- - Add new series to Ubuntu KTL
-    - In kteam-tools/info/kernel-series.yaml:
-       - New section for the new series.
-       - Mark the new series as “supported : false”; “development: true”; “opening:”
-       - CHECK: confirm that we have derived kernels specified correctly in the previous series.
+== On Deck ==
+ - ubuntu-kernel-release: add stable series branch
+    - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
+       - create the new ubuntu/<stable-series> branch off of the devel branch
+ - Apply git gc to all mirrors
+    - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
  - Archive opening -- closed
-    - NEEDS: archive published
+    - NEEDS: archive initialised and published
     - OPENING: opening: archive-closed: true
- - Archive opening -- open
-    - NEEDS: final name set and archive accepting uploads
-    - OPENING: opening: archive-open: true
- - Create new primary repositories
-    - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel/canonical-kernel-security-team
-    - run the admin/admin-seed-repositories script to initialise
-      the primary and security repositories
-    - OPENING: opening: repositories: true
-    - run the admin/admin-lp-git-permissions sync-primary to add acls to the new repositories
- - Add repositories to wani mirroring
-    - NEEDS: repos
-    - Wait for mirroring to create repos
-    - add symlinks to ubuntu directory to expose them for legacy user
  - Create new linux-snap git repository
     - NEEDS: launchpad admin for ubuntu-kernel
     - NOTE: Only needed on LTSs for their corresponding ucNN
@@ -31,44 +18,80 @@
     - NOTE: Likely is already created so we can test against development.
     - Email snap-store-admins@lists.canonical.com requesting all the new tracks needed,
       should mirror those in previous ucNN mostly.
+
+== Backlog ==
+ - Switch development series to stable
+    - PREREQ: ubuntu-kernel-release: add stable series branch
+    - In kteam-tools/info/kernel-series.yaml
+       - Mark the series as “supported: true”, “development: false”
+ - Add new series to Ubuntu KTL
+    - PREREQ: Switch development series to stable
+    - In kteam-tools/info/kernel-series.yaml:
+       - New section for the new series.
+       - Mark the new series as “supported : false”; “development: true”; “opening:”
+       - CHECK: confirm that we have derived kernels specified correctly in the previous series.
+ - Archive opening -- open
+    - PREREQ: Archive opening -- closed
+    - NEEDS: final name set and archive accepting uploads
+    - OPENING: opening: archive-open: true
+ - Confirm ADT running for series
+    - PREREQ: Archive opening -- closed
+    - NEEDS: ADT running tests successfully in series
+    - OPENING: opening: autopkgtest: true
  - Create snap build recipies
+    - PREREQ: Archive opening -- closed
     - NEEDS: linux-snap git repository created
     - NEEDS: new series tracks created
     - Create recipies (Producing snaps documentation)
+ - Create new primary repositories
+    - PREREQ: Add new series to Ubuntu KTL
+    - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel/canonical-kernel-security-team
+    - run the admin/admin-seed-repositories script to initialise
+      the primary and security repositories
+    - OPENING: opening: repositories: true
+    - run the admin/admin-lp-git-permissions sync-primary to add acls to the new repositories
+ - Confirm britney is running in development
+    - PREREQ: Add new series to Ubuntu KTL
+    - NEEDS: britney running in production
+    - Confirm that ubuntu-kernel-release ubuntu/devel branch has all new series kernels
+    - OPENING: opening: britney: true
+ - Add repositories to wani mirroring
+    - PREREQ: Apply git gc to all mirrors
+    - PREREQ: Create new primary repositories
+    - Wait for mirroring to create repos
+    - add symlinks to ubuntu directory to expose them for legacy user
  - Prime builder-extras for the new series
-    - NEEDS: series open in launchpad and launchpad builders valid
+    - PREREQ: Archive opening -- closed
+    - NEEDS: launchpad builders valid
     - ensure the suite is present
      - mark-suite-dirty -A ppa:canonical-kernel-team/ubuntu/builder-extra -s disco
     - Copy any valid packages in old series to new series
+ - Install updated debootstrap onto builders
+    - PREREQ: Prime builder-extras for the new series
+    - NEEDS: updated debootstrap in primary archive
+    - NEEDS: builder admin (has root on builders)
+    - copy to builders and install manually
+    - OPENING: opening: debootstrap: true
  - Add series to chroot creation
-    - NEEDS: builder-extras primed
-    - NEEDS: debootstrap updated for new series and installed on the builders
+    - PREREQ: Prime builder-extras for the new series
+    - PREREQ: Install updated debootstrap onto builders
     - once opening: debootstrap: true is present the chroots will be added to
       the next automated run; once they are ready
     - OPENING: opening: chroots: true
- - Add series to ADT matrix
-    - NEEDS: dashboard updated
-    - Adt-matrix configuration:
-    - Add a sensible version seed to the primary-hints.d and push
+ - Prime ADT matrix for series
+    - PREREQ: Confirm ADT running for series
+    - PREREQ: Confirm britney is running in development
+    - Confirm adt-matrix updated with new series
+    - Add a sensible version seed (for all packages) to the primary-hints.d and push
        - kteam-tools/adt-matrix/adt-gen-seed bionic linux-meta http://people.canonical.com/~kernel/status/adt-matrix/artful-linux-meta.latest.json
- - Request Britney blocks for all copy-forward kernels
-    - NEEDS: britney running
-    - Each copy forward kernel needs blocking to prevent them escaping when the primary kernel is released
-    - OPENING: opening: britney: true
- - Confirm ADT running for series
-    - NEEDS: ADT running tests successfully in series
-    - OPENING: opening: autopkgtest: true
  - Remove opening tag
-    - NEEDS: repositories initialise
-    - NEEDS: chroots created
-    - NEEDS: britney running
-    - NEEDS: autopkgtest running in series
+    - PREREQ: Create new primary repositories
+    - PREREQ: Archive opening -- closed
+    - PREREQ: Install updated debootstrap onto builders
+    - PREREQ: Add series to chroot creation
+    - PREREQ: Confirm britney is running in development
+    - PREREQ: Confirm ADT running for series
+    - PREREQ: Archive opening -- open
     - remove “opening” from series stanza
-
-== Development Transition ==
- - ubuntu-kernel-release: add stable series branch
-    - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
-       - create the new ubuntu/<stable-series> branch off of the devel branch
- - Switch development series to stable
-    - In kteam-tools/info/kernel-series.yaml
-       - Mark the series as “supported: true”, “development: false”
+ - Update opening proceedure
+    - Ensure we reflect all changes to the proceedure in the primary kteam-tools:proceedures/series-opening
