@@ -1,14 +1,19 @@
 #!/bin/bash
 
+so_trello()
+{
+	so-trello-dev "$@"
+}
+
 list()
 {
 	local board="$1"
 	local list="$2"
 
-	echo "+++ $list ..."
-	so-trello board-addlist \
+	echo "LIST $board $list ..."
+	so_trello board-addlist \
 		--board "$board" \
-		--list-name "$list"
+		--with-name "$list"
 }
 
 card()
@@ -18,12 +23,39 @@ card()
 	local name="$3"
 	local body="$4"
 
-	echo "*** $name ..."
-	so-trello list-addcard \
+	echo "CARD $board/$list $name ..."
+	so_trello list-addcard \
 		--board "$board" \
 		--list "$list" \
-		--card-name "$name" \
-		--card-desc "$body"
+		--with-name "$name" \
+		--with-desc "$body"
+}
+
+checklist()
+{
+	local board="$1"
+	local card="$2"
+	local name="$3"
+
+	echo "CHECKLIST $board/$card $name ..."
+	so_trello card-addchecklist \
+		--board "$board" \
+		--card "$card" \
+		--with-name "$name"
+}
+checkitem()
+{
+	local board="$1"
+	local card="$2"
+	local checklist="$3"
+	local name="$4"
+
+	echo "CHECKITEM $board/$card/$checklist $name ..."
+	so_trello checklist-additem \
+		--board "$board" \
+		--card "$card" \
+		--checklist "$checklist" \
+		--with-name "$name"
 }
 
 if false; then
@@ -41,6 +73,21 @@ if false; then
 		echo " title<$3>"
 		echo " body<$4>"
 	}
+	checklist()
+	{
+		echo "CHECKLIST:"
+		echo " board<$1>"
+		echo " card<$2>"
+		echo " name<$3>"
+	}
+	checkitem()
+	{
+		echo "CHECKITEM:"
+		echo " board<$1>"
+		echo " card<$2>"
+		echo " checklist<$3>"
+		echo " name<$4>"
+	}
 fi
 
 if [ "$#" -ne 2 ]; then
@@ -49,6 +96,9 @@ if [ "$#" -ne 2 ]; then
 fi
 trello_board="$1"
 proceedure="$2"
+
+list "$trello_board" "Done"
+list "$trello_board" "In Progress"
 
 sed \
 	-e 's///g' \
@@ -76,7 +126,24 @@ awk '
 		EOC)
 			if [ "$title" != '' ]; then
 				card "$trello_board" "$trello_list" "$title" "$body"
+				trello_card="$title"
 			fi
+			# Add any checklists and items.
+			echo "$body" | \
+			{
+				let n=0
+				while read mark type text
+				do
+					[ "$type" != 'PREREQ:' ] && continue
+					let n="$n+1"
+					echo "0 checklist Prerequisites"
+					echo "$n checkitem Prerequisites $text"
+				done | sort -u | \
+				while read order cmd checklist text
+				do
+					"$cmd" "$trello_board" "$trello_card" "$checklist" "$text"
+				done
+			}
 			title=''
 			body=''
 			;;
