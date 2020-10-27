@@ -225,32 +225,29 @@ class Promoter(TaskHandler):
             # Check if the master bug could release.
             required_sru_tasks = {
                 'prepare-package'            : ['Fix Released'],
-                'prepare-package-lbm'        : ['Fix Released', 'Invalid'],
-                'prepare-package-meta'       : ['Fix Released', 'Invalid'],
-                'prepare-package-ports-meta' : ['Fix Released', 'Invalid'],
+                'prepare-package-lbm'        : ['Fix Released'],
+                'prepare-package-meta'       : ['Fix Released'],
+                'prepare-package-ports-meta' : ['Fix Released'],
                 'prepare-package-signed'     : ['Fix Released'],
                 'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
                 'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
                 'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
             }
 
-            required_sru_tasks['automated-testing']     = ['Fix Released', 'Invalid']
-            required_sru_tasks['regression-testing']    = ['Fix Released', 'Invalid']
+            required_sru_tasks['automated-testing']     = ['Fix Released']
+            required_sru_tasks['regression-testing']    = ['Fix Released']
 
             if not master.is_development_series:
-                required_sru_tasks['certification-testing'] = ['Fix Released', 'Invalid']
-                required_sru_tasks['verification-testing']  = ['Fix Released', 'Invalid']
+                required_sru_tasks['certification-testing'] = ['Fix Released']
+                required_sru_tasks['verification-testing']  = ['Fix Released']
 
             tasks = required_sru_tasks
             retval = True
             for t in tasks:
-                try:
-                    if master.tasks_by_name[t].status not in tasks[t]:
-                        cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
-                        retval = False
-                        break
-                except KeyError:
-                    cdebug('master bug does not contain the %s task' % t)
+                if master.task_status(t) not in (tasks[t] + ['Invalid']):
+                    cinfo('master bug task %s is \'%s\' and not one of: %s' % (t, master.tasks_by_name[t].status, str(tasks[t])), 'yellow')
+                    retval = False
+                    break
 
         if 'kernel-block' in master.tags or 'kernel-block-proposed' in master.tags:
             cinfo('master bug is blocked')
