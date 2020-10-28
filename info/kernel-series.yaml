@@ -827,22 +827,23 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
-        linux-oem-5.9:
-            versions: ['5.9.0']
+        linux-oem-5.10:
+            versions: ['5.10.0']
             variants: ['-oem-20.04-edge']
             packages:
-                linux-oem-5.9:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.9-next']
-                linux-meta-oem-5.9:
+                linux-oem-5.10:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.10-next']
+                linux-meta-oem-5.10:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.9']
-                linux-signed-oem-5.9:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.10']
+                linux-signed-oem-5.10:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.9']
-                linux-restricted-modules-oem-5.9:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.10']
+                linux-restricted-modules-oem-5.10:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.9']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.10']
             supported: true
+            derived-from: [ '21.04', 'linux-5.10' ]
             testing:
                 flavours:
                     oem:
