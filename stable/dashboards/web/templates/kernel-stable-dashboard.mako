@@ -422,6 +422,11 @@ for bid in sorted(data['swm']):
                                             % endif
                                         % endfor
                                     % endfor
+                                    % if cycle_first is True:
+                                        <tr>
+                                            <td colspan="5">No active SRU cycle at this time (see <a href="https://kernel.ubuntu.com/">kernel.ubuntu.com</a> for any announcements).</td>
+                                        </tr>
+                                    % endif
                                     </table>
                                 </td>
                                 <!--
