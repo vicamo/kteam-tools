@@ -26,7 +26,7 @@ fi
 if [ ! -d "$hints-britney" ]; then
 	git clone lp:~ubuntu-release/britney/+git/hints-ubuntu "$hints-britney"
 else
-	(cd "$hints-britney" && git fetch origin && git reset --hard origin/ubuntu/devel)
+	(cd "$hints-britney" && git fetch origin && git reset --hard origin/devel)
 fi
 (cd "$hints-britney" && egrep -h '^force-(badtest|reset-test)' *) | sed -e 's/^/britney /' \
 	>"$hints/primary.hints.d/devel--britney.conf"
