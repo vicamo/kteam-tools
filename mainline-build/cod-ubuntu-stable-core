@@ -63,7 +63,11 @@ git clean -x -f -d
 # Make a branch at the specified commit.
 git checkout HEAD^ --
 git branch -D "tip-$id" || true
-git checkout -b "tip-$id" "$commit"
+git checkout -b "tip-$id" "$commit" || {
+	echo "Unable to checkout requested commit; aborting" 1>&2
+	exit 1
+}
+
 
 # Find the commit time.
 sha=$( git log -1 --pretty=format:%H "$commit" )
