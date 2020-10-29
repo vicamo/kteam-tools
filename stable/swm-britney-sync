@@ -62,9 +62,9 @@ if __name__ == '__main__':
             if series.esm:
                 continue
 
-            branch = "ubuntu/" + series.codename
+            branch = series.codename
             if series.development:
-                branch = "ubuntu/devel"
+                branch = "devel"
 
             print("checking out {}".format(branch))
             cmd = [ "git", "checkout", "-f", branch ]
