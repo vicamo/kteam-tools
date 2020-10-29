@@ -158,6 +158,7 @@
         debootstrap: true
         britney: true
         autopkgtest: true
+        archive-open: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
