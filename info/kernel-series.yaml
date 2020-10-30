@@ -1789,7 +1789,6 @@
 
         linux-dell300x:
             variants: ['--']
-            routing: prerelease
             packages:
                linux-dell300x:
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-dell300x/+git/bionic', 'master-next']
