@@ -281,6 +281,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/hirsute']
             supported: true
+            backport: true
             testing:
                 flavours:
                     generic:
@@ -301,6 +302,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-raspi' ]
             invalid-tasks: [ 'regression-testing' ]
@@ -317,6 +319,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-aws' ]
             testing:
@@ -341,6 +344,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-azure' ]
             swm:
@@ -371,6 +375,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-gcp' ]
             testing:
@@ -392,6 +397,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-kvm' ]
             testing:
@@ -416,6 +422,7 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-oracle' ]
             testing:
@@ -434,6 +441,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/hirsute']
             supported: true
+            backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-riscv' ]
             testing:
