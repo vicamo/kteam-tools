@@ -61,4 +61,10 @@ print("DEBIAN_MASTER=debian." + master_branch)
 # startnewrelease" will use it to build the new release version
 # following the format "${PARENT_VERSION}~${BACKPORT_SUFFIX}.N":
 if source.backport:
-    print("BACKPORT_SUFFIX={}".format(source.series.name))
+    series = int(source.series.name.replace('.', ''))
+    parent_series = int(parent_source.series.name.replace('.', ''))
+    if series > parent_series:
+        leader = "+"
+    else:
+        leader = "~"
+    print("BACKPORT_SUFFIX={}{}".format(leader, source.series.name))
