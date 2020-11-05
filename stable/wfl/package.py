@@ -934,6 +934,28 @@ class Package():
         cleave(s.__class__.__name__ + '.ready_for_security (%s)' % (retval))
         return retval
 
+    # older_tracker_in_ppa
+    #
+    @property
+    def older_tracker_in_ppa(s):
+        # The target trackers are returned in cycle order.
+        target_trackers = s.bug.target_trackers
+        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
+
+        for tracker_nr, tracker_data in target_trackers:
+            # If we find ourselves then we have considered everything "older".
+            if tracker_nr == str(s.bug.lpbug.id):
+                return False
+            # Consider if this is a blocker if it promote-to-proposed is not
+            # Fix Released.
+            cinfo("    considering {} {}".format(tracker_nr, tracker_data))
+            ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
+            if ptp_status not in ('Invalid', 'Fix Released'):
+                cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
+                return True
+
+        return False
+
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied

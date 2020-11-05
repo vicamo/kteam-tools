@@ -79,26 +79,6 @@ class PreparePackage(TaskHandler):
             pkg = 'main'
         return pkg
 
-    @property
-    def older_tracker_in_ppa(s):
-        # The target trackers are returned in cycle order.
-        target_trackers = s.bug.target_trackers
-        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
-
-        for tracker_nr, tracker_data in target_trackers:
-            # If we find ourselves then we have considered everything "older".
-            if tracker_nr == str(s.bug.lpbug.id):
-                return False
-            # Consider if this is a blocker if it promote-to-proposed is not
-            # Fix Released.
-            cinfo("    considering {} {}".format(tracker_nr, tracker_data))
-            ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
-            if ptp_status not in ('Invalid', 'Fix Released'):
-                cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
-                return True
-
-        return False
-
     # master_prepare_ready
     #
     def master_prepare_ready(s):
@@ -141,10 +121,18 @@ class PreparePackage(TaskHandler):
             # we need to determine which one we are working this time.
             pkg = s._package_name()
 
+            # Confirm whether this package is actually valid.
+            if not s.bug.valid_package(pkg):
+                s.task.status = 'Invalid'
+                retval = True
+                break
+
             # Check for blocking trackers in a previous cycle.
-            if s.older_tracker_in_ppa:
-                if pkg == 'main' or not s.bug.valid_package('main'):
-                    s.task.reason = 'Holding -- previous cycle tracker in PPA'
+            if s.bug.debs.older_tracker_in_ppa:
+                break
+
+            # Are we blocked.
+            if s._trello_block_source():
                 break
 
             # For derivative bugs we wait until the parent has at least got its
@@ -153,18 +141,6 @@ class PreparePackage(TaskHandler):
             if not s.master_prepare_ready():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Holding -- waiting for master bug'
-                break
-
-            # Confirm whether this package is actually valid.
-            if not s.bug.valid_package(pkg):
-                s.task.status = 'Invalid'
-                retval = True
-                break
-
-            # Are we blocked.
-            if s._trello_block_source():
-                if pkg == 'main' or not s.bug.valid_package('main'):
-                    s.task.reason = 'Stalled -- blocked on SRU board'
                 break
 
             # If we are not the primary-package and there is a primary package
@@ -204,7 +180,7 @@ class PreparePackage(TaskHandler):
                 break
 
             pull_back = False
-            if s.older_tracker_in_ppa:
+            if s.bug.debs.older_tracker_in_ppa:
                 cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s._trello_block_source():

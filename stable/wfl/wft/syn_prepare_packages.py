@@ -35,6 +35,13 @@ class SynPreparePackages(TaskHandler):
             return False
         return s.jumper[state]()
 
+    # _trello_block_source
+    #
+    def _trello_block_source(s):
+        if 'kernel-trello-blocked-debs-prepare' in s.bug.tags or 'kernel-trello-blocked-prepare-packages' in s.bug.tags:
+            return True
+        return False
+
     # _common
     #
     def _common(s):
@@ -47,7 +54,14 @@ class SynPreparePackages(TaskHandler):
 
         status = s.task.status
         if status == 'New':
-            s.task.reason = 'Holding -b Not ready to be cranked'
+            if s.bug.debs.older_tracker_in_ppa:
+                s.task.reason = 'Stalled -- previous cycle tracker in PPA'
+
+            elif s._trello_block_source():
+                s.task.reason = 'Stalled -- blocked on SRU board'
+
+            else:
+                s.task.reason = 'Holding -b Not ready to be cranked'
 
         elif status == 'Confirmed':
             s.task.reason = 'Pending -b Debs ready to be cranked'
