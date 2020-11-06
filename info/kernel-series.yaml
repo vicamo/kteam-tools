@@ -166,6 +166,7 @@
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
@@ -205,6 +206,7 @@
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
             test:
@@ -3517,6 +3519,8 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
             build:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
             signing:
