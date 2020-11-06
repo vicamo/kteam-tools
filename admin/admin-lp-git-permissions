@@ -178,6 +178,11 @@ def sync_esm():
             update_webhooks(git_repo)
             sys.stdout.flush()
 
+# XXX: we need a better way to control this.
+def is_hwe(source):
+    return source.name.startswith('linux-oem') or source.name in (
+            'linux-cascade', 'linux-bluefield', 'linux-denver')
+
 def sync_primary():
     admins = '/~canonical-kernel-repo-admins-active'
 
@@ -202,6 +207,8 @@ def sync_primary():
 
         for source in sorted(series.sources, key=lambda x: x.name):
             #if series.codename != 'focal':
+            #    continue
+            #if source.name != 'linux-denver':
             #    continue
 
             for package in source.packages:
@@ -231,14 +238,16 @@ def sync_primary():
 
         any_supported = False
         for package in path_packages:
-            if package.source.development is False and package.source.supported is False:
+            if not is_hwe(package.source) and package.source.development is False and package.source.supported is False:
                 continue
+            #if package.series.supported is False:
+            #    continue
+
             any_supported = True
             print(package, package.source.development, package.source.supported)
 
             people = ['/~canonical-kernel-committers']
-            # XXX: we need a better way to control this.
-            if package.source.name == 'linux-cascade' or '-oem' in package.source.name:
+            if is_hwe(package.source):
                 people.append('/~canonical-kernel-hwe-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
