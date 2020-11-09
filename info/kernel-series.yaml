@@ -1023,6 +1023,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:chelmsford-team/ubuntu/linux-bluefield-build', 'Release']
                 proposed:
@@ -1042,6 +1043,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:denver-team/ubuntu/denver-build', 'Release']
                 signing:
@@ -1754,6 +1756,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:munich-team/ubuntu/munich-test', 'Release']
                 signing:
@@ -1793,6 +1796,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:denver-team/ubuntu/denver-build', 'Release']
                 signing:
@@ -2574,6 +2578,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 test:
                     - ['ppa:ibm-cloud/ubuntu/test', 'Release']
                 build:
@@ -2783,6 +2788,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:canonical-kernel-team/ubuntu/uc18-fde-build', 'Release']
                 signing:
@@ -3074,6 +3080,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:tillamook-team/ubuntu/build', 'Release']
                 signing:
@@ -3392,6 +3399,7 @@
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
                 build:
                     - ['ppa:baring-team/ubuntu/build', 'Release']
                 test:
@@ -3754,6 +3762,8 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
             build:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
             signing:
