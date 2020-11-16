@@ -179,6 +179,10 @@
             release:
                 - ['ubuntu', 'Release']
         uc20:
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
             signing:
