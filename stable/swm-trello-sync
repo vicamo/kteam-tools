@@ -231,7 +231,7 @@ if __name__ == '__main__':
                     list_name = 'Done'
 
                 #print("CHECK", card_name, dest_list, list_name)
-                if list_name in ('Blocked', 'For Review', 'Review'):
+                if list_name == 'Blocked':
                     print("{}: '{}' {} -> -- ({} {})".format(list_name, card_name, list_name, dest_why, dest_list))
 
                 elif list_name not in dest_list:
