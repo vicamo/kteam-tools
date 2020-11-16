@@ -722,8 +722,6 @@
                 linux-signed-uc20-efi:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-uefi/+git/focal']
-            swm:
-                need-promote-to-proposed: true
             supported: true
             snaps:
                 pc-kernel:
