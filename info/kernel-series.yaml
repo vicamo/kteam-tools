@@ -911,6 +911,75 @@
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gke:
+            # Variants probably is a problem, it is currently '-5.4' in Bionic which likely
+            # leads to clashes
+            variants: ['-wip']
+            routing: prerelease
+            packages:
+                linux-gke:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'master-next']
+                linux-meta-gke:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal']
+                linux-signed-gke:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal']
+            # There are no other cloud snaps yet, but likely just a matter of time
+            #snaps:
+            #    gke-kernel:
+            #        primary: true
+            #        repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'gke']
+            #        gated: false
+            #        stable: false
+            #        qa: false
+            #        hw-cert: false
+            #        publish-to:
+            #            amd64: [ '20' ]
+            supported: false
+            backport: false
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
+            swm:
+                # gke-releases:
+                #    - '1.19'
+                gke-releases:
+                    - '1.19'
+                # Has to be verified (copied from Bionic)
+                gke-nvidia-packages:
+                    - gke-d1903-0-amd64
+                nvidia-releases:
+                    - 418
+
+        linux-gkeop:
+            # Variants probably is a problem, it is currently '-5.4' in Bionic which likely
+            # leads to clashes
+            variants: ['-wip']
+            routing: prerelease
+            packages:
+                linux-gkeop:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gkeop-next']
+                linux-meta-gkeop:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal', 'gkeop']
+                linux-signed-gkeop:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop']
+            supported: false
+            backport: false
+            derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    gkeop:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-kvm:
             variants: ['--']
             packages:
