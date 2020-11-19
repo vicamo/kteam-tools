@@ -912,9 +912,14 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke:
-            # Variants probably is a problem, it is currently '-5.4' in Bionic which likely
-            # leads to clashes
-            variants: ['-wip']
+            # For Focal, we want linux-gke to stay at the version that is
+            # native to the release. This is not how things get selected
+            # for GKE but consistent with other derivatives. Additionally
+            # we have the kernel version as variant so image building can
+            # use that as a selection.
+            # NOTE: Before dropping the -wip, the virtual flavour for gke
+            # has to be dropped from focal/linux-gcp.
+            variants: ['-wip', '-5.4-wip']
             routing: prerelease
             packages:
                 linux-gke:
@@ -936,7 +941,7 @@
             #        hw-cert: false
             #        publish-to:
             #            amd64: [ '20' ]
-            supported: false
+            supported: true
             backport: false
             derived-from: [ '20.04', 'linux' ]
             testing:
@@ -957,9 +962,9 @@
                     - 418
 
         linux-gkeop:
-            # Variants probably is a problem, it is currently '-5.4' in Bionic which likely
-            # leads to clashes
-            variants: ['-wip']
+            # As for linux-gke, the main variant is for consistency with other
+            # derivatives. The version based variant is for imaging.
+            variants: ['-wip', '-5.4-wip']
             routing: prerelease
             packages:
                 linux-gkeop:
@@ -2560,7 +2565,7 @@
                         amd64: [ '18-5.4' ]
             supported: true
             backport: true
-            derived-from: [ '20.04', 'linux-gcp' ]
+            derived-from: [ '20.04', 'linux-gke' ]
             testing:
                 flavours:
                     gke:
@@ -2592,8 +2597,8 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic', 'gkeop-5.4']
             supported: true
-            backport: false
-            derived-from: [ '18.04', 'linux-hwe-5.4' ]
+            backport: true
+            derived-from: [ '20.04', 'linux-gkeop' ]
             testing:
                 flavours:
                     gkeop:
