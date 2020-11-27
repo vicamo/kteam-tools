@@ -1,3 +1,5 @@
+from datetime                                   import datetime, timedelta, timezone
+
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 
@@ -56,6 +58,9 @@ class SynPreparePackages(TaskHandler):
         if status == 'New':
             if s.bug.debs.older_tracker_in_ppa:
                 s.task.reason = 'Stalled -- previous cycle tracker in PPA'
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
+                    '{}:{} polling previous cycle tracker'.format(
+                    s.bug.series, s.bug.name))
 
             elif s._trello_block_source():
                 s.task.reason = 'Stalled -- blocked on SRU board'
