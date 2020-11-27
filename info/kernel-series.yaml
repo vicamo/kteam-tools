@@ -975,7 +975,7 @@
                 linux-signed-gkeop:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop']
-            supported: false
+            supported: true
             backport: false
             derived-from: [ '20.04', 'linux' ]
             testing:
