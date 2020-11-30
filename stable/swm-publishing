@@ -218,6 +218,7 @@ class MonitorLaunchpadArchive:
 
         # Accumulate new source package publications.
         changed = self.archive.getPublishedSources(order_by_date=True,
+            source_name='linux', exact_match=False,
             status='Published', created_since_date=oldest)
         changed_count = len(changed)
         replay_count = len(self.src_replay)
@@ -262,6 +263,7 @@ class MonitorLaunchpadArchive:
 
         # Accumulate new binary package publications.
         changed = self.archive.getPublishedBinaries(order_by_date=True,
+            binary_name='linux-', exact_match=False,
             status='Published', created_since_date=oldest)
         changed_count = len(changed)
         replay_count = len(self.bin_replay)
