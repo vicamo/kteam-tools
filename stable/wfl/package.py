@@ -67,6 +67,7 @@ class Package():
                 ('ppa', 'build'),
                 ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
+                ('as-proposed', 'as-proposed'),
                 ('Updates', 'updates'),
                 ('Security', 'security'),
                 ('Release', 'release'),
@@ -197,11 +198,11 @@ class Package():
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates')
+                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates')
             else:
                 cdebug('Development Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'Release')
+                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Release')
 
             for pocket in scan_pockets:
                 if pocket not in s._routing:
@@ -234,6 +235,7 @@ class Package():
                 s._cache[dep][pocket]['most_recent_build'] = info[4]
                 s._cache[dep][pocket]['status'] = info[5]
                 s._cache[dep][pocket]['version'] = info[6]
+                s._cache[dep][pocket]['route'] = (src_archive, src_pocket)
                 cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 

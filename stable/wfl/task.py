@@ -232,4 +232,17 @@ class WorkflowBugTaskSynPreparePackages(WorkflowBugTaskSynthetic):
     def status(self, val):
         raise ValueError()
 
+
+class WorkflowBugTaskSynPersistent(WorkflowBugTaskSynthetic):
+
+    @property
+    def status(self):
+        return self.bug.bprops.get('synthetic', {}).get(self.name, 'New')
+
+    @status.setter
+    def status(self, val):
+        syn_state = self.bug.bprops.setdefault('synthetic', {})
+        syn_state[self.name] = val
+
+
 # vi:set ts=4 sw=4 expandtab:

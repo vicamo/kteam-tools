@@ -959,7 +959,7 @@ class MonitorFactory:
                     if not source.routing:
                         continue
                     for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
-                            'release'):
+                            'release', 'as-proposed'):
                         dest = source.routing.lookup_destination(pocket)
                         if not dest:
                             continue

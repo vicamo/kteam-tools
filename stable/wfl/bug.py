@@ -11,7 +11,7 @@ from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError, WorkflowCrankError
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
-from .task                              import WorkflowBugTask, WorkflowBugTaskSynPreparePackages
+from .task                              import WorkflowBugTask, WorkflowBugTaskSynPersistent, WorkflowBugTaskSynPreparePackages
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 from .swm_config                        import SwmConfig
@@ -697,6 +697,10 @@ class WorkflowBug():
         # Add our synthetic tasks.
         if ':prepare-packages' in synthesise:
             task = WorkflowBugTaskSynPreparePackages(':prepare-packages', s)
+            tasks_by_name[task.name] = task
+
+        if s.debs is not None:
+            task = WorkflowBugTaskSynPersistent(':promote-to-as-proposed', s)
             tasks_by_name[task.name] = task
 
         return tasks_by_name
