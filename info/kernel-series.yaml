@@ -170,6 +170,8 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+            as-proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
             proposed:
                 - ['ubuntu', 'Proposed']
             updates:
