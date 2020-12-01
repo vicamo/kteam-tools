@@ -44,7 +44,7 @@ def ppa_clean(owner, ppa):
                                        exact_match=False,
                                        status='Superseded')
 
-    for pub in pubs:
+    for pub in list(pubs):
         print(pub.source_package_name, pub.source_package_version, pub.pocket, pub.status)
         print("DELETE", pub)
         pub.requestDeletion()
