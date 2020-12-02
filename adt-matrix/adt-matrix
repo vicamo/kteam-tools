@@ -684,7 +684,12 @@ class AutoPackageTest(object):
                             status = 'NEVER'
                         else:
                             status = 'FAIL'
-                    elif arch in some_ever or (ver == verlist[-1] and pkg in self.packages_latest and arch in self.packages_latest[pkg]):
+                    # If a package is introduced we only want to report it as missing from time it first
+                    # was tested against.  That is to left of the first result it should be an empty
+                    # cell, once we have seen a result it should be reported as a MISS.  However, for the
+                    # latest version we should consider anything seeded as expected, if this is not true
+                    # the seed entry can be removed or hinted GONE.
+                    elif arch in some_ever or ver == verlist[-1]:
                         status = 'MISS'
 
                     # HINTS: override results using hint data.
