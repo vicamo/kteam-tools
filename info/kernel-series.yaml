@@ -668,7 +668,7 @@
     sources:
         linux:
             versions: ['5.4.0']
-            variants: ['--', '-hwe-20.04']
+            variants: ['--']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
@@ -693,7 +693,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.8:
-            variants: [ '-hwe-20.04-edge' ]
+            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.8:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.8']
