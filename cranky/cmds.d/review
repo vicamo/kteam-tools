@@ -24,6 +24,13 @@ def dpkg_extract(dsc_path, dest_path):
     cmd = ["dpkg-source", "-x", dsc_path, dest_path]
     sp = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     stderr = sp.communicate()[1].decode()
+
+    with open(dsc_path) as ifd, open(os.path.join(dest_path, "DSC"), "w") as ofd:
+        for line in ifd:
+            if line.startswith('-----BEGIN PGP SIGNATURE-----'):
+                break
+            print(line, end='', file=ofd)
+
     return (sp.returncode, stderr)
 
 def normalize_control_file(path, ver, abi, upload):
@@ -51,6 +58,7 @@ def normalize_unsorted_file(path):
         ufile.write(''.join(ufile_data))
 
 def normalize_tree(path, ver, abi, upload):
+    normalize_control_file(os.path.join(path, "DSC"), ver, abi, upload)
     normalize_control_file(os.path.join(path, "debian", "control"), ver, abi, upload)
     for control_file in (
             glob("{}/debian/control.stub".format(path)) +
@@ -100,6 +108,8 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
     with tempfile.TemporaryDirectory() as tmpdir, open(diff_path, "w") as outfile:
         prev_dir = source_pkg + '_' + prev_version
         new_dir = source_pkg + '_' + version
+        if prev_dir == new_dir:
+            new_dir += '_B'
         prev_path = os.path.join(tmpdir, prev_dir)
         new_path = os.path.join(tmpdir, new_dir)
 
