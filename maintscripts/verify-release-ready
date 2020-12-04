@@ -281,7 +281,8 @@ class VerifyReleaseReady():
         #         last commit matches the tag
         #
         closed = True
-        expected = '^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$' % (version, cl0['version'])
+        expected = '^UBUNTU: (Ubuntu[-\S]*-(%s|%s))$' % \
+                   (version, cl0['version'].replace('+', '\+'))
         m = re.match(expected, commit[0])
         msg = 'closing release commit'
         if len(commit) != 1:        # There should only be a single line in the commit
