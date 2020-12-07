@@ -566,7 +566,7 @@ class WorkflowBug():
         if block not in s.blockers:
             return None
 
-        if 'kernel-unblock-' + block in s.tags:
+        if 'kernel-override-' + block in s.tags:
             cinfo("blocker {} present but hinted unblock".format(block))
             return None
 
