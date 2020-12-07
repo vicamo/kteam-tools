@@ -208,6 +208,14 @@ class Promoter(TaskHandler):
 
         master = s.bug.master_bug
 
+        # If we are a development kernel and our parent is not then we should
+        # ignore our parents status.  We do not want to hold development kernels
+        # if their testing is good, it is the wild west after all.
+        if s.bug.is_development and not master.is_development:
+            retval = True
+            cleave(s.__class__.__name__ + '.master_bug_ready (%s)' % retval)
+            return retval
+
         # Check if it already released.  If it did we do not need to check if it is
         # otherwise ready to release.
         for task in ('promote-to-updates', 'promote-to-release'):
