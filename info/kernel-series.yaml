@@ -1790,7 +1790,7 @@
 
         linux-hwe-5.4:
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
-            # transitionals: [ '-oem-osp1' ]
+            # transitionals: [ '-oem-osp1', '-oem' ]
             packages:
                 linux-hwe-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.4']
@@ -2004,7 +2004,7 @@
                 linux-restricted-modules-oem:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/bionic', 'oem']
-            supported: true
+            supported: false
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
