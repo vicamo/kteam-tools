@@ -1047,7 +1047,7 @@ if __name__ == '__main__':
     sys.stdout.flush()
 
     if len(changed) > 0:
-        cmd = ['./swm-cron', '--dependants'] + list(changed)
+        cmd = ['./swm-cron'] + list(changed)
         command = Popen(cmd)
         print("COMMAND STARTED", command.pid)
         sys.stdout.flush()

@@ -431,7 +431,7 @@ class WorkflowManager():
     # manage
     #
     def manage(s):
-        if s.args.dependant_only:
+        if s.args.dependants_only:
             try:
                 with s.single_dependants_only():
                     s.manage_payload()
@@ -462,6 +462,10 @@ class WorkflowManager():
             bugs_pass = 0
             bugs_total = 0
             bugs_scanned = 0
+
+            if s.args.dependants_only:
+                buglist = s.live_dependants_rescan()
+
             while len(buglist) > 0:
                 # Make sure that each bug only appears once.
                 buglist = list(set(buglist))
@@ -489,8 +493,8 @@ class WorkflowManager():
 
                 buglist = buglist_rescan
 
-            if not s.args.bugs:
-                s.status_clean()
+            #if not s.args.bugs and not s.args.dependants_only:
+            #    s.status_clean()
 
         except BugMailConfigFileMissing as e:
             print(e.message)

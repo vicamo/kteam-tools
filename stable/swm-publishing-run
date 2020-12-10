@@ -15,6 +15,7 @@ esac
 
 {
 	HOME=$HOME/shankbot timeout 3600 "$here/swm-publishing" "$@"
+	HOME=$HOME/shankbot "$here/swm" --no-color --dependants-only 3<&- >>$HOME/logs/shank.log 2>&1 &
 	HOME=$HOME/shankbot timeout 900 "$here/swm-britney-sync" "lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu" "kernel-release-hints"
 	echo "Done"
 } 2>&1 | tee -a "$HOME/logs/swm-publishing.log"
