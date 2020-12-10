@@ -37,6 +37,7 @@ examples:
     parser.add_argument('--sauron',                     action='store_true', default=False, help='I\'m a professional, I know what I\'m doing. (will work on bugs marked \'invalid\')')
     parser.add_argument('--no-color',                   action='store_true', default=False, help='Turn off colorisationn.)')
     parser.add_argument('--dependants',                 action='store_true', default=False, help='Include dependant bugs of specified bugs.')
+    parser.add_argument('--dependants-only',            action='store_true', default=False, help='Only scan dependant bugs.')
     parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
     parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')
     parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')

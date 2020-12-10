@@ -111,6 +111,11 @@ class WorkflowManager():
         with s.lock_bug(2):
             yield
 
+    @contextmanager
+    def single_dependants_only(s):
+        with s.lock_bug(3, block=False):
+            yield
+
     def status_get(s, bugid, summary=False, modified=None):
         with s.lock_status():
             status = s.status_load()
@@ -405,7 +410,7 @@ class WorkflowManager():
                 lpbug = s.lp.default_service.get_bug(bugid)
                 cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
-        else:
+        elif not s.args.dependants_only:
             for project in WorkflowBug.projects_tracked:
                 cinfo('project: %s' % project, 'magenta')
                 search_tags            = ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live']
@@ -426,12 +431,20 @@ class WorkflowManager():
     # manage
     #
     def manage(s):
-        if not s.args.bugs:
+        if s.args.dependant_only:
+            try:
+                with s.single_dependants_only():
+                    s.manage_payload()
+            except BlockingIOError:
+                cerror('dependants-only run already in progress.', 'red')
+
+        elif not s.args.bugs:
             try:
                 with s.single_thread():
                     s.manage_payload()
             except BlockingIOError:
                 cerror('Full run already in progress.', 'red')
+
         else:
             s.manage_payload()
 
@@ -471,7 +484,7 @@ class WorkflowManager():
                 # If we are interested in scanning dependants, trigger them if
                 # they have a parent and that parent has been modified since
                 # they were last scanned.
-                if s.args.dependants:
+                if s.args.dependants or s.args.dependants_only:
                     buglist_rescan += s.live_dependants_rescan()
 
                 buglist = buglist_rescan
