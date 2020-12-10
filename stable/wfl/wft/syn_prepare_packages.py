@@ -58,7 +58,7 @@ class SynPreparePackages(TaskHandler):
         if status == 'New':
             if s.bug.debs.older_tracker_in_ppa:
                 s.task.reason = 'Stalled -- previous cycle tracker in PPA'
-                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=20),
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=30),
                     '{}:{} polling previous cycle tracker'.format(
                     s.bug.series, s.bug.name))
 

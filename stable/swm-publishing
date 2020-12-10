@@ -1018,6 +1018,76 @@ class MonitorFactory:
         return "Private Archive Monitor {}".format(self.reference)
 
 
+class FilterSwmStatus:
+
+    def __init__(self, status_path, bs=None):
+        if bs is None:
+            raise ValueError("backing store not specified")
+
+        self.status_path = status_path
+
+        bs.attach(status_path, self)
+
+    last_scanned = MonitorStoreAttr(default={})
+
+    def filter(self, trackers):
+        changed = set()
+
+        status = SwmStatus(path=self.status_path)
+
+        trackers_mapped = set()
+        for tracker in trackers:
+            if ':' in tracker:
+                # We will search for <series>:<source>:<target>
+                # if target is missing imply it from source.
+                bits = tracker.split(':')
+                if len(bits) < 3:
+                    bits.append(bits[-1])
+
+                for search_id, search_data in status.trackers.items():
+                    search_key = [
+                        search_data.get('series', '-'),
+                        search_data.get('source', '-'),
+                        search_data.get('target', '-')]
+                    if bits == search_key:
+                        trackers_mapped.add(search_id)
+            else:
+                trackers_mapped.add(tracker)
+
+        print("MAPPED", len(trackers_mapped), trackers_mapped)
+
+        tracker_delta = {}
+        for tracker in trackers_mapped:
+            tracker_delta[tracker] = '+'
+            #print("NEEDS SCANNING {}".format(tracker))
+            self.last_scanned[tracker] = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
+
+        for tracker in list(self.last_scanned):
+            last_scanned = self.last_scanned[tracker]
+            curr_scanned = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
+            if last_scanned == curr_scanned:
+                if tracker not in tracker_delta:
+                    tracker_delta[tracker] = '!'
+                #print("NEEEDED {} {} {}".format(tracker, last_scanned, curr_scanned))
+                changed.add(tracker)
+            else:
+                tracker_delta[tracker] = '-'
+                #print("ALREADY SCANNED {}".format(tracker))
+                del self.last_scanned[tracker]
+
+        print("DELTA ", ' '.join(["{}{}".format(x, y) for y,x in sorted([(y,x) for x,y in tracker_delta.items()])]))
+
+        return changed
+
+    def commit(self):
+        for tracker in list(self.last_scanned):
+            if self.last_scanned[tracker] is False:
+                del self.last_scanned[tracker]
+
+    def __str__(self):
+        return "Filter SwmStatus"
+
+
 if __name__ == '__main__':
     factory = MonitorFactory()
 
@@ -1042,7 +1112,15 @@ if __name__ == '__main__':
             print(monitor, "CHANGED", list(new))
         sys.stdout.flush()
         changed = changed | new
-    print("CHANGED", changed)
+    print("CHANGED", len(changed), changed)
+
+    swm_filter = FilterSwmStatus('status.yaml', bs=factory.bs)
+    changed = swm_filter.filter(changed)
+    print("NEEDED", len(changed), changed)
+
+    # We have converted the scan data into a list for scanning
+    # so it is safe to save our state ready to scan.
+    factory.sync()
 
     sys.stdout.flush()
 
@@ -1056,5 +1134,5 @@ if __name__ == '__main__':
         if status != 0:
             sys.exit(1)
 
-    # All is done, update the backing store.
-    factory.sync()
+        swm_filter.commit()
+        factory.sync()
