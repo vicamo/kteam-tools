@@ -91,6 +91,8 @@ class WorkflowBug():
         s._sru_spin = False
         s.is_valid = True
         s._target_trackers = None
+        s.debs = None
+        s.snap = None
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
