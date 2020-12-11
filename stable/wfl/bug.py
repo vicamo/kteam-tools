@@ -475,7 +475,8 @@ class WorkflowBug():
             props_bits.append(line)
         props_wrapped = '\n'.join(props_bits)
 
-        cinfo(props_wrapped)
+        for line in props_wrapped.split('\n'):
+            cinfo('        ' + line, 'magenta')
         props_new = yaml.safe_load(props_wrapped)
         if props != props_new:
             cinfo("properties_for_description: falling back to default")
