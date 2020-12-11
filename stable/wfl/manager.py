@@ -382,7 +382,6 @@ class WorkflowManager():
         '''
         center('WorkflowManager.buglist')
         retval = {}
-        cinfo('Starting run ' + str(datetime.now()))
         if s.args.bugs:
             bugs = []
             for bugid in s.args.bugs:
@@ -431,6 +430,7 @@ class WorkflowManager():
     # manage
     #
     def manage(s):
+        cinfo('Starting run ' + str(datetime.now()))
         if s.args.dependants_only:
             try:
                 with s.single_dependants_only():
@@ -447,6 +447,7 @@ class WorkflowManager():
 
         else:
             s.manage_payload()
+        cinfo('Completed run ' + str(datetime.now()))
 
     # manage_payload
     #
