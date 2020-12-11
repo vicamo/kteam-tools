@@ -3,4 +3,4 @@
 here=$(dirname "$(readlink -f "${0}")")
 
 # Run swm as requested and record a copy to the persistent log.
-exec "$here/swm-run" "$@"
+exec "$here/swm-run" --log-prefix 'H:' "$@"

@@ -39,6 +39,7 @@ examples:
     parser.add_argument('--dependants',                 action='store_true', default=False, help='Include dependant bugs of specified bugs.')
     parser.add_argument('--dependants-only',            action='store_true', default=False, help='Only scan dependant bugs.')
     parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
+    parser.add_argument('--log-prefix',                                      default=None, help='Logfile prefix to disabiguate overlapping runs.')
     parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')
     parser.add_argument('bugs',  metavar='BUGS', nargs="*",                  default=None, help='A list of Launchpad bug ids that are to be processed.')
 
@@ -47,12 +48,15 @@ examples:
     # If logging parameters were set on the command line, handle them
     # here.
     #
+    log_prefix = ''
+    if args.log_prefix is not None:
+        log_prefix = args.log_prefix + ' '
     if args.debug:
-        log_format = "%(levelname)05s - %(message)s"
+        log_format = log_prefix + "%(levelname)05s - %(message)s"
         basicConfig(filename=args.logfile, level=DEBUG, format=log_format)
         Clog.dbg = True
     else:
-        log_format = "%(message)s"
+        log_format = log_prefix + "%(message)s"
         basicConfig(filename=args.logfile, level=INFO, format=log_format)
         Clog.dbg = False
 
