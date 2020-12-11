@@ -911,7 +911,7 @@ class Package():
         routing = s.routing('Proposed')
         (archive, pocket) = routing[0]
         if archive.reference == 'ubuntu':
-            delay = timedelta(hours=1.5)
+            delay = timedelta(hours=1)
         else:
             delay = timedelta(hours=0)
         retval = s.all_built_and_in_pocket_for('Proposed', delay)
