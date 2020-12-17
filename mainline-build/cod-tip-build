@@ -188,3 +188,6 @@ echo "$out $arch/$build_arch" >"$result/@publish@"
 publish="$HOME/public_html/$out"
 mkdir -p "$publish"
 mv "$result_topdir"/* "$publish"
+
+# Tidy up our mess at the end of the job.
+rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes}
