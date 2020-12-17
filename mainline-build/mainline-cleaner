@@ -32,4 +32,4 @@ do
 done
 
 # Tidy up standard build mess.
-rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes}
+rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes,tar.gz}

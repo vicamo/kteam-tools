@@ -190,4 +190,4 @@ mkdir -p "$publish"
 mv "$result_topdir"/* "$publish"
 
 # Tidy up our mess at the end of the job.
-rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes}
+rm -f "$master_main/"*.{deb,ddeb,udeb,buildinfo,changes,tar.gz}
