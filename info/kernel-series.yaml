@@ -180,7 +180,7 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
-        uc20:
+        uc20: &routing-table-uc20
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
@@ -193,6 +193,10 @@
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+        newparis-uc20:
+            <<:         *routing-table-uc20
+            build:
+                - ['ppa:oem-archive/ubuntu/newparis', 'Release']
         prerelease:
             <<:             *routing-table-default
             updates:
@@ -1144,6 +1148,20 @@
                 linux-meta-denver:
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
                     type: meta
+            supported: false
+
+        linux-adv-uno420:
+            routing: newparis-uc20
+            packages:
+                linux-adv-uno420:
+            supported: false
+
+        linux-adv-uno420-uc20-efi:
+            routing: newparis-uc20
+            packages:
+                linux-adv-uno420-uc20-efi:
+                linux-signed-adv-uno420-uc20-efi:
+                    type: signed
             supported: false
 
 # 19.10 (Eoan Ermine)
