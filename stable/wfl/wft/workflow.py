@@ -162,7 +162,7 @@ class Workflow(TaskHandler):
                 for task_name in ('snap-certification-testing', 'snap-qa-testing'):
                     task = s.bug.tasks_by_name.get(task_name)
                     if task is not None and task.status not in ('New', 'Invalid', 'Fix Released'):
-                        s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- {} is not complete'
+                        s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- {} is not complete'.format(task_name)
                         break
 
                 # Block transition to updates if we are not at least in our latest risk
