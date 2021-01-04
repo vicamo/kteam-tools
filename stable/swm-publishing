@@ -1067,15 +1067,19 @@ class FilterSwmStatus:
 
         for tracker in list(self.last_scanned):
             last_scanned = self.last_scanned[tracker]
+            if isinstance(last_scanned, datetime):
+                last_scanned = last_scanned.replace(tzinfo=None)
             curr_scanned = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
             if last_scanned == curr_scanned:
                 if tracker not in tracker_delta:
                     tracker_delta[tracker] = '!'
-                #print("NEEEDED {} {} {}".format(tracker, last_scanned, curr_scanned))
+                    print("RECOVERED {} {} {}".format(tracker, last_scanned, curr_scanned))
+                else:
+                    print("NEW {} {} {}".format(tracker, last_scanned, curr_scanned))
                 changed.add(tracker)
             else:
                 tracker_delta[tracker] = '-'
-                #print("ALREADY SCANNED {}".format(tracker))
+                print("ALREADY-SCANNED {} {} {}".format(tracker, last_scanned, curr_scanned))
                 del self.last_scanned[tracker]
 
         print("DELTA ", ' '.join(["{}{}".format(x, y) for y,x in sorted([(y,x) for x,y in tracker_delta.items()])]))
@@ -1083,9 +1087,9 @@ class FilterSwmStatus:
         return changed
 
     def commit(self):
+        print("SUCCESS PURGING")
         for tracker in list(self.last_scanned):
-            if self.last_scanned[tracker] is False:
-                del self.last_scanned[tracker]
+            del self.last_scanned[tracker]
 
     def __str__(self):
         return "Filter SwmStatus"
