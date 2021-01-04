@@ -85,7 +85,7 @@ class TrackerProduction:
 
         if importance is not None and lp_task.importance != importance:
             lp_task.importance = importance
-            changed.append('importance {}'.format(status))
+            changed.append('importance {}'.format(importance))
 
         if assignee is not None:
             lp_assignee = self.lp_person(assignee)
