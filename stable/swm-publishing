@@ -554,7 +554,10 @@ class MonitorLaunchpadProject:
                     continue
                 #print("P?", activity, activity.person_link)
                 # Why is this not lp.me.self_link ?
-                if activity.person_link.endswith("/~ubuntu-kernel-bot"):
+                if (activity.whatchanged == 'kernel-sru-workflow: status' and
+                        activity.newvalue == 'In Progress'):
+                    pass
+                elif activity.person_link.endswith("/~ubuntu-kernel-bot"):
                     continue
                 print("Y", bug_id, activity, activity.person_link)
                 changed.add(str(bug_id))
@@ -847,42 +850,42 @@ class MonitorStatusSwmStatus:
 
         #print("REFRESH", changed)
 
-        # Record all newly added trackers.  If they are not in status trigger them.
-        # Keep track of such newly added trackers until they are added to status
-        # as these are seemingly lost.
-        start_date = self.new_bugs_last
-        tasks = self.project.searchTasks(
-            status=['In Progress'],
-            tags=['kernel-release-tracking-bug-live'],
-            modified_since=self.new_bugs_last)
-        for task in tasks:
-            bug = task.bug
-            if bug.date_last_updated > self.new_bugs_last:
-                self.new_bugs_last = bug.date_last_updated
-            print("TASK", task, task.status, bug, bug.date_last_updated)
-
-            # If we have it in status we are good to ignore it.
-            bug_id = str(bug.id)
-            if bug_id in status.trackers:
-                continue
-
-            print("NEW-ADDED", bug_id)
-            self.new_bugs[bug_id] = True
-        # Drop any which have now been seen.
-        for bug_id in list(self.new_bugs):
-            if bug_id in status.trackers:
-                print("NEW-REMOVED", bug_id)
-                del self.new_bugs[bug_id]
-                continue
-
-            bug = self.lp.bugs[bug_id]
-            if bug.duplicate_of is not None:
-                print("NEW-DUPLICATE", bug_id)
-                del self.new_bugs[bug_id]
-                continue
-
-            print("NEW", bug_id)
-            changed.add(bug_id)
+#        # Record all newly added trackers.  If they are not in status trigger them.
+#        # Keep track of such newly added trackers until they are added to status
+#        # as these are seemingly lost.
+#        start_date = self.new_bugs_last
+#        tasks = self.project.searchTasks(
+#            status=['In Progress'],
+#            tags=['kernel-release-tracking-bug-live'],
+#            modified_since=self.new_bugs_last)
+#        for task in tasks:
+#            bug = task.bug
+#            if bug.date_last_updated > self.new_bugs_last:
+#                self.new_bugs_last = bug.date_last_updated
+#            print("TASK", task, task.status, bug, bug.date_last_updated)
+#
+#            # If we have it in status we are good to ignore it.
+#            bug_id = str(bug.id)
+#            if bug_id in status.trackers:
+#                continue
+#
+#            print("NEW-ADDED", bug_id)
+#            self.new_bugs[bug_id] = True
+#        # Drop any which have now been seen.
+#        for bug_id in list(self.new_bugs):
+#            if bug_id in status.trackers:
+#                print("NEW-REMOVED", bug_id)
+#                del self.new_bugs[bug_id]
+#                continue
+#
+#            bug = self.lp.bugs[bug_id]
+#            if bug.duplicate_of is not None:
+#                print("NEW-DUPLICATE", bug_id)
+#                del self.new_bugs[bug_id]
+#                continue
+#
+#            print("NEW", bug_id)
+#            changed.add(bug_id)
 
         return changed
 
