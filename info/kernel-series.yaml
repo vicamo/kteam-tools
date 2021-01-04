@@ -827,7 +827,7 @@
 
         linux-oem-5.10:
             versions: ['5.10.0']
-            variants: ['-20.04-edge']
+            variants: ['-20.04b']
             packages:
                 linux-oem-5.10:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.10-next']
