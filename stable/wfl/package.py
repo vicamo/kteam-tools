@@ -559,44 +559,6 @@ class Package():
 
         return s.__distro_series
 
-    # fully_built
-    #
-    def fully_built(s, pkg):
-        center('Package::fully_built')
-        cdebug('   pkg: \'%s\'' % pkg)
-        retval = False
-
-        try:
-            for pocket in s.srcs[pkg]:
-                if s.srcs[pkg][pocket]['built']:
-                    retval = True
-                    break
-        except KeyError:
-            pass # Eat the KeyError and return False
-
-        cleave('Package::fully_built (%s : %s)' % (pkg, retval))
-        return retval
-
-    # in_pocket
-    #
-    def in_pocket(s, pkg, pocket):
-        '''
-        Dependent package is in the pocket 'pocket'.
-        '''
-        center(s.__class__.__name__ + '.in_pocket')
-        try:
-            pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
-        except KeyError:
-            pkg_seen = False
-
-        if pkg_seen:
-            cinfo('        %s is present in %s.' % (pkg, pocket), 'yellow')
-        else:
-            cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
-
-        cleave(s.__class__.__name__ + '.in_pocket (%s)' % (pkg_seen))
-        return pkg_seen
-
     # built_and_in_pocket
     #
     def built_and_in_pocket(s, pkg, pocket):
@@ -774,16 +736,6 @@ class Package():
         else:
             retval = s.srcs[pkg][pocket]['signer']
         cleave('Packages::signer')
-        return retval
-
-    # package_fully_built
-    #
-    def package_fully_built(s, pkg):
-        '''
-        For the package specified, the status of whether or not it is fully built
-        is returned.
-        '''
-        retval = s.fully_built(pkg)
         return retval
 
     # packages_released
