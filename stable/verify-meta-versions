@@ -95,6 +95,10 @@ than those of the respective master.
                 cwarn('WARN: {} ?? {} (no version)'.format(src_version, tgt_version), 'yellow')
                 continue
 
+            if '~' in src_version:
+                cinfo('PASS: {} is unique'.format(src_version))
+                continue
+
             bits = src_version.split('.')
             src_base = '.'.join(bits[0:3])
             src_abi = int(bits[3])
