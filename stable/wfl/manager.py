@@ -241,7 +241,11 @@ class WorkflowManager():
         cycle = entry[1].get('cycle', '-')
         if cycle != '-':
             cycle_bits = cycle.split('-')
-            cycle_bits[-1] = '{:03}'.format(int(cycle_bits[-1]))
+            try:
+                cycle_spin = int(cycle_bits[-1])
+            except ValueError:
+                cycle_spin = 0
+            cycle_bits[-1] = '{:03}'.format(cycle_spin)
             cycle = '-'.join(cycle_bits)
         return cycle
 
