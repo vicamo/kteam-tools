@@ -32,6 +32,283 @@ class SeriesLookupFailure(ShankError):
     '''
     pass
 
+
+# PackageBuild
+#
+class PackageBuild:
+
+    def __init__(self, bug, series, dependent, pocket, routing, package, version, abi, sloppy):
+        self.bug = bug
+        self.series = series
+        self.dependent = dependent
+        self.pocket = pocket
+        self.routing = routing
+        self.package = package
+        self.srch_version = version
+        self.srch_abi = abi
+        self.srch_sloppy = sloppy
+
+        self._data = None
+
+    # __is_fully_built
+    #
+    def __is_fully_built(s, package, abi, archive, release, pocket, sloppy):
+        '''
+        Have the source package specified been fully built?
+        '''
+        center(s.__class__.__name__ + '.__is_fully_built')
+        cdebug('package: %s' % package, 'yellow')
+        cdebug('    abi: %s' % abi,     'yellow')
+        cdebug('archive: %s' % archive.reference, 'yellow')
+        cdebug('release: %s' % release, 'yellow')
+        cdebug(' pocket: %s' % pocket, 'yellow')
+        cdebug(' sloppy: %s' % pocket, 'yellow')
+
+        # Do a loose match, we will select for the specific version we wanted
+        # in __find_matches but this way we have the published version for
+        # pocket emptyness checks.
+        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, status='Published', pocket=pocket)
+        matches = s.__find_matches(ps, abi, release, sloppy)
+        if len(matches) > 0:
+            cdebug('    match: %s (%s)' % (release, abi), 'green')
+            fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
+            version = matches[0].source_package_version
+        else:
+            fullybuilt   = False
+            status  = ''
+            creator = None
+            signer  = None
+            published = None
+            most_recent_build = None
+            version = None
+            if len(ps) > 0:
+                version = ps[0].source_package_version
+
+        cleave(s.__class__.__name__ + '.__is_fully_built')
+        return fullybuilt, creator, signer, published, most_recent_build, status, version
+
+    # __find_matches
+    #
+    def __find_matches(s, ps, abi, release, sloppy):
+        center('Sources::__find_matches')
+        cdebug('    abi: %s' % abi,     'yellow')
+        cdebug('release: %s' % release, 'yellow')
+        cdebug(' sloppy: %s' % release, 'yellow')
+        cdebug('records: %d' % len(ps), 'yellow')
+
+        match = False
+        matches = []
+        if abi:
+            cdebug('abi match only')
+            dep_ver1 = '%s-%s' % (release, abi)
+            dep_ver2 = '%s.%s' % (release, abi)
+            for p in ps:
+                src_ver = p.source_package_version
+                cdebug('examining: %s' % src_ver)
+                if ((src_ver.startswith(dep_ver1 + '.') or src_ver.startswith(dep_ver2 + '.'))):
+                    cdebug('adding: %s' % src_ver, 'green')
+                    matches.append(p)
+                    match = True
+        else:
+            cdebug('exact version match required')
+            for p in ps:
+                src_ver = p.source_package_version
+                # Exact match or exact prefix plus '+somethingN'
+                if src_ver == release or (sloppy and src_ver.startswith(release + '+')):
+                    cdebug('adding: %s' % src_ver, 'green')
+                    matches.append(p)
+                    match = True
+
+        cleave('Sources::__find_matches (%s)' % match)
+        return matches
+
+    # __sources_built
+    #
+    def __sources_built(s, sources, archive, package, release, pocket):
+        '''
+        '''
+        center('Sources::__sources_built')
+        cdebug('sources: %s' % sources, 'yellow')
+        cdebug('archive: %s' % archive.reference, 'yellow')
+        cdebug('package: %s' % package, 'yellow')
+        cdebug('release: %s' % release, 'yellow')
+        cdebug(' pocket: %s' % pocket, 'yellow')
+
+        # If we do get more than one match we should be picking the latest.
+        if len(sources) != 1:
+            raise ValueError("too many sources")
+
+        source = sources[0]
+
+        package_creator = source.package_creator
+        package_signer = source.package_signer
+        published = source.date_published
+        latest_build = source.date_published
+        status = set()
+        status.add('UNKNOWN')
+
+        cdebug("source status={}".format(source.status))
+        if source.status in ('Pending'):
+            status.add('BUILDING')
+        elif source.status in ('Published'):
+            status.add('FULLYBUILT')
+        else:
+            # Anything else is broken.
+            #  Superseded
+            #  Deleted
+            #  Obsolete
+            status.add('FAILEDTOBUILD')
+
+        arch_build = set()
+        arch_complete = set()
+        builds = source.getBuilds()
+        for build in builds:
+            ##print(build, build.buildstate, build.datebuilt)
+            cdebug("build arch={} status={}".format(build.arch_tag, build.buildstate))
+            if build.buildstate in (
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build'):
+                status.add('BUILDING')
+
+            elif build.buildstate == 'Dependency wait':
+                status.add('DEPWAIT')
+                s.bug.maintenance_add({
+                    'type': 'deb-build',
+                    'target': s.bug.target,
+                    'detail': {
+                        'state': build.buildstate,
+                        'package': build.source_package_name,
+                        'url': build.web_link,
+                        'lp-api': build.self_link,
+                    }})
+
+            elif build.buildstate == 'Successfully built':
+                status.add('FULLYBUILT')
+                arch_complete.add(build.arch_tag)
+
+            else:
+                # Anything else is a failure, currently:
+                #  Build for superseded Source
+                #  Failed to build
+                #  Chroot problem
+                #  Failed to upload
+                #  Cancelling build
+                #  Cancelled build
+                status.add('FAILEDTOBUILD')
+                s.bug.maintenance_add({
+                    'type': 'deb-build',
+                    'target': s.bug.target,
+                    'detail': {
+                        'state': build.buildstate,
+                        'package': build.source_package_name,
+                        'url': build.web_link,
+                        'lp-api': build.self_link,
+                    }})
+
+            # Accumulate the latest build completion.
+            if build.datebuilt is not None and latest_build < build.datebuilt:
+                latest_build = build.datebuilt
+
+            # Accumulate the architectures we are meant to build for.
+            arch_build.add(build.arch_tag)
+
+        arch_published = set()
+        binaries = source.getPublishedBinaries()
+        for binary in binaries:
+            ##print(binary, binary.status, binary.date_published)
+            if binary.architecture_specific:
+                arch_tag = binary.distro_arch_series_link.split('/')[-1]
+            else:
+                arch_tag = 'all'
+            cdebug("binary arch={} status={}".format(arch_tag, binary.status))
+            if binary.status in ('Pending'):
+                status.add('BUILDING')
+            elif binary.status in ('Published'):
+                status.add('FULLYBUILT')
+            else:
+                # Anything else is broken.
+                #  Superseded
+                #  Deleted
+                #  Obsolete
+                status.add('FAILEDTOBUILD')
+
+            # Accumulate the latest publication time.
+            if binary.date_published is not None and published < binary.date_published:
+                published = binary.date_published
+
+            # Accumulate the architectures we have publications for.
+            if binary.architecture_specific:
+                arch_published.add(binary.distro_arch_series_link.split('/')[-1])
+
+        # If our build architecture list does not match our published architecture
+        # list then we have a publication missing.  Check if we have publications
+        # missing because they are in flight.
+        if arch_build != arch_published:
+            if arch_build == arch_complete:
+                status.add('FULLYBUILT_PENDING')
+            else:
+                status.add('BUILDING')
+
+        # Pick out the stati in a severity order.
+        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
+            if state in status:
+                break
+
+        published = published.replace(tzinfo=None)
+        latest_build = latest_build.replace(tzinfo=None)
+
+        cleave('Sources::__sources_built' )
+        return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
+
+    def instantiate(self):
+        cdebug("INSTANTIATING {} {} {} {} {} {}".format(self.dependent, self.pocket, self.package, self.srch_version, self.srch_abi, self.srch_sloppy))
+
+        publications = []
+        for (src_archive, src_pocket) in self.routing:
+            info = self.__is_fully_built(self.package, self.srch_abi, src_archive, self.srch_version, src_pocket, self.srch_sloppy)
+            publications.append(info)
+            # If this archive pocket contains the version we are looking for then scan
+            # no further.
+            if info[5] != '':
+                break
+
+        # If we have a match use that, else use the first one.
+        if publications[-1][5] != '':
+            info = publications[-1]
+        else:
+            info = publications[0]
+
+        self._data = {}
+        self._data['built']   = info[0]
+        self._data['creator'] = info[1]
+        self._data['signer']  = info[2]
+        self._data['published'] = info[3]
+        self._data['most_recent_build'] = info[4]
+        self._data['status'] = info[5]
+        self._data['version'] = info[6]
+        self._data['route'] = (src_archive, src_pocket)
+
+        cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
+
+    def __getattr__(self, name):
+        if self._data is None:
+            self.instantiate()
+        if name not in self._data:
+            raise AttributeError()
+        return self._data[name]
+
+    def __getitem__(self, name):
+        if self._data is None:
+            self.instantiate()
+        return self._data[name]
+
+    def get(self, name, default=None):
+        if self._data is None:
+            self.instantiate()
+        return self._data.get(name, default)
+
+
 # Package
 #
 class Package():
@@ -195,6 +472,8 @@ class Package():
                 version = s.version
                 sloppy = True
 
+            cinfo("{} {} abi={} sloppy={}".format(s.pkgs[dep], version, abi, sloppy))
+
             s._cache[dep] = {}
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
@@ -213,39 +492,16 @@ class Package():
                     cwarn(s.bug.overall_reason)
                     continue
 
-                publications = []
-                for (src_archive, src_pocket) in s._routing[pocket]:
-                    info = s.__is_fully_built(s.pkgs[dep], abi, src_archive, version, src_pocket, sloppy)
-                    publications.append(info)
-                    # If this archive pocket contains the version we are looking for then scan
-                    # no further.
-                    if info[5] != '':
-                        break
-
-                # If we have a match use that, else use the first one.
-                if publications[-1][5] != '':
-                    info = publications[-1]
-                else:
-                    info = publications[0]
-
-                s._cache[dep][pocket] = {}
-                s._cache[dep][pocket]['built']   = info[0]
-                s._cache[dep][pocket]['creator'] = info[1]
-                s._cache[dep][pocket]['signer']  = info[2]
-                s._cache[dep][pocket]['published'] = info[3]
-                s._cache[dep][pocket]['most_recent_build'] = info[4]
-                s._cache[dep][pocket]['status'] = info[5]
-                s._cache[dep][pocket]['version'] = info[6]
-                s._cache[dep][pocket]['route'] = (src_archive, src_pocket)
-                cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
+                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket, s._routing[pocket], s.pkgs[dep], version, abi, sloppy)
+                #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
-        cdebug('')
-        cdebug('The Cache:', 'cyan')
-        for d in sorted(s._cache):
-            cdebug('    %s' % d, 'cyan')
-            for p in sorted(s._cache[d]):
-                cdebug('        %-8s : %-5s   (%s)' % (p, s._cache[d][p]['built'], date_to_string(s._cache[d][p]['published'])), 'cyan')
+        #cdebug('')
+        #cdebug('The Cache:', 'cyan')
+        #for d in sorted(s._cache):
+        #    cdebug('    %s' % d, 'cyan')
+        #    for p in sorted(s._cache[d]):
+        #        cdebug('        %-8s : %-5s   (%s)' % (p, s._cache[d][p]['built'], date_to_string(s._cache[d][p]['published'])), 'cyan')
 
         cleave('Sources::__determine_build_status')
         return None
@@ -289,218 +545,8 @@ class Package():
         cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
         return retval
 
-    # __is_fully_built
-    #
-    def __is_fully_built(s, package, abi, archive, release, pocket, sloppy):
-        '''
-        Have the source package specified been fully built?
-        '''
-        center(s.__class__.__name__ + '.__is_fully_built')
-        cdebug('package: %s' % package, 'yellow')
-        cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('archive: %s' % archive.reference, 'yellow')
-        cdebug('release: %s' % release, 'yellow')
-        cdebug(' pocket: %s' % pocket, 'yellow')
-        cdebug(' sloppy: %s' % pocket, 'yellow')
-
-        # Do a loose match, we will select for the specific version we wanted
-        # in __find_matches but this way we have the published version for
-        # pocket emptyness checks.
-        ps = archive.getPublishedSources(distro_series=s.distro_series, exact_match=True, source_name=package, status='Published', pocket=pocket)
-        matches = s.__find_matches(ps, abi, release, sloppy)
-        if len(matches) > 0:
-            cdebug('    match: %s (%s)' % (release, abi), 'green')
-            fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
-            version = matches[0].source_package_version
-        else:
-            fullybuilt   = False
-            status  = ''
-            creator = None
-            signer  = None
-            published = None
-            most_recent_build = None
-            version = None
-            if len(ps) > 0:
-                version = ps[0].source_package_version
-
-        cleave(s.__class__.__name__ + '.__is_fully_built')
-        return fullybuilt, creator, signer, published, most_recent_build, status, version
-
-    # __find_matches
-    #
-    def __find_matches(s, ps, abi, release, sloppy):
-        center('Sources::__find_matches')
-        cdebug('    abi: %s' % abi,     'yellow')
-        cdebug('release: %s' % release, 'yellow')
-        cdebug(' sloppy: %s' % release, 'yellow')
-        cdebug('records: %d' % len(ps), 'yellow')
-
-        match = False
-        matches = []
-        if abi:
-            cdebug('abi match only')
-            dep_ver1 = '%s-%s' % (release, abi)
-            dep_ver2 = '%s.%s' % (release, abi)
-            for p in ps:
-                src_ver = p.source_package_version
-                cdebug('examining: %s' % src_ver)
-                if ((src_ver.startswith(dep_ver1 + '.') or src_ver.startswith(dep_ver2 + '.'))):
-                    cdebug('adding: %s' % src_ver, 'green')
-                    matches.append(p)
-                    match = True
-        else:
-            cdebug('exact version match required')
-            for p in ps:
-                src_ver = p.source_package_version
-                # Exact match or exact prefix plus '+somethingN'
-                if src_ver == release or (sloppy and src_ver.startswith(release + '+')):
-                    cdebug('adding: %s' % src_ver, 'green')
-                    matches.append(p)
-                    match = True
-
-        cleave('Sources::__find_matches (%s)' % match)
-        return matches
-
     __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
-
-    # __sources_built
-    #
-    def __sources_built(s, sources, archive, package, release, pocket):
-        '''
-        '''
-        center('Sources::__sources_built')
-        cdebug('sources: %s' % sources, 'yellow')
-        cdebug('archive: %s' % archive.reference, 'yellow')
-        cdebug('package: %s' % package, 'yellow')
-        cdebug('release: %s' % release, 'yellow')
-        cdebug(' pocket: %s' % pocket, 'yellow')
-
-        # If we do get more than one match we should be picking the latest.
-        if len(sources) != 1:
-            raise ValueError("too many sources")
-
-        source = sources[0]
-
-        package_creator = source.package_creator
-        package_signer = source.package_signer
-        published = source.date_published
-        latest_build = source.date_published
-        status = set()
-        status.add('UNKNOWN')
-
-        cdebug("source status={}".format(source.status))
-        if source.status in ('Pending'):
-            status.add('BUILDING')
-        elif source.status in ('Published'):
-            status.add('FULLYBUILT')
-        else:
-            # Anything else is broken.
-            #  Superseded
-            #  Deleted
-            #  Obsolete
-            status.add('FAILEDTOBUILD')
-
-        arch_build = set()
-        arch_complete = set()
-        builds = source.getBuilds()
-        for build in builds:
-            ##print(build, build.buildstate, build.datebuilt)
-            cdebug("build arch={} status={}".format(build.arch_tag, build.buildstate))
-            if build.buildstate in (
-                    'Needs building',
-                    'Currently building',
-                    'Uploading build'):
-                status.add('BUILDING')
-
-            elif build.buildstate == 'Dependency wait':
-                status.add('DEPWAIT')
-                s.bug.maintenance_add({
-                    'type': 'deb-build',
-                    'target': s.bug.target,
-                    'detail': {
-                        'state': build.buildstate,
-                        'package': build.source_package_name,
-                        'url': build.web_link,
-                        'lp-api': build.self_link,
-                    }})
-
-            elif build.buildstate == 'Successfully built':
-                status.add('FULLYBUILT')
-                arch_complete.add(build.arch_tag)
-
-            else:
-                # Anything else is a failure, currently:
-                #  Build for superseded Source
-                #  Failed to build
-                #  Chroot problem
-                #  Failed to upload
-                #  Cancelling build
-                #  Cancelled build
-                status.add('FAILEDTOBUILD')
-                s.bug.maintenance_add({
-                    'type': 'deb-build',
-                    'target': s.bug.target,
-                    'detail': {
-                        'state': build.buildstate,
-                        'package': build.source_package_name,
-                        'url': build.web_link,
-                        'lp-api': build.self_link,
-                    }})
-
-            # Accumulate the latest build completion.
-            if build.datebuilt is not None and latest_build < build.datebuilt:
-                latest_build = build.datebuilt
-
-            # Accumulate the architectures we are meant to build for.
-            arch_build.add(build.arch_tag)
-
-        arch_published = set()
-        binaries = source.getPublishedBinaries()
-        for binary in binaries:
-            ##print(binary, binary.status, binary.date_published)
-            if binary.architecture_specific:
-                arch_tag = binary.distro_arch_series_link.split('/')[-1]
-            else:
-                arch_tag = 'all'
-            cdebug("binary arch={} status={}".format(arch_tag, binary.status))
-            if binary.status in ('Pending'):
-                status.add('BUILDING')
-            elif binary.status in ('Published'):
-                status.add('FULLYBUILT')
-            else:
-                # Anything else is broken.
-                #  Superseded
-                #  Deleted
-                #  Obsolete
-                status.add('FAILEDTOBUILD')
-
-            # Accumulate the latest publication time.
-            if binary.date_published is not None and published < binary.date_published:
-                published = binary.date_published
-
-            # Accumulate the architectures we have publications for.
-            if binary.architecture_specific:
-                arch_published.add(binary.distro_arch_series_link.split('/')[-1])
-
-        # If our build architecture list does not match our published architecture
-        # list then we have a publication missing.  Check if we have publications
-        # missing because they are in flight.
-        if arch_build != arch_published:
-            if arch_build == arch_complete:
-                status.add('FULLYBUILT_PENDING')
-            else:
-                status.add('BUILDING')
-
-        # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
-            if state in status:
-                break
-
-        published = published.replace(tzinfo=None)
-        latest_build = latest_build.replace(tzinfo=None)
-
-        cleave('Sources::__sources_built' )
-        return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
+    __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
 
     # build_info
     #
@@ -598,6 +644,7 @@ class Package():
             else:
                 cinfo('        %s is NOT present in %s.' % (pkg, pocket), 'yellow')
                 retval = False
+                break
 
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval
@@ -711,13 +758,16 @@ class Package():
         cdebug('pocket: %s' % pocket)
         retval = None
 
+        bi = s.build_info
         if pocket is None:
-            for pocket in s.srcs[pkg]:
-                if s.srcs[pkg][pocket]['status'] in s.__states_present:
-                    retval = s.srcs[pkg][pocket]['creator']
+            for pocket in s.__pockets_uploaded:
+                if pocket not in bi[pkg]:
+                    continue
+                if bi[pkg][pocket]['status'] in s.__states_present:
+                    retval = bi[pkg][pocket]['creator']
                     break
         else:
-            retval = s.srcs[pkg][pocket]['creator']
+            retval = bi[pkg][pocket]['creator']
         cleave('Packages::creator')
         return retval
 
@@ -729,13 +779,16 @@ class Package():
         cdebug('pocket: %s' % pocket)
         retval = None
 
+        bi = s.build_info
         if pocket is None:
-            for pocket in s.srcs[pkg]:
-                if s.srcs[pkg][pocket]['built']:
-                    retval = s.srcs[pkg][pocket]['signer']
+            for pocket in s.__pockets_uploaded:
+                if pocket not in bi[pkg]:
+                    continue
+                if bi[pkg][pocket]['built']:
+                    retval = bi[pkg][pocket]['signer']
                     break
         else:
-            retval = s.srcs[pkg][pocket]['signer']
+            retval = bi[pkg][pocket]['signer']
         cleave('Packages::signer')
         return retval
 
@@ -843,9 +896,12 @@ class Package():
         retval = False
 
         bi = s.build_info
-        for pocket in bi[pkg]:
+        for pocket in s.__pockets_uploaded:
+            if pocket not in bi[pkg]:
+                continue
             if bi[pkg][pocket]['status'] in s.__states_present:
                 retval = True
+                break
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
         return retval
