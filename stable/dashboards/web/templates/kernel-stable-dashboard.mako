@@ -126,7 +126,7 @@ def __status_bites(bug, attrs):
             prep_task = prep_states[prep_status]
             break
 
-    if bug['variant'] in ('debs', 'combo'):
+    if bug.get('variant') in ('debs', 'combo'):
         thing_prefix = 'd:'
         security_status = __task_status(bug, 'promote-to-security')
         updates_status  = __task_status(bug, 'promote-to-updates')
@@ -142,7 +142,7 @@ def __status_bites(bug, attrs):
             add_in(thing_in, 'release', release_status)
 
     # Report Snap release progress.
-    if bug['variant'] == 'snap-debs':
+    if bug.get('variant') == 'snap-debs':
         thing_prefix = 's:'
         for risk in ['edge', 'beta', 'candidate', 'stable']:
             status = __task_status(bug, 'snap-release-to-' + risk)
