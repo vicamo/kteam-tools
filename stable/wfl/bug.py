@@ -133,7 +133,9 @@ class WorkflowBug():
         if s.series is None:
             raise WorkflowBugError('Series not identified from tags')
         if s.source is None:
-            raise WorkflowBugError('Source not found in kernel-series')
+            cerror("Source not found in kernel-series")
+            s.is_valid = False
+            return
         s.is_development_series = s.source.series.development
         s.is_development = s.source.development or s.sru_cycle[0] == 'd'
 
