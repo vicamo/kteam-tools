@@ -24,7 +24,7 @@ class Bug2Card:
                 '--board', self.board,
                 '--list', self.list,
                 '--card-name', card_name,
-                '--card-desc', card_desc,
+                '--card-desc', card_desc[:2000],
                 '--format', '{id} {url}',
                ]
         for card_member in self.card_members:
