@@ -251,16 +251,16 @@
             variants: ['-unstable']
             packages:
                 linux-unstable:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
                 linux-meta-unstable:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable', 'master-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable', 'master']
                 linux-signed-unstable:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable', 'master-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable', 'master']
                 linux-restricted-modules-unstable:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
             supported: false
             testing:
                 flavours:
