@@ -1045,11 +1045,6 @@ class Package():
         #
         msg['sru-cycle'] = s.bug.sru_cycle
 
-        # At this time only 2 arches have the lowlatency flavour
-        #
-        if flavour == 'lowlatency':
-            msg['arches'] = ['amd64', 'i386']
-
         if ppa:
             routing = s.routing('ppa')
         else:
