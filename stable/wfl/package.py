@@ -779,6 +779,22 @@ class Package():
 
         return retval
 
+    # pocket_route
+    #
+    def pocket_route(s, pocket):
+        '''
+        '''
+        retval = None
+
+        bi = s.build_info
+        for pkg in bi:
+            if bi[pkg][pocket]['built'] is True:
+                retval = bi[pkg][pocket]['route']
+                cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
+                break
+
+        return retval
+
     # pocket_clear
     #
     def pocket_clear(s, pocket, pocket_next):
@@ -1046,11 +1062,10 @@ class Package():
         msg['sru-cycle'] = s.bug.sru_cycle
 
         if ppa:
-            routing = s.routing('ppa')
+            routing = s.pocket_route('ppa')
         else:
-            routing = s.routing('Proposed')
-
-        (archive, pocket) = routing[0]
+            routing = s.pocket_route('Proposed')
+        (archive, pocket) = routing
         if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'
             # XXX: need to find out what this used for, if it is exclusively
