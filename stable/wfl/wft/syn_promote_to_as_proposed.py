@@ -98,6 +98,7 @@ class SynPromoteToAsProposed(TaskHandler):
                 retval = True
             break
 
+        cleave(s.__class__.__name__ + '._common')
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
