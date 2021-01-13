@@ -479,8 +479,7 @@ class WorkflowManager():
             # Run the list based on the master chain depth, shortest first.
             buglist = s.buglist
             bugs_pass = 0
-            bugs_total = 0
-            bugs_scanned = 0
+            bugs_overall = 0
 
             if s.args.dependants_only:
                 buglist = s.live_dependants_rescan()
@@ -490,8 +489,12 @@ class WorkflowManager():
                 buglist = list(set(buglist))
 
                 bugs_pass += 1
-                bugs_total += len(buglist)
+
+                bugs_overall += len(buglist)
+
                 buglist_rescan = []
+                bugs_total = len(buglist)
+                bugs_scanned = 0
 
                 # Order such that parents are handled before their children.
                 buglist = list(sorted(buglist, key=s.tracker_key))
@@ -500,7 +503,7 @@ class WorkflowManager():
                     bugs_scanned += 1
                     with s.lock_bug(bugid):
                         cinfo('')
-                        cinfo("Processing ({}/{} pass={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugid, s.lp.bug_url(bugid)))
+                        cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.lp.bug_url(bugid)))
 
                         buglist_rescan += s.crank(bugid)
 
