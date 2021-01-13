@@ -86,6 +86,8 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.yaml'
+        s.status_validator = None
+        s.Status_current = None
         with s.lock_status():
             s.status_start = s.status_load()
         s.status_wanted = {}
@@ -169,7 +171,13 @@ class WorkflowManager():
         status = {}
         if os.path.exists(s.status_path):
             with open(s.status_path) as rfd:
-                status = yaml.safe_load(rfd)
+                stat = os.stat(rfd.fileno())
+                validator = (stat.st_ino, stat.st_mtime)
+                cinfo("VALIDATOR: {} {}".format(s.status_validator, validator))
+                if validator != s.status_validator:
+                    s.status_current = yaml.safe_load(rfd)
+                    s.status_validator = validator
+            status = s.status_current
 
         # Migration: pull all manager related items into a shared manager
         # sub-key.  This allows simpler forward migration when updating status.
@@ -187,6 +195,12 @@ class WorkflowManager():
         with open(s.status_path + '.new', 'w') as rfd:
             yaml.dump(status, rfd, default_flow_style=False)
         os.rename(s.status_path + '.new', s.status_path)
+
+        # We are writing the file, update our cache.
+        stat = os.stat(s.status_path)
+        validator = (stat.st_ino, stat.st_mtime)
+        s.status_current = status
+        s.status_validator = (stat.st_ino, stat.st_mtime)
 
     # Returns a tuple (depth, master-bug-number, bug-number) which will be used
     # to sort a list of bug numbers.  By sorting by master-bug chain length we
