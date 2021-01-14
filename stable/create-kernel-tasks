@@ -227,39 +227,39 @@ class TaskSet():
         return origin
 
     def __task_match_tb(self, task):
-            series  = task.ks_source.series.codename
-            source  = task.ks_source.name
-            matchtb = None
+        series  = task.ks_source.series.codename
+        source  = task.ks_source.name
+        matchtb = None
 
-            if task.ks_snap is not None:
-                source = '{}/{}'.format(source, task.ks_snap.name)
-            bug_ids = self.tbs.get_series_package(series, source)
+        if task.ks_snap is not None:
+            source = '{}/{}'.format(source, task.ks_snap.name)
+        bug_ids = self.tbs.get_series_package(series, source)
 
-            if bug_ids is not None:
-                # At this point there might be multiple bugs returned (for example one
-                # from a previous cycle which has not yet cleared away).
-                for bug_id in bug_ids:
-                    tb = self.tbs[bug_id]
-                    if tb.cycle != self.cycletag:
+        if bug_ids is not None:
+            # At this point there might be multiple bugs returned (for example one
+            # from a previous cycle which has not yet cleared away).
+            for bug_id in bug_ids:
+                tb = self.tbs[bug_id]
+                if tb.cycle != self.cycletag:
+                    continue
+                if task.sourcetype == 'snap':
+                    variant = tb.wf_get_property('variant')
+                    if variant is None or variant != 'snap-debs':
                         continue
-                    if task.sourcetype == 'snap':
-                        variant = tb.wf_get_property('variant')
-                        if variant is None or variant != 'snap-debs':
-                            continue
-                    # if task.create is True and self.spin_nr is not None:
-                    #    if tb.spin_nr < self.spin_nr:
-                    #        continue
-                    if matchtb is None:
+                # if task.create is True and self.spin_nr is not None:
+                #    if tb.spin_nr < self.spin_nr:
+                #        continue
+                if matchtb is None:
+                    matchtb = tb
+                elif matchtb.spin_nr == tb.spin_nr:
+                    cerror('{} has existing tbs with identical spin number!'.format(task))
+                    cerror('- {} vs. {}'.format(matchtb.id, tb.id))
+                    sys.exit(2)
+                else:
+                    if tb.spin_nr > matchtb.spin_nr:
                         matchtb = tb
-                    elif matchtb.spin_nr == tb.spin_nr:
-                        cerror('{} has existing tbs with identical spin number!'.format(task))
-                        cerror('- {} vs. {}'.format(matchtb.id, tb.id))
-                        sys.exit(2)
-                    else:
-                        if tb.spin_nr > matchtb.spin_nr:
-                            matchtb = tb
 
-            return matchtb
+        return matchtb
 
     def __task_match_all_tbs(self, task):
         series = task.ks_source.series.codename
@@ -442,11 +442,11 @@ class TaskSet():
 
     def CreateTrackingBugs(self, dryrun=False):
         for tkey in self.tasks.keys():
-                self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun)
+            self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun)
 
     def FinalizeTrackingBugs(self, dryrun=False):
         for tkey in self.tasks.keys():
-                self.tasks[tkey].FinalizeTrackingBugs(dryrun=dryrun)
+            self.tasks[tkey].FinalizeTrackingBugs(dryrun=dryrun)
 
     def CreateCards(self, boardname, dryrun=False):
         if dryrun is False and self.board is None:
@@ -495,8 +495,7 @@ Examples:
     parser.add_argument('--boardname', action='store', metavar='<board name>', default=None,
                         type=str, help='use given name to add cards instead of the date')
     parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='do not make any changes, ' +
-                        'just show what would be done')
+                        help='do not make any changes, just show what would be done')
     parser.add_argument('--force-nocards', action='store_true', default=False,
                         help='forcefully disable the creation of Trello cards. This is the default in --devel mode')
     parser.add_argument('--force-nobugs', action='store_true', default=False,
