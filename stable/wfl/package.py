@@ -263,7 +263,9 @@ class PackageBuild:
         cdebug("INSTANTIATING {} {} {} {} {} {}".format(self.dependent, self.pocket, self.package, self.srch_version, self.srch_abi, self.srch_sloppy))
 
         publications = []
+        archive_num = 0
         for (src_archive, src_pocket) in self.routing:
+            archive_num += 1
             info = self.__is_fully_built(self.package, self.srch_abi, src_archive, self.srch_version, src_pocket, self.srch_sloppy)
             publications.append(info)
             # If this archive pocket contains the version we are looking for then scan
@@ -289,6 +291,10 @@ class PackageBuild:
         self._data['changes'] = info[7]
 
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
+
+        # If we find a build is now complete, record _where_ it was built.
+        if self.pocket == 'ppa' and self._data['built'] == True:
+            self.bug.bprops.setdefault('built', {})[self.dependent] = "build#{}".format(archive_num)
 
     def __getattr__(self, name):
         if self._data is None:
