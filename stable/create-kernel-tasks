@@ -212,13 +212,6 @@ class Task():
 
 
 class TaskSet():
-    def __src_wanted(self, ks_source, src_list):
-        if len(src_list) == 0:
-            return True
-        if ks_source.series not in self.ks_series_list:
-            return False
-        return ks_source.name in src_list
-
     def __src_get_origin(self, ks_source):
         origin = ks_source.derived_from
         if origin:
@@ -294,11 +287,24 @@ class TaskSet():
         Internal helper which adds a new task for a source and optionally also creates
         all tasks in its ancestor chain.
         '''
-        print('{}:{}'.format(derivative.series.codename, derivative.name))
+        cdebug('{}:{}'.format(derivative.series.codename, derivative.name))
         if derivative.derived_from is None:
             # Top-level task (master kernel) if it is not created already, do that
             # here.
             tkey = derivative.series.codename + ':' + derivative.name
+            if tkey not in self.tasks:
+                self.tasks[tkey] = Task(self, derivative)
+            return self.tasks[tkey]
+
+        '''
+        Special handling of sources which are backported from a devel series
+        but are considered a non-development source.
+        Treat that as its own primary source which does not depend on a parent.
+        '''
+        if derivative.derived_from.development and not derivative.development and \
+           not self.development:
+            tkey = derivative.series.codename + ':' + derivative.name
+            cwarn('{} is derived from development source. Treating as primary.'.format(tkey))
             if tkey not in self.tasks:
                 self.tasks[tkey] = Task(self, derivative)
             return self.tasks[tkey]
@@ -348,12 +354,12 @@ class TaskSet():
 
         return output
 
-    def __init__(self, ks_series_list, source_name_list, cycledate, ks=None):
+    def __init__(self, ks_source_list, cycledate, devel=False, ks=None):
         '''
         Initialize a TaskSet which consists
-        ks_series_list = [ KernelSeries.series ... ]
-        source_name_list = [ str ... ]
+        ks_source_list = [ ks.KernelSourceEntry ...]
         cycledate = datetime
+        devel = bool(Development Cycle)
         ks = Instance of KernelSeries to embed
         '''
         if ks is None:
@@ -362,44 +368,39 @@ class TaskSet():
         self.tbs = None
         self.board = None
         self.cycledate = cycledate
-        self.ks_series_list = ks_series_list
         self.tasks = dict()
         self.cycletag = cycledate.strftime('%Y.%m.%d')
         self.spin_nr = None
         self.fake_id = 5550000
+        self.development = devel
 
-        if ks_series_list[0].development:
+        if devel:
             self.cycletag = 'd' + self.cycletag
 
         for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
-            if not ks_series.development and not ks_series.supported:
-                continue
-            for ks_source in ks_series.sources:
-                if not ks_source.supported or ks_source.copy_forward:
+            for ks_source in ks_source_list:
+                if ks_series != ks_source.series:
                     continue
-                if not self.__src_wanted(ks_source, source_name_list):
-                    continue
+
                 origin = self.__src_get_origin(ks_source)
                 if origin is None:
                     # This handles the base linux sources (top-level tasks). Depending on
                     # the order sources are enumerated it might have been created when adding
                     # one of the sources derived from there.
                     tkey = ks_series.codename + ':' + ks_source.name
-                    if ks_series in ks_series_list:
-                        if tkey not in self.tasks:
-                            self.tasks[tkey] = Task(self, ks_source)
-                        self.tasks[tkey].create = True
-                        self.__task_add_snaps(self.tasks[tkey])
+                    if tkey not in self.tasks:
+                        self.tasks[tkey] = Task(self, ks_source)
+                    self.tasks[tkey].create = True
+                    self.__task_add_snaps(self.tasks[tkey])
                 else:
                     # For any derivative, we call a helper which returns a new Task object
                     # that already has been attached to its ancestor chain. Any task which
                     # had to be created (including main tasks) will not be marked for creation
                     # (so there must be an existing tracking bug for that or verification will
                     # fail).
-                    if origin.series in ks_series_list or len(source_name_list) > 0:
-                        subtask = self.__add_task_and_ancestors(ks_source)
-                        subtask.create = True
-                        self.__task_add_snaps(subtask)
+                    subtask = self.__add_task_and_ancestors(ks_source)
+                    subtask.create = True
+                    self.__task_add_snaps(subtask)
 
     def LoadTrackingBugs(self, test=False):
         self.tbs = TrackingBugs(testing=test)
@@ -407,7 +408,7 @@ class TaskSet():
         cinfo('Fetching existing tracking bugs for reality check...')
 
         for tkey in self.tasks.keys():
-                self.__task_match_all_tbs(self.tasks[tkey])
+            self.__task_match_all_tbs(self.tasks[tkey])
 
     def ValidateTasks(self):
         # When no spin number is provided on the command-line, then pick the
@@ -501,6 +502,8 @@ Examples:
     parser.add_argument('--force-nobugs', action='store_true', default=False,
                         help='forcefully disable the creation of tracking bugs')
     grp1 = parser.add_mutually_exclusive_group()
+    grp1.add_argument('--handle', action='append', default=[], metavar='<series>:<source>',
+                      help='limit task creation to specific sources given in <series>:<source> format.')
     grp1.add_argument('--devel', action='store_true', default=False,
                       help='run task creation in development mode')
     grp1.add_argument('--series', action='append', default=[], metavar='<series>',
@@ -533,46 +536,126 @@ Examples:
         cerror('Forcing no cards and no tracking bugs is not allowed')
         sys.exit(1)
 
-    # Prepare a list of (originating) series to work on
+    # The arguments to limit which sources should get tasks created cannot be correctly
+    # grouped with argparse. Basically we want to allow one of these:
+    #   - --devel [--source <source> [--source <source> [...]]]
+    #   - --series <series> [--source <source> [--source <source> [...]]]
+    #   - --series <series> [--series <series> [...]]
+    #   - --handle <series>:<source> [--handle <series>:<source> [...]]
     ks = KernelSeries()
-    ks_series_list = []
-    if args.devel:
+    ks_source_list = []
+    if len(args.handle) > 0:
+        if args.devel or len(args.series) > 0 or len(args.source) > 0:
+            cerror('The handle argument is incompatible with devel, series, and source')
+            sys.exit(1)
+        devel_set = False
+        for handle in args.handle:
+            try:
+                (cn, sn) = handle.split(':')
+            except:
+                cerror('Failed to parse handle({})'.format(handle))
+                sys.exit(2)
+            ks_series = ks.lookup_series(codename=cn)
+            if ks_series is None:
+                cerror('{} seems to be no valid series codename'.format(cn))
+                sys.exit(3)
+            # The first handle decides whether we treat this as devel cycle or stable.
+            if not devel_set:
+                args.devel = ks_series.development
+                devel_set  = True
+            ks_source = ks_series.lookup_source(sn)
+            if ks_source is None:
+                cerror('{} is no valid source in {}'.format(sn, cn))
+                sys.exit(3)
+            if not ks_source.supported:
+                cwarn('{}:{} is not supported (ignored)'.format(cn, sn))
+                continue
+            if ks_source not in ks_source_list:
+                ks_source_list.append(ks_source)
+            else:
+                cwarn('{}:{} already selected'.format(cn, sn))
+    elif args.devel:
+        if len(args.series) > 0:
+            cerror('The devel argument cannot be mixed with series')
+            sys.exit(1)
         ks_series = ks.lookup_series(development=True)
         if ks_series is None:
-            cerror('No development series found!')
-            sys.exit(1)
-        ks_series_list.append(ks_series)
+            cerror('No development series found')
+            sys.exit(2)
+        for ks_source in sorted(ks_series.sources, key=lambda x: x.name):
+            if len(args.source) > 0 and ks_source.name not in args.source:
+                continue
+            if not ks_source.supported or not ks_source.development:
+                continue
+            # Skip forward-ports from stable series
+            if ks_source.backport and not ks_source.derived_from.series.development:
+                continue
+            ks_source_list.append(ks_source)
     else:
-        for ks_series in sorted(ks.series, key=KernelSeries.key_series_name, reverse=True):
-            if len(args.series) == 0:
-                if not ks_series.supported or ks_series.development:
+        if len(args.source) > 0 and len(args.series) != 1:
+            cerror('The source argument is only allowed with one series')
+            sys.exit(1)
+        for ks_series in sorted(ks.series, key=lambda x: x.name, reverse=True):
+            if not ks_series.supported:
+                continue
+            if len(args.series) > 0 and ks_series.codename not in args.series:
+                continue
+            if ks_series.development:
+                cerror('Development series tasks must be created using --devel')
+                sys.exit(2)
+            for ks_source in sorted(ks_series.sources, key=lambda x: x.name):
+                if not ks_source.supported:
                     continue
-                ks_series_list.append(ks_series)
-            else:
-                if ks_series.codename in args.series:
-                    if ks_series.development:
-                        cerror('Development series tasks must be created using --devel')
-                        sys.exit(1)
-                    ks_series_list.append(ks_series)
+                if len(args.source) > 0:
+                    if ks_source.name not in args.source:
+                        continue
+                else:
+                    # When not explicitly specified by providing a list of sources, then
+                    # skip over derivatives not originating in the series.
+                    if ks_source.derived_from:
+                        ks_orig = ks_source.derived_from
+                        while ks_orig.derived_from:
+                            ks_orig = ks_orig.derived_from
+                        if ks_orig.series != ks_series:
+                            continue
+                if ks_source.development:
+                    cwarn('{}:{} ignored for stable cycle')
+                    continue
+                ks_source_list.append(ks_source)
 
-    # Sanity check whether --source only is used together with one series
-    if len(args.source) > 0 and len(ks_series_list) != 1:
-        cerror('The --source filter is only allowed when limited to one series')
-        sys.exit(1)
-
-    # Sanity check the cycle date
+    # Sanity check the cycle date (is done that late because handle might have
+    # changed devel mode.
     try:
         cycledate = datetime.strptime(args.cycledate, '%Y.%m.%d')
     except:
         cerror('The provided cycle date could not be parsed!')
-        sys.exit(1)
-    if not ks_series_list[0].development:
+        sys.exit(2)
+    if not args.devel:
         if cycledate.isoweekday() != 1:
             cerror('The provided date is not a Monday when not using --devel!')
-            sys.exit(1)
+            sys.exit(3)
+
+    # For now the source list only contains primary sources and derivatives
+    # which do not cross series boundaries. When selection was not using
+    # handles or source names, then do a run now to include everything which
+    # is derived from a source already present in the selection.
+    if len(args.handle) == 0 and len(args.source) == 0:
+        for ks_series in sorted(ks.series, key=lambda x: x.name):
+            for ks_source in sorted(ks_series.sources, key=lambda y: y.name):
+                if not ks_source.supported:
+                    continue
+                ks_orig = ks_source.derived_from
+                if not ks_orig:
+                    continue
+                while ks_orig.derived_from:
+                    ks_orig = ks_orig.derived_from
+                if ks_orig in ks_source_list and ks_source not in ks_source_list:
+                    ks_source_list.append(ks_source)
+
+    cdebug([(x.series.codename, x.name) for x in ks_source_list])
 
     # Now collect all sources (deb or snap) that need tasks
-    ts = TaskSet(ks_series_list, args.source, cycledate, ks)
+    ts = TaskSet(ks_source_list, cycledate, args.devel, ks)
 
     # If the taskset is empty, then your choice was poor...
     if len(ts.tasks) == 0:
@@ -583,6 +666,7 @@ Examples:
         ts.spin_nr = args.spin
 
     print(ts)
+
     if not args.force_nobugs:
         ts.LoadTrackingBugs(test=args.test)
         print(ts)
