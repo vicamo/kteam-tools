@@ -199,7 +199,7 @@ def sync_primary():
 
     kernel_series = KernelSeries()
 
-    repo_packages = {}
+    repo_things = {}
 
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if series.opening_ready('repositories') is False:
@@ -211,12 +211,14 @@ def sync_primary():
             #if source.name != 'linux-denver':
             #    continue
 
-            for package in source.packages:
-                if package.repo is None:
+            for thing in source.packages + source.snaps:
+                if thing.repo is None:
                     continue
-                url = package.repo.url
+                url = thing.repo.url
 
                 if 'git.launchpad.net' not in url:
+                    continue
+                if 'tillamook' in url:
                     continue
 
                 bits = url.split('~', 1)
@@ -225,29 +227,31 @@ def sync_primary():
 
                 path = '~' + bits[1]
 
-                repo_packages.setdefault(path, []).append(package)
+                repo_things.setdefault(path, []).append(thing)
                 #branch = package.repo.branch
                 #repo_packages.setdefault(path, []).append(branch)
                 #if branch.endswith('-next'):
                 #    repo_packages.setdefault(path).append(branch[:-5])
 
-    for (path, path_packages) in repo_packages.items():
+    for (path, path_things) in repo_things.items():
         rules = []
         rules_wild = []
         version_people = dict()
 
         any_supported = False
-        for package in path_packages:
-            if not is_hwe(package.source) and package.source.development is False and package.source.supported is False:
+        for thing in path_things:
+            if not is_hwe(thing.source) and thing.source.development is False and thing.source.supported is False:
                 continue
-            #if package.series.supported is False:
+            #if thing.series.supported is False:
             #    continue
 
             any_supported = True
-            print(package, package.source.development, package.source.supported)
+            print(thing, thing.source.development, thing.source.supported)
+
+            thing_type = getattr(thing, 'type', 'snap')
 
             people = ['/~canonical-kernel-committers']
-            if is_hwe(package.source):
+            if is_hwe(thing.source):
                 people.append('/~canonical-kernel-hwe-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
@@ -255,19 +259,19 @@ def sync_primary():
             # XXX: until we drop people from the ubuntu-kernel and canonical-kernel
             #      we need to bodge their admin-ness away.
 
-            branch = package.repo.branch
+            branch = thing.repo.branch
             branches = []
             # Order here matters to launchpad, see LP: #1815431.
             if branch.endswith('-next'):
                 branches.append(branch[:-5])
-            print(package, branch)
+            print(thing, branch)
             branches.append(branch)
-            if package.type in (None, 'main'):
+            if getattr(thing, 'type', 'other') in (None, 'main'):
                 branches.append(branches[0] + '-prep')
             for branch in branches:
-                if package.series.development:
+                if thing.series.development:
                     rewind = True
-                elif package.source.derived_from is not None and package.type is None:
+                elif thing.source.derived_from is not None and thing_type in (None, 'main'):
                     rewind = True
                 elif branch.endswith('-next') or branch.endswith('-prep'):
                     rewind = True
@@ -284,11 +288,16 @@ def sync_primary():
                     )
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
-            branch_prefix = package.source.name.replace('linux', '')
+            if thing_type == 'snap':
+                branch_prefix = '-' + branch
+            else:
+                branch_prefix = thing.source.name.replace('linux', '')
             branch_prefixes = [ branch_prefix ]
-            if branch_prefix.startswith('-lts-'):
+            if branch_prefix == '-pc':
+                branch_prefixes.append('')
+            elif branch_prefix.startswith('-lts-'):
                 branch_prefixes.append('-lts')
-            rewind_tags = series.development
+            rewind_tags = thing.series.development
             grants = []
             for person in people:
                 grants.append(generate_grant(person=person, create=True, rewind=rewind_tags))
@@ -301,8 +310,8 @@ def sync_primary():
                     )
 
             # TAGS: for main packages allow version tags to be pushed too.
-            if package.type in (None, 'main'):
-                pkg_versions = package.source.versions
+            if thing_type in (None, 'main'):
+                pkg_versions = thing.source.versions
                 if pkg_versions is not None:
                     for version in pkg_versions:
                         for person in people:
@@ -310,7 +319,7 @@ def sync_primary():
 
         # Add the administrator rules.
         grants = []
-        series = path_packages[0].series
+        series = path_things[0].series
         grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
         if admins != 'owner':
             grants.append(generate_grant(person='owner'))
@@ -344,7 +353,7 @@ def sync_primary():
 
         git_repo = lp.git_repositories.getByPath(path=path)
         if git_repo is None:
-            print("  invalid repository path {} for {}".format(path, package.name))
+            print("  invalid repository path {} for {}".format(path, thing.name))
             continue
         print(git_repo)
         update_rules(git_repo, rules)
