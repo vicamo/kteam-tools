@@ -108,14 +108,17 @@ def update_webhooks(git_repo):
         live_hook.lp_save()
 
 def sync_misc():
+    kernel_series = KernelSeries()
+
     admins = '/~canonical-kernel-repo-admins-active'
 
-    for repo_path in (
-            '~canonical-kernel/+git/kteam-tools',
-            '~canonical-kernel/+git/adt-matrix-hints',
-        ):
+    series = [x.codename for x in kernel_series.series if x.supported or x.development]
 
-        branch = 'master'
+    for repo_path, repo_branches in [
+            ['~canonical-kernel/+git/kteam-tools', ['master']],
+            ['~canonical-kernel/+git/adt-matrix-hints', ['master']],
+            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', ['master'] + series],
+            ]:
 
         rules = []
         grants = []
@@ -129,12 +132,13 @@ def sync_misc():
         grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
         if admins != 'owner':
             grants.append(generate_grant(person='owner'))
-        rules.append(
-            {
-                'ref_pattern': "refs/heads/{}".format(branch),
-                'grants': sort_grants(grants),
-            },
-            )
+        for branch in repo_branches:
+            rules.append(
+                {
+                    'ref_pattern': "refs/heads/{}".format(branch),
+                    'grants': sort_grants(grants),
+                },
+                )
 
         git_repo = lp.git_repositories.getByPath(path=repo_path)
         print(git_repo)
