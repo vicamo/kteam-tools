@@ -206,12 +206,16 @@ def sync_primary():
             continue
 
         for source in sorted(series.sources, key=lambda x: x.name):
+            #if series.codename != 'bionic' or source.name != 'linux':
+            #    continue
             #if series.codename != 'focal':
             #    continue
             #if source.name != 'linux-denver':
             #    continue
 
+            #print("APW", source, source.packages, source.snaps)
             for thing in source.packages + source.snaps:
+                #print("APW", thing)
                 if thing.repo is None:
                     continue
                 url = thing.repo.url
@@ -293,8 +297,8 @@ def sync_primary():
             else:
                 branch_prefix = thing.source.name.replace('linux', '')
             branch_prefixes = [ branch_prefix ]
-            if branch_prefix == '-pc':
-                branch_prefixes.append('')
+            if branch_prefix.startswith('-pc'):
+                branch_prefixes.append(branch_prefix[3:])
             elif branch_prefix.startswith('-lts-'):
                 branch_prefixes.append('-lts')
             rewind_tags = thing.series.development
