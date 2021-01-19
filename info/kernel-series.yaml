@@ -444,7 +444,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--']
+            variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/hirsute']
@@ -651,7 +651,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--']
+            variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/groovy']
@@ -1039,15 +1039,31 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'master-next']
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal']
-            supported: true
+            supported: false
             derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-riscv-5.8:
+            variants: ['--', '-hwe-20.04']
+            packages:
+                linux-riscv-5.8:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.8-next']
+                linux-meta-riscv-5.8:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.8']
+            supported: true
+            backport: true
+            derived-from: [ '20.10', 'linux-riscv' ]
             testing:
                 flavours:
                     generic:
