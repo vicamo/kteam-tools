@@ -6,230 +6,28 @@
 import argparse
 import logging
 import os
-from subprocess             import run, PIPE
 import sys
 
-from crl.config             import Config
-from crl.handle             import Handle, HandleError
-from ktl.log                import cerror, cnotice, cwarn
+from crl.git import GitHandleSet, GitError
+from crl.config import Config
+from crl.handle import HandleError
+from ktl.log import cerror, cnotice
 
-
-def git_remote_update(repo_dir, remote, url, fetch=True):
-    result = run(["git", "config", "remote.{}.url".format(remote)],
-                 cwd=repo_dir, stdout=PIPE)
-    if result.returncode == 0:
-        current_url = result.stdout.decode('utf-8').strip()
-        if current_url != url:
-            cnotice("Updating remote {} in {}".format(remote, repo_dir))
-            result = run(["git", "config", "remote.{}.url".format(remote),
-                          url], cwd=repo_dir, stdout=PIPE)
-            if result.returncode != 0:
-                cerror("failed to update remote {} url to {} "
-                       "rc={}".format(remote, url, result.returncode))
-                sys.exit(1)
-    else:
-        cnotice("Adding remote {} in {}".format(remote, repo_dir))
-        result = run(["git", "remote", "add", remote, url], cwd=repo_dir)
-        if result.returncode != 0:
-            cerror("failed to add remote {} "
-                   "rc={}".format(remote, result.returncode))
-            sys.exit(1)
-
-    if fetch:
-        cnotice("Fetching remote {} in {}".format(remote, repo_dir))
-        result = run(["git", "fetch", remote], cwd=repo_dir)
-        if result.returncode != 0:
-            cerror("failed to fetch remote {} "
-                   "rc={}".format(remote, result.returncode))
-            sys.exit(1)
-
-
-def git_clone(pkg, repo_dir, remote, url, branch, reference, dissociate):
-    """
-    Clone a single repo
-    """
-    cmd = ["git", "clone", "--origin", remote, "--branch", branch]
-    if pkg.type is None:
-        if reference is not None:
-            if ((os.path.exists(reference) and
-                 (os.path.exists(os.path.join(reference, '.git')) or
-                  os.path.exists(os.path.join(reference, 'objects'))))):
-                cmd.extend(["--reference", reference])
-                if dissociate:
-                    cmd.extend(["--dissociate"])
-            else:
-                cwarn('Warning: %s is not a directory or git repo' %
-                      reference)
-    cmd.extend([url, repo_dir])
-
-    cnotice("Cloning '%s' into %s" % (pkg.name, repo_dir))
-    result = run(cmd)
-    if result.returncode != 0:
-        cerror("git clone failed rc={}".format(result.returncode))
-        sys.exit(1)
-
-def git_configure(repo_dir, repo_url, pkg_type, codename):
-    """
-    Do some additional git repo configuration
-    """
-    # Add the default mailing list address for sending patches
-    if "canonical-kernel-esm" in repo_url:
-        address = "canonical-kernel-esm@lists.canonical.com"
-    else:
-        address = "kernel-team@lists.ubuntu.com"
-    run(["git", "config", "--local", "sendemail.to", address],
-        cwd=repo_dir)
-
-    # Don't cc the patch author and signers, i.e., don't spam upstream
-    run(["git", "config", "--local", "sendemail.suppresscc", "all"],
-        cwd=repo_dir)
-
-    # Add a remote for the (private) security repo
-    if pkg_type is None:
-        security_repo = "linux-{}".format(codename)
-    else:
-        security_repo = "linux-{}-{}".format(pkg_type, codename)
-    security_url = "git+ssh://git.launchpad.net/~canonical-kernel-security-team/canonical-kernel-private/+git/{}".format(security_repo)
-
-    try:
-        # Add the security repo without fetching it
-        git_remote_update(repo_dir, "security", security_url, fetch=False)
-    except SystemExit:
-        cwarn('Could not add remote "security" {}'.format(security_url))
-
-def git_lookup_ref(repo_dir, ref):
-    result = run(["git", "for-each-ref", "--format", "%(objectname)", ref],
-                 cwd=repo_dir, stdout=PIPE)
-    if result.returncode != 0:
-        cerror("git for-each-ref failed rc={}".format(result.returncode))
-        sys.exit(1)
-
-    sha1 = result.stdout.decode('utf-8').strip()
-    if sha1 == '':
-        sha1 = None
-
-    return sha1
-
-def git_ancestor(repo_dir, old, new):
-    result = run(["git", "merge-base", "--is-ancestor", old, new],
-                 cwd=repo_dir)
-    return result.returncode == 0
-
-# XXX: create_checkout_reset
-def git_checkout(repo_dir, remote, rmt_branch, branch):
-    rmt_ref = 'refs/remotes/{}/{}'.format(remote, rmt_branch)
-    lcl_ref = 'refs/heads/{}'.format(branch)
-
-    # Get us onto the branch in question -- if it does not exists
-    # git checkout -b branch remote/branch else
-    # git checkout branch
-    lcl_sha1 = git_lookup_ref(repo_dir, lcl_ref)
-    if lcl_sha1 is None:
-        cmd = ["git", "checkout", "-q", "-b", branch, rmt_ref]
-    else:
-        cmd = ["git", "checkout", "-q", branch]
-    result = run(cmd, cwd=repo_dir)
-    if result.returncode != 0:
-        cerror("git checkout failed rc={}".format(result.returncode))
-        sys.exit(1)
-
-    # If the new upstream branch does not match ours we need
-    # to reset the branch.  Firstly back it up in case it is not
-    # fully merged upstream.
-    rmt_sha1 = git_lookup_ref(repo_dir, rmt_ref)
-    if lcl_sha1 is not None and rmt_sha1 != lcl_sha1:
-        # Backup via an explict reflog entry if this is not an ancestor.
-        if not git_ancestor(repo_dir, lcl_sha1, rmt_sha1):
-            result = run(["git", "update-ref", "-m",
-                          "cranky checkout: previous tip", "HEAD", "HEAD"],
-                         cwd=repo_dir)
-            if result.returncode != 0:
-                cerror("unable to backup previous tip rc={}".format(
-                    result.returncode))
-                sys.exit(1)
-
-        # RESET
-        result = run(["git", "reset", "--hard", rmt_ref], cwd=repo_dir)
-        if result.returncode != 0:
-            cerror("unable to reset to new tip tip rc={}".format(
-                result.returncode))
-            sys.exit(1)
-
-def git_safe(repo_dir):
-    """
-    Check that there are no uncommited changes in a repository.
-    """
-    result = run(["git", "diff", "--quiet", "HEAD"], cwd=repo_dir)
-
-    return result.returncode == 0
 
 def checkout_repos(handle, reference=None, dissociate=False):
     """
     Clone the repos that make up the set of kernel packages
     """
-    try:
-        hdl = Handle()
-        handle_set = hdl.lookup_set(handle, validate=False)
-    except HandleError as e:
-        cerror(e)
-        sys.exit(1)
-
-    codename = handle_set.series.codename
-    cnotice("Codename: {}".format(codename))
-    cnotice("Source:   {}".format(handle_set.source.name))
-
-    # Check for a meta-only package.  This should really imply checking
-    # out the matching derived-from packages with our -meta; we do this as we
-    # will want to run updates against that.
-    derived_from = handle_set.source.derived_from
-    if derived_from is not None:
-        meta_only = True
-        for handle_tree in handle_set.trees:
-            if handle_tree.package.type != 'meta':
-                meta_only = False
-                break
-        if meta_only:
-            prime_handle = "{}:{}".format(derived_from.series.codename,
-                                          derived_from.name)
-            prime_set = hdl.lookup_set(prime_handle, validate=False)
-            for handle in prime_set.trees:
-                if handle.package.type != 'meta':
-                    handle_set.trees.append(handle)
-
-    # If the trees already exist, we need to make sure they are clean otherwise
-    # we may destroy work in progress.
-    for handle_tree in handle_set.trees:
-        repo_dir = handle_tree.directory
-        if not os.path.exists(os.path.join(repo_dir, '.git')):
-            continue
-        if not git_safe(repo_dir):
-            cerror("repo for {} is not clean, unable to update".format(
-                handle_tree.name))
-            sys.exit(1)
-
     # Cycle through the trees and clone/update the package specific
     # repositories.
+    ghs = GitHandleSet(handle)
+
+    cnotice("Codename: {}".format(ghs.codename))
+    cnotice("Source:   {}".format(ghs.source.name))
+
     summary = []
-    for handle_tree in handle_set.trees:
-        pkg = handle_tree.package
-        # XXX: we should be checking for there being a repo ...
-        repo = pkg.repo
-        repo_dir = handle_tree.directory
-
-        remote = handle_tree.remote
-
-        # Private sources or sources under ESM have to be accessed via ssh
-        # and a username. We use the generic form here which works as long
-        # as the launchpad user matches the local username. Otherwise this
-        # needs a mapping like this in git config:
-        #  [url "git+ssh://<user>@git.launchpad.net/"]
-        #      insteadof = "git+ssh://git.launchpad.net"
-        if pkg.source.private or pkg.series.esm:
-            repo_url = repo.url.replace('git://', 'git+ssh://', 1)
-        else:
-            repo_url = repo.url
-
-        branch = repo.branch if repo.branch else 'master'
+    for gh in ghs:
+        repo_dir = gh.directory
 
         # Make the parental directories.
         if not os.path.exists(os.path.dirname(repo_dir)):
@@ -237,52 +35,31 @@ def checkout_repos(handle, reference=None, dissociate=False):
 
         # Update an existing repo or otherwise clone it
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            git_remote_update(repo_dir, remote, repo_url)
+            gh.update_remote(gh.remote, gh.get_url())
         else:
-            git_clone(pkg, repo_dir, remote, repo_url, branch, reference,
-                      dissociate)
+            gh.clone(reference, dissociate)
 
         # Configure the git repo. Do this every time in case things have
         # changed, for example when a release transitions to ESM.
-        git_configure(repo_dir, repo_url, pkg.type, codename)
+        gh.configure()
 
-    # Checkout the specified branches.
-    for handle_tree in handle_set.trees:
-        pkg = handle_tree.package
-        repo = pkg.repo
-        repo_dir = handle_tree.directory
-
-        remote = handle_tree.remote
-        rmt_branch = repo.branch if repo.branch else 'master'
-
-        # local branch is branch if we are checking out against 'origin',
-        # derivative's name otherwise.
-        branch_suffix = rmt_branch
-        if remote != 'origin':
-            if pkg.type is None:
-                branch_suffix = pkg.name.replace('linux-', '')
-            else:
-                branch_suffix = pkg.name.replace('linux-%s-' % pkg.type, '')
-        branch = 'cranky/' + branch_suffix
+    for gh in ghs:
+        pkg        = gh.package
+        remote     = gh.remote
+        rmt_branch = gh.remote_branch
+        branch     = gh.get_cranky_branch_name()
 
         # Add info for the summary
-        summary.append({"name": pkg.name, "dir": repo_dir, "remote": remote,
+        summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
                         "branch": branch})
 
-        git_checkout(repo_dir, remote, rmt_branch, branch)
-
-        # Validate whether the right branch is checked out.
-        handle_validate = hdl.lookup_tree(repo_dir)
-        if handle_tree.package != handle_validate.package:
-            cwarn("Repository '%s' has the wrong package checked out %s:%s" %
-                  (repo_dir, handle_validate.package.series.codename,
-                   handle_validate.package.name))
+        gh.checkout(remote, rmt_branch, branch)
 
     # Print the summary
     cnotice("Summary:")
     for s in summary:
-        cnotice("  Repo '%(name)s' in directory '%(dir)s' "
-                "(branch '%(branch)s')" % s)
+        cnotice("  Repo '{}' in directory '{}' (branch '{}')".format(
+                s["name"], s["dir"], s["branch"]))
 
 
 def expanduser(path):
@@ -366,9 +143,11 @@ Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
 """
 
-    parser = argparse.ArgumentParser(description=desc, formatter_class=
-                                     argparse.RawDescriptionHelpFormatter,
-                                     epilog=epilog, prog="cranky checkout")
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=formatter,
+                                     epilog=epilog,
+                                     prog="cranky checkout")
     parser.add_argument("handle", help=help_handle)
     parser.add_argument("-r", "--reference",
                         default=expanduser(config_cmd.get('reference', None)),
@@ -377,4 +156,8 @@ traffic. This is a git clone option, check 'git help clone' for more details.
                         default=config_cmd.get('dissociate', False),
                         help=help_dissociate)
 
-    checkout_repos(**vars(parser.parse_args()))
+    try:
+        checkout_repos(**vars(parser.parse_args()))
+    except (HandleError, GitError) as e:
+        cerror(e)
+        sys.exit(1)
