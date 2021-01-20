@@ -444,7 +444,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--', '-hwe-20.04']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/hirsute']
@@ -651,7 +651,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--', '-hwe-20.04']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/groovy']
@@ -1054,7 +1054,7 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.8:
-            variants: ['--', '-hwe-20.04']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux-riscv-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.8-next']
