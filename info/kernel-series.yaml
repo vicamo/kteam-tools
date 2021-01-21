@@ -2944,10 +2944,13 @@
                     - ['ppa:canonical-kernel-team/ubuntu/uc18-fde-proposed', 'Release']
             packages:
                 linux-fde:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-fde/+git/bionic', 'master-next']
                 linux-meta-fde:
                     type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-fde/+git/bionic']
                 linux-signed-fde:
                     type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-fde/+git/bionic']
             supported: false
             private: true
 
