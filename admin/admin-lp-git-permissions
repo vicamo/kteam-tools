@@ -185,7 +185,7 @@ def sync_esm():
 # XXX: we need a better way to control this.
 def is_hwe(source):
     return source.name.startswith('linux-oem') or source.name in (
-            'linux-cascade', 'linux-bluefield', 'linux-denver')
+            'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde')
 
 def sync_primary():
     admins = '/~canonical-kernel-repo-admins-active'
@@ -206,6 +206,8 @@ def sync_primary():
     repo_things = {}
 
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        #if series.codename != 'bionic':
+        #    continue
         if series.opening_ready('repositories') is False:
             continue
 
@@ -248,6 +250,7 @@ def sync_primary():
 
         any_supported = False
         for thing in path_things:
+            print(thing, thing.source.development, thing.source.supported)
             if not is_hwe(thing.source) and thing.source.development is False and thing.source.supported is False:
                 continue
             #if thing.series.supported is False:
