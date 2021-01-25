@@ -59,3 +59,6 @@
         - name: 'Update linux-riscv'
           description: 'Update linux-riscv to this kernel version.'
           list: 'TODO'
+        - name: 'Backport linux-riscv to focal'
+          description: 'Update the linux-riscv backport in focal to this kernel version.'
+          list: 'TODO'
