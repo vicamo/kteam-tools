@@ -170,10 +170,12 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
-            as-proposed:
-                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
+            security-signing:
+                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
             proposed:
                 - ['ubuntu', 'Proposed']
+            as-proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
             updates:
                 - ['ubuntu', 'Updates']
             security:
