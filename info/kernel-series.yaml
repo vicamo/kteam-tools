@@ -850,6 +850,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.10']
             supported: true
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oem:
