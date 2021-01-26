@@ -268,7 +268,7 @@
                 flavours:
                     generic:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     generic-64k:
                         arches: ['arm64']
@@ -297,7 +297,7 @@
                 flavours:
                     generic:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     generic-64k:
                         arches: ['arm64']
@@ -490,7 +490,7 @@
                 flavours:
                     generic:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     generic-64k:
                         arches: ['arm64']
@@ -519,7 +519,7 @@
                 flavours:
                     generic:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     generic-64k:
                         arches: ['arm64']
@@ -696,7 +696,7 @@
                 flavours:
                     generic:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64']
@@ -724,13 +724,13 @@
             testing:
                 flavours:
                     generic:
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal']
                     lowlatency:
-                        arches: ['amd64', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
         linux-uc20-efi:
@@ -1768,7 +1768,7 @@
             testing:
                 flavours:
                     generic:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'i386', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
                         arches: ['amd64', 'i386']        # test system arch names
@@ -1852,10 +1852,10 @@
             testing:
                 flavours:
                     generic:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'i386', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
                     lowlatency:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'i386', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
         linux-hwe-edge:
@@ -1875,7 +1875,7 @@
             testing:
                 flavours:
                     hwe-edge:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'i386', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
