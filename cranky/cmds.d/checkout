@@ -217,6 +217,18 @@ def checkout_repos(handle, reference=None, dissociate=False):
         repo_dir = handle_tree.directory
 
         remote = handle_tree.remote
+
+        # Private sources or sources under ESM have to be accessed via ssh
+        # and a username. We use the generic form here which works as long
+        # as the launchpad user matches the local username. Otherwise this
+        # needs a mapping like this in git config:
+        #  [url "git+ssh://<user>@git.launchpad.net/"]
+        #      insteadof = "git+ssh://git.launchpad.net"
+        if pkg.source.private or pkg.series.esm:
+            repo_url = repo.url.replace('git://', 'git+ssh://', 1)
+        else:
+            repo_url = repo.url
+
         branch = repo.branch if repo.branch else 'master'
 
         # Make the parental directories.
@@ -225,14 +237,14 @@ def checkout_repos(handle, reference=None, dissociate=False):
 
         # Update an existing repo or otherwise clone it
         if os.path.exists(os.path.join(repo_dir, '.git')):
-            git_remote_update(repo_dir, remote, repo.url)
+            git_remote_update(repo_dir, remote, repo_url)
         else:
-            git_clone(pkg, repo_dir, remote, repo.url, branch, reference,
+            git_clone(pkg, repo_dir, remote, repo_url, branch, reference,
                       dissociate)
 
         # Configure the git repo. Do this every time in case things have
         # changed, for example when a release transitions to ESM.
-        git_configure(repo_dir, repo.url, pkg.type, codename)
+        git_configure(repo_dir, repo_url, pkg.type, codename)
 
     # Checkout the specified branches.
     for handle_tree in handle_set.trees:
