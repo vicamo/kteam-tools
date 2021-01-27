@@ -3361,7 +3361,10 @@
             derived-from: [ '18.04', 'linux' ]
             testing:
                 flavours:
-                    hwe:
+                    generic:
+                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    lowlatency:
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
