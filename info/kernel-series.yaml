@@ -2851,6 +2851,8 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oracle:
