@@ -2235,6 +2235,7 @@
             derived-from: [ '18.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
             testing:
                 flavours:
                     azure:
@@ -2326,6 +2327,7 @@
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
             testing:
                 flavours:
                     azure:
@@ -2399,6 +2401,8 @@
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
@@ -2479,6 +2483,8 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
@@ -3317,6 +3323,8 @@
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux-gcp-4.15' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
