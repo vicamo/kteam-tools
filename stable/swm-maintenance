@@ -33,6 +33,8 @@ class SwmMaintenance:
         parser = argparse.ArgumentParser(description='SWM maintenance tool')
         parser.add_argument('--list', help='Display maintenance records',
             action='store_true', default=False)
+        parser.add_argument('--all', help='Include positive maintenance records',
+            action='store_true', default=False)
         parser.add_argument('--retry-builds', help='Retry build failure records for a tracker',
             action='append')
 
@@ -48,12 +50,14 @@ class SwmMaintenance:
             if maint_records is None:
                 continue
 
+            records = []
             for maint in maint_records:
                 if args.list:
                     fmt = "{bug_id:13} {cycle:15} {what:25} {type:10}"
                     detail = {}
                     for key, value in sorted(maint.get('detail', {}).items()):
                         if key in ('lp-api'):
+                            detail['lp-api'] = value
                             continue
                         if ' ' in value:
                             fmt += " {0}<{{detail-{0}}}>".format(key)
@@ -64,14 +68,20 @@ class SwmMaintenance:
                     what = "{}:{}".format(bug_data['series'], bug_data['source'])
                     if maint['target'] != bug_data['source']:
                         what += ':' + maint['target']
-                    print(fmt.format(
+                    records.append(fmt.format(
                             bug_id=self.bug_prefix(bug_id),
                             cycle=bug_data['cycle'],
                             what=what,
                             type=maint['type'],
                             **detail))
+                    if not args.all:
+                        build = self.lp.load(detail['lp-api'])
+                        buildstate = build.buildstate
+                        if buildstate in ('Currently building', 'Uploading build', 'Successfully built'):
+                            records = []
+                            break
 
-                elif len(args.retry_builds):
+                elif args.retry_builds is not None:
                     if bug_id not in args.retry_builds:
                         continue
 
@@ -106,6 +116,11 @@ class SwmMaintenance:
                             **maint))
                     if build.can_be_retried:
                         build.retry()
+
+            # Emit any pending records
+            if len(records):
+                for record in records:
+                    print(record)
 
 if __name__ == '__main__':
     SwmMaintenance().main()
