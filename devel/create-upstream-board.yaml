@@ -20,6 +20,9 @@
           - 'paolopisati'
           - 'thadeucascardo1'
     cards:
+        - name: 'Drop patches to disable selftests'
+          description: 'Drop any kselftests patches which disable known bad tests.'
+          list: 'TODO'
         - name: 'Config review'
           description: 'Use devel kernel config review tools to review configs and update annotations.'
           list: 'TODO'
