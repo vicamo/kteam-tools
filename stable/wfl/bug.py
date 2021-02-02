@@ -96,7 +96,7 @@ class WorkflowBug():
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
-        (s.is_workflow, s.is_crankable, s.is_closed, s.is_gone) = s.check_is_valid(s.lpbug)
+        s.check_is_valid()
         if not s.is_workflow:
             raise WorkflowBugError('Bug is not a workflow bug')
         s.properties = s.lpbug.properties
@@ -644,30 +644,28 @@ class WorkflowBug():
 
     # check_is_valid
     #
-    def check_is_valid(s, bug):
+    def check_is_valid(s):
         '''
         Determine if this bug is one that we want to be processing. Bugs that we
         should not be processing are ones that are not currently "In Progress".
         '''
-        workflow = False
-        valid = False
-        closed = False
-        gone = False
+        s.is_workflow = False
+        s.is_crankable = False
+        s.is_closed = False
+        s.is_gone = False
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
-                workflow = True
+                s.is_workflow = True
                 s.workflow_project = task_name
                 if t.status == 'In Progress':
-                    valid = True
+                    s.is_crankable = True
                 elif t.status == 'Fix Released':
-                    closed = True
+                    s.is_closed = True
                 elif t.status == 'Invalid':
-                    gone = True
+                    s.is_gone = True
                 break
-
-        return (workflow, valid, closed, gone)
 
     # _create_tasks_by_name_mapping
     #
