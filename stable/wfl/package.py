@@ -87,7 +87,8 @@ class Package():
             s.routing_mode = s.source.routing.name
 
 
-        cinfo('    test_flavours: %s' % (s.test_flavours()), 'blue')
+        cinfo('     test_flavours: %s' % (s.test_flavours()), 'blue')
+        cinfo('test_flavour_meta4: %s' % (s.test_flavour_meta()), 'blue')
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
@@ -1108,6 +1109,38 @@ class Package():
     #
     def send_proposed_testing_requests(s):
         s.send_testing_requests(op="sru", ppa=False)
+
+    # test_flavour_meta
+    #
+    def test_flavour_meta(s):
+        # If we have no testable flavours fall back to legacy mode.
+        testables = s.source.testable_flavours
+        cdebug("test_flavour_meta: testables={}".format(testables))
+        if len(testables) == 0:
+            return []
+
+        # If any of the testables have a meta_pkg specified then
+        # emit testing for those combinations.
+        # NOTE: entries supporting kernel-series will have synthetic
+        # meta_pkg entries of the right form.
+        result = []
+        for flavour in testables:
+            if flavour.meta_pkg is not None:
+                result.append((flavour.name, flavour.meta_pkg))
+        if len(result):
+            return result
+
+        # Otherwise if we have no meta-pkg definitions, use the flavour
+        # and first variant.
+        variants = s.source.variants
+        if variants is None or len(variants) == 0:
+            variants = ['']
+        if variants[0] == '--':
+            variants[0] = ''
+        for flavour in testables:
+            result.append((flavour.name, 'linux-' + flavour.name + variants[0]))
+
+        return result
 
     # test_flavours
     #
