@@ -383,11 +383,7 @@ class KernelSourceEntry:
                 # If we have neither arches nor clouds we represent a noop
                 if not fdata:
                     continue
-                arches = fdata.get('arches', None)
-                arches = arches if arches is not None else []
-                clouds = fdata.get('clouds', None)
-                clouds = clouds if clouds is not None else []
-                retval.append(KernelSourceTestingFlavourEntry(flavour, arches, clouds))
+                retval.append(KernelSourceTestingFlavourEntry(flavour, fdata))
         return retval
 
     @property
@@ -446,10 +442,14 @@ class KernelSourceEntry:
         return "{} {}".format(self.series.name, self.name)
 
 class KernelSourceTestingFlavourEntry:
-    def __init__(self, name, arches, clouds):
+    def __init__(self, name, data):
         self._name = name
-        self._arches = arches
-        self._clouds = clouds
+        self._data = data
+
+        self._arches = self._data.get('arches', None)
+        self._arches = self._arches if self._arches is not None else []
+        self._clouds = self._data.get('clouds', None)
+        self._clouds = self._clouds if self._clouds is not None else []
 
     @property
     def name(self):
