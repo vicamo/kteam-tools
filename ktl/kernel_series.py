@@ -450,6 +450,7 @@ class KernelSourceTestingFlavourEntry:
         self._arches = self._arches if self._arches is not None else []
         self._clouds = self._data.get('clouds', None)
         self._clouds = self._clouds if self._clouds is not None else []
+        self._meta_pkg = self._data.get('meta-pkg', None)
 
     @property
     def name(self):
@@ -462,6 +463,10 @@ class KernelSourceTestingFlavourEntry:
     @property
     def clouds(self):
         return self._clouds
+
+    @property
+    def meta_pkg(self):
+        return self._meta_pkg
 
 class KernelSeriesEntry:
     def __init__(self, ks, name, data, defaults=None):
