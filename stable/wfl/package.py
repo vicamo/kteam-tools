@@ -1036,7 +1036,7 @@ class Package():
 
     # send_testing_message
     #
-    def send_testing_message(s, op="sru", ppa=False, flavour="generic"):
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.
         #
@@ -1051,12 +1051,14 @@ class Package():
             "package"        : s.name,
             "flavour"        : flavour,
         }
+        if meta is not None:
+            msg['meta-pkg'] = meta
 
         # Construct the appropriate testing meta package.
         # XXX: note this is currently limited to those packages which are
         #      converted to have the new interfaces.
-        if s.bug.swm_config.hack_kernel_testing:
-            msg['meta-pkg'] = 'kernel-testing--{}--full--{}'.format(s.name, flavour)
+        #if s.bug.swm_config.hack_kernel_testing:
+        #    msg['meta-pkg'] = 'kernel-testing--{}--full--{}'.format(s.name, flavour)
 
         # Add the kernel-sru-cycle identifier to the message
         #
@@ -1164,13 +1166,13 @@ class Package():
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
-        for flavour in s.test_flavours():
-            s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
+        for flavour_meta in s.test_flavour_meta():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour_meta[0], meta=flavour_meta[1])
 
     # send_testing_request
     #
-    def send_testing_request(s, op="sru", ppa=False, flavour="generic"):
-        msg = s.send_testing_message(op, ppa, flavour)
+    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None):
+        msg = s.send_testing_message(op, ppa, flavour, meta)
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
