@@ -320,6 +320,13 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-raspi' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-aws:
@@ -553,6 +560,13 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-aws:
@@ -816,6 +830,13 @@
                         arm64: [ '20' ]
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-raspi2:
@@ -839,6 +860,11 @@
                         arm64: [ '20' ]
             supported: false
             derived-from: [ '20.04', 'linux' ]
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem-5.6:
@@ -1271,6 +1297,11 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/eoan', 'raspi2']
             derived-from: [ '19.10', 'linux' ]
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem:
@@ -1453,6 +1484,11 @@
             supported: false
             derived-from: [ '19.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
 
         linux-oem:
             routing: eol
@@ -1638,6 +1674,11 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/cosmic', 'raspi2']
             derived-from: [ '18.10', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
 
         linux-oem:
             packages:
@@ -2011,7 +2052,7 @@
             testing:
                 flavours:
                    raspi2:
-                        arches: ['armhf']        # test system arch names
+                        arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
 
         linux-raspi-5.4:
@@ -2037,6 +2078,13 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-raspi' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-raspi2-5.3:
@@ -2061,6 +2109,13 @@
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
         linux-snapdragon:
