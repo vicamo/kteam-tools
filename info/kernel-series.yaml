@@ -3306,6 +3306,7 @@
             testing:
                 flavours:
                     aws:
+                        meta-pkg: linux-aws-hwe
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
@@ -3822,6 +3823,11 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-trusty']
             supported: true
             derived-from: [ '16.04', 'linux' ]
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
@@ -3906,6 +3912,16 @@
             supported: true
             backport: true
             derived-from: [ '16.04', 'linux' ]
+            testing:
+                flavours:
+                    generic:
+                        meta-pkg: linux-generic-lts-xenial
+                        arches: ['amd64', 'i386']        # test system arch names
+                        clouds: ['metal', 'kvm']
+                    lowlatency:
+                        meta-pkg: linux-lowlatency-lts-xenial
+                        arches: ['amd64', 'i386']        # test system arch names
+                        clouds: ['metal', 'kvm']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
 # 13.10 (saucy)
@@ -4140,6 +4156,16 @@
             derived-from: [ '14.04', 'linux' ]
             supported: true
             backport: true
+            testing:
+                flavours:
+                    generic:
+                        meta-pkg: linux-generic-lts-trusty
+                        arches: ['amd64', 'i386']        # test system arch names
+                        clouds: ['metal', 'kvm']
+                    lowlatency:
+                        meta-pkg: linux-lowlatency-lts-trusty
+                        arches: ['amd64', 'i386']        # test system arch names
+                        clouds: ['metal', 'kvm']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-mako:
