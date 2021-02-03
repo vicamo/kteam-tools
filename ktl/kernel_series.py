@@ -376,14 +376,22 @@ class KernelSourceEntry:
     def testable_flavours(self):
         retval = []
         if (self._data.get('testing') is not None and
-                self._data['testing'].get('flavours') is not None
-           ):
+                self._data['testing'].get('flavours') is not None):
+            # XXX: there should be a KernelSourceTesting object which carries kernel_testing
+            # and has a flavours attribute to return this information.
+            kernel_testing = self._data['testing'].get('kernel-testing', False)
+            if not kernel_testing:
+                # XXX: Fallback to swm.kernel-testing: true/false if not present.
+                # this should be removed once all existing instances are converted.
+                swm_config = self._data.get('swm')
+                swm_config = {} if swm_config is None else swm_config
+                kernel_testing = swm_config.get('kernel-testing', False)
             for flavour in self._data['testing']['flavours'].keys():
                 fdata = self._data['testing']['flavours'][flavour]
                 # If we have neither arches nor clouds we represent a noop
                 if not fdata:
                     continue
-                retval.append(KernelSourceTestingFlavourEntry(flavour, fdata))
+                retval.append(KernelSourceTestingFlavourEntry(flavour, fdata, kernel_testing, source=self))
         return retval
 
     @property
@@ -442,15 +450,19 @@ class KernelSourceEntry:
         return "{} {}".format(self.series.name, self.name)
 
 class KernelSourceTestingFlavourEntry:
-    def __init__(self, name, data):
+    def __init__(self, name, data, kernel_testing, source=None):
         self._name = name
         self._data = data
+        self._source = source
 
         self._arches = self._data.get('arches', None)
         self._arches = self._arches if self._arches is not None else []
         self._clouds = self._data.get('clouds', None)
         self._clouds = self._clouds if self._clouds is not None else []
         self._meta_pkg = self._data.get('meta-pkg', None)
+
+        if self._meta_pkg is None and kernel_testing:
+            self._meta_pkg = "kernel-testing--{}--full--{}".format(self._source.name, name)
 
     @property
     def name(self):
