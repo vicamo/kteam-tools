@@ -293,6 +293,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/hirsute']
             supported: true
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -335,6 +337,8 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-aws' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     aws:
@@ -365,6 +369,7 @@
                     - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
                     - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
                     - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+                kernel-testing: true
             testing:
                 flavours:
                     azure:
@@ -391,6 +396,8 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
@@ -413,6 +420,8 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-kvm' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     kvm:
@@ -438,6 +447,8 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oracle:
@@ -457,6 +468,8 @@
             backport: true
             #derived-from: [ '21.04', 'linux' ]
             derived-from: [ '20.10', 'linux-riscv' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -515,6 +528,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/groovy']
             supported: true
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -553,6 +568,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     aws:
@@ -578,6 +595,8 @@
             derived-from: [ '20.10', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     azure:
@@ -602,6 +621,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
@@ -622,6 +643,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     kvm:
@@ -645,6 +668,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oracle:
@@ -662,6 +687,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/groovy']
             supported: true
             derived-from: [ '20.10', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -692,6 +719,8 @@
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
             supported: true
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -871,6 +900,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     aws:
@@ -896,6 +927,7 @@
             derived-from: [ '20.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
             testing:
                 flavours:
                     azure:
@@ -920,6 +952,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp:
@@ -958,15 +992,8 @@
             supported: true
             backport: false
             derived-from: [ '20.04', 'linux' ]
-            testing:
-                flavours:
-                    gke:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['gke']
-            invalid-tasks: [ 'certification-testing' ]
             swm:
-                # gke-releases:
-                #    - '1.19'
+                kernel-testing: true
                 gke-releases:
                     - '1.19'
                 # Has to be verified (copied from Bionic)
@@ -974,6 +1001,12 @@
                     - gke-d1903-0-amd64
                 nvidia-releases:
                     - 418
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop:
             # As for linux-gke, the main variant is for consistency with other
@@ -991,6 +1024,8 @@
             supported: true
             backport: false
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gkeop:
@@ -1011,6 +1046,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     kvm:
@@ -1034,6 +1071,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     oracle:
@@ -1067,6 +1106,8 @@
             supported: true
             backport: true
             derived-from: [ '20.10', 'linux-riscv' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     generic:
@@ -1090,6 +1131,8 @@
             supported: true
             private: true
             derived-from: ['20.04', 'linux']
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     fips:
@@ -1912,6 +1955,8 @@
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     dell300x:
@@ -1961,6 +2006,13 @@
             supported: true
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi2:
+                        arches: ['armhf']        # test system arch names
+                        clouds: ['metal']
 
         linux-raspi-5.4:
             variants: ['-hwe-18.04', '-hwe-18.04-edge']
@@ -2263,6 +2315,7 @@
             derived-from: ['18.04', 'linux-azure-4.15']
             swm:
                 deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
             testing:
                 flavours:
                     azure-fips:
@@ -2425,6 +2478,7 @@
             private: true
             derived-from: ['18.04', 'linux-gcp-4.15']
             swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gcp-fips:
@@ -2515,23 +2569,19 @@
                         amd64: [ '18', '18-4.15' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            testing:
-                flavours:
-                    gke:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['gke']
             swm:
-                #gke-releases:
-                #    - '1.11'
-                #    - '1.12'
-                #    - '1.13'
-                #    - '1.14'
+                kernel-testing: true
                 gke-releases:
                     - '1.14'
                 gke-nvidia-packages:
                     - gke-d1809-0-amd64
                 nvidia-releases:
                     - 418
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
@@ -2558,18 +2608,19 @@
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux-hwe-5.0' ]
-            testing:
-                flavours:
-                    gke:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['gke']
             swm:
+                kernel-testing: true
                 gke-releases:
                     - '1.15'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
                     - 418
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
@@ -2596,22 +2647,20 @@
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
-            testing:
-                flavours:
-                    gke:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['gke']
-            invalid-tasks: [ 'certification-testing' ]
             swm:
-                #gke-releases:
-                #    - '1.16'
-                #    - '1.17'
+                kernel-testing: true
                 gke-releases:
                     - '1.16'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
                     - 418
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.4:
             variants: ['-5.4']
@@ -2637,17 +2686,8 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gke' ]
-            testing:
-                flavours:
-                    gke:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['gke']
-            invalid-tasks: [ 'certification-testing' ]
             swm:
-                # gke-releases:
-                #    - '1.17'
-                #    - '1.18'
-                #    - '1.19'
+                kernel-testing: true
                 gke-releases:
                     - '1.17'
                     - '1.18'
@@ -2655,6 +2695,12 @@
                     - gke-d1903-0-amd64
                 nvidia-releases:
                     - 418
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop-5.4:
             variants: ['-5.4']
@@ -2670,6 +2716,8 @@
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-gkeop' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     gkeop:
@@ -2708,6 +2756,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/bionic']
             supported: true
             derived-from: [ '18.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     kvm:
@@ -2934,6 +2984,8 @@
             supported: true
             private: true
             derived-from: ['18.04', 'linux-aws']
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     aws-fips:
@@ -3323,8 +3375,6 @@
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux-gcp-4.15' ]
-            swm:
-                kernel-testing: true
             testing:
                 flavours:
                     gcp:
