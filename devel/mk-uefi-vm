@@ -51,7 +51,7 @@ class MakeUefiVm:
         else:
             subprocess.check_call(["wget", url, "-O", path])
 
-    def gen_seed_image(self, base):
+    def gen_seed_image(self):
         with open(self.args.pubkey, "r") as f:
             pubkey_data = f.read().rstrip("\n")
 
@@ -69,7 +69,6 @@ users:
 runcmd:
   - echo "AllowUsers ubuntu" >> /etc/ssh/sshd_config
   - systemctl restart sshd.service
-        shutil.copy(base, self.seed_image)
 """.format(pubkey_data)
             meta_data = "local-hostname: {}".format(self.args.name)
             user_data_path = os.path.join(tempdir, "user-data")
@@ -97,7 +96,6 @@ runcmd:
         parser = ArgumentParser(description="Create UEFI vm from Ubuntu cloud images using libvirt.")
         parser.add_argument("-r", "--release", required=True, help="Ubuntu release to install in vm")
         parser.add_argument("-a", "--architecture", default=self.host_arch, help="CPU architecture (default: host architecture)")
-        parser.add_argument("-s", "--seed", required=True, help="cloud-init seed image")
         parser.add_argument("--secure-boot", action="store_true", help="Enable secure boot (amd64 only)")
         parser.add_argument("-m", "--memory", default="2048", help="Amount of RAM in MB (default: 2048)")
         parser.add_argument("-c", "--cpus", default="2", help="Number of CPUs (default: 2)")
@@ -114,7 +112,7 @@ runcmd:
             self.dry_run_print("Generate seed image")
         else:
             subprocess.check_call(["qemu-img", "resize", self.disk_image, "{}G".format(self.args.disk_size)])
-            self.gen_seed_image(self.args.seed)
+            self.gen_seed_image()
 
         cmd = [
             "virt-install",

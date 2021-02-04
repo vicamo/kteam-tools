@@ -27,12 +27,11 @@ sudo apt-get install qemu-kvm libvirt-daemon-system virtinst ovmf
 
 The script uses cloud images, and will automatically enable ssh access with
 ~/.ssh/id_rsa.pub (or with a different key supplied on the command line).
-so you must set up a seed for cloud-init to allow yourself ssh access.
 
 To create the vm:
 
 ```
-kteam-tools/devel/mk-uefi-vm -r <release> -a <arch> -s <seed-file> --secure-boot <name>
+kteam-tools/devel/mk-uefi-vm -r <release> -a <arch> --secure-boot <name>
 ```
 
 Various options can be customized, run `mk-uefi-vm -h` for more information.
