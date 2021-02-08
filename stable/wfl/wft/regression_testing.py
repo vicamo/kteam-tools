@@ -35,7 +35,7 @@ class RegressionTesting(TaskHandler):
                 retval = True
                 break
 
-            if not s.bug.debs.ready_for_testing:
+            if not s.bug.debs.ready_for_testing_as_proposed:
                 break
 
             s.task.status = 'Confirmed'

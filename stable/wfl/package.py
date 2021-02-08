@@ -888,6 +888,30 @@ class Package():
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
         return retval
 
+    # ready_for_testing_as_proposed
+    #
+    @property
+    def ready_for_testing_as_proposed(s):
+        '''
+        If we have an as-proposed route check if the packages are fully published
+        there and return that as current status.  If we do not have an as-proposed
+        route fallback to the status in the primary proposed route.
+        '''
+        center(s.__class__.__name__ + '.ready_for_testing_as_proposed')
+        ptap_status = s.bug.task_status(':promote-to-as-proposed')
+        if ptap_status == 'Fix Released':
+            retval = True
+
+        elif ptap_status != 'Invalid':
+            retval = False
+
+        else:
+            retval = s.ready_for_testing
+
+        cinfo('        Ready for testing (as-proposed): %s' % (retval), 'yellow')
+        cleave(s.__class__.__name__ + '.ready_for_testing_as_proposed (%s)' % (retval))
+        return retval
+
     # ready_for_security
     #
     @property
@@ -1067,7 +1091,12 @@ class Package():
         if ppa:
             routing = s.pocket_route('ppa')
         else:
-            routing = s.pocket_route('Proposed')
+            # If we have an as-proposed route we will get here when that publishes
+            # and we should be preferring it for testing as there is no cache on the
+            # front of it and so package publication is deterministic.
+            routing = s.pocket_route('as-proposed')
+            if routing is None:
+                routing = s.pocket_route('Proposed')
         (archive, pocket) = routing
         if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'
