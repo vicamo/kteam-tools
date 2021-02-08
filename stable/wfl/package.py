@@ -678,6 +678,60 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket ({})'.format(retval))
         return retval
 
+    # all_built_and_in_pocket_or_pocket
+    #
+    def all_built_in_src_dst(s, src, dst):
+        '''
+        All dependent packages are fully built and in src or dst.
+        '''
+        center(s.__class__.__name__ + '.all_built_in_src_dst')
+        retval = True
+
+        for pkg in s.srcs:
+            try:
+                pkg_built_src = s.srcs[pkg][src]['built']
+            except KeyError:
+                pkg_built_src = False
+
+            try:
+                pkg_built_dst = s.srcs[pkg][dst]['built']
+            except KeyError:
+                pkg_built_dst = False
+
+            if not pkg_built_src and not pkg_built_dst:
+                cinfo('        {} is either not fully built yet or not in {} or {}.'.format(pkg, src, dst), 'red')
+                retval = False
+                break
+
+        cleave(s.__class__.__name__ + '.all_built_in_src_dst ({})'.format(retval))
+        return retval
+
+    # built_in_src_dst_delta
+    #
+    def built_in_src_dst_delta(s, src, dst):
+        '''
+        List of dependent packages in src which are not in dst.
+        '''
+        center(s.__class__.__name__ + '.built_in_src_dst_delta')
+        retval = []
+
+        for pkg in s.srcs:
+            try:
+                pkg_built_src = s.srcs[pkg][src]['built']
+            except KeyError:
+                pkg_built_src = False
+            try:
+                pkg_built_dst = s.srcs[pkg][dst]['built']
+            except KeyError:
+                pkg_built_dst = False
+
+            if pkg_built_src and not pkg_built_dst:
+                cinfo('        {} is in {} and not yet in {}.'.format(pkg, src, dst), 'red')
+                retval.append(pkg)
+
+        cleave(s.__class__.__name__ + '.built_in_src_dst_delta ({})'.format(retval))
+        return retval
+
     # all_built_and_in_pocket_for
     #
     def all_built_and_in_pocket_for(s, pocket, period):
@@ -884,6 +938,8 @@ class Package():
 
         bi = s.build_info
         for pkg in bi:
+            if pocket not in bi[pkg]:
+                continue
             if bi[pkg][pocket]['built'] is True:
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')

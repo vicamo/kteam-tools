@@ -94,6 +94,9 @@ class PromoteToUpdates(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for release'
                     break
 
+            # Record what is missing as we move to Confirmed.
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta('Proposed', 'Updates')
+
             s.task.status = 'Confirmed'
             retval = True
             break

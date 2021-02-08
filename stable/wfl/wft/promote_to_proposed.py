@@ -73,7 +73,7 @@ class PromoteFromTo(Promoter):
             if s.bug.task_status(':prepare-packages') != 'Fix Released':
                 break
 
-            if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
+            if not s.bug.debs.all_built_in_src_dst(s.pocket_src, s.pocket_dest):
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -101,6 +101,9 @@ class PromoteFromTo(Promoter):
             if s._kernel_block_ppa():
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
+
+            # Record what is missing as we move to Confirmed.
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta(s.pocket_src, s.pocket_dest)
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
@@ -142,7 +145,7 @@ class PromoteFromTo(Promoter):
             # Check if the packages are published completely yet.
             if not s.bug.debs.all_in_pocket(s.pocket_dest):
                 # Confirm the packages remain available to copy.
-                if not s.bug.debs.all_built_and_in_pocket(s.pocket_src):
+                if not s.bug.debs.all_built_in_src_dst(s.pocket_src, s.pocket_dest):
                     s.task.reason = 'Alert -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
