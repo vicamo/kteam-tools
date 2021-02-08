@@ -972,7 +972,7 @@ class Package():
         # If the packages are not all built and in -proposed then just bail out of
         # here.
         #
-        if not s.ready_for_testing:
+        if not s.bug.debs.all_built_and_in_pocket(pocket):
             cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
             return (None, [])
 
