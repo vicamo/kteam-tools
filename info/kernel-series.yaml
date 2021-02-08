@@ -308,6 +308,23 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-raspi-unstable:
+            versions: ['5.11.0']
+            variants: ['-unstable']
+            packages:
+                linux-raspi-unstable:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/unstable', 'master']
+                linux-meta-raspi-unstable:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/unstable', 'master']
+            supported: false
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'regression-testing' ]
+
         linux-raspi:
             variants: ['--']
             packages:
