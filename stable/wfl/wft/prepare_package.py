@@ -38,6 +38,7 @@ class PreparePackage(TaskHandler):
         s.jumper['Triaged']       = s._common
         s.jumper['In Progress']   = s._common
         s.jumper['Fix Committed'] = s._common
+        s.jumper['Fix Released']  = s._complete
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -303,6 +304,42 @@ class PreparePackage(TaskHandler):
             break
 
         cleave(s.__class__.__name__ + '._common (%s)' % (retval))
+        return retval
+
+    # _complete
+    #
+    def _complete(s):
+        '''
+        Until such time as promote-to-proposed reacts and moves out of
+        New we should consider whether our package is still present.  If
+        not move back to In Progress.
+        '''
+        center(s.__class__.__name__ + '._complete')
+        retval = False
+
+        while not retval:
+            # If promote-to-proposed has not yet gone active there could be an
+            # issue with this task.
+            ptps = s.bug.task_status('promote-to-proposed')
+            if ptps != 'New':
+                break
+
+            pkg = s._package_name()
+
+            # Confirm that this package remains uploaded.
+            upload_present = s.bug.debs.uploaded(pkg)
+            if upload_present:
+                break
+
+            # The package is no longer found in the build route, this
+            # means we cannot any longer claim to be prepared.  Pull
+            # back to In Progress which will throw tag/upload missing
+            # as appropriate into the status and onto the dashboard.
+            s.task.status = 'In Progress'
+            retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._complete (%s)' % (retval))
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
