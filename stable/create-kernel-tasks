@@ -559,10 +559,6 @@ Examples:
             if ks_series is None:
                 cerror('{} seems to be no valid series codename'.format(cn))
                 sys.exit(3)
-            # The first handle decides whether we treat this as devel cycle or stable.
-            if not devel_set:
-                args.devel = ks_series.development
-                devel_set  = True
             ks_source = ks_series.lookup_source(sn)
             if ks_source is None:
                 cerror('{} is no valid source in {}'.format(sn, cn))
@@ -570,6 +566,17 @@ Examples:
             if not ks_source.supported:
                 cwarn('{}:{} is not supported (ignored)'.format(cn, sn))
                 continue
+            # The first handle decides whether we treat this as devel cycle or stable.
+            # But this cannot simply be tied to the series where the source is defined
+            # because with forward ports we might have a source defined in the development
+            # series but originating in a stable kernel. Which makes them part of a stable
+            # cycle.
+            if not devel_set:
+                ks_origin = ks_source
+                while ks_origin.derived_from:
+                    ks_origin = ks_origin.derived_from
+                args.devel = ks_origin.development
+                devel_set  = True
             if ks_source not in ks_source_list:
                 ks_source_list.append(ks_source)
             else:
