@@ -2649,7 +2649,7 @@
                     hw-cert: false
                     publish-to:
                         amd64: [ '18', '18-4.15' ]
-            supported: true
+            supported: false
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
