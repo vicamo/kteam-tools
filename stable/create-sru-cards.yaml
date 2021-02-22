@@ -59,7 +59,7 @@
           description: 'Whenever someone from the pool starts working, one should make oneself member of the active card. And remove oneself, at the end of the working day (or if moving to other duties for the rest of the day).'
           list: 'Cycle Roles'
         - name: 'Get pre-cycle boot tests done'
-          description: 'Someone should crank the main kernels on the Friday before the cycle starts so they can be boot tested over the weekend.'
+          description: 'Someone should crank the main kernels on the Friday before the cycle starts so they can be boot tested over the weekend.\n\nResults: http://10.246.72.4/test-results/index.html or http://10.246.72.4/test-results/tracker-index.html\nTo access the Jenkins server: http://10.246.72.4:8080/'
           list: 'Backlog (manual)'
         - name: 'Update IRC topic(s)'
           description: 'Update the topic of #stable-kernel at Canonical with the current cycle date and lead.'
