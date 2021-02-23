@@ -325,6 +325,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/unstable', 'master']
             supported: false
+            derived-from: [ '21.04', 'linux-unstable' ]
             testing:
                 flavours:
                    raspi:
