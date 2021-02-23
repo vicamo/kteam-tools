@@ -255,7 +255,7 @@
             release:
     sources:
         linux-unstable:
-            routing: prerelease
+            routing: devel-prerelease
             versions: ['5.11.0']
             variants: ['-wip']
             packages:
