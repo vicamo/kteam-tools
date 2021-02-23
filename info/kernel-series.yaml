@@ -1941,7 +1941,7 @@
                 #linux-restricted-modules-hwe-5.0:
                 #    type: lrm
                 #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.0']
-            supported: true
+            supported: false
             backport: false
             # derived-from: [ '19.04', 'linux' ]
             swm:
@@ -2873,7 +2873,7 @@
                 linux-meta-bluefield:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/bionic']
-            supported: true
+            supported: false
             derived-from: [ '18.04', 'linux-hwe-5.0' ]
             invalid-tasks: [ 'regression-testing' ]
 
