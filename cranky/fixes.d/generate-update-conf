@@ -49,9 +49,11 @@ if parent_package.repo.branch:
 # update DEBIAN_MASTER in order to rebase it with cranky rebase.
 #
 # We check the parent kernel's name and assume "debian.master" for
-# "linux" or "linux-NN.MM" and "debian.BRANCH" for "linux-BRANCH":
+# "linux" or "linux-NN.MM" or "linux-unstable" and "debian.BRANCH" for
+# "linux-BRANCH":
 parent_name=parent_source.name.split("-", 1) # ['linux', 'BRANCH']
-if len(parent_name) <= 1 or re.match("\d+\.\d+$", parent_name[1]):
+if (len(parent_name) <= 1 or re.match("\d+\.\d+$", parent_name[1]) or
+    parent_name[1] == "unstable"):
     master_branch="master"
 else:
     master_branch=parent_name[1]
