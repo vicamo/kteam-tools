@@ -3515,9 +3515,11 @@
             testing:
                 flavours:
                     generic:
+                        meta-pkg: linux-generic-hwe-16.04
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
                     lowlatency:
+                        meta-pkg: linux-lowlatency-hwe-16.04
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
