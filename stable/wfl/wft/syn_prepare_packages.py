@@ -72,7 +72,9 @@ class SynPreparePackages(TaskHandler):
             s.task.reason = 'Pending -b Debs ready to be cranked'
 
         elif status in ('In Progress', 'Fix Committed'):
-            failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
+            failures = None
+            if s.bug.version is not None:
+                failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
             if failures is None:
                 if 'kernel-trello-review-prepare-packages' in s.bug.tags:
                     s.task.reason = 'Stalled -b Debs waiting for peer-review on SRU board'
