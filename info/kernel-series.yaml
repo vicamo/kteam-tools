@@ -205,7 +205,7 @@
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
-        devel:
+        devel: &routing-table-devel
             <<:             *routing-table-default
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/devel', 'Release']
@@ -214,6 +214,12 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+        devel-prerelease:
+            <<:             *routing-table-devel
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
+            security:
+            release:
         fips: &routing-table-fips
             test-build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
