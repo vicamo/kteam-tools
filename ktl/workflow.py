@@ -150,6 +150,7 @@ class Workflow:
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
                 'stakeholder-signoff'        : 'canonical-kernel-team',
+                'kernel-signoff'             : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
@@ -185,6 +186,7 @@ class Workflow:
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security',
                 'stakeholder-signoff'        : 'canonical-kernel-team',
+                'kernel-signoff'             : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
