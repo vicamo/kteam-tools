@@ -1232,8 +1232,7 @@
             # According to the spreadsheet we will have no snap here and since this
             # kernel is for the special on NIC environment, I don't think running our
             # regression-testing environment does make sense.
-            routing: prerelease
-            variants: ['-wip']
+            variants: ['--']
             packages:
                 linux-bluefield:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/focal', 'master-next']
@@ -1243,7 +1242,7 @@
                 linux-meta-bluefield:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/focal']
-            supported: false
+            supported: true
             derived-from: ['20.04', 'linux']
             swm:
                 kernel-testing: true
