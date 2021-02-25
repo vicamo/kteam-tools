@@ -112,27 +112,29 @@ def sync_misc():
 
     admins = '/~canonical-kernel-repo-admins-active'
 
-    series = [x.codename for x in kernel_series.series if x.supported or x.development]
+    series = [x for x in kernel_series.series if x.supported or x.development]
+    fw_branches = [(x.codename, x.development) for x in series]
 
     for repo_path, repo_branches in [
-            ['~canonical-kernel/+git/kteam-tools', ['master']],
-            ['~canonical-kernel/+git/adt-matrix-hints', ['master']],
-            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', ['master'] + series],
+            ['~canonical-kernel/+git/kteam-tools', [('master', False)]],
+            ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)]],
+            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches],
             ]:
 
         rules = []
-        grants = []
 
-        for person in (
-                "/~canonical-kernel-committers",
-                "/~canonical-kernel-hwe-committers",
-                "/~canonical-kernel-tools-committers",
-                ):
-            grants.append(generate_grant(person=person, push=True))
-        grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
-        if admins != 'owner':
-            grants.append(generate_grant(person='owner'))
-        for branch in repo_branches:
+        for branch, allow_rewind in repo_branches:
+            grants = []
+
+            for person in (
+                    "/~canonical-kernel-committers",
+                    "/~canonical-kernel-hwe-committers",
+                    "/~canonical-kernel-tools-committers",
+                    ):
+                grants.append(generate_grant(person=person, push=True, rewind=allow_rewind))
+            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+            if admins != 'owner':
+                grants.append(generate_grant(person='owner'))
             rules.append(
                 {
                     'ref_pattern': "refs/heads/{}".format(branch),
