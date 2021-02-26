@@ -172,7 +172,7 @@ class WorkflowBug():
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
 
-        if 'versions' in s.bprops and 'main' in s.bprops['versions'] and s.bprops['versions']['main'] != s.version:
+        if 'versions' in s.bprops and 'source' in s.bprops['versions'] and s.bprops['versions']['source'] != s.version:
             cinfo("tracker version has changed dropping package version data")
             del s.bprops['versions']
 
