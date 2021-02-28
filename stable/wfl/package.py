@@ -1242,6 +1242,9 @@ class Package():
     # test_flavour_meta
     #
     def test_flavour_meta(s):
+        if s.source is None:
+            return []
+
         # If we have no testable flavours fall back to legacy mode.
         testables = s.source.testable_flavours
         cdebug("test_flavour_meta: testables={}".format(testables))
