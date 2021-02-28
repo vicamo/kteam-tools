@@ -93,6 +93,8 @@ class WorkflowBug():
         s._target_trackers = None
         s.debs = None
         s.snap = None
+        s.error = None
+        s.tasks_by_name = {}
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -119,23 +121,24 @@ class WorkflowBug():
                     s.snap = None
         # XXX: should be a VariantError or something.
         except (PackageError, SnapError) as e:
-            # Report why we are not valid.
-            for l in e.args:
-                cinfo(l, 'red')
-            s.reasons['overall'] = e.args[0]
-            s.is_valid = False
             s.debs = None
+            s.error = WorkflowCrankError(e.args[0])
 
         # If we have no series/package/source by now we are dead in the
         # water kill this bug hard.
         if s.name is None:
-            raise WorkflowBugError('Package not identified from title')
-        if s.series is None:
-            raise WorkflowBugError('Series not identified from tags')
-        if s.source is None:
-            cerror("Source not found in kernel-series")
-            s.is_valid = False
+            s.error = WorkflowCrankError('Package not identified from title')
+        elif s.series is None:
+            s.error = WorkflowCrankError('Series not identified from tags')
+        elif s.source is None:
+            s.error = WorkflowCrankError('Source not found in kernel-series')
+
+        # Primary data consistency issue, out of here; caller will raise
+        # error when it is convienient.
+        if s.error is not None:
+            s.is_crankable = False
             return
+
         s.is_development_series = s.source.series.development
         s.is_development = s.source.development or s.sru_cycle[0] == 'd'
 

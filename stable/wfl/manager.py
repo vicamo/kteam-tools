@@ -560,6 +560,8 @@ class WorkflowManager():
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
             bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle, manager=s)
+            if bug.error is not None:
+                raise bug.error
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))
