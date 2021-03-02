@@ -220,9 +220,14 @@ class VerifyReleaseReady():
         # Look to see if a tracking bug has been added to the changelog
         #
         found_tracker = False
-        for line in changelog[0]['content']:
+        for index, line in enumerate(changelog[0]['content']):
             if '-proposed tracker' in line:
                 found_tracker = True
+                # Concatenate next line if possible split content
+                if (index + 1 != len(changelog[0]['content'])):
+                    line2 = changelog[0]['content'][index + 1]
+                    if (line2.startswith("    ")):
+                        line += line2
                 try:
                     (junk, tracker_id) = line.split('#')
                     (tracker_id,junk) = tracker_id.split(')')
@@ -245,8 +250,13 @@ class VerifyReleaseReady():
                 master_changelog = Debian.master_changelog()
                 found_tracker = False
                 master_tracker_id = 'NOT-FOUND'
-                for line in master_changelog[0]['content']:
+                for index, line in enumerate(master_changelog[0]['content']):
                     if '-proposed tracker' in line:
+                        # Concatenate next line if possible split content
+                        if (index + 1 != len(master_changelog[0]['content'])):
+                            line2 = master_changelog[0]['content'][index + 1]
+                            if (line2.startswith("    ")):
+                                line += line2
                         try:
                             (junk, master_tracker_id) = line.split('#')
                             (master_tracker_id, junk) = master_tracker_id.split(')')
