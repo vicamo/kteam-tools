@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import yaml
+import argparse
 
 from launchpadlib.launchpad             import Launchpad
 
@@ -14,11 +15,6 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                               os.pardir, 'libs')))
 
 from ktl.kernel_series                  import KernelSeries
-
-
-lp = Launchpad.login_with('admin-lp-git-permissions', 'production', version='devel')
-
-cmd = sys.argv[1]
 
 crankers = ['/~canonical-kernel-crankers']
 
@@ -107,7 +103,17 @@ def update_webhooks(git_repo):
     if update_hook:
         live_hook.lp_save()
 
-def sync_misc():
+def list_all(args):
+    me = lp.people(args.user)
+    for repo in lp.git_repositories.getRepositories(target=me):
+        print(repo)
+        current_rules = repo.getRules()
+        rule_txt = yaml.dump(current_rules, default_flow_style=False)
+        for line in rule_txt.split('\n'):
+            print("  " + line)
+        sys.stdout.flush()
+
+def sync_misc(args):
     kernel_series = KernelSeries()
 
     admins = '/~canonical-kernel-repo-admins-active'
@@ -149,7 +155,7 @@ def sync_misc():
         update_webhooks(git_repo)
         sys.stdout.flush()
 
-def sync_esm():
+def sync_esm(args):
     admins = '/~canonical-kernel-repo-admins-active'
 
     kernel_series = KernelSeries()
@@ -189,7 +195,7 @@ def is_hwe(source):
     return source.name.startswith('linux-oem') or source.name in (
             'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde')
 
-def sync_primary():
+def sync_primary(args):
     admins = '/~canonical-kernel-repo-admins-active'
 
     #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
@@ -374,30 +380,36 @@ def sync_primary():
         update_webhooks(git_repo)
         sys.stdout.flush()
 
-
-if cmd == 'list-all':
-    me = lp.people(sys.argv[2])
-    for repo in lp.git_repositories.getRepositories(target=me):
-        print(repo)
-        current_rules = repo.getRules()
-        rule_txt = yaml.dump(current_rules, default_flow_style=False)
-        for line in rule_txt.split('\n'):
-            print("  " + line)
-        sys.stdout.flush()
-
-elif cmd == 'sync-misc':
-    sync_misc()
-
-elif cmd == 'sync-esm':
-    sync_esm()
-
-elif cmd == 'sync-primary':
-    sync_primary()
-
-elif cmd == 'sync-all':
+def sync_all(args):
     print("SYNC: primary")
-    sync_primary()
+    sync_primary(args)
     print("SYNC: esm")
-    sync_esm()
+    sync_esm(args)
     print("SYNC: misc")
-    sync_misc()
+    sync_misc(args)
+
+desc = "List or update permissions for kernel team repositories in Launchpad."
+parser = argparse.ArgumentParser(description=desc)
+
+subparsers = parser.add_subparsers(help="commands", dest="command", required=True)
+
+subparser = subparsers.add_parser("list-all", help="list permissions for users")
+subparser.add_argument("user", help="launchpad user")
+subparser.set_defaults(func=list_all)
+
+subparser = subparsers.add_parser("sync-misc", help="update misc repository permissions")
+subparser.set_defaults(func=sync_misc)
+
+subparser = subparsers.add_parser("sync-esm", help="update ESM repository permissions")
+subparser.set_defaults(func=sync_esm)
+
+subparser = subparsers.add_parser("sync-primary", help="update primary repository permissions")
+subparser.set_defaults(func=sync_primary)
+
+subparser = subparsers.add_parser("sync-all", help="update all repository permissions")
+subparser.set_defaults(func=sync_all)
+
+args = parser.parse_args()
+
+lp = Launchpad.login_with('admin-lp-git-permissions', 'production', version='devel')
+args.func(args)
