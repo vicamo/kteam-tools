@@ -126,14 +126,19 @@ def sync_misc(args):
     kernel_series = KernelSeries()
 
     admins = '/~canonical-kernel-repo-admins-active'
+    people = (
+        "/~canonical-kernel-committers",
+        "/~canonical-kernel-hwe-committers",
+        "/~canonical-kernel-tools-committers",
+        )
 
     series = [x for x in kernel_series.series if x.supported or x.development]
     fw_branches = [(x.codename, x.development) for x in series]
 
-    for repo_path, repo_branches in [
-            ['~canonical-kernel/+git/kteam-tools', [('master', False)]],
-            ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)]],
-            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches],
+    for repo_path, repo_branches, tags_wild in [
+            ['~canonical-kernel/+git/kteam-tools', [('master', False)], None],
+            ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)], None],
+            ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches, "Ubuntu-*"],
             ]:
 
         rules = []
@@ -141,11 +146,7 @@ def sync_misc(args):
         for branch, allow_rewind in repo_branches:
             grants = []
 
-            for person in (
-                    "/~canonical-kernel-committers",
-                    "/~canonical-kernel-hwe-committers",
-                    "/~canonical-kernel-tools-committers",
-                    ):
+            for person in people:
                 grants.append(generate_grant(person=person, push=True, rewind=allow_rewind))
             grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
             if admins != 'owner':
@@ -153,6 +154,20 @@ def sync_misc(args):
             rules.append(
                 {
                     'ref_pattern': "refs/heads/{}".format(branch),
+                    'grants': sort_grants(grants),
+                },
+                )
+
+        if tags_wild is not None:
+            grants = []
+            for person in people:
+                grants.append(generate_grant(person=person, create=True))
+            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+            if admins != 'owner':
+                grants.append(generate_grant(person='owner'))
+            rules.append(
+                {
+                    'ref_pattern': "refs/tags/{}".format(tags_wild),
                     'grants': sort_grants(grants),
                 },
                 )
