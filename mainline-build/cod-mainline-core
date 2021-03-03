@@ -112,6 +112,11 @@ fi
 short_version=$(echo "${full_version#v}" | cut -d. -f1-2)
 branches="master-$short_version master-next master"
 
+# Convert possible branch names into concrete existant git refs
+# ordering them by the most recently committed to so we we avoid those
+# which are languishing.
+git_refs=$(git for-each-ref --sort=-committerdate $(echo unstable/master-5.11 unstable/master-next unstable/master | sed -e 's@\(^\| \)@\1refs/remotes/@g') | awk '{print $NF;}')
+
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
 version=`echo "${full_version#v}" | cut -d. -f1-3 | cut -d- -f1`
@@ -149,13 +154,13 @@ echo "^^^ - build head"
 #
 # Pull in the packaging from the head of our tree.
 #
-echo "II: searching for packaging on $series/{$branches}"
-for branch in $branches
+echo "II: searching for packaging on $git_refs"
+for git_ref in $git_refs
 do
-	git checkout "$series/$branch" -- debian && break
+	git checkout "$git_ref" -- debian && break
 done
-git checkout "$series/$branch" -- debian.master
-echo "II: found packaging on $series/$branch"
+git checkout "$git_ref" -- debian.master
+echo "II: found packaging on $git_ref"
 
 # Mark this as a mainline-build.
 cat - <<EOM >>debian.master/rules.d/hooks.mk
@@ -200,15 +205,15 @@ done
 find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
 
 found="0"
-fbranch=""
-for branch in $branches
+config_ref=""
+for git_ref in $git_refs
 do
-	echo "II: searching for configs on $series/$branch"
+	echo "II: searching for configs on $git_ref"
 	let off=-1
 	while :
 	do
 		let "off=$off+1"
-		fversion=`git cat-file -p "$series/$branch:debian.master/changelog" | \
+		fversion=`git cat-file -p "$git_ref:debian.master/changelog" | \
 			    dpkg-parsechangelog -l- --count 1 --offset "$off" | awk '
 			BEGIN				{ v="END"; }
 			/^Version:/			{ v=$2; last }
@@ -222,10 +227,10 @@ do
 	[ "$fversion" = 'END' ] && continue
 	dpkg --compare-versions "$fversion" lt "$found" && break
 	found="$fversion"
-	fbranch="$branch"
+	config_ref="$git_ref"
 done
-configset="Ubuntu-$short_version-$found Ubuntu-$found $series/$fbranch"
-echo "II:  chose $series/$fbranch $found ($configset)"
+configset="Ubuntu-$short_version-$found Ubuntu-$found $config_ref"
+echo "II:  chose $config_ref $found ($configset)"
 
 #
 # Rebuild the changelog.
@@ -255,7 +260,7 @@ for configs in $configset
 do
 	git checkout "$configs" -- debian.master/config && break
 done
-echo "II: using configs from $series/$fbranch $configs"
+echo "II: using configs from $config_ref $configs"
 
 # Take the defaults for the configuration, applying any local
 # overrides for the series and also applying a default =m
