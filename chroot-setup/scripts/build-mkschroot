@@ -181,7 +181,7 @@ esac
 #            XXX: we should use kernel series to instantiate the
 #            full list of packages in the series.
 case "$SUITE" in
-hirsute)
+hirsute|groovy|focal)
 	ADDPKG="$ADDPKG dctrl-tools"
 	;;
 esac
