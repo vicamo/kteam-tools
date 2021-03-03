@@ -39,7 +39,7 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 def sort_grants(grants):
     return sorted(deepcopy(grants), key=lambda x: (x['grantee_type'], x['grantee_link']))
 
-def update_rules(git_repo, rules, show=False):
+def update_rules(git_repo, rules, show=False, dry_run=False):
     # Get and sort the rules so we can compare against them.
     current_rules = git_repo.getRules()
     for rule in current_rules:
@@ -56,10 +56,13 @@ def update_rules(git_repo, rules, show=False):
         rule_txt = yaml.dump(rules, default_flow_style=False)
         for line in rule_txt.split('\n'):
             print("  " + line)
-        print(" rules updated")
-        git_repo.setRules(rules=rules)
+        if dry_run:
+            print(" dry run, rules not updated")
+        else:
+            print(" rules updated")
+            git_repo.setRules(rules=rules)
 
-def update_subscriptions(git_repo, crankers):
+def update_subscriptions(git_repo, crankers, dry_run=False):
     if not git_repo.private:
         return
 
@@ -76,14 +79,17 @@ def update_subscriptions(git_repo, crankers):
             person = lp.people(cranker)
             print(" cranker:")
             print("  " + cranker)
-            git_repo.subscribe(person=person,
-                code_review_level='No email',
-                max_diff_lines="Don't send diffs",
-                notification_level='No email')
+            if dry_run:
+                print(" dry run, subscriptions not updated")
+            else:
+                git_repo.subscribe(person=person,
+                    code_review_level='No email',
+                    max_diff_lines="Don't send diffs",
+                    notification_level='No email')
 
 webhook_url = 'http://10.15.182.10/webhooks'
 webhook_events = ['git:push:0.1']
-def update_webhooks(git_repo):
+def update_webhooks(git_repo, dry_run=False):
     live_hook = None
     for hook in git_repo.webhooks:
         print(hook, hook.delivery_url, hook.event_types, hook.active)
@@ -101,7 +107,10 @@ def update_webhooks(git_repo):
         live_hook.event_types = webhook_events
         update_hook = True
     if update_hook:
-        live_hook.lp_save()
+        if dry_run:
+            print(" dry run, webhooks not updated")
+        else:
+            live_hook.lp_save()
 
 def list_all(args):
     me = lp.people(args.user)
@@ -150,16 +159,15 @@ def sync_misc(args):
 
         git_repo = lp.git_repositories.getByPath(path=repo_path)
         print(git_repo)
-        update_rules(git_repo, rules)
-        update_subscriptions(git_repo, crankers)
-        update_webhooks(git_repo)
+        update_rules(git_repo, rules, dry_run=args.dry_run)
+        update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
+        update_webhooks(git_repo, dry_run=args.dry_run)
         sys.stdout.flush()
 
 def sync_esm(args):
     admins = '/~canonical-kernel-repo-admins-active'
 
     kernel_series = KernelSeries()
-
 
     in_esm = set()
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
@@ -185,9 +193,9 @@ def sync_esm(args):
             if bits[-2] != '+git' or bits[-1] not in in_esm:
                 continue
             print(git_repo, 'ESM')
-            update_rules(git_repo, rules)
-            update_subscriptions(git_repo, crankers)
-            update_webhooks(git_repo)
+            update_rules(git_repo, rules, dry_run=args.dry_run)
+            update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
+            update_webhooks(git_repo, dry_run=args.dry_run)
             sys.stdout.flush()
 
 # XXX: we need a better way to control this.
@@ -375,9 +383,9 @@ def sync_primary(args):
             print("  invalid repository path {} for {}".format(path, thing.name))
             continue
         print(git_repo)
-        update_rules(git_repo, rules)
-        update_subscriptions(git_repo, crankers)
-        update_webhooks(git_repo)
+        update_rules(git_repo, rules, dry_run=args.dry_run)
+        update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
+        update_webhooks(git_repo, dry_run=args.dry_run)
         sys.stdout.flush()
 
 def sync_all(args):
@@ -390,6 +398,8 @@ def sync_all(args):
 
 desc = "List or update permissions for kernel team repositories in Launchpad."
 parser = argparse.ArgumentParser(description=desc)
+parser.add_argument("-d", "--dry-run", action="store_true", default=False,
+                    help="do not make any changes, just show what would be done")
 
 subparsers = parser.add_subparsers(help="commands", dest="command", required=True)
 
