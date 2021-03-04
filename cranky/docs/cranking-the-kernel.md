@@ -244,6 +244,10 @@ debian.BRANCH in the base kernel.
 Run `cranky review-master-changes` and review if any of the listed
 changes need to be applied to the derivative.
 
+In particular, check if any changes were made to debian.master/rules.d that should
+be reflected in debian.DERIVATIVE/rules.d. Those commits may not be obvious in
+the master changelog.
+
 <!--cheatsheet-->
 ```
 cranky review-master-changes
