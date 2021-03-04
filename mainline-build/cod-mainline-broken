@@ -2,7 +2,19 @@
 
 queue='/home/kernel-ppa/kteam-tools/mainline-build/mainline-work-kmsgq'
 
-find public_html/mainline/ -name BUILD.LOG -print | \
+request_log="/tmp/cod-mainline-broken.$$"
+touch "$request_log"
+request()
+{
+	if [ "$(egrep -c "^$@$" "$request_log")" -eq 0 ]; then
+		echo "$@" >>"$request_log"
+		echo "$@"
+	else
+		echo '# "'
+	fi
+}
+
+find public_html/mainline/ -name BUILD.LOG -print -o -name log -print | \
 while read log
 do
     # Scan the logs for likely issues.
@@ -21,14 +33,18 @@ do
             -e ": chroot not found (" \
             -e "fatal: empty ident name (for" \
             -e "error: '-mindirect-branch' and '-fcf-protection' are not compatible" \
+            -e "No rule to make target 'debian/canonical-certs.pem'" \
+            -e ": grep-dctrl: command not found" \
         "$log" | head -1
     )
+    core=
     case "$which" in
     *"dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead"*)
         which='use xz or gzip instead' ;;
     *"dpkg-deb (subprocess): compressing tar member: lzma error: Cannot allocate memory"*)
         which='Cannot allocate memory' ;;
     *"No space left on device"*)
+        core=0
         which='Out of disk space' ;;
     *"/usr/bin/python3: bad interpreter: No such file or directory"*)
         which='No python3 in chroot' ;;
@@ -47,12 +63,22 @@ do
     *"II: dkms-build downloading nvidia-390"*)
         which='nvidia dkms enabled' ;;
     *": chroot not found ("*)
+        core=1
         which='broken chroots' ;;
     *"fatal: empty ident name (for"*)
         which='broken git configuration' ;;
     *"error: '-mindirect-branch' and '-fcf-protection' are not compatible"*)
         which='compiler enables -fcf-protection by default' ;;
+    *"No rule to make target 'debian/canonical-certs.pem'"*)
+        core=1
+        which='inconsistent packaging and config for cert handling';;
+    *": grep-dctrl: command not found"*)
+        core=1
+        which='missing grep-dctrl binary';;
     esac
+
+    # Only handle tests which have been converted to core/not-core form.
+    [ "$core" = '' ] && continue
 
     # Check for unsigned and no modules.
     dirname=$(dirname "$log")
@@ -73,15 +99,24 @@ do
     # If we have a reason, report it and generate the rebuild command.
     if [ "$which" != '' ]; then
         dir=$( dirname "$log" )
-        echo "# $dir ... $which"
+        # If this is an error which requires the core to be rebuilt
+        # redirect us to the upper level directory.
+        if [ "$core" -eq 1 ]; then
+            for iteration in 1 2 3
+            do
+                [ -f "$dir/aggregate.yaml" ] && break
+                dir=$( dirname "$dir" )
+            done
+        fi
+        echo "# $dir (core=$core log=$log) ... $which"
         if [ -f "$dir/REBUILD" ]; then
-            echo "$queue $( cat "$dir/REBUILD" )"
+            request "$queue $( cat "$dir/REBUILD" )"
             continue;
         fi
         read tag <"$dir/COMMIT"
         case "$tag" in
         v*)
-            echo "$queue mainline-build crack $tag # INTUITED"
+            request "$queue mainline-build crack $tag # INTUITED"
             ;;
         cod/tip/*)
             IFS="/" read junk junk base date <"$dir/COMMIT"
@@ -94,9 +129,10 @@ do
             *)                  abi=999 ;;
             esac
 
-            echo "$queue mainline-build crack $tag $abi $base $date # INTUITED"
+            request "$queue mainline-build crack $tag $abi $base $date # INTUITED"
             ;;
         esac
         ##egrep -h " $tag( |$)" $HOME/logs/cod-enqueue-2017-*
     fi
 done
+rm -f "$request_log"
