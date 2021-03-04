@@ -115,7 +115,7 @@ branches="master-$short_version master-next master"
 # Convert possible branch names into concrete existant git refs
 # ordering them by the most recently committed to so we we avoid those
 # which are languishing.
-git_refs=$(git for-each-ref --sort=-committerdate $(echo unstable/master-5.11 unstable/master-next unstable/master | sed -e 's@\(^\| \)@\1refs/remotes/@g') | awk '{print $NF;}')
+git_refs=$(git for-each-ref --sort=-committerdate $(echo $branches | sed -e 's@\(^\| \)@\1refs/remotes/'"$series"'/@g') | awk '{print $NF;}')
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
