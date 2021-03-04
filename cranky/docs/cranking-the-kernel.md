@@ -31,6 +31,16 @@ cranky chroot create-session configs RELEASE:linux
 ```
 <!--/cheatsheet-->
 
+If your home directory or sources are not in the same partition as /
+(e.g. separate /home partition or encrypted home directory with ecryptfs) you
+might need to tweak /etc/schroot/sbuild/fstab:
+```
+# Allow use of /home for use with cranky.
+/home           /home           none    rw,bind         0       0
+# Allow use of /home with ecryptfs
+/home/<user>    /home/<user>    none    rw,bind         0       0
+```
+
 Make sure you have a proper chroot environment for the release and the kernel
 that you are going to build.
 
