@@ -343,9 +343,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/hirsute']
             supported: true
-            backport: true
-            #derived-from: [ '21.04', 'linux' ]
-            derived-from: [ '20.10', 'linux-raspi' ]
+            derived-from: [ '21.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
