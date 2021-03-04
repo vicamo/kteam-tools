@@ -1,0 +1,121 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <base>" 1>&2
+	exit 1
+fi
+base="$1"
+
+queue='/home/kernel-ppa/kteam-tools/mainline-build/mainline-work-kmsgq --priority low'
+
+request_log="/tmp/cod-mainline-broken.$$"
+touch "$request_log"
+request()
+{
+	if [ "$(egrep -c "^$@$" "$request_log")" -eq 0 ]; then
+		echo "$@" >>"$request_log"
+		echo "$@"
+	else
+		echo '# "'
+	fi
+}
+
+find "$base"/ -name BUILD.LOG -print -o -name log -print | \
+while read log
+do
+    # Scan the logs for likely issues.
+    which=$( grep \
+            -e "dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead" \
+            -e "dpkg-deb (subprocess): compressing tar member: lzma error: Cannot allocate memory" \
+            -e "No space left on device" \
+            -e "/usr/bin/python3: bad interpreter: No such file or directory" \
+            -e "aarch64-linux-gnu-gcc: command not found" \
+            -e "debian/rules: No such file or directory" \
+            -e "/lib-build: eval: line 89: syntax error: unexpected end of file" \
+            -e "No rule to make target 'syncconfig'.  Stop." \
+            -e "dh_prep: Requested unknown package linux-image-" \
+            -e "No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop." \
+            -e "II: dkms-build downloading nvidia-390" \
+            -e ": chroot not found (" \
+            -e "fatal: empty ident name (for" \
+            -e "error: '-mindirect-branch' and '-fcf-protection' are not compatible" \
+            -e "No rule to make target 'debian/canonical-certs.pem'" \
+            -e ": grep-dctrl: command not found" \
+        "$log" | head -1
+    )
+    core=
+    case "$which" in
+    *"dpkg-deb: error: obsolete compression type 'bzip2'; use xz or gzip instead"*)
+        which='use xz or gzip instead' ;;
+    *"dpkg-deb (subprocess): compressing tar member: lzma error: Cannot allocate memory"*)
+        which='Cannot allocate memory' ;;
+    *"No space left on device"*)
+        core=0
+        which='Out of disk space' ;;
+    *"/usr/bin/python3: bad interpreter: No such file or directory"*)
+        which='No python3 in chroot' ;;
+    *"aarch64-linux-gnu-gcc: command not found"*)
+        which='missing cross-compilers' ;;
+    *"debian/rules: No such file or directory"*)
+        which='bad rules via kernel-series' ;;
+    *"/lib-build: eval: line 89: syntax error: unexpected end of file"*)
+        which='lib-build fookage' ;;
+    *"No rule to make target 'syncconfig'.  Stop"*)
+        which='syncconfig compatibility' ;;
+    *"dh_prep: Requested unknown package linux-image-"*)
+        which='cleaned in the wrong architecture' ;;
+    *"No rule to make target 'silentoldconfig', needed by 'syncconfig'.  Stop."*)
+        which='syncconfig form changed' ;;
+    *"II: dkms-build downloading nvidia-390"*)
+        which='nvidia dkms enabled' ;;
+    *": chroot not found ("*)
+        core=1
+        which='broken chroots' ;;
+    *"fatal: empty ident name (for"*)
+        which='broken git configuration' ;;
+    *"error: '-mindirect-branch' and '-fcf-protection' are not compatible"*)
+        which='compiler enables -fcf-protection by default' ;;
+    *"No rule to make target 'debian/canonical-certs.pem'"*)
+        core=1
+        which='inconsistent packaging and config for cert handling';;
+    *": grep-dctrl: command not found"*)
+        core=1
+        which='missing grep-dctrl binary';;
+    esac
+
+    # Only handle tests which have been converted to core/not-core form.
+    [ "$core" = '' ] && continue
+
+    # Check for unsigned and no modules.
+    dirname=$(dirname "$log")
+    unsigned_found=0
+    modules_found=0
+    for file in "$dirname/"*
+    do
+        case "$file" in
+        "$dirname/linux-image-unsigned-"*)     unsigned_found=1 ;;
+        "$dirname/linux-modules-"*)            modules_found=1 ;;
+        esac
+    done
+    ##echo "$dirname: $unsigned_found $modules_found"
+    if [ "$unsigned_found" = 1 -a "$modules_found" = 0 ]; then
+        which="missing linux-modules-*"
+    fi
+
+    # If we have a reason, report it and generate the rebuild command.
+    if [ "$which" != '' ]; then
+        dir=$( dirname "$log" )
+        # If this is an error which requires the core to be rebuilt
+        # redirect us to the upper level directory.
+        if [ "$core" -eq 1 ]; then
+            for iteration in 1 2 3
+            do
+                [ -f "$dir/aggregate.yaml" ] && break
+                dir=$( dirname "$dir" )
+            done
+        fi
+        echo "# $dir (core=$core log=$log) ... $which"
+        request "$queue $( cat "$dir/REBUILD" )"
+    fi
+done
+rm -f "$request_log"
