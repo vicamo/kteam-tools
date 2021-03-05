@@ -77,6 +77,9 @@ linux-linus.git			git://kernel.ubuntu.com/virgin/linux.git					-
 kteam-tools			git://kernel.ubuntu.com/ubuntu/kteam-tools.git					-
 EOL
 
+# If we will not have local developers we do not need general repository mirrors.
+[ -f "$HOME/.cod/disable-ubuntu-repositories" ] && { rm -f $LOCK; exit 0; }
+
 while read k_u_c lp master flags
 do
 	case ",$flags," in
