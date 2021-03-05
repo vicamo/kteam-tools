@@ -32,7 +32,7 @@ for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         primary = None
         meta = None
         for package in source.packages:
-            if not package.type:
+            if package.type in (None, 'main'):
                 primary = package
             elif package.type == 'meta':
                 meta = package
