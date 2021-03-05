@@ -7,12 +7,17 @@ import yaml
 import json
 import re
 
+from ktl.kernel_series import KernelSeries
+
+
 class AdtMatrixSeed(object):
     def __init__(self, cache):
         self.cache_file = cache
         self.cache = {}
         self.latest = {}
         self.nbs = {}
+
+        self.ks = KernelSeries()
 
         self.britney_cache = {}
 
@@ -38,7 +43,7 @@ class AdtMatrixSeed(object):
                     for arch in sorted(self.cache[seriespkg][pkg]):
                         tmp_arch.append(arch)
                     seeds[seriespkg].append((pkg, tmp_arch))
-                        
+
             # seeds: make a list based output for adt-matrix.
             latest_merged = {}
             for master in self.latest:
@@ -55,37 +60,8 @@ class AdtMatrixSeed(object):
                 'seeds':            seeds,
                 'seeds-latest':     latest_merged,
             }
-            json.dump(out, cfd, indent=2)
+            json.dump(out, cfd, indent=2, sort_keys=True)
         os.rename(self.cache_file + '.new', self.cache_file)
-
-
-    def britney_hierachy(self, state, record, seen=None):    
-        if seen == None:
-            seen = {}
-        if record['source'] in seen:
-            return []
-        seen[record['source']] = True
-
-        hier = [ record ]
-
-        if 'dependencies' in record:
-            for how in record['dependencies']:
-                for depends_package in record['dependencies'][how]:
-                    if not depends_package.startswith('linux'):
-                        continue
-                    for record2 in state['sources']:
-                        if record2['source'] == depends_package:
-                            hier += self.britney_hierachy(state, record2, seen)
-        # XXX: old-format -- remove when gone.
-        elif 'excuses' in record:
-            for line in record['excuses']:
-                if line.startswith('Depends:'):
-                    bits = line.strip().split()
-                    for record2 in state['sources']:
-                        if record2['source'] == bits[2]:
-                            hier += self.britney_hierachy(state, record2, seen)
-
-        return hier
 
 
     def britney_load(self, series, britney):
@@ -135,46 +111,65 @@ class AdtMatrixSeed(object):
                         print('remove-package -y -m NBS -d ubuntu -s {}-proposed -e {} {} # legacy'.format(series, version, record['source']))
 
 
-    def accumulate(self, series, package, flags, britney):
+    def accumulate(self, series, source, flags, britney):
         state = self.britney_load(series, britney)
 
         #if 'devel' not in flags:
         #    self.britney_nbs(series, flags)
         self.britney_nbs(series, flags)
 
-        for record in state['sources']:
-            if record['source'] != package:
-                continue;
+        ks_series = self.ks.lookup_series(codename=series)
+        if ks_series is None:
+            raise ValueError("{}:{}: invalid series".format(series, source))
+        ks_source = ks_series.lookup_source(source)
+        if ks_source is None:
+            raise ValueError("{}:{}: invalid source".format(series, source))
+        package_key = None
+        for ks_package in ks_source.packages:
+            if ks_package.type == 'meta':
+                package_key = ks_package.name
+                break
+        if package_key is None:
+            raise ValueError("{}:{}: no meta package found".format(series, source))
+
+        # Iterate over our hierachy and accumulate testing for each as seen
+        # by britney so we can track it.
+        debug = []
+        for ks_package in ks_source.packages:
+            package = ks_package.name
+            debug.append(package)
+
+            # Locate the britney record if there is one.
+            for record in state['sources']:
+                if record['source'] == ks_package.name:
+                    break
+            else:
+                continue
 
             # The persistant list holds any package we ever tested against.
-            pcache = self.cache.setdefault(series + '-' + package, {})
+            pcache = self.cache.setdefault(series + '-' + package_key, {})
             # The current lists holds those we tested on in the most recent test run.
-            lcache = self.latest.setdefault(series + '-' + package, {})
+            lcache = self.latest.setdefault(series + '-' + package_key, {})
 
-            debug = [ record['source'] ]
-            for record2 in self.britney_hierachy(state, record):
-                if record2['source'] not in debug:
-                    debug.append(record2['source'])
-                if ('policy_info' in record2 and
-                    'autopkgtest' in record2['policy_info'] and
-                    len(record2['policy_info']['autopkgtest']) > 0
-                   ):
-                    # If we have a list, this becomes the new list.
-                    tcache = lcache[record2['source']] = {}
-                    for pkg in record2['policy_info']['autopkgtest']:
-                        for arch in record2['policy_info']['autopkgtest'][pkg]:
-                            if '/' in pkg:
-                                bits = pkg.split('/')
-                            else:
-                                bits = pkg.split()
-                            package = bits[0]
-                            pcache.setdefault(package, {})[arch] = True
-                            tcache.setdefault(package, {})[arch] = True
+            if ('policy_info' in record and
+                    'autopkgtest' in record['policy_info'] and
+                    len(record['policy_info']['autopkgtest']) > 0):
+                # If we have a list, this becomes the new list.
+                tcache = lcache[record['source']] = {}
+                for pkg in record['policy_info']['autopkgtest']:
+                    for arch in record['policy_info']['autopkgtest'][pkg]:
+                        if '/' in pkg:
+                            bits = pkg.split('/')
+                        else:
+                            bits = pkg.split()
+                        tpackage = bits[0]
+                        pcache.setdefault(tpackage, {})[arch] = True
+                        tcache.setdefault(tpackage, {})[arch] = True
 
-            print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
+        print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
 
 
-matrix_seed = AdtMatrixSeed('package-relation.json')
+matrix_seed = AdtMatrixSeed('test--package-relation.json')
 for line in sys.stdin:
     (series, package, parent, flags, britney) = line.strip().split()
     matrix_seed.accumulate(series, package, flags.split(','), britney)
