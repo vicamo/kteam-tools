@@ -47,7 +47,8 @@ amd64)
 		--command x86:cod-tip-build.arm64 \
 		--command x86:cod-tip-build.armhf \
 		--command x86:cod-tip-build.ppc64el \
-		--command x86:cod-tip-build.powerpc
+		--command x86:cod-tip-build.powerpc \
+		--command x86:cod-tip-build.riscv64
 	;;
 s390x)
 	cmd_args \
