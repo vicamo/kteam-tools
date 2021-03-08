@@ -611,9 +611,5 @@ dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1
 
 Pay attention to the following kernels, they require special actions to be
 cranked:
-- linux-euclid
-- linux-fips
-- linux-ibm-gt
-- all the edge kernels (i.e., linux-hwe-edge)
-- all the esm kernels, currently precise/linux and precise/linux-lts-trusty
-
+- all kernels marked as "private" in info/kernel-series.yaml
+- all the ESM kernels
