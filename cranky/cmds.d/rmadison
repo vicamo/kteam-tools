@@ -52,54 +52,56 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
     result = []
     for route in routing:
         dest = route[0]
-        ppa, pocket = route[1][0]
+        count = 0
+        for ppa, pocket in route[1]:
+            count += 1
+            dest_n = dest + '#' + str(count)
 
-        if show_pocket:
-            # Skip it if a pocket was provided but the route doesn't match
-            if dest != show_pocket:
+            if show_pocket and dest != show_pocket:
+                # Skip it if a pocket was provided but the route doesn't match
                 continue
 
-        elif ((dest not in ("release", "security", "updates", "proposed") and
-             not show_all)):
-            # This is a non-standard PPA and we didn't ask for it, so
-            # skip it
-            continue
-
-        lp_archive = lp.archives.getByReference(reference=ppa)
-        if not lp_archive:
-            # Archive not found (private?)
-            continue
-
-        for package in sorted(packages):
-            lp_sources = lp_archive.getPublishedSources(source_name=package,
-                                                        distro_series=lp_series,
-                                                        pocket=pocket,
-                                                        exact_match=True,
-                                                        order_by_date=True,
-                                                        status="Published")
-            if not lp_sources:
-                # Nothing found in this PPA/pocket
+            elif ((dest not in ("release", "security", "updates", "proposed") and
+                 not show_all)):
+                # This is a non-standard PPA and we didn't ask for it, so
+                # skip it
                 continue
 
-            # The package version
-            package_version = lp_sources[0].source_package_version
+            lp_archive = lp.archives.getByReference(reference=ppa)
+            if not lp_archive:
+                # Archive not found (private?)
+                continue
 
-            # Generate the pocket name to display
-            if dest == "release":
-                pocket_name = series
-            elif dest in ("security", "updates", "proposed"):
-                pocket_name = "%s-%s" % (series, dest)
-            else:
-                pocket_name = "%s (ppa:%s)" % (series, dest)
+            for package in sorted(packages):
+                lp_sources = lp_archive.getPublishedSources(source_name=package,
+                                                            distro_series=lp_series,
+                                                            pocket=pocket,
+                                                            exact_match=True,
+                                                            order_by_date=True,
+                                                            status="Published")
+                if not lp_sources:
+                    # Nothing found in this PPA/pocket
+                    continue
 
-            # The basic data that we always display
-            route_data = [(package, pocket_order(pocket_name)), package, package_version, pocket_name, "source"]
+                # The package version
+                package_version = lp_sources[0].source_package_version
 
-            if show_ext:
-                # Pull additional (non-rmadison) data from launchpad
-                route_data.append(lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M"))
+                # Generate the pocket name to display
+                if dest == "release":
+                    pocket_name = series
+                elif dest in ("security", "updates", "proposed"):
+                    pocket_name = "%s-%s" % (series, dest)
+                else:
+                    pocket_name = "%s (ppa:%s)" % (series, dest_n)
 
-            result.append(route_data)
+                # The basic data that we always display
+                route_data = [(package, pocket_order(pocket_name), count), package, package_version, pocket_name, "source"]
+
+                if show_ext:
+                    # Pull additional (non-rmadison) data from launchpad
+                    route_data.append(lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M"))
+
+                result.append(route_data)
 
     # Sort the list by package and pocket names, and strip the order key.
     return [a[1:] for a in sorted(result)]
