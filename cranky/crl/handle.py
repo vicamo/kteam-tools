@@ -219,6 +219,10 @@ class HandleSet(HandleCore):
             for package_entry in source.packages:
                 if package_entry == sample.package:
                     continue
+                # There is no sense in having a directory handle for something
+                # which does not have repository.
+                if package_entry.repo is None:
+                    continue
                 directory = prefix + add[package_entry.type if package_entry.type else 'main']
                 self.trees.append(HandleTree(series, package_entry, directory=directory,
                                              validate=validate, ks=self.ks, config=self.config))
@@ -226,6 +230,10 @@ class HandleSet(HandleCore):
         else:
             self.trees = []
             for package_entry in source.packages:
+                # There is no sense in having a directory handle for something
+                # which does not have repository.
+                if package_entry.repo is None:
+                    continue
                 self.trees.append(HandleTree(series, package_entry,
                                              validate=validate, ks=self.ks, config=self.config))
 
