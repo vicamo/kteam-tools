@@ -182,6 +182,14 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
+        default-drivers:
+            <<:             *routing-table-default
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            security-signing:
         uc20: &routing-table-uc20
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
@@ -214,6 +222,14 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+        devel-drivers:
+            <<:             *routing-table-devel
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            security-signing:
         devel-prerelease:
             <<:             *routing-table-devel
             updates:
