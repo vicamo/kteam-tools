@@ -293,7 +293,9 @@ class PackageBuild:
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
 
         # If we find a build is now complete, record _where_ it was built.
-        if self.pocket == 'ppa' and self._data['built'] == True:
+        if ((self.pocket == 'ppa' or self.pocket.startswith('build')) and
+                self._data['built'] == True):
+            # NOTE: copy-proposed-kernel et al treat auto select build-private so just call this build.
             self.bug.bprops.setdefault('built', {})[self.dependent] = "build#{}".format(archive_num)
 
     def __getattr__(self, name):
@@ -347,6 +349,7 @@ class Package():
         if s.source is not None and s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
+                ('build-private', 'build-private'),
                 ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
                 ('as-proposed', 'as-proposed'),
@@ -417,6 +420,12 @@ class Package():
             if not package_package:
                 return None
 
+            # If the package is an ancillary package then if that package has a version
+            # then we should take it.
+            ancillary_for = s.ancillary_package_for(pkg)
+            if ancillary_for is not None:
+                return s.bug.bprops.get('versions', {}).get(ancillary_for)
+
             # Work out the package version form based on its type.
             if pkg == 'lbm':
                 version_lookup, version_sloppy = (s.bug.kernel + '-' + s.bug.abi, '.')
@@ -435,10 +444,22 @@ class Package():
                     package_package, version_lookup, version_sloppy, e))
 
             # Cache any positive version matches.
-            if version:
+            if version is not None:
                 s.bug.bprops.setdefault('versions', {'source': s.bug.version})[pkg] = version
 
         return version
+
+    # ancillary_package_for
+    #
+    def ancillary_package_for(self, pkg):
+        if pkg in ('lrg', 'lrs'):
+            return 'lrm'
+        return None
+
+    # adjunct_package
+    #
+    def adjunct_package(self, pkg):
+        return self.ancillary_package_for(pkg) == 'lrm'
 
     # __determine_build_status
     #
@@ -492,14 +513,18 @@ class Package():
             s.scan_pockets = scan_pockets
 
             for pocket in scan_pockets:
-                if pocket not in s._routing:
+                pocket_from = pocket
+                if pocket == 'ppa' and s.adjunct_package(dep):
+                    pocket_from = 'build-private'
+
+                if pocket_from not in s._routing:
                     continue
-                if s._routing[pocket] is None:
-                    s.bug.overall_reason = "{} pocket routing archive specified but invalid {}".format(pocket, s.source)
+                if s._routing[pocket_from] is None:
+                    s.bug.overall_reason = "{} pocket routing archive specified but invalid {}".format(pocket_from, s.source)
                     cwarn(s.bug.overall_reason)
                     continue
 
-                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket, s._routing[pocket], s.pkgs[dep], version, abi, sloppy)
+                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
