@@ -301,6 +301,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
+            routing: devel-drivers
             versions: ['5.11.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -315,6 +316,10 @@
                 linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/hirsute']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
             supported: true
             swm:
                 kernel-testing: true
