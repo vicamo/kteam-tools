@@ -50,28 +50,27 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
     lp_series = lp.distributions["ubuntu"].getSeries(name_or_version=series)
 
     result = []
-    for package in sorted(packages):
-        package_list = []
-        for route in routing:
-            dest = route[0]
-            ppa, pocket = route[1][0]
+    for route in routing:
+        dest = route[0]
+        ppa, pocket = route[1][0]
 
-            if show_pocket:
-                # Skip it if a pocket was provided but the route doesn't match
-                if dest != show_pocket:
-                    continue
-
-            elif ((dest not in ("release", "security", "updates", "proposed") and
-                 not show_all)):
-                # This is a non-standard PPA and we didn't ask for it, so
-                # skip it
+        if show_pocket:
+            # Skip it if a pocket was provided but the route doesn't match
+            if dest != show_pocket:
                 continue
 
-            lp_archive = lp.archives.getByReference(reference=ppa)
-            if not lp_archive:
-                # Archive not found (private?)
-                continue
+        elif ((dest not in ("release", "security", "updates", "proposed") and
+             not show_all)):
+            # This is a non-standard PPA and we didn't ask for it, so
+            # skip it
+            continue
 
+        lp_archive = lp.archives.getByReference(reference=ppa)
+        if not lp_archive:
+            # Archive not found (private?)
+            continue
+
+        for package in sorted(packages):
             lp_sources = lp_archive.getPublishedSources(source_name=package,
                                                         distro_series=lp_series,
                                                         pocket=pocket,
@@ -94,19 +93,16 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                 pocket_name = "%s (ppa:%s)" % (series, dest)
 
             # The basic data that we always display
-            route_data = [package, package_version, pocket_name, "source"]
+            route_data = [(package, pocket_order(pocket_name)), package, package_version, pocket_name, "source"]
 
             if show_ext:
                 # Pull additional (non-rmadison) data from launchpad
                 route_data.append(lp_sources[0].date_published.strftime("%Y-%m-%d %H:%M"))
 
-            # Add the route data to the package list
-            package_list.append(route_data)
+            result.append(route_data)
 
-        # Sort the temporary list by pocket names and add it to the result
-        result.extend(sorted(package_list, key=pocket_order))
-
-    return result
+    # Sort the list by package and pocket names, and strip the order key.
+    return [a[1:] for a in sorted(result)]
 
 
 def print_table(data, show_ext=False, script=False):
