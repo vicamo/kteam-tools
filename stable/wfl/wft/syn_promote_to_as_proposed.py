@@ -76,7 +76,8 @@ class SynPromoteToAsProposed(TaskHandler):
             if s.task.status not in ('Fix Committed', 'Fix Released'):
                 cinfo("packages ready for copy, requesting")
                 (dst_archive, dst_pocket) = s.bug.debs.routing('as-proposed')[0]
-                for dep, package in s.bug.debs.pkgs.items():
+                for dep in s.bug.debs.dependent_packages_for_pocket('Proposed'):
+                    package = s.bug.debs.pkgs[dep]
                     (src_archive, src_pocket) = s.bug.debs.build_info[dep]['Proposed']['route']
                     cinfo("copying from {}:{}:{} to {}:{}:{} package {}:{}".format(src_archive, src_pocket, s.bug.series, dst_archive, dst_pocket, s.bug.series, dep, package))
                     dst_archive.copyPackage(

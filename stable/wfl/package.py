@@ -589,6 +589,17 @@ class Package():
 
         return s.bug.bprops['packages']
 
+    # dependent_packages_for_pocket
+    #
+    def dependent_packages_for_pocket(self, pocket):
+        pkgs = []
+        for pkg in self.build_info:
+            if pkg == 'lrg' and pocket not in ('ppa', 'build-private', 'Signing'):
+                continue
+            pkgs.append(pkg)
+        cdebug("dependent_packages_for_pocket({})={}".format(pocket, pkgs))
+        return pkgs
+
     # distro_series
     #
     @property
@@ -639,7 +650,7 @@ class Package():
         center(s.__class__.__name__ + '.all_in_pocket')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             try:
                 pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
             except KeyError:
@@ -664,7 +675,7 @@ class Package():
         center(s.__class__.__name__ + '.all_built_and_in_pocket')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             try:
                 pkg_built = s.srcs[pkg][pocket]['built']
             except KeyError:
@@ -687,7 +698,7 @@ class Package():
         center(s.__class__.__name__ + '.all_built_in_src_dst')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(dst):
             try:
                 pkg_built_src = s.srcs[pkg][src]['built']
             except KeyError:
@@ -715,7 +726,7 @@ class Package():
         center(s.__class__.__name__ + '.built_in_src_dst_delta')
         retval = []
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(dst):
             try:
                 pkg_built_src = s.srcs[pkg][src]['built']
             except KeyError:
@@ -784,7 +795,7 @@ class Package():
         failures = []
         missing = 0
         sources = 0
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             sources += 1
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
@@ -902,7 +913,7 @@ class Package():
             pocket = 'Updates'
 
         bi = s.build_info
-        for pkg in bi:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             if bi[pkg][pocket]['built'] is not True:
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
@@ -921,7 +932,7 @@ class Package():
         pocket = 'Security'
 
         bi = s.build_info
-        for pkg in bi:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             if bi[pkg][pocket]['built'] is not True:
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
@@ -1185,7 +1196,8 @@ class Package():
         mis_lst = []
         # Run the packages list for this source, do main first as we need to
         # check components against that.
-        for (pkg_type, pkg) in sorted(s.pkgs.items(), key=lambda a: (a[0] != 'main', a[0])):
+        for pkg_type in sorted(s.dependent_packages_for_pocket(pocket), key=lambda a: (a != 'main', a)):
+            pkg = s.pkgs[pkg_type]
             if pkg_type == 'main':
                 check_ver = s.version
             else:
