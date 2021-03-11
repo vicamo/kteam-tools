@@ -1271,7 +1271,7 @@ class Package():
             if not ps:
                 if check_ver:
                     missing_pkg.append([pkg, check_ver])
-                elif 'linux-signed' in pkg:
+                elif pkg_type == 'signed':
                     missing_pkg.append([pkg, 'for version=%s' % (s.version)])
                 else:
                     missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
@@ -1308,7 +1308,7 @@ class Package():
 
             # If we have a match:
             if match:
-                if pkg_type == 'lrm':
+                if pkg_type == 'lrm' or s.ancillary_package_for(pkg_type) == 'lrm':
                     if primary_src_component == 'main':
                         which_component = 'restricted'
                     else:
