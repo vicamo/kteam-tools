@@ -5,6 +5,8 @@ import re
 from datetime                           import datetime, timedelta, timezone
 import json
 
+from lazr.restfulclient.errors          import NotFound
+
 from ktl.kernel_series                  import KernelSeries
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
@@ -73,6 +75,7 @@ class PackageBuild:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
             version = matches[0].source_package_version
+            changes = matches[0].changesFileUrl()
         else:
             fullybuilt   = False
             status  = ''
@@ -83,9 +86,10 @@ class PackageBuild:
             version = None
             if len(ps) > 0:
                 version = ps[0].source_package_version
+            changes = None
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
-        return fullybuilt, creator, signer, published, most_recent_build, status, version
+        return fullybuilt, creator, signer, published, most_recent_build, status, version, changes
 
     # __find_matches
     #
@@ -282,6 +286,7 @@ class PackageBuild:
         self._data['status'] = info[5]
         self._data['version'] = info[6]
         self._data['route'] = (src_archive, src_pocket)
+        self._data['changes'] = info[7]
 
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
 
@@ -381,6 +386,7 @@ class Package():
         s._version_tried = {}
 
         cleave('package::__init__')
+
 
     def routing(self, pocket):
         center(self.__class__.__name__ + '.routing')
@@ -785,6 +791,41 @@ class Package():
             retval = bi[pkg][pocket]['signer']
         cleave('Packages::signer')
         return retval
+
+    # bugs
+    #
+    @property
+    def bugs(self):
+        center(self.__class__.__name__ + '.bugs')
+
+        # Find an upload record for the main package.
+        changes_url = None
+        pkg = 'main'
+        bi = self.build_info
+        for pocket in self.__pockets_uploaded:
+            if pkg not in bi or pocket not in bi[pkg]:
+                    continue
+            if bi[pkg][pocket]['status'] in self.__states_present:
+                changes_url = bi[pkg][pocket]['changes']
+                cdebug("CHANGES: url={}".format(changes_url))
+                break
+
+
+        # If we managed to find a changes file then we can extract the list.
+        bugs = None
+        if changes_url is not None:
+            changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+            try:
+                changes = self.lp.launchpad._browser.get(changes_url)
+                bugs = []
+                for line in changes.decode('utf-8').rstrip().split('\n'):
+                    if line.startswith('Launchpad-Bugs-Fixed:'):
+                        bugs = line.split(' ')[1:]
+            except NotFound:
+                pass
+
+        cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
+        return bugs
 
     # packages_released
     #
