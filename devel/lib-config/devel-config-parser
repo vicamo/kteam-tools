@@ -233,7 +233,7 @@ def read_kconfig(arch, base, filename):
             # config attributes
             if a[0] == 'help' or a[0] == '---help---':
                 text = True
-            elif a[0] in ('boolean', 'bool', 'tristate', 'int', 'string'):
+            elif a[0] in ('boolean', 'bool', 'tristate', 'int', 'string', 'hex'):
                 if a[0] == 'boolean':
                     a[0] = 'bool'
                 A['type'] = a[0]
