@@ -112,12 +112,28 @@ class VerificationTesting(TaskHandler):
         cdebug("SPAM final_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
         # See if we have any trackers that need verification.
-        spam_needed = False
+        human_state = []
+        overall = {}
         for bug in sru_bugs:
-            if sru_bugs[bug]['state'].endswith('-tracker'):
+            state = sru_bugs[bug]['state']
+            human_state.append("{}:{}".format(bug, state))
+
+            # Trackers are not individually verified.
+            if state.endswith('-tracker'):
                 continue
-            spam_needed = True
-            break
+
+            overall[state] = overall.get(state, 0) + 1
+
+        # Find the most concerning state.
+        spam_needed = 'none'
+        summary = []
+        for state in ('failed', 'needed', 'reverted', 'verified'):
+            if state in overall:
+                if spam_needed == 'none':
+                    spam_needed = state
+                summary.append("{}:{}".format(state, overall[state]))
+
+        cinfo("verification_testing: {}".format(' '.join(summary)))
 
         cleave(s.__class__.__name__ + '._spam_bugs retval={}'.format(spam_needed))
 
@@ -160,8 +176,9 @@ class VerificationTesting(TaskHandler):
                     retval = True
                 break
 
-            # Spam bugs from the main package if they haven't been spammed already
-            elif 'bugs-spammed' not in s.bug.bprops:
+            # Spam bugs against this package (but not those against our master)
+            # if they haven't been spammed already.
+            if 'bugs-spammed' not in s.bug.bprops:
                 cinfo('            Spamming bugs for verification', 'yellow')
                 try:
                     s._spam_bugs()
@@ -174,6 +191,27 @@ class VerificationTesting(TaskHandler):
                 if s.task.status == 'Confirmed':
                     s.task.status = 'In Progress'
                     retval = True
+
+            # Work out if the testing is complete.
+            status = 'needed'
+            try:
+                status = s._spam_bugs(dry_run=True)
+            except BugSpamError as e:
+                cerror('            %s' % str(e))
+
+            task_status = s.task.status
+            if status == 'failed' and task_status != 'Incomplete':
+                s.task.status = 'Incomplete'
+                retval = True
+
+            elif status == 'needed' and task_status != 'In Progress':
+                s.task.status = 'In Progress'
+                retval = True
+
+            elif status in ('reverted', 'verified', 'none') and task_status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
+
             break
 
         if s.task.status == 'Fix Released':
