@@ -18,7 +18,7 @@ if [ "$1" = '--update-deps' ]; then
 	update=1
 fi
 
-export DEPLOY_DEPS="${DEPLOY_DEPS:-deps}"
+DEPLOY_DEPS="${DEPLOY_DEPS:-deps}"
 while read thing url master
 do
 	dep="$DEPLOY_DEPS/$thing"
@@ -32,7 +32,7 @@ do
 		(
 			cd "$dep" || exit 1
 			if [ -x "./deploy" ]; then
-				"./deploy" --update
+				DEPLOY_DEPS=".." "./deploy" --update
 			else
 				git pull --ff-only
 			fi
@@ -43,5 +43,5 @@ so-trello			git://git.launchpad.net/~apw/+git/so-trello
 python-mattermost-driver	git://git.launchpad.net/~canonical-kernel-team/+git/python-mattermost-driver https://github.com/Vaelor/python-mattermost-driver
 EOL
 
-ln -sf $(realpath --relative-to=stable deps/so-trello/trellotool) stable/trellotool
-ln -sf $(realpath --relative-to=announce deps/python-mattermost-driver/src/mattermostdriver) announce/mattermostdriver
+ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/so-trello/trellotool) stable/trellotool
+ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-mattermost-driver/src/mattermostdriver) announce/mattermostdriver
