@@ -1,14 +1,15 @@
 #!/bin/sh
 
 here=$(dirname "$(readlink -f "${0}")")
+app=$(basename "$here")
 
 if [ "$1" = '--update' ]; then
 	# Update ourselves, that may include this script so ensure
 	# we use the new version.
 	shift
 	cd "$here" || exit 1
-	echo "II: updating kteam-tools"
-	git pull
+	echo "II: updating $app"
+	git pull --ff-only || exit 1
 	exec "$here/deploy" --update-deps "$@"
 fi
 
@@ -17,17 +18,25 @@ if [ "$1" = '--update-deps' ]; then
 	update=1
 fi
 
+export DEPLOY_DEPS="${DEPLOY_DEPS:-deps}"
 while read thing url master
 do
-	dep="deps/$thing"
+	dep="$DEPLOY_DEPS/$thing"
 	mkdir -p "$dep"
 	if [ ! -d "$dep/.git" ]; then
-		echo "II: cloning dependency $thing ($url)"
+		echo "II: $app: cloning dependency $thing ($url)"
 		git clone "$url" "$dep"
 
 	elif [ -n "$update" ]; then
-		echo "II: updating dependency $thing ($url)"
-		(cd "$dep" && git pull)
+		echo "II: $app: updating dependency $thing ($url)"
+		(
+			cd "$dep" || exit 1
+			if [ -x "./deploy" ]; then
+				"./deploy" --update
+			else
+				git pull --ff-only
+			fi
+		)
 	fi
 done <<EOL
 so-trello			git://git.launchpad.net/~apw/+git/so-trello
