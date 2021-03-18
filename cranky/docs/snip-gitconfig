@@ -13,7 +13,6 @@
 	cccover = 0
 	tocover = 0
 	chainreplyto = false
-	suppresscc = all
 	suppressfrom = true
 
 [url "git+ssh://<your-launchpad-id>@git.launchpad.net/"]
