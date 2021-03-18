@@ -111,11 +111,56 @@ class VerificationTesting(TaskHandler):
 
         cdebug("SPAM final_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
+        cleave(s.__class__.__name__ + '._spam_bugs')
+
+    # _verification_status
+    #
+    def _verification_status(self):
+        center(self.__class__.__name__ + '._verification_status')
+
+        # Grab a list of our bugs (as found in the changes file).
+        sru_bugs = self.bug.debs.bugs
+        cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
+
+        # If we have a master bug then we ask for its list of bugs and subtract those from ours
+        master_bug = self.bug.master_bug
+        if master_bug is not None:
+            master_bugs = master_bug.debs.bugs
+            if master_bugs is None:
+                master_bugs = []
+            cdebug("SPAM-V master_bugs {} {}".format(len(master_bugs), master_bugs))
+
+            sru_bugs = list(set(sru_bugs) - set(master_bugs))
+        cdebug("SPAM-V final_bugs {} {}".format(len(sru_bugs), sru_bugs))
+
         # See if we have any trackers that need verification.
         human_state = []
         overall = {}
         for bug in sru_bugs:
-            state = sru_bugs[bug]['state']
+            try:
+                cinfo("APW " + str(self._lp) + " " + str(self._lp.default_service) + " " + str(self._lp.default_service.launchpad))
+                lp_bug = self._lp.default_service.launchpad.bugs[bug]
+                rls = self.bug.series
+
+                state = 'missing'
+                if   'kernel-tracking-bug'              in lp_bug.tags: state = 'release-tracker'
+                elif 'kernel-release-tracker'           in lp_bug.tags: state = 'release-tracker'
+                elif 'kernel-release-tracking-bug'      in lp_bug.tags: state = 'release-tracker'
+                elif 'kernel-cve-tracker'               in lp_bug.tags: state = 'cve-tracker'
+                elif 'kernel-cve-tracking-bug'          in lp_bug.tags: state = 'cve-tracker'
+                elif 'kernel-stable-tracking-bug'       in lp_bug.tags: state = 'stable-tracker'
+
+                # By making these checks separately and after the previous ones, we
+                # can add the correct state for tracking bugs.
+                #
+                if 'verification-failed-%s' % rls       in lp_bug.tags: state = 'failed'
+                elif 'verification-reverted-%s' % rls   in lp_bug.tags: state = 'reverted'
+                elif 'verification-done-%s'   % rls     in lp_bug.tags: state = 'verified'
+                elif 'verification-needed-%s' % rls     in lp_bug.tags: state = 'needed'
+                elif 'verification-done'                in lp_bug.tags: state = 'verified'
+            except KeyError:
+                state = 'private'
+
             human_state.append("{}:{}".format(bug, state))
 
             # Trackers are not individually verified.
@@ -127,7 +172,7 @@ class VerificationTesting(TaskHandler):
         # Find the most concerning state.
         spam_needed = 'none'
         summary = []
-        for state in ('failed', 'needed', 'reverted', 'verified'):
+        for state in ('failed', 'needed', 'reverted', 'private', 'verified'):
             if state in overall:
                 if spam_needed == 'none':
                     spam_needed = state
@@ -135,7 +180,7 @@ class VerificationTesting(TaskHandler):
 
         cinfo("verification_testing: {}".format(' '.join(summary)))
 
-        cleave(s.__class__.__name__ + '._spam_bugs retval={}'.format(spam_needed))
+        cleave(self.__class__.__name__ + '._verification_status retval={}'.format(spam_needed))
 
         return spam_needed
 
@@ -195,7 +240,7 @@ class VerificationTesting(TaskHandler):
             # Work out if the testing is complete.
             status = 'needed'
             try:
-                status = s._spam_bugs(dry_run=True)
+                status = s._verification_status()
             except BugSpamError as e:
                 cerror('            %s' % str(e))
 
