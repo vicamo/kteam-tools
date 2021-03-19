@@ -1388,6 +1388,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
                     type: meta
             supported: false
+            derived-from: [ '20.04', 'linux-raspi' ]
 
         linux-adv-uno420:
             routing: newparis-uc20
