@@ -457,6 +457,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -470,6 +471,10 @@
                 linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/hirsute']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
