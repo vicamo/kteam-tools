@@ -471,9 +471,9 @@
                 linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/hirsute']
-                linux-restricted-generate:
+                linux-restricted-generate-gcp:
                     type: lrg
-                linux-restricted-signatures:
+                linux-restricted-signatures-gcp:
                     type: lrs
             supported: true
             derived-from: [ '21.04', 'linux' ]
