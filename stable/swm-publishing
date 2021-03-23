@@ -369,7 +369,7 @@ class MonitorLaunchpadArchivePrivate:
                 if source.supported or source.development:
                     if not source.routing:
                         continue
-                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
                             'release'):
                         dest = source.routing.lookup_destination(pocket)
                         if not dest:
@@ -961,7 +961,7 @@ class MonitorFactory:
                 if source.supported or source.development:
                     if not source.routing:
                         continue
-                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
                             'release', 'as-proposed'):
                         dest = source.routing.lookup_destination(pocket)
                         if not dest:
