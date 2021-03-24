@@ -280,6 +280,7 @@ def sync_primary(args):
         version_people = dict()
 
         any_supported = False
+        snap_master_added = False
         for thing in path_things:
             print(thing, thing.source.development, thing.source.supported)
             if not is_hwe(thing.source) and thing.source.development is False and thing.source.supported is False:
@@ -308,7 +309,12 @@ def sync_primary(args):
                 branches.append(branch[:-5])
             print(thing, branch)
             branches.append(branch)
-            if getattr(thing, 'type', 'other') in (None, 'main'):
+            # snap repositories have a fungible master shared by the remainder.
+            if thing_type =='snap' and not snap_master_added:
+                snap_master_added = True
+                branches.append('master')
+            # debs repositories have a -prep branch.
+            if thing_type in (None, 'main'):
                 branches.append(branches[0] + '-prep')
             for branch in branches:
                 if thing.series.development:
