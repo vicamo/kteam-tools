@@ -1013,13 +1013,13 @@
             variants: [ '-edge' ]
             packages:
                 linux-aws-5.8:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.8-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.8-next']
                 linux-meta-aws-5.8:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.8']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.8']
                 linux-restricted-modules-aws-5.8:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal', 'aws-5.8']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal', 'aws-5.8']
             supported: true
             backport: true
             derived-from: [ '20.10', 'linux-aws' ]
