@@ -405,6 +405,7 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-aws:
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -415,6 +416,10 @@
                 linux-restricted-modules-aws:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/hirsute']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
