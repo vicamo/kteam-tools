@@ -312,7 +312,7 @@ def sync_primary(args):
             # snap repositories have a fungible master shared by the remainder.
             if thing_type =='snap' and not snap_master_added:
                 snap_master_added = True
-                branches.append('master')
+                branches.insert(0, 'master')
             # debs repositories have a -prep branch.
             if thing_type in (None, 'main'):
                 branches.append(branches[0] + '-prep')
