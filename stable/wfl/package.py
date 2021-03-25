@@ -977,7 +977,7 @@ class Package():
                 failures.append("{}:depwait".format(pkg))
             elif status == 'FAILEDTOBUILD':
                 # Signed is allowed to be broken until we have built the main kernel.
-                if pkg != 'signed':
+                if s.signing_package_for(pkg) is None:
                     failures.append("{}:failed".format(pkg))
             elif status == '':
                 failures.append("{}:missing".format(pkg))
@@ -985,9 +985,13 @@ class Package():
             elif status == 'FULLYBUILT_PENDING':
                 failures.append("{}:queued".format(pkg))
 
-        if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
-                s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
-            failures.append("signed:retry-needed")
+        for pkg in s.dependent_packages_for_pocket(pocket):
+            signing_for = s.signing_package_for(pkg)
+            if signing_for is None:
+                continue
+            if (s.srcs.get(pkg, {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
+                    s.srcs.get(signing_for, {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
+                failures.append("{}:retry-needed".format(pkg))
 
         if ignore_all_missing and sources == missing:
                 failures = []
