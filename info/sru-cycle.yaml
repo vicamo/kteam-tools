@@ -17,7 +17,7 @@
 #       the cycle is on hold; infer kernel-block on all active packages
 
 '2021.03.15':
-    release-date: '2021-04-05'
+    release-date: '2021-04-12'
 
 '2021.02.22':
     release-date: '2021-03-15'
