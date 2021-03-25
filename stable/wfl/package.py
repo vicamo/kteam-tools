@@ -7,7 +7,7 @@ import json
 
 from ktl.kernel_series                  import KernelSeries
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
-from lib.utils                          import date_to_string, dump
+from ktl.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
 from .errors                            import ShankError, ErrorExit
