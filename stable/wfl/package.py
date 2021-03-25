@@ -456,6 +456,14 @@ class Package():
             return 'lrm'
         return None
 
+    # signing_package_for
+    #
+    def signing_package_for(self, pkg):
+        return {
+                'lrs': 'lrm',
+                'signed': 'main',
+            }.get(pkg)
+
     # adjunct_package
     #
     def adjunct_package(self, pkg):

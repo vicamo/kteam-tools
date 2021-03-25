@@ -289,10 +289,16 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
+        has_signables = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('prepare-package-'):
+                pkg = task_name.replace('prepare-package-', '')
+                if (s.bug.debs.signing_package_for(pkg) and
+                        s.bug.tasks_by_name[task_name].status != 'Invalid'):
+                    has_signables = True
+
         s.pocket_src = 'ppa'
-        if (s.bug.debs.routing('Signing') and
-                'prepare-package-signed' in s.bug.tasks_by_name and
-                s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
+        if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_dest = 'Signing'
             s.pockets_after = ['Proposed', 'Release/Updates']
         else:
@@ -334,9 +340,16 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        if (s.bug.debs.routing('Signing') and
-                'prepare-package-signed' in s.bug.tasks_by_name and
-                s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
+        has_signables = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('prepare-package-'):
+                pkg = task_name.replace('prepare-package-', '')
+                if (s.bug.debs.signing_package_for(pkg) and
+                        s.bug.tasks_by_name[task_name].status != 'Invalid'):
+                    has_signables = True
+
+        cdebug("signing={} has_signables={}".format(s.bug.debs.routing('Signing'), has_signables))
+        if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'
             s.pockets_after = ['Release/Updates']
