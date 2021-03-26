@@ -19,16 +19,13 @@ Several of the scripts get bug information from launchpad via the launchpad
 api. There is a wrapper api that sits on top of tha launchpad api which is
 used.
 
-1. Use bzr to get a copy of the wrapper api:
-    bzr branch bzr+ssh://bazaar.launchpad.net/~arsenal-devel/arsenal/python-launchpadlib-toolkit/
+1. sudo apt install python3-launchpadlib
 
-2. Install the wrapper:
-    cd python-launchpadlib-toolkit;sudo ./setup.py install
-
-3. Install so-trello:
+2. Install so-trello:
    a) via snap (so-trello by shadowen)
    b) via git clone lp:~apw/+git/so-trello
-4. Authenticate trellotool:
+
+3. Authenticate trellotool:
    a) so-trello authenticate
    b) visit the URL that gets printed copy that number
    c) create ~/.trellotool with the following content:
