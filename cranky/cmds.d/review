@@ -41,8 +41,13 @@ def normalize_control_file(path, ver, abi, upload):
     fullver = verabi + '.' + upload
     basever = verabi + '.' + upload.split('+')[0]
 
+    fulldep = '(>= ' + verabi + '.' + upload + ')'
+    basedep = '(>= ' + verabi + '.' + upload.split('+')[0] + ')'
+
     with open(path, "r") as cfile:
         cfile_data = cfile.read()
+    cfile_data = cfile_data.replace(basedep, "(>= BASEDEP)")
+    cfile_data = cfile_data.replace(fulldep, "(>= FULLDEP)")
     cfile_data = cfile_data.replace(fullver, "FULLVER")
     cfile_data = cfile_data.replace(basever, "BASEVER")
     cfile_data = cfile_data.replace(verabi, "VERABI")
