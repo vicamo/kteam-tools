@@ -432,6 +432,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -445,6 +446,10 @@
                 linux-restricted-modules-azure:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/hirsute']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
