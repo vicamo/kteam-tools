@@ -62,6 +62,17 @@ def normalize_unsorted_file(path):
     with open(path, "w") as ufile:
         ufile.write(''.join(ufile_data))
 
+def normalize_abi_file(path):
+    afile_data = []
+    with open(path, "r") as afile:
+        for line in afile:
+            bits = line.split()
+            if len(bits) > 2:
+                bits[2] = '-hash-'
+            afile_data.append(' '.join(bits) + '\n')
+    with open(path, "w") as afile:
+        afile.write(''.join(sorted(afile_data)))
+
 def normalize_tree(path, ver, abi, upload):
     normalize_control_file(os.path.join(path, "DSC"), ver, abi, upload)
     normalize_control_file(os.path.join(path, "debian", "control"), ver, abi, upload)
@@ -72,11 +83,20 @@ def normalize_tree(path, ver, abi, upload):
             glob("{}/debian.*/d-i/kernel-versions".format(path))
         ):
         normalize_control_file(control_file, ver, abi, upload)
+    # Detect ABI location.
+    if len(glob("{}/debian.*/abi/abiname".format(path))) > 0:
+        abi_path = "debian.*/abi"
+    else:
+        abi_path = "debian.*/abi/*"
     for unsorted_file in (
-            glob("{}/debian.*/abi/*/*/*.modules".format(path)) +
-            glob("{}/debian.*/abi/*/fwinfo".format(path))
+            glob("{}/{}/*/*.modules".format(path, abi_path)) +
+            glob("{}/{}/fwinfo".format(path, abi_path))
         ):
         normalize_unsorted_file(unsorted_file)
+    for abi_file in glob("{}/{}/*/*".format(path, abi_path)):
+        if '.' in os.path.basename(abi_file):
+            continue
+        normalize_abi_file(abi_file)
 
 def dsc_source_version(dsc_file):
     basename = os.path.basename(dsc_file)
