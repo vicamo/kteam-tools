@@ -519,7 +519,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing devel-drivers
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-oracle:
