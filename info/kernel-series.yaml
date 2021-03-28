@@ -519,6 +519,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing devel-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -532,6 +533,10 @@
                 linux-restricted-modules-oracle:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/hirsute']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
