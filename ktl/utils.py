@@ -127,7 +127,7 @@ def string_to_date(date):
 
 # FileDoesntExist
 #
-class FileDoesntExist():
+class FileDoesntExist(Exception):
     def __init__(self, file_name=''):
         self.file_name = file_name
 
