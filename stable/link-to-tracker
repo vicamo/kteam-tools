@@ -3,17 +3,14 @@
 import sys
 import os
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'py3')))
-
-
 from datetime                           import datetime, timedelta
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, DEBUG, INFO, WARNING
 from ktl.log                            import center, cleave, cdebug, cinfo, Clog
 from ktl.launchpad                      import Launchpad
-from lib.git                            import Git
-from lib.debian                         import Debian
-from lib.shell                          import sh
+from ktl.git                            import Git
+from ktl.debian                         import Debian
+from ktl.shell                          import sh
 
 # AppError
 #
