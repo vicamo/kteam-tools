@@ -66,7 +66,7 @@ class ShellError(Exception):
 # enqueue_output
 #
 def enqueue_output(out, queue, quiet=False):
-    for line in iter(out.readline, b''):
+    for line in iter(out.readline, ''):
         queue.put(line)
         if not quiet:
             stdout.write(line)
@@ -77,7 +77,7 @@ def enqueue_output(out, queue, quiet=False):
 #
 def sh(cmd, timeout=None, ignore_result=False, quiet=False):
     out = []
-    p = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, shell=True)
+    p = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, shell=True, universal_newlines=True)
     q = Queue()
     t = Thread(target=enqueue_output, args=(p.stdout, q, quiet))
     t.daemon = True # thread dies with the program
