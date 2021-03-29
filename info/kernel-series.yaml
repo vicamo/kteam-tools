@@ -1099,6 +1099,35 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-5.8:
+            routing: prerelease
+            variants: [ '-edge' ]
+            packages:
+                linux-azure-5.8:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.8-next']
+                linux-meta-azure-5.8:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-5.8']
+                linux-signed-azure-5.8:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-5.8']
+                linux-restricted-modules-azure-5.8:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal', 'azure-5.8']
+            supported: true
+            backport: true
+            derived-from: [ '20.10', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
         linux-gcp:
             variants: ['--']
             packages:
