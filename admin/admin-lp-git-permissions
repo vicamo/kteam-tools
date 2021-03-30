@@ -4,6 +4,7 @@ from __future__ import print_function
 from copy                               import deepcopy
 import json
 import os
+import re
 import sys
 import yaml
 import argparse
@@ -274,6 +275,8 @@ def sync_primary(args):
                 #if branch.endswith('-next'):
                 #    repo_packages.setdefault(path).append(branch[:-5])
 
+    snap_branch_prefix_re = re.compile('^(.*?)(-[0-9\.]+)?$')
+
     for (path, path_things) in repo_things.items():
         rules = []
         rules_wild = []
@@ -281,6 +284,7 @@ def sync_primary(args):
 
         any_supported = False
         snap_master_added = False
+        snap_prefix_added = {}
         for thing in path_things:
             print(thing, thing.source.development, thing.source.supported)
             if not is_hwe(thing.source) and thing.source.development is False and thing.source.supported is False:
@@ -337,7 +341,13 @@ def sync_primary(args):
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
             if thing_type == 'snap':
-                branch_prefix = '-' + branch
+                # Drop any numerical suffix from the branch name.
+                match = snap_branch_prefix_re.search(branch)
+                if match:
+                    branch_prefix = '-' + match.group(1)
+                else:
+                    branch_prefix = '-' + branch
+
             else:
                 branch_prefix = thing.source.name.replace('linux', '')
             branch_prefixes = [ branch_prefix ]
@@ -350,6 +360,9 @@ def sync_primary(args):
             for person in people:
                 grants.append(generate_grant(person=person, create=True, rewind=rewind_tags))
             for branch_prefix in branch_prefixes:
+                if branch_prefix in snap_prefix_added:
+                    continue
+                snap_prefix_added[branch_prefix] = True
                 rules_wild.append(
                     {
                         'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
