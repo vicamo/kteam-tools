@@ -1042,7 +1042,6 @@
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
-
         linux-azure:
             variants: ['--']
             packages:
@@ -1144,6 +1143,33 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-gcp-5.8:
+            routing: prerelease
+            variants: [ '-edge' ]
+            packages:
+                linux-gcp-5.8:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.8-next']
+                linux-meta-gcp-5.8:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal', 'gcp-5.8']
+                linux-signed-gcp-5.8:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal', 'gcp-5.8']
+                linux-restricted-modules-gcp-5.8:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal', 'gcp-5.8']
+            supported: true
+            backport: true
+            derived-from: [ '20.10', 'linux-gcp' ]
             swm:
                 kernel-testing: true
             testing:
