@@ -462,6 +462,17 @@ class Package():
                 'signed': 'main',
             }.get(pkg)
 
+    # feeder_package_for
+    #
+    def feeder_package_for(self, pkg):
+        return {
+                'signed': 'main',
+                'lrm': 'main',
+                'lrg': 'lrm',
+                'lrs': 'lrg',
+                'meta': 'main',
+            }.get(pkg)
+
     # adjunct_package
     #
     def adjunct_package(self, pkg):
@@ -973,25 +984,62 @@ class Package():
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 failures.append("{}:building".format(pkg))
-            elif status == 'DEPWAIT':
-                failures.append("{}:depwait".format(pkg))
-            elif status == 'FAILEDTOBUILD':
-                # Signed is allowed to be broken until we have built the main kernel.
-                if s.signing_package_for(pkg) is None:
-                    failures.append("{}:failed".format(pkg))
+            elif status in ('DEPWAIT', 'FAILEDTOBUILD'):
+                real_status = 'depwait' if status == 'DEPWAIT' else 'failed'
+                wait_status = 'depwait' if status == 'DEPWAIT' else 'failwait'
+
+                # Look up the dependancy chain looking for something which
+                # can be retried.
+                active_feeder = pkg
+                while True:
+                    previous_feeder = active_feeder
+                    active_feeder = s.feeder_package_for(active_feeder)
+                    if active_feeder is None:
+                        break
+                    active_feeder_state = s.srcs.get(active_feeder, {}).get(pocket, {}).get('status')
+                    if active_feeder_state not in ('DEPWAIT', 'FAILEDTOBUILD'):
+                       break
+
+                # If there is nothing above us doing anything.  Then our status
+                # is real.
+                if active_feeder is None:
+                    failures.append("{}:{}".format(pkg, real_status))
+                    continue
+
+                # If the active feeder is incomplete then we should continue
+                # waiting for it.
+                if active_feeder_state != 'FULLYBUILT':
+                    failures.append("{}:{}".format(pkg, wait_status))
+                    continue
+
+                # Work out if the previous_feeder is retryable.
+                previous_feeder_completed = s.srcs[previous_feeder].get(pocket, {}).get('published')
+                active_feeder_completed = s.srcs[active_feeder].get(pocket, {}).get('published')
+                cinfo("completions {} => {} {} -> {} {}".format(pkg, previous_feeder_completed, previous_feeder, active_feeder, active_feeder_completed))
+                previous_feeder_retry = (
+                        previous_feeder_completed is not None and
+                        active_feeder_completed is not None and
+                        previous_feeder_completed <= active_feeder_completed)
+
+                # If the previous_feeder is actually us and can be retried.
+                if previous_feeder_retry and previous_feeder == pkg:
+                    failures.append("{}:retry-needed".format(pkg))
+                    continue
+
+                # If the previous_feeder can be retried, assume it will
+                # elsewhere in the pass.  Mark ourselves as waiting.
+                if previous_feeder_retry:
+                    failures.append("{}:{}".format(pkg, wait_status))
+
+                # Otherwise we are genuinely broken.
+                else:
+                    failures.append("{}:{}".format(pkg, real_status))
+
             elif status == '':
                 failures.append("{}:missing".format(pkg))
                 missing += 1
             elif status == 'FULLYBUILT_PENDING':
                 failures.append("{}:queued".format(pkg))
-
-        for pkg in s.dependent_packages_for_pocket(pocket):
-            signing_for = s.signing_package_for(pkg)
-            if signing_for is None:
-                continue
-            if (s.srcs.get(pkg, {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
-                    s.srcs.get(signing_for, {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
-                failures.append("{}:retry-needed".format(pkg))
 
         if ignore_all_missing and sources == missing:
                 failures = []
