@@ -1,11 +1,20 @@
 #!/usr/bin/python3
 
+import os
 import sys
 import json
 import subprocess
 from urllib.request import urlopen
 
 from launchpadlib.launchpad import Launchpad
+
+if len(sys.argv) < 3:
+    print(len(sys.argv))
+    print('Usage: {0} <url to ADT matrix of single kernel> <failed package>\n\n'
+          'For example:\n'
+          '{0} https://people.canonical.com/~kernel/status/adt-matrix/xenial-linux-meta.html '
+          'acpi-call\n'.format(os.path.basename(__file__)))
+    sys.exit(1)
 
 (url, test_package) = sys.argv[1:]
 
@@ -40,11 +49,22 @@ keys = {
     'test_version': test_version,
     'package': package,
     'version': version,
+    'series' : series,
 }
-title = "{test_package} {test_version} ADT test failure with {package} {version}".format(**keys)
+if test_package == package:
+    title = '{test_package} '.format(**keys)
+else:
+    title = '{test_package}/{test_version} '.format(**keys)
+title += "ADT test failure with {package}/{version}".format(**keys)
 
 print(title)
-desc_lines = ['Testing failed on:' ]
+desc_lines = [
+    'This is a scripted bug report about ADT failures while running {test_package} tests '
+    'for {package}/{version} on {series}. Whether this is caused by the dep8 tests of the'
+    ' tested source or the kernel has yet to be determined.'.format(**keys),
+    '',
+    'Testing failed on:'
+]
 for (arch, state, url) in broken:
     desc_lines.append("    {}: {}log.gz".format(arch, url))
 description = "\n".join(desc_lines)
@@ -55,12 +75,18 @@ lp = Launchpad.login_with('adt-submit-bug', 'production')
 distro = lp.distributions("ubuntu")
 source = distro.getSourcePackage(name=test_package)
 
-#print(source.self_link, title, description)
+# print(source.self_link)
+# print(kernel_source.self_link)
 
 bug = lp.bugs.createBug(target=source, title=title, description=description)
+
+if test_package != package:
+    kernel_source = distro.getSourcePackage(name=package)
+    bug.addTask(target=kernel_source)
+
 tags = bug.tags
 tags.append('kernel-adt-failure')
-#tags.append('kernel-adt-failure-lts-trusty')
+# tags.append('kernel-adt-failure-lts-trusty')
 bug.tags = tags
 bug.lp_save()
 
