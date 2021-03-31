@@ -85,13 +85,12 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
-                        "branch": branch})
+                        "branch": branch, "remote-branch": rmt_branch})
 
     # Print the summary
     cnotice("Summary:")
     for s in summary:
-        cnotice("  Repo '{}' in directory '{}' (branch '{}')".format(
-                s["name"], s["dir"], s["branch"]))
+        cnotice("  Repo '{name}' in directory '{dir}' (branch '{branch}' remote '{remote}' remote-branch '{remote-branch}')".format(**s))
 
 
 def expanduser(path):
