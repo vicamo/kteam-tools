@@ -5,7 +5,7 @@ import re
 from datetime                           import datetime, timedelta, timezone
 import json
 
-from lazr.restfulclient.errors          import NotFound
+from lazr.restfulclient.errors          import NotFound, Unauthorized
 
 from ktl.kernel_series                  import KernelSeries
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
@@ -967,6 +967,41 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
 
+    # attempt_retry
+    #
+    def attempt_retry(s, pkg):
+        retried = False
+        package_name = s.dependent_packages[pkg]
+        for record in s.bug.maintenance:
+            if record['type'] != 'deb-build':
+                continue
+            if record['detail']['package'] == package_name:
+                cinfo("RETRY: {}".format(record['detail']['lp-api']))
+                lp_build = s.lp.launchpad.load(record['detail']['lp-api'])
+                if lp_build is None:
+                    cinfo("RETRY: {} build not found".format(
+                        record['detail']['lp-api']))
+                elif not lp_build.can_be_retried:
+                    cinfo("RETRY: {} not retryable (state={})".format(
+                        record['detail']['lp-api'], lp_build.buildstate))
+                    # If this is not retryable but is in progress now,
+                    # so just behave as if we retried it.
+                    if lp_build.buildstate in (
+                            'Needs building',
+                            'Currently building',
+                            'Uploading build'):
+                        retried = True
+                else:
+                    try:
+                        lp_build.retry()
+                        retried = True
+                        cinfo("RETRY: {} retry successful".format(
+                            record['detail']['lp-api']))
+                    except Unauthorized as e:
+                        cinfo("RETRY: {} retry unsuccessful".format(
+                            record['detail']['lp-api']))
+        return retried
+
     # all_failures_in_pocket
     #
     def all_failures_in_pocket(s, pocket, ignore_all_missing=False):
@@ -1021,9 +1056,20 @@ class Package():
                         active_feeder_completed is not None and
                         previous_feeder_completed <= active_feeder_completed)
 
-                # If the previous_feeder is actually us and can be retried.
+                # If the previous_feeder is actually us and can be retried
+                # actually attempt it.
                 if previous_feeder_retry and previous_feeder == pkg:
-                    failures.append("{}:retry-needed".format(pkg))
+                    # If the retry fails this requirs a manual retry,
+                    # mark us and annotate the maintenance record.
+                    if not s.attempt_retry(pkg):
+                        failures.append("{}:retry-needed".format(pkg))
+
+                    # If it works it should end up in Needs Building state
+                    # which implies we should report it as :building.
+                    else:
+                        failures.append("{}:building".format(pkg))
+
+                    # Otherwise we made progress, so no mark is needed.
                     continue
 
                 # If the previous_feeder can be retried, assume it will
