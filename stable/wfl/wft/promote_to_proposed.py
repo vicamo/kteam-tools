@@ -89,7 +89,7 @@ class PromoteFromTo(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pocket_after) and
+            if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pockets_after) and
                 not s._kernel_unblock_ppa()):
                 s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(s.pocket_dest)
                 break
@@ -294,10 +294,10 @@ class PromoteToProposed(PromoteFromTo):
                 'prepare-package-signed' in s.bug.tasks_by_name and
                 s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
             s.pocket_dest = 'Signing'
-            s.pocket_after = 'Proposed'
+            s.pockets_after = ['Proposed', 'Release/Updates']
         else:
             s.pocket_dest = 'Proposed'
-            s.pocket_after = 'Release/Updates'
+            s.pockets_after = ['Release/Updates']
 
         # If we have no source pocket, then there can be nothing to copy.
         if s.bug.debs.routing(s.pocket_src) is None:
@@ -339,11 +339,11 @@ class PromoteSigningToProposed(PromoteFromTo):
                 s.bug.tasks_by_name['prepare-package-signed'] != 'Invalid'):
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'
-            s.pocket_after = 'Release/Updates'
+            s.pockets_after = ['Release/Updates']
         else:
             s.pocket_src = None
             s.pocket_dest = None
-            s.pocket_after = None
+            s.pockets_after = None
 
         cleave(s.__class__.__name__ + '.__init__')
 

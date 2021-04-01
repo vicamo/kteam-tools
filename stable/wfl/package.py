@@ -960,7 +960,7 @@ class Package():
 
     # pocket_clear
     #
-    def pocket_clear(s, pocket, pocket_next):
+    def pocket_clear(s, pocket, pockets_after):
         '''
         Check that the proposed pocket is either empty or contains the same version
         as found in -updates/-release.
@@ -968,14 +968,27 @@ class Package():
         retval = True
 
         # Release/Updates maps based on development series.
-        if pocket_next == 'Release/Updates':
-            pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
+        pockets_srch = []
+        for pocket_next in pockets_after:
+            if pocket_next == 'Release/Updates':
+                pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
+            pockets_srch.append(pocket_next)
 
         bi = s.build_info
         for pkg in bi:
-            if pocket not in bi[pkg] or pocket_next not in bi[pkg]:
+            if pocket not in bi[pkg]:
                 continue
-            if bi[pkg][pocket]['version'] not in (None, bi[pkg][pocket_next]['version']):
+            found = False
+            if bi[pkg][pocket]['version'] is None:
+                found = True
+            for pocket_next in pockets_srch:
+                if found:
+                    break
+                if pocket_next not in bi[pkg]:
+                    continue
+                if bi[pkg][pocket]['version'] == bi[pkg][pocket_next]['version']:
+                    found = True
+            if not found:
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
 
