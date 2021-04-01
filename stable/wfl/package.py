@@ -1047,6 +1047,8 @@ class Package():
                     continue
                 if bi[pkg][pocket]['version'] == bi[pkg][pocket_next]['version']:
                     found = True
+                if pkg not in s.dependent_packages_for_pocket(pocket_next):
+                    found = True
             if not found:
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
