@@ -210,10 +210,11 @@ class SruReport:
                     if 'Proposed' not in self.data['releases'][rls][pkg]: continue
 
                     #lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
+                    pkg_id = rls + '--' + pkg
                     lpurl = 'https://launchpad.net/ubuntu/+source/%s/' % (pkg)
                     ppaurl = 'https://launchpad.net/~canonical-kernel-team/+archive/ppa/+packages'
                     retval += '                        <tr>\n'
-                    retval += '                            <td width="400" valign="top"><a href="%s"        >%s  </a></td>\n' % (lpurl, pkg)
+                    retval += '                            <td width="400" valign="top"><a id="%s" href="%s"        >%s  </a></td>\n' % (pkg_id, lpurl, pkg)
 
                     if 'Release' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['Release'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
