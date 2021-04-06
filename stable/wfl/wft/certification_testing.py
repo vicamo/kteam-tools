@@ -17,6 +17,7 @@ class CertificationTesting(TaskHandler):
         s.jumper['Confirmed']     = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
+        s.jumper['Opinion']       = s._status_check
         s.jumper['Fix Committed'] = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
@@ -53,10 +54,14 @@ class CertificationTesting(TaskHandler):
 
         present = s.bug.debs.all_built_and_in_pocket('Proposed')
         if not present:
-            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
-                cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
-                s.task.status = 'Incomplete'
+            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
+                cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
+                s.task.status = 'Opinion'
                 retval = True
+
+        elif present and s.task.status == 'Opinion':
+            s.task.status = 'New'
+            retval = True
 
         elif 'certification-testing-failed' in s.bug.tags:
             cdebug('Certification Testing tagged as FAIL', 'yellow')
