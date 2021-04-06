@@ -243,6 +243,10 @@ class SruReport:
                                     colour = '#ffff00' # Yellow
                                     img    = 'img/shield.png'
                                     msg    = 'This is a cve-tracking bug, not needing verification'
+                                elif state == 'packaging-tracker':
+                                    colour = '#ffff00' # Yellow
+                                    img    = 'img/zoom.png'
+                                    msg    = 'This is a packaging-tracking bug, not needing verification'
                                 else:
                                     colour = '#ffffff'
                                     img    = 'img/tux.png'

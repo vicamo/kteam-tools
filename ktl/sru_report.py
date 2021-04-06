@@ -270,6 +270,7 @@ class SruReport:
                                 elif 'kernel-cve-tracker'           in lp_bug.tags: state = 'cve-tracker'
                                 elif 'kernel-cve-tracking-bug'      in lp_bug.tags: state = 'cve-tracker'
                                 elif 'kernel-stable-tracking-bug'   in lp_bug.tags: state = 'stable-tracker'
+                                elif 'kernel-packaging-tracking-bug' in lp_bug.tags: state = 'packaging-tracker'
 
                                 # By making these checks separately and after the previous ones, we
                                 # can add the correct state for tracking bugs.
