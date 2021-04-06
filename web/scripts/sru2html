@@ -143,6 +143,48 @@ class SruReport:
 </html>
         '''
 
+    def package_type_key(self, package):
+        if package.startswith('linux-signed'):
+            words = 2
+            order = 15
+
+        elif package.startswith('linux-restricted-modules'):
+            words = 3
+            order = 40
+
+        elif package.startswith('linux-restricted-'):
+            words = 3
+            order = 45
+
+        elif package.startswith('linux-backports-modules-'):
+            words = 4
+            order = 60
+
+        elif package.startswith('linux-meta'):
+            words = 2
+            order = 80
+
+        elif package.startswith('linux'):
+            words = 1
+            order = 10
+
+        else:
+            words = 0
+            order = 90
+
+        # Form the master source package name from the suffix of the binary
+        # package (a poormans ks_package.source.name).  Above we have
+        # identified the length of the package type prefix, the remainder (if
+        # any) represents the package suffix: linux-signed-aws -> [aws],
+        # linux-meta-gcp-5.8 -> [gcp, 5.8].  Reassemble these with a linux-
+        # prefix to form the kernel-series source package name.
+        master_package = '-'.join(['linux'] + package.split('-')[words:])
+
+        # Sort by the kernel-series source package, and within that order
+        # packages in a consistent order as above.  Where there is any
+        # ambiguity disambiguate using the full package name.
+        return master_package, order, package
+
     def body(self):
         retval =  '''
     <body class="bugbody">
@@ -156,7 +198,7 @@ class SruReport:
                 retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
                 pkg_keys = self.data['releases'][rls].keys()
-                pkg_keys.sort()
+                pkg_keys.sort(key=self.package_type_key)
 
                 retval += "                <div class=\"l2-section-heading\">%s</div>\n" % rls
                 retval += '            <div class="section">\n'
