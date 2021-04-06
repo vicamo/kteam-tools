@@ -332,7 +332,7 @@ for bid in sorted(data['swm']):
     except KeyError:
         pass
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
-    attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html'
+    attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
 
     status_list = __status_bites(b, attrs)
     first = True
