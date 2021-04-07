@@ -169,6 +169,10 @@ class MonitorLaunchpadArchive:
         self.reference = archive
         self.archive = lp.archives.getByReference(reference=archive)
 
+        if self.archive is None:
+            print("MonitorLaunchpadArchive: archive not found reference={}".format(archive))
+            raise MonitorIncompatible()
+
         bs.attach(self.reference, self)
 
         # Make a quick lookup for all valid source packages.
