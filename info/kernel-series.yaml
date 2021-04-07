@@ -404,6 +404,27 @@
                         clouds: ['metal']
             invalid-tasks: [ 'regression-testing' ]
 
+        linux-realtime:
+            routing:
+                build:
+                    - ['ppa:canonical-kernel-rt/ppa', 'Release']
+            variants: ['--']
+            packages:
+                linux-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/hirsute']
+                linux-meta-realtime:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/hirsute']
+            supported: true
+            derived-from: [ '21.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    realtime:
+                        arches: ['amd64', 'arm64']        # test system arch names
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-aws:
             routing: devel-drivers
             variants: ['--']
