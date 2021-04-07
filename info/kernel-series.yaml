@@ -827,6 +827,7 @@
     routing-table: *routing-table
     sources:
         linux:
+            routing: stable-drivers
             versions: ['5.4.0']
             variants: ['--']
             packages:
@@ -841,6 +842,10 @@
                 linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
             supported: true
             swm:
                 kernel-testing: true
