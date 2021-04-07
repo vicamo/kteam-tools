@@ -182,7 +182,7 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
-        default-drivers:
+        stable-drivers:
             <<:             *routing-table-default
             build-private:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
@@ -624,7 +624,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
-            routing: default-drivers
+            routing: stable-drivers
             versions: ['5.8.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -1004,7 +1004,7 @@
                         clouds: ['metal']
 
         linux-oem-5.10:
-            routing: default-drivers
+            routing: stable-drivers
             versions: ['5.10.0']
             variants: ['-20.04b']
             packages:
