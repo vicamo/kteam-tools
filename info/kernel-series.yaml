@@ -407,7 +407,7 @@
         linux-realtime:
             routing:
                 build:
-                    - ['ppa:canonical-kernel-rt/ppa', 'Release']
+                    - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
             variants: ['--']
             packages:
                 linux-realtime:
