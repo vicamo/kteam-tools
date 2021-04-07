@@ -2054,6 +2054,7 @@
     routing-table: *routing-table
     sources:
         linux:
+            routing: stable-drivers
             versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
@@ -2067,6 +2068,10 @@
                 linux-restricted-modules:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
             snaps:
                 pc-kernel:
                     primary: true
