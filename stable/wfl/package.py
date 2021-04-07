@@ -199,6 +199,7 @@ class PackageBuild:
                     'target': s.bug.target,
                     'detail': {
                         'state': buildstate,
+                        'type': s.dependent,
                         'package': build.source_package_name,
                         'url': build.web_link,
                         'lp-api': build.self_link,
@@ -1000,6 +1001,7 @@ class Package():
                     except Unauthorized as e:
                         cinfo("RETRY: {} retry unsuccessful".format(
                             record['detail']['lp-api']))
+                        record['detail']['manual-retry'] = True
         return retried
 
     # all_failures_in_pocket
