@@ -624,7 +624,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
-            routing: devel-drivers
+            routing: default-drivers
             versions: ['5.8.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
