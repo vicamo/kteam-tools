@@ -294,7 +294,7 @@
                 linux-restricted-modules-unstable:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
-            supported: true
+            supported: false
             testing:
                 flavours:
                     generic:
