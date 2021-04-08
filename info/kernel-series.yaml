@@ -2568,6 +2568,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
+            routing: stable-drivers
             variants: ['--', '-edge']
             packages:
                 linux-aws-5.4:
@@ -2578,6 +2579,10 @@
                 linux-restricted-modules-aws-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.4']
+                linux-restricted-generate-aws-5.4:
+                    type: lrg
+                linux-restricted-signatures-aws-5.4:
+                    type: lrs
             snaps:
                 aws-kernel:
                     primary: true
