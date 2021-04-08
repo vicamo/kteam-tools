@@ -739,6 +739,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -752,6 +753,10 @@
                 linux-restricted-modules-gcp:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/groovy']
+                linux-restricted-generate-gcp:
+                    type: lrg
+                linux-restricted-signatures-gcp:
+                    type: lrs
             supported: true
             derived-from: [ '20.10', 'linux' ]
             swm:
