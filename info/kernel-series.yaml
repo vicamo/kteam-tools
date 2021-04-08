@@ -706,6 +706,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -719,6 +720,10 @@
                 linux-restricted-modules-azure:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/groovy']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
             supported: true
             derived-from: [ '20.10', 'linux' ]
             swm:
