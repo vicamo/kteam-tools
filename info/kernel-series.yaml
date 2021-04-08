@@ -791,6 +791,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -804,6 +805,10 @@
                 linux-restricted-modules-oracle:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/groovy']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
             supported: true
             derived-from: [ '20.10', 'linux' ]
             swm:
