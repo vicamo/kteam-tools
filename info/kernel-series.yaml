@@ -182,7 +182,7 @@
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
-        stable-drivers:
+        stable-drivers: &routing-table-stable-drivers
             <<:             *routing-table-default
             build-private:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
@@ -209,6 +209,12 @@
                 - ['ppa:oem-archive/ubuntu/newparis', 'Release']
         prerelease:
             <<:             *routing-table-default
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
+            security:
+            release:
+        prerelease-drivers:
+            <<:             *routing-table-stable-drivers
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
@@ -1141,7 +1147,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.8:
-            routing: prerelease
+            routing: prerelease-drivers
             variants: [ '-edge' ]
             packages:
                 linux-azure-5.8:
@@ -1155,6 +1161,10 @@
                 linux-restricted-modules-azure-5.8:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal', 'azure-5.8']
+                linux-restricted-generate-azure-5.8:
+                    type: lrg
+                linux-restricted-signatures-azure-5.8:
+                    type: lrs
             supported: true
             backport: true
             derived-from: [ '20.10', 'linux-azure' ]
