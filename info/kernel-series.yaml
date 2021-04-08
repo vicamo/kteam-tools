@@ -2219,6 +2219,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.4:
+            routing: stable-drivers
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
             # transitionals: [ '-oem-osp1', '-oem' ]
             packages:
@@ -2233,6 +2234,10 @@
                 linux-restricted-modules-hwe-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/bionic', 'hwe-5.4']
+                linux-restricted-generate-hwe-5.4:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.4:
+                    type: lrs
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux' ]
