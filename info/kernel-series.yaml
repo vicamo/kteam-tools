@@ -344,37 +344,6 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
-        linux-5.10:
-            versions: ['5.10.0']
-            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
-            packages:
-                linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/hirsute', 'master-5.10']
-                linux-meta:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/hirsute', 'master-5.10']
-                linux-signed:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/hirsute', 'master-5.10']
-                linux-restricted-modules:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/hirsute', 'master-5.10']
-            supported: true
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    generic:
-                        # arches as defined by the testing system
-                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-                    generic-64k:
-                        arches: ['arm64']
-                        clouds: ['metal', 'aws']
-                    lowlatency:
-                        arches: ['amd64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-
         linux-raspi-unstable:
             versions: ['5.11.0']
             variants: ['-unstable']
