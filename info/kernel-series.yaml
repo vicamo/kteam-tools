@@ -3291,6 +3291,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.4:
+            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-oracle-5.4:
@@ -3304,6 +3305,10 @@
                 linux-restricted-modules-oracle-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic', 'oracle-5.4']
+                linux-restricted-generate-oracle-5.4:
+                    type: lrg
+                linux-restricted-signatures-oracle-5.4:
+                    type: lrs
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-oracle' ]
