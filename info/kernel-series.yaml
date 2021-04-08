@@ -2649,6 +2649,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-4.15:
+            routing: stable-drivers
             variants: [ '-lts-18.04' ]
             packages:
                 linux-azure-4.15:
@@ -2662,6 +2663,10 @@
                 linux-restricted-modules-azure-4.15:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/bionic', 'azure-4.15']
+                linux-restricted-generate-azure-4.15:
+                    type: lrg
+                linux-restricted-signatures-azure-4.15:
+                    type: lrs
             supported: true
             backport: false
             derived-from: [ '18.04', 'linux' ]
