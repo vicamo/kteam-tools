@@ -1058,6 +1058,7 @@
                         clouds: ['metal']
 
         linux-aws:
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -1068,6 +1069,10 @@
                 linux-restricted-modules-aws:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
             supported: true
             derived-from: [ '20.04', 'linux' ]
             swm:
