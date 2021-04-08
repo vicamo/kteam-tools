@@ -880,6 +880,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.8:
+            routing: stable-drivers
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.8:
@@ -893,6 +894,10 @@
                 linux-restricted-modules-hwe-5.8:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.8']
+                linux-restricted-generate-hwe-5.8:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.8:
+                    type: lrs
             supported: true
             backport: true
             derived-from: [ '20.10', 'linux' ]
