@@ -2901,6 +2901,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
+            routing: stable-drivers
             variants: ['--', '-edge']
             packages:
                 linux-gcp-5.4:
@@ -2914,6 +2915,10 @@
                 linux-restricted-modules-gcp-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/bionic', 'gcp-5.4']
+                linux-restricted-generate-gcp-5.4:
+                    type: lrg
+                linux-restricted-signatures-gcp-5.4:
+                    type: lrs
             snaps:
                 gcp-kernel:
                     primary: true
