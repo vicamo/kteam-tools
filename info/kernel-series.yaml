@@ -3214,6 +3214,7 @@
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-oracle:
+            routing: stable-drivers
             variants: [ '-lts-18.04' ]
             packages:
                 linux-oracle:
@@ -3227,6 +3228,10 @@
                 linux-restricted-modules-oracle:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/bionic']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
             supported: true
             derived-from: [ '18.04', 'linux' ]
             swm:
