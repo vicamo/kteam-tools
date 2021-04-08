@@ -91,14 +91,14 @@ class SynPreparePackages(TaskHandler):
             building = False
             state = 'Ongoing'
             for failure in failures:
-                if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                if not failure.endswith(':building') and not failure.endswith('wait'):
                     state = 'Pending'
                 if failure.endswith(':building'):
                     building = True
-            # If something is building elide any depwaits.  These are almost cirtainly waiting
+            # If something is building elide any *waits.  These are almost cirtainly waiting
             # for that build to complete.  Only show them when nothing else is showing.
             if building:
-                failures = [failure for failure in failures if not failure.endswith(':depwait')]
+                failures = [failure for failure in failures if not failure.endswith('wait')]
             reason = '{} -- building in {}'.format(state, "ppa")
             if failures is not None:
                 reason += ' ' + ' '.join(failures)
