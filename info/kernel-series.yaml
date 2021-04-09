@@ -984,6 +984,7 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem-5.6:
+            routing: stable-drivers
             versions: ['5.6.0']
             variants: ['-20.04']
             packages:
@@ -998,6 +999,10 @@
                 linux-restricted-modules-oem-5.6:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/focal', 'oem-5.6']
+                linux-restricted-generate-oem-5.6:
+                    type: lrg
+                linux-restricted-signatures-oem-5.6:
+                    type: lrs
             supported: true
             testing:
                 flavours:
