@@ -1046,14 +1046,14 @@ class Package():
     # delta_failures_in_pocket
     #
     def delta_failures_in_pocket(s, delta, pocket, ignore_all_missing=False):
-        failures = []
+        failures = {}
         missing = 0
         sources = 0
         for pkg in delta:
             sources += 1
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
-                failures.append("{}:building".format(pkg))
+                failures.setdefault('building', []).append(pkg)
             elif status in ('DEPWAIT', 'FAILEDTOBUILD'):
                 real_status = 'depwait' if status == 'DEPWAIT' else 'failed'
                 wait_status = 'depwait' if status == 'DEPWAIT' else 'failwait'
@@ -1064,7 +1064,7 @@ class Package():
                     # If we successfully retried it then we should report it as
                     # building.
                     if s.attempt_retry_logless(pkg):
-                        failures.append("{}:building".format(pkg))
+                        failures.setdefault('building', []).append(pkg)
                         continue
 
                 # Look up the dependancy chain looking for something which
@@ -1082,13 +1082,13 @@ class Package():
                 # If there is nothing above us doing anything.  Then our status
                 # is real.
                 if active_feeder is None:
-                    failures.append("{}:{}".format(pkg, real_status))
+                    failures.setdefault(real_status, []).append(pkg)
                     continue
 
                 # If the active feeder is incomplete then we should continue
                 # waiting for it.
                 if active_feeder_state != 'FULLYBUILT':
-                    failures.append("{}:{}".format(pkg, wait_status))
+                    failures.setdefault(wait_status, []).append(pkg)
                     continue
 
                 # Work out if the previous_feeder is retryable.
@@ -1106,12 +1106,12 @@ class Package():
                     # If the retry fails this requirs a manual retry,
                     # mark us and annotate the maintenance record.
                     if not s.attempt_retry(pkg):
-                        failures.append("{}:retry-needed".format(pkg))
+                        failures.setdefault('retry-needed', []).append(pkg)
 
                     # If it works it should end up in Needs Building state
                     # which implies we should report it as :building.
                     else:
-                        failures.append("{}:building".format(pkg))
+                        failures.setdefault('building', []).append(pkg)
 
                     # Otherwise we made progress, so no mark is needed.
                     continue
@@ -1119,22 +1119,30 @@ class Package():
                 # If the previous_feeder can be retried, assume it will
                 # elsewhere in the pass.  Mark ourselves as waiting.
                 if previous_feeder_retry:
-                    failures.append("{}:{}".format(pkg, wait_status))
+                    failures.setdefault(wait_status, []).append(pkg)
 
                 # Otherwise we are genuinely broken.
                 else:
-                    failures.append("{}:{}".format(pkg, real_status))
+                    failures.setdefault(real_status, []).append(pkg)
 
             elif status == '':
-                failures.append("{}:missing".format(pkg))
+                failures.setdefault('missing', []).append(pkg)
                 missing += 1
             elif status == 'FULLYBUILT_PENDING':
-                failures.append("{}:queued".format(pkg))
+                failures.setdefault('queued', []).append(pkg)
 
         if ignore_all_missing and sources == missing:
-                failures = []
+            failures = None
 
-        return sorted(failures) if len(failures) > 0 else None
+        return failures
+
+    # failures_to_text
+    #
+    def failures_to_text(self, summary):
+        bits = []
+        for state, members in sorted(summary.items()):
+            bits.append(','.join(members) + ':' + state)
+        return ' '.join(bits)
 
     # creator
     #
