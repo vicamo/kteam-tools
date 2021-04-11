@@ -102,6 +102,8 @@ class SynPreparePackages(TaskHandler):
             reason = '{} -- building in {}'.format(state, "ppa")
             if failures is not None:
                 reason += ' ' + ' '.join(failures)
+            else:
+                reason += ' (builds complete)'
             s.task.reason = reason
 
         cleave(s.__class__.__name__ + '._common')
