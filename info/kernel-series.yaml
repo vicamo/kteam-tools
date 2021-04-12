@@ -1255,11 +1255,8 @@
                 kernel-testing: true
                 gke-releases:
                     - '1.19'
-                # Has to be verified (copied from Bionic)
-                gke-nvidia-packages:
-                    - gke-d1903-0-amd64
                 nvidia-releases:
-                    - 418
+                    - 460
             testing:
                 flavours:
                     gke:
