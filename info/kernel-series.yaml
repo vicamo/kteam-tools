@@ -1256,7 +1256,7 @@
                 gke-releases:
                     - '1.19'
                 nvidia-releases:
-                    - 460
+                    - 450
             testing:
                 flavours:
                     gke:
