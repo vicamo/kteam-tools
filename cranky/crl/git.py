@@ -185,7 +185,7 @@ class GitHandle():
             raise GitError('{} has no repository set'.format(pkg.name))
 
         remote   = self.__ht.remote
-        branch   = self.get_cranky_branch_name()
+        branch   = self.remote_branch
         repo_dir = self.directory
         repo_url = self.get_url()
 
