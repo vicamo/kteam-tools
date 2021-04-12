@@ -1257,6 +1257,7 @@
                     - '1.19'
                 nvidia-releases:
                     - 450
+                nvidia-driver-legacy-naming: true
             testing:
                 flavours:
                     gke:
