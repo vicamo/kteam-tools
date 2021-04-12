@@ -385,6 +385,10 @@
             routing:
                 build:
                     - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+                proposed:
+                    - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
+                updates:
+                    - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
             variants: ['--']
             packages:
                 linux-realtime:
