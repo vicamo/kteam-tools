@@ -1,0 +1,24 @@
+#!/bin/bash
+
+here=$(dirname $(readlink -f "$0"))
+
+builder="$here/lrm-ancillary-builder"
+#builder="$here/lrm-ancillary-lookup"
+
+if [ "$1" = "security" ]; then
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/ppa    ppa:canonical-kernel-security-team/ubuntu/ppa
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/ppa2   ppa:canonical-kernel-security-team/ubuntu/ppa2
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/ppa3   ppa:canonical-kernel-security-team/ubuntu/ppa3
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/devel  ppa:canonical-kernel-security-team/ubuntu/devel
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/devel2 ppa:canonical-kernel-security-team/ubuntu/devel2
+	"$builder" ppa:canonical-kernel-security-team/ubuntu/devel3 ppa:canonical-kernel-security-team/ubuntu/devel3
+
+	exit 0
+
+else
+	"$builder" ppa:canonical-kernel-team/ubuntu/ppa       ppa:canonical-kernel-team/ubuntu/ppa-ps
+	"$builder" ppa:canonical-kernel-team/ubuntu/ppa2      ppa:canonical-kernel-team/ubuntu/ppa2-ps
+	"$builder" ppa:canonical-kernel-team/ubuntu/bootstrap ppa:canonical-kernel-team/ubuntu/bootstrap-ps
+	"$builder" ppa:canonical-kernel-team/ubuntu/unstable  ppa:canonical-kernel-team/ubuntu/unstable-ps
+	"$builder" ppa:fips-cc-stig/ubuntu/fips-build         ppa:fips-cc-stig/ubuntu/fips-build
+fi

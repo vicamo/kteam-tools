@@ -1,0 +1,75 @@
+#!/usr/bin/python3
+from __future__ import print_function
+
+import json
+import os
+import sys
+
+from launchpadlib.launchpad import Launchpad
+
+cred_dir = os.path.expanduser("~/ancillary-bot/.config")
+cred_file = None
+if os.path.exists(cred_dir):
+    cred_file = os.path.join(cred_dir, "credentials-ancillary-bot")
+lp = Launchpad.login_with('lrm-ancillary-builder', 'production', version='devel',
+    credentials_file=cred_file)
+
+me = lp.me
+
+primary_ref, adjunct_ref = sys.argv[1:]
+
+primary = lp.archives.getByReference(reference=primary_ref)
+#public = lp.archives.getByReference(reference='ppa:apw/ubuntu/private')
+#print(primary)
+# XXX: public + '-ps'
+adjunct = lp.archives.getByReference(reference=adjunct_ref)
+#print(adjunct)
+
+# For private PPAs we will have to use the users subscription
+# to form the URLs to download the components.  Lookup up any
+# such subscription if needed.
+subscription = None
+if primary.private:
+    #subscription = me.getArchiveSubscriptionURL(archive=primary)
+    #print(subscription)
+
+    # XXX: until python3 lazr.restfulclient is upgraded ....
+    subscription = None
+    find = primary.reference[1:].split('/')
+    find = '/{}/{}/{}'.format(find[0], find[2], find[1])
+    for sub in me.getArchiveSubscriptionURLs():
+        #print(sub)
+        if sub.endswith(find):
+            subscription = sub
+            break
+    #print(primary.reference, find, found)
+    #sys.exit(1)
+
+    #print("PRIVATE", subscription)
+
+    if subscription is None:
+        raise ValueError("no private subscription")
+
+lrms = []
+lrms += list(primary.getPublishedSources(source_name='linux-restricted-modules', status='Published'))
+#lrms += list(primary.getPublishedSources(source_name='linux-restricted-modules', status='Pending'))
+for lrm in lrms:
+    #print(lrm)
+    lrm_id = os.path.basename(lrm.self_link)
+    lrg_name = lrm.source_package_name.replace('linux-restricted-modules', 'linux-restricted-generate')
+    lrg_version = lrm.source_package_version
+    #print(" ", lrg_name, lrg_version)
+    lrgs = adjunct.getPublishedSources(exact_match=True, source_name=lrg_name, version=lrg_version)
+    if len(lrgs) == 0:
+        urls = []
+        for url in lrm.sourceFileUrls():
+            if subscription:
+                deb = os.path.basename(url)
+                package = deb.split('_')[0]
+                prefix = package[0]
+                url = os.path.join(subscription, 'pool', 'main', prefix, package, deb)
+            urls.append(url)
+        print(lrm_id, lrm.source_package_name, ' '.join(urls))
+
+    else:
+        print(lrm_id, lrm.source_package_name, '-')
