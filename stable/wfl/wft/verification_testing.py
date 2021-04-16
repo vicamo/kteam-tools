@@ -94,7 +94,7 @@ class VerificationTesting(TaskHandler):
                 break
 
             # And where builds exist for them to be in -proposed.
-            if s.bug.debs.routing('Proposed') is not None and not s.bug.debs.ready_for_testing:
+            if s.bug.debs.routing('Proposed') is not None and not s.bug.debs.ready_for_testing_as_proposed:
                 break
 
             s.task.status = 'Confirmed'

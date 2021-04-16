@@ -177,7 +177,17 @@ class PromoteFromTo(Promoter):
                 break
 
             if s.pocket_dest == 'Proposed':
-                if not s.bug.debs.ready_for_testing:
+                # Wait for the debs to be in Proposed long enough, or for promote-to-as-proposed to publish
+                # adequately.
+                ptap_status = s.bug.task_status(':promote-to-as-proposed')
+                if ptap_status == 'Fix Released':
+                    pass
+
+                elif ptap_status != 'Invalid':
+                    s.task.reason = 'Ongoing -- waiting for packages to publish to as-proposed'
+                    break
+
+                elif not s.bug.debs.ready_for_testing:
                     s.task.reason = 'Ongoing -- packages waiting in -proposed for mirror sync'
                     break
 

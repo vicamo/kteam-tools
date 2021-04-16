@@ -87,7 +87,8 @@ class Package():
             s.routing_mode = s.source.routing.name
 
 
-        cinfo('    test_flavours: %s' % (s.test_flavours()), 'blue')
+        cinfo('     test_flavours: %s' % (s.test_flavours()), 'blue')
+        cinfo('test_flavour_meta4: %s' % (s.test_flavour_meta()), 'blue')
         cinfo('     Routing mode: {}'.format(s.routing_mode), 'blue')
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
@@ -779,6 +780,22 @@ class Package():
 
         return retval
 
+    # pocket_route
+    #
+    def pocket_route(s, pocket):
+        '''
+        '''
+        retval = None
+
+        bi = s.build_info
+        for pkg in bi:
+            if bi[pkg][pocket]['built'] is True:
+                retval = bi[pkg][pocket]['route']
+                cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
+                break
+
+        return retval
+
     # pocket_clear
     #
     def pocket_clear(s, pocket, pocket_next):
@@ -869,6 +886,30 @@ class Package():
         retval = s.all_built_and_in_pocket_for('Proposed', delay)
         cinfo('        Ready for testing: %s' % (retval), 'yellow')
         cleave(s.__class__.__name__ + '.ready_for_testing (%s)' % (retval))
+        return retval
+
+    # ready_for_testing_as_proposed
+    #
+    @property
+    def ready_for_testing_as_proposed(s):
+        '''
+        If we have an as-proposed route check if the packages are fully published
+        there and return that as current status.  If we do not have an as-proposed
+        route fallback to the status in the primary proposed route.
+        '''
+        center(s.__class__.__name__ + '.ready_for_testing_as_proposed')
+        ptap_status = s.bug.task_status(':promote-to-as-proposed')
+        if ptap_status == 'Fix Released':
+            retval = True
+
+        elif ptap_status != 'Invalid':
+            retval = False
+
+        else:
+            retval = s.ready_for_testing
+
+        cinfo('        Ready for testing (as-proposed): %s' % (retval), 'yellow')
+        cleave(s.__class__.__name__ + '.ready_for_testing_as_proposed (%s)' % (retval))
         return retval
 
     # ready_for_security
@@ -1019,7 +1060,7 @@ class Package():
 
     # send_testing_message
     #
-    def send_testing_message(s, op="sru", ppa=False, flavour="generic"):
+    def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.
         #
@@ -1034,28 +1075,29 @@ class Package():
             "package"        : s.name,
             "flavour"        : flavour,
         }
+        if meta is not None:
+            msg['meta-pkg'] = meta
 
         # Construct the appropriate testing meta package.
         # XXX: note this is currently limited to those packages which are
         #      converted to have the new interfaces.
-        if s.bug.swm_config.hack_kernel_testing:
-            msg['meta-pkg'] = 'kernel-testing--{}--full--{}'.format(s.name, flavour)
+        #if s.bug.swm_config.hack_kernel_testing:
+        #    msg['meta-pkg'] = 'kernel-testing--{}--full--{}'.format(s.name, flavour)
 
         # Add the kernel-sru-cycle identifier to the message
         #
         msg['sru-cycle'] = s.bug.sru_cycle
 
-        # At this time only 2 arches have the lowlatency flavour
-        #
-        if flavour == 'lowlatency':
-            msg['arches'] = ['amd64', 'i386']
-
         if ppa:
-            routing = s.routing('ppa')
+            routing = s.pocket_route('ppa')
         else:
-            routing = s.routing('Proposed')
-
-        (archive, pocket) = routing[0]
+            # If we have an as-proposed route we will get here when that publishes
+            # and we should be preferring it for testing as there is no cache on the
+            # front of it and so package publication is deterministic.
+            routing = s.pocket_route('as-proposed')
+            if routing is None:
+                routing = s.pocket_route('Proposed')
+        (archive, pocket) = routing
         if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'
             # XXX: need to find out what this used for, if it is exclusively
@@ -1099,6 +1141,38 @@ class Package():
     def send_proposed_testing_requests(s):
         s.send_testing_requests(op="sru", ppa=False)
 
+    # test_flavour_meta
+    #
+    def test_flavour_meta(s):
+        # If we have no testable flavours fall back to legacy mode.
+        testables = s.source.testable_flavours
+        cdebug("test_flavour_meta: testables={}".format(testables))
+        if len(testables) == 0:
+            return []
+
+        # If any of the testables have a meta_pkg specified then
+        # emit testing for those combinations.
+        # NOTE: entries supporting kernel-series will have synthetic
+        # meta_pkg entries of the right form.
+        result = []
+        for flavour in testables:
+            if flavour.meta_pkg is not None:
+                result.append((flavour.name, flavour.meta_pkg))
+        if len(result):
+            return result
+
+        # Otherwise if we have no meta-pkg definitions, use the flavour
+        # and first variant.
+        variants = s.source.variants
+        if variants is None or len(variants) == 0:
+            variants = ['']
+        if variants[0] == '--':
+            variants[0] = ''
+        for flavour in testables:
+            result.append((flavour.name, 'linux-' + flavour.name + variants[0]))
+
+        return result
+
     # test_flavours
     #
     def test_flavours(s):
@@ -1121,13 +1195,13 @@ class Package():
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
-        for flavour in s.test_flavours():
-            s.send_testing_request(op=op, ppa=ppa, flavour=flavour)
+        for flavour_meta in s.test_flavour_meta():
+            s.send_testing_request(op=op, ppa=ppa, flavour=flavour_meta[0], meta=flavour_meta[1])
 
     # send_testing_request
     #
-    def send_testing_request(s, op="sru", ppa=False, flavour="generic"):
-        msg = s.send_testing_message(op, ppa, flavour)
+    def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None):
+        msg = s.send_testing_message(op, ppa, flavour, meta)
 
         where = " uploaded" if not ppa else " available in ppa"
         subject = "[" + s.series + "] " + s.name + " " + flavour + " " + s.version + where
