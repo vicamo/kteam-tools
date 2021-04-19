@@ -1010,6 +1010,8 @@ class Package():
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
+            if s.ancillary_package_for(pkg) is not None:
+                continue
             if bi[pkg][pocket]['built'] is True:
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
