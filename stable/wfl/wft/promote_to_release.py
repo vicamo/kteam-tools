@@ -83,7 +83,8 @@ class PromoteToRelease(Promoter):
                     break
 
             # Record what is missing as we move to Confirmed.
-            s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta('Proposed', 'Release')
+            delta = s.bug.debs.built_in_src_dst_delta('Proposed', 'Release')
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
 
             s.task.status = 'Confirmed'
             retval = True

@@ -74,7 +74,13 @@ class SynPreparePackages(TaskHandler):
         elif status in ('In Progress', 'Fix Committed'):
             failures = None
             if s.bug.version is not None:
-                failures = s.bug.debs.all_failures_in_pocket("ppa", ignore_all_missing=True)
+                # Work on the assumption that eventually we end up in -proposed.
+                if s.bug.task_status('promote-signing-to-proposed') != 'Invalid':
+                    dst_pocket = "Signing"
+                else:
+                    dst_pocket = "Proposed"
+                delta = s.bug.debs.delta_src_dst("ppa", dst_pocket)
+                failures = s.bug.debs.delta_failures_in_pocket(delta, "ppa", ignore_all_missing=True)
             if failures is None:
                 if 'kernel-trello-review-prepare-packages' in s.bug.tags:
                     s.task.reason = 'Stalled -b Debs waiting for peer-review on SRU board'

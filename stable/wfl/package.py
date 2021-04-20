@@ -726,6 +726,116 @@ class Package():
         cleave(s.__class__.__name__ + '.all_in_pocket (%s)' % (retval))
         return retval
 
+    # __pockets_from
+    #
+    def __pockets_from(s, pocket_from):
+        pockets = []
+        found_from = False
+        for pocket_next in s.scan_pockets:
+            if pocket_next == pocket_from:
+                found_from = True
+            if found_from:
+                pockets.append(pocket_next)
+        return pockets
+
+    # __pkg_in
+    #
+    def __pkg_in(s, pkg, pocket):
+        try:
+            pkg_in = s.srcs[pkg][pocket]['status'] in s.__states_present
+        except KeyError:
+            pkg_in = False
+        return pkg_in
+
+    # __pkg_built
+    #
+    def __pkg_built(s, pkg, pocket):
+        try:
+            pkg_built = s.srcs[pkg][pocket]['built']
+        except KeyError:
+            pkg_built = False
+        return pkg_built
+
+    # __pkg_task
+    #
+    def __pkg_task(s, pkg):
+        if pkg == 'main':
+            suffix = ''
+        else:
+            suffix = '-' + pkg
+        return 'prepare-package' + suffix
+
+    # delta_src_dst
+    #
+    def delta_src_dst(s, src, dst):
+        '''
+        List of dependent packages in src which are not in dst or later.
+        '''
+        center(s.__class__.__name__ + '.delta_src_dst({}, {})'.format(src, dst))
+
+        retval = []
+        for pkg in s.dependent_packages_for_pocket(dst):
+            pkg_in_src = s.__pkg_in(pkg, src)
+            pocket = dst
+            for pocket in s.__pockets_from(dst):
+                pkg_in_dst = s.__pkg_in(pkg, pocket)
+                if pkg_in_dst:
+                    break
+
+            if pkg_in_src and not pkg_in_dst:
+                cinfo('        {} is in {} and not yet in {} or later.'.format(pkg, src, dst), 'red')
+                retval.append(pkg)
+
+            elif src == 'ppa' and s.bug.task_status(s.__pkg_task(pkg)) not in ('Fix Released', 'Invalid'):
+                cinfo('        {} is missing from {} or later.'.format(pkg, src), 'red')
+                retval.append(pkg)
+
+            else:
+                cinfo('        {} is in {} and in {}'.format(pkg, src, pocket), 'red')
+
+        cinfo("from {} to {} delta {}".format(src, dst, retval))
+
+        cleave(s.__class__.__name__ + '.delta_src_dst(...)={}'.format(retval))
+        return retval
+
+    # delta_in_pocket
+    #
+    def delta_in_pocket(s, delta, pocket):
+        '''
+        Are all of the packages in delta in pocket.
+        '''
+        center(s.__class__.__name__ + '.delta_in_pocket({}, {})'.format(delta, pocket))
+
+        retval = True
+        for pkg in delta:
+            pkg_in = s.__pkg_in(pkg, pocket)
+            if not pkg_in:
+                cinfo('        {} is not in {}'.format(pkg, pocket), 'red')
+                retval = False
+                break
+
+        cleave(s.__class__.__name__ + '.delta_in_pocket(...)={}'.format(retval))
+        return retval
+
+    # delta_built_pocket
+    #
+    def delta_built_pocket(s, delta, pocket):
+        '''
+        Are all of the packages in delta built in pocket.
+        '''
+        center(s.__class__.__name__ + '.delta_built_pocket({}, {})'.format(delta, pocket))
+
+        retval = True
+        for pkg in delta:
+            pkg_in = s.__pkg_built(pkg, pocket)
+            if not pkg_in:
+                cinfo('        {} is not built in {}'.format(pkg, pocket), 'red')
+                retval = False
+                break
+
+        cleave(s.__class__.__name__ + '.delta_built_pocket(...)={}'.format(retval))
+        return retval
+
     # all_built_and_in_pocket
     #
     def all_built_and_in_pocket(s, pocket):
@@ -849,10 +959,16 @@ class Package():
     # all_failures_in_pocket
     #
     def all_failures_in_pocket(s, pocket, ignore_all_missing=False):
+        packages = s.dependent_packages_for_pocket(pocket)
+        return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
+
+    # delta_failures_in_pocket
+    #
+    def delta_failures_in_pocket(s, delta, pocket, ignore_all_missing=False):
         failures = []
         missing = 0
         sources = 0
-        for pkg in s.dependent_packages_for_pocket(pocket):
+        for pkg in delta:
             sources += 1
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':

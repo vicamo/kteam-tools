@@ -56,11 +56,14 @@ class PromoteFromTo(Promoter):
             retval = True
             break
 
+        # Identify the packages which are incomplete.
+        delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
+
         while not retval:
             if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
                 break
 
-            if not s.bug.debs.all_in_pocket(s.pocket_dest):
+            if len(delta) == 0 or not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 break
 
             s.task.status = 'Fix Committed'
@@ -73,7 +76,7 @@ class PromoteFromTo(Promoter):
             if s.bug.task_status(':prepare-packages') != 'Fix Released':
                 break
 
-            if not s.bug.debs.all_built_in_src_dst(s.pocket_src, s.pocket_dest):
+            if len(delta) == 0 or not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -107,7 +110,7 @@ class PromoteFromTo(Promoter):
                 break
 
             # Record what is missing as we move to Confirmed.
-            s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta(s.pocket_src, s.pocket_dest)
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
@@ -145,11 +148,14 @@ class PromoteFromTo(Promoter):
 
             break
 
+        # Identify the packages which are incomplete.
+        delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
+
         while not retval:
             # Check if the packages are published completely yet.
-            if not s.bug.debs.all_in_pocket(s.pocket_dest):
+            if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 # Confirm the packages remain available to copy.
-                if not s.bug.debs.all_built_in_src_dst(s.pocket_src, s.pocket_dest):
+                if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
                     s.task.reason = 'Alert -- packages no longer available'
                     if s.task.status != 'Incomplete':
                         s.task.status = 'Incomplete'
@@ -180,8 +186,8 @@ class PromoteFromTo(Promoter):
                 break
 
             # If they are now all built ...
-            if not s.bug.debs.all_built_and_in_pocket(s.pocket_dest):
-                failures = s.bug.debs.all_failures_in_pocket(s.pocket_dest)
+            if not s.bug.debs.delta_built_pocket(delta, s.pocket_dest):
+                failures = s.bug.debs.delta_failures_in_pocket(delta, s.pocket_dest)
                 state = s.task.reason_state('Ongoing', timedelta(hours=4))
                 for failure in failures:
                     if not failure.endswith(':building') and not failure.endswith(':depwait'):
