@@ -489,6 +489,7 @@ class Package():
                 cdebug('Development Package', 'cyan')
                 cdebug('')
                 scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Release')
+            s.scan_pockets = scan_pockets
 
             for pocket in scan_pockets:
                 if pocket not in s._routing:
@@ -639,6 +640,34 @@ class Package():
             cinfo('        {} is either not fully built yet or not in {}.'.format(pkg, pocket), 'red')
 
         cleave(s.__class__.__name__ + '.built_and_in_pocket ({})'.format(pkg_built))
+        return pkg_built
+
+    # built_and_in_pocket
+    #
+    def built_and_in_pocket_or_after(s, pkg, pocket):
+        '''
+        Dependent package is fully built and in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.built_and_in_pocket_or_after')
+        found_start = False
+        for find_pocket in s.scan_pockets:
+            if find_pocket == pocket:
+                found_start = True
+            if not found_start:
+                continue
+
+            try:
+                pkg_built = s.srcs[pkg][find_pocket]['built']
+            except KeyError:
+                pkg_built = False
+
+            if pkg_built:
+                break
+
+        if not pkg_built:
+            cinfo('        {} is either not fully built yet or not in {} or after.'.format(pkg, pocket), 'red')
+
+        cleave(s.__class__.__name__ + '.built_and_in_pocket_or_after ({})'.format(pkg_built))
         return pkg_built
 
     # all_in_pocket

@@ -281,8 +281,7 @@ class PreparePackage(TaskHandler):
             # uploaded.
             if s.bug.debs.routing('ppa'):
                 # Hold prepare-package open until the package is built.
-                if (not s.bug.debs.built_and_in_pocket(pkg, 'ppa') and
-                        not s.bug.debs.built_and_in_pocket(pkg, 'Proposed')):
+                if not s.bug.debs.built_and_in_pocket_or_after(pkg, 'ppa'):
                     s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
                     break
 
