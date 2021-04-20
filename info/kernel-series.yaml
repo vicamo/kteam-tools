@@ -862,6 +862,42 @@
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-hwe-5.11:
+            routing: stable-drivers
+            variants: [ '-hwe-20.04-edge-wip' ]
+            packages:
+                linux-hwe-5.11:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11']
+                linux-meta-hwe-5.11:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.11']
+                linux-signed-hwe-5.11:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'hwe-5.11']
+                linux-restricted-modules-hwe-5.11:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.11']
+                linux-restricted-generate-hwe-5.11:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.11:
+                    type: lrs
+            supported: true
+            backport: true
+            derived-from: [ '21.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    lowlatency:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+
         linux-hwe-5.8:
             routing: stable-drivers
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
