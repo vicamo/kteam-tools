@@ -1448,6 +1448,39 @@
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-fips-recert:
+            routing: fips-recert
+            packages:
+                linux-fips-recert:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'fips-recert']
+                linux-meta-fips-recert:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'fips-recert']
+                linux-signed-fips-recert:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'fips-recert']
+                linux-restricted-modules-fips-recert:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'fips-recert']
+                linux-restricted-generate-fips-recert:
+                    type: lrg
+                linux-restricted-signatures-fips-recert:
+                    type: lrs
+            supported: false # fips-recert isn't cranked every cycle
+            private: true
+            # Handle linux-fips-recert as a backport since it should
+            # be basically a replica of linux-fips with other archs:
+            backport: true
+            derived-from: ['20.04', 'linux-fips']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    fips:
+                        arches: ['s390x.LPAR', 's390x.KVM']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-fips:
             routing: fips-prerelease
             packages:
@@ -1477,6 +1510,7 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
+
 
         linux-larch:
             routing:
