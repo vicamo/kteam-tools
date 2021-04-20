@@ -760,13 +760,10 @@ class Package():
                 pkg_built_src = s.srcs[pkg][src]['built']
             except KeyError:
                 pkg_built_src = False
-            try:
-                pkg_built_dst = s.srcs[pkg][dst]['built']
-            except KeyError:
-                pkg_built_dst = False
+            pkg_built_dst = s.built_and_in_pocket_or_after(pkg, dst)
 
             if pkg_built_src and not pkg_built_dst:
-                cinfo('        {} is in {} and not yet in {}.'.format(pkg, src, dst), 'red')
+                cinfo('        {} is in {} and not yet in {} or later.'.format(pkg, src, dst), 'red')
                 retval.append(pkg)
 
         cleave(s.__class__.__name__ + '.built_in_src_dst_delta ({})'.format(retval))
