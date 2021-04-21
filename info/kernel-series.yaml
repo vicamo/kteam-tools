@@ -3745,6 +3745,31 @@
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm-5.4:
+            variants: ['--', '-edge']
+            packages:
+                linux-ibm-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/bionic', 'ibm-5.4-next']
+                linux-meta-ibm-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/bionic', 'ibm-5.4']
+                linux-signed-ibm-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
+                linux-restricted-modules-ibm-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/bionic', 'ibm-5.4']
+            supported: true
+            derived-from: [ '18.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-bluefield:
             routing: prerelease
             packages:
