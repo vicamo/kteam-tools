@@ -106,7 +106,12 @@ class PreparePackage(TaskHandler):
         else:
             wait_for = ['Fix Committed', 'Fix Released']
 
-        if master.tasks_by_name['prepare-package'].status in wait_for:
+        for task_name in ('prepare-package', 'prepare-package-lrm'):
+            task_status = master.task_status(task_name)
+            if task_status != 'Invalid':
+                break
+
+        if task_status in wait_for:
             return True
 
         return False
