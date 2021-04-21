@@ -48,13 +48,17 @@ class Bug2Card:
         parser.add_argument('bug', type=int, nargs='+', help='Bug numbers to create card from.')
         parser.add_argument('--board', help='trello board', default='Development Tasks')
         parser.add_argument('--list', help='trello list', default='Backlog')
-        parser.add_argument('--card-member', help='add a card member', action='append', default=['me'])
+        parser.add_argument('--card-member', help='add a card member', action='append', default=[])
+        parser.add_argument('--remove-me', help='don\'t add myself as a card member',
+                            action='store_true', default=False)
 
         args = parser.parse_args()
         bugs = args.bug
         self.board = args.board
         self.list = args.list
         self.card_members = args.card_member
+        if not args.remove_me:
+            self.card_members.append('me')
 
         # Find so-trello
         if 'SO_TRELLO' in os.environ:
