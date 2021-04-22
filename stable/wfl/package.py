@@ -475,6 +475,15 @@ class Package():
                 'meta': 'main',
             }.get(pkg)
 
+    # feeder_key
+    #
+    def feeder_key(self, pkg):
+        key = []
+        while pkg is not None:
+            key.insert(0, pkg)
+            pkg = self.feeder_package_for(pkg)
+        return key
+
     # adjunct_package
     #
     def adjunct_package(self, pkg):
@@ -1141,6 +1150,7 @@ class Package():
     def failures_to_text(self, summary):
         bits = []
         for state, members in sorted(summary.items()):
+            members = sorted(members, key=self.feeder_key)
             bits.append(','.join(members) + ':' + state)
         return ' '.join(bits)
 
