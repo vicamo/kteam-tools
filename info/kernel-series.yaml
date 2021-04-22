@@ -150,8 +150,8 @@
 # 21.04 (Hirsute Hippo)
 '21.04':
     codename: hirsute
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
