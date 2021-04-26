@@ -3643,19 +3643,39 @@
     development: false
     supported: true
     lts: true
-    routing-table: *routing-table
+    esm: true
+    routing-table:
+        <<: *routing-table
+        esm:
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
     sources:
         linux:
             versions: ['4.4.0']
             packages:
                 linux:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                 linux-meta:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-xenial']
                 linux-signed:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-xenial']
             snaps:
                 pc-kernel:
                     primary: true
@@ -3663,39 +3683,42 @@
                     gated: false
                     stable: true
                     qa: false
+                    # FIXME: Will ESM snaps be still cert tested?
                     hw-cert: true
                     arches: ['amd64', 'i386']
-                caracalla-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'caracalla']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    arches: ['amd64']
-                stlouis-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'stlouis']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    arches: ['amd64']
+                # The caracalla and stlouis snaps were not on the ESM list
+                #caracalla-kernel:
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'caracalla']
+                #    gated: false
+                #    stable: true
+                #    qa: false
+                #    hw-cert: true
+                #    arches: ['amd64']
+                #stlouis-kernel:
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'stlouis']
+                #    gated: false
+                #    stable: true
+                #    qa: false
+                #    hw-cert: true
+                #    arches: ['amd64']
             supported: true
             testing:
                 flavours:
                     generic:
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'arm64', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency:
-                        arches: ['amd64', 'i386']        # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-aws-xenial', 'master-next']
                 linux-meta-aws:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-xenial']
             snaps:
                 aws-kernel:
                     primary: true
@@ -3712,15 +3735,15 @@
                     aws:
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws-hwe:
             packages:
                 linux-aws-hwe:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/xenial', 'aws-hwe']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-aws-xenial', 'aws-hwe-next']
                 linux-meta-aws-hwe:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/xenial', 'aws-hwe']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-xenial', 'aws-hwe']
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux-aws' ]
@@ -3730,18 +3753,18 @@
                         meta-pkg: linux-aws-hwe
                         arches: ['amd64']        # test system arch names
                         clouds: ['aws']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
             packages:
                 linux-azure:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-xenial', 'master-next']
                 linux-meta-azure:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-azure-xenial']
                 linux-signed-azure:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-xenial']
             snaps:
                 azure-kernel:
                     primary: true
@@ -3761,10 +3784,10 @@
                     azure:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
-        # Kernel for Tillamook (Rigado) Cascade-500 IoT GW
+        # Kernel for Tillamook (Rigado) Cascade-500 IoT GW (no longer supported)
         linux-cascade:
             routing:
                 security-build:
@@ -3788,20 +3811,21 @@
                 linux-signed-cascade:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-cascade']
-            snaps:
-                cascade-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~tillamook-team/tillamook/+git/cascade-uc16-snap', 'cascade']
-                    gated: false
-                    qa: false
-                    hw-cert: true
-                    promote-to: stable
-                    arches: ['armhf']
-            supported: true
+            #snaps:
+            #    cascade-kernel:
+            #        primary: true
+            #        repo: ['git://git.launchpad.net/~tillamook-team/tillamook/+git/cascade-uc16-snap', 'cascade']
+            #        gated: false
+            #        qa: false
+            #        hw-cert: true
+            #        promote-to: stable
+            #        arches: ['armhf']
+            supported: false
             private: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing', 'automated-testing', 'certification-testing']
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-euclid:
             packages:
                 linux-euclid:
@@ -3814,6 +3838,7 @@
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-flo:
             packages:
                 linux-flo:
@@ -3826,13 +3851,13 @@
         linux-gcp:
             packages:
                 linux-gcp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-gcp-xenial']
                 linux-meta-gcp:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-gcp-xenial']
                 linux-signed-gcp:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-gcp-xenial']
             snaps:
                 gcp-kernel:
                     primary: true
@@ -3857,8 +3882,9 @@
                     gcp:
                         arches: ['amd64']        # test system arch names
                         clouds: ['gcp']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-gke:
             packages:
                 linux-gke:
@@ -3874,6 +3900,7 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['gke']
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-goldfish:
             packages:
                 linux-goldfish:
@@ -3886,13 +3913,13 @@
         linux-hwe:
             packages:
                 linux-hwe:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/xenial', 'hwe']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'hwe-next']
                 linux-meta-hwe:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'hwe']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-xenial', 'hwe']
                 linux-signed-hwe:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/xenial', 'hwe']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-xenial', 'hwe']
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux' ]
@@ -3900,13 +3927,15 @@
                 flavours:
                     generic:
                         meta-pkg: linux-generic-hwe-16.04
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'arm64', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
                     lowlatency:
                         meta-pkg: linux-lowlatency-hwe-16.04
-                        arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        arches: ['amd64', 'arm64', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-hwe-edge:
             packages:
                 #linux-hwe-edge:
@@ -3930,6 +3959,7 @@
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-joule:
             packages:
                 linux-joule:
@@ -3942,10 +3972,10 @@
         linux-kvm:
             packages:
                 linux-kvm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-kvm-xenial', 'master-next']
                 linux-meta-kvm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-kvm-xenial']
             supported: true
             derived-from: [ '16.04', 'linux' ]
             testing:
@@ -3953,8 +3983,9 @@
                     kvm:
                         arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-mako:
             packages:
                 linux-mako:
@@ -3964,6 +3995,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/xenial', 'mako']
             supported: false
 
+        # FIXME: Already out of support. Maybe time for complete removal?
         linux-oem:
             packages:
                 linux-oem:
@@ -3985,13 +4017,13 @@
         linux-oracle:
             packages:
                 linux-oracle:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-oracle-xenial', 'master-next']
                 linux-meta-oracle:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-oracle-xenial']
                 linux-signed-oracle:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/xenial']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-oracle-xenial']
             supported: true
             backport: true
             derived-from: [ '18.04', 'linux-oracle' ]
@@ -4000,25 +4032,26 @@
                     oracle:
                         arches: ['amd64']        # test system arch names
                         clouds: ['oracle']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        # Kernel is no longer supported
         linux-raspi2:
             packages:
                 linux-raspi2:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi2/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-raspi2-xenial', 'master-next']
                 linux-meta-raspi2:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi2/+git/xenial']
-            snaps:
-                pi2-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'raspi2']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    arches: ['armhf']
-            supported: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-raspi2-xenial']
+            #snaps:
+            #    pi2-kernel:
+            #        primary: true
+            #        repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'raspi2']
+            #        gated: false
+            #        stable: true
+            #        qa: false
+            #        hw-cert: true
+            #        arches: ['armhf']
+            supported: false
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
             testing:
@@ -4026,24 +4059,26 @@
                    raspi2:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        # Kernel is no longer supported
         linux-snapdragon:
             packages:
                 linux-snapdragon:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snapdragon/+git/xenial', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-snapdragon-xenial', 'master-next']
                 linux-meta-snapdragon:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-snapdragon/+git/xenial']
-            snaps:
-                dragonboard-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'snapdragon']
-                    gated: false
-                    stable: true
-                    qa: false
-                    hw-cert: true
-                    arches: ['arm64']
-            supported: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-snapdragon-xenial']
+            #snaps:
+            #    dragonboard-kernel:
+            #        primary: true
+            #        repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'snapdragon']
+            #        gated: false
+            #        stable: true
+            #        qa: false
+            #        hw-cert: true
+            #        arches: ['arm64']
+            supported: false
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing' ]
             testing:
@@ -4051,6 +4086,7 @@
                    snapdragon:
                         arches: ['armhf']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-fips:
             routing: fips
@@ -4069,7 +4105,7 @@
             testing:
                 flavours:
                     fips:
-                        arches: ['amd64', 'ppc64el', 's390x.LPAR', 's390x.KVM']        # test system arch names
+                        arches: ['amd64', 's390x.LPAR', 's390x.KVM']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
@@ -4097,6 +4133,7 @@
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        # Kernel is no longer supported
         linux-deeplens:
             routing:
                 test-build:
@@ -4121,7 +4158,7 @@
                 linux-meta-deeplens:
                     type: meta
                     repo: ['git://git.launchpad.net/~baring-team/baring/+git/linux-meta-deeplens', 'master-hwe']
-            supported: true
+            supported: false
             private: true
             derived-from: ['16.04', 'linux-hwe']
             testing:
