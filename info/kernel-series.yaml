@@ -1453,13 +1453,13 @@
                 linux-signed-fips-recert:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'fips-recert']
-                linux-restricted-modules-fips-recert:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'fips-recert']
-                linux-restricted-generate-fips-recert:
-                    type: lrg
-                linux-restricted-signatures-fips-recert:
-                    type: lrs
+                #linux-restricted-modules-fips-recert:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'fips-recert']
+                #linux-restricted-generate-fips-recert:
+                #    type: lrg
+                #linux-restricted-signatures-fips-recert:
+                #    type: lrs
             supported: false # fips-recert isn't cranked every cycle
             private: true
             # Handle linux-fips-recert as a backport since it should
