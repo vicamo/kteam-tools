@@ -281,7 +281,7 @@ class GitHandleSet():
         try:
             self.__hdlset = hdl.lookup_set(handle, validate=False)
         except HandleError as e:
-            raise GitError(e.msg)
+            raise GitError(e)
 
         # Check for a meta-only package.  This should really imply checking
         # out the matching derived-from packages with our -meta; we do this as we
