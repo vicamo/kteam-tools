@@ -933,20 +933,13 @@
             variants: ['--']
             packages:
                 linux-intel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-intel/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal']
                 linux-meta-intel:
                     type: meta
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-intel/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel/+git/focal']
                 linux-signed-intel:
                     type: signed
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed-intel/+git/focal']
-                linux-restricted-modules-intel:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-intel/+git/focal']
-                linux-restricted-generate-intel:
-                    type: lrg
-                linux-restricted-signatures-intel:
-                    type: lrs
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal']
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
