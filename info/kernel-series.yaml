@@ -147,11 +147,12 @@
 #       archive pocket
 #
 
-# 21.04 (Hirsute Hippo)
-'21.04':
-    codename: hirsute
-    development: false
-    supported: true
+# 21.10 (Impish Indri)
+'21.10':
+    codename: impish
+    development: true
+    supported: false
+    opening:
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
@@ -272,6 +273,312 @@
             updates:
             security:
             release:
+    sources:
+        linux-unstable:
+            routing: devel-prerelease
+            versions: ['5.12.0']
+            variants: ['-wip']
+            packages:
+                linux-unstable:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/unstable', 'master']
+                linux-meta-unstable:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/unstable', 'master']
+                linux-signed-unstable:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable', 'master']
+                linux-restricted-modules-unstable:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
+            supported: false
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+
+        linux:
+            routing: devel-drivers
+            versions: ['5.11.0']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/impish', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/impish']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/impish']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/impish']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
+            supported: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+                    lowlatency:
+                        arches: ['amd64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+            derived-from: ['21.04', 'linux']
+
+        linux-raspi-unstable:
+            versions: ['5.11.0']
+            variants: ['-unstable']
+            packages:
+                linux-raspi-unstable:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/unstable', 'master']
+                linux-meta-raspi-unstable:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/unstable', 'master']
+            supported: false
+            derived-from: [ '21.10', 'linux-unstable' ]
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'regression-testing' ]
+
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/impish', 'master-next']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/impish']
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-raspi' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'regression-testing' ]
+
+        linux-realtime:
+            routing:
+                build:
+                    - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+                proposed:
+                    - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
+                updates:
+                    - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+            variants: ['--']
+            packages:
+                linux-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/impish']
+                linux-meta-realtime:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/impish']
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-realtime' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    realtime:
+                        arches: ['amd64', 'arm64']        # test system arch names
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-aws:
+            routing: devel-drivers
+            variants: ['--']
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/impish']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/impish']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/impish']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-azure:
+            routing: devel-drivers
+            variants: ['--']
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/impish', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/impish']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/impish']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/impish']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: &swm-azure-blackout
+                    - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
+                    - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
+                    - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-gcp:
+            routing: devel-drivers
+            variants: ['--']
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/impish', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/impish']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/impish']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/impish']
+                linux-restricted-generate-gcp:
+                    type: lrg
+                linux-restricted-signatures-gcp:
+                    type: lrs
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-kvm:
+            variants: ['--']
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/impish', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/impish']
+                linux-signed-kvm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/impish']
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-kvm' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oracle:
+            routing: devel-drivers
+            variants: ['--']
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/impish', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/impish']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/impish']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/impish']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-riscv:
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/impish']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/impish']
+            supported: true
+            #derived-from: [ '21.10', 'linux' ]
+            derived-from: [ '21.04', 'linux-riscv' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+# 21.04 (Hirsute Hippo)
+'21.04':
+    codename: hirsute
+    development: false
+    supported: true
+    routing-table: &routing-table
     sources:
         linux-unstable:
             routing: devel-prerelease
