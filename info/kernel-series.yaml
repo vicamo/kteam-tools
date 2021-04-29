@@ -932,7 +932,7 @@
             variants: ['--']
             packages:
                 linux-intel:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal', 'master-next']
                 linux-meta-intel:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel/+git/focal']
