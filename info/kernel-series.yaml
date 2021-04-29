@@ -929,7 +929,6 @@
                         clouds: ['metal']
 
         linux-intel:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-intel:
