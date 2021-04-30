@@ -800,6 +800,7 @@ class Package():
 
         # Find an upload record for the main package.
         changes_url = None
+        bugs = None
         pkg = 'main'
         bi = self.build_info
         for pocket in self.__pockets_uploaded:
@@ -808,21 +809,21 @@ class Package():
             if bi[pkg][pocket]['status'] in self.__states_present:
                 changes_url = bi[pkg][pocket]['changes']
                 cdebug("CHANGES: url={}".format(changes_url))
-                break
 
-
-        # If we managed to find a changes file then we can extract the list.
-        bugs = None
-        if changes_url is not None:
-            changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
-            try:
-                changes = self.lp.launchpad._browser.get(changes_url)
-                bugs = []
-                for line in changes.decode('utf-8').rstrip().split('\n'):
-                    if line.startswith('Launchpad-Bugs-Fixed:'):
-                        bugs = line.split(' ')[1:]
-            except NotFound:
-                pass
+                # If we managed to find a changes file then we can extract the list.
+                if changes_url is not None:
+                    changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+                    try:
+                        changes = self.lp.launchpad._browser.get(changes_url)
+                        bugs = []
+                        for line in changes.decode('utf-8').rstrip().split('\n'):
+                            if line.startswith('Launchpad-Bugs-Fixed:'):
+                                bugs = line.split(' ')[1:]
+                    except NotFound:
+                        pass
+                    except Unauthorized:
+                        continue
+                    break
 
         cleave(self.__class__.__name__ + '.bugs {}'.format(bugs))
         return bugs
