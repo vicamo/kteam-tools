@@ -573,7 +573,7 @@ class AutoPackageTest(object):
             #    archs = sorted(set(archs + self.packages_latest[pkg]))
 
             for arch in archs:
-                if not adt.fetch_swift_results('https://autopkgtest.ubuntu.com/results/v1/AUTH_77e2ada1e7a84929a74ba3b87153c0ac/', pkg, arch):
+                if not adt.fetch_swift_results('https://autopkgtest.ubuntu.com/results/', pkg, arch):
                     return
 
 
