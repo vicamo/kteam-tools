@@ -1806,6 +1806,26 @@
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-riscv-5.11:
+            variants: ['-wip']
+            packages:
+                linux-riscv-5.11:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.11-next']
+                linux-meta-riscv-5.11:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.11']
+            supported: false
+            development: true
+            backport: true
+            derived-from: ['21.04', 'linux-riscv']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-fips-recert:
             routing: fips-recert
             packages:
