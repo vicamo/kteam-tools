@@ -757,10 +757,7 @@
             supported: true
             derived-from: [ '21.04', 'linux' ]
             swm:
-                deployment-blackout: &swm-azure-blackout
-                    - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
-                    - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
-                    - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
+                deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
             testing:
                 flavours:
