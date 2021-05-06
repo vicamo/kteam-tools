@@ -611,7 +611,7 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
-            routing: devel-drivers
+            routing: stable-drivers
             versions: ['5.11.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -709,7 +709,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -736,7 +736,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -768,7 +768,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -820,7 +820,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
