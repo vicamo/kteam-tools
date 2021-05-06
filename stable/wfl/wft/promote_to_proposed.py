@@ -73,6 +73,9 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
+            if s.task_src == ':prepare-packages' and s.bug.task_status('sru-review') not in ('Fix Released', 'Invalid'):
+                break
+
             if s.bug.task_status(s.task_src) != 'Fix Released':
                 break
 
