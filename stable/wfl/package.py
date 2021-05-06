@@ -751,6 +751,14 @@ class Package():
                 pockets.append(pocket_next)
         return pockets
 
+    # pocket_after
+    #
+    def pocket_after(s, pocket_from):
+        pockets = s.__pockets_from(pocket_from)
+        if len(pockets) < 2:
+            return None
+        return pockets[1]
+
     # __pkg_in
     #
     def __pkg_in(s, pkg, pocket):

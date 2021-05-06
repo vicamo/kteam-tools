@@ -65,6 +65,7 @@ class WorkflowManager():
             'snap-qa-testing'           : wfl.wft.SnapQaTesting,
             'snap-certification-testing': wfl.wft.SnapCertificationTesting,
             'snap-publish'              : wfl.wft.SnapPublish,
+            'sru-review'                : wfl.wft.SruReview,
             'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
             'kernel-signoff'            : wfl.wft.StakeholderSignoff,
         }
