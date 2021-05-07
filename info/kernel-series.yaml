@@ -1247,10 +1247,7 @@
             derived-from: [ '21.04', 'linux' ]
             testing:
                 flavours:
-                    generic:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
-                    lowlatency:
+                    intel:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
