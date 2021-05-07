@@ -1245,6 +1245,8 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal']
             supported: true
             derived-from: [ '21.04', 'linux' ]
+            swm:
+                kernel-testing: true
             testing:
                 flavours:
                     intel:
