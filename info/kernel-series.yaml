@@ -153,6 +153,7 @@
     development: true
     supported: false
     opening:
+        archive-closed: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
