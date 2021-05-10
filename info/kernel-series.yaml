@@ -156,6 +156,7 @@
         archive-closed: true
         repositories: true
         archive-open: true
+        britney: true
     routing-table: &routing-table
         default: &routing-table-default
             security-test:
