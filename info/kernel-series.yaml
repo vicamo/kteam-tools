@@ -1166,6 +1166,7 @@
                         clouds: ['metal']
 
         linux-intel:
+            routing: prerelease
             variants: ['--']
             packages:
                 linux-intel:
