@@ -51,7 +51,7 @@ checkitem()
 	local name="$4"
 
 	echo "CHECKITEM $board/$card/$checklist $name ..."
-	so_trello checklist-additem \
+	so_trello checklist-addcheckitem \
 		--board "$board" \
 		--card "$card" \
 		--checklist "$checklist" \
