@@ -3990,24 +3990,22 @@
                     gated: false
                     stable: true
                     qa: false
-                    # FIXME: Will ESM snaps be still cert tested?
                     hw-cert: true
                     arches: ['amd64']
-                # The caracalla and stlouis snaps were not on the ESM list
-                #caracalla-kernel:
-                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'caracalla']
-                #    gated: false
-                #    stable: true
-                #    qa: false
-                #    hw-cert: true
-                #    arches: ['amd64']
-                #stlouis-kernel:
-                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'stlouis']
-                #    gated: false
-                #    stable: true
-                #    qa: false
-                #    hw-cert: true
-                #    arches: ['amd64']
+                caracalla-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'caracalla']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64']
+                stlouis-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'stlouis']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    arches: ['amd64']
             supported: true
             testing:
                 flavours:
