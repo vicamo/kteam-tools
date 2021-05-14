@@ -93,11 +93,19 @@ class SynPreparePackages(TaskHandler):
             for failure in failures:
                 if failure not in ('building', 'depwait', 'failwait'):
                     state = 'Pending'
-                if failure == 'building':
-                    building = True
-            reason = '{} -- building in {}'.format(state, "ppa")
+                #if failure == 'building':
+                #    building = True
+            if 'failed' in failures:
+                state = 'Stalled'
+            # If something is building elide any depwaits.  These are almost cirtainly waiting
+            # for that build to complete.  Only show them when nothing else is showing.
+            #if building:
+            #    failures = [failure for failure in failures if not failure.endswith(':depwait')]
+            reason = '{} -- {} in {}'.format(state,
+                    "build FAILED" if state == 'Stalled' else "building",
+                    "ppa")
             if len(failures) > 0:
-                reason += ' ' + s.bug.debs.failures_to_text(failures)
+                reason += ' (' + s.bug.debs.failures_to_text(failures) + ')'
             else:
                 reason += ' (builds complete)'
             s.task.reason = reason
