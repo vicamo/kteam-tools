@@ -1364,7 +1364,7 @@
 
         linux-oem-5.13:
             routing: devel-drivers
-            versions: ['5.12.0']
+            versions: ['5.13.0']
             variants: ['-20.04c']
             packages:
                 linux-oem-5.13:
@@ -1383,7 +1383,7 @@
                 linux-restricted-signatures-oem-5.13:
                     type: lrs
             supported: true
-            derived-from: [ '21.04', 'linux-unstable' ]
+            derived-from: [ '21.10', 'linux-unstable' ]
             swm:
                 kernel-testing: true
             testing:
