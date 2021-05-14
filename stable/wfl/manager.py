@@ -8,6 +8,8 @@ from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 import os
 import yaml
 
+from lazr.restfulclient.errors          import PreconditionFailed
+
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 
@@ -536,6 +538,15 @@ class WorkflowManager():
     # crank
     #
     def crank(s, bugid):
+        while True:
+            try:
+                return s.__crank(bugid)
+            except PreconditionFailed:
+                cinfo("PreconditionFailed: retrying")
+
+    # __crank
+    #
+    def __crank(s, bugid):
         '''
         For the specified bug, continue to process all of the bugs tasks until none
         of them are changed from the previous processing.
