@@ -4122,7 +4122,7 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
-        # Kernel for Tillamook (Rigado) Cascade-500 IoT GW (no longer supported)
+        # Kernel for Tillamook (Rigado) Cascade-500 IoT GW (Supported 10y)
         linux-cascade:
             routing:
                 security-build:
@@ -4139,23 +4139,23 @@
                     - ['ppa:tillamook-team/ubuntu/tillamook', 'Release']
             packages:
                 linux-cascade:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-cascade', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/+git/linux-cascade-xenial', 'master-next']
                 linux-meta-cascade:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-cascade']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/+git/linux-meta-cascade-xenial']
                 linux-signed-cascade:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-cascade']
-            #snaps:
-            #    cascade-kernel:
-            #        primary: true
-            #        repo: ['git://git.launchpad.net/~tillamook-team/tillamook/+git/cascade-uc16-snap', 'cascade']
-            #        gated: false
-            #        qa: false
-            #        hw-cert: true
-            #        promote-to: stable
-            #        arches: ['armhf']
-            supported: false
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/+git/linux-signed-cascade-xenial']
+            snaps:
+                cascade-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~tillamook-team/tillamook/+git/cascade-uc16-snap', 'cascade']
+                    gated: false
+                    qa: false
+                    hw-cert: true
+                    promote-to: stable
+                    arches: ['armhf']
+            supported: true
             private: true
             derived-from: [ '16.04', 'linux' ]
             invalid-tasks: [ 'regression-testing', 'automated-testing', 'certification-testing']
