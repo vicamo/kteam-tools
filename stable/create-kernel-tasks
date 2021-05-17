@@ -563,20 +563,27 @@ Examples:
             if ks_source is None:
                 cerror('{} is no valid source in {}'.format(sn, cn))
                 sys.exit(3)
-            if not ks_source.supported:
-                cwarn('{}:{} is not supported (ignored)'.format(cn, sn))
-                continue
             # The first handle decides whether we treat this as devel cycle or stable.
-            # But this cannot simply be tied to the series where the source is defined
-            # because with forward ports we might have a source defined in the development
-            # series but originating in a stable kernel. Which makes them part of a stable
-            # cycle.
+            # Instead of trying to figure out whether something originates in a development
+            # series or not and which ended in brain damaging special cases, we treat it as
+            # development if the handle source is not supported.
             if not devel_set:
-                ks_origin = ks_source
-                while ks_origin.derived_from:
-                    ks_origin = ks_origin.derived_from
-                args.devel = ks_origin.development
+                args.devel = not ks_source.supported
+                if args.devel:
+                    cinfo('Creating tasks in development mode.')
+                else:
+                    cinfo('Creating tasks in stable mode.')
                 devel_set  = True
+            # In development mode we only want to accept unsupported sources and
+            # otherwise only supported ones.
+            if args.devel:
+                if ks_source.supported:
+                    cwarn('{}:{} is already supported (ignored for devel)'.format(cn, sn))
+                    continue
+            else:
+                if not ks_source.supported:
+                    cwarn('{}:{} is not supported (ignored)'.format(cn, sn))
+                    continue
             if ks_source not in ks_source_list:
                 ks_source_list.append(ks_source)
             else:
@@ -592,7 +599,7 @@ Examples:
         for ks_source in sorted(ks_series.sources, key=lambda x: x.name):
             if len(args.source) > 0 and ks_source.name not in args.source:
                 continue
-            if not ks_source.supported or not ks_source.development:
+            if ks_source.supported:
                 continue
             # Skip forward-ports from stable series
             if ks_source.backport and not ks_source.derived_from.series.development:
