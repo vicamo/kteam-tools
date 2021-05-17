@@ -22,7 +22,7 @@ fi
 
 tools='/usr3/ubuntu/kteam-tools'
 
-dashboard_status="$here/../dashboard-status"
+dashboard_status="$here/../dashboard/dashboard-status"
 
 case "$1" in
 chroots)
