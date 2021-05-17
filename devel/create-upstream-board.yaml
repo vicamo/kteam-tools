@@ -30,7 +30,7 @@
           description: 'Update aufs from upstream.'
           list: 'TODO'
         - name: 'Update lockdown patches'
-          description: 'Update lockdown patches from fedora.'
+          description: 'Update lockdown patches from fedora. See kteam-tools/devel/docs/lockdown-patch-updates.md.'
           list: 'TODO'
         - name: 'Update zfs'
           description: 'Check for updated zfs dkms package which is compatible with this version.'
