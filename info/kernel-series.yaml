@@ -1193,6 +1193,35 @@
                         arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
+        linux-nvidia:
+            routing: prerelease
+            variants: ['--']
+            packages:
+                linux-nvidia:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/focal', 'master-next']
+                linux-meta-nvidia:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/focal']
+                linux-signed-nvidia:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/focal']
+                linux-restricted-modules-nvidia:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/focal']
+                linux-restricted-generate-nvidia:
+                    type: lrg
+                linux-restricted-signatures-nvidia:
+                    type: lrs
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    nvidia:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-intel:
             routing: prerelease
             variants: ['--']
