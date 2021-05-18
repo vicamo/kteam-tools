@@ -289,6 +289,10 @@
                 linux-restricted-modules-unstable:
                     type: lrm
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
+                linux-restricted-generate-unstable:
+                    type: lrg
+                linux-restricted-signatures-unstable:
+                    type: lrs
             supported: false
             testing:
                 flavours:
