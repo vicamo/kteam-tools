@@ -222,7 +222,7 @@
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
-        devel-drivers:
+        devel-drivers: &routing-table-devel-drivers
             <<:             *routing-table-devel
             build-private:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
@@ -233,6 +233,12 @@
             security-signing:
         devel-prerelease:
             <<:             *routing-table-devel
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
+            security:
+            release:
+        devel-prerelease-drivers:
+            <<:             *routing-table-devel-drivers
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
@@ -274,7 +280,7 @@
             release:
     sources:
         linux-unstable:
-            routing: devel-prerelease
+            routing: devel-prerelease-drivers
             versions: ['5.13.0']
             variants: ['-wip']
             packages:
