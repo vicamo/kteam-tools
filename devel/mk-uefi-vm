@@ -123,7 +123,7 @@ runcmd:
         if self.args.architecture == "amd64":
             if self.args.secure_boot:
                 cmd = cmd + ["--feature", "smm=on"]
-                uefi_code = "/usr/share/OVMF/OVMF_CODE_4M.ms.fd"
+                uefi_code = "/usr/share/OVMF/OVMF_CODE_4M.secboot.fd"
             else:
                 uefi_code = "/usr/share/OVMF/OVMF_CODE_4M.fd"
             cmd += [
