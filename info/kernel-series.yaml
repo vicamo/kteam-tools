@@ -1203,24 +1203,24 @@
                         arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
 
-        linux-nvidia:
+        linux-nv-dgx:
             routing: prerelease
             variants: ['--']
             packages:
-                linux-nvidia:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/focal', 'master-next']
-                linux-meta-nvidia:
+                linux-nv-dgx:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-nv-dgx', 'master-next']
+                linux-meta-nv-dgx:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/focal']
-                linux-signed-nvidia:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-meta-nv-dgx']
+                linux-signed-nv-dgx:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/focal']
-                linux-restricted-modules-nvidia:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-signed-nv-dgx']
+                linux-restricted-modules-nv-dgx:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/focal']
-                linux-restricted-generate-nvidia:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-restricted-modules-nv-dgx']
+                linux-restricted-generate-nv-dgx:
                     type: lrg
-                linux-restricted-signatures-nvidia:
+                linux-restricted-signatures-nv-dgx:
                     type: lrs
             supported: true
             derived-from: [ '20.04', 'linux' ]
@@ -1228,7 +1228,7 @@
                 kernel-testing: true
             testing:
                 flavours:
-                    nvidia:
+                    nv-dgx:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
