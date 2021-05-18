@@ -148,7 +148,7 @@ def sync_misc(args):
             grants = []
 
             for person in people:
-                grants.append(generate_grant(person=person, push=True, rewind=allow_rewind))
+                grants.append(generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
             grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
             if admins != 'owner':
                 grants.append(generate_grant(person='owner'))
