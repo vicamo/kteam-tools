@@ -273,6 +273,27 @@
                 - ['ppa:canonical-signing/ubuntu/fips', 'Release']
             proposed:
                 - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
+        ibm-gt:
+            test-build:
+                - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+            test:
+                - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+            build:
+                - ['ppa:ibm-cloud/ubuntu/build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
+            proposed:
+                - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+            #security:
+            #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+            #release:
+            #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
         eol:
             proposed:
             updates:
@@ -3612,27 +3633,7 @@
             invalid-tasks: [ 'regression-testing' ]
 
         linux-ibm-gt:
-            routing:
-                test-build:
-                    - ['ppa:ibm-cloud/ubuntu/test', 'Release']
-                security-build:
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
-                test:
-                    - ['ppa:ibm-cloud/ubuntu/test', 'Release']
-                build:
-                    - ['ppa:ibm-cloud/ubuntu/build', 'Release']
-                signing:
-                    - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
-                proposed:
-                    - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
-                updates:
-                    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
-                #security:
-                #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
-                #release:
-                #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+            routing: ibm-gt
             packages:
                 linux-ibm-gt:
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'master-next']
@@ -3649,6 +3650,27 @@
                 flavours:
                     ibm-gt:
                         arches: ['amd64', 's390x.LPAR']   # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
+        linux-ibm-gt-fips:
+            routing: ibm-gt
+            packages:
+                linux-ibm-gt-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'ibm-gt-fips']
+                linux-meta-ibm-gt-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'ibm-gt-fips']
+                linux-signed-ibm-gt-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'ibm-gt-fips']
+            supported: true
+            private: true
+            derived-from: ['18.04', 'linux-ibm-gt']
+            testing:
+                flavours:
+                    ibm-gt:
+                        arches: ['amd64']   # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
