@@ -1010,6 +1010,17 @@ class Package():
         packages = s.dependent_packages_for_pocket(pocket)
         return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
 
+    def __feeder_completed(s, feeder, pocket):
+        published = s.srcs[feeder].get(pocket, {}).get('published')
+        built = s.srcs[feeder].get(pocket, {}).get('most_recent_build')
+        if published is None:
+            return built
+        if built is None:
+            return published
+        if built > published:
+            return built
+        return published
+
     # delta_failures_in_pocket
     #
     def delta_failures_in_pocket(s, delta, pocket, ignore_all_missing=False):
@@ -1050,8 +1061,8 @@ class Package():
                     continue
 
                 # Work out if the previous_feeder is retryable.
-                previous_feeder_completed = s.srcs[previous_feeder].get(pocket, {}).get('published')
-                active_feeder_completed = s.srcs[active_feeder].get(pocket, {}).get('published')
+                previous_feeder_completed = s.__feeder_completed(previous_feeder, pocket)
+                active_feeder_completed = s.__feeder_completed(active_feeder, pocket)
                 cinfo("completions {} => {} {} -> {} {}".format(pkg, previous_feeder_completed, previous_feeder, active_feeder, active_feeder_completed))
                 previous_feeder_retry = (
                         previous_feeder_completed is not None and
