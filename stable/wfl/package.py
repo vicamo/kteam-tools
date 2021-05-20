@@ -1067,7 +1067,7 @@ class Package():
                 previous_feeder_retry = (
                         previous_feeder_completed is not None and
                         active_feeder_completed is not None and
-                        previous_feeder_completed <= active_feeder_completed)
+                        previous_feeder_completed - timedelta(hours=2) <= active_feeder_completed)
 
                 # If the previous_feeder is actually us and can be retried
                 # actually attempt it.
