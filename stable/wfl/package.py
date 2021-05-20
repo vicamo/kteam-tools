@@ -12,7 +12,7 @@ from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
-from .errors                            import ShankError, ErrorExit
+from .errors                            import ShankError, ErrorExit, WorkflowCrankError
 from .git_tag                           import GitTag, GitTagError
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
 
@@ -266,6 +266,8 @@ class PackageBuild:
         archive_num = 0
         for (src_archive, src_pocket) in self.routing:
             archive_num += 1
+            if src_archive is None:
+                raise WorkflowCrankError("Routing table entry {}#{} invalid".format(self.pocket, archive_num))
             info = self.__is_fully_built(self.package, self.srch_abi, src_archive, self.srch_version, src_pocket, self.srch_sloppy)
             publications.append(info)
             # If this archive pocket contains the version we are looking for then scan
@@ -360,12 +362,8 @@ class Package():
                 route_list = []
                 for route in routes:
                     archive = s.lp.launchpad.archives.getByReference(reference=route[0])
-                    if archive is None:
-                        cwarn("invalid-archive {} {}".format(route[0], route[1]))
-                        continue
                     route_list.append((archive, route[1]))
-                # Record invalid pockets as present but broken.
-                s._routing[key] = route_list if len(route_list) > 0 else None
+                s._routing[key] = route_list
             s.routing_mode = s.source.routing.name
 
 
@@ -375,7 +373,6 @@ class Package():
         cinfo('    Routing table:', 'blue')
         for pocket, pocket_data in s._routing.items():
             if pocket_data is None:
-                pocket_data = ('NONE', 'NONE')
                 cerror('        {}: {} {}'.format(pocket, 'NONE', 'NONE', 'red'))
             else:
                 for route in pocket_data:
