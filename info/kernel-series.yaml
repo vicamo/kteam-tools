@@ -3666,6 +3666,7 @@
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'ibm-gt-fips']
             supported: true
             private: true
+            backport: true
             derived-from: ['18.04', 'linux-ibm-gt']
             testing:
                 flavours:
