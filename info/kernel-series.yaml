@@ -1225,7 +1225,7 @@
                         clouds: ['metal']
 
         linux-nv-dgx:
-            routing: prerelease
+            routing: prerelease-drivers
             variants: ['--']
             packages:
                 linux-nv-dgx:
@@ -1244,6 +1244,7 @@
                 linux-restricted-signatures-nv-dgx:
                     type: lrs
             supported: true
+            private: true
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
