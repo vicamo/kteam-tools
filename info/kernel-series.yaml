@@ -462,7 +462,7 @@
             testing:
                 flavours:
                     aws:
-                        arches: ['amd64']        # test system arch names
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
