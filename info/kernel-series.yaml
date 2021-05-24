@@ -1844,7 +1844,7 @@
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-fips:
-            routing: fips-prerelease
+            routing: fips
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'master-next']
