@@ -1811,7 +1811,7 @@
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-fips-recert:
-            routing: fips-recert
+            routing: fips
             packages:
                 linux-fips-recert:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'fips-recert']
