@@ -969,7 +969,6 @@
             derived-from: [ '20.10', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
-            swm:
                 kernel-testing: true
             testing:
                 flavours:
@@ -4420,13 +4419,12 @@
             #        arches: ['armhf']
             supported: false
             derived-from: [ '16.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
             testing:
                 flavours:
                    raspi2:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing', 'regression-testing' ]
 
         # Kernel is no longer supported
         linux-snapdragon:
@@ -4447,13 +4445,12 @@
             #        arches: ['arm64']
             supported: false
             derived-from: [ '16.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
             testing:
                 flavours:
                    snapdragon:
                         arches: ['armhf']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing', 'regression-testing' ]
 
         linux-fips:
             routing: fips
