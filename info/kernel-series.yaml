@@ -3628,13 +3628,13 @@
             routing: ibm-gt
             packages:
                 linux-ibm-gt-fips:
-                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'ibm-gt-fips']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'ibm-gt-fips']
                 linux-meta-ibm-gt-fips:
                     type: meta
-                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'ibm-gt-fips']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-bionic', 'ibm-gt-fips']
                 linux-signed-ibm-gt-fips:
                     type: signed
-                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'ibm-gt-fips']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic', 'ibm-gt-fips']
             supported: true
             private: true
             backport: true
