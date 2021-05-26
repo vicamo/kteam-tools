@@ -19,6 +19,7 @@
           - 'juerghaefliger'
           - 'paolopisati'
           - 'thadeucascardo1'
+          - 'dimitriledkov'
     cards:
         - name: 'Drop patches to disable selftests'
           description: 'Drop any kselftests patches which disable known bad tests.'
