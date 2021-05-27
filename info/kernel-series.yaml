@@ -1140,8 +1140,8 @@
                     type: lrg
                 linux-restricted-signatures-hwe-5.11:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
+            development: false
             backport: true
             derived-from: [ '21.04', 'linux' ]
             swm:
