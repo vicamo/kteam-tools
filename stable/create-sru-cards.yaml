@@ -50,7 +50,7 @@
           - 'dimitriledkov'
     cards:
         - name: 'Cycle Lead: <insert name>'
-          description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.'
+          description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.\n\nRole description and tasks: https://docs.google.com/document/d/1iI7NIsG6ymYtT7vNEets91SUfNgAvqenhjeh69JwRec/'
           list: 'Cycle Roles'
         - name: 'Crankers Pool'
           description: 'All potential crankers (whoever is supposed to participate in this cycle) to be assigned as members to this card.'
