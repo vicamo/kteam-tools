@@ -1,0 +1,112 @@
+#!/usr/bin/python2
+# Copyright 2021 Canonical Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+if hasattr(__builtins__, 'raw_input'):
+    input = raw_input
+
+import argparse
+import json
+import logging
+import os
+from collections import OrderedDict
+
+_description = "Reset package version numbers in series.cache latest key"
+
+_epilog = """When adt-matrix runs, it caches the latest versions of packages
+that it has ever seen in any of the adt results. However sometimes
+when packages fail verification they are removed from the -proposed
+pocket. When that happens the cached version of the package may need
+to be adjusted in the cache files, if adt-matrix has already noticed a
+higher version number that is no longer published.
+
+Example, glibc in 2.31-0ubuntu9.3 was publish in focal-proposed and
+run some tests against current kernel sru cycle. It has been removed
+from focal-proposed because it has regressions. adt-matrix reports
+glibc results as MISS because it thinks that glibc tests should run
+against 2.31-0ubuntu9.3, whereas only 2.31-0ubuntu9.2 is available.
+
+Correct the cache by executing
+
+$ ssh people.canonical.com
+$ cd /home/kernel/public_html/status/adt-matrix/
+$ adt-remove-package-version --series-cache ./focal.cache --package glibc --remove-version 2.31-0ubuntu9.3 --set-version 2.31-0ubuntu9.2
+"""
+
+logger = logging.getLogger("adt-remove-package-version")
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(levelname)s: %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+def remove_package_version(args):
+    cache = json.load(open(args.series_cache), object_pairs_hook=OrderedDict)
+
+    results_removals = []
+    for verpackage, results in cache["results"].items():
+        if args.package in results:
+            for arch, resultinfo in results[args.package].items():
+                if resultinfo[1] == args.remove_version:
+                    results_removals.append((verpackage, args.package, arch))
+                    logger.info("results: %s %s %s for '%s' removed" % (args.package, arch, resultinfo[1], verpackage))
+
+    latest_updates = []
+    for pkgarch, version in cache["latest"].items():
+        package, arch = pkgarch.split(' ', 1)
+        if package == args.package and version == args.remove_version:
+            latest_updates.append((pkgarch, args.set_version))
+            logger.info(" latest: %s %s -> %s" % (pkgarch, version, args.set_version))
+
+    if not (results_removals or latest_updates):
+        logger.info("Nothing to do")
+        return
+
+    confirmation = input("Ok to proceed? y/n\n")
+    if confirmation not in ('y', 'Y'):
+        logger.info("Aborted")
+        return
+
+    # update latest package version to a new one
+    cache["latest"].update(latest_updates)
+    # delete bad results and do not leave empty leafs
+    for verpackage, package, arch in results_removals:
+        del(cache["results"][verpackage][package][arch])
+        if not cache["results"][verpackage][package]:
+            del(cache["results"][verpackage][package])
+        if not cache["results"][verpackage]:
+            del(cache["results"][verpackage])
+
+    new_series_cache = args.series_cache + '.new'
+    with open(new_series_cache, 'w') as wfd:
+        json.dump(cache, wfd, indent=2)
+    os.rename(new_series_cache, args.series_cache)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=_description, epilog=_epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--series-cache", required=True, help="path to series.cache file to update")
+    parser.add_argument("--package", required=True, help="source package name to change")
+    parser.add_argument("--remove-version", required=True, help="source package version to remove from results")
+    parser.add_argument("--set-version", required=True, help="source package version to set as latest")
+    args = parser.parse_args()
+    remove_package_version(args)
+
+
+if __name__ == "__main__":
+    main()
