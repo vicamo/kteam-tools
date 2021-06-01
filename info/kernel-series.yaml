@@ -373,7 +373,6 @@
             derived-from: ['21.04', 'linux']
 
         linux-raspi-unstable:
-            versions: ['5.11.0']
             variants: ['-unstable']
             packages:
                 linux-raspi-unstable:
