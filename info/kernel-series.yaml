@@ -1542,6 +1542,37 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-efi:
+            routing:
+              build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/azure', 'Release']
+              proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/azure-test', 'Release']
+              signing:
+                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            variants: ['--']
+            packages:
+                linux-azure-efi:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-efi']
+                linux-meta-azure-efi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-efi']
+                linux-signed-azure-efi:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-efi']
+            supported: true
+            derived-from: [ '20.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
         linux-azure-5.8:
             routing: stable-drivers
             variants: [ '--', '-edge' ]
