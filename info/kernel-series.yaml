@@ -1357,7 +1357,7 @@
                     type: lrg
                 linux-restricted-signatures-oem-5.6:
                     type: lrs
-            supported: true
+            supported: false
             testing:
                 flavours:
                     oem:
