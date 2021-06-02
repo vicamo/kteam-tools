@@ -203,6 +203,7 @@ class PackageBuild:
                         'package': build.source_package_name,
                         'url': build.web_link,
                         'lp-api': build.self_link,
+                        'log': build.build_log_url,
                     }})
 
             # Accumulate the latest build completion.
@@ -968,15 +969,28 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
 
+    # attempt_retry_logless
+    #
+    def attempt_retry_logless(s, pkg):
+        retried = False
+        for maint in s.bug.maintenance:
+            if maint['type'] == 'deb-build' and maint['detail']['type'] == pkg:
+                # If we have a maintenance record and it is in 'Failed to build'
+                # and we have no log then this is a clear retry candidate.
+                if (maint is not None and
+                        maint['detail']['state'] == 'Failed to build' and
+                        maint['detail']['log'] is None):
+                    cinfo("RETRY: {} (logless failure)".format(maint['detail']['lp-api']))
+                    if s.attempt_retry(pkg):
+                        retried = True
+        return retried
+
     # attempt_retry
     #
     def attempt_retry(s, pkg):
         retried = False
-        package_name = s.dependent_packages[pkg]
         for record in s.bug.maintenance:
-            if record['type'] != 'deb-build':
-                continue
-            if record['detail']['package'] == package_name:
+            if record['type'] == 'deb-build' and record['detail']['type'] == pkg:
                 cinfo("RETRY: {}".format(record['detail']['lp-api']))
                 lp_build = s.lp.launchpad.load(record['detail']['lp-api'])
                 if lp_build is None:
@@ -999,7 +1013,7 @@ class Package():
                         cinfo("RETRY: {} retry successful".format(
                             record['detail']['lp-api']))
                     except Unauthorized as e:
-                        cinfo("RETRY: {} retry unsuccessful".format(
+                        cinfo("RETRY: {} retry unsuccessful -- marked manual-retry".format(
                             record['detail']['lp-api']))
                         record['detail']['manual-retry'] = True
         return retried
@@ -1035,6 +1049,15 @@ class Package():
             elif status in ('DEPWAIT', 'FAILEDTOBUILD'):
                 real_status = 'depwait' if status == 'DEPWAIT' else 'failed'
                 wait_status = 'depwait' if status == 'DEPWAIT' else 'failwait'
+
+                # Check if we failed without a log, if so, hit retry regardless
+                # or any feeder existance.
+                if status == 'FAILEDTOBUILD':
+                    # If we successfully retried it then we should report it as
+                    # building.
+                    if s.attempt_retry_logless(pkg):
+                        failures.append("{}:building".format(pkg))
+                        continue
 
                 # Look up the dependancy chain looking for something which
                 # can be retried.
