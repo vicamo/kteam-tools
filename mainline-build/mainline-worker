@@ -55,6 +55,10 @@ s390x)
 		--command s390x:cod-tip-build.s390x
 	;;
 esac
+# If we have RPM build tooling installed ...
+if [ -f "$HOME/centos/ubuntu-build-rpm" ]; then
+	cmd_args --command centos:cod-build-rpm
+fi
 cmd_args $(hostname) mainline-todo "$@"
 
 #for arg in "${args[@]}"
