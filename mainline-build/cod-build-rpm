@@ -7,7 +7,7 @@ fi
 version="$1"
 
 # If we don't have RPM build tooling installed ...
-if [ -f "$HOME/centos/ubuntu-build-rpm" ]; then
+if [ ! -f "$HOME/centos/ubuntu-build-rpm" ]; then
 	echo "$0: RPM build support not present" 1>&2
 	exit 1
 fi
