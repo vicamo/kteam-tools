@@ -1277,6 +1277,23 @@
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
+        linux-uc20-ambarella-honeywell:
+            routing:
+                'build':
+                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                'signing':
+                    - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-honeywell', 'Release' ]
+                'proposed':
+                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                'updates':
+                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+            packages:
+                linux-uc20-ambarella-honeywell:
+                linux-signed-uc20-ambarella-honeywell:
+                    type: signed
+            development: true
+            supported: false
+
         linux-raspi:
             variants: ['--']
             packages:
