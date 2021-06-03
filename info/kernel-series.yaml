@@ -234,15 +234,15 @@
         devel-prerelease:
             <<:             *routing-table-devel
             updates:
-                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
         devel-prerelease-drivers:
             <<:             *routing-table-devel-drivers
             updates:
-                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
         fips: &routing-table-fips
             test-build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
