@@ -56,14 +56,15 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
             dest = route[0]
             ppa, pocket = route[1][0]
 
-            if ((dest not in ("release", "security", "updates", "proposed") and
+            if show_pocket:
+                # Skip it if a pocket was provided but the route doesn't match
+                if dest != show_pocket:
+                    continue
+
+            elif ((dest not in ("release", "security", "updates", "proposed") and
                  not show_all)):
                 # This is a non-standard PPA and we didn't ask for it, so
                 # skip it
-                continue
-
-            if show_pocket and dest != show_pocket:
-                # Skip it if a pocket was provided but the route doesn't match
                 continue
 
             lp_archive = lp.archives.getByReference(reference=ppa)
@@ -181,8 +182,9 @@ Examples:
                         help="Dump the data in a format suitable for "
                         "subsequent consumption by a script, i.e., don't "
                         "render a fancy table")
-    parser.add_argument('-p', '--pocket', choices=['release', 'security',
-                                                   'updates', 'proposed'],
+    parser.add_argument('-p', '--pocket', choices=['build', 'release',
+                                                   'security', 'updates',
+                                                   'proposed'],
                         help='Only show source package information from the '
                         'provided pocket.')
     args = parser.parse_args()
