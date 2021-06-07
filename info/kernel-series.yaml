@@ -1294,6 +1294,23 @@
             development: true
             supported: false
 
+        linux-uc20-ambarella-bosch:
+            routing:
+                'build':
+                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+                'signing':
+                    - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-bosch', 'Release' ]
+                'proposed':
+                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+                'updates':
+                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+            packages:
+                linux-uc20-ambarella-bosch:
+                linux-signed-uc20-ambarella-bosch:
+                    type: signed
+            development: true
+            supported: false
+
         linux-raspi:
             variants: ['--']
             packages:
