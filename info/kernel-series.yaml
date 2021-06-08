@@ -1242,6 +1242,28 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
+        linux-uc20-intel:
+            routing: uc20
+            packages:
+                linux-uc20-intel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-intel/+git/focal', 'master-next']
+                linux-signed-uc20-intel:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel/+git/focal']
+            supported: true
+            snaps:
+                intel-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel']
+                    gated: false
+                    stable: true
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['20']
+            derived-from: [ '20.04', 'linux-intel' ]
+            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+
         linux-uc20-efi:
             routing: uc20
             packages:
