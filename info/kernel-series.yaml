@@ -1542,7 +1542,7 @@
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
-        linux-azure-efi:
+        linux-azure-fde:
             routing:
               build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/azure', 'Release']
@@ -1552,14 +1552,14 @@
                 - ['ppa:canonical-signing/ubuntu/primary', 'Release']
             variants: ['--']
             packages:
-                linux-azure-efi:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-efi']
-                linux-meta-azure-efi:
+                linux-azure-fde:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-fde']
+                linux-meta-azure-fde:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-efi']
-                linux-signed-azure-efi:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-fde']
+                linux-signed-azure-fde:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-efi']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde']
             supported: true
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
