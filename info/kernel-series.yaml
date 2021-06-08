@@ -1249,7 +1249,7 @@
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-efi/+git/focal', 'master-next']
                 linux-signed-uc20-efi:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-uefi/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-efi/+git/focal']
             supported: true
             snaps:
                 pc-kernel:
