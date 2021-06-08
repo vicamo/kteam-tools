@@ -1545,9 +1545,9 @@
         linux-azure-fde:
             routing:
               build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/azure', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/azure', 'Release']
               proposed:
-                - ['ppa:canonical-kernel-security-team/ubuntu/azure-test', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/azure-test', 'Release']
               signing:
                 - ['ppa:canonical-signing/ubuntu/primary', 'Release']
             variants: ['--']
