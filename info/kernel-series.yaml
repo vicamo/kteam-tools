@@ -1324,7 +1324,7 @@
                     primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pi']
                     gated: false
-                    stable: false
+                    promote-to: stable
                     qa: false
                     hw-cert: true
                     publish-to:
