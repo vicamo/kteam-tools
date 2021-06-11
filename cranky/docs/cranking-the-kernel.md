@@ -102,10 +102,9 @@ to match those currently present in the specified pocket. For SRU kernels
 `POCKET` should be `updates`.  For development kernels it will typically be
 `proposed`.
 
-**Note**: `update-version-dkms` should only need to be run for primary kernels,
-hwe kernels, and kernels forward-ported to the development release. Other
-derivatives generally should not be deviating from the versions in the primary
-kernel.
+**Note**: `update-version-dkms` should only need to be run for primary kernels
+and kernels forward-ported to the development release. Other derivatives
+generally should not be deviating from the versions in the primary kernel.
 
 Example:
 ```
