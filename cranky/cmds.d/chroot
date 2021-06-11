@@ -133,6 +133,12 @@ session_chroot_create()
 		# Xenial doesn't have these packages
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-i686-linux-gnu libc6-dev-i386-cross gcc-riscv64-linux-gnu libc6-dev-riscv64-cross
 	fi
+
+	# Fixups to support backport kernels
+	if [ "${series}" = "focal" ] ; then
+		# Compiling Hirsute and later kernels requires dctrl-tools
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install dctrl-tools
+	fi
 }
 
 chroot_update() {
