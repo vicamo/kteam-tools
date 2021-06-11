@@ -78,6 +78,7 @@
           description: 'Once the main and HWE kernels are in proposed, send the SRU announcement to the mailing lists (use "gen-sru-announce <cycle>" to prepare the content).'
           list: 'Backlog (manual)'
         - name: 'Review regression tests results'
+          description: '**RT results report:** http://sita/rtr-lvl0.html'
           list: 'Backlog (manual)'
         - name: 'Review automated (ADT) tests results'
           description: '**Documentation:** https://docs.google.com/document/d/1vFddb7K1TarlQY9pqyH4_DJ6uKHlCaT1ovzdHjUW5gs/\n\n**Note:** the main and HWE kernels should be reviewed and hinted only by team members with upload rights.'
