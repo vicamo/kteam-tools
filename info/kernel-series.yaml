@@ -1818,7 +1818,7 @@
 
         linux-oracle-5.8:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-oracle-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.8-next']
@@ -1838,6 +1838,37 @@
             supported: true
             backport: true
             derived-from: [ '20.10', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oracle-5.11:
+            routing: prerelease-drivers
+            variants: [ '-edge' ]
+            packages:
+                linux-oracle-5.11:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.11-next']
+                linux-meta-oracle-5.11:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal', 'oracle-5.11']
+                linux-signed-oracle-5.11:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal', 'oracle-5.11']
+                linux-restricted-modules-oracle-5.11:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal', 'oracle-5.11']
+                linux-restricted-generate-oracle-5.11:
+                    type: lrg
+                linux-restricted-signatures-oracle-5.11:
+                    type: lrs
+            supported: true
+            backport: true
+            derived-from: [ '21.04', 'linux-oracle' ]
             swm:
                 kernel-testing: true
             testing:
