@@ -1484,7 +1484,7 @@
 
         linux-aws-5.8:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-aws-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.8-next']
@@ -1507,6 +1507,34 @@
                 flavours:
                     aws:
                         arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-aws-5.11:
+            routing: prerelease-drivers
+            variants: [ '-edge' ]
+            packages:
+                linux-aws-5.11:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.11-next']
+                linux-meta-aws-5.11:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.11']
+                linux-restricted-modules-aws-5.11:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal', 'aws-5.11']
+                linux-restricted-generate-aws-5.11:
+                    type: lrg
+                linux-restricted-signatures-aws-5.11:
+                    type: lrs
+            supported: true
+            backport: true
+            derived-from: [ '21.04', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
