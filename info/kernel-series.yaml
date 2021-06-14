@@ -1588,7 +1588,8 @@
                 linux-signed-azure-fde:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde']
-            supported: true
+            supported: false
+            development: true
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
