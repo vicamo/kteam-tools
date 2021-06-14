@@ -181,6 +181,11 @@ esac
 #            XXX: we should use kernel series to instantiate the
 #            full list of packages in the series.
 case "$SUITE" in
+impish)
+	ADDPKG="$ADDPKG zstd"
+	;;
+esac
+case "$SUITE" in
 hirsute|groovy|focal)
 	ADDPKG="$ADDPKG dctrl-tools"
 	;;
