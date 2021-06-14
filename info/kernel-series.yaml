@@ -4966,7 +4966,7 @@
 '12.04':
     codename: precise
     development: false
-    supported: true
+    supported: false
     lts: true
     esm: true
     routing-table:
