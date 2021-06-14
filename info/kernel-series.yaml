@@ -1121,7 +1121,7 @@
 
         linux-hwe-5.11:
             routing: stable-drivers
-            variants: [ '-hwe-20.04-edge-wip' ]
+            variants: [ '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.11:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11']
@@ -1158,7 +1158,7 @@
 
         linux-hwe-5.8:
             routing: stable-drivers
-            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
+            variants: [ '-hwe-20.04' ]
             packages:
                 linux-hwe-5.8:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.8']
