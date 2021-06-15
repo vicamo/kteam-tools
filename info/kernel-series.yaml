@@ -160,6 +160,10 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+            security-proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
@@ -188,6 +192,10 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
+            security-proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
             signing:
@@ -218,6 +226,10 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/devel', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/devel2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/devel3', 'Release']
+            security-proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
@@ -250,6 +262,10 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+            security-proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
             build-private:
@@ -280,6 +296,10 @@
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+            security-proposed:
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
             test:
                 - ['ppa:ibm-cloud/ubuntu/test', 'Release']
             build:
