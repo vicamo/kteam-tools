@@ -159,7 +159,7 @@ for git_ref in $git_refs
 do
 	git checkout "$git_ref" -- debian && break
 done
-git checkout "$git_ref" -- debian.master
+git checkout "$git_ref" -- 'debian.master*'
 echo "II: found packaging on $git_ref"
 
 # Mark this as a mainline-build.
