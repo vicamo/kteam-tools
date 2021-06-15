@@ -41,6 +41,7 @@ do
             -e "error: '-mindirect-branch' and '-fcf-protection' are not compatible" \
             -e "No rule to make target 'debian/canonical-certs.pem'" \
             -e ": grep-dctrl: command not found" \
+            -e "can't read debian.master-21.10/changelog" \
         "$log" | head -1
     )
     core=
@@ -81,6 +82,9 @@ do
     *": grep-dctrl: command not found"*)
         core=1
         which='missing grep-dctrl binary';;
+    *"can't read debian.master-21.10/changelog"*)
+        core=1
+        which='bad debian.master pickup';;
     esac
 
     # Only handle tests which have been converted to core/not-core form.
@@ -111,6 +115,8 @@ do
             for iteration in 1 2 3
             do
                 [ -f "$dir/aggregate.yaml" ] && break
+                testsets=$(grep -c testsets: "$dir/summary.yaml")
+                [ "$testsets" -ne 0 ] && break
                 dir=$( dirname "$dir" )
             done
         fi
