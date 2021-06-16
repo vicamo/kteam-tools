@@ -14,7 +14,11 @@ if os.path.exists(cred_dir):
 lp = Launchpad.login_with('lrm-ancillary-builder', 'production', version='devel',
     credentials_file=cred_file)
 
-me = lp.me
+# Work around a redirect handling issue in python3-lazr.restfulclient
+# which fails when trying to carry over non-GET requests.  Look up
+# my name (via +me), and then manually resolve that name to a user.
+me_name = lp.me.name
+me = lp.people[me_name]
 
 primary_ref, adjunct_ref = sys.argv[1:]
 
@@ -30,23 +34,7 @@ adjunct = lp.archives.getByReference(reference=adjunct_ref)
 # such subscription if needed.
 subscription = None
 if primary.private:
-    #subscription = me.getArchiveSubscriptionURL(archive=primary)
-    #print(subscription)
-
-    # XXX: until python3 lazr.restfulclient is upgraded ....
-    subscription = None
-    find = primary.reference[1:].split('/')
-    find = '/{}/{}/{}'.format(find[0], find[2], find[1])
-    for sub in me.getArchiveSubscriptionURLs():
-        #print(sub)
-        if sub.endswith(find):
-            subscription = sub
-            break
-    #print(primary.reference, find, found)
-    #sys.exit(1)
-
-    #print("PRIVATE", subscription)
-
+    subscription = me.getArchiveSubscriptionURL(archive=primary)
     if subscription is None:
         raise ValueError("no private subscription")
 
