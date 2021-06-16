@@ -141,7 +141,14 @@ class Workflow(TaskHandler):
                 s.bug.reasons['derivatives-held'] = 'Stalled -- derivative preparation block requested'
 
             if s.bug.snap:
-                (consistent, reasons) = s.bug.snap.channel_revisions_consistent()
+                for risk in ('edge', 'beta', 'candidate', 'stable'):
+                    task = s.bug.tasks_by_name.get('snap-release-to-' + risk)
+                    if task is not None and task.status != 'Fix Released':
+                        break
+                else:
+                    risk = None
+                cinfo("workflow: snap risk={}".format(risk))
+                (consistent, reasons) = s.bug.snap.channel_revisions_consistent(risk)
                 if consistent is False:
                     s.bug.reasons['snap-publishing'] = "snap channel revisions inconsistent {}".format(",".join(reasons))
 
