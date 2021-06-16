@@ -1602,7 +1602,7 @@
 
         linux-azure-5.8:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-azure-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.8-next']
