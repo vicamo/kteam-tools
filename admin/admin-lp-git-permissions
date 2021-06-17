@@ -324,12 +324,12 @@ def sync_primary(args):
             # debs repositories have a -prep branch.
             if thing_type in (None, 'main'):
                 branches.append(branches[0] + '-prep')
-            for branch in branches:
+            for branch_name in branches:
                 if thing.series.development:
                     rewind = True
                 elif thing.source.derived_from is not None and thing_type in (None, 'main'):
                     rewind = True
-                elif branch.endswith('-next') or branch.endswith('-prep'):
+                elif branch_name.endswith('-next') or branch_name.endswith('-prep'):
                     rewind = True
                 else:
                     rewind = False
@@ -338,7 +338,7 @@ def sync_primary(args):
                     grants.append(generate_grant(person=person, create=True, push=True, rewind=rewind))
                 rules.append(
                     {
-                        'ref_pattern': "refs/heads/{}".format(branch),
+                        'ref_pattern': "refs/heads/{}".format(branch_name),
                         'grants': sort_grants(grants),
                     },
                     )
