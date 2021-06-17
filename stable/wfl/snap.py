@@ -95,6 +95,13 @@ class SnapStore:
             store_err = False
             if hasattr(e, 'code') and e.code == 404:
                 ret_body = e.read().decode()
+                ret_data = json.loads(ret_body)
+                cinfo("SNAP 404: {}".format(ret_data))
+                for error in ret_data.get('error-list', []):
+                    cinfo("SNAP ERROR: code={} message={}".format(error['code'], error['message']))
+                    if error['code'] == 'resource-not-found':
+                        store_err = True
+                # XXX: convert to something sane in the above loop.
                 store_err_str = 'has no published revisions in the given context'
                 if store_err_str in ret_body:
                     store_err = True
