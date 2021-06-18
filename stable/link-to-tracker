@@ -301,7 +301,7 @@ class Tracking():
                 # Record the tacking bug number.
                 tracking = os.path.join(debian, 'tracking-bug')
                 with open(tracking, 'w') as f:
-                    print(bugid, file=f)
+                    print(bugid, s.bug_to_sru_cycle(lpbug), file=f)
 
                 msg = """
 UBUNTU: link-to-tracker: update tracking bug
