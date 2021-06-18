@@ -4249,6 +4249,7 @@
     routing-table:
         <<: *routing-table
         esm:
+            <<: *routing-table-security-proposed
             security-test:
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
@@ -4842,6 +4843,7 @@
     routing-table:
         <<: *routing-table
         esm:
+            <<: *routing-table-security-proposed
             security-test:
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
@@ -5113,6 +5115,7 @@
     routing-table:
         <<: *routing-table
         esm:
+            <<: *routing-table-security-proposed
             security-test:
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
             security-build:
