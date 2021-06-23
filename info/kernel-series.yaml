@@ -1256,9 +1256,10 @@
                     primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel']
                     gated: false
-                    stable: true
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
                     qa: false
-                    hw-cert: true
+                    hw-cert: false
                     publish-to:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel' ]
