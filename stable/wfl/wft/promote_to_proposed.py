@@ -92,9 +92,13 @@ class PromoteFromTo(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pockets_after) and
-                not s._kernel_unblock_ppa()):
-                s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(s.pocket_dest)
+            clear = True
+            for pocket_dest, pockets_after in s.pockets_clear:
+                if not s.bug.debs.pocket_clear(pocket_dest, pockets_after):
+                    clear = False
+                    break
+            if not clear and not s._kernel_unblock_ppa():
+                s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(pocket_dest)
                 break
 
             if s.bug.debs.older_tracker_in_proposed:
@@ -315,12 +319,13 @@ class PromoteToProposed(PromoteFromTo):
 
         s.task_src = ':prepare-packages'
         s.pocket_src = 'ppa'
+        s.pockets_clear = []
         if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_dest = 'Signing'
-            s.pockets_after = ['Proposed', 'Release/Updates']
+            s.pockets_clear.append(('Signing', ['Proposed', 'Release/Updates']))
         else:
             s.pocket_dest = 'Proposed'
-            s.pockets_after = ['Release/Updates']
+        s.pockets_clear.append(('Proposed', ['Release/Updates']))
 
         # If we have no source pocket, then there can be nothing to copy.
         if s.bug.debs.routing(s.pocket_src) is None:
@@ -367,10 +372,11 @@ class PromoteSigningToProposed(PromoteFromTo):
 
         cdebug("signing={} has_signables={}".format(s.bug.debs.routing('Signing'), has_signables))
         s.task_src = 'promote-to-proposed'
+        s.pockets_clear = []
         if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'
-            s.pockets_after = ['Release/Updates']
+            s.pockets_clear.append(('Proposed', ['Release/Updates']))
         else:
             s.pocket_src = None
             s.pocket_dest = None
