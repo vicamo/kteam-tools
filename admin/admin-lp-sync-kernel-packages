@@ -1,0 +1,34 @@
+#!/usr/bin/python3 
+import os
+import sys
+
+from launchpadlib.launchpad             import Launchpad
+
+from ktl.kernel_series                  import KernelSeries
+
+lp = Launchpad.login_with('admin-lp-sync-kernel-packages', 'production', version='devel')
+ubuntu = lp.distributions['ubuntu']
+kp = lp.people['kernel-packages']
+
+ks = KernelSeries()
+
+for ks_series in ks.series:
+    for ks_source in ks_series.sources:
+        if not ks_source.supported and not ks_source.development:
+            continue
+        for ks_package in ks_source.packages:
+            #print(ks_package)
+
+            lp_package = ubuntu.getSourcePackage(name=ks_package.name)
+            if lp_package is None:
+                print("NOT IN UBUNTU", ks_package)
+                continue
+            lp_sub = lp_package.getSubscription(person=kp)
+            if lp_sub is not None:
+                print("GOOD", ks_package)
+                continue
+            lp_sub = lp_package.addBugSubscription(subscriber=kp)
+            if lp_sub is None:
+                print("FAILED", ks_package)
+                continue
+            print("ADDED", ks_package)
