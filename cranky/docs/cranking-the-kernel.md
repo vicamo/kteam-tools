@@ -186,9 +186,7 @@ cranky fix
 
 At this point you should double check that the version number at the top of
 "debian.master/changelog" matches the version that you see on the dashboard:
-```
 https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
-```
 
 Look under "linux", inside the section of the release in the dashboard you are
 currently cranking such as "xenial".
