@@ -1536,7 +1536,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.11:
-            routing: prerelease-drivers
+            routing: stable-drivers
             variants: [ '-edge' ]
             packages:
                 linux-aws-5.11:
@@ -1661,7 +1661,7 @@
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.11:
-            routing: prerelease-drivers
+            routing: stable-drivers
             variants: [ '-edge' ]
             packages:
                 linux-azure-5.11:
@@ -1755,7 +1755,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.11:
-            routing: prerelease-drivers
+            routing: stable-drivers
             variants: [ '-edge' ]
             packages:
                 linux-gcp-5.11:
@@ -1938,7 +1938,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.11:
-            routing: prerelease-drivers
+            routing: stable-drivers
             variants: [ '-edge' ]
             packages:
                 linux-oracle-5.11:
