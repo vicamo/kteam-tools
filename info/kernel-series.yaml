@@ -1312,6 +1312,8 @@
                 linux-uc20-ambarella-honeywell:
                 linux-signed-uc20-ambarella-honeywell:
                     type: signed
+                linux-ambarella-honeywell:
+                    type: extra
             development: true
             supported: false
 
@@ -1329,6 +1331,8 @@
                 linux-uc20-ambarella-bosch:
                 linux-signed-uc20-ambarella-bosch:
                     type: signed
+                linux-ambarella-bosch:
+                    type: extra
             development: true
             supported: false
 
