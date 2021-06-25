@@ -76,7 +76,7 @@ if __name__ == '__main__':
             with open(os.path.join(args.git_repo, "release"), "w") as rfd:
                 print("# Block all kernels from migrating.", file=rfd)
                 for source in sorted(series.sources, key=lambda x: x.name):
-                    if not source.supported:
+                    if not source.supported and not source.development:
                         continue
                     if source.private:
                         continue
