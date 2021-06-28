@@ -425,7 +425,7 @@
             variants: ['--']
             packages:
                 linux-realtime:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/impish']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/impish', 'master-next']
                 linux-meta-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/impish']
