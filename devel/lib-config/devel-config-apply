@@ -21,6 +21,7 @@ i386|amd64)		karch='x86' ;;
 armel|armhf|arm64)	karch='arm' ;;
 powerpc|ppc64el)	karch='powerpc' ;;
 s390x)			karch='s390' ;;
+riscv64)		karch='riscv' ;;
 *)			echo "$arch: architecture unknown" 1>&2; exit 1 ;;
 esac
 
