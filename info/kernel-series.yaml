@@ -364,7 +364,7 @@
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: true
+            supported: false
             swm:
                 kernel-testing: true
             testing:
