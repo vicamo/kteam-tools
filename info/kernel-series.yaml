@@ -346,7 +346,7 @@
 
         linux:
             routing: devel-drivers
-            versions: ['5.13.0', '5.11.0']
+            versions: ['5.11.0', '5.13.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux:
@@ -365,7 +365,6 @@
                 linux-restricted-signatures:
                     type: lrs
             supported: true
-            backport: true
             swm:
                 kernel-testing: true
             testing:
@@ -380,7 +379,6 @@
                     lowlatency:
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            derived-from: ['21.04', 'linux']
 
         linux-raspi-unstable:
             variants: ['-unstable']
