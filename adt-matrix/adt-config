@@ -22,7 +22,8 @@ for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
 
     flags = 'devel' if series.development else '-'
     for source in sorted(series.sources, key=lambda x: x.name):
-        if not source.supported:
+        if not ((source.supported and series.supported) or
+                (source.development and series.development)):
             continue
 
         if source.private:
