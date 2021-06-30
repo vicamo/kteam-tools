@@ -1,5 +1,6 @@
 import json
 from urllib.request import urlopen
+from urllib.error import HTTPError
 
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
@@ -19,11 +20,19 @@ class RegressionTestingResultsCycle:
         self.cycle = cycle
 
         if data is None:
-            response = urlopen(url)
-            data = response.read()
-        if not isinstance(data, str):
-            data = data.decode('utf-8')
-        self.data = json.loads(data)
+            try:
+                response = urlopen(url)
+                data = response.read()
+            except HTTPError as e:
+                if e.code != 404:
+                    raise e
+                data = None
+        if data is not None:
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
+            self.data = json.loads(data)
+        else:
+            self.data = {}
 
 
     def lookup_result(self, series, source, version, op):
@@ -59,7 +68,7 @@ class RegressionTestingResults:
     _cycle_cache = {}
 
     @classmethod
-    def lookup_results(cls, spin, series, source, version, op, url=None):
+    def lookup_result(cls, spin, series, source, version, op, url=None):
         (cycle, spin_num) = spin.rsplit('-', 1)
         if cycle not in cls._cycle_cache:
             cls._cycle_cache[cycle] = RegressionTestingResultsCycle(cycle, url)
@@ -81,10 +90,12 @@ class RegressionTesting(TaskHandler):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
+        s.jumper['Triaged']       = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Opinion']       = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -145,16 +156,26 @@ class RegressionTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by rt testing.
         else:
-            rtr = RegressionTestingResults.lookup_results(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
+            result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
             task_status = {
+                    None: 'Triaged',
+                    'noprov': 'Incomplete',
                     'failed': 'Incomplete',
                     'passed': 'Fix Released',
                     'incomplete': 'In Progress',
-                }.get(rtr, 'In Progress')
+                }.get(result, 'In Progress')
             if s.task.status != task_status:
-                cinfo("RegressionTestingResults {} -> status {}".format(rtr, task_status))
+                cinfo("RegressionTestingResults {} -> status {}".format(result, task_status))
                 s.task.status = task_status
                 retval = True
+            s.bug.monitor_add({
+                "type": "regression-testing",
+                #"cycle": s.bug.sru_cycle,
+                #"series": s.bug.series,
+                #"source": s.bug.name,
+                #"version": s.bug.version,
+                "op": "sru",
+                "status": result})
 
         if s.task.status == 'Fix Released':
             pass
