@@ -86,6 +86,7 @@ class WorkflowBug():
         s.bprops = s.load_bug_properties()
         s.reasons = {}
         s._refresh = [None, None]
+        s._monitor = []
         s._maintenance = []
         s.interlocks = {}
         s.blockers = None
@@ -565,6 +566,7 @@ class WorkflowBug():
         if 'reason' in s.bprops:
             del s.bprops['reason']
         s._refresh = [None, None]
+        s._monitor = []
         s.interlocks = {}
 
     @property
@@ -578,6 +580,14 @@ class WorkflowBug():
         if current_when is None or when < current_when:
             cinfo("refresh_at {} {}".format(when, why))
             s._refresh = [when, why]
+
+    @property
+    def monitor(s):
+        return s._monitor
+
+    def monitor_add(s, what):
+        if what not in s._monitor:
+            s._monitor.append(what)
 
     @property
     def maintenance(s):
@@ -673,6 +683,9 @@ class WorkflowBug():
 
         if s.refresh[0] is not None:
             status['refresh'] = s.refresh
+
+        if len(s.monitor) > 0:
+            status['monitor'] = s.monitor
 
         if len(s.maintenance) > 0:
             status['maintenance'] = s.maintenance
