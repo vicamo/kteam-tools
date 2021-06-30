@@ -1982,7 +1982,7 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.8:
-            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.8-next']
@@ -2001,15 +2001,15 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.11:
-            variants: ['-wip']
+            variants: ['-hwe-20.04-edge']
             packages:
                 linux-riscv-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.11-next']
                 linux-meta-riscv-5.11:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.11']
-            supported: false
-            development: true
+            supported: true
+            development: false
             backport: true
             derived-from: ['21.04', 'linux-riscv']
             swm:
