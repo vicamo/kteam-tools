@@ -550,6 +550,16 @@ times when you will have upload rights.
 **Note** DO NOT publish private kernels such as ESM, linux-ibm-gt and
 linux-fips, see section "Special kernels" below.
 
+**Note** Prior to pushing it is best to fork existing parent
+repository into your own namespace using launchpad web UI. This will
+create an efficient server side fork, minimizing the amount of objects
+one need to push for review. For example open
+https://code.launchpad.net/ubuntu/+source/linux-oracle select the
+right series team owned repo
+https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal,
+click "fork it directly to your account". To pre-create pre-populated
+linux repository, prior to doing `git push for-review`.
+
 Push git repositories to your Launchpad for a review (only push master or
 master-next and the last tag applied):
 ```
