@@ -53,6 +53,10 @@ class KernelSnapBase(TaskHandler):
                 issue = 'snap {} not in expected channel(s): {}'.format(s.bug.snap.name, ' '.join(reasons))
                 s.task.reason = 'Pending -- {}'.format(issue)
                 cinfo('    {}'.format(issue), 'yellow')
+                s.bug.monitor_add({
+                    'type': 'snap-publishing',
+                    #'snap': s.bug.snap.name,
+                    'last-published': s.bug.snap.last_published})
         except SnapStoreError as e:
             cerror('    failed to query snap store (%s)' % str(e))
             s.task.reason = 'Stalled -- snap store query failed ({})'.format(str(e))
