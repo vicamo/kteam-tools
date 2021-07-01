@@ -1,8 +1,9 @@
 from datetime                                   import datetime, timedelta, timezone
 
-from wfl.git_tag                                import GitTagsSnap
+from wfl.git_tag                                import GitTagsSnap, GitTagError
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 from wfl.snap                                   import SnapStoreError
+from wfl.errors                                 import WorkflowCrankError
 from .base                                      import TaskHandler
 
 
@@ -189,7 +190,11 @@ class SnapPrepare(KernelSnapBase):
         while not retval:
             # Check the tags and tip are prepared and pushed.
             git_repo = s.bug.snap.git_repo
-            version = git_repo.tip_version
+            try:
+                version = git_repo.tip_version
+            except GitTagError as e:
+                raise WorkflowCrankError("unable to fetch tag information -- {}".format(e.args[0]))
+
             if version != s.bug.version:
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -b Snap ready to be cranked'
