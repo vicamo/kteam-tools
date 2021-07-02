@@ -1468,7 +1468,7 @@
                     type: lrg
                 linux-restricted-signatures-oem-5.13:
                     type: lrs
-            supported: false
+            supported: true
             derived-from: [ '21.10', 'linux-unstable' ]
             swm:
                 kernel-testing: true
