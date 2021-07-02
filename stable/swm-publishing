@@ -903,6 +903,10 @@ class MonitorSwmStatusMonitor:
     def ss(self):
         return self.factory.ss
 
+    @property
+    def ks(self):
+        return self.factory.ks
+
     def regression_testing(self, bug_id, bug_data, monitor):
         sru_cycle = bug_data.get('cycle')
         series = bug_data.get('series')
@@ -914,6 +918,31 @@ class MonitorSwmStatusMonitor:
         current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
         print("regression_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
+
+    def snap_publishing(self, bug_id, bug_data, monitor):
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        snap = bug_data.get('snap-name')
+        last_published = monitor.get('last-published')
+        if last_published is not None:
+            last_published = last_published.replace(tzinfo=timezone.utc)
+
+        ks_series = self.ks.lookup_series(codename=series)
+        if ks_series is None:
+            return False
+        ks_source = ks_series.lookup_source(source)
+        if ks_source is None:
+            return False
+        ks_snap = ks_source.lookup_snap(snap)
+        if ks_snap is None:
+            return False
+        snap_store = SnapStore(ks_snap)
+        if snap_store is None:
+            return False
+
+        current_published = snap_store.last_published
+        print("snap_publishing: last_published={} current_published={} change={}".format(last_published, current_published, current_published != last_published))
+        return current_published != last_published
 
     def changed(self):
         changed = set()
@@ -927,6 +956,7 @@ class MonitorSwmStatusMonitor:
                 print("{}: bug={} monitor={}".format(monitor.get("type", "????"), bug_id, monitor))
                 handler = {
                     'regression-testing':   self.regression_testing,
+                    'snap-publishing':      self.snap_publishing,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
                     changed.add(bug_id)
