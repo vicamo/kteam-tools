@@ -741,71 +741,6 @@ class MonitorTrelloDisposition:
         return "Trello Disposition Monitor {}".format(self.path)
 
 
-class MonitorSnapStore:
-
-    def __init__(self, snap, bs=None):
-        if bs is None:
-            raise ValueError("backing store not specified")
-        if snap.publish_to is None:
-            raise ValueError("snap {} is not published to any tracks".format(snap.name))
-        if snap.promote_to is None:
-            raise ValueError("snap {} is not promoted to any risks".format(snap.name))
-
-        self.snap = snap
-        self.snap_store = SnapStore(snap)
-
-        bs.attach(str(self.snap), self)
-
-    last_date = MonitorStoreAttr(default=datetime.now(timezone.utc))
-
-    def changed(self):
-        changed = set()
-        start_date = self.last_date
-
-        #print(self.snap)
-
-        try:
-            data = self.snap_store.channel_map()
-        except SnapStoreError as e:
-            print("Snap lookup failed: " + str(e))
-            return changed
-
-        for arch, tracks in self.snap.publish_to.items():
-            for track in tracks:
-                for risk in self.snap.promote_to:
-                    channel = "{}/{}".format(track, risk)
-                    #print("?", self.snap.name, arch, channel)
-                    key = (arch, channel)
-                    if key not in data:
-                        continue
-
-                    # Convert the iso8601 format timestring into one
-                    # which strptime actually can parse.
-                    released_at = data[key]['released-at']
-                    released_at = released_at[:-3] + released_at[-2:]
-                    #print("D?", released_at)
-
-                    date_published = datetime.strptime(released_at,
-                        "%Y-%m-%dT%H:%M:%S.%f%z")
-                    #print(date_published, '>', self.last_date)
-                    if date_published > self.last_date:
-                        self.last_date = date_published
-
-                    #print(date_published, start_date)
-                    if date_published > start_date:
-                        print("P", self.snap.name, arch, channel)
-                        changed.add("{}:{}:{}".format(
-                            self.snap.source.series.codename,
-                            self.snap.source.name, self.snap.name))
-
-        return changed
-
-    def __str__(self):
-        return "Snapstore Snap Monitor {}:{}:{}".format(
-            self.snap.source.series.codename,
-            self.snap.source.name, self.snap.name)
-
-
 class MonitorStatusSwmStatus:
 
     def __init__(self, factory=None):
@@ -1081,17 +1016,6 @@ class MonitorFactory:
     def launchpad_queues(self):
         return [MonitorLaunchpadQueues(lp=self.lp, ks=self.ks, bs=self.bs)]
 
-    def kernel_series_snaps(self):
-        snaps = []
-        for series in self.ks.series:
-            for source in series.sources:
-                if source.supported or source.development:
-                    for snap in source.snaps:
-                        if (snap.promote_to is not None and
-                                snap.publish_to is not None):
-                            snaps.append(MonitorSnapStore(snap, bs=self.bs))
-        return snaps
-
     def swm_status(self):
         return [MonitorStatusSwmStatus(factory=self)]
 
@@ -1195,7 +1119,6 @@ if __name__ == '__main__':
     monitors = []
     monitors += factory.kernel_series_archives()
     monitors += factory.launchpad_project('kernel-sru-workflow')
-    monitors += factory.kernel_series_snaps()
     monitors += factory.swm_status()
     monitors += factory.swm_monitor()
     monitors += factory.trello_disposition('swm-trello.yaml')
