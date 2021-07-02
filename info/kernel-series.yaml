@@ -304,6 +304,8 @@
                 - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
             updates:
                 - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
         eol:
             proposed:
             updates:
