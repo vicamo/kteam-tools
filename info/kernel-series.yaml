@@ -1191,7 +1191,15 @@
                         clouds: ['metal']
 
         linux-nv-dgx:
-            routing: prerelease-drivers
+            routing:
+                build:
+                    - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
+                build-private:
+                    - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
+                security-signing:
+                    - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
+                proposed:
+                    - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
             variants: ['--']
             packages:
                 linux-nv-dgx:
@@ -1209,6 +1217,10 @@
                     type: lrg
                 linux-restricted-signatures-nv-dgx:
                     type: lrs
+                linux-nv-dgx-modules:
+                    type: extra#1
+                linux-nv-dgx-modules-signed:
+                    type: extra#2
             supported: true
             private: true
             derived-from: [ '20.04', 'linux' ]
