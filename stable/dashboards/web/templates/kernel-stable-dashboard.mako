@@ -20,6 +20,7 @@ __testing_status_colors = {
     'New'           : 'grey',
     'In Progress'   : 'grey', # 'white',
     'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
+    'Triaged'       : 'orange',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : 'green', # '#1496bb',
