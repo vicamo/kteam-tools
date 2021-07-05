@@ -89,6 +89,7 @@ class WorkflowBug():
         s._maintenance = []
         s.interlocks = {}
         s.blockers = None
+        s.stage = None
         s.is_development_series = False
         s._master_bug = False
         s._sru_spin = False
@@ -678,6 +679,9 @@ class WorkflowBug():
 
         if len(s.interlocks) > 0:
             status['interlocks'] = s.interlocks
+
+        if s.stage is not None:
+            status['stage'] = s.stage
 
         try:
             status['cycle'] = s.sru_cycle
