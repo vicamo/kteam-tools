@@ -17,6 +17,7 @@ class PromoteToUpdates(Promoter):
         s.jumper['Confirmed']     = s._verify_promotion
         s.jumper['Triaged']       = s._verify_promotion
         s.jumper['In Progress']   = s._verify_promotion
+        s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
 
         cleave(s.__class__.__name__ + '.__init__')
@@ -144,6 +145,14 @@ class PromoteToUpdates(Promoter):
             # Check if packages were copied to the right pocket->component
             #
             if not s.bug.debs.packages_released:
+                # Confirm the packages remain available to copy.
+                if not s.bug.debs.all_built_and_in_pocket('Proposed'):
+                    s.task.reason = 'Alert -- packages no longer available'
+                    if s.task.status != 'Incomplete':
+                        s.task.status = 'Incomplete'
+                        retval = True
+                    break
+
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -- ready to copy'
                 else:

@@ -94,6 +94,10 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(s.pocket_dest)
                 break
 
+            if s.bug.debs.older_tracker_in_proposed:
+                s.task.reason = 'Stalled -- tracker for earlier spin still active in Proposed'
+                break
+
             if s._kernel_block_ppa():
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
@@ -116,17 +120,22 @@ class PromoteFromTo(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
-            if not s._kernel_block_ppa():
-                break
 
+            pull_back = False
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.bug.debs.older_tracker_in_proposed:
+                cinfo('            A previous spin tracker is active in proposed pulling back from Confirmed', 'yellow')
+                pull_back = True
             if s._cycle_hold():
                 cinfo('            Cycle on hold pulling back from Confirmed', 'yellow')
+                pull_back = True
 
-            s.task.status = 'New'
+            if pull_back:
+                s.task.status = 'New'
+                retval = True
 
-            retval = True
             break
 
         while not retval:

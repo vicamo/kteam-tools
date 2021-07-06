@@ -595,6 +595,15 @@ class WorkflowManager():
                 cinfo("new derivative -- triggering master tracker")
                 rescan.append(str(bug.master_bug_id))
 
+            # If we are a new bug trigger all trackers in existance for this
+            # target to ensure they notice if we are a blocking tracker.
+            # be rescanned to ensure it gains our linkage.
+            if bugid not in s.status_start:
+                cinfo("new tracker -- triggering all trackers for this target")
+                for tracker_nr, tracker_data in s.live_trackers_for_target(bug.series, bug.name, bug.target):
+                    if str(tracker_nr) != str(bugid):
+                        rescan.append(str(tracker_nr))
+
             # If our interlocks have changed and we have a master bug request
             # a rescan to ensure it has seen the latest interlocks.
             if bug.interlocks != interlocks_before and bug.is_derivative_package:

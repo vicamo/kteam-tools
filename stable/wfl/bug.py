@@ -404,12 +404,16 @@ class WorkflowBug():
             cinfo("replaces={} detected checking target inactive".format(dup_pointer))
             for taskname, task in dup_wb.tasks_by_name.items():
                 if (taskname.endswith('-testing') and task.status in
-                        (['Confirmed', 'Triaged', 'In Progress',
-                        'Fix Committed'])):
+                        ['Confirmed', 'Triaged', 'In Progress',
+                        'Fix Committed']):
                     keep = True
                 elif (taskname == 'promote-to-proposed' and task.status in
-                        (['Confirmed', 'Triaged', 'In Progress',
-                        'Fix Committed'])):
+                        ['Confirmed', 'Triaged', 'In Progress',
+                        'Fix Committed']):
+                    keep = True
+                elif (taskname == 'promote-to-updates' and task.status in
+                        ['Confirmed', 'Triaged', 'In Progress',
+                        'Fix Committed', 'Fix Released']):
                     keep = True
 
         # If we deem this ready for duplication wack it.
