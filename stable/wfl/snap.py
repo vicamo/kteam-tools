@@ -268,7 +268,7 @@ class SnapDebs:
                         for risk in s.snap_info.promote_to:
                             task = "snap-release-to-{}".format(risk)
                             if (task not in s.bug.tasks_by_name or
-                                    s.bug.tasks_by_name[task] != 'New'):
+                                    s.bug.tasks_by_name[task].status != 'New'):
                                 continue
                             channel = "{}/{}".format(track, risk)
                             revision = s.snap_store.channel_revision(arch, channel)
