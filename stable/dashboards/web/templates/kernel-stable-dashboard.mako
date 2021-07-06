@@ -342,12 +342,9 @@ for bid in sorted(data['swm']):
 
     # Pull together any suplemental links etc we need.
     attrs = {}
-    try:
-        attrs['rt:'] = data['testing']['regression'][package]
-    except KeyError:
-        pass
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
+    attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
 
     status_list = __status_bites(b, attrs)
     first = True
