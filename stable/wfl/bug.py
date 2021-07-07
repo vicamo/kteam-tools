@@ -356,16 +356,20 @@ class WorkflowBug():
             if s.is_derivative_package:
                 try:
                     master = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series, sru_cycle=s.sc)
+                    error = None
                     if master.is_gone:
-                        raise WorkflowCrankError("master tracker link points to invalidated tracker")
+                        error = WorkflowCrankError("master tracker link points to invalidated tracker")
                     if not master.is_crankable and not master.is_closed:
+                        error = WorkflowCrankError("master tracker link points to uninstantiated tracker")
+
+                    if error is not None:
                         # check if our master is a duplicte, and if so follow the chain.
                         duplicate_of = master.lpbug.lpbug.duplicate_of
                         if duplicate_of is not None:
                             cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, master.lpbug.lpbug.id))
                             master = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series, sru_cycle=s.sc)
                         else:
-                            raise WorkflowCrankError("master tracker link points to uninstantiated tracker")
+                            raise error
                 except WorkflowBugError as e:
                     # Mark this as known to fail.
                     raise WorkflowCrankError("invalid master bug link -- {}".format(e.args[0]))
