@@ -486,7 +486,7 @@ class WorkflowBug():
         props_new = yaml.safe_load(props_wrapped)
         if props != props_new:
             cinfo("properties_for_description: falling back to default")
-            props_wrapped = yaml.safe_dump(status, default_flow_style=False, width=65)
+            props_wrapped = yaml.safe_dump(props, default_flow_style=False, width=65)
 
         return props_wrapped.strip()
 
