@@ -69,9 +69,9 @@ class PackageBuild:
         # Do a loose match, we will select for the specific version we wanted
         # in __find_matches but this way we have the published version for
         # pocket emptyness checks.
-        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, status='Published', pocket=pocket, order_by_date=True)
+        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, pocket=pocket, order_by_date=True)
         matches = s.__find_matches(ps, abi, release, sloppy)
-        if len(matches) > 0:
+        if len(matches) > 0 and matches[0].status in ('Pending', 'Published'):
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
             version = matches[0].source_package_version
@@ -84,9 +84,24 @@ class PackageBuild:
             published = None
             most_recent_build = None
             version = None
-            if len(ps) > 0:
-                version = ps[0].source_package_version
             changes = None
+            source = None
+            if len(ps) > 0:
+                source = ps[0]
+                if source.status in ('Pending', 'Published'):
+                    version = source.source_package_version
+
+            monitor = {
+                'type': 'launchpad-source',
+                'reference': archive.reference,
+                'pocket': pocket,
+                #'series': s.series,
+                'package': package,
+                'last-scanned': s.bug.tracker_instantiated}
+            if source:
+                monitor['status'] = source.status
+                monitor['lp-api'] = source.self_link
+            s.bug.debs.monitor_debs_add(monitor)
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
         return fullybuilt, creator, signer, published, most_recent_build, status, version, changes
@@ -166,6 +181,14 @@ class PackageBuild:
         arch_build = set()
         arch_complete = set()
         builds = source.getBuilds()
+        if len(builds) == 0:
+            s.bug.debs.monitor_debs_add({
+                    'type': 'launchpad-nobuilds',
+                    'reference': archive.reference,
+                    'pocket': pocket,
+                    #'status': source.status,
+                    'lp-api': source.self_link,
+                    'last-scanned': s.bug.tracker_instantiated})
         for build in builds:
             buildstate = build.buildstate
             ##print(build, build.buildstate, build.datebuilt)
@@ -193,6 +216,20 @@ class PackageBuild:
                 #  Cancelled build
                 status.add('FAILEDTOBUILD')
 
+            if build.buildstate in (
+                    'Failed to build',
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build',
+                    'Dependency wait'):
+                s.bug.debs.monitor_debs_add({
+                        'type': 'launchpad-build',
+                        'reference': archive.reference,
+                        'pocket': pocket,
+                        'status': buildstate,
+                        'lp-api': build.self_link,
+                        'last-scanned': s.bug.tracker_instantiated})
+
             if buildstate != 'Successfully built':
                 s.bug.maintenance_add({
                     'type': 'deb-build',
@@ -213,6 +250,7 @@ class PackageBuild:
             # Accumulate the architectures we are meant to build for.
             arch_build.add(build.arch_tag)
 
+        one_per_build = set()
         arch_published = set()
         binaries = source.getPublishedBinaries()
         for binary in binaries:
@@ -222,9 +260,9 @@ class PackageBuild:
             else:
                 arch_tag = 'all'
             cdebug("binary arch={} status={}".format(arch_tag, binary.status))
-            if binary.status in ('Pending'):
+            if binary.status == 'Pending':
                 status.add('BUILDING')
-            elif binary.status in ('Published'):
+            elif binary.status  == 'Published':
                 status.add('FULLYBUILT')
             else:
                 # Anything else is broken.
@@ -232,6 +270,16 @@ class PackageBuild:
                 #  Deleted
                 #  Obsolete
                 status.add('FAILEDTOBUILD')
+
+            if binary.status == 'Pending' and binary.build_link not in one_per_build:
+                one_per_build.add(binary.build_link)
+                s.bug.debs.monitor_debs_add({
+                        'type': 'launchpad-binary',
+                        'reference': archive.reference,
+                        'pocket': pocket,
+                        'status': binary.status,
+                        'lp-api': binary.self_link,
+                        'last-scanned': s.bug.tracker_instantiated})
 
             # Accumulate the latest publication time.
             if binary.date_published is not None and published < binary.date_published:
@@ -247,6 +295,19 @@ class PackageBuild:
         if arch_build != arch_published:
             if arch_build == arch_complete:
                 status.add('FULLYBUILT_PENDING')
+                uploads = source.distro_series.getPackageUploads(exact_match=True,
+                        archive=archive, pocket=pocket, name=source.source_package_name,
+                        version=source.source_package_version)
+                for upload in uploads:
+                    if upload.status not in ('Done', 'Rejected'):
+                        cinfo("upload not complete status={}".format(upload.status))
+                        s.bug.debs.monitor_debs_add({
+                                'type': 'launchpad-upload',
+                                'reference': archive.reference,
+                                'pocket': pocket,
+                                'status': upload.status,
+                                'lp-api': upload.self_link,
+                                'last-scanned': s.bug.tracker_instantiated})
             else:
                 status.add('BUILDING')
 
@@ -394,7 +455,17 @@ class Package():
         s._cache = None
         s._version_tried = {}
 
+        s._monitor_debs = []
+
         cleave('package::__init__')
+
+    @property
+    def monitor_debs(s):
+        return s._monitor_debs
+
+    def monitor_debs_add(s, what):
+        if what not in s._monitor_debs:
+            s._monitor_debs.append(what)
 
 
     def routing(self, pocket):
@@ -402,6 +473,24 @@ class Package():
         routes = self._routing.get(pocket)
         cleave(self.__class__.__name__ + '.routing')
         return routes
+
+    def monitor_routes(self, routes):
+        for route_name in routes:
+            route_found = self.pocket_route(route_name)
+            if route_found is not None:
+                cinfo("monitor_routes: {} location found {}".format(route_name, route_found))
+                route_list = [route_found]
+            else:
+                route_list = self.routing(route_name)
+            if route_list is None:
+                continue
+            cinfo("monitor_routes: {} using {}".format(route_name, route_list))
+            for route_archive, route_pocket in route_list:
+                # Copy over any build related monitors for this archive/pocket.
+                for monitor in self.monitor_debs:
+                    if (monitor['reference'] == route_archive.reference and
+                            monitor['pocket'] == route_pocket):
+                        self.bug.monitor_add(monitor)
 
     def package_version(s, pkg):
         # Look up the specific version of a package for this tracker.
@@ -1358,6 +1447,7 @@ class Package():
         for pocket in s.__pockets_uploaded:
             if pocket not in bi[pkg]:
                 continue
+            cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
             if bi[pkg][pocket]['status'] in s.__states_present:
                 retval = True
                 break

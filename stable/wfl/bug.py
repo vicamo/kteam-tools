@@ -68,6 +68,7 @@ class WorkflowBug():
                 raise WorkflowBugError('bug or bugid required')
 
         s.tracker_modified = False
+        s.tracker_instantiated = datetime.utcnow()
 
         # Pass along any "global" settings to the WorkflowBugTask.
         #
@@ -587,6 +588,7 @@ class WorkflowBug():
 
     def monitor_add(s, what):
         if what not in s._monitor:
+            cdebug("new monitor: {}".format(what))
             s._monitor.append(what)
 
     @property
