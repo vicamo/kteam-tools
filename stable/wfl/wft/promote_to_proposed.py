@@ -205,6 +205,7 @@ class PromoteFromTo(Promoter):
                 (good, mis_lst) = s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', s.pocket_dest)
                 # Not ready to check...
                 if good is None:
+                    s.task.reason = 'Ongoing -- waiting for publication to complete to check components'
                     cinfo('        packages not ready to check components')
                     break
 
