@@ -229,7 +229,6 @@
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
         devel-drivers: &routing-table-devel-drivers
             <<:             *routing-table-devel
             build-private:
