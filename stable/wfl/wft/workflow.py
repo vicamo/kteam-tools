@@ -269,6 +269,7 @@ class Workflow(TaskHandler):
             s.task.status = 'Fix Released'
             msgbody = 'All tasks have been completed and the bug is being set to Fix Released\n'
             s.bug.add_comment('Workflow done!', msgbody)
+            s.bug.check_is_valid()
             break
 
         cleave(s.__class__.__name__ + '._complete (%s)' % retval)
