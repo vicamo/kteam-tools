@@ -28,7 +28,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus
-from wfl.launchpad import Launchpad
+from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
 
@@ -158,7 +158,7 @@ class MonitorLaunchpadArchive:
 
     def __init__(self, archive, lp=None, ks=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if ks is None:
             ks = KernelSeries()
         if bs is None:
@@ -325,7 +325,7 @@ class MonitorLaunchpadArchivePrivate:
 
     def __init__(self, archive, lp=None, ks=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if ks is None:
             ks = KernelSeries()
         if bs is None:
@@ -490,7 +490,7 @@ class MonitorLaunchpadProject:
 
     def __init__(self, project, lp=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if bs is None:
             raise ValueError("backing store not specified")
 
@@ -576,7 +576,7 @@ class MonitorLaunchpadQueues:
 
     def __init__(self, lp=None, ks=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if ks is None:
             ks = KernelSeries()
         if bs is None:
@@ -669,7 +669,7 @@ class MonitorTrelloDisposition:
 
     def __init__(self, trello_path, lp=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if bs is None:
             raise ValueError("backing store not specified")
 
@@ -808,7 +808,7 @@ class MonitorStatusSwmStatus:
 
     def __init__(self, status_path, project, lp=None, bs=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            raise ValueError("launchpad not specified")
         if bs is None:
             raise ValueError("backing store not specified")
 
@@ -974,7 +974,7 @@ class MonitorFactory:
     @property
     def lp(self):
         if self._lp is None:
-            self._lp = Launchpad(False).default_service.launchpad
+            self._lp = LaunchpadDirect.login()
         return self._lp
 
     @property
