@@ -58,6 +58,10 @@ class SwmConfig:
         cleave(self.__class__.__name__ + '.__init__')
 
     @property
+    def nvidia_driver_legacy_naming(self):
+        return self._data.get('nvidia-driver-legacy-naming', False)
+
+    @property
     def gke_nvidia_packages(self):
         return self._data.get('gke-nvidia-packages', [])
 

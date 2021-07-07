@@ -173,20 +173,21 @@ class Promoter(TaskHandler):
 
         # Check the list of artifacts.
         if gke_nvidia_packages or nvidia_releases:
-            missing = []
+            wanted = []
             for release in nvidia_releases:
-                obj = 'nvidia-driver-gke_{}-{}-{}-{}.'.format(s.bug.kernel, s.bug.abi, kernel_flavour, release)
-                cdebug("checking prefix {}".format(obj))
-                gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj, prefix=True)
-                if gke_object.present is False:
-                    obj += '*'
-                    cdebug("missing {}".format(obj))
-                    missing.append(obj)
+                if s.bug.swm_config.nvidia_driver_legacy_naming:
+                    wanted.append(('nvidia-driver-gke_{}-{}-{}-{}.'.format(s.bug.kernel, s.bug.abi, kernel_flavour, release), True))
+                wanted.append(('nvidia-driver-gke_{}-{}-{}-{}-{}.'.format(s.bug.series, s.bug.kernel, s.bug.abi, kernel_flavour, release), True))
             for flavour in gke_nvidia_packages:
-                obj = 'current-driver-{}-{}-{}'.format(s.bug.kernel, s.bug.abi, flavour)
-                cdebug("checking {}".format(obj))
-                gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj)
+                wanted.append(('current-driver-{}-{}-{}-{}'.format(s.bug.series, s.bug.kernel, s.bug.abi, flavour), False))
+
+            missing = []
+            for obj, prefix in wanted:
+                cdebug("checking prefix={} {}".format(prefix, obj))
+                gke_object = GcpBucketObject('ubuntu_nvidia_packages', obj, prefix=prefix)
                 if gke_object.present is False:
+                    if prefix:
+                        obj += '*'
                     cdebug("missing {}".format(obj))
                     missing.append(obj)
             if len(missing) > 0:
