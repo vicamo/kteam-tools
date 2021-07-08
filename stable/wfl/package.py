@@ -1375,7 +1375,7 @@ class Package():
                 continue
             if s.ancillary_package_for(pkg) is not None:
                 continue
-            if bi[pkg][pocket]['built'] is True:
+            if bi[pkg][pocket]['status'] != "":
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
                 break
