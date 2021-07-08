@@ -476,6 +476,10 @@ class Package():
         return routes
 
     def monitor_routes(self, routes):
+        if 'ppa' in routes:
+            routes.remove('ppa')
+            routes.append('build')
+            routes.append('build-private')
         for route_name in routes:
             route_found = self.pocket_route(route_name)
             if route_found is not None:
