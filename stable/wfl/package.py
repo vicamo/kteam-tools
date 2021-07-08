@@ -414,6 +414,7 @@ class Package():
         if s.source is not None and s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
+                ('build', 'build'),
                 ('build-private', 'build-private'),
                 ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
@@ -622,18 +623,16 @@ class Package():
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates')
+                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates']
             else:
                 cdebug('Development Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Release')
-            s.scan_pockets = scan_pockets
+                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Release']
+            s.scan_pockets = list(scan_pockets)
+            scan_pockets[0] = 'build' if not s.adjunct_package(dep) else 'build-private'
 
             for pocket in scan_pockets:
                 pocket_from = pocket
-                if pocket == 'ppa' and s.adjunct_package(dep):
-                    pocket_from = 'build-private'
-
                 if pocket_from not in s._routing:
                     continue
                 if s._routing[pocket_from] is None:
@@ -642,6 +641,8 @@ class Package():
                     continue
 
                 s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
+                if pocket == scan_pockets[0]:
+                    s._cache[dep]['ppa'] = s._cache[dep][pocket]
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
@@ -1373,8 +1374,6 @@ class Package():
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
-            if s.ancillary_package_for(pkg) is not None:
-                continue
             if bi[pkg][pocket]['status'] != "":
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
@@ -1743,7 +1742,7 @@ class Package():
         msg['sru-cycle'] = s.bug.sru_cycle
 
         if ppa:
-            routing = s.pocket_route('ppa')
+            routing = s.pocket_route('build')
         else:
             # If we have an as-proposed route we will get here when that publishes
             # and we should be preferring it for testing as there is no cache on the
