@@ -184,7 +184,7 @@ class TrackerProduction:
         lp_task = lp_tasks[self.project.self_link]
         cdebug("liven workflow task")
 
-        self.lp_task_update(lp_task, status='In Progress', importance='Medium')
+        self.lp_task_update(lp_task, status='Triaged', importance='Medium')
 
     def instantiate_all(self):
         bugs = {}
