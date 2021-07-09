@@ -20,6 +20,7 @@ __testing_status_colors = {
     'New'           : 'grey',
     'In Progress'   : 'grey', # 'white',
     'Confirmed'     : 'darkorange', # '#1496bb', # 'yellow',
+    'Triaged'       : 'orange',
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : 'green', # '#1496bb',
@@ -28,6 +29,14 @@ __testing_status_colors = {
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
     "Won't Fix"     : 'red',
+}
+__testing_status_text = {
+    'New'           : 'Not Ready',
+    'In Progress'   : 'In Progress',
+    'Confirmed'     : 'Ready',
+    'Triaged'       : 'No Results',
+    'Incomplete'    : 'Failed',
+    'Fix Released'  : 'Passed',
 }
 %>
 <%
@@ -171,15 +180,19 @@ def __status_bites(bug, attrs):
         retval = ''
 
         color = __testing_status_colors[automated_testing_status]
+        automated_testing_status = __testing_status_text.get(automated_testing_status, automated_testing_status)
         retval += tagged_block_valid('at:', automated_testing_status, color)
 
         color = __testing_status_colors[certification_testing_status]
+        certification_testing_status = __testing_status_text.get(certification_testing_status, certification_testing_status)
         retval += tagged_block_valid('ct:', certification_testing_status, color)
 
         color = __testing_status_colors[regression_testing_status]
+        regression_testing_status = __testing_status_text.get(regression_testing_status, regression_testing_status)
         retval += tagged_block_valid('rt:', regression_testing_status, color)
 
         color = __testing_status_colors[verification_testing_status]
+        verification_testing_status = __testing_status_text.get(verification_testing_status, verification_testing_status)
         retval += tagged_block_valid('vt:', verification_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
@@ -208,9 +221,11 @@ def __status_bites(bug, attrs):
         retval = ''
 
         color = __testing_status_colors[certification_testing_status]
+        certification_testing_status = __testing_status_text.get(certification_testing_status, certification_testing_status)
         retval += tagged_block_valid('ct:', certification_testing_status, color)
 
         color = __testing_status_colors[qa_testing_status]
+        qa_testing_status = __testing_status_text.get(qa_testing_status, qa_testing_status)
         retval += tagged_block_valid('qa:', qa_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
@@ -327,12 +342,9 @@ for bid in sorted(data['swm']):
 
     # Pull together any suplemental links etc we need.
     attrs = {}
-    try:
-        attrs['rt:'] = data['testing']['regression'][package]
-    except KeyError:
-        pass
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
+    attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
 
     status_list = __status_bites(b, attrs)
     first = True
