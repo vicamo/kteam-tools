@@ -97,6 +97,10 @@ class BugSpam:
                         self.verbose('    . has kernel-stable-tracking-bug tag')
                         break  # Old tag that was previously used for this.
 
+                    if 'kernel-packaging-tracking-bug' in bug.tags:
+                        self.verbose('    . has kernel-packaging-tracking-bug tag')
+                        break
+
                     self.verbose('    . no tracking tags')
                     is_tracker_bug = False
                     break
