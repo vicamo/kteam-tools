@@ -1262,11 +1262,11 @@ table.matrix td {{
         series_source_packages = []
         for source_ks in series_ks.sources:
             for package_ks in source_ks.packages:
-                series_source_packages += [package_ks.name for package_ks in source_ks.packages]
                 # Find the kernel-series source entry for this meta package.
                 if package_ks.name == package:
                     ks_source = source_ks
         series_source_packages = sorted(series_source_packages)
+        ks_source_name = "unknown" if ks_source is None else ks_source.name
 
         adt = AutoPackageTest(
                 stamp = stamp,
@@ -1364,7 +1364,7 @@ table.matrix td {{
 
         rdata.append({
             'series' : series,
-            'source' : ks_source.name,
+            'source' : ks_source_name,
             'package' : package,
             'detail_url' : html,
             'latest_version' : version,
