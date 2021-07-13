@@ -686,40 +686,6 @@ class MonitorSwmStatusMonitor:
         return "SwmStatus monitor Monitor"
 
 
-class MonitorAutomatedTesting:
-
-    def __init__(self, adt_url, bs=None):
-        if bs is None:
-            raise ValueError("backing store not specified")
-        self.adt_url = adt_url
-
-        bs.attach(self.adt_url, self)
-
-    test_status = MonitorStoreAttr(default={})
-
-    def changed(self):
-        changed = set()
-
-        with urlopen(self.adt_url) as status:
-            ##print(status, status.status)
-            for line in status.read().decode('utf-8').split('\n'):
-                bits = line.split(None, 4)
-                if len(bits) < 4:
-                    continue
-                (series, source, version, state) = bits[0:4]
-                key = "{}:{}".format(series, source)
-                if self.test_status.setdefault(key, state) != state:
-                    changed.add(key)
-                    self.test_status[key] = state
-
-        #print("TESTING", changed)
-
-        return changed
-
-    def __str__(self):
-        return "Automated Testing Monitor"
-
-
 class MonitorFactory:
 
     def __init__(self, lp=None, ks=None, bs=None, ss=None, ss_file=None):
@@ -769,9 +735,6 @@ class MonitorFactory:
 
     def trello_disposition(self, trello_path):
         return [MonitorTrelloDisposition(trello_path, lp=self.lp, bs=self.bs)]
-
-    def automated_testing(self, adt_url):
-        return [MonitorAutomatedTesting(adt_url, bs=self.bs)]
 
     def sync(self):
         self.bs.sync()
@@ -866,7 +829,6 @@ if __name__ == '__main__':
     monitors += factory.swm_status()
     monitors += factory.swm_monitor()
     monitors += factory.trello_disposition('swm-trello.yaml')
-    monitors += factory.automated_testing('https://people.canonical.com/~kernel/status/adt-matrix/overall.txt')
     monitors += factory.launchpad_queues()
 
     command = None
