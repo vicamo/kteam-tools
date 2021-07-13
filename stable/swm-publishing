@@ -33,6 +33,7 @@ from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults
+from wfl.wft.automated_testing import AutomatedTestingResults
 
 
 class MonitorIncompatible(Exception):
@@ -513,6 +514,17 @@ class MonitorSwmStatusMonitor:
         print("regression_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
 
+    def automated_testing(self, bug_id, bug_data, monitor):
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        version = bug_data.get('version')
+        existing = monitor.get('status')
+
+        result = AutomatedTestingResults.lookup_result(series, source, version)
+        current = result.status
+        print("automated_testing: existing={} current={} change={}".format(existing, current, existing != current))
+        return existing != current
+
     def snap_publishing(self, bug_id, bug_data, monitor):
         series = bug_data.get('series')
         source = bug_data.get('source')
@@ -654,6 +666,7 @@ class MonitorSwmStatusMonitor:
                 print("{}: bug={} monitor={}".format(monitor.get("type", "????"), bug_id, monitor))
                 handler = {
                     'regression-testing':   self.regression_testing,
+                    'automated-testing':    self.automated_testing,
                     'snap-publishing':      self.snap_publishing,
                     'launchpad-source':     self.launchpad_source,
                     'launchpad-nobuilds':   self.launchpad_nobuilds,
