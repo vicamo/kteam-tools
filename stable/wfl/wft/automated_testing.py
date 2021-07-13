@@ -1,7 +1,101 @@
+import json
+from urllib.request import urlopen
+from urllib.error import HTTPError
 
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 import requests
+
+
+class AutomatedTestingResultsOne:
+
+    def __init__(self, data):
+        self.data = data
+
+    @property
+    def status(self):
+        return self.data.get("state")
+
+    @property
+    def summary(self):
+        return self.data.get("summary", "--unknown--")
+
+    @property
+    def is_ongoing(self):
+        return self.status is not None and self.status.upper() == 'MISS'
+
+    @property
+    def is_awol(self):
+        return self.status is None or self.status.upper() == 'NONE'
+
+    @property
+    def is_failure(self):
+        return self.status is not None and self.status.upper() in ['REGR', 'REGN']
+
+    @property
+    def is_pass(self):
+        return self.status is not None and self.status.upper() in ['GOOD', 'FAIL', 'NEUTRAL']
+
+    @property
+    def task_status(self):
+        if self.is_awol:
+            return 'Triaged'
+        if self.is_ongoing:
+            return 'In Progress'
+        if self.is_pass:
+            return 'Fix Released'
+        return 'Incomplete'
+
+
+class AutomatedTestingResultsOverall:
+
+    _url = "https://people.canonical.com/~kernel/status/adt-matrix/overall-results-data.json"
+
+    def __init__(self, url=None, data=None):
+        if url is None:
+            url = self._url
+
+        cinfo("ATC creating url={}".format(url))
+
+        if data is None:
+            try:
+                response = urlopen(url)
+                data = response.read()
+            except HTTPError as e:
+                if e.code != 404:
+                    raise e
+                data = None
+        if data is not None:
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
+            self.data = json.loads(data)
+        else:
+            self.data = {}
+
+    def lookup_result(self, series, source, version):
+        for record in self.data:
+            if (record.get('series') == series and
+                    record.get('source') == source and
+                    record.get('latest_version') == version):
+                break
+        else:
+            record = {}
+
+        return AutomatedTestingResultsOne(record)
+
+
+class AutomatedTestingResults:
+
+    _cache = None
+
+    @classmethod
+    def lookup_result(cls, series, source, version, url=None):
+        if cls._cache is None:
+            cls._cache = AutomatedTestingResultsOverall(url)
+        atc = cls._cache
+
+        return atc.lookup_result(series, source, version)
+
 
 class AutomatedTesting(TaskHandler):
     '''
@@ -16,12 +110,12 @@ class AutomatedTesting(TaskHandler):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._status_check
+        s.jumper['Triaged']       = s._status_check
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Opinion']       = s._status_check
         s.jumper['Fix Committed'] = s._status_check
-
-        s.regressions_url = "http://people.canonical.com/~kernel/status/adt-matrix/overall.txt"
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -35,11 +129,6 @@ class AutomatedTesting(TaskHandler):
             # If we have no routing for Proposed then there is nothing to test.
             if s.bug.debs.routing('Proposed') is None:
                 cinfo("automated-testing invalid with no Proposed route")
-                s.task.status = 'Invalid'
-                retval = True
-                break
-
-            if s.bug.tasks_by_name['prepare-package'].status == 'Invalid':
                 s.task.status = 'Invalid'
                 retval = True
                 break
@@ -60,84 +149,52 @@ class AutomatedTesting(TaskHandler):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
-        # Start by retrieving regression data
-        try:
-            present = s.bug.debs.all_built_and_in_pocket('Proposed')
-
-            request = requests.get(s.regressions_url)
-            data = request.text.split('\n')
-
-            # Check main package
-            state = s.check_testing_regression(s.bug.name, s.bug.version, data)
-            if not present:
-                if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
-                    cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
-                    s.task.status = 'Opinion'
-                    retval = True
-
-            elif present and s.task.status == 'Opinion':
-                s.task.status = 'New'
+        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        if not present:
+            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
+                cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
+                s.task.status = 'Opinion'
                 retval = True
 
-            elif s.test_is_regression(state):
-                if s.task.status != 'Incomplete':
-                    s.task.status = 'Incomplete'
-                    retval = True
+        elif present and s.task.status == 'Opinion':
+            s.task.status = 'New'
+            retval = True
 
-            elif s.test_is_pass(state):
-                if s.task.status != 'Fix Released':
-                    s.task.status = 'Fix Released'
-                    retval = True
+        elif 'automated-testing-failed' in s.bug.tags:
+            cdebug('Automated Testing tagged as FAILED', 'yellow')
+            if s.task.status != 'Incomplete':
+                s.task.status = 'Incomplete'
+                retval = True
 
-            elif state is None:
-                if s.task.status != 'Confirmed':
-                    s.task.status = 'Confirmed'
-                    retval = True
-            else:
-                if s.task.status != 'In Progress':
-                    s.task.status = 'In Progress'
-                    retval = True
+        elif 'automated-testing-passed' in s.bug.tags:
+            cdebug('Automated Testing tagged as PASSED', 'yellow')
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
 
-            if s.task.status == 'Fix Released':
-                pass
-            elif s.task.status == 'Incomplete':
-                s.task.reason = 'Stalled -- testing FAILED'
-            else:
-                s.task.reason = 'Ongoing -- testing in progress'
+        # Otherwise use the testing status as posted by adt-matrix summariser.
+        else:
+            result = AutomatedTestingResults.lookup_result(s.bug.series, s.bug.name, s.bug.version)
+            task_status = result.task_status
+            if s.task.status != task_status:
+                cinfo("AutomatedTestingResults {} -> status {}".format(result.summary, task_status))
+                s.task.status = task_status
+                retval = True
+            s.bug.monitor_add({
+                "type": "automated-testing",
+                #"series": s.bug.series,
+                #"source": s.bug.name,
+                #"version": s.bug.version,
+                "status": result.status})
 
-        except IOError:
-            s.task.reason = 'Stalled -- testing results broken'
-            cdebug('Failed to read from testing regressions data URL "%s"', s.regressions_url)
+        if s.task.status == 'Fix Released':
+            pass
+        elif s.task.status == 'Incomplete':
+            s.task.reason = 'Stalled -- testing FAILED'
+        else:
+            s.task.reason = 'Ongoing -- testing in progress'
 
         cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
         return retval
-
-    def test_is_regression(s, state):
-        return state is not None and state.upper() in ['REGR', 'REGN']
-
-    def test_is_pass(s, state):
-        return state is not None and state.upper() in ['GOOD', 'FAIL', 'NEUTRAL']
-
-    def check_testing_regression(s, package, version, test_data):
-        for l in test_data:
-            # Just in case we have a malformed line (e.g., when the file is being created)
-            if (len(l.split()) > 3):
-                # line format:
-                # series package version state notes (optional)
-                res = l.split(None, 4)
-                if res[0] == s.bug.series and res[1] == package and res[2] == version:
-                    state = res[3]
-                    notes = res[4]
-                    cinfo('            State for %s %s in %s: %s (%s)' % (package, version, s.bug.series, state, notes))
-
-                    if s.test_is_regression(state):
-                        if s.task.status != 'Incomplete':
-                            msgbody = "Automated-Testing has regressed with version %s of package %s in %s\n" % (version, package, s.bug.series)
-                            msgbody = "Here's the relevant information:\n\n\t%s\n\n" % l
-                            msgbody += "Please verify test results in %s\n" % s.regressions_url
-                            # s.bug.add_comment('Automated-Testing regression', msgbody)
-                    return state
-        cinfo('            Failed to get testing state for %s %s in %s' % (package, version, s.bug.series))
-        return None
 
 # vi: set ts=4 sw=4 expandtab syntax=python
