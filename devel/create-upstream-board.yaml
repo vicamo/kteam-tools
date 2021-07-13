@@ -69,3 +69,6 @@
         - name: 'Backport linux-riscv to focal'
           description: 'Update the linux-riscv backport in focal to this kernel version.'
           list: 'TODO'
+        - name: 'Rebase linux-firmware'
+          description: 'Rebase linux-firmware on upstream. This should happen at least once near final release (-rc6 or so).'
+          list: 'TODO'
