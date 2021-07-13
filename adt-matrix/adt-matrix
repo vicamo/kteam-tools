@@ -1258,10 +1258,14 @@ table.matrix td {{
         if series_ks is None:
             adt.log_verbose('{} series not present in kernel-series, skipped'.format(series))
             continue
+        ks_source = None
         series_source_packages = []
         for source_ks in series_ks.sources:
             for package_ks in source_ks.packages:
                 series_source_packages += [package_ks.name for package_ks in source_ks.packages]
+                # Find the kernel-series source entry for this meta package.
+                if package_ks.name == package:
+                    ks_source = source_ks
         series_source_packages = sorted(series_source_packages)
 
         adt = AutoPackageTest(
@@ -1360,6 +1364,7 @@ table.matrix td {{
 
         rdata.append({
             'series' : series,
+            'source' : ks_source.name,
             'package' : package,
             'detail_url' : html,
             'latest_version' : version,
