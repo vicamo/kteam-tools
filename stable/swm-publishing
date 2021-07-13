@@ -11,6 +11,7 @@ from copy import copy
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from subprocess import Popen
+from time import time, perf_counter
 #from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
@@ -1159,17 +1160,24 @@ if __name__ == '__main__':
 
     command = None
 
+    updates_before = perf_counter()
+
     # Look for updates in each monitor.
     changed = set()
     for monitor in monitors:
         print("***", monitor)
         sys.stdout.flush()
+        before = perf_counter()
         new = monitor.changed()
-        if len(new) > 0:
-            print(monitor, "CHANGED", list(new))
+        after = perf_counter()
+        #if len(new) > 0:
+        #    print(monitor, "CHANGED", list(new))
+        print(monitor, "changed={} time={}".format(new, after - before))
         sys.stdout.flush()
         changed = changed | new
-    print("CHANGED", len(changed), changed)
+
+    updates_after = perf_counter()
+    print("CHANGED changed={} time={} wall={}".format(changed, updates_after - updates_before, time()))
 
     swm_filter = FilterSwmStatus(factory=factory)
     changed = swm_filter.filter(changed)
@@ -1182,12 +1190,14 @@ if __name__ == '__main__':
     sys.stdout.flush()
 
     if len(changed) > 0:
+        cmd_before = perf_counter()
         cmd = ['./swm-cron'] + list(changed)
         command = Popen(cmd)
         print("COMMAND STARTED", command.pid)
         sys.stdout.flush()
         status = command.wait()
-        print("COMMAND COMPLETE", status)
+        cmd_after = perf_counter()
+        print("COMMAND COMPLETE rc={} time={} wall={}".format(status, cmd_after - cmd_before, time()))
         if status != 0:
             sys.exit(1)
 
