@@ -258,6 +258,12 @@ class BootTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by rt testing.
         else:
+            # If we are checking results and we have not requested boot testing
+            # do that now.
+            if 'boot-testing-requested' not in s.bug.bprops:
+                s.bug.debs.send_boot_testing_requests()
+                s.bug.bprops['boot-testing-requested'] = True
+
             result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
             task_status = {
                     None: 'Triaged',

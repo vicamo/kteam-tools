@@ -91,10 +91,6 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Pending -- source package tags missing'
                 break
 
-            if 'boot-testing-requested' not in s.bug.bprops:
-                s.bug.debs.send_boot_testing_requests()
-                s.bug.bprops['boot-testing-requested'] = True
-
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
                     s.task.reason = 'Holding -- master bug not ready for proposed'
