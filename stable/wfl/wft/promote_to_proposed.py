@@ -65,7 +65,11 @@ class PromoteFromTo(Promoter):
                 break
 
         while not retval:
-            if s.bug.task_status(s.task_src) not in ('Fix Committed', 'Fix Released'):
+            task_src_ready = True
+            for task_src in s.task_srcs:
+                if s.bug.task_status(task_src) not in ('Fix Committed', 'Fix Released', 'Invalid'):
+                    task_src_ready = False
+            if not task_src_ready:
                 break
 
             if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
@@ -78,10 +82,11 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
-            if s.task_src == ':prepare-packages' and s.bug.task_status('sru-review') not in ('Fix Released', 'Invalid'):
-                break
-
-            if s.bug.task_status(s.task_src) != 'Fix Released':
+            task_src_ready = True
+            for task_src in s.task_srcs:
+                if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
+                    task_src_ready = False
+            if not task_src_ready:
                 break
 
             if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
@@ -355,7 +360,7 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_src = ':prepare-packages'
+        s.task_srcs = ['boot-testing', 'sru-review']
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []
@@ -411,7 +416,7 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        s.task_src = 'promote-to-proposed'
+        s.task_srcs = ['promote-to-proposed']
         s.pockets_clear = []
         s.pockets_watch = []
         if not s.signing_bot and s.via_signing:
