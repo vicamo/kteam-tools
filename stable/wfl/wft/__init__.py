@@ -5,7 +5,7 @@ from .automated_testing                 import AutomatedTesting
 from .promote_to_proposed               import PromoteToProposed, PromoteSigningToProposed
 from .verification_testing              import VerificationTesting
 from .certification_testing             import CertificationTesting
-from .regression_testing                import RegressionTesting
+from .regression_testing                import BootTesting, RegressionTesting
 from .promote_to_updates                import PromoteToUpdates
 from .promote_to_security               import PromoteToSecurity
 from .promote_to_release                import PromoteToRelease
