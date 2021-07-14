@@ -790,19 +790,6 @@ class MonitorStatusSwmStatus:
                     print("LAGGING {} time={} delta={} trigger={}".format(bug_id, scan_refresh, delta, scan_refresh < start_date))
                     lagging.append((scan_refresh, delta, bug_id))
 
-            # Scan
-            for maint in bug_data.get('maintenance', []):
-                if maint['type'] == 'deb-build':
-                    lp_api = maint['detail']['lp-api']
-                    state = maint['detail']['state']
-
-                    build = self.lp.load(lp_api)
-                    buildstate = build.buildstate
-                    print("BUILD {} state={} buildstate={}".format(lp_api, state, buildstate))
-                    if state != buildstate:
-                        print("BUILD {} state={} buildstate={} changed".format(lp_api, state, buildstate))
-                        changed.add(bug_id)
-
         # Run the list of lagging trackers and try and spread them out over the cycle without
         # letting them lag too long.  Try not to batch up too many updates either as a timeout
         # in a batch is fatal.  Basically, spread out the entire pending pile over the 'next'
@@ -833,6 +820,10 @@ class MonitorSwmStatusMonitor:
         self.factory = factory
 
         #self.factory.bs.attach(status_path + '--' + project, self)
+
+    @property
+    def lp(self):
+        return self.factory.lp
 
     @property
     def ss(self):
@@ -879,6 +870,110 @@ class MonitorSwmStatusMonitor:
         print("snap_publishing: last_published={} current_published={} change={}".format(last_published, current_published, current_published != last_published))
         return current_published != last_published
 
+    def launchpad_source(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        archive_reference = monitor.get('reference')
+        archive_pocket = monitor.get('pocket')
+        series = bug_data.get('series')
+        package_name = monitor.get('package')
+        status = monitor.get('status')
+        lp_api = monitor.get('lp-api')
+
+        lp_archive = self.lp.archives.getByReference(reference=archive_reference)
+        if lp_archive is None:
+            print(tag, "no-archive change=False")
+            return False
+
+        # Grab the current latest publication, if it is a different lp_api
+        # then things are changing.
+        srcs = lp_archive.getPublishedSources(exact_match=True, order_by_date=True,
+            pocket=archive_pocket, distro_series='/ubuntu/' + series,
+            source_name=package_name)
+
+        if lp_api is None and len(srcs) == 0:
+            print(tag, "expected=no-package current=no-package change=False")
+            return False
+
+        src = srcs[0]
+        if src.self_link != lp_api:
+            print(tag, "expected={} current={} change=True".format(lp_api, src.self_link))
+            return True
+
+        print(tag, "expected={} current={} change={}".format(status, src.status, src.status != status))
+        return src.status != status
+
+    def launchpad_nobuilds(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
+        #status = monitor.get('status')
+
+        # Grab us the object in question.
+        src = self.lp.load(lp_api)
+        if build is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        builds = len(src.getBuilds())
+
+        print(tag, "expected={} current={} change={}".format(0, builds, builds != 0))
+        return builds != 0
+
+    def launchpad_build(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        build = self.lp.load(lp_api)
+        if build is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        if build.date_started is not None and build.date_started > last_scanned:
+            print(tag, "time_floor={} time_current={} change={}".format(last_scanned, build.date_started, True))
+            return True
+
+        print(tag, "expected={} current={} change={}".format(status, build.buildstate, build.buildstate != status))
+        return build.buildstate != status
+
+    def launchpad_upload(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        upload = self.lp.load(lp_api)
+        if upload is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        print(tag, "expected={} current={} change={}".format(status, upload.status, upload.status != status))
+        return upload.status != status
+
+    def launchpad_binary(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        binary = self.lp.load(lp_api)
+        if binary is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        print(tag, "expected={} current={} change={}".format(status, binary.status, binary.status != status))
+        return binary.status != status
+
     def changed(self):
         changed = set()
 
@@ -892,6 +987,11 @@ class MonitorSwmStatusMonitor:
                 handler = {
                     'regression-testing':   self.regression_testing,
                     'snap-publishing':      self.snap_publishing,
+                    'launchpad-source':     self.launchpad_source,
+                    'launchpad-nobuilds':   self.launchpad_nobuilds,
+                    'launchpad-build':      self.launchpad_build,
+                    'launchpad-upload':     self.launchpad_upload,
+                    'launchpad-binary':     self.launchpad_binary,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
                     changed.add(bug_id)
