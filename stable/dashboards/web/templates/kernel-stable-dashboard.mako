@@ -161,7 +161,20 @@ def __status_bites(bug, attrs):
     test_set_invalid = ('n/a', 'New', 'Invalid')
     test_set_complete = ('n/a', 'Invalid', 'Fix Released', "Won't Fix")
 
-    # debs: testing status mashup.
+    # debs: testing status mashup (early phase Touch Testing)
+    boot_testing_status = __task_status(bug, 'boot-testing')
+    testing_valid = boot_testing_status not in test_set_invalid
+    testing_complete = boot_testing_status in test_set_complete
+    if testing_valid and not testing_complete:
+        retval = ''
+
+        color = __testing_status_colors[boot_testing_status]
+        boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
+        retval += tagged_block_valid('bt:', boot_testing_status, color)
+
+        bites.append(bite_format(thing_prefix, retval, thing_in))
+
+    # debs: testing status mashup (main phase Testing)
     automated_testing_status = __task_status(bug, 'automated-testing')
     certification_testing_status = __task_status(bug, 'certification-testing')
     regression_testing_status = __task_status(bug, 'regression-testing')
@@ -345,6 +358,7 @@ for bid in sorted(data['swm']):
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
     attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
+    attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
 
     status_list = __status_bites(b, attrs)
     first = True
