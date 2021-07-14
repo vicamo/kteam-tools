@@ -3504,7 +3504,7 @@
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-fips:
-            routing: fips-prerelease
+            routing: fips
             packages:
                 linux-gcp-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'gcp-fips']
