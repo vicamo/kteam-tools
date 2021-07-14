@@ -244,7 +244,7 @@ class PackageBuild:
                     }})
 
             # Accumulate the latest build completion.
-            if build.datebuilt is not None and latest_build < build.datebuilt:
+            if build.datebuilt is not None and (latest_build is None or latest_build < build.datebuilt):
                 latest_build = build.datebuilt
 
             # Accumulate the architectures we are meant to build for.
@@ -316,8 +316,10 @@ class PackageBuild:
             if state in status:
                 break
 
-        published = published.replace(tzinfo=None)
-        latest_build = latest_build.replace(tzinfo=None)
+        if published is not None:
+            published = published.replace(tzinfo=None)
+        if latest_build is not None:
+            latest_build = latest_build.replace(tzinfo=None)
 
         cleave('Sources::__sources_built' )
         return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
