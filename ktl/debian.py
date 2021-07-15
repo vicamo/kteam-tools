@@ -269,11 +269,17 @@ class Debian:
             debug("Trying '%s': \n" % abidir, cls.debug)
             if path.isdir(abidir):
                 debug("  '%s' is a directory\n" % abidir, cls.debug)
-                contents = listdir(abidir)
-                for item in contents:
-                    debug("  Contains: '%s'\n" % item, cls.debug)
-                    if path.isdir(abidir + '/' + item):
-                        retvals.append(item)
+                version = abidir + '/version'
+                if path.exists(version):
+                    debug("  Contains: 'version'\n", cls.debug)
+                    with open(version) as fh:
+                        retvals.append(fh.read().strip())
+                else:
+                    contents = listdir(abidir)
+                    for item in contents:
+                        debug("  Contains: '%s'\n" % item, cls.debug)
+                        if path.isdir(abidir + '/' + item):
+                            retvals.append(item)
                 return retvals
 
         # Not there anywhere, barf
@@ -294,15 +300,24 @@ class Debian:
             debug("Trying '%s': \n" % abidir, cls.debug)
             if path.isdir(abidir):
                 debug("  '%s' is a directory\n" % abidir, cls.debug)
-                contents = listdir(abidir)
-                for item in contents:
-                    debug("  Contains: '%s'\n" % item, cls.debug)
-                    if path.isdir(abidir + '/' + item):
-                        abisubdirs = listdir(abidir + '/' + item)
-                        for subdir in abisubdirs:
-                            fullpath = path.join(abidir, item, subdir)
-                            if path.isdir(fullpath):
-                                abiarch.append(fullpath)
+                version = abidir + '/version'
+                if path.exists(version):
+                    debug("  Contains: 'version'\n", cls.debug)
+                    abisubdirs = listdir(abidir)
+                    for subdir in abisubdirs:
+                        fullpath = path.join(abidir, subdir)
+                        if path.isdir(fullpath):
+                            abiarch.append(fullpath)
+                else:
+                    contents = listdir(abidir)
+                    for item in contents:
+                        debug("  Contains: '%s'\n" % item, cls.debug)
+                        if path.isdir(abidir + '/' + item):
+                            abisubdirs = listdir(abidir + '/' + item)
+                            for subdir in abisubdirs:
+                                fullpath = path.join(abidir, item, subdir)
+                                if path.isdir(fullpath):
+                                    abiarch.append(fullpath)
                 for archdir in abiarch:
                     arch = path.basename(archdir)
                     contents = listdir(archdir)
