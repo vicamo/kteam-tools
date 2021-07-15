@@ -1262,6 +1262,7 @@ table.matrix td {{
         series_source_packages = []
         for source_ks in series_ks.sources:
             for package_ks in source_ks.packages:
+                series_source_packages.append(package_ks.name)
                 # Find the kernel-series source entry for this meta package.
                 if package_ks.name == package:
                     ks_source = source_ks
