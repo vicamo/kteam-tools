@@ -31,6 +31,7 @@ class VerificationTesting(TaskHandler):
         s.jumper['In Progress']   = s._status_check
         s.jumper['Incomplete']    = s._status_check
         s.jumper['Fix Committed'] = s._status_check
+        s.jumper['Fix Released']  = s._status_check
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -219,6 +220,20 @@ class VerificationTesting(TaskHandler):
                 if s.task.status not in ('Incomplete', 'Fix Released'):
                     cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
                     s.task.status = 'Incomplete'
+                    retval = True
+                break
+
+            elif 'verification-testing-failed' in s.bug.tags:
+                cdebug('Verification Testing tagged as FAILED', 'yellow')
+                if s.task.status != 'Incomplete':
+                    s.task.status = 'Incomplete'
+                    retval = True
+                break
+
+            elif 'verification-testing-passed' in s.bug.tags:
+                cdebug('Verification Testing tagged as PASSED', 'yellow')
+                if s.task.status != 'Fix Released':
+                    s.task.status = 'Fix Released'
                     retval = True
                 break
 
