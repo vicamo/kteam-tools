@@ -1348,6 +1348,31 @@
             development: true
             supported: false
 
+        linux-ibm:
+            variants: ['--']
+            packages:
+                linux-ibm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'ibm-next']
+                linux-meta-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal', 'ibm']
+                linux-signed-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal', 'ibm']
+                linux-restricted-modules-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/focal', 'ibm']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-raspi:
             variants: ['--']
             packages:
@@ -3812,31 +3837,6 @@
                     kvm:
                         arches: ['amd64']        # test system arch names
                         clouds: ['kvm']
-            invalid-tasks: [ 'certification-testing' ]
-
-        linux-ibm-5.4:
-            variants: ['--', '-edge']
-            packages:
-                linux-ibm-5.4:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/bionic', 'ibm-5.4-next']
-                linux-meta-ibm-5.4:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/bionic', 'ibm-5.4']
-                linux-signed-ibm-5.4:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
-                linux-restricted-modules-ibm-5.4:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/bionic', 'ibm-5.4']
-            supported: true
-            derived-from: [ '18.04', 'linux' ]
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    ibm:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['ibm']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-bluefield:
