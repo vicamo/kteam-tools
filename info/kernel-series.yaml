@@ -4408,10 +4408,7 @@
         # Kernel for Tillamook (Rigado) Cascade-500 IoT GW (Supported 10y)
         linux-cascade:
             routing:
-                security-build:
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+                <<: [*routing-table-security-build, *routing-table-security-proposed]
                 build:
                     - ['ppa:tillamook-team/ubuntu/build', 'Release']
                 signing:
