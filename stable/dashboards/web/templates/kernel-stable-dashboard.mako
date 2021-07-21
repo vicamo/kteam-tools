@@ -212,19 +212,19 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[automated_testing_status]
         automated_testing_status = __testing_status_text.get(automated_testing_status, automated_testing_status)
-        retval += tagged_block_valid('at:', automated_testing_status, color)
+        retval += tagged_block_valid('<span title="Automated Testing">at:</span>', automated_testing_status, color)
 
         color = __testing_status_colors[certification_testing_status]
         certification_testing_status = __testing_status_text.get(certification_testing_status, certification_testing_status)
-        retval += tagged_block_valid('ct:', certification_testing_status, color)
+        retval += tagged_block_valid('<span title="Certification Testing">ct:</span>', certification_testing_status, color)
 
         color = __testing_status_colors[regression_testing_status]
         regression_testing_status = __testing_status_text.get(regression_testing_status, regression_testing_status)
-        retval += tagged_block_valid('rt:', regression_testing_status, color)
+        retval += tagged_block_valid('<span title="Regression Testing">rt:</span>', regression_testing_status, color)
 
         color = __testing_status_colors[verification_testing_status]
         verification_testing_status = __testing_status_text.get(verification_testing_status, verification_testing_status)
-        retval += tagged_block_valid('vt:', verification_testing_status, color)
+        retval += tagged_block_valid('<span title="Verification Testing">vt:</span>', verification_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
