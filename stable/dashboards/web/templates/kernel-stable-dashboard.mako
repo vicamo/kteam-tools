@@ -38,6 +38,14 @@ __testing_status_text = {
     'Incomplete'    : 'Failed',
     'Fix Released'  : 'Passed',
 }
+__review_status_colors = __testing_status_colors
+__review_status_text = {
+    'New'           : 'Not Ready',
+    'In Progress'   : 'In Progress',
+    'Confirmed'     : 'Ready',
+    'Incomplete'    : 'Rejected',
+    'Fix Released'  : 'Approved',
+}
 %>
 <%
 
@@ -163,14 +171,24 @@ def __status_bites(bug, attrs):
 
     # debs: testing status mashup (early phase Touch Testing)
     boot_testing_status = __task_status(bug, 'boot-testing')
-    testing_valid = boot_testing_status not in test_set_invalid
-    testing_complete = boot_testing_status in test_set_complete
+    sru_review_status = __task_status(bug, 'sru-review')
+    testing_valid = (
+            boot_testing_status not in test_set_invalid or
+            sru_review_status not in test_set_invalid)
+    testing_complete = (
+            boot_testing_status in test_set_complete and
+            sru_review_status in test_set_complete)
     if testing_valid and not testing_complete:
         retval = ''
 
         color = __testing_status_colors[boot_testing_status]
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
         retval += tagged_block_valid('bt:', boot_testing_status, color)
+        retval += tagged_block('', '')
+        retval += tagged_block('', '')
+        color = __review_status_colors[sru_review_status]
+        sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
+        retval += tagged_block_valid('sr:', sru_review_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -282,7 +300,8 @@ def __status_bites(bug, attrs):
         if (task.startswith('prepare-package') and
                 not reason.startswith('Stalled -- ')):
             continue
-        if task.endswith('-testing') or task.endswith('-signoff'):
+        # Elide things which are on one of the three "status box" rows.
+        if task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review':
             continue
         (state, flags, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
