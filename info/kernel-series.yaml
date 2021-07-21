@@ -858,7 +858,7 @@
 '20.10':
     codename: groovy
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
@@ -905,7 +905,7 @@
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/groovy']
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -932,7 +932,7 @@
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -962,7 +962,7 @@
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -994,7 +994,7 @@
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1016,7 +1016,7 @@
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/groovy']
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1046,7 +1046,7 @@
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1065,7 +1065,7 @@
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/groovy']
-            supported: true
+            supported: false
             derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1155,6 +1155,7 @@
 
         linux-hwe-5.8:
             routing: stable-drivers
+            versions: ['5.8.0']
             variants: [ '-hwe-20.04' ]
             packages:
                 linux-hwe-5.8:
@@ -1173,8 +1174,8 @@
                 linux-restricted-signatures-hwe-5.8:
                     type: lrs
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux' ]
+            backport: false
+            # derived-from: [ '20.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
@@ -1535,8 +1536,8 @@
                 linux-restricted-signatures-aws-5.8:
                     type: lrs
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux-aws' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
                 kernel-testing: true
             testing:
@@ -1658,8 +1659,8 @@
                 linux-restricted-signatures-azure-5.8:
                     type: lrs
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux-azure' ]
+            backport:  false
+            derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -1754,8 +1755,8 @@
                 linux-restricted-signatures-gcp-5.8:
                     type: lrs
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux-gcp' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
                 kernel-testing: true
             testing:
@@ -1937,8 +1938,8 @@
                 linux-restricted-signatures-oracle-5.8:
                     type: lrs
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux-oracle' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2003,8 +2004,8 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.8']
             supported: true
-            backport: true
-            derived-from: [ '20.10', 'linux-riscv' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
                 kernel-testing: true
             testing:
