@@ -183,12 +183,12 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[boot_testing_status]
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
-        retval += tagged_block_valid('bt:', boot_testing_status, color)
+        retval += tagged_block_valid('<span title="Boot Testing">bt:</span>', boot_testing_status, color)
         retval += tagged_block('', '')
         retval += tagged_block('', '')
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
-        retval += tagged_block_valid('sr:', sru_review_status, color)
+        retval += tagged_block_valid('<span title="SRU Review">sr:</span>', sru_review_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
