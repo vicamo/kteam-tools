@@ -3,7 +3,9 @@
 here=$(dirname $(readlink -f "$0"))
 
 export ANCILLARY_KEYID=F13D93DB5BD0A44CB31368293D4C62FD8AE8E854
-export ANCILLARY_DPUTCF="$here/.dput.cf"
+if [ -f ".dput.cf" ]; then
+	export ANCILLARY_DPUTCF="$(pwd)/.dput.cf"
+fi
 
 echo "Starting: $(date)"
 "$here/lrm-ancillary-engine" "$@"
