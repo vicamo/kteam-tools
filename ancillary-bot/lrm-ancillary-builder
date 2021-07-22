@@ -68,6 +68,6 @@ do
 		debsign ${ANCILLARY_KEYID:+-k $ANCILLARY_KEYID} *_source.changes
 
 		echo "$i: uploading ..."
-		dput "$ppa_ps" *_source.changes
+		dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$ppa_ps" *_source.changes
 	) || exit "$?"
 done
