@@ -7,10 +7,9 @@ import sys
 
 from launchpadlib.launchpad import Launchpad
 
-cred_dir = os.path.expanduser("~/ancillary-bot/.config")
-cred_file = None
-if os.path.exists(cred_dir):
-    cred_file = os.path.join(cred_dir, "credentials-ancillary-bot")
+cred_file = os.path.join(".config", "credentials-ancillary-bot")
+if not os.path.exists(cred_file):
+    cred_file = None
 lp = Launchpad.login_with('lrm-ancillary-builder', 'production', version='devel',
     credentials_file=cred_file)
 
