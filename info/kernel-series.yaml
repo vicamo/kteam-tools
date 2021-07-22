@@ -3692,7 +3692,7 @@
                     hw-cert: false
                     publish-to:
                         amd64: [ '18-5.3' ]
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
             swm:
