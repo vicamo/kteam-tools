@@ -99,12 +99,15 @@ def tagged_block(key, value):
 # tagged_block_valid
 #
 def tagged_block_valid(key, value, colour):
+    key_title = key
+    if 'tooltip-' + key in attrs:
+        key_title = '<span title="{}">{}</span>'.format(attrs['tooltip-' + key], key)
     if value in ('n/a', 'Invalid'):
-        return tagged_block(__coloured(key, 'silver'), __coloured('n/a', 'silver'))
+        return tagged_block(__coloured(key_title, 'silver'), __coloured('n/a', 'silver'))
     elif value == "Won't Fix":
-        return tagged_block(__coloured(key, 'silver'), __coloured('Skipped', 'silver'))
+        return tagged_block(__coloured(key_title, 'silver'), __coloured('Skipped', 'silver'))
     else:
-        block = tagged_block(key, __coloured(value, colour))
+        block = tagged_block(key_title, __coloured(value, colour))
         if key in attrs:
             block = '<a href="{}">{}</a>'.format(attrs[key], block)
         return block
@@ -183,12 +186,12 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[boot_testing_status]
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
-        retval += tagged_block_valid('<span title="Boot Testing">bt:</span>', boot_testing_status, color)
+        retval += tagged_block_valid('bt:', boot_testing_status, color)
         retval += tagged_block('', '')
         retval += tagged_block('', '')
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
-        retval += tagged_block_valid('<span title="SRU Review">sr:</span>', sru_review_status, color)
+        retval += tagged_block_valid('sr:', sru_review_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -212,19 +215,19 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[automated_testing_status]
         automated_testing_status = __testing_status_text.get(automated_testing_status, automated_testing_status)
-        retval += tagged_block_valid('<span title="Automated Testing">at:</span>', automated_testing_status, color)
+        retval += tagged_block_valid('at:', automated_testing_status, color)
 
         color = __testing_status_colors[certification_testing_status]
         certification_testing_status = __testing_status_text.get(certification_testing_status, certification_testing_status)
-        retval += tagged_block_valid('<span title="Certification Testing">ct:</span>', certification_testing_status, color)
+        retval += tagged_block_valid('ct:', certification_testing_status, color)
 
         color = __testing_status_colors[regression_testing_status]
         regression_testing_status = __testing_status_text.get(regression_testing_status, regression_testing_status)
-        retval += tagged_block_valid('<span title="Regression Testing">rt:</span>', regression_testing_status, color)
+        retval += tagged_block_valid('rt:', regression_testing_status, color)
 
         color = __testing_status_colors[verification_testing_status]
         verification_testing_status = __testing_status_text.get(verification_testing_status, verification_testing_status)
-        retval += tagged_block_valid('<span title="Verification Testing">vt:</span>', verification_testing_status, color)
+        retval += tagged_block_valid('vt:', verification_testing_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -277,13 +280,13 @@ def __status_bites(bug, attrs):
         retval = ''
 
         color = __testing_status_colors[security_signoff_status]
-        retval += tagged_block_valid('<span title="Security Signoff">ss:</span>', security_signoff_status, color)
+        retval += tagged_block_valid('ss:', security_signoff_status, color)
 
         color = __testing_status_colors[stakeholder_signoff_status]
-        retval += tagged_block_valid('<span title="Stakeholder Signoff">Ss:</span>', stakeholder_signoff_status, color)
+        retval += tagged_block_valid('Ss:', stakeholder_signoff_status, color)
 
         color = __testing_status_colors[kernel_signoff_status]
-        retval += tagged_block_valid('<span title="Kernel Signoff">ks:</span>', kernel_signoff_status, color)
+        retval += tagged_block_valid('ks:', kernel_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -378,6 +381,15 @@ for bid in sorted(data['swm']):
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
     attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
     attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
+
+    attrs['tooltip-at:'] = 'Automated Testing'
+    attrs['tooltip-ct:'] = 'Certification Testing'
+    attrs['tooltip-rt:'] = 'Regression Testing'
+    attrs['tooltip-vt:'] = 'Verification Testing'
+    attrs['tooltip-bt:'] = 'Boot Testing'
+    attrs['tooltip-ss:'] = 'Security Signoff'
+    attrs['tooltip-Ss:'] = 'Stakeholder Signoff'
+    attrs['tooltip-ks:'] = 'Kernel Signoff'
 
     status_list = __status_bites(b, attrs)
     first = True
