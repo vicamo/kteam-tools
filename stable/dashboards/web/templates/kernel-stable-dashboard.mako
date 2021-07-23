@@ -1,13 +1,24 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <style>
 a:link {
-    color: green; 
-    background-color: transparent; 
+    color: green;
+    background-color: transparent;
     text-decoration: none;
 }
 
 a:visited {
-    color: green; 
+    color: green;
+    background-color: transparent;
+    text-decoration: none;
+}
+.master a:link {
+    color: darkblue;
+    background-color: transparent;
+    text-decoration: none;
+}
+
+.master a:visited {
+    color: darkblue;
     background-color: transparent;
     text-decoration: none;
 }
@@ -393,12 +404,15 @@ for bid in sorted(data['swm']):
 
     status_list = __status_bites(b, attrs)
     first = True
+    #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
+    master_class = 'master' if 'master-bug' not in b else 'derivative'
     for status in status_list:
+        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class}
         if first:
-            cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status, 'spin': spin })
+            status_row['bug'] = bid
+            status_row['version'] = version
             first = False
-        else:
-            cadence[cycle][sn][package].append({ 'bug': None, 'version': None, 'phase': status, 'spin': spin })
+        cadence[cycle][sn][package].append(status_row)
 
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
@@ -450,6 +464,7 @@ for bid in sorted(data['swm']):
                                         % for rls in sorted(releases, reverse=True):
                                             <%
                                                 codename = releases[rls].capitalize()
+                                                row_number = 0
                                             %>
                                             % if releases[rls] in cadence[cycle]:
                                             <tr>
@@ -457,20 +472,22 @@ for bid in sorted(data['swm']):
                                             </tr>
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
-                                                        <tr style="line-height: 100%">
+                                                        <%
+                                                            cell_version = '&nbsp;'
+                                                            cell_package = '&nbsp;'
+                                                            cell_spin = '&nbsp;'
+                                                            if bug['bug'] is not None:
+                                                                url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
+                                                                cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
+                                                                cell_package = '<a href="{}">{}</a>'.format(url, pkg)
+                                                                cell_spin = '#{}'.format(bug['spin'])
+                                                                row_number += 1
+                                                            row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
+                                                        %>
+                                                        <tr style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
-                                                            <%
-                                                                cell_version = '&nbsp;'
-                                                                cell_package = '&nbsp;'
-                                                                cell_spin = '&nbsp;'
-                                                                if bug['bug'] is not None:
-                                                                    url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
-                                                                    cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
-                                                                    cell_package = '<a href="{}">{}</a>'.format(url, pkg)
-                                                                    cell_spin = '#{}'.format(bug['spin'])
-                                                            %>
-                                                            <td width="120" align="right" style="color: green">${cell_version}</td>
-                                                            <td style="color: green">${cell_package}</a></td>
+                                                            <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
+                                                            <td class="${bug['master-class']}">${cell_package}</a></td>
                                                             <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
                                                         </tr>
