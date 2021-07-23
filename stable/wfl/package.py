@@ -168,7 +168,7 @@ class PackageBuild:
 
         cdebug("source status={}".format(source.status))
         if source.status in ('Pending'):
-            status.add('BUILDING')
+            status.add('PENDING')
         elif source.status in ('Published'):
             status.add('FULLYBUILT')
         else:
@@ -261,7 +261,7 @@ class PackageBuild:
                 arch_tag = 'all'
             cdebug("binary arch={} status={}".format(arch_tag, binary.status))
             if binary.status == 'Pending':
-                status.add('BUILDING')
+                status.add('PENDING')
             elif binary.status  == 'Published':
                 status.add('FULLYBUILT')
             else:
@@ -294,12 +294,14 @@ class PackageBuild:
         # missing because they are in flight.
         if arch_build != arch_published:
             if arch_build == arch_complete:
-                status.add('FULLYBUILT_PENDING')
                 uploads = source.distro_series.getPackageUploads(exact_match=True,
                         archive=archive, pocket=pocket, name=source.source_package_name,
                         version=source.source_package_version)
+                queued = False
                 for upload in uploads:
                     if upload.status not in ('Done', 'Rejected'):
+                        if upload.status in ('New', 'Unapproved'):
+                            queued = True
                         cinfo("upload not complete status={}".format(upload.status))
                         s.bug.debs.monitor_debs_add({
                                 'type': 'launchpad-upload',
@@ -308,11 +310,16 @@ class PackageBuild:
                                 'status': upload.status,
                                 'lp-api': upload.self_link,
                                 'last-scanned': s.bug.tracker_instantiated})
+                if queued:
+                    status.add('FULLYBUILT_PENDING')
+                else:
+                    status.add('PENDING')
+
             else:
                 status.add('BUILDING')
 
         # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
+        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'PENDING', 'FULLYBUILT', 'UNKNOWN'):
             if state in status:
                 break
 
@@ -701,7 +708,7 @@ class Package():
         cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
         return retval
 
-    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
+    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'PENDING', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
     __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
 
     # build_info
@@ -1233,6 +1240,8 @@ class Package():
             elif status == '':
                 failures.setdefault('missing', []).append(pkg)
                 missing += 1
+            elif status == 'PENDING':
+                failures.setdefault('pending', []).append(pkg)
             elif status == 'FULLYBUILT_PENDING':
                 failures.setdefault('queued', []).append(pkg)
 
