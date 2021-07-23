@@ -2158,7 +2158,7 @@
                     bluefield:
                         arches: ['arm64']        # test system arch names
                         clouds: ['mellanox']     # FIXME: how to describe on-NIC?
-            invalid-tasks: ['automated-testing', 'regression-testing']
+            invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
             stakeholder: 'kernel-sru-bluefield-signoff'
 
         linux-denver:
