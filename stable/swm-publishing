@@ -32,6 +32,7 @@ from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
+from wfl.wft.regression_testing import RegressionTestingResults
 
 
 class MonitorIncompatible(Exception):
@@ -902,6 +903,18 @@ class MonitorSwmStatusMonitor:
     def ss(self):
         return self.factory.ss
 
+    def regression_testing(self, bug_id, bug_data, monitor):
+        sru_cycle = bug_data.get('cycle')
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        version = bug_data.get('version')
+        op = monitor.get('op')
+        existing = monitor.get('status')
+
+        current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
+        print("regression_testing: existing={} current={} change={}".format(existing, current, existing != current))
+        return existing != current
+
     def changed(self):
         changed = set()
 
@@ -913,6 +926,7 @@ class MonitorSwmStatusMonitor:
             for monitor in bug_data.get("monitor", []):
                 print("{}: bug={} monitor={}".format(monitor.get("type", "????"), bug_id, monitor))
                 handler = {
+                    'regression-testing':   self.regression_testing,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
                     changed.add(bug_id)
