@@ -3062,7 +3062,7 @@
                     publish-to:
                         armhf: [ '18-pi' ]
                         arm64: [ '18-pi' ]
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '18.04', 'linux-hwe' ]
             swm:
