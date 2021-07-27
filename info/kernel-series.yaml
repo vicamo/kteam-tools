@@ -2161,7 +2161,7 @@
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
             stakeholder: 'kernel-sru-bluefield-signoff'
 
-        linux-denver:
+        linux-uc20-denver:
             routing:
                 security-build:
                     - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
@@ -2176,14 +2176,14 @@
                 updates:
                     - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
             packages:
+                linux-uc20-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-uc20-denver']
+                linux-signed-uc20-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-signed-uc20-denver']
+                    type: signed
                 linux-denver:
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-denver', 'denver']
-                linux-signed-denver:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-signed-denver']
-                    type: signed
-                linux-meta-denver:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
-                    type: meta
+                    type: extra
             supported: false
             derived-from: [ '20.04', 'linux-raspi' ]
 
