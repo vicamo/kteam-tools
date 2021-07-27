@@ -5159,7 +5159,7 @@
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-precise']
-            supported: true
+            supported: false
             testing:
                 flavours:
                     generic:
@@ -5239,7 +5239,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-precise', 'lts-backport-trusty']
             derived-from: [ '14.04', 'linux' ]
-            supported: true
+            supported: false
             backport: true
             testing:
                 flavours:
