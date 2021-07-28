@@ -19,14 +19,14 @@ from ktl.kernel_series import KernelSeries
 from ktl.log                            import cdebug, cinfo, cerror, cwarn, center, cleave
 from ktl.workflow import Workflow, DefaultAssigneeMissing
 from lazr.restfulclient.errors import BadRequest
-from wfl.launchpad import Launchpad
+from wfl.launchpad import LaunchpadDirect
 
 
 class TrackerProduction:
 
     def __init__(self, project, lp=None, ks=None, wf=None):
         if lp is None:
-            lp = Launchpad(False).default_service.launchpad
+            lp = LaunchpadDirect.login()
         if ks is None:
             ks = KernelSeries()
         if wf is None:
@@ -36,7 +36,7 @@ class TrackerProduction:
         self.ks = ks
         self.wf = wf
         self.project_name = project
-        self.project = self.lp_project(project)
+        self.project = self.lp.projects[project]
 
     title2sp_rc = re.compile(r'^([^/]*)/?(\S+):')
 
@@ -65,18 +65,6 @@ class TrackerProduction:
         description = bug.description
         return yaml.safe_load(description.split('-- swm properties --')[-1])
 
-    cache_lp_person = {}
-    def lp_person(self, person):
-        if person not in self.cache_lp_person:
-            self.cache_lp_person[person] = self.lp.people[person]
-        return self.cache_lp_person[person]
-
-    cache_lp_project = {}
-    def lp_project(self, project):
-        if project not in self.cache_lp_project:
-            self.cache_lp_project[project] = self.lp.projects[project]
-        return self.cache_lp_project[project]
-
     def lp_task_update(self, lp_task, status=None, importance=None, assignee=None):
         changed = []
         if status is not None and lp_task.status != status:
@@ -88,7 +76,7 @@ class TrackerProduction:
             changed.append('importance {}'.format(importance))
 
         if assignee is not None:
-            lp_assignee = self.lp_person(assignee)
+            lp_assignee = self.lp.people[assignee]
             if lp_task.assignee != lp_assignee:
                 lp_task.assignee = lp_assignee
                 changed.append('assignee {}'.format(assignee))
@@ -154,7 +142,7 @@ class TrackerProduction:
             for subscriber in lp_bug.subscriptions:
                 subscriber_present[subscriber.person.self_link] = True
             for subscriber in self.wf.subscribers(ks_source.name, ks_source.development):
-                lp_subscriber = self.lp_person(subscriber)
+                lp_subscriber = self.lp.people[subscriber]
                 if lp_subscriber.self_link in subscriber_present:
                     continue
                 cdebug('    subscriber {}'.format(subscriber))
@@ -164,7 +152,7 @@ class TrackerProduction:
         # Add the package/series nomination.
         if variant in ('debs', 'combo'):
             cdebug("series/package task")
-            lp_ubuntu = self.lp_project('ubuntu')
+            lp_ubuntu = self.lp.projects['ubuntu']
             lp_series = lp_ubuntu.getSeries(name_or_version=ks_source.series.codename)
             lp_package = lp_series.getSourcePackage(name=ks_source.name)
 
