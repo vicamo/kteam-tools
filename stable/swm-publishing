@@ -966,10 +966,12 @@ class MonitorAutomatedTesting:
 
 class MonitorFactory:
 
-    def __init__(self, lp=None, ks=None, bs=None):
+    def __init__(self, lp=None, ks=None, bs=None, ss=None, ss_file=None):
         self._lp = lp
         self._ks = ks
         self._bs = bs
+        self._ss = ss
+        self.ss_file = ss_file
 
     @property
     def lp(self):
@@ -988,6 +990,14 @@ class MonitorFactory:
         if self._bs is None:
             self._bs = MonitorStore('swm-publishing.yaml')
         return self._bs
+
+    @property
+    def ss(self):
+        if self._ss is None:
+            if self.ss_file is None:
+                raise ValueError("ss_file not specified")
+            self._ss = SwmStatus(path=self.ss_file)
+        return self._ss
 
     def kernel_series_archives(self):
         # Find out which archives we may be publishing to and which
@@ -1133,7 +1143,7 @@ class FilterSwmStatus:
 
 
 if __name__ == '__main__':
-    factory = MonitorFactory()
+    factory = MonitorFactory(ss_file='status.yaml')
 
     monitors = []
     monitors += factory.kernel_series_archives()
