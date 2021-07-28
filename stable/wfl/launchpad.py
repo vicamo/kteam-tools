@@ -1,4 +1,9 @@
-from lpltk.LaunchpadService             import LaunchpadService
+import os
+
+from lpltk.LaunchpadService import LaunchpadService
+
+from .launchpad_cache import LaunchpadCache
+
 
 # Launchpad
 #
@@ -32,3 +37,12 @@ class Launchpad():
             lpserver = 'bugs.launchpad.net'
         retval = 'https://%s/bugs/%s' % (lpserver, bug_id)
         return retval
+
+
+class LaunchpadDirect:
+
+    @classmethod
+    def login(cld, client_name='kernel-team-sru-workflow-manager'):
+        creds = os.path.expanduser(os.path.join('~/.config', client_name, 'credentials-production'))
+        return LaunchpadCache.login_with(client_name, 'production', version='devel',
+            credentials_file=creds)
