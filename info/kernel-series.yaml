@@ -1483,7 +1483,7 @@
                 linux-restricted-signatures-oem-5.13:
                     type: lrs
             supported: true
-            derived-from: [ '21.10', 'linux-unstable' ]
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
