@@ -1352,16 +1352,13 @@
             variants: ['--']
             packages:
                 linux-ibm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'ibm-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
                 linux-meta-ibm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal', 'ibm']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
                 linux-signed-ibm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal', 'ibm']
-                linux-restricted-modules-ibm:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/focal', 'ibm']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             swm:
