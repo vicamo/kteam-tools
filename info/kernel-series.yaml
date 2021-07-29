@@ -389,7 +389,7 @@
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/impish']
-            supported: true
+            supported: false
             derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
