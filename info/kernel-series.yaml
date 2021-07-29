@@ -1329,17 +1329,20 @@
             development: true
             supported: false
 
+
+	# Note: The following private kernel is the IBM guest kernel
+	#       which is intended for VM and baremetal
         linux-ibm:
             variants: ['--']
             packages:
                 linux-ibm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-focal', 'master-next']
                 linux-meta-ibm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-focal']
                 linux-signed-ibm:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
             swm:
