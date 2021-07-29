@@ -1219,7 +1219,8 @@
                 linux-signed-intel:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal']
-            supported: true
+            supported: false
+            development: true
             derived-from: [ '21.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1237,7 +1238,8 @@
                 linux-signed-uc20-intel:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel/+git/focal']
-            supported: true
+            supported: false
+            development: true
             snaps:
                 intel-kernel:
                     primary: true
