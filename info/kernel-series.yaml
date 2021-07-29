@@ -1330,8 +1330,8 @@
             supported: false
 
 
-	# Note: The following private kernel is the IBM guest kernel
-	#       which is intended for VM and baremetal
+        # Note: The following private kernel is the IBM guest kernel
+        #       which is intended for VM and baremetal
         linux-ibm:
             variants: ['--']
             packages:
