@@ -94,6 +94,7 @@ class PreparePackage(TaskHandler):
         # If our master is marked to block derivatives block on it.
         if 'kernel-block-derivatives' in master.tags and 'kernel-unblock-derivatives' not in master.tags:
             wait_for = []
+            s.bug.interlocks['holding-derivative'] = s.bug.name
 
         # If our master package is a leader (no master of its own) then we want
         # to wait for it to be successfully built (Fix Released).
