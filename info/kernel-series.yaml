@@ -398,7 +398,7 @@
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-realtime:
             routing: realtime
@@ -655,7 +655,7 @@
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-realtime:
             routing: realtime
@@ -1382,7 +1382,7 @@
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-raspi2:
             variants: ['--']
@@ -3009,7 +3009,7 @@
                         arm64: [ '18-pi3' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
             swm:
                 kernel-testing: true
             testing:
@@ -3047,7 +3047,7 @@
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-raspi2-5.3:
             variants: ['-hwe-18.04']
