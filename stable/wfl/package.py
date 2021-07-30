@@ -4,6 +4,7 @@
 import re
 from datetime                           import datetime, timedelta, timezone
 import json
+from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized
 
@@ -1424,10 +1425,14 @@ class Package():
                     break
                 if pocket_next not in bi[pkg]:
                     continue
-                if bi[pkg][pocket]['version'] == bi[pkg][pocket_next]['version']:
-                    found = True
+                try:
+                    if version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version']) <= 0:
+                        found = True
+                except ValueError:
+                    pass
                 if pkg not in s.dependent_packages_for_pocket(pocket_next):
                     found = True
+                cinfo("APW: {} <= {} = {}".format(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'], version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'])))
             if not found:
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
