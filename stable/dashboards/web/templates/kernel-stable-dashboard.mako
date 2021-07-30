@@ -1,13 +1,24 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <style>
 a:link {
-    color: green; 
-    background-color: transparent; 
+    color: green;
+    background-color: transparent;
     text-decoration: none;
 }
 
 a:visited {
-    color: green; 
+    color: green;
+    background-color: transparent;
+    text-decoration: none;
+}
+.master a:link {
+    color: darkblue;
+    background-color: transparent;
+    text-decoration: none;
+}
+
+.master a:visited {
+    color: darkblue;
     background-color: transparent;
     text-decoration: none;
 }
@@ -37,6 +48,14 @@ __testing_status_text = {
     'Triaged'       : 'No Results',
     'Incomplete'    : 'Failed',
     'Fix Released'  : 'Passed',
+}
+__review_status_colors = __testing_status_colors
+__review_status_text = {
+    'New'           : 'Not Ready',
+    'In Progress'   : 'In Progress',
+    'Confirmed'     : 'Ready',
+    'Incomplete'    : 'Rejected',
+    'Fix Released'  : 'Approved',
 }
 %>
 <%
@@ -91,12 +110,15 @@ def tagged_block(key, value):
 # tagged_block_valid
 #
 def tagged_block_valid(key, value, colour):
+    key_title = key
+    if 'tooltip-' + key in attrs:
+        key_title = '<span title="{}">{}</span>'.format(attrs['tooltip-' + key], key)
     if value in ('n/a', 'Invalid'):
-        return tagged_block(__coloured(key, 'silver'), __coloured('n/a', 'silver'))
+        return tagged_block(__coloured(key_title, 'silver'), __coloured('n/a', 'silver'))
     elif value == "Won't Fix":
-        return tagged_block(__coloured(key, 'silver'), __coloured('Skipped', 'silver'))
+        return tagged_block(__coloured(key_title, 'silver'), __coloured('Skipped', 'silver'))
     else:
-        block = tagged_block(key, __coloured(value, colour))
+        block = tagged_block(key_title, __coloured(value, colour))
         if key in attrs:
             block = '<a href="{}">{}</a>'.format(attrs[key], block)
         return block
@@ -161,7 +183,30 @@ def __status_bites(bug, attrs):
     test_set_invalid = ('n/a', 'New', 'Invalid')
     test_set_complete = ('n/a', 'Invalid', 'Fix Released', "Won't Fix")
 
-    # debs: testing status mashup.
+    # debs: testing status mashup (early phase Touch Testing)
+    boot_testing_status = __task_status(bug, 'boot-testing')
+    sru_review_status = __task_status(bug, 'sru-review')
+    testing_valid = (
+            boot_testing_status not in test_set_invalid or
+            sru_review_status not in test_set_invalid)
+    testing_complete = (
+            boot_testing_status in test_set_complete and
+            sru_review_status in test_set_complete)
+    if testing_valid and not testing_complete:
+        retval = ''
+
+        color = __testing_status_colors[boot_testing_status]
+        boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
+        retval += tagged_block_valid('bt:', boot_testing_status, color)
+        retval += tagged_block('', '')
+        retval += tagged_block('', '')
+        color = __review_status_colors[sru_review_status]
+        sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
+        retval += tagged_block_valid('sr:', sru_review_status, color)
+
+        bites.append(bite_format(thing_prefix, retval, thing_in))
+
+    # debs: testing status mashup (main phase Testing)
     automated_testing_status = __task_status(bug, 'automated-testing')
     certification_testing_status = __task_status(bug, 'certification-testing')
     regression_testing_status = __task_status(bug, 'regression-testing')
@@ -246,13 +291,13 @@ def __status_bites(bug, attrs):
         retval = ''
 
         color = __testing_status_colors[security_signoff_status]
-        retval += tagged_block_valid('<span title="Security Signoff">ss:</span>', security_signoff_status, color)
+        retval += tagged_block_valid('ss:', security_signoff_status, color)
 
         color = __testing_status_colors[stakeholder_signoff_status]
-        retval += tagged_block_valid('<span title="Stakeholder Signoff">Ss:</span>', stakeholder_signoff_status, color)
+        retval += tagged_block_valid('Ss:', stakeholder_signoff_status, color)
 
         color = __testing_status_colors[kernel_signoff_status]
-        retval += tagged_block_valid('<span title="Kernel Signoff">ks:</span>', kernel_signoff_status, color)
+        retval += tagged_block_valid('ks:', kernel_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -269,7 +314,8 @@ def __status_bites(bug, attrs):
         if (task.startswith('prepare-package') and
                 not reason.startswith('Stalled -- ')):
             continue
-        if task.endswith('-testing') or task.endswith('-signoff'):
+        # Elide things which are on one of the three "status box" rows.
+        if task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review':
             continue
         (state, flags, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
@@ -345,15 +391,29 @@ for bid in sorted(data['swm']):
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
     attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
+    attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
+
+    attrs['tooltip-at:'] = 'Automated Testing'
+    attrs['tooltip-ct:'] = 'Certification Testing'
+    attrs['tooltip-rt:'] = 'Regression Testing'
+    attrs['tooltip-vt:'] = 'Verification Testing'
+    attrs['tooltip-bt:'] = 'Boot Testing'
+    attrs['tooltip-ss:'] = 'Security Signoff'
+    attrs['tooltip-Ss:'] = 'Stakeholder Signoff'
+    attrs['tooltip-ks:'] = 'Kernel Signoff'
+    attrs['tooltip-sr:'] = 'SRU Review'
 
     status_list = __status_bites(b, attrs)
     first = True
+    #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
+    master_class = 'master' if 'master-bug' not in b else 'derivative'
     for status in status_list:
+        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class}
         if first:
-            cadence[cycle][sn][package].append({ 'bug': bid, 'version': version, 'phase': status, 'spin': spin })
+            status_row['bug'] = bid
+            status_row['version'] = version
             first = False
-        else:
-            cadence[cycle][sn][package].append({ 'bug': None, 'version': None, 'phase': status, 'spin': spin })
+        cadence[cycle][sn][package].append(status_row)
 
 %>
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
@@ -405,6 +465,7 @@ for bid in sorted(data['swm']):
                                         % for rls in sorted(releases, reverse=True):
                                             <%
                                                 codename = releases[rls].capitalize()
+                                                row_number = 0
                                             %>
                                             % if releases[rls] in cadence[cycle]:
                                             <tr>
@@ -412,20 +473,22 @@ for bid in sorted(data['swm']):
                                             </tr>
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
-                                                        <tr style="line-height: 100%">
+                                                        <%
+                                                            cell_version = '&nbsp;'
+                                                            cell_package = '&nbsp;'
+                                                            cell_spin = '&nbsp;'
+                                                            if bug['bug'] is not None:
+                                                                url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
+                                                                cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
+                                                                cell_package = '<a href="{}">{}</a>'.format(url, pkg)
+                                                                cell_spin = '#{}'.format(bug['spin'])
+                                                                row_number += 1
+                                                            row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
+                                                        %>
+                                                        <tr style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
-                                                            <%
-                                                                cell_version = '&nbsp;'
-                                                                cell_package = '&nbsp;'
-                                                                cell_spin = '&nbsp;'
-                                                                if bug['bug'] is not None:
-                                                                    url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
-                                                                    cell_version = '<a href="{}">{}</a>'.format(url, bug['version'])
-                                                                    cell_package = '<a href="{}">{}</a>'.format(url, pkg)
-                                                                    cell_spin = '#{}'.format(bug['spin'])
-                                                            %>
-                                                            <td width="120" align="right" style="color: green">${cell_version}</td>
-                                                            <td style="color: green">${cell_package}</a></td>
+                                                            <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
+                                                            <td class="${bug['master-class']}">${cell_package}</a></td>
                                                             <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
                                                         </tr>
