@@ -4674,7 +4674,7 @@
                    snapdragon:
                         arches: ['armhf']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'certification-testing', 'regression-testing' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'certification-testing', 'regression-testing' ]
 
         linux-fips:
             routing: fips
