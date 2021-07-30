@@ -224,7 +224,9 @@ class PromoteFromTo(Promoter):
                     if failure not in ('building', 'depwait', 'failwait'):
                         state = 'Pending'
                 reason = '{} -- packages copying to {}'.format(state, pocket)
-                reason += ' ' + s.bug.debs.failures_to_text(failures)
+                failures_text = s.bug.debs.failures_to_text(failures)
+                if failures_text != '':
+                    reason += ' (' + failures_text + ')'
                 s.task.reason = reason
                 break
 
