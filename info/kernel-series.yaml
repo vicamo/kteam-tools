@@ -4419,7 +4419,7 @@
             supported: true
             private: true
             derived-from: [ '16.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing', 'automated-testing', 'certification-testing']
+            invalid-tasks: [ 'boot-testing', 'regression-testing', 'automated-testing', 'certification-testing']
 
         # FIXME: Already out of support. Maybe time for complete removal?
         linux-euclid:
