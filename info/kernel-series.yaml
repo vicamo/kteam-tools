@@ -410,9 +410,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/impish']
             supported: true
-            backport: true
-            #derived-from: [ '21.10', 'linux' ]
-            derived-from: [ '21.04', 'linux-realtime' ]
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
@@ -531,9 +529,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/impish']
             supported: true
-            backport: true
-            #derived-from: [ '21.10', 'linux' ]
-            derived-from: [ '21.04', 'linux-kvm' ]
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
@@ -584,9 +580,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/impish']
             supported: true
-            backport: true
-            #derived-from: [ '21.10', 'linux' ]
-            derived-from: [ '21.04', 'linux-riscv' ]
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
