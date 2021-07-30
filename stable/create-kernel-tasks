@@ -133,6 +133,9 @@ class Task():
         # Add the tracking bugs of the subtasks to this tasks tracking bug
         # as derivatives.
         for tbid in new_tbids:
+            if not self.create and self.tb is None:
+                cwarn('LP: #{} will be an orphaned derivative tracker'.format(tbid))
+                continue
             if dryrun is False:
                 tb = ts.tbs[tbid]
                 cinfo('{}/{} + derivative {}/{}'.format(cn, sn, tb.target_series, tb.target_package))
@@ -410,7 +413,7 @@ class TaskSet():
         for tkey in self.tasks.keys():
             self.__task_match_all_tbs(self.tasks[tkey])
 
-    def ValidateTasks(self):
+    def ValidateTasks(self, allow_master=False):
         # When no spin number is provided on the command-line, then pick the
         # next one free.
         if self.spin_nr is None:
@@ -439,6 +442,9 @@ class TaskSet():
             cn = maintask.ks_source.series.codename
             sn = maintask.ks_source.name
             if maintask.create is False and maintask.tb is None:
+                if allow_master:
+                    cwarn('{}:{} does not exist. Derivatives will be orphaned!'.format(cn, sn))
+                    continue
                 raise ValueError('{}/{} has no tracking bug and is not created!'.format(cn, sn))
 
     def CreateTrackingBugs(self, dryrun=False):
@@ -501,6 +507,8 @@ Examples:
                         help='forcefully disable the creation of Trello cards. This is the default in --devel mode')
     parser.add_argument('--force-nobugs', action='store_true', default=False,
                         help='forcefully disable the creation of tracking bugs')
+    parser.add_argument('--allow-nomaster', action='store_true', default=False,
+                        help='allow a derivative task to be created without a master ')
     grp1 = parser.add_mutually_exclusive_group()
     grp1.add_argument('--handle', action='append', default=[], metavar='<series>:<source>',
                       help='limit task creation to specific sources given in <series>:<source> format.')
@@ -685,7 +693,7 @@ Examples:
         ts.LoadTrackingBugs(test=args.test)
         print(ts)
         try:
-            ts.ValidateTasks()
+            ts.ValidateTasks(args.allow_nomaster)
         except ValueError as e:
             cerror('Validation: failed with "{}"!'.format(e))
             sys.exit(1)
