@@ -401,6 +401,7 @@ for bid in sorted(data['swm']):
     attrs['tooltip-ss:'] = 'Security Signoff'
     attrs['tooltip-Ss:'] = 'Stakeholder Signoff'
     attrs['tooltip-ks:'] = 'Kernel Signoff'
+    attrs['tooltip-sr:'] = 'SRU Review'
 
     status_list = __status_bites(b, attrs)
     first = True
