@@ -336,25 +336,11 @@ class MonitorLaunchpadArchivePrivate:
 
         # Get the callers private subscription URL so we can look at the
         # InRelease files later.
-        #print(archive)
-        me = self.lp.load(self.lp.me.self_link)
-        #print("APW", me, archive)
-        ##self.subscription = me.getArchiveSubscriptionURL(archive=self.archive)
-        ##print("APW", self.subscription)
 
-        # XXX: until python3 lazr.restfulclient is upgraded ....
-        found = None
-        find = archive[4:].split('/')
-        find = '/{}/{}/{}'.format(find[0], find[2], find[1])
-        for sub in me.getArchiveSubscriptionURLs():
-            if sub.endswith(find):
-                found = sub
-                break
-        #print(find, found)
-        #sys.exit(1)
-        if found is None:
-            raise MonitorIncompatible()
-        self.subscription = found
+        # XXX: paper over a redirect issue in lazr.restfulclient.
+        me = self.lp.people[self.lp.me.name]
+        # Lookup the subscription and instantiate the access key.
+        self.subscription = me.getArchiveSubscriptionURL(archive=self.archive)
 
         # The current InRelease data for the archive pocket.  This will change
         # iff we have a publication change in the archive.  There is no point
@@ -369,7 +355,7 @@ class MonitorLaunchpadArchivePrivate:
                 if source.supported or source.development:
                     if not source.routing:
                         continue
-                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
                             'release'):
                         dest = source.routing.lookup_destination(pocket)
                         if not dest:
@@ -985,7 +971,7 @@ class MonitorFactory:
                 if source.supported or source.development:
                     if not source.routing:
                         continue
-                    for pocket in ('build', 'proposed', 'signing', 'updates', 'security',
+                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
                             'release', 'as-proposed'):
                         dest = source.routing.lookup_destination(pocket)
                         if not dest:
