@@ -815,6 +815,7 @@ class MonitorStatusSwmStatus:
 
         # Scan the live trackers and trigger any which have past their refresh
         # time.  Also accumulate any which have not been scanned for 4 hours.
+        # Finally scan the maintenance records for changes.
         lagging = []
         for bug_id, bug_data in sorted(status.trackers.items(), key=self.status_key):
             if 'refresh' in bug_data:
@@ -833,6 +834,19 @@ class MonitorStatusSwmStatus:
                     delta = scan_refresh - start_date
                     print("LAGGING {} time={} delta={} trigger={}".format(bug_id, scan_refresh, delta, scan_refresh < start_date))
                     lagging.append((scan_refresh, delta, bug_id))
+
+            # Scan
+            for maint in bug_data.get('maintenance', []):
+                if maint['type'] == 'deb-build':
+                    lp_api = maint['detail']['lp-api']
+                    state = maint['detail']['state']
+
+                    build = self.lp.load(lp_api)
+                    buildstate = build.buildstate
+                    print("BUILD {} state={} buildstate={}".format(lp_api, state, buildstate))
+                    if state != buildstate:
+                        print("BUILD {} state={} buildstate={} changed".format(lp_api, state, buildstate))
+                        changed.add(bug_id)
 
         # Run the list of lagging trackers and try and spread them out over the cycle without
         # letting them lag too long.  Try not to batch up too many updates either as a timeout

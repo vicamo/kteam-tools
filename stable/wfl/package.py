@@ -163,27 +163,19 @@ class PackageBuild:
         arch_complete = set()
         builds = source.getBuilds()
         for build in builds:
+            buildstate = build.buildstate
             ##print(build, build.buildstate, build.datebuilt)
-            cdebug("build arch={} status={}".format(build.arch_tag, build.buildstate))
+            cdebug("build arch={} status={}".format(build.arch_tag, buildstate))
             if build.buildstate in (
                     'Needs building',
                     'Currently building',
                     'Uploading build'):
                 status.add('BUILDING')
 
-            elif build.buildstate == 'Dependency wait':
+            elif buildstate == 'Dependency wait':
                 status.add('DEPWAIT')
-                s.bug.maintenance_add({
-                    'type': 'deb-build',
-                    'target': s.bug.target,
-                    'detail': {
-                        'state': build.buildstate,
-                        'package': build.source_package_name,
-                        'url': build.web_link,
-                        'lp-api': build.self_link,
-                    }})
 
-            elif build.buildstate == 'Successfully built':
+            elif buildstate == 'Successfully built':
                 status.add('FULLYBUILT')
                 arch_complete.add(build.arch_tag)
 
@@ -196,11 +188,13 @@ class PackageBuild:
                 #  Cancelling build
                 #  Cancelled build
                 status.add('FAILEDTOBUILD')
+
+            if buildstate != 'Successfully built':
                 s.bug.maintenance_add({
                     'type': 'deb-build',
                     'target': s.bug.target,
                     'detail': {
-                        'state': build.buildstate,
+                        'state': buildstate,
                         'package': build.source_package_name,
                         'url': build.web_link,
                         'lp-api': build.self_link,
