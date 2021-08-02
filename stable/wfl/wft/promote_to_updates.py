@@ -131,6 +131,10 @@ class PromoteToUpdates(Promoter):
                 cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
                 pull_back = True
 
+            if not s._all_signoffs_verified():
+                # Note this will set an appropriate reason.
+                pull_back = True
+
             if not s._cycle_ready():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
                 pull_back = True
