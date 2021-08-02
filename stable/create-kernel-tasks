@@ -143,7 +143,7 @@ class Task():
             else:
                 cinfo('{}/{} + derivative LP: #{}'.format(cn, sn, tbid))
 
-        if not dryrun:
+        if not dryrun and self.tb is not None:
             self.tb.save()
 
         if new_tbid is None:
