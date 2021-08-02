@@ -1996,7 +1996,7 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.8:
-            variants: ['--', '-hwe-20.04']
+            variants: ['-eol-riscv-5.8']
             packages:
                 linux-riscv-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.8-next']
@@ -2015,7 +2015,7 @@
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.11:
-            variants: ['-hwe-20.04-edge']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux-riscv-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.11-next']
