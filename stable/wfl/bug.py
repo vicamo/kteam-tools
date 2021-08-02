@@ -658,6 +658,7 @@ class WorkflowBug():
         should not be processing are ones that are not currently "In Progress".
         '''
         s.is_workflow = False
+        s.is_new = False
         s.is_crankable = False
         s.is_closed = False
         s.is_gone = False
@@ -667,13 +668,32 @@ class WorkflowBug():
             if task_name in WorkflowBug.projects_tracked:
                 s.is_workflow = True
                 s.workflow_project = task_name
-                if t.status == 'In Progress':
+                if t.status == 'Triaged':
+                    s.is_new = True
+                    s.is_crankable = True
+                elif t.status == 'In Progress':
                     s.is_crankable = True
                 elif t.status == 'Fix Released':
                     s.is_closed = True
                 elif t.status == 'Invalid':
                     s.is_gone = True
                 break
+
+    # accept_new
+    #
+    def accept_new(self):
+        if not self.is_new:
+            return
+
+        for t in self.lpbug.tasks:
+            task_name       = t.bug_target_name
+
+            if task_name in WorkflowBug.projects_tracked:
+                cinfo("accept_new: Triaged tracker now tracked flipping In Progress")
+                t.status = 'In Progress'
+                break
+
+        self.check_is_valid()
 
     # _create_tasks_by_name_mapping
     #

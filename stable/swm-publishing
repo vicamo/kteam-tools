@@ -563,6 +563,16 @@ class MonitorLaunchpadProject:
                 changed.add(str(bug_id))
                 break
 
+        # Trackers in Triaged are new and have never been scanned (or that
+        # scan has failed, retrigger until they resolve.
+        tasks = self.project.searchTasks(status=['Triaged'])
+        for task in tasks:
+            bug = task.bug
+            if 'kernel-release-tracking-bug-test' in bug.tags:
+                continue
+            print("TASK (NEW)", task, bug, bug.date_last_updated)
+            changed.add(str(bug.id))
+
         return changed
 
     def __str__(self):
