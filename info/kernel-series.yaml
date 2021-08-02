@@ -4975,11 +4975,11 @@
                 flavours:
                     generic:
                         meta-pkg: linux-generic-lts-xenial
-                        arches: ['amd64', 'i386']        # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal', 'kvm']
                     lowlatency:
                         meta-pkg: linux-lowlatency-lts-xenial
-                        arches: ['amd64', 'i386']        # test system arch names
+                        arches: ['amd64']        # test system arch names
                         clouds: ['metal', 'kvm']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
