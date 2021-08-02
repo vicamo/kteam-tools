@@ -1254,10 +1254,26 @@ class Package():
     # failures_to_text
     #
     def failures_to_text(self, summary):
+        type_state = {}
+        for state, members in summary.items():
+            state_text = {
+                    'missing': 'M',
+                    'queued': 'Q',
+                    'pending': 'P',
+                    'building': 'B',
+                    'depwait': 'D',
+                    'retry-needed': 'R',
+                    'failwait': 'D*',
+                    'failed': 'F',
+                }.get(state, state)
+            for member in members:
+                type_state[member] = state_text
         bits = []
-        for state, members in sorted(summary.items()):
-            members = sorted(members, key=self.feeder_key)
-            bits.append(','.join(members) + ':' + state)
+        #for state, members in sorted(summary.items()):
+        #    members = sorted(members, key=self.feeder_key)
+        #    bits.append(','.join(members) + ':' + state)
+        for member in sorted(type_state, key=self.feeder_key):
+            bits.append("{}:{}".format(member, type_state[member]))
         return ' '.join(bits)
 
     # creator
