@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import os
 import sys
 import argparse
 import yaml
@@ -11,22 +10,24 @@ import apt_pkg
 
 from launchpadlib.launchpad import Launchpad
 
-from crl.handle import Handle, HandleError
 from ktl.kernel_series import KernelSeries
-from ktl.log import cerror, cwarn, cinfo
+from ktl.log import cerror, cinfo
 
 class UpdateSnap():
     def __init__(self, pocket='proposed', no_tag=False, dry_run=False):
         self.ks = KernelSeries()
         self.scy_file_name = "snapcraft.yaml"
+        self.krn_file_name = "kernel.yaml"
         self.no_tag = no_tag
         self.dry_run = dry_run
         self.scy = None
+        self.krn = None
         self.pocket = pocket
 
         self.name = None
         self.series = None
         self.source = None
+        self.version = None
 
         # open and parse the local snapcraft.yaml file
         try:
@@ -36,49 +37,74 @@ class UpdateSnap():
             cerror("ERROR: Could not open and parse file {}".format(self.scy_file_name))
             sys.exit(1)
 
+        # Try to open and parse the local kernel.yaml file
+        try:
+            with open(self.krn_file_name, 'r') as krn_file:
+                self.krn = yaml.safe_load(krn_file)
+        except:
+            # As long as snapcraft.yaml still contains a version key, we use the old
+            # format and it is acceptable to fail.
+            if 'version' not in self.scy.keys():
+                cerror("ERROR: Could not open and parse {}".format(self.krn_file_name))
+                sys.exit(1)
+            pass
+
         # Pull out the name name.
         self.name = self.scy['name']
 
-        # Lookup the KERNEL_SOURCE identifier.  This is either a source handle
-        # (bionic:linux) or just a source package name (linux-raspi2).
-        source_handle = None
-        for param in self.scy['parts']['kernel']['make-parameters']:
-            if param.startswith('KERNEL_SOURCE='):
-                source_handle = param.split('=', 1)[1]
-                break
+        # If we have a kernel.yaml, then extract the kernel source info from that.
+        if self.krn is not None:
+            self.series  = self.krn['series']
+            self.source  = self.krn['source']
+            self.version = self.krn['version']
 
-        # <series>:<source> handle.
-        if source_handle is not None and ':' in source_handle:
-            (self.series, self.source) = source_handle.split(':', 1)
-
-        # <source> plain source package.
-        elif source_handle is not None:
-            self.source = source_handle
-
-        # If we have not been given a series yet, try and intuit it from the
-        # source git URL /+git/<series> data.
-        if self.series is None:
-            self.series = self.scy['parts']['kernel']['source'].rpartition('/')[2]
-
-        # VALIDATION: confirm series.
-        ks_series = self.ks.lookup_series(codename=self.series)
-        if ks_series is None:
-            cerror("ERROR: {} invalid series specified".format(self.series))
-            sys.exit(1)
-
-        # If we have no source yet, find it using the series and snap name.
-        if self.source is None:
-            for source in ks_series.sources:
-                copy_forward = source.copy_forward
-                if copy_forward is not None:
-                    source = copy_forward
-                snap = source.lookup_snap(self.name)
-                if snap is not None:
-                    self.source = source.name
-                    break
-            if self.source is None:
-                cerror("ERROR: {} snap not found in {}".format(self.name, self.series))
+            # VALIDATION: confirm series.
+            ks_series = self.ks.lookup_series(codename=self.series)
+            if ks_series is None:
+                cerror("ERROR: {} invalid series specified".format(self.series))
                 sys.exit(1)
+        else:
+            # Lookup the KERNEL_SOURCE identifier.  This is either a source handle
+            # (bionic:linux) or just a source package name (linux-raspi2).
+            source_handle = None
+            for param in self.scy['parts']['kernel']['make-parameters']:
+                if param.startswith('KERNEL_SOURCE='):
+                    source_handle = param.split('=', 1)[1]
+                    break
+
+            # <series>:<source> handle.
+            if source_handle is not None and ':' in source_handle:
+                (self.series, self.source) = source_handle.split(':', 1)
+
+            # <source> plain source package.
+            elif source_handle is not None:
+                self.source = source_handle
+
+            # If we have not been given a series yet, try and intuit it from the
+            # source git URL /+git/<series> data.
+            if self.series is None:
+                self.series = self.scy['parts']['kernel']['source'].rpartition('/')[2]
+
+            # VALIDATION: confirm series.
+            ks_series = self.ks.lookup_series(codename=self.series)
+            if ks_series is None:
+                cerror("ERROR: {} invalid series specified".format(self.series))
+                sys.exit(1)
+
+            # If we have no source yet, find it using the series and snap name.
+            if self.source is None:
+                for source in ks_series.sources:
+                    copy_forward = source.copy_forward
+                    if copy_forward is not None:
+                        source = copy_forward
+                    snap = source.lookup_snap(self.name)
+                    if snap is not None:
+                        self.source = source.name
+                        break
+                if self.source is None:
+                    cerror("ERROR: {} snap not found in {}".format(self.name, self.series))
+                    sys.exit(1)
+        self.version = self.scy['version']
 
         # VALIDATION: confirm source.
         ks_source = ks_series.lookup_source(self.source)
@@ -134,25 +160,47 @@ class UpdateSnap():
 
     def update_snap(self, version, url):
         '''
-        Update the snapcraft yaml file with the new version.
+        Update the file(s) which contain(s) the kernel version with the new version. For
+        a transitional period this might be two files.
         '''
-        with open(self.scy_file_name, 'r') as scy_file:
-            scy_content = scy_file.read()
+        scy_content = None
+        if 'version' in self.scy.keys():
+            with open(self.scy_file_name, 'r') as scy_file:
+                scy_content = scy_file.read()
 
-        if self.scy['version'] != version:
-            scy_content = re.sub(r'version: .*', 'version: {}'.format(version), scy_content)
-            cinfo("INFO: update version from %s to %s" %
-                  (self.scy['version'], version))
-        if self.scy['parts']['kernel']['source'] != self.snap.repo.url:
-            scy_content = re.sub(r'( *source: ) *{}'.format(
-                re.escape(self.scy['parts']['kernel']['source'])),
-                r'\1{}'.format(url), scy_content)
-            cinfo("INFO: update url:\n      %s\n      %s" %
-                  (self.scy['parts']['kernel']['source'], self.snap.repo.url))
+            if self.version != version:
+                scy_content = re.sub(r'version: .*', 'version: {}'.format(version), scy_content)
+                cinfo("INFO: update version from %s to %s" %
+                      (self.scy['version'], version))
+            if self.scy['parts']['kernel']['source'] != self.snap.repo.url:
+                scy_content = re.sub(r'( *source: ) *{}'.format(
+                    re.escape(self.scy['parts']['kernel']['source'])),
+                    r'\1{}'.format(url), scy_content)
+                cinfo("INFO: update url:\n      %s\n      %s" %
+                      (self.scy['parts']['kernel']['source'], self.snap.repo.url))
+
+        if self.krn is not None:
+            with open(self.krn_file_name, 'r') as krn_file:
+                krn_content = krn_file.read()
+
+            if self.version != version:
+                krn_content = re.sub(r'version: .*', 'version: {}'.format(version), krn_content)
+                cinfo("INFO: update version from {} to {}".format(self.krn['version'], version))
+        else:
+            cinfo("INFO: creating initial {}".format(self.krn_file_name))
+            krn_content  = "#\n# Kernel Source Information\n#\n"
+            krn_content += "series: {}\n".format(self.series)
+            krn_content += "source: {}\n".format(self.source)
+            krn_content += "version: {}\n".format(version)
 
         if not self.dry_run:
-            with open(self.scy_file_name, 'w') as scy_file:
-                scy_file.write(scy_content)
+            if scy_content is not None:
+                with open(self.scy_file_name, 'w') as scy_file:
+                    scy_file.write(scy_content)
+            with open(self.krn_file_name, 'w') as krn_file:
+                krn_file.write(krn_content)
+            if self.krn is None:
+                subprocess.call("git add {}".format(self.krn_file_name), shell=True)
 
     def get_commit_subject(self, version):
         '''
@@ -182,17 +230,26 @@ class UpdateSnap():
         '''
         main method.
         '''
-        proposed_ver = self.get_published_ver(self.source, self.ks_source.series.codename, self.pocket)
-        if (self.scy['version'] == proposed_ver and
-                self.scy['parts']['kernel']['source'] == self.snap.repo.url):
+        proposed_ver = self.get_published_ver(self.source, self.ks_source.series.codename,
+                                              self.pocket)
+        if self.version == proposed_ver:
             cerror("ERROR: No new version available in -{}".format(self.pocket))
             sys.exit(1)
+        if 'version' in self.scy.keys() and self.version == proposed_ver:
+            if self.scy['parts']['kernel']['source'] == self.snap.repo.url:
+                cerror("ERROR: No new repository info")
+                sys.exit(1)
 
         self.update_snap(proposed_ver, self.snap.repo.url)
         commit_msg = self.get_commit_subject(proposed_ver)
         (tag_name, tag_msg) = self.get_tag_from_commit(commit_msg)
         commit_cmd = "git commit -s -m '%s' -- %s" % (commit_msg, self.scy_file_name)
+        commit_cmd = "git commit -s -m '{}' --".format(commit_msg)
+        if 'version' in self.scy.keys():
+            commit_cmd += " {}".format(self.scy_file_name)
+        commit_cmd += " {}".format(self.krn_file_name)
         tag_cmd = "git tag -sm '%s' '%s'" % (tag_msg, tag_name)
+
         if not self.dry_run:
             ret = subprocess.call(commit_cmd, shell=True)
             if ret != 0:
@@ -243,9 +300,9 @@ Examples:
                         help="do not make any changes, just show what would be done")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-r", "--release", action="store_true", default=False,
-                        help="get version from -release instead of -proposed")
+                       help="get version from -release instead of -proposed")
     group.add_argument("-u", "--updates", action="store_true", default=False,
-                        help="get version from -updates instead of -proposed")
+                       help="get version from -updates instead of -proposed")
     parser.add_argument("-t", "--no-tag", action="store_true", default=False,
                         help="do not automatically tag the commit")
     args = parser.parse_args()
