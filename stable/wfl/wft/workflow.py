@@ -137,7 +137,7 @@ class Workflow(TaskHandler):
             # Things which if found are worthy of reporting even if we are not yet trying
             # to close.
             #
-            if 'kernel-block-derivatives' in s.bug.tags:
+            if s.bug.blockers.get('holding-derivative') is not None:
                 s.bug.reasons['derivatives-held'] = 'Stalled -- derivative preparation block requested'
 
             if s.bug.snap:

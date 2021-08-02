@@ -112,6 +112,7 @@ class TrackerProduction:
         ks_source = self.lookup_source(bug_id, lp_bug)
         swm_props = self.load_properties(lp_bug)
         variant = swm_props.get('variant', 'combo')
+        master = swm_props.get('master-bug', swm_props.get('kernel-stable-master-bug'))
 
         # Pick up the invalidation hints from kernel-series.
         ks_invalid_tasks = []
@@ -179,6 +180,14 @@ class TrackerProduction:
                 lp_task = lp_tasks.get(lp_package.self_link)
             if lp_task is not None:
                 self.lp_task_update(lp_task, status='New', importance='Medium')
+
+        # If this is a key package default to derivatives held.
+        if master is None:
+            cinfo('blocking derivatives')
+            tags = lp_bug.tags
+            tags.append('kernel-block-derivatives')
+            lp_bug.tags = tags
+            lp_bug.lp_save()
 
         # All done, mark ready.
         lp_task = lp_tasks[self.project.self_link]
