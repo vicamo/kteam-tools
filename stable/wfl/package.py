@@ -67,7 +67,7 @@ class PackageBuild:
         # Do a loose match, we will select for the specific version we wanted
         # in __find_matches but this way we have the published version for
         # pocket emptyness checks.
-        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, status='Published', pocket=pocket)
+        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, status='Published', pocket=pocket, order_by_date=True)
         matches = s.__find_matches(ps, abi, release, sloppy)
         if len(matches) > 0:
             cdebug('    match: %s (%s)' % (release, abi), 'green')
@@ -135,8 +135,8 @@ class PackageBuild:
         cdebug(' pocket: %s' % pocket, 'yellow')
 
         # If we do get more than one match we should be picking the latest.
-        if len(sources) != 1:
-            raise ValueError("too many sources")
+        if len(sources) == 0:
+            raise ValueError("too few sources")
 
         source = sources[0]
 
