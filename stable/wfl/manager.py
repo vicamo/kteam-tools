@@ -11,7 +11,7 @@ import yaml
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 
-from .errors                            import WorkflowCrankError
+from .errors                            import WorkflowCrankError, WorkflowCorruptError
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
@@ -124,12 +124,16 @@ class WorkflowManager():
 
         return status.get(bugid, {})
 
-    def status_set(s, bugid, summary=False, modified=None):
+    def status_set(s, bugid, summary=False, update=False, modified=None):
         with s.lock_status():
             status = s.status_load()
             # If we supply no summary assume we want it unchanged.
             if summary is False:
                 summary = status.get(bugid)
+            if update is not False:
+                if summary is None:
+                    summary = {}
+                summary.update(update)
             if summary is not None:
                 # Pull forward persistent swm related state.
                 manager = summary['manager'] = status.get(bugid, {}).get('manager', {})
@@ -644,6 +648,15 @@ class WorkflowManager():
                 status = bug.status_summary()
                 bug.save()
                 s.status_set(bugid, status, modified=False)
+                bug.accept_new()
+
+        except WorkflowCorruptError as e:
+            modified = False
+            for l in e.args:
+                cerror(e.__class__.__name__ + ': ' + l)
+            if bug is not None:
+                critical = {'reason': {'crank-failure': 'Stalled -- ' + e.args[0]}}
+                s.status_set(bugid, update=critical, modified=False)
                 bug.accept_new()
 
         cleave('WorkflowManager.crank')

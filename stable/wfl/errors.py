@@ -45,3 +45,6 @@ class ErrorExit(ShankError):
 
 class WorkflowCrankError(ShankError):
     pass
+
+class WorkflowCorruptError(ShankError):
+    pass
