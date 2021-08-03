@@ -423,26 +423,26 @@ class SnapDebs:
                 #  Cancelling build
                 #  Cancelled build
 
-            if build.store_upload_status == 'Unscheduled':
-                status.add('UPLOAD-DISABLED')
+            if build.buildstate == 'Successfully built':
+                if build.store_upload_status == 'Unscheduled':
+                    status.add('UPLOAD-DISABLED')
 
-            elif build.store_upload_status == 'Pending':
-                status.add('UPLOAD-PENDING')
+                elif build.store_upload_status == 'Pending':
+                    status.add('UPLOAD-PENDING')
 
-            elif build.store_upload_status == 'Uploaded':
-                status.add('UPLOAD-COMPLETE')
+                elif build.store_upload_status == 'Uploaded':
+                    status.add('UPLOAD-COMPLETE')
 
-            else:
-                status.add('UPLOAD-FAILED')
-                # Anything else is a failure, currently:
-                #  Failed to upload
-                #  Failed to release to channels
+                else:
+                    status.add('UPLOAD-FAILED')
+                    # Anything else is a failure, currently:
+                    #  Failed to upload
+                    #  Failed to release to channels
 
         # Find the 'worst' state and report that for everything.
         for state in (
-                'BUILD-FAILED', 'UPLOAD-FAILED',                                     # Errors: earliest first
+                'BUILD-FAILED', 'UPLOAD-FAILED', 'UPLOAD-DISABLED',                  # Errors: earliest first
                 'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
-                'UPLOAD-DISABLED',
                 'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
                 'BUILD-MISSING'):
             if state in status:
