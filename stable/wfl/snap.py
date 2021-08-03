@@ -369,14 +369,19 @@ class SnapDebs:
         status.add('BUILD-MISSING')
         arches_seen = {}
 
-        # Assume we are incomplete if there are any build pending as we have no way
-        # to know which revision they will refer supply for once built.
+        # Assume we are incomplete if there are any build-requests pending.
+        if len(lp_snap.pending_build_requests) != 0:
+            status.add('BUILD-PENDING')
+
+        # Assume we are incomplete if there are any build pending without a
+        # revision-id as we have no way to know which revision they will refer
+        # supply for once built.
         for build in lp_snap.pending_builds:
             cinfo("snap build pending: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
-            arch_tag = build.arch_tag
-            arches_seen[arch_tag] = True
-
-            status.add('BUILD-PENDING')
+            if build.revision_id is None:
+                arch_tag = build.arch_tag
+                arches_seen[arch_tag] = True
+                status.add('BUILD-PENDING')
 
         for build in lp_snap.builds:
             cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
