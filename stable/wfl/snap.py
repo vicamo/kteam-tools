@@ -418,9 +418,10 @@ class SnapDebs:
                 #  Cancelling build
                 #  Cancelled build
 
-            if build.store_upload_status in (
-                    'Pending',
-                    'Unscheduled'):
+            if build.store_upload_status == 'Unscheduled':
+                status.add('UPLOAD-DISABLED')
+
+            elif build.store_upload_status == 'Pending':
                 status.add('UPLOAD-PENDING')
 
             elif build.store_upload_status == 'Uploaded':
@@ -436,6 +437,7 @@ class SnapDebs:
         for state in (
                 'BUILD-FAILED', 'UPLOAD-FAILED',                                     # Errors: earliest first
                 'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
+                'UPLOAD-DISABLED',
                 'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
                 'BUILD-MISSING'):
             if state in status:
