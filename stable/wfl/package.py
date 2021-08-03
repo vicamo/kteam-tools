@@ -424,7 +424,7 @@ class Package():
 
             # Cache any positive version matches.
             if version:
-                s.bug.bprops.setdefault('versions', {})[pkg] = version
+                s.bug.bprops.setdefault('versions', {'source': s.bug.version})[pkg] = version
 
         return version
 
