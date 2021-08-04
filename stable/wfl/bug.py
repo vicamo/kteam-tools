@@ -8,7 +8,7 @@ from ktl.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
 from ktl.shanky                         import send_to_shankbot
-from .errors                            import ShankError, WorkflowCrankError
+from .errors                            import ShankError, WorkflowCrankError, WorkflowCorruptError
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
 from .task                              import WorkflowBugTask, WorkflowBugTaskSynPersistent, WorkflowBugTaskSynPreparePackages
@@ -78,6 +78,7 @@ class WorkflowBug():
         s.sc = SruCycle() if sru_cycle is None else sru_cycle
         s.manager = manager
 
+        s.error = None
         s.title = s.lpbug.title
         s._tags = None
         s.bprops = s.load_bug_properties()
@@ -93,6 +94,7 @@ class WorkflowBug():
         s._target_trackers = None
         s.debs = None
         s.snap = None
+        s.tasks_by_name = {}
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -103,6 +105,11 @@ class WorkflowBug():
 
         # If this tracker is_closed drop out quietly and quickly.
         if s.is_gone:
+            return
+
+        # Early error, blow this joint.
+        if s.error is not None:
+            s.is_crankable = False
             return
 
         # Instantiate this variant.
@@ -119,23 +126,24 @@ class WorkflowBug():
                     s.snap = None
         # XXX: should be a VariantError or something.
         except (PackageError, SnapError) as e:
-            # Report why we are not valid.
-            for l in e.args:
-                cinfo(l, 'red')
-            s.reasons['overall'] = e.args[0]
-            s.is_valid = False
             s.debs = None
+            s.error = WorkflowCrankError(e.args[0])
 
         # If we have no series/package/source by now we are dead in the
         # water kill this bug hard.
         if s.name is None:
-            raise WorkflowBugError('Package not identified from title')
-        if s.series is None:
-            raise WorkflowBugError('Series not identified from tags')
-        if s.source is None:
-            cerror("Source not found in kernel-series")
-            s.is_valid = False
+            s.error = WorkflowCrankError('Package not identified from title')
+        elif s.series is None:
+            s.error = WorkflowCrankError('Series not identified from tags')
+        elif s.source is None:
+            s.error = WorkflowCrankError('Source not found in kernel-series')
+
+        # Primary data consistency issue, out of here; caller will raise
+        # error when it is convienient.
+        if s.error is not None:
+            s.is_crankable = False
             return
+
         s.is_development_series = s.source.series.development
         s.is_development = s.source.development or s.sru_cycle[0] == 'd'
 
@@ -460,9 +468,10 @@ class WorkflowBug():
                 retval = yaml.safe_load(buf)
                 if retval is None:
                     retval = {}
-            except:
-                cinfo('Exception thrown trying to load bug properties', 'red')
+            except Exception as e:
                 retval = {}
+                error = str(e).split('\n')[0]
+                s.error = WorkflowCorruptError('failed to load swm-properties -- {}'.format(error))
 
         cleave(s.__class__.__name__ + '.load_bug_properties')
         return retval
