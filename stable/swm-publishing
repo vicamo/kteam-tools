@@ -654,6 +654,24 @@ class MonitorSwmStatusMonitor:
         print(tag, "expected={} current={} change={}".format(status, binary.status, binary.status != status))
         return binary.status != status
 
+    def tracker_modified(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        watch = monitor.get('watch')
+        watch_data = self.ss.trackers.get(watch, {})
+
+        bug_scanned = bug_data.get('manager', {}).get('time-scanned')
+        watch_modified = watch_data.get('manager', {}).get('time-modified')
+
+        if bug_scanned is None:
+            print(tag, "tracker has no time-scanned change=True")
+            return True
+        if watch_modified is None:
+            print(tag, "watch has no time-modified change=True")
+            return True
+
+        print(tag, "time_floor={} time_current={} change={}".format(watch_modified, bug_scanned, (bug_scanned < watch_modified)))
+        return bug_scanned < watch_modified
+
     def changed(self):
         changed = set()
 
@@ -673,6 +691,7 @@ class MonitorSwmStatusMonitor:
                     'launchpad-build':      self.launchpad_build,
                     'launchpad-upload':     self.launchpad_upload,
                     'launchpad-binary':     self.launchpad_binary,
+                    'tracker-modified':     self.tracker_modified,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
                     changed.add(bug_id)
