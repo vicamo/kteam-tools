@@ -108,6 +108,8 @@ class PromoteFromTo(Promoter):
                     break
             if not clear and not s._kernel_unblock_ppa():
                 s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(pocket_dest)
+                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=30),
+                        '{}:{} waiting for {} to become clear'.format(s.bug.series, s.bug.name, pocket_dest))
                 break
 
             older = s.bug.debs.older_tracker_in_proposed
