@@ -436,9 +436,8 @@
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: true
-            backport: true
-            #derived-from: [ '21.10', 'linux' ]
-            derived-from: [ '21.04', 'linux-aws' ]
+            backport: false
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
