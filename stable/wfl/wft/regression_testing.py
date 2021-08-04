@@ -162,6 +162,7 @@ class RegressionTesting(TaskHandler):
                     'noprov': 'Incomplete',
                     'failed': 'Incomplete',
                     'passed': 'Fix Released',
+                    'hinted': 'Fix Released',
                     'incomplete': 'In Progress',
                 }.get(result, 'In Progress')
             if s.task.status != task_status:
@@ -270,6 +271,7 @@ class BootTesting(TaskHandler):
                     'noprov': 'Incomplete',
                     'failed': 'Incomplete',
                     'passed': 'Fix Released',
+                    'hinted': 'Fix Released',
                     'incomplete': 'In Progress',
                 }.get(result, 'In Progress')
             if s.task.status != task_status:
