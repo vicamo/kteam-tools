@@ -1596,13 +1596,13 @@ class Package():
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
             if tracker_nr == my_id:
-                return False
+                return None
 
             # If we find we have an older cycle than the current entry we are older
             # than it.  This only can occur when we are new and have not yet saved
             # a single status.
             if my_cycle_key < tracker_data.get('cycle', '-'):
-                return False
+                return None
 
             # Consider if this is a blocker if it promote-to-proposed is not
             # Fix Released.
@@ -1610,9 +1610,9 @@ class Package():
             ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
             if ptp_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
-                return True
+                return tracker_nr
 
-        return False
+        return None
 
     # older_tracker_in_proposed
     #
@@ -1625,7 +1625,7 @@ class Package():
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
             if tracker_nr == str(s.bug.lpbug.id):
-                return False
+                return None
             # Consider if this is a blocker if it promote-to-proposed is
             # Fix Released and promote-to-updates/release is not Fix Released.
             cinfo("    considering {}".format(tracker_nr))
@@ -1635,9 +1635,9 @@ class Package():
                 ptu_status = tracker_data.get('task', {}).get('promote-to-release', {}).get('status', 'Invalid')
             if ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} plus promote-to-{{updates,release}} {} considered blocking".format(ptp_status, ptu_status))
-                return True
+                return tracker_nr
 
-        return False
+        return None
 
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """

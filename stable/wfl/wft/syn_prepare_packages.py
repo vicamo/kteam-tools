@@ -56,11 +56,12 @@ class SynPreparePackages(TaskHandler):
 
         status = s.task.status
         if status == 'New':
-            if s.bug.debs.older_tracker_in_ppa:
+            older = s.bug.debs.older_tracker_in_ppa
+            if older is not None:
                 s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
-                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=30),
-                    '{}:{} polling previous cycle tracker'.format(
-                    s.bug.series, s.bug.name))
+                s.bug.monitor_add({
+                    "type": "tracker-modified",
+                    "watch": str(older)})
 
             elif s._trello_block_source():
                 s.task.reason = 'Stalled -- blocked on SRU board'

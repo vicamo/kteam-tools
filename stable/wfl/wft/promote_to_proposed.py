@@ -110,8 +110,12 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(pocket_dest)
                 break
 
-            if s.bug.debs.older_tracker_in_proposed:
+            older = s.bug.debs.older_tracker_in_proposed
+            if older is not None:
                 s.task.reason = 'Stalled -- tracker for earlier spin still active in Proposed'
+                s.bug.monitor_add({
+                    "type": "tracker-modified",
+                    "watch": str(older)})
                 break
 
             if s._kernel_block_ppa():
@@ -148,7 +152,7 @@ class PromoteFromTo(Promoter):
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
-            if s.bug.debs.older_tracker_in_proposed:
+            if s.bug.debs.older_tracker_in_proposed is not None:
                 cinfo('            A previous spin tracker is active in proposed pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s._cycle_hold():
