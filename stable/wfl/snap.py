@@ -154,7 +154,7 @@ class SnapStore:
 
                     date_published = datetime.strptime(released_at,
                         "%Y-%m-%dT%H:%M:%S.%f%z")
-                    #print(date_published, '>', self.last_date)
+                    cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(data[key]['released-at'], date_published, last_published))
                     if last_published is None or date_published > last_published:
                         last_published = date_published
 
