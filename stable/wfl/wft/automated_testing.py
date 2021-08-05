@@ -143,11 +143,15 @@ class AutomatedTesting(TaskHandler):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
-    # _status_check
-    #
-    def _status_check(s):
-        center(s.__class__.__name__ + '._status_check')
+    def _status_check_payload(s):
         retval = False
+
+        promote_status = s.bug.task_status('promote-to-updates')
+        if promote_status == 'Invalid':
+            promote_status = s.bug.task_status('promote-to-release')
+        if promote_status == 'Fix Released':
+            cinfo('kernels promoted successfully from Proposed', 'green')
+            return retval
 
         present = s.bug.debs.all_built_and_in_pocket('Proposed')
         if not present:
@@ -186,6 +190,15 @@ class AutomatedTesting(TaskHandler):
                 #"source": s.bug.name,
                 #"version": s.bug.version,
                 "status": result.status})
+
+        return retval
+
+    # _status_check
+    #
+    def _status_check(s):
+        center(s.__class__.__name__ + '._status_check')
+
+        retval = s._status_check_payload()
 
         if s.task.status == 'Fix Released':
             pass
