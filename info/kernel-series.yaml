@@ -435,7 +435,8 @@
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: true
+            supported: false
+            development: true
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
