@@ -78,7 +78,9 @@ class SnapStore:
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
-                response = json.loads(resp.read().decode('utf-8'))
+                raw_data = resp.read().decode('utf-8')
+                cinfo("SNAP JSON: {}".format(raw_data))
+                response = json.loads(raw_data)
                 cdebug(response)
                 for channel_rec in response['channel-map']:
                     channel = (channel_rec['channel']['architecture'],
