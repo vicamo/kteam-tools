@@ -213,6 +213,13 @@ class VerificationTesting(TaskHandler):
     def _status_check_payload(s):
         retval = False
 
+        promote_status = s.bug.task_status('promote-to-updates')
+        if promote_status == 'Invalid':
+            promote_status = s.bug.task_status('promote-to-release')
+        if promote_status == 'Fix Released':
+            cinfo('kernels promoted successfully from Proposed', 'green')
+            return retval
+
         present = s.bug.debs.all_built_and_in_pocket('Proposed')
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
