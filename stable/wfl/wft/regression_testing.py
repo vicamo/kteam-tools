@@ -228,11 +228,12 @@ class BootTesting(TaskHandler):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
-    # _status_check
-    #
-    def _status_check(s):
-        center(s.__class__.__name__ + '._status_check')
+    def _status_check_payload(s):
         retval = False
+
+        if s.bug.task_status('promote-to-proposed') == 'Fix Released':
+            cinfo('kernels promoted successfully from the PPA', 'green')
+            return retval
 
         present = s.bug.debs.all_built_and_in_pocket('ppa')
         if not present:
@@ -286,6 +287,15 @@ class BootTesting(TaskHandler):
                 #"version": s.bug.version,
                 "op": "boot",
                 "status": result})
+
+        return retval
+
+    # _status_check
+    #
+    def _status_check(s):
+        center(s.__class__.__name__ + '._status_check')
+
+        retval = s._status_check_payload()
 
         if s.task.status == 'Fix Released':
             pass
