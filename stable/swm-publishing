@@ -596,6 +596,7 @@ class MonitorLaunchpadQueues:
                     self.source_packages["{}:{}".format(series.codename, package.name)] = source.name
 
     last_date = MonitorStoreAttr(default=datetime.now(timezone.utc))
+    last_announce = MonitorStoreAttr(default=[])
 
     def changed(self):
         start_date = self.last_date #- timedelta(hours=1)
@@ -608,29 +609,48 @@ class MonitorLaunchpadQueues:
                 continue
             series_lp = self.lp.distributions[self.distro].getSeries(name_or_version=series.name)
             for status in ('New', 'Unapproved'):
-                for upload in series_lp.getPackageUploads(created_since_date=start_date, status=status):
+                for upload in series_lp.getPackageUploads(status=status):
+                    date_created = upload.date_created
+                    if date_created > self.last_date:
+                        self.last_date = date_created
+
                     package_name = upload.package_name
                     # If we have no package name this is likely a signing block.
                     if package_name is None and upload.display_arches in ('uefi', 'signing'):
                         package_name = upload.display_name.split('_')[0]
-                    print("QUEUE", upload, package_name, upload.status, upload.date_created)
+
                     package_key = "{}:{}".format(series.codename, package_name)
-                    if upload.date_created > self.last_date:
-                        self.last_date = upload.date_created
                     if package_key not in self.source_packages:
                         continue
-                    source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
-                    if source_key in changed:
-                        continue
-                    changed.add(source_key)
-                    notices.append("{} {} on {} queue for {}".format(series.codename, package_name, status, upload.pocket))
+
+                    print("QUEUE", upload, package_name, status, date_created)
+
+                    # If this is new to the queue then trigger it.
+                    if date_created > start_date:
+                        source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
+                        changed.add(source_key)
+
+                    # Anything on the queue is interesting for summary notification.
+                    notices.append([status, series.codename, upload.pocket, package_name])
                 sys.stdout.flush()
 
-        if len(notices) > 0:
+        notices = sorted(notices)
+        if notices != self.last_announce:
+            self.last_announce = notices
+            msgs = ["Queues:"]
+            if len(notices) == 0:
+                msgs.append("--empty--")
+            else:
+                summary = {}
+                for status, series_name, pocket, package_name in notices:
+                    summary[(series_name, status)] = summary.get((series_name, status), 0) + 1
+                for series_name, status in sorted(summary):
+                    msgs.append("{}:{}={}".format(status, series_name, summary[(series_name, status)]))
+            notice = ' '.join(msgs)
+
             announce = Announce()
-            for notice in notices:
-                print("ANNOUNCE", notice)
-                announce.send('swm-queued-item', notice)
+            print("ANNOUNCE", notice)
+            announce.send('swm-queued-item', notice)
 
         return changed
 
