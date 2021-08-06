@@ -17,7 +17,7 @@ class UpdateSnap():
     def __init__(self, pocket='proposed', no_tag=False, dry_run=False):
         self.ks = KernelSeries()
         self.scy_file_name = "snapcraft.yaml"
-        self.krn_file_name = "kernel.yaml"
+        self.krn_file_name = "kernel-info.yaml"
         self.no_tag = no_tag
         self.dry_run = dry_run
         self.scy = None
