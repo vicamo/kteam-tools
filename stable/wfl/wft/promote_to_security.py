@@ -92,6 +92,9 @@ class PromoteToSecurity(Promoter):
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
+            # Record what is missing as we move to Confirmed.
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta('Updates', 'Security')
+
             s.task.status = 'Confirmed'
             retval = True
             break
