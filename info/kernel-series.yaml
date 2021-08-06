@@ -467,10 +467,10 @@
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: true
-            backport: true
-            #derived-from: [ '21.10', 'linux' ]
-            derived-from: [ '21.04', 'linux-azure' ]
+            supported: false
+            development: true
+            backport: false
+            derived-from: [ '21.10', 'linux' ]
             swm:
                 deployment-blackout: &swm-azure-blackout
                     - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
