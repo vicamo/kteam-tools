@@ -23,12 +23,67 @@
         function handleResponse(e) {
             if ((e.target.readyState == XMLHttpRequest.DONE) && (e.target.status == 200)) {
                 document.getElementById("target").innerHTML = e.target.responseText;
+                restoreAll()
+                selectAll()
             }
         }
 
+        var selected = {}
+        var limits = []
+
         function main() {
+            const params = new URLSearchParams(window.location.search);
+            for (const thing of limits) {
+                defaultOne(params, thing, 'all')
+            }
+            reload();
+        }
+
+        function reload() {
             request_html();
-            t = setTimeout("main()", 1000 * 60);
+            t = setTimeout("reload()", 1000 * 60);
+        }
+
+        function defaultOne(params, thing, fallback) {
+            selected[thing] = params.get(thing)
+            if (selected[thing] == null) {
+                selected[thing] = fallback
+            }
+        }
+
+        function selectAll() {
+            for (const thing of limits) {
+                console.log(`${thing}`)
+                select_element = document.getElementById("limit-" + thing)
+                selected[thing] = select_element.value
+                console.log(`${thing} ${selected[thing]}`)
+            }
+
+            document.querySelectorAll('.entry-any').forEach(x => {
+                    keep = true
+                    for (const thing of limits) {
+                        owner_class = thing + '-' + selected[thing]
+                        if (owner_class != thing + '-all' && !x.classList.contains(owner_class)) {
+                            keep = false
+                        }
+                    }
+                    if (keep) {
+                        x.style.display = "table-row";
+                    } else {
+                        x.style.display = "none";
+                    }
+                })
+        }
+
+        function restoreOne(thing) {
+            select_element = document.getElementById("limit-" + thing)
+            select_element.value = selected[thing]
+        }
+
+        function restoreAll() {
+            for (const thing of limits) {
+                restoreOne(thing)
+            }
         }
 
         window.onload = main;

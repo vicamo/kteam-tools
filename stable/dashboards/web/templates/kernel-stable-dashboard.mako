@@ -384,9 +384,11 @@ for bid in sorted(data['swm']):
     status_list = __status_bites(b, attrs)
     first = True
     #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
+    row_class = ['entry-any']
     master_class = 'master' if 'master-bug' not in b else 'derivative'
+
     for status in status_list:
-        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class}
+        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
         if first:
             status_row['bug'] = bid
             status_row['version'] = version
@@ -448,6 +450,10 @@ for bid in sorted(data['swm']):
                                     <table width="100%"> <tr><td><h3><a href="http://people.canonical.com/~kernel/reports/sru-report.html">SRUs</a></h3></td></tr> <tr><td><hr /></td></tr> </table>
                                     -->
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
+                                    <tr><td>
+                                    </td></tr>
+
+                                    <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <%
                                         releases = data['releases']
                                         releases['00.00'] = 'unknown'
@@ -488,7 +494,7 @@ for bid in sorted(data['swm']):
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
                                                         %>
-                                                        <tr style="line-height: 100%;${row_style}">
+                                                        <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>
