@@ -668,7 +668,7 @@
                 flavours:
                     realtime:
                         arches: ['amd64', 'arm64']        # test system arch names
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
             routing: stable-drivers
