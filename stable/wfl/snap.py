@@ -51,12 +51,12 @@ class SnapStore:
         :param bug: WorkflowBug object
         """
         s.snap = snap
-        s._versions = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
+        s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
         s.secrets = Secrets().get('snaps')
 
-    # channel_map
+    # channel_map_lookup
     #
-    def channel_map(s):
+    def channel_map_lookup(s):
         """
         Query the snap store URL to get the information about the kernel snap
         publishing.
@@ -115,28 +115,26 @@ class SnapStore:
                                  (type(e), str(e)))
         return result
 
+    def channel_map(s):
+        if s._channel_map is None:
+            s._channel_map = s.channel_map_lookup()
+        return s._channel_map
+
     # channel_version
     #
     def channel_version(s, arch, channel):
         key = (arch, channel)
-        if s._versions is None:
-            s._versions = s.channel_map()
-        return s._versions.get(key, {}).get('version', None)
+        return s.channel_map().get(key, {}).get('version', None)
 
     # channel_revision
     #
     def channel_revision(s, arch, channel):
         key = (arch, channel)
-        if s._versions is None:
-            s._versions[key] = s.channel_map()
-        return s._versions.get(key, {}).get('revision', None)
+        return s.channel_map().get(key, {}).get('revision', None)
 
     @property
     def last_published(self):
-        try:
-            data = self.channel_map()
-        except SnapStoreError as e:
-            return None
+        data = self.channel_map()
 
         last_published = None
         for arch, tracks in self.snap.publish_to.items():
