@@ -621,6 +621,8 @@ class WorkflowBug():
             return None
 
         # Add the current tasks status information.
+        owner = None
+        owner_pp = None
         task = status.setdefault('task', {})
         for taskname in s.tasks_by_name:
             task[taskname] = {
@@ -629,12 +631,26 @@ class WorkflowBug():
             assignee = s.tasks_by_name[taskname].assignee
             if assignee is not None:
                 task[taskname]['assignee'] = assignee.username
+                # Record the overall owner if we have one.
+                if taskname == 'kernel-sru-workflow':
+                    owner = assignee.username
+                # XXX: lpltk does not expose `is_team` so just bodge it.
+                elif taskname == 'prepare-package' and assignee.username != 'canonical-kernel-team':
+                    owner_pp = assignee.username
 
             # XXX: ownership of tasks should be more obvious, but this is
             # only needed while we have combo bugs in reality.
             if (taskname.startswith('snap-') and s.snap is not None and
                 s.snap.name != s.name):
                 task[taskname]['target'] = s.snap.name
+
+        # If prepare-package has an owner and the tracker does not, default
+        # to that.
+        if owner is None and owner_pp is not None:
+            owner = owner_pp
+
+        if owner is not None:
+            status['owner'] = owner
 
         if s.refresh[0] is not None:
             status['refresh'] = s.refresh
