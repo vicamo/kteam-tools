@@ -393,6 +393,34 @@ for bid in sorted(data['swm']):
     if row_owner != 'unassigned':
         owners[row_owner] = row_class
 
+    sru_review_status = __task_status(b, 'sru-review')
+    ptp_status = __task_status(b, 'promote-to-proposed')
+    if (sru_review_status not in ('n/a', 'Invalid', 'New', 'Fix Released') or
+            ptp_status not in ('n/a', 'Invalid', 'New', 'Fix Released')):
+        row_class.append('phase-reviews')
+
+    snap_tasks = ['snap-prepare']
+    for risk in ('edge', 'beta', 'candidate', 'stable'):
+        snap_tasks.append('snap-release-to-' + risk)
+    for snap_task in snap_tasks:
+        status = __task_status(b, snap_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-snap-promotions')
+            break
+
+    for testing_task in ('boot-testing', 'automated-testing',
+            'certification-testing', 'regression-testing', 'verification-testing'):
+        status = __task_status(b, testing_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-testing')
+            break
+
+    for testing_task in ('boot-testing', 'automated-testing',
+            'certification-testing', 'regression-testing', 'verification-testing'):
+        status = __task_status(b, testing_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-' + testing_task)
+
     for status in status_list:
         status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
         if first:
@@ -465,6 +493,19 @@ for bid in sorted(data['swm']):
                                         <option value="${owner}">${owner}</option>
                                     % endfor
                                         <option value="unassigned">Unassigned</option>
+                                    </select>
+                                    &nbsp;
+                                    <label for="limit-phase">Phase:</lable>
+                                    <select name="limit-phase" id="limit-phase" onchange=selectAll() style="font-size: 0.8em">
+                                        <option value="all">All</option>
+                                        <option value="reviews">reviews</option>
+                                        <option value="snap-promotions">snap-promotions</option>
+                                        <option value="testing">testing</option>
+                                        <option value="boot-testing">&nbsp;&nbsp;boot-testing</option>
+                                        <option value="automated-testing">&nbsp;&nbsp;automated-testing</option>
+                                        <option value="certification-testing">&nbsp;&nbsp;certification-testing</option>
+                                        <option value="regression-testing">&nbsp;&nbsp;regression-testing</option>
+                                        <option value="verification-testing">&nbsp;&nbsp;verification-testing</option>
                                     </select>
                                     </td></tr>
 
