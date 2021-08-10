@@ -332,6 +332,7 @@ import urllib.parse
 
 cycles = {}
 cadence = {}
+owners = {}
 for bid in sorted(data['swm']):
     b = data['swm'][bid]
 
@@ -386,6 +387,11 @@ for bid in sorted(data['swm']):
     #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
     row_class = ['entry-any']
     master_class = 'master' if 'master-bug' not in b else 'derivative'
+
+    row_owner = b.get('owner', 'unassigned')
+    row_class.append('owner-' + row_owner)
+    if row_owner != 'unassigned':
+        owners[row_owner] = row_class
 
     for status in status_list:
         status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
@@ -451,6 +457,15 @@ for bid in sorted(data['swm']):
                                     -->
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <tr><td>
+                                    <label for="limit-owner">Owner:</lable>
+                                    <select name="limit-owner" id="limit-owner" onchange=selectAll() style="font-size: 0.8em">
+                                        <option value="all">All</option>
+                                    % for owner in sorted(owners):
+                                        <!-- <button class="toggle-pressed" onclick="toggleOwners('${owner}')" id="toggle-${owner}">${owner}</button> -->
+                                        <option value="${owner}">${owner}</option>
+                                    % endfor
+                                        <option value="unassigned">Unassigned</option>
+                                    </select>
                                     </td></tr>
 
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
