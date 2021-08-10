@@ -12,7 +12,7 @@ the cranky tools required to produce all the Canonical kernels.
 
 You will need to install/update the following packages:
 ```
-sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python3-launchpadlib wget schroot
+sudo apt-get install -y git git-email debhelper gawk ubuntu-dev-tools build-essential devscripts fakeroot libncurses5-dev ccache kernel-wedge makedumpfile xmlto docbook-utils transfig sharutils python3-launchpadlib wget schroot snapcraft
 ```
 
 Read and follow the directions in ../../README.deploy.
