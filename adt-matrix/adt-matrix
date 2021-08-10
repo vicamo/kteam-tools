@@ -876,18 +876,14 @@ class AutoPackageTest(object):
         status_class = status
         cell = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
 
-        triggers = archive = None
-
-        # XXX: there is currently no way to specify the PPA for the retry.
+        triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+        # XXX: if we specify a test package trigger this is assumed as -proposed.
+        #if lversion and version != lversion:
+        #    pver = pkg + '/' + lversion
+        #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
+        archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
+        retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
         if status != 'GOOD' and show_retry:
-            triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
-            # XXX: if we specify a test package trigger this is assumed as -proposed.
-            #if lversion and version != lversion:
-            #    pver = pkg + '/' + lversion
-            #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
-            archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
-
-            retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
             cell += '&nbsp;<a href="{}" style="text-decoration: none;">&#x21bb;</a>'.format(retry_url_cell)
         cell += '</span>'
 
