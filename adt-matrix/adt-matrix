@@ -887,10 +887,11 @@ class AutoPackageTest(object):
             #    triggers.append(pver.replace('/', '%2F').replace('+', '%2B'))
             archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
 
-            cell += '&nbsp;<a href="{5}?release={0}&trigger={1}&arch={2}&package={3}{4}" style="text-decoration: none;">&#x21bb;</a>'.format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
+            retry_url_cell = "{5}?release={0}&trigger={1}&arch={2}&package={3}{4}".format(self.series, '&trigger='.join(triggers), arch, pkg, archive, retry_url)
+            cell += '&nbsp;<a href="{}" style="text-decoration: none;">&#x21bb;</a>'.format(retry_url_cell)
         cell += '</span>'
 
-        return cell, retry_url, annot
+        return cell, retry_url_cell, annot
 
     # XXX: this is really a separate results object ...
     def matrix(self, results, limit=None, limit_url=None):
@@ -991,7 +992,7 @@ wide {{
                     width = 1 if ver == verlist[-1] else 2
                     if pkg in results[ver] and arch in results[ver][pkg]:
                         #width = 1 if (arch + '+') in results[ver][pkg] else 2
-                        cell, retry_url, annot = self.format_cell(results[ver][pkg][arch], arch, pkg, width, ver == self.trigger)
+                        cell, retry_url_cell, annot = self.format_cell(results[ver][pkg][arch], arch, pkg, width, ver == self.trigger)
                         page += cell
                         if arch + '+' in results[ver][pkg]:
                             cell, _, _ = self.format_cell(results[ver][pkg][arch + '+'], arch, pkg, 1, False)
@@ -1009,7 +1010,7 @@ wide {{
                             'autopackage_package_test_link': autopackage_pkg_test_link,
                             'arch': arch,
                             'arch_link': simple_arch_link,
-                            'retry_url': retry_url,
+                            'retry_url': retry_url_cell,
                             'annotation': annotation,
                             'status_link': status_link
                         }
