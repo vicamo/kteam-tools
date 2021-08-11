@@ -69,7 +69,7 @@ class AutomatedTesting(TaskHandler):
             # Check main package
             state = s.check_testing_regression(s.bug.name, s.bug.version, data)
             if not present:
-                if s.task.status not in ('Incomplete', 'Fix Released'):
+                if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
                     cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
                     s.task.status = 'Incomplete'
                     retval = True

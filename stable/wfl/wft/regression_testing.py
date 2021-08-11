@@ -53,7 +53,7 @@ class RegressionTesting(TaskHandler):
 
         present = s.bug.debs.all_built_and_in_pocket('Proposed')
         if not present:
-            if s.task.status not in ('Incomplete', 'Fix Released'):
+            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
                 cinfo('Kernels no longer present in Proposed moving Incomplete', 'yellow')
                 s.task.status = 'Incomplete'
                 retval = True
