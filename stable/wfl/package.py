@@ -283,7 +283,8 @@ class PackageBuild:
                         'last-scanned': s.bug.tracker_instantiated})
 
             # Accumulate the latest publication time.
-            if binary.date_published is not None and published < binary.date_published:
+            if published is None or (binary.date_published is not None and
+                    published < binary.date_published):
                 published = binary.date_published
 
             # Accumulate the architectures we have publications for.
