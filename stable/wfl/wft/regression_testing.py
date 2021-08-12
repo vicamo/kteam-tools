@@ -1,9 +1,15 @@
 import json
 from urllib.request import urlopen
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
+from wfl.bug                                    import WorkflowBugTaskError
+from wfl.errors                                 import ShankError
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
+
+
+class RegressionTestingResultsError(ShankError):
+    pass
 
 
 class RegressionTestingResultsCycle:
@@ -21,21 +27,31 @@ class RegressionTestingResultsCycle:
 
         if data is None:
             try:
-                response = urlopen(url)
+                response = urlopen(url, timeout=30)
                 data = response.read()
             except HTTPError as e:
                 if e.code != 404:
                     raise e
                 data = None
-        if data is not None:
+            except URLError as e:
+                data = RegressionTestingResultsError("summarized-results fetch failure -- " + str(e.reason))
+
+        if isinstance(data, Exception):
+            self.data = data
+
+        elif data is not None:
             if not isinstance(data, str):
                 data = data.decode('utf-8')
             self.data = json.loads(data)
+
         else:
             self.data = {}
 
 
     def lookup_result(self, series, source, version, op):
+        if isinstance(self.data, Exception):
+            raise self.data
+
         cycle_data = self.data.get(self.cycle)
         if cycle_data is None:
             return None
@@ -160,19 +176,26 @@ class RegressionTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by rt testing.
         else:
-            result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
-            task_status = {
-                    None: 'Triaged',
-                    'noprov': 'Incomplete',
-                    'failed': 'Incomplete',
-                    'passed': 'Fix Released',
-                    'hinted': 'Fix Released',
-                    'incomplete': 'In Progress',
-                }.get(result, 'In Progress')
-            if s.task.status != task_status:
-                cinfo("RegressionTestingResults sru {} -> status {}".format(result, task_status))
-                s.task.status = task_status
-                retval = True
+            try:
+                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
+                task_status = {
+                        None: 'Triaged',
+                        'noprov': 'Incomplete',
+                        'failed': 'Incomplete',
+                        'passed': 'Fix Released',
+                        'hinted': 'Fix Released',
+                        'incomplete': 'In Progress',
+                    }.get(result, 'In Progress')
+                if s.task.status != task_status:
+                    cinfo("RegressionTestingResults sru {} -> status {}".format(result, task_status))
+                    s.task.status = task_status
+                    retval = True
+            except RegressionTestingResultsError as e:
+                s.bug.monitor_add({
+                    "type": "regression-testing",
+                    "op": "sru",
+                    "status": '--broken--'})
+                raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
                 #"cycle": s.bug.sru_cycle,
@@ -279,19 +302,26 @@ class BootTesting(TaskHandler):
                 s.bug.debs.send_boot_testing_requests()
                 s.bug.bprops['boot-testing-requested'] = True
 
-            result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
-            task_status = {
-                    None: 'Triaged',
-                    'noprov': 'Incomplete',
-                    'failed': 'Incomplete',
-                    'passed': 'Fix Released',
-                    'hinted': 'Fix Released',
-                    'incomplete': 'In Progress',
-                }.get(result, 'In Progress')
-            if s.task.status != task_status:
-                cinfo("RegressionTestingResults boot {} -> status {}".format(result, task_status))
-                s.task.status = task_status
-                retval = True
+            try:
+                result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
+                task_status = {
+                        None: 'Triaged',
+                        'noprov': 'Incomplete',
+                        'failed': 'Incomplete',
+                        'passed': 'Fix Released',
+                        'hinted': 'Fix Released',
+                        'incomplete': 'In Progress',
+                    }.get(result, 'In Progress')
+                if s.task.status != task_status:
+                    cinfo("RegressionTestingResults boot {} -> status {}".format(result, task_status))
+                    s.task.status = task_status
+                    retval = True
+            except RegressionTestingResultsError as e:
+                s.bug.monitor_add({
+                    "type": "regression-testing",
+                    "op": "boot",
+                    "status": '--broken--'})
+                raise WorkflowBugTaskError(str(e))
             s.bug.monitor_add({
                 "type": "regression-testing",
                 #"cycle": s.bug.sru_cycle,
