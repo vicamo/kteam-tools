@@ -32,7 +32,7 @@ from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
-from wfl.wft.regression_testing import RegressionTestingResults
+from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
 from wfl.wft.automated_testing import AutomatedTestingResults
 
 
@@ -510,7 +510,11 @@ class MonitorSwmStatusMonitor:
         op = monitor.get('op')
         existing = monitor.get('status')
 
-        current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
+        try:
+            current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
+        except RegressionTestingResultsError as e:
+            print("regression_testing: data missing ({}) change={}".format(str(e), False))
+            return False
         print("regression_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
 
