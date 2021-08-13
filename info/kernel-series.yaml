@@ -1830,7 +1830,8 @@
             swm:
                 kernel-testing: true
                 gke-releases:
-                    - '1.19'
+                    - '1.20'
+                    - '1.21'
                 nvidia-releases:
                     - 450
             testing:
@@ -3738,6 +3739,7 @@
                 gke-releases:
                     - '1.17'
                     - '1.18'
+                    - '1.19'
                 gke-nvidia-packages:
                     - gke-d1903-0-amd64
                 nvidia-releases:
