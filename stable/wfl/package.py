@@ -293,7 +293,9 @@ class PackageBuild:
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
 
         # If we find a build is now complete, record _where_ it was built.
-        if self.pocket == 'ppa' and self._data['built'] == True:
+        if ((self.pocket == 'ppa' or self.pocket.startswith('build')) and
+                self._data['built'] == True):
+            # NOTE: copy-proposed-kernel et al treat auto select build-private so just call this build.
             self.bug.bprops.setdefault('built', {})[self.dependent] = "build#{}".format(archive_num)
 
     def __getattr__(self, name):
@@ -347,6 +349,7 @@ class Package():
         if s.source is not None and s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
+                ('build-private', 'build-private'),
                 ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
                 ('as-proposed', 'as-proposed'),
@@ -417,6 +420,12 @@ class Package():
             if not package_package:
                 return None
 
+            # If the package is an ancillary package then if that package has a version
+            # then we should take it.
+            ancillary_for = s.ancillary_package_for(pkg)
+            if ancillary_for is not None:
+                return s.bug.bprops.get('versions', {}).get(ancillary_for)
+
             # Work out the package version form based on its type.
             if pkg == 'lbm':
                 version_lookup, version_sloppy = (s.bug.kernel + '-' + s.bug.abi, '.')
@@ -435,10 +444,30 @@ class Package():
                     package_package, version_lookup, version_sloppy, e))
 
             # Cache any positive version matches.
-            if version:
+            if version is not None:
                 s.bug.bprops.setdefault('versions', {'source': s.bug.version})[pkg] = version
 
         return version
+
+    # ancillary_package_for
+    #
+    def ancillary_package_for(self, pkg):
+        if pkg in ('lrg', 'lrs'):
+            return 'lrm'
+        return None
+
+    # signing_package_for
+    #
+    def signing_package_for(self, pkg):
+        return {
+                'lrs': 'lrm',
+                'signed': 'main',
+            }.get(pkg)
+
+    # adjunct_package
+    #
+    def adjunct_package(self, pkg):
+        return self.ancillary_package_for(pkg) == 'lrm'
 
     # __determine_build_status
     #
@@ -489,16 +518,21 @@ class Package():
                 cdebug('Development Package', 'cyan')
                 cdebug('')
                 scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Release')
+            s.scan_pockets = scan_pockets
 
             for pocket in scan_pockets:
-                if pocket not in s._routing:
+                pocket_from = pocket
+                if pocket == 'ppa' and s.adjunct_package(dep):
+                    pocket_from = 'build-private'
+
+                if pocket_from not in s._routing:
                     continue
-                if s._routing[pocket] is None:
-                    s.bug.overall_reason = "{} pocket routing archive specified but invalid {}".format(pocket, s.source)
+                if s._routing[pocket_from] is None:
+                    s.bug.overall_reason = "{} pocket routing archive specified but invalid {}".format(pocket_from, s.source)
                     cwarn(s.bug.overall_reason)
                     continue
 
-                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket, s._routing[pocket], s.pkgs[dep], version, abi, sloppy)
+                s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
@@ -589,6 +623,17 @@ class Package():
 
         return s.bug.bprops['packages']
 
+    # dependent_packages_for_pocket
+    #
+    def dependent_packages_for_pocket(self, pocket):
+        pkgs = []
+        for pkg in self.build_info:
+            if pkg == 'lrg' and pocket not in ('ppa', 'build-private', 'Signing'):
+                continue
+            pkgs.append(pkg)
+        cdebug("dependent_packages_for_pocket({})={}".format(pocket, pkgs))
+        return pkgs
+
     # distro_series
     #
     @property
@@ -630,6 +675,34 @@ class Package():
         cleave(s.__class__.__name__ + '.built_and_in_pocket ({})'.format(pkg_built))
         return pkg_built
 
+    # built_and_in_pocket
+    #
+    def built_and_in_pocket_or_after(s, pkg, pocket):
+        '''
+        Dependent package is fully built and in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.built_and_in_pocket_or_after')
+        found_start = False
+        for find_pocket in s.scan_pockets:
+            if find_pocket == pocket:
+                found_start = True
+            if not found_start:
+                continue
+
+            try:
+                pkg_built = s.srcs[pkg][find_pocket]['built']
+            except KeyError:
+                pkg_built = False
+
+            if pkg_built:
+                break
+
+        if not pkg_built:
+            cinfo('        {} is either not fully built yet or not in {} or after.'.format(pkg, pocket), 'red')
+
+        cleave(s.__class__.__name__ + '.built_and_in_pocket_or_after ({})'.format(pkg_built))
+        return pkg_built
+
     # all_in_pocket
     #
     def all_in_pocket(s, pocket):
@@ -639,7 +712,7 @@ class Package():
         center(s.__class__.__name__ + '.all_in_pocket')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             try:
                 pkg_seen = s.srcs[pkg][pocket]['status'] in s.__states_present
             except KeyError:
@@ -664,7 +737,7 @@ class Package():
         center(s.__class__.__name__ + '.all_built_and_in_pocket')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             try:
                 pkg_built = s.srcs[pkg][pocket]['built']
             except KeyError:
@@ -687,7 +760,7 @@ class Package():
         center(s.__class__.__name__ + '.all_built_in_src_dst')
         retval = True
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(dst):
             try:
                 pkg_built_src = s.srcs[pkg][src]['built']
             except KeyError:
@@ -715,18 +788,15 @@ class Package():
         center(s.__class__.__name__ + '.built_in_src_dst_delta')
         retval = []
 
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(dst):
             try:
                 pkg_built_src = s.srcs[pkg][src]['built']
             except KeyError:
                 pkg_built_src = False
-            try:
-                pkg_built_dst = s.srcs[pkg][dst]['built']
-            except KeyError:
-                pkg_built_dst = False
+            pkg_built_dst = s.built_and_in_pocket_or_after(pkg, dst)
 
             if pkg_built_src and not pkg_built_dst:
-                cinfo('        {} is in {} and not yet in {}.'.format(pkg, src, dst), 'red')
+                cinfo('        {} is in {} and not yet in {} or later.'.format(pkg, src, dst), 'red')
                 retval.append(pkg)
 
         cleave(s.__class__.__name__ + '.built_in_src_dst_delta ({})'.format(retval))
@@ -784,7 +854,7 @@ class Package():
         failures = []
         missing = 0
         sources = 0
-        for pkg in s.srcs:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             sources += 1
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
@@ -902,7 +972,7 @@ class Package():
             pocket = 'Updates'
 
         bi = s.build_info
-        for pkg in bi:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             if bi[pkg][pocket]['built'] is not True:
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
@@ -921,7 +991,7 @@ class Package():
         pocket = 'Security'
 
         bi = s.build_info
-        for pkg in bi:
+        for pkg in s.dependent_packages_for_pocket(pocket):
             if bi[pkg][pocket]['built'] is not True:
                 cinfo('            %s has not been released.' % (pkg), 'yellow')
                 retval = False
@@ -940,6 +1010,8 @@ class Package():
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
+            if s.ancillary_package_for(pkg) is not None:
+                continue
             if bi[pkg][pocket]['built'] is True:
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
@@ -949,7 +1021,7 @@ class Package():
 
     # pocket_clear
     #
-    def pocket_clear(s, pocket, pocket_next):
+    def pocket_clear(s, pocket, pockets_after):
         '''
         Check that the proposed pocket is either empty or contains the same version
         as found in -updates/-release.
@@ -957,14 +1029,29 @@ class Package():
         retval = True
 
         # Release/Updates maps based on development series.
-        if pocket_next == 'Release/Updates':
-            pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
+        pockets_srch = []
+        for pocket_next in pockets_after:
+            if pocket_next == 'Release/Updates':
+                pocket_next = 'Release' if s.bug.is_development_series else 'Updates'
+            pockets_srch.append(pocket_next)
 
         bi = s.build_info
         for pkg in bi:
-            if pocket not in bi[pkg] or pocket_next not in bi[pkg]:
+            if pocket not in bi[pkg]:
                 continue
-            if bi[pkg][pocket]['version'] not in (None, bi[pkg][pocket_next]['version']):
+            found = False
+            if bi[pkg][pocket]['version'] is None:
+                found = True
+            for pocket_next in pockets_srch:
+                if found:
+                    break
+                if pocket_next not in bi[pkg]:
+                    continue
+                if bi[pkg][pocket]['version'] == bi[pkg][pocket_next]['version']:
+                    found = True
+                if pkg not in s.dependent_packages_for_pocket(pocket_next):
+                    found = True
+            if not found:
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
 
@@ -1185,7 +1272,8 @@ class Package():
         mis_lst = []
         # Run the packages list for this source, do main first as we need to
         # check components against that.
-        for (pkg_type, pkg) in sorted(s.pkgs.items(), key=lambda a: (a[0] != 'main', a[0])):
+        for pkg_type in sorted(s.dependent_packages_for_pocket(pocket), key=lambda a: (a != 'main', a)):
+            pkg = s.pkgs[pkg_type]
             if pkg_type == 'main':
                 check_ver = s.version
             else:
@@ -1195,7 +1283,7 @@ class Package():
             if not ps:
                 if check_ver:
                     missing_pkg.append([pkg, check_ver])
-                elif 'linux-signed' in pkg:
+                elif pkg_type == 'signed':
                     missing_pkg.append([pkg, 'for version=%s' % (s.version)])
                 else:
                     missing_pkg.append([pkg, 'with ABI=%s' % (s.abi)])
@@ -1232,7 +1320,7 @@ class Package():
 
             # If we have a match:
             if match:
-                if pkg_type == 'lrm':
+                if pkg_type == 'lrm' or s.ancillary_package_for(pkg_type) == 'lrm':
                     if primary_src_component == 'main':
                         which_component = 'restricted'
                     else:

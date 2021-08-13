@@ -52,7 +52,7 @@ class PromoteToUpdates(Promoter):
 
             # There is no point in considering prerequisites before we are
             # at least in proposed.
-            if not s.bug.debs.all_in_pocket('Proposed'):
+            if not s.bug.debs.all_built_in_src_dst('Proposed', 'Updates'):
                 break
 
             # Note this will set appropriate reasons.
