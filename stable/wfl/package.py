@@ -1357,6 +1357,7 @@ class Package():
         #    bits.append(','.join(members) + ':' + state)
         for member in sorted(type_state, key=self.feeder_key):
             bits.append("{}:{}".format(member, type_state[member]))
+        cdebug("failures_to_text: {} -> {}".format(summary, bits))
         return ' '.join(bits)
 
     # creator
