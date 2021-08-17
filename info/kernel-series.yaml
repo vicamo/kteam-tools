@@ -1334,7 +1334,7 @@
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
                 linux-signed-ibm:
-                    type: meta
+                    type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
             supported: true
             derived-from: [ '20.04', 'linux' ]
