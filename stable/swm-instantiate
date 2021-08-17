@@ -151,7 +151,7 @@ class TrackerProduction:
 
         # Add the package/series nomination.
         if variant in ('debs', 'combo'):
-            cdebug("series/package task")
+            cdebug("series/package task ({}/{})".format(ks_source.series.codename, ks_source.name))
             lp_ubuntu = self.lp.projects['ubuntu']
             lp_series = lp_ubuntu.getSeries(name_or_version=ks_source.series.codename)
             lp_package = lp_series.getSourcePackage(name=ks_source.name)
@@ -159,9 +159,11 @@ class TrackerProduction:
             lp_task = None
             if lp_package is not None and lp_package.self_link not in lp_tasks:
                 try:
+                    cdebug("    adding: {}".format(lp_package.self_link))
                     lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
                 except BadRequest:
                     lp_package = lp_series.getSourcePackage(name='linux')
+                    cdebug("    failed, adding: {}".format(lp_package.self_link))
                     lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
 
             if lp_package is not None:
