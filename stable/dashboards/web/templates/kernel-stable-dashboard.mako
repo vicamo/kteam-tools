@@ -351,6 +351,7 @@ def __status_bites(bug, attrs):
 %>
 <%
 import re
+import urllib.parse
 
 cycles = {}
 cadence = {}
@@ -390,8 +391,8 @@ for bid in sorted(data['swm']):
     attrs = {}
     attrs['at:'] = 'http://people.canonical.com/~kernel/status/adt-matrix/{}-{}.html'.format(sn, package.replace('linux', 'linux-meta'))
     attrs['vt:'] = 'http://kernel.ubuntu.com/reports/sru-report.html#{}--{}'.format(sn, package)
-    attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
-    attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html'.format(cycle)
+    attrs['rt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:sru'.format(cycle, sn, package, urllib.parse.quote_plus(version))
+    attrs['bt:'] = 'http://10.246.75.167/{}/rtr-lvl1.html#{}:{}:{}:boot'.format(cycle, sn, package, urllib.parse.quote_plus(version))
 
     attrs['tooltip-at:'] = 'Automated Testing'
     attrs['tooltip-ct:'] = 'Certification Testing'
