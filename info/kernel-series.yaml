@@ -1580,7 +1580,7 @@
 
         linux-aws-5.8:
             routing: stable-drivers
-            variants: [ '--' ]
+            variants: []
             packages:
                 linux-aws-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.8-next']
@@ -1594,7 +1594,7 @@
                     type: lrg
                 linux-restricted-signatures-aws-5.8:
                     type: lrs
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
@@ -1608,7 +1608,7 @@
 
         linux-aws-5.11:
             routing: stable-drivers
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-aws-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.11-next']
