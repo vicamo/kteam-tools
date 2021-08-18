@@ -1796,7 +1796,7 @@
 
         linux-gcp-5.8:
             routing: stable-drivers
-            variants: [ '--' ]
+            variants: []
             packages:
                 linux-gcp-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.8-next']
@@ -1813,7 +1813,7 @@
                     type: lrg
                 linux-restricted-signatures-gcp-5.8:
                     type: lrs
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
@@ -1827,7 +1827,7 @@
 
         linux-gcp-5.11:
             routing: stable-drivers
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-gcp-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.11-next']
