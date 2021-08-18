@@ -204,8 +204,14 @@ class PromoteFromTo(Promoter):
                     break
 
                 # Check if packages were copied to the right pocket->component
-                #
-                (good, mis_lst) = s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', s.pocket_dest)
+                # Only do this if we have a main package, as we need a package
+                # as a key.
+                pp_status = s.bug.task_status('prepare-package')
+                if pp_status != 'Invalid':
+                    (good, mis_lst) = s.bug.debs.check_component_in_pocket('kernel-stable-Promote-to-proposed-end', s.pocket_dest)
+                else:
+                    good = True
+
                 # Not ready to check...
                 if good is None:
                     s.task.reason = 'Ongoing -- waiting for publication to complete to check components'
