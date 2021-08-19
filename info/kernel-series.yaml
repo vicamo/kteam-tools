@@ -2003,7 +2003,7 @@
                 linux-meta-riscv-5.8:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.8']
-            supported: true
+            supported: false
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.8' ]
             swm:
