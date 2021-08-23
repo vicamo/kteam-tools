@@ -1085,11 +1085,11 @@
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.13:
-            routing: stable-drivers
-            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
+            routing: prerelease-drivers
+            variants: [ '-hwe-20.04-edge-wip' ]
             packages:
                 linux-hwe-5.13:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13-next']
                 linux-meta-hwe-5.13:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.13']
