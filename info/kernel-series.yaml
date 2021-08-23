@@ -1098,7 +1098,7 @@
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'hwe-5.13']
                 linux-restricted-modules-hwe-5.13:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.13']
                 linux-restricted-generate-hwe-5.13:
                     type: lrg
                 linux-restricted-signatures-hwe-5.13:
