@@ -16,13 +16,13 @@
 	suppressfrom = true
 
 [url "git+ssh://<your-launchpad-id>@git.launchpad.net/"]
-        pushinsteadof = lp:
-        insteadof = lps:
-        insteadof = "git+ssh://git.launchpad.net"
+	pushinsteadof = lp:
+	insteadof = lps:
+	insteadof = "git+ssh://git.launchpad.net"
 
 [url "git+ssh://<your-launchpad-id>@git.launchpad.net/~canonical-kernel-esm/"]
-        insteadof = lp:~canonical-kernel-esm
-        insteadof = git://git.launchpad.net/~canonical-kernel-esm/
+	insteadof = lp:~canonical-kernel-esm
+	insteadof = git://git.launchpad.net/~canonical-kernel-esm/
 
 [url "git://git.launchpad.net/"]
-        insteadof = lp:
+	insteadof = lp:
