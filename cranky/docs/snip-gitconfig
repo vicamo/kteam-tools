@@ -17,6 +17,8 @@
 
 [url "git+ssh://<your-launchpad-id>@git.launchpad.net/"]
 	pushinsteadof = lp:
+	pushinsteadof = "git://git.launchpad.net/"
+	pushinsteadof = "https://git.launchpad.net/"
 	insteadof = lps:
 	insteadof = "git+ssh://git.launchpad.net"
 
