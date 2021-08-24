@@ -3153,7 +3153,7 @@
                         arm64: [ '18' ]
             supported: true
             derived-from: [ '18.04', 'linux' ]
-            invalid-tasks: [ 'regression-testing' ]
+            invalid-tasks: [ 'boot-testing', 'regression-testing' ]
             testing:
                 flavours:
                    snapdragon:
