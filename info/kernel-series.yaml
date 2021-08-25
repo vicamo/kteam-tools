@@ -1237,6 +1237,29 @@
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
+        linux-intel-5.13:
+            routing: prerelease
+            variants: [ '-wip' ]
+            packages:
+                linux-intel-5.13:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal', 'intel-5.13-next']
+                linux-meta-intel-5.13:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel/+git/focal', 'intel-5.13']
+                linux-signed-intel-5.13:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal', 'intel-5.13']
+            supported: false
+            development: true
+            derived-from: [ '20.04', 'linux-hwe-5.13' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-intel:
             routing: prerelease
             variants: ['--']
