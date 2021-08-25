@@ -182,7 +182,8 @@ class Task():
                 snn = self.ks_snap.name
                 pt = self.ks_snap.publish_to
                 card_txt = 'Produce (#{}) {}/{}/{} snap'.format(sp, cn, sn, snn)
-                card_dsc = 'Use cranky-update-snap in related branch and push with new tag.'
+                card_dsc = 'Use `cranky update-snap` in related branch and push the branch '
+                card_dsc += '**and** the new tag.'
                 cinfo('Create "{}" card'.format(card_txt))
                 cdebug('  Desc: {}'.format(card_dsc))
                 if dryrun is False:
