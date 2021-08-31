@@ -1545,7 +1545,7 @@
                         clouds: ['metal']
 
         linux-oem-5.14:
-            routing: devel-drivers
+            routing: stable-drivers
             versions: ['5.14.0']
             variants: ['-20.04d']
             packages:
@@ -1564,7 +1564,7 @@
                     type: lrg
                 linux-restricted-signatures-oem-5.14:
                     type: lrs
-            supported: false
+            supported: true
             derived-from: [ '21.10', 'linux-unstable' ]
             swm:
                 kernel-testing: true
