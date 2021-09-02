@@ -185,16 +185,6 @@ class WorkflowManager():
                     s.status_validator = validator
             status = s.status_current
 
-        # Migration: pull all manager related items into a shared manager
-        # sub-key.  This allows simpler forward migration when updating status.
-        for child_nr, child_data in status.items():
-            if 'manager' not in child_data:
-                manager = child_data['manager'] = {}
-                for stamp in ('time-scanned', 'time-modified'):
-                    if stamp in child_data:
-                        manager[stamp] = child_data[stamp]
-                        del child_data[stamp]
-
         return status
 
     def status_save(s, status):
