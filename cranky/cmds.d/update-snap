@@ -104,7 +104,7 @@ class UpdateSnap():
                 if self.source is None:
                     cerror("ERROR: {} snap not found in {}".format(self.name, self.series))
                     sys.exit(1)
-        self.version = self.scy['version']
+            self.version = self.scy['version']
 
         # VALIDATION: confirm source.
         ks_source = ks_series.lookup_source(self.source)
