@@ -15,6 +15,7 @@ __testing_status_colors = {
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
     "Won't Fix"     : 'red',
+    'Opinion'       : 'red',
 }
 __testing_status_text = {
     'New'           : 'Not Ready',
@@ -23,6 +24,7 @@ __testing_status_text = {
     'Triaged'       : 'No Results',
     'Incomplete'    : 'Failed',
     'Fix Released'  : 'Passed',
+    'Opinion'       : 'Aborted',
 }
 __review_status_colors = __testing_status_colors
 __review_status_text = {

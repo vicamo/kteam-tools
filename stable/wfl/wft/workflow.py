@@ -49,7 +49,7 @@ class Workflow(TaskHandler):
         phase_text = None
         while True:
             for (taskname, task) in s.bug.tasks_by_name.items():
-                if task.status in [ 'Invalid', 'Opinion', 'Fix Released', ]:
+                if task.status in ['Invalid', 'Opinion', 'Fix Released', "Won't Fix"]:
                     continue
 
                 (task_section, task_text) = (None, None)
