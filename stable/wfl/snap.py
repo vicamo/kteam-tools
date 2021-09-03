@@ -306,7 +306,11 @@ class SnapDebs:
         cinfo("snap_status: ks_snap={} sha={} lp_repo={} lp_ref={}".format(ks_snap, sha, lp_repo, lp_ref))
 
         # Lookup our team snap recipies.
-        cks = lp.people['canonical-kernel-snaps']
+        if s.bug.source.series.esm:
+            snap_team = 'canonical-kernel-esm'
+        else:
+            snap_team = 'canonical-kernel-snaps'
+        cks = lp.people[snap_team]
         for lp_snap in lp.snaps.findByOwner(owner=cks):
             if lp_snap.git_ref == lp_ref:
                 cdebug("snap_status: snap found {}".format(lp_snap))
