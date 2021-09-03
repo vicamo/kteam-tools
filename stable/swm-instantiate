@@ -152,7 +152,7 @@ class TrackerProduction:
         # Add the package/series nomination.
         if variant in ('debs', 'combo'):
             cdebug("series/package task ({}/{})".format(ks_source.series.codename, ks_source.name))
-            lp_ubuntu = self.lp.projects['ubuntu']
+            lp_ubuntu = self.lp.distributions['ubuntu']
             lp_series = lp_ubuntu.getSeries(name_or_version=ks_source.series.codename)
             lp_package = lp_series.getSourcePackage(name=ks_source.name)
 
