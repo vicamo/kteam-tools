@@ -542,6 +542,11 @@ class WorkflowManager():
             try:
                 return s.__crank(bugid)
             except PreconditionFailed:
+                # When the cached launchpad copy of an object we are updating
+                # is written back we check if the cached data we worked against
+                # is still current.  Where it is not a PreconitionFailed is
+                # thrown.  This could be triggered by an attempt to update the
+                # main bug, or when updating any of the tasks on the bug.
                 cinfo("PreconditionFailed: retrying")
 
     # __crank
