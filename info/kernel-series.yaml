@@ -1304,7 +1304,7 @@
                     hw-cert: false
                     publish-to:
                         amd64: ['20']
-            derived-from: [ '20.04', 'linux-intel' ]
+            derived-from: [ '20.04', 'linux-intel-5.13' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-uc20-efi:
