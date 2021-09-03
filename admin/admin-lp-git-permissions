@@ -139,6 +139,7 @@ def sync_misc(args):
     for repo_path, repo_branches, tags_wild in [
             ['~canonical-kernel/+git/kteam-tools', [('master', False)], None],
             ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)], None],
+            ['~canonical-kernel/+git/kernel-versions', [('*', True)], None],
             ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches, "Ubuntu-*"],
             ]:
 
