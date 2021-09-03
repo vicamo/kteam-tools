@@ -67,6 +67,8 @@ class WorkflowBug():
         else:
                 raise WorkflowBugError('bug or bugid required')
 
+        s.tracker_modified = False
+
         # Pass along any "global" settings to the WorkflowBugTask.
         #
         WorkflowBugTask.dryrun = WorkflowBug.dryrun
@@ -219,6 +221,7 @@ class WorkflowBug():
         title = "{}/{}: {} {}".format(s.series, s.name, version, suffix)
         if s.title != title:
             s.lpbug.title = title
+            s.tracker_modified = True
             s.title = title
 
     def __title_decode(s):
@@ -293,13 +296,17 @@ class WorkflowBug():
                 # Drop the "-live" tag as this one is moving dead.
                 if 'kernel-release-tracking-bug-live' in s.lpbug.tags:
                     s.lpbug.tags.remove('kernel-release-tracking-bug-live')
+                    s.tracker_modified = True
 
     # save
     #
     def save(s):
         s.save_bug_properties()
         s._remove_live_tag()
-        s.lpbug.lpbug.lp_save()
+        if s.tracker_modified:
+            cinfo("Tracker modified, saving")
+            s.lpbug.lpbug.lp_save()
+            s.tracker_modified = False
 
     @property
     def _dryrun(s):
@@ -531,6 +538,7 @@ class WorkflowBug():
                 else:
                     cinfo('    action - updating SWM properties', 'red')
                     s.lpbug.description = newd
+                    s.tracker_modified = True
             else:
                 cinfo('    noop - SWM properties unchanged', 'yellow')
             for line in new_props.split('\n'):
