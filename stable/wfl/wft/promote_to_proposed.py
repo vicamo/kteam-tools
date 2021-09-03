@@ -102,6 +102,10 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
 
+            if s._cycle_hold():
+                s.task.reason = 'Stalled -- cycle on hold'
+                break
+
             # Record what is missing as we move to Confirmed.
             s.bug.bprops.setdefault('delta', {})[s.task.name] = s.bug.debs.built_in_src_dst_delta(s.pocket_src, s.pocket_dest)
 
