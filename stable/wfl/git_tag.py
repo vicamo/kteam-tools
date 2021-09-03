@@ -114,7 +114,7 @@ class GitRemote:
 
         cmd = ['git', 'ls-remote', url]
         #print('  CMD: ' + ' '.join(cmd))
-        proc = Popen(cmd, stdout=PIPE)
+        proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
         refs = {}
         hashes = {}
         for entry in proc.stdout:
@@ -125,8 +125,7 @@ class GitRemote:
             hashes.setdefault(bits[0], []).append(bits[1])
         retcode = proc.wait()
         if retcode != 0:
-            raise CalledProcessError(proc.returncode, proc.args,
-                proc.stdout, proc.stderr)
+            raise GitTagError(proc.stderr.read().decode('utf-8').strip())
 
         self._refs = refs
         self._hashes = hashes
