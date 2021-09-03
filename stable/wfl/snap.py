@@ -238,7 +238,7 @@ class SnapDebs:
         cleave(s.__class__.__name__ + '.is_in_tracks')
         return retval, partial, missing
 
-    def channel_revisions_consistent(s, min_risk=None):
+    def channel_revisions_consistent(s, before_risk=None):
         center(s.__class__.__name__ + '.channel_revisions_consistent')
         broken = []
 
@@ -266,6 +266,9 @@ class SnapDebs:
                     for track in publish_to[arch]:
                         track_versions = ()
                         for risk in s.snap_info.promote_to:
+                            # Only check to the risk level requested.
+                            if risk == before_risk:
+                                break
                             task = "snap-release-to-{}".format(risk)
                             if (task not in s.bug.tasks_by_name or
                                     s.bug.tasks_by_name[task].status != 'New'):
@@ -274,9 +277,6 @@ class SnapDebs:
                             revision = s.snap_store.channel_revision(arch, channel)
                             if revision is not None and expected_revision != revision:
                                 broken.append("arch={}:channel={}:rev={}:badrev={}".format(arch, channel, expected_revision, revision))
-                            # Only check to the risk level requested.
-                            if risk == min_risk:
-                                break
 
         retval = len(broken) == 0
 
