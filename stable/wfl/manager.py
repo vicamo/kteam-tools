@@ -708,7 +708,7 @@ class WorkflowManager():
             task_name = therest
 
             if workflow_task_name not in s._task_map:
-                task.reason = 'unknown workflow task'
+                task.reason = 'Stalled -- unknown workflow task'
                 cinfo('        Unknown workflow task')
                 continue
 
