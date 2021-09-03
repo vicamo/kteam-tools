@@ -11,7 +11,7 @@ class LaunchpadCacheNamedOperation:
         self.__cache = cache
 
     def __call__(self, *args, **kwargs):
-        op_key = kwargs.get(self.__key)
+        op_key = kwargs[self.__key]
         if op_key not in self.__cache:
             self.__cache[op_key] = self.__value.__call__(*args, **kwargs)
         return self.__cache[op_key]
