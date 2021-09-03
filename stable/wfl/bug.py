@@ -397,6 +397,14 @@ class WorkflowBug():
 
         return s._master_bug
 
+    # master_bug_swmstatus
+    #
+    @property
+    def master_bug_swmstatus(self):
+        if not self.is_derivative_package:
+            return None
+        return self.manager.status_get(str(self.master_bug_id))
+
     # dup_replaces
     #
     def dup_replaces(s, inactive_only=False):
@@ -648,6 +656,13 @@ class WorkflowBug():
         # to that.
         if owner is None and owner_pp is not None:
             owner = owner_pp
+
+        # If we still have no owner and we are a snap-debs tracker
+        # pull the owner from our parent.
+        if owner is None and s.variant == 'snap-debs':
+            master_status = s.master_bug_swmstatus
+            if master_status is not None:
+                owner = master_status.get('owner')
 
         if owner is not None:
             status['owner'] = owner
