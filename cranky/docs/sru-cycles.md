@@ -12,7 +12,7 @@ Trello workflow system.
 
 The scripts for Start the Kernel SRU Cycle need some initial configuration
 before the first run, which is documented in $HOME/kteam-tools/stable/README.
-For example, the script "create-sru-cards.py" depends on the Trello
+For example, the script "create-sru-cards" depends on the Trello
 command-line tools, so make sure to follow the steps reported in
 $HOME/kteam-tool/stable/README about this particular script.
 
@@ -31,8 +31,6 @@ longer be maintained in Google Docs.
 
 ## Start The Kernel SRU Cycle
 
-[This section might change in Q2 2019]
-
 It is important that a new or unfamiliar kernel cranking engineer is enabled
 in the kernel team Trello instance, which is a kanban tool that serves as our
 workflow manager. While this section documents tools only the kernel SRU cycle
@@ -48,8 +46,8 @@ On the week before the actual start of the cycle (3rd week of the previous SRU
 cycle), the SRU "lead" will create a Trello board to coordinate the tasks that
 are done before the first week of the cycle, e.g. apply patches from the
 mailing-list, prepare mainline stable updates, review CVE tracker, etc.  The
-script "stable/create-sru-cards.py" creates the board with the initial cards.
-To create the board and the cards, "create-sru-cards.py" reads the configuration
+script "stable/create-sru-cards" creates the board with the initial cards.
+To create the board and the cards, "create-sru-cards" reads the configuration
 file "stable/create-sru-cards.yaml" and information about the current supported
 kernels from "info/kernel-series.yaml" (wrapped by a library). The script also
 adds an entry to the "info/sru-cycle.yaml" file with the information of the
@@ -58,7 +56,7 @@ upcoming cycle.
 By default, the only required parameter is the cycle tag name (the date of the
 Monday of the first week, in the format ‘YYYY.MM.DD’). Example:
 ```
-create-sru-cards.py 2019.03.04
+create-sru-cards 2019.03.04
 ```
 
 Some of the aspects of the default behavior can be changed by providing
@@ -66,8 +64,8 @@ additional parameters, please check the script --help output. The default to be
 used now is not to create any kernel related task cards. Those will be added in
 the next step.
 
-After the board is created, the people involved in the SRU cycle need to be
-manually added to the board and the key persons given ‘admin’ permissions.
+People involved in the SRU cycle will be automatically added to the board and
+the key persons given ‘admin’ permissions.
 
 Next, kernel tasks would be created by "create-kernel-tasks" which would create
 tracking bugs and (if not for development) also add crank turn cards to the
@@ -92,6 +90,19 @@ prefixes the cycle tag with a ‘d’. The spin number is automatically calculat
 and starts with 1.
 
 ### Managing kernel re-spins, which we seem to do every cycle now
+
+All re-spins require a notification card be created and placed in the `Notice`
+column for the cycle. This is done using "stable/create-respin-card". This
+script will reserve a new spin number for the given cycle and then adds a
+Notification card for it with some skeleton description to be completed before
+starting to create trackers.
+
+The only required parameter is the cycle tag name (the date of the Monday of the
+first week, in the format ‘YYYY.MM.DD’). Example:
+
+```
+create-respin-card 2019.03.11
+```
 
 In this example, we will re-spin the linux-oem source for the currently running
 cycle. The following command will create new cards for cranking and a new
