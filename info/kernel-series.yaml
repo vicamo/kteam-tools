@@ -1378,28 +1378,6 @@
             development: true
             supported: false
 
-        linux-ibm:
-            variants: ['--']
-            packages:
-                linux-ibm:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
-                linux-meta-ibm:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
-                linux-signed-ibm:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
-            supported: true
-            derived-from: [ '20.04', 'linux' ]
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    ibm:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['ibm']
-            invalid-tasks: [ 'certification-testing' ]
-
         linux-raspi:
             variants: ['--']
             packages:
@@ -1947,6 +1925,29 @@
                     gkeop:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-ibm:
+            routing: stable-drivers
+            variants: ['-lts-20.04']
+            packages:
+                linux-ibm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
+                linux-meta-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
+                linux-signed-ibm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
+            supported: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
