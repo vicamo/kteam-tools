@@ -1929,7 +1929,7 @@
 
         linux-ibm:
             routing: stable-drivers
-            variants: ['-lts-20.04']
+            variants: ['--', '-lts-20.04']
             packages:
                 linux-ibm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
