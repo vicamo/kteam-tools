@@ -1946,6 +1946,7 @@
             testing:
                 flavours:
                     ibm:
+                        meta-pkg: linux-ibm
                         arches: ['amd64']        # test system arch names
                         clouds: ['ibm']
             invalid-tasks: [ 'certification-testing' ]
