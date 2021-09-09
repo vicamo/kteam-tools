@@ -560,7 +560,7 @@
             testing:
                 flavours:
                     oracle:
-                        arches: ['amd64']        # test system arch names
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
