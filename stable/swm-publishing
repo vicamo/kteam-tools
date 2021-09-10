@@ -33,7 +33,7 @@ from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
-from wfl.wft.automated_testing import AutomatedTestingResults
+from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
 
 
 class MonitorIncompatible(Exception):
@@ -524,7 +524,11 @@ class MonitorSwmStatusMonitor:
         version = bug_data.get('version')
         existing = monitor.get('status')
 
-        result = AutomatedTestingResults.lookup_result(series, source, version)
+        try:
+            result = AutomatedTestingResults.lookup_result(series, source, version)
+        except AutomatedTestingResultsError as e:
+            print("automated_testing: data missing ({}) change={}".format(str(e), False))
+            return False
         current = result.status
         print("automated_testing: existing={} current={} change={}".format(existing, current, existing != current))
         return existing != current
