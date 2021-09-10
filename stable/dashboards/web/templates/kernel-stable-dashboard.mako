@@ -426,6 +426,15 @@ for bid in sorted(data['swm']):
         status = __task_status(b, task_name)
         if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
             row_class.append('phase-deb-promotions')
+            break
+
+    for task_name in b['task']:
+        if not task_name.startswith('prepare-package') and task_name != 'snap-prepare':
+            continue
+        status = __task_status(b, task_name)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-prepare')
+            break
 
     for status in status_list:
         status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
@@ -504,6 +513,7 @@ for bid in sorted(data['swm']):
                                     <label for="limit-phase">Phase:</lable>
                                     <select name="limit-phase" id="limit-phase" onchange=selectAll() style="font-size: 0.8em">
                                         <option value="all">All</option>
+                                        <option value="prepare">prepare</option>
                                         <option value="reviews">reviews</option>
                                         <option value="deb-promotions">deb-promotions</option>
                                         <option value="snap-promotions">snap-promotions</option>
