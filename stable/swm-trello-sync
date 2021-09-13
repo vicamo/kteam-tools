@@ -173,9 +173,14 @@ if __name__ == '__main__':
 
             elif which == ':prepare-packages':
                 task_state = tracker['task'].get(which, {}).get('status', 'unknown')
+                review_state = tracker['task'].get('sru-review', {}).get('status', 'unknown')
+
+                # If it is reviewed and rejected, move the card to rejected from mostly anywhere.
+                if review_state == 'Incomplete':
+                    dest_list = ['Rejected']
 
                 # Not yet ready for packaging -- Backlog
-                if task_state == 'New':
+                elif task_state == 'New':
                     dest_list = ['In Progress', 'Backlog']
 
                 # Ready to package -- On Deck
