@@ -7,16 +7,22 @@ every-day: versions.html 30-day-new.html
 
 .PHONY : sru-data.json
 sru-data.json:
-	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
-	@if [ -s sru-data-tmp.json ]; then \
-	    mv sru-data-tmp.json sru-data.json; \
+	kteam-tools/stable/sru-report --archive-versions > $@.tmp
+	@if [ -s $@.tmp ]; then \
+	    mv $@.tmp $@; \
 	fi
 
 sru-report.html: sru-data.json scripts/sru2html
-	scripts/sru2html $< > $@
+	scripts/sru2html $< > $@.tmp
+	@if [ -s $@.tmp ]; then \
+	    mv $@.tmp $@; \
+	fi
 
 versions.html: sru-data.json scripts/versions2html
-	scripts/versions2html $< > $@
+	scripts/versions2html $< > $@.tmp
+	@if [ -s $@.tmp ]; then \
+	    mv $@.tmp $@; \
+	fi
 
 shankbot: kernel-sru-workflow.html
 	cp *.json dashboards
@@ -77,7 +83,10 @@ clean:
 	scripts/collect-window-data --window=1 --db=$@ --title="24 Hours of New Bugs"
 
 1-day-new.html: 1-day-window.json
-	scripts/mk-regressions-report --sru=sru-data.json $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@.tmp
+	@if [ -s $@.tmp ]; then \
+	    mv $@.tmp $@; \
+	fi
 
 .PHONY : kernel-sru-workflow.json
 kernel-sru-workflow.json:
