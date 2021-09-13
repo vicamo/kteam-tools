@@ -31,8 +31,13 @@ class GitTag():
         self._present = False
 
         if package.repo is not None and package.repo.url is not None:
-            url = package.repo.url
-            self._refs = self.cache_tags(url)
+            remote = GitRemote(package.repo.url)
+
+            try:
+                self._refs = remote.refs
+                self._verifiable = True
+            except GitTagError:
+                pass
 
             tag_prefix = 'Ubuntu{}-'.format(
                 package.source.name.replace('linux', ''))
@@ -61,28 +66,6 @@ class GitTag():
                     break
 
         cleave(self.__class__.__name__ + '.__init__')
-
-    def cache_tags(self, url):
-        center(self.__class__.__name__ + '.cache_tags')
-        cdebug('url     : {}'.format(url))
-
-        refs = []
-        if url.startswith("git://git.launchpad.net"):
-            cmd = [ 'git', 'ls-remote', '--refs', url ]
-            result = run(cmd, stdout=PIPE, stderr=PIPE)
-            if result.returncode != 0:
-                raise GitTagError(result.stderr.decode('utf-8').strip())
-
-            self._verifiable = True
-
-            for line in result.stdout.decode('utf-8').split('\n'):
-                if '\t' not in line:
-                    continue
-                (sha, ref) = line.split('\t')
-                refs.append(ref)
-
-        cleave(self.__class__.__name__ + '.lookup_tag')
-        return refs
 
     @property
     def verifiable(self):
