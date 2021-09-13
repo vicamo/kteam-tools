@@ -379,7 +379,8 @@ class Package():
                 cerror('        {}: {} {}'.format(pocket, 'NONE', 'NONE', 'red'))
             else:
                 for route in pocket_data:
-                    cinfo('        {}: {} {}'.format(pocket, route[0].reference, route[1]), 'blue')
+                    route_reference = "NONE" if route[0] is None else route[0].reference
+                    cinfo('        {}: {} {}'.format(pocket, route_reference, route[1]), 'blue')
 
         if s.source is not None:
             s.pkgs = s.dependent_packages
