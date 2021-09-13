@@ -102,10 +102,14 @@ class GitRemote:
         hashes = {}
         for entry in proc.stdout:
             bits = entry.decode('utf-8').split()
+            if bits[1] == 'HEAD':
+                continue
+            # We rely on the ordering of the output, that the tags preceed the
+            # peeled tags.
             if bits[1].endswith('^{}'):
                 bits[1] = bits[1][:-3]
-            refs.setdefault(bits[1], []).append(bits[0])
-            hashes.setdefault(bits[0], []).append(bits[1])
+            refs[bits[1]] = bits[0]
+            hashes[bits[0]] = bits[1]
         retcode = proc.wait()
         if retcode != 0:
             raise GitTagError(proc.stderr.read().decode('utf-8').strip())
@@ -155,13 +159,12 @@ class GitTagsSnap:
         tip_hash = self.remote.refs.get(tip_name)
         if tip_hash is None:
             return
-        tip_hash = tip_hash[0]
 
         # See if there are any other refs pointing to that.  If there
         # is extract the tag prefix and current version from the tag.
         for ref_name, ref_hash in self.remote.refs.items():
             #print(tip_name, tip_hash, ref_name, ref_hash)
-            if ref_name != tip_name and tip_hash in ref_hash:
+            if ref_name != tip_name and tip_hash == ref_hash:
                 self._tip_tag = ref_name
                 pv_match = self.prefix_version_re.search(ref_name)
                 if pv_match is not None:

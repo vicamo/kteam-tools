@@ -206,7 +206,7 @@ class SnapPrepare(KernelSnapBase):
                 retval = True
 
             # Check for a snap build in this version.
-            sha = git_repo.lookup_version(version)[-1]
+            sha = git_repo.lookup_version(version)
             snap_status = s.bug.snap.snap_status(sha)
             if snap_status == 'SNAP-MISSING':
                 pass
