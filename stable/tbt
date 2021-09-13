@@ -81,9 +81,13 @@ class Tasks(object):
         retval = 0
         WorkflowBug.local_msgqueue_port = args.local_msgqueue_port
 
+        if args.op is None:
+            args.op = 'boot' if args.ppa else 'sru'
+
         for b in args.bugs:
             wb = WorkflowBug(s.lp.default_service, b)
-            wb.debs.send_proposed_testing_requests()
+            #print("DRY-RUN: op={} ppa={}\n".format(args.op, args.ppa))
+            wb.debs.send_testing_requests(op=args.op, ppa=args.ppa)
 
         cleave(s.__class__.__name__ + '.retest')
         return retval
@@ -106,6 +110,9 @@ if __name__ == '__main__':
     retest = subparsers.add_parser('retest')
     retest.set_defaults(func=Tasks.retest)
     retest.add_argument('bugs',  metavar='BUGS', nargs="*", default=None, help='A list of Launchpad bug ids that are to be processed.')
+    retest.add_argument('--ppa', action='store_true', default=False, help='Request testing against the PPA copy of the kernel.')
+    retest.add_argument('--op', choices=['boot', 'sru'], help='The operation to request.')
+
     parser.add_argument('--local-msgqueue-port',  type=int, default=None, help='The local port to be used to talk to the Rabbit MQ service.')
 
     args = parser.parse_args()

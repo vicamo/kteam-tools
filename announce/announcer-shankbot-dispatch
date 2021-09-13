@@ -44,18 +44,7 @@ retest)
 		echo "Usage: retest <bug> ..." 1>&2
 		exit 1
 	fi
-	for bug in "$@"
-	do
-		validator=$(echo "$bug" | sed -e 's/[0-9][0-9]*/0/g')
-		case "$validator" in
-		0)		;;
-		*)
-			echo "retest $bug: Invalid bug number" 1>&2
-			exit 1
-			;;
-		esac
-		"$here/../sbin/oops-run" shiv-retest "$here/../stable/tbt" retest "$@"
-	done
+	"$here/../sbin/oops-run" shiv-retest "$here/../stable/tbt" retest "$@"
 	;;
 *)
 	echo "shankbot: $cmd: unknown command"
