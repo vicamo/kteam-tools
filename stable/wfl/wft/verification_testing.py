@@ -94,6 +94,7 @@ class VerificationTesting(TaskHandler):
                 bug_spam_cfg = {}
                 bug_spam_cfg['series'] = s.bug.series
                 bug_spam_cfg['package'] = s.bug.name
+                bug_spam_cfg['version'] = s.bug.version
                 bug_spam_cfg['sru'] = sru_report
                 # the dryrun flag is passed from the swm CLI to the WorkflowBug object
                 bug_spam_cfg['dryrun'] = s.bug._dryrun

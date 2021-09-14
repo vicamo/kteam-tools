@@ -145,7 +145,7 @@ class BugSpam:
                     if 'comment-text' in self.cfg:
                         self.verbose('        . adding comment')
                         if not self.cfg['dryrun']:
-                            bug.add_comment(self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']))
+                            bug.add_comment(self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
 
                     # Status
                     #
