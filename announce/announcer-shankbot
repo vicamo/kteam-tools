@@ -74,7 +74,7 @@ class AnnouncerShankbot():
                 self.deliver_to(reply)
 
                 command.insert(0, os.path.join(os.path.dirname(__file__), "announcer-shankbot-dispatch"))
-                result = run(command, stdout=PIPE, stderr=STDOUT)
+                result = run(command, stdout=PIPE, stderr=PIPE)
                 body = result.stdout.decode("utf-8")
                 if body is not None and body != '':
                     message['body'] = body
@@ -89,7 +89,12 @@ class AnnouncerShankbot():
                 else:
                     text += ' successful'
 
-                message["summary"] = text
+                control = result.stderr.decode("utf-8")
+                if control == 'DIRECT\n':
+                    message["summary"] = body + text
+                    del message["body"]
+                else:
+                    message["summary"] = text
 
                 reply['message'] = message
                 self.deliver_to(reply)
