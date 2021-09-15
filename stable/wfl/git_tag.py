@@ -2,6 +2,7 @@ import re
 
 from subprocess                 import Popen, PIPE, run
 
+from wfl.context                import ctx
 from wfl.errors                 import ShankError
 from wfl.log                    import center, cleave, cinfo, cdebug
 
@@ -76,9 +77,9 @@ class GitTag():
         return self._present
 
 
-# GitRemote
+# GitRemoteDirect
 #
-class GitRemote:
+class GitRemoteDirect:
 
     # __init__
     #
@@ -129,6 +130,62 @@ class GitRemote:
         if self._hashes is None:
             self.cache_refs(self.url)
         return self._hashes
+
+
+# GitRemoteLaunchpad
+#
+class GitRemoteLaunchpad:
+
+    # __init__
+    #
+    def __init__(self, url, lp=None):
+        center(self.__class__.__name__ + '.__init__')
+        if lp is None:
+            raise ValueError("lp is required")
+
+        self.url = url
+        self.lp = lp
+
+        self._refs = None
+        self._hashes = None
+
+        cleave(self.__class__.__name__ + '.__init__')
+
+    def cache_refs(self, url):
+        center(self.__class__.__name__ + '.cache_refs')
+        cdebug('url     : {}'.format(url))
+
+        lp_repo = self.lp.git_repositories.getByPath(path='~' + url.split('~', 1)[1])
+
+        refs = {}
+        hashes = {}
+        for ref in lp_repo.refs:
+            refs[ref.path] = ref.commit_sha1
+            hashes[ref.commit_sha1] = ref.path
+
+        self._refs = refs
+        self._hashes = hashes
+        cleave(self.__class__.__name__ + '.cache_refs')
+
+    @property
+    def refs(self):
+        if self._refs is None:
+            self.cache_refs(self.url)
+        return self._refs
+
+    @property
+    def hashes(self):
+        if self._hashes is None:
+            self.cache_refs(self.url)
+        return self._hashes
+
+
+class GitRemote:
+
+    def __new__(cls, url):
+        if '//git.launchpad.net/~' in url:
+            return GitRemoteLaunchpad(url, ctx.lp)
+        return GitRemoteDirect(url)
 
 
 class GitTagsSnap:
