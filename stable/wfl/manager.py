@@ -14,6 +14,7 @@ from lazr.restfulclient.errors          import PreconditionFailed
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 
+from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
@@ -466,10 +467,18 @@ class WorkflowManager():
         cleave('WorkflowManager.buglist')
         return retval
 
+    # initialise_context
+    #
+    def initialise_context(self):
+        # We use lambda here to convert the expression into a callable
+        # so that we can delay instantiating it until first use.
+        pass
+
     # manage
     #
     def manage(s):
         cinfo('Starting run ' + str(datetime.now()))
+        s.initialise_context()
         if s.args.dependants_only:
             try:
                 with s.single_dependants_only():
