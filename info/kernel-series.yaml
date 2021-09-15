@@ -306,7 +306,7 @@
     sources:
         linux-unstable:
             routing: devel-prerelease-drivers
-            versions: ['5.14.0']
+            versions: ['5.15.0']
             variants: ['-wip']
             packages:
                 linux-unstable:
