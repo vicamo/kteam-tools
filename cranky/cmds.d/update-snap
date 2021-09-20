@@ -207,7 +207,11 @@ class UpdateSnap():
         Return a string with the subject to be used for the commit,
         based on the previous commit messages.
         '''
-        cmd = "git log --pretty=%%s -1 --grep='UBUNTU: Ubuntu-.*[0-9]'  -- %s" % self.scy_file_name
+        if self.krn is not None:
+            ckfile = self.krn_file_name
+        else:
+            ckfile = self.scy_file_name
+        cmd = "git log --pretty=%%s -1 --grep='UBUNTU: Ubuntu-.*[0-9]'  -- %s" % ckfile
         last_commit = subprocess.check_output(cmd, shell=True).decode()
 
         match = re.match(r'(UBUNTU: Ubuntu-)(([a-z][^-]*-)*)[0-9].*', last_commit)
