@@ -183,8 +183,8 @@ class GitRemoteLaunchpad:
 class GitRemote:
 
     def __new__(cls, url):
-        if '//git.launchpad.net/~' in url:
-            return GitRemoteLaunchpad(url, ctx.lp)
+        #if '//git.launchpad.net/~' in url:
+        #    return GitRemoteLaunchpad(url, ctx.lp)
         return GitRemoteDirect(url)
 
 
