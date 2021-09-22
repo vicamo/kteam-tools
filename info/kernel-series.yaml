@@ -649,7 +649,7 @@
             variants: ['--']
             packages:
                 linux-realtime:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/hirsute']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/hirsute', 'master-next']
                 linux-meta-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/hirsute']
