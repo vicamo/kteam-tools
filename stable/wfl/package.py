@@ -8,7 +8,6 @@ from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized
 
-from ktl.kernel_series                  import KernelSeries
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
 
@@ -398,11 +397,10 @@ class Package():
 
     # __init__
     #
-    def __init__(s, shankbug, ks=None):
+    def __init__(s, shankbug):
         center('package::__init__')
         s.bug = shankbug
 
-        s.kernel_series = KernelSeries() if ks is None else ks
         s.__distro_series = None
 
         # debs record their versions in their title -- sync back canonical form.
@@ -473,6 +471,10 @@ class Package():
     @property
     def lp(self):
         return ctx.lp
+
+    @property
+    def kernel_series(self):
+        return ctx.ks
 
     @property
     def monitor_debs(s):

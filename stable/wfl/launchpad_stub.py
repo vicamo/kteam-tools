@@ -1,7 +1,9 @@
-from ktl.kernel_series                  import KernelSeries
 from datetime                           import date
 
 import yaml
+
+from .context                           import ctx
+
 
 class AssigneeStub():
     def __init__(s, assignee):
@@ -169,8 +171,7 @@ class LpPeoplePpaDistributionsStub():
         s.distributions = {'ubuntu': s}
 
         # Get a list of series
-        kernel_series = KernelSeries()
-        s.series_collection = [ SeriesCollectionStub(series.codename) for series in kernel_series.series ]
+        s.series_collection = [ SeriesCollectionStub(series.codename) for series in ctx.ks.series ]
 
     def getPPAByName(s, name):
         return PPAStub(name, s.config)

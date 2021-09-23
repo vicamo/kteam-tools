@@ -11,8 +11,6 @@ import json
 from .errors import ShankError
 from datetime import datetime
 
-from ktl.kernel_series                          import KernelSeries
-
 from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
@@ -168,14 +166,12 @@ class SnapDebs:
     """
     Class representing a snap of a kernel from debian packages.
     """
-    def __init__(s, shankbug, ks=None):
+    def __init__(s, shankbug):
         s.bug = shankbug
 
         s.snap_info = None
         s._snap_store = None
         s._git_repo = False
-
-        s.kernel_series = KernelSeries() if ks is None else ks
 
         if s.bug.variant == 'snap-debs':
             # We take our version from the debs we are snapping up

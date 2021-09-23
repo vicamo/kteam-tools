@@ -1,7 +1,5 @@
 from datetime                           import datetime, timedelta, timezone
 
-from ktl.kernel_series                          import KernelSeries
-
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 

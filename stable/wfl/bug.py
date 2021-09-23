@@ -12,7 +12,6 @@ from .errors                            import ShankError, WorkflowCrankError, W
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
 from .task                              import WorkflowBugTask, WorkflowBugTaskSynPersistent, WorkflowBugTaskSynPreparePackages
-from ktl.kernel_series                  import KernelSeries
 from .swm_config                        import SwmConfig
 from .git_tag                           import GitTag, GitTagError
 from .context                           import ctx
@@ -47,7 +46,7 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid=None, bug=None, ks=None, manager=None):
+    def __init__(s, lp, bugid=None, bug=None, manager=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
@@ -77,7 +76,6 @@ class WorkflowBug():
         WorkflowBugTask.no_assignments = WorkflowBug.no_assignments
         WorkflowBugTask.no_timestamps = WorkflowBug.no_timestamps
 
-        s.kernel_series = KernelSeries() if ks is None else ks
         s.manager = manager
 
         s.error = None
@@ -120,7 +118,7 @@ class WorkflowBug():
         try:
             s.debs = None
             if s.variant in ('debs', 'combo'):
-                s.debs = Package(s, ks=s.kernel_series)
+                s.debs = Package(s)
             s.snap = None
             if s.variant in ('snap-debs', 'combo'):
                 s.snap = SnapDebs(s)
@@ -193,6 +191,10 @@ class WorkflowBug():
     @property
     def sc(self):
         return ctx.sc
+
+    @property
+    def kernel_series(self):
+        return ctx.ks
 
     def version_from_title(s):
         (s.series, s.name, s.version, s.source, s.kernel, s.abi) = (None, None, None, None, None, None)
@@ -376,7 +378,7 @@ class WorkflowBug():
         if s._master_bug is False:
             if s.is_derivative_package:
                 try:
-                    master = WorkflowBug(s.lp, s.master_bug_id, ks=s.kernel_series)
+                    master = WorkflowBug(s.lp, s.master_bug_id)
                     error = None
                     if master.is_gone:
                         error = WorkflowCrankError("master tracker link points to invalidated tracker")
@@ -388,7 +390,7 @@ class WorkflowBug():
                         duplicate_of = master.lpbug.lpbug.duplicate_of
                         if duplicate_of is not None:
                             cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, master.lpbug.lpbug.id))
-                            master = WorkflowBug(s.lp, bug=duplicate_of, ks=s.kernel_series)
+                            master = WorkflowBug(s.lp, bug=duplicate_of)
                         else:
                             raise error
                 except WorkflowBugError as e:
@@ -425,7 +427,7 @@ class WorkflowBug():
             return
         dup_id = dup_pointer.split()[1]
         try:
-            dup_wb = WorkflowBug(s.lp, dup_id, ks=s.kernel_series)
+            dup_wb = WorkflowBug(s.lp, dup_id)
         except WorkflowBugError:
             raise WorkflowBugError("invalid replaces pointer {}".dup_id)
 
@@ -1121,7 +1123,7 @@ class WorkflowBug():
         for dup in duplicates:
             cdebug("workflow_duplicates: checking {}".format(dup.id))
             try:
-                dup_wb = WorkflowBug(s.lp, dup.id, ks=s.kernel_series)
+                dup_wb = WorkflowBug(s.lp, dup.id)
             except WorkflowBugError as e:
                 cinfo("workflow_duplicates: duplicate {} threw a {} exception, ignored".format(dup.id, e.__class__.__name__))
                 for l in e.args:
