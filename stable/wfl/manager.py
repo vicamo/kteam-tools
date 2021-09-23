@@ -31,7 +31,7 @@ import wfl.wft
 class WorkflowManager():
     # __init__
     #
-    def __init__(s, args, test_mode=False, ks=None, sru_cycle=None):
+    def __init__(s, args, test_mode=False, ks=None):
         center('WorkflowManager.__init__')
         s.test_mode = test_mode
         s.args = args
@@ -73,7 +73,6 @@ class WorkflowManager():
             'kernel-signoff'            : wfl.wft.StakeholderSignoff,
         }
         s.kernel_series = KernelSeries() if ks is None else ks
-        s.sru_cycle = SruCycle() if sru_cycle is None else sru_cycle
 
         WorkflowBug.sauron            = s.args.sauron
         WorkflowBug.dryrunn           = s.args.dryrun
@@ -473,6 +472,7 @@ class WorkflowManager():
         # We use lambda here to convert the expression into a callable
         # so that we can delay instantiating it until first use.
         ctx.lp = lambda : self.lp.default_service.launchpad # XXX: this is the raw connection.
+        ctx.sc = lambda : SruCycle()
 
     # manage
     #
@@ -600,7 +600,7 @@ class WorkflowManager():
                 s.status_set(bugid, None)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle, manager=s)
+            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, manager=s)
             if bug.error is not None:
                 raise bug.error
             if bug.is_closed:
