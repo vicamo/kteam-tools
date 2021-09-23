@@ -181,7 +181,7 @@ esac
 #            XXX: we should use kernel series to instantiate the
 #            full list of packages in the series.
 case "$SUITE" in
-impish)
+impish|focal)
 	ADDPKG="$ADDPKG zstd"
 	;;
 esac
@@ -216,17 +216,17 @@ xenial)
 	;;
 esac
 case "$SUITE" in
-xenial|bionic|disco|eoan|focal|groovy)
+xenial|bionic|disco|eoan|focal|groovy|hirsute)
 	ADDPKG="$ADDPKG libcap-dev"
 	;;
 esac
 case "$SUITE" in
-xenial|bionic|disco|eoan|focal|groovy)
+xenial|bionic|disco|eoan|focal|groovy|hirsute)
 	ADDPKG="$ADDPKG pkg-config libfuse-dev"
 	;;
 esac
 case "$SUITE" in
-bionic|disco|eoan|focal|groovy)
+bionic|disco|eoan|focal|groovy|hirsute)
 	ADDPKG="$ADDPKG clang libelf-dev llvm"
 	;;
 esac
