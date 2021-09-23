@@ -16,6 +16,7 @@ from ktl.kernel_series                          import KernelSeries
 from wfl.git_tag                                import GitTagsSnap
 from wfl.log                                    import center, cleave, cinfo, cerror, cdebug
 
+from .context                                   import ctx
 from .secrets                                   import Secrets
 
 
@@ -339,7 +340,7 @@ class SnapDebs:
     # snap_status
     #
     def snap_status(s, sha):
-        lp = s.bug.lp.launchpad
+        lp = ctx.lp
         ks_snap = s.snap_info
 
         # Find the snap repository in launchpad.

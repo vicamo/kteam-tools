@@ -13,6 +13,7 @@ from ktl.msgq                           import MsgQueue, MsgQueueCkct
 from ktl.utils                          import date_to_string, dump
 
 from .check_component                   import CheckComponent
+from .context                           import ctx
 from .errors                            import ShankError, ErrorExit, WorkflowCrankError
 from .git_tag                           import GitTag, GitTagError
 from .log                               import cdebug, cerror, cwarn, center, cleave, Clog, cinfo
@@ -397,9 +398,8 @@ class Package():
 
     # __init__
     #
-    def __init__(s, lp, shankbug, ks=None):
+    def __init__(s, shankbug, ks=None):
         center('package::__init__')
-        s.lp = lp
         s.bug = shankbug
 
         s.kernel_series = KernelSeries() if ks is None else ks
@@ -438,7 +438,7 @@ class Package():
                     continue
                 route_list = []
                 for route in routes:
-                    archive = s.lp.launchpad.archives.getByReference(reference=route[0])
+                    archive = s.lp.archives.getByReference(reference=route[0])
                     route_list.append((archive, route[1]))
                 s._routing[key] = route_list
             s.routing_mode = s.source.routing.name
@@ -469,6 +469,10 @@ class Package():
         s._monitor_debs = []
 
         cleave('package::__init__')
+
+    @property
+    def lp(self):
+        return ctx.lp
 
     @property
     def monitor_debs(s):
@@ -768,7 +772,7 @@ class Package():
         '''
         if s.__distro_series is None:
             if s.series:
-                sc = s.lp.launchpad.distributions["ubuntu"].series_collection
+                sc = s.lp.distributions["ubuntu"].series_collection
                 for ds in sc:
                     if ds.name == s.series:
                         s.__distro_series = ds
@@ -1113,7 +1117,7 @@ class Package():
         for record in s.bug.maintenance:
             if record['type'] == 'deb-build' and record['detail']['type'] == pkg:
                 cinfo("RETRY: {}".format(record['detail']['lp-api']))
-                lp_build = s.lp.launchpad.load(record['detail']['lp-api'])
+                lp_build = s.lp.load(record['detail']['lp-api'])
                 if lp_build is None:
                     cinfo("RETRY: {} build not found".format(
                         record['detail']['lp-api']))
@@ -1340,7 +1344,7 @@ class Package():
                 if changes_url is not None:
                     changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
                     try:
-                        changes = self.lp.launchpad._browser.get(changes_url)
+                        changes = self.lp._browser.get(changes_url)
                         bugs = []
                         for line in changes.decode('utf-8').rstrip().split('\n'):
                             if line.startswith('Launchpad-Bugs-Fixed:'):
@@ -1664,7 +1668,7 @@ class Package():
             cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
             return (None, [])
 
-        check_component = CheckComponent(s.lp, s)
+        check_component = CheckComponent(s)
 
         primary_src_component = None
         missing_pkg = []

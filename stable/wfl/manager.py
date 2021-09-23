@@ -472,7 +472,7 @@ class WorkflowManager():
     def initialise_context(self):
         # We use lambda here to convert the expression into a callable
         # so that we can delay instantiating it until first use.
-        pass
+        ctx.lp = lambda : self.lp.default_service.launchpad # XXX: this is the raw connection.
 
     # manage
     #

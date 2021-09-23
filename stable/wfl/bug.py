@@ -121,7 +121,7 @@ class WorkflowBug():
         try:
             s.debs = None
             if s.variant in ('debs', 'combo'):
-                s.debs = Package(s.lp, s, ks=s.kernel_series)
+                s.debs = Package(s, ks=s.kernel_series)
             s.snap = None
             if s.variant in ('snap-debs', 'combo'):
                 s.snap = SnapDebs(s)
