@@ -141,7 +141,6 @@ class VerificationTesting(TaskHandler):
         overall = {}
         for bug in sru_bugs:
             try:
-                cinfo("APW " + str(self._lp) + " " + str(self._lp.default_service) + " " + str(self._lp.default_service.launchpad))
                 lp_bug = self._lp.default_service.launchpad.bugs[bug]
                 rls = self.bug.series
 
