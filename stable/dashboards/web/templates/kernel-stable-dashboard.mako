@@ -416,9 +416,11 @@ for bid in sorted(data['swm']):
             break
 
     for testing_task in ('boot-testing', 'automated-testing',
-            'certification-testing', 'regression-testing', 'verification-testing'):
+            'certification-testing', 'regression-testing', 'verification-testing',
+            'snap-certification-testing', 'snap-qa-testing'):
         status = __task_status(b, testing_task)
         if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            testing_task = testing_task.replace('snap-', '')
             row_class.append('phase-' + testing_task)
 
     for task_name in ('promote-to-updates', 'promote-to-security',
