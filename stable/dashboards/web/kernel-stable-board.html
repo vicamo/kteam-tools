@@ -73,6 +73,22 @@
                         x.style.display = "none";
                     }
                 })
+
+            url = location.href.split('?')[0]
+            query = ""
+            for (const thing of limits) {
+                if (selected[thing] != 'all') {
+                    query += "&" + thing + "=" + selected[thing]
+                }
+            }
+            if (query != "") {
+                query = "?" + query.slice(1)
+            }
+            if (window.history.replaceState) {
+                window.history.replaceState({}, null, url + query)
+            } else {
+                location.replace(url + query)
+            }
         }
 
         function restoreOne(thing) {
