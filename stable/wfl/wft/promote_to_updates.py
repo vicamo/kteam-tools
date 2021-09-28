@@ -101,7 +101,7 @@ class PromoteToUpdates(Promoter):
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready() and not s._kernel_manual_release():
-                    s.task.reason = 'Holding -- master bug not ready for release'
+                    s.task.reason = 'Holding -- parent tracker not ready for release'
                     break
 
             # Record what is missing as we move to Confirmed.
