@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+#
+import argparse
+import os
+import sys
+import yaml
+
+from ktl.kernel_series import KernelSeries
+from wfl.launchpad import LaunchpadDirect
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='UBUNTU queue purge tool')
+    parser.add_argument('-n', '--dry-run', help='Dry-run only',
+        action='store_true', default=False)
+    parser.add_argument('series', nargs='*', default=[], help='Series')
+    args = parser.parse_args()
+
+    ks = KernelSeries()
+
+    series = []
+    for series_name in args.series:
+        ks_series = ks.lookup_series(codename=series_name)
+        series.append(ks_series)
+    if len(series) == 0:
+        for ks_series in ks.series:
+            if ks_series.supported or ks_series.development:
+                series.append(ks_series)
+
+    lp = LaunchpadDirect().login()
+    lp_ubuntu = lp.distributions['ubuntu']
+    lp_archive = lp.archives.getByReference(reference='primary')
+
+    for ks_series in series:
+        lp_series = lp_ubuntu.getSeries(name_or_version=ks_series.codename)
+
+        for lp_upload in lp_series.getPackageUploads(archive=lp_archive, status='Unapproved', custom_type='signing'):
+            package_name = lp_upload.display_name.split('_')[0]
+            ks_package = ks_series.lookup_source(package_name)
+            if ks_package is not None:
+                print("REJECT", lp_upload, package_name, lp_upload.pocket)
+                if not args.dry_run:
+                    lp_upload.rejectFromQueue(comment='Signing was performed under canonical-signing (you may ignore this error)')
