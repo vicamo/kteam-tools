@@ -1262,7 +1262,7 @@
 
         linux-intel:
             routing: prerelease
-            variants: ['--']
+            variants: []
             packages:
                 linux-intel:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal', 'master-next']
@@ -1273,7 +1273,7 @@
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal']
             supported: false
-            development: true
+            development: false
             derived-from: [ '21.04', 'linux' ]
             swm:
                 kernel-testing: true
