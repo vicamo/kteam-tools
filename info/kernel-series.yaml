@@ -1239,7 +1239,7 @@
 
         linux-intel-5.13:
             routing: prerelease
-            variants: [ '-wip' ]
+            variants: [ '--' ]
             packages:
                 linux-intel-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal', 'intel-5.13-next']
