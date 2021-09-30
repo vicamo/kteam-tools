@@ -218,7 +218,8 @@ def sync_esm(args):
 # XXX: we need a better way to control this.
 def is_hwe(source):
     return source.name.startswith('linux-oem') or source.name in (
-            'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde', 'linux-intel')
+            'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde',
+            'linux-intel', 'linux-iot')
 
 def sync_primary(args):
     admins = '/~canonical-kernel-repo-admins-active'
