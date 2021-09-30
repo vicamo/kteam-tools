@@ -1223,9 +1223,9 @@
                 linux-restricted-signatures-nv-dgx:
                     type: lrs
                 linux-nv-dgx-modules:
-                    type: extra#1
+                    type: extra
                 linux-nv-dgx-modules-signed:
-                    type: extra#2
+                    type: extra2
             supported: true
             private: true
             derived-from: [ '20.04', 'linux' ]
