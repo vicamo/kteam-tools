@@ -2287,6 +2287,53 @@
                     type: signed
             supported: false
 
+        linux-iot:
+            routing: prerelease
+            variants: [ '-wip' ]
+            packages:
+                linux-iot:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-iot/+git/focal', 'master-next']
+                linux-meta-iot:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-iot/+git/focal']
+                linux-signed-iot:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-iot/+git/focal']
+            supported: false
+            development: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    iot:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-uc20-iot:
+            routing: uc20
+            packages:
+                linux-uc20-iot:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-iot/+git/focal', 'master-next']
+                linux-signed-uc20-iot:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-iot/+git/focal']
+            supported: false
+            development: true
+            snaps:
+                iot-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'iot']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['20']
+            derived-from: [ '20.04', 'linux-iot' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
