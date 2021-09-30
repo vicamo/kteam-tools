@@ -1224,8 +1224,10 @@
                     type: lrs
                 linux-nv-dgx-modules:
                     type: extra
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-nv-dgx-modules']
                 linux-nv-dgx-modules-signed:
                     type: extra2
+                    repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-nv-dgx-modules-signed']
             supported: true
             private: true
             derived-from: [ '20.04', 'linux' ]
