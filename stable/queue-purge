@@ -27,7 +27,7 @@ if __name__ == '__main__':
             if ks_series.supported or ks_series.development:
                 series.append(ks_series)
 
-    lp = LaunchpadDirect().login()
+    lp = LaunchpadDirect().login('queue-purge')
     lp_ubuntu = lp.distributions['ubuntu']
     lp_archive = lp.archives.getByReference(reference='primary')
 
