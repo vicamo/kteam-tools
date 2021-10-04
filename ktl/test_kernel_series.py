@@ -1403,6 +1403,44 @@ class TestKernelSourceEntry(TestKernelSeriesCore):
         self.assertIsNotNone(source.swm_data)
         self.assertTrue(source.swm_data['something'])
 
+    def test_owner_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.owner)
+
+    def test_swm_owner_empty(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    owner:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertIsNone(source.owner)
+
+    def test_owner_present_something(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    owner: botty-mc-bot-face
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+
+        self.assertEqual(source.owner, 'botty-mc-bot-face')
+
 
 class TestKernelSourceTestingFlavourEntry(TestKernelSeriesCore):
 

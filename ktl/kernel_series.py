@@ -325,6 +325,10 @@ class KernelSourceEntry:
         return self._data.get('severe-only', False)
 
     @property
+    def owner(self):
+        return self._data.get('owner', None)
+
+    @property
     def stakeholder(self):
         return self._data.get('stakeholder', None)
 
