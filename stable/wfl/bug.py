@@ -652,9 +652,12 @@ class WorkflowBug():
                 s.snap.name != s.name):
                 task[taskname]['target'] = s.snap.name
 
-        # If prepare-package has an owner and the tracker does not, default
-        # to that.
-        if owner is None and owner_pp is not None:
+        # If the workflow task is assigned assume that as owner.  If not
+        # and the kernel-series object has an owner use that.  If neither
+        # of those is valid, use the prepare-package owner.
+        if owner is None and s.source is not None and s.source.owner is not None:
+            owner = s.source.owner
+        elif owner is None and owner_pp is not None:
             owner = owner_pp
 
         # If we still have no owner and we are a snap-debs tracker
