@@ -4000,6 +4000,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic', 'ibm-gt-fips']
             supported: true
+            owner: mhcerri
             private: true
             backport: true
             derived-from: ['18.04', 'linux-ibm-gt']
