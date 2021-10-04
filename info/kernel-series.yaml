@@ -1492,6 +1492,7 @@ defaults:
                 linux-restricted-signatures-oem-5.10:
                     type: lrs
             supported: true
+            owner: acelankao
             swm:
                 kernel-testing: true
             testing:
