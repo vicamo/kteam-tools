@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+import argparse
+import os
+import re
+import sys
+import yaml
+
+from datetime import datetime, timedelta
+
+from jira import JIRA
+
+# SwmStatus
+#
+class SwmStatus:
+    _url = 'https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
+
+    def __init__(self, url=None, data=None, use_local=False):
+        if data is None and url is None:
+            url = self._url
+        if data is None and url:
+            response = urlopen(url)
+            data = response.read()
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
+
+        self._data = yaml.safe_load(data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def items(self):
+        return self._data.items()
+
+    def __getitem__(self, *args, **kwargs):
+        return self._data.__getitem__(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        return self._data.get(*args, **kwargs)
+
+
+def key_to_title(key):
+    end = 4
+    if key[2] == key[3]:
+        end = 3
+    return ':'.join(key[1:end]) + ' #' + key[0]
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
+    args = parser.parse_args()
+
+    print(datetime.now())
+
+    # Load up the Swm Status data.  This tells us what trackers exist
+    # and provides us with status information for each.
+    status = SwmStatus()
+
+    # Record card dispositions.
+    disposition = {}
+
+    # Run the list of tracks and extract the live cycles and create
+    # a tracker mapping.  Ensure this is done in bug_id order so
+    # we use a consistent tracker.
+    cycles = set()
+    cycle_trackers = {}
+    for bug_id, bug_data in sorted(status.items()):
+        (cycle, spin) = bug_data['cycle'].rsplit('-', 1)
+        if cycle[0] == 'd':
+            continue
+        cycles.add(cycle)
+
+        #print(bug_id, cycle, spin, bug_data['phase'])
+
+        bug_data['_id'] = bug_id
+        cycle_trackers.setdefault(cycle, {})[(spin, bug_data.get('series', '-'), bug_data.get('source', '-'), bug_data.get('target', '-'))] = bug_data
+
+    # Connect us to JIRA.
+    jira = JIRA('https://warthogs.atlassian.net/')
+
+    # Lookup custom fields we are going to use.
+    for field in jira.fields():
+        if field['name'] == 'Epic Link':
+            custom_epic_link = field['key']
+
+    # Find the SRU epic parent.
+    sru_epic = 'KERN-25' #jira.issue('KERN-25')
+
+    # Look up all live cycles.
+    jira_cycles = {}
+    stories = jira.search_issues('project=KERN and component="SRU Cycle" and issuetype=Story and status!=DONE')
+    print("Stories:", len(stories))
+    for story in stories:
+        #print(story, story.fields.summary, getattr(story.fields, custom_epic_link))
+        jira_cycles[story.fields.summary.replace('SRU-', '')] = story
+
+    #print(cycles)
+    #print(jira_cycles)
+    #print(cycle_trackers.keys())
+
+    jira_issues = {}
+
+    crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
+
+    for cycle in cycles:
+        print("Cycle:", cycle, jira_cycles[cycle])
+        trackers = cycle_trackers[cycle]
+
+        if cycle not in jira_cycles:
+            print("{}: new cycle ...".format(cycle))
+            issue_dict = {
+                'project': {'key': 'KERN'},
+                'summary': 'SRU-' + cycle,
+                'description': 'Tasks related to the ' + cycle + ' SRU Cycle',
+                'components': [{'name': 'SRU Cycle'}],
+                'issuetype': {'name': 'Story'},
+                custom_epic_link: sru_epic,
+            }
+            new_story = jira.create_issue(fields=issue_dict)
+            jira_cycles[cycle] = new_story
+
+        jira_cycle = jira_cycles[cycle].key
+
+        jira_issues = {}
+        chunk_offset = 0
+        chunk_size = 50
+        while True:
+            issues = jira.search_issues('project=KERN and component="SRU Cycle" and parent={}'.format(jira_cycle), startAt=chunk_offset, maxResults=chunk_size) #, fields="summary, status")
+            chunk_offset += chunk_size
+            if len(issues) == 0:
+                break
+            for issue in issues:
+                summary = issue.fields.summary
+                match = crank_re.match(summary)
+                if not match:
+                    continue
+                #print("APW", issue, summary, match.group(1), match.group(2))
+
+                bits = [match.group(2)] + match.group(1).split(':')
+                if len(bits) == 3:
+                    bits.append(bits[-1])
+                key = tuple(bits)
+                if key in jira_issues:
+                    print("DUPLICATE", jira_issues[key])
+                    jira_issues[key].delete()
+                jira_issues[key] = issue
+
+        #print(trackers)
+        #print(jira_issues.keys())
+        print("ISSUES:", len(jira_issues))
+
+        for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
+            if key not in trackers:
+                print("LOST ISSUE")
+                issue = jira_issues[key]
+                jira.transition_issue(issue, transition='Done')
+                continue
+
+            if key not in jira_issues:
+                print("MISSING ISSUE")
+                print("{}: new issue ...".format(cycle))
+                title = key_to_title(key)
+                issue_dict = {
+                    'project': {'key': 'KERN'},
+                    'summary': 'Crank ' + title,
+                    'description': 'Tasks related to cranking ' + title + '.',
+                    'components': [{'name': 'SRU Cycle'}],
+                    'issuetype': {'name': 'Sub-task'},
+                    'parent': {'key': jira_cycle},
+                }
+                issue = jira.create_issue(fields=issue_dict)
+                os.exit(1)
+                jira.transition_issue(issue, transition='Backlog')
+                jira_issues[key] = issue
+                print(issue)
+
+            # Determine swm's view of its disposition.
+            tracker_phase = trackers[key].get('phase', '-')
+            tracker_tasks = trackers[key].get('task', {})
+            preparation_ready = False
+            preparation_started = False
+            preparation_done = True
+            for task_name in (':prepare-packages', 'snap-prepare'):
+                task = tracker_tasks.get(task_name, {})
+                if task.get('status', 'Invalid') in ('Confirmed'):
+                    preparation_ready = True
+                if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                    preparation_started = True
+                if task.get('status', 'Invalid') not in ('Invalid', 'Fix Committed', 'Fix Released'):
+                    preparation_done = False
+
+            testing_started = False
+            testing_done = True
+            signoff_started = False
+            signoff_done = True
+            for task_name, task in tracker_tasks.items():
+                if task_name.endswith('-testing'):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        testing_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        testing_done = False
+                if task_name.endswith('-signoff'):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        signoff_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        signoff_done = False
+
+            can_be = []
+            if preparation_started:
+                status = 'On Deck'
+
+            if not preparation_started:
+                status = 'Backlog'
+
+            elif preparation_started and not preparation_done:
+                status = 'In Progress'
+                can_be += ['Review Needed', 'Review Ongoing', 'Review Failed']
+
+            elif ((testing_started and not testing_done) or
+                    (signoff_started and not signoff_done)):
+                status = 'Waiting'
+
+            can_be.append(status)
+
+            issue = jira_issues[key]
+            #print("SYNC ISSUE", issue)
+            if str(issue.fields.status) not in can_be:
+                print(issue.fields.status, '->', status)
+                jira.transition_issue(issue, transition=status)
+
+
+    #with open("swm-trello.yaml.new", "w") as sfd:
+    #    state = {'disposition': disposition}
+    #    yaml.dump(state, sfd, default_flow_style=False)
+    #os.rename("swm-trello.yaml.new", "swm-trello.yaml")
+
+    print(datetime.now())
