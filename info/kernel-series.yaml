@@ -4006,7 +4006,7 @@ defaults:
             derived-from: ['18.04', 'linux-ibm-gt']
             testing:
                 flavours:
-                    ibm-gt:
+                    ibm-gt-fips:
                         arches: ['amd64']   # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
