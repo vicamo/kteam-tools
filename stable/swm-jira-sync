@@ -13,9 +13,11 @@ import re
 import sys
 import yaml
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from jira import JIRA
+from jira.resources import GreenHopperResource
+
 
 # SwmStatus
 #
@@ -58,7 +60,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
 
-    print(datetime.now())
+    print(datetime.now(), "starting")
 
     # Load up the Swm Status data.  This tells us what trackers exist
     # and provides us with status information for each.
@@ -83,57 +85,65 @@ if __name__ == '__main__':
         bug_data['_id'] = bug_id
         cycle_trackers.setdefault(cycle, {})[(spin, bug_data.get('series', '-'), bug_data.get('source', '-'), bug_data.get('target', '-'))] = bug_data
 
+    print("SWM Cycles:", len(cycles))
+    for cycle in sorted(cycles):
+        print(" ", cycle)
+
     # Connect us to JIRA.
-    jira = JIRA('https://warthogs.atlassian.net/')
+    jira = JIRA('https://warthogs.atlassian.net/',
+        options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
 
     # Lookup custom fields we are going to use.
-    for field in jira.fields():
-        if field['name'] == 'Epic Link':
-            custom_epic_link = field['key']
+    #for field in jira.fields():
+    #    if field['name'] == 'Epic Link':
+    #        custom_epic_link = field['key']
+    #    if field['name'] == 'Sprint':
+    #        custom_sprint = field['key']
 
-    # Find the SRU epic parent.
-    sru_epic = 'KERN-25' #jira.issue('KERN-25')
+    project_key, board_name = 'KSRU', 'SRU Cycles'
 
-    # Look up all live cycles.
+    # Lookup the sprint board in its project.
+    boards = jira.boards(projectKeyOrID=project_key, name=board_name)
+    board = boards[0]
+
+    # Find the active sprints.
+    sprints = jira.sprints(board_id=board.id, state='active,future')
+    #print(sprints)
+    print("JIRA Sprints:", len(sprints))
     jira_cycles = {}
-    stories = jira.search_issues('project=KERN and component="SRU Cycle" and issuetype=Story and status!=DONE')
-    print("Stories:", len(stories))
-    for story in stories:
+    for sprint in sprints:
         #print(story, story.fields.summary, getattr(story.fields, custom_epic_link))
-        jira_cycles[story.fields.summary.replace('SRU-', '')] = story
+        jira_cycles[sprint.name] = sprint
 
-    #print(cycles)
     #print(jira_cycles)
-    #print(cycle_trackers.keys())
+    for cycle in sorted(jira_cycles.keys()):
+        print(" ", cycle)
 
     jira_issues = {}
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
 
-    for cycle in cycles:
-        print("Cycle:", cycle, jira_cycles[cycle])
+    blocked = set()
+
+    for cycle in sorted(cycles):
+        print("Cycle:", cycle)
         trackers = cycle_trackers[cycle]
+        print("  SWM Trackers:", len(trackers))
 
         if cycle not in jira_cycles:
-            print("{}: new cycle ...".format(cycle))
-            issue_dict = {
-                'project': {'key': 'KERN'},
-                'summary': 'SRU-' + cycle,
-                'description': 'Tasks related to the ' + cycle + ' SRU Cycle',
-                'components': [{'name': 'SRU Cycle'}],
-                'issuetype': {'name': 'Story'},
-                custom_epic_link: sru_epic,
-            }
-            new_story = jira.create_issue(fields=issue_dict)
-            jira_cycles[cycle] = new_story
+            print("{}: new sprint ...".format(cycle))
+            start_date = datetime.strptime(cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
+            end_date = start_date + timedelta(days=21)
+            new_sprint = jira.create_sprint(name=cycle, board_id=board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
+            jira_cycles[cycle] = new_sprint
 
-        jira_cycle = jira_cycles[cycle].key
+        jira_cycle = jira_cycles[cycle]
 
         jira_issues = {}
         chunk_offset = 0
         chunk_size = 50
         while True:
-            issues = jira.search_issues('project=KERN and component="SRU Cycle" and parent={}'.format(jira_cycle), startAt=chunk_offset, maxResults=chunk_size) #, fields="summary, status")
+            issues = jira.search_issues('project="{}" and sprint={}'.format(project_key, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
             chunk_offset += chunk_size
             if len(issues) == 0:
                 break
@@ -155,13 +165,41 @@ if __name__ == '__main__':
 
         #print(trackers)
         #print(jira_issues.keys())
-        print("ISSUES:", len(jira_issues))
+        print("  JIRA Issues:", len(jira_issues))
 
         for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
             if key not in trackers:
-                print("LOST ISSUE")
                 issue = jira_issues[key]
-                jira.transition_issue(issue, transition='Done')
+                status = str(issue.fields.status)
+                # If we have no swm tracker for this card, it is either new and
+                # should be ignored till the tracker appears, or it has been
+                # closed in our absense and should be closed.  If it is In
+                # Backlog then we have never seen it before, so leave it be;
+                # otherwise we need to shove it into Kernel Complete.
+                if status == 'In Backlog':
+                    print("NEW/UNKNOWN ISSUE")
+
+                elif status != 'Kernel Complete':
+                    print("LOST/COMPLETE ISSUE")
+                    step_to_done = {
+                        'kernel not ready': 'Kernel Ready',
+                        'kernel ready': 'Kernel Preparing',
+                        'kernel preparing': 'Kernel Building',
+                        'kernel building': 'Kernel Early Testing',
+                        'kernel early testing': 'Kernel Promotion',
+                        'kernel promotion': 'Kernel Testing',
+                        'kernel testing': 'Kernel Complete',
+                        'kernel testing failed': 'Kernel Testing',
+                        'kernel review failed': 'Kernel Preparing',
+                    }
+                    while True:
+                        status_key = status.lower()
+                        status_step = step_to_done.get(status_key)
+                        if status_step is None:
+                            break
+                        print(issue.key, status, '->', status_step)
+                        jira.transition_issue(issue, transition=status_step)
+                        status = status_step
                 continue
 
             if key not in jira_issues:
@@ -169,77 +207,183 @@ if __name__ == '__main__':
                 print("{}: new issue ...".format(cycle))
                 title = key_to_title(key)
                 issue_dict = {
-                    'project': {'key': 'KERN'},
+                    'project': {'key': project_key},
                     'summary': 'Crank ' + title,
                     'description': 'Tasks related to cranking ' + title + '.',
-                    'components': [{'name': 'SRU Cycle'}],
-                    'issuetype': {'name': 'Sub-task'},
-                    'parent': {'key': jira_cycle},
+                    'issuetype': {'name': 'Task'},
                 }
                 issue = jira.create_issue(fields=issue_dict)
-                os.exit(1)
-                jira.transition_issue(issue, transition='Backlog')
-                jira_issues[key] = issue
                 print(issue)
+                jira.add_issues_to_sprint(sprint_id=jira_cycle.id, issue_keys=[issue.key])
+                #jira.transition_issue(issue, transition='Kernel Not Ready')
+                jira_issues[key] = issue
+
+            else:
+                issue = jira_issues[key]
 
             # Determine swm's view of its disposition.
-            tracker_phase = trackers[key].get('phase', '-')
+            tracker_id = trackers[key].get('_id')
             tracker_tasks = trackers[key].get('task', {})
-            preparation_ready = False
-            preparation_started = False
-            preparation_done = True
-            for task_name in (':prepare-packages', 'snap-prepare'):
-                task = tracker_tasks.get(task_name, {})
-                if task.get('status', 'Invalid') in ('Confirmed'):
-                    preparation_ready = True
-                if task.get('status', 'Invalid') not in ('New', 'Invalid'):
-                    preparation_started = True
-                if task.get('status', 'Invalid') not in ('Invalid', 'Fix Committed', 'Fix Released'):
-                    preparation_done = False
 
+            ready_started = False
+            ready_complete = True
+            preparation_started = False
+            preparation_complete = True
+            builds_started = False
+            builds_complete = True
+            for task_name in (':prepare-packages', 'snap-prepare'):
+                status = tracker_tasks.get(task_name, {}).get('status', 'Invalid')
+                if status in ('Confirmed', 'In Progress', 'Fix Committed', 'Fix Released'):
+                    ready_started = True
+                if status not in ('Invalid', 'In Progress', 'Fix Committed', 'Fix Released'):
+                    ready_complete = False
+
+                if status in ('In Progress', 'Fix Committed', 'Fix Released'):
+                    preparation_started = True
+                if status not in ('Invalid', 'Fix Committed', 'Fix Released'):
+                    preparation_complete = False
+
+                if status in ('In Progress', 'Fix Committed'):
+                    builds_started = True
+                if status not in ('Invalid', 'Fix Released'):
+                    builds_complete = False
+
+            earlytest_started = False
+            earlytest_complete = True
+            earlytest_failed = False
+            ptp_started = False
+            ptp_complete = True
             testing_started = False
-            testing_done = True
+            testing_complete = True
+            testing_failed = False
             signoff_started = False
-            signoff_done = True
+            signoff_complete = True
             for task_name, task in tracker_tasks.items():
-                if task_name.endswith('-testing'):
+                if task_name == 'boot-testing':
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        earlytest_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        earlytest_complete = False
+                    if task.get('status', 'Invalid') == 'Incomplete':
+                        earlytest_failed = True
+                elif task_name.endswith('-testing'):
                     if task.get('status', 'Invalid') not in ('New', 'Invalid'):
                         testing_started = True
                     if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
-                        testing_done = False
+                        testing_complete = False
+                    if task.get('status', 'Invalid') == 'Incomplete':
+                        testing_failed = True
                 if task_name.endswith('-signoff'):
                     if task.get('status', 'Invalid') not in ('New', 'Invalid'):
                         signoff_started = True
                     if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
-                        signoff_done = False
+                        signoff_complete = False
+                if task_name in ('promote-to-proposed', 'promote-signing-to-proposed'):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        ptp_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        ptp_complete = False
 
-            can_be = []
-            if preparation_started:
-                status = 'On Deck'
+            starting_state = str(issue.fields.status)
+            while True:
+                # We can only follow the workflow so determine our starting point.
+                target_state = starting_state
 
-            if not preparation_started:
-                status = 'Backlog'
+                if starting_state == 'In Backlog':
+                    target_state = 'Kernel Not Ready'
 
-            elif preparation_started and not preparation_done:
-                status = 'In Progress'
-                can_be += ['Review Needed', 'Review Ongoing', 'Review Failed']
+                elif starting_state == 'Kernel Not Ready':
+                    if ready_started:
+                        target_state = 'Kernel Ready'
 
-            elif ((testing_started and not testing_done) or
-                    (signoff_started and not signoff_done)):
-                status = 'Waiting'
+                elif starting_state == 'Kernel Ready':
+                    if not ready_started:
+                        target_state = 'Kernel Not Ready'
+                    elif ready_complete:
+                        target_state = 'Kernel Preparing'
 
-            can_be.append(status)
+                elif starting_state == 'Kernel Preparing':
+                    # Allow us to move to kernel-preparing manually as an interlock.
+                    if not ready_started:
+                    #if not ready_complete:
+                        target_state = 'Kernel Ready'
+                    elif preparation_complete:
+                        target_state = 'Kernel Building'
 
-            issue = jira_issues[key]
-            #print("SYNC ISSUE", issue)
-            if str(issue.fields.status) not in can_be:
-                print(issue.fields.status, '->', status)
-                jira.transition_issue(issue, transition=status)
+                elif starting_state == 'Kernel Building':
+                    if not preparation_complete:
+                        target_state = 'Kernel Preparing'
+                    elif builds_complete:
+                        target_state = 'Kernel Early Testing'
 
+                elif starting_state == 'Kernel Early Testing':
+                    if not builds_complete:
+                        target_state = 'Kernel Building'
+                    elif earlytest_complete:
+                        target_state = 'Kernel Promotion'
+                    elif earlytest_failed:
+                        target_state = 'Kernel Testing Failed'
 
-    #with open("swm-trello.yaml.new", "w") as sfd:
+                elif starting_state == 'Kernel Promotion':
+                    if not earlytest_complete:
+                        target_state = 'Kernel Early Testing'
+                    elif ptp_complete:
+                        target_state = 'Kernel Testing'
+
+                elif starting_state == 'Kernel Testing':
+                    #print("ptp_complete<{}> testing_complete<{}> testing_failed<{}>".format(ptp_complete, testing_complete, testing_failed))
+                    if not ptp_complete:
+                        target_state = 'Kernel Promotion'
+                    elif testing_complete:
+                        target_state = 'Kernel Complete'
+                    elif testing_failed:
+                        target_state = 'Kernel Testing Failed'
+
+                elif starting_state == 'Kernel Complete':
+                    if not testing_complete:
+                        target_state = 'Kernel Testing'
+
+                elif starting_state == 'Kernel Testing Failed':
+                    # If a test phase is:
+                    #  failed, stay here;
+                    #  successful, move to the latest such phase,
+                    #  not-started, move to the earliest such phase,
+                    # For these latter two we are cirtain to step onwards
+                    # in the same direction.
+                    if testing_failed or earlytest_failed:
+                        pass
+                    elif testing_complete:
+                        target_state = 'Kernel Testing'
+                    elif earlytest_complete:
+                        target_state = 'Kernel Early Testing'
+                    elif not earlytest_started:
+                        target_state = 'Kernel Early Testing'
+                    elif not testing_started:
+                        target_state = 'Kernel Testing'
+
+                elif starting_state == 'Kernel Blocked':
+                    blocked.add(tracker_id)
+
+                #print("SYNC ISSUE", issue, starting_state, target_state)
+                if starting_state == target_state:
+                    break
+
+                print(issue.key, starting_state, '->', target_state)
+                jira.transition_issue(issue, transition=target_state)
+                starting_state = target_state
+
+            # Add labels based on the variant type so we can colourise cards.
+            tracker_variant = trackers[key].get('variant')
+            #print(issue, tracker_variant)
+            if tracker_variant is not None:
+                label_with = 'kernel-' + tracker_variant
+                if label_with not in issue.fields.labels:
+                    print(issue, "adding label", label_with)
+                    issue.add_field_value('labels', label_with)
+
+    #with open("swm-jira.yaml.new", "w") as sfd:
     #    state = {'disposition': disposition}
     #    yaml.dump(state, sfd, default_flow_style=False)
-    #os.rename("swm-trello.yaml.new", "swm-trello.yaml")
+    #os.rename("swm-jira.yaml.new", "swm-jira.yaml")
 
-    print(datetime.now())
+    print(datetime.now(), "complete")
