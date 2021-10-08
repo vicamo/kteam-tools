@@ -6,9 +6,12 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, DEBUG, INFO
 import signal
 import traceback
+from ktl.kernel_series                  import KernelSeries
+from ktl.sru_cycle                      import SruCycle
 from ktl.log                            import center, cleave, Clog
 from wfl.launchpad                      import Launchpad
 from wfl.bug                            import WorkflowBug
+from wfl.context                        import ctx
 
 # TheApp
 #
@@ -66,12 +69,6 @@ class Tasks(object):
         s._lp = None
         cleave(s.__class__.__name__ + '.__init__')
 
-    @property
-    def lp(s):
-        if s._lp is None:
-            s._lp = Launchpad(False)
-        return s._lp
-
     # retest
     #
     def retest(s, args):
@@ -85,7 +82,7 @@ class Tasks(object):
             args.op = 'boot' if args.ppa else 'sru'
 
         for b in args.bugs:
-            wb = WorkflowBug(s.lp.default_service, b)
+            wb = WorkflowBug(ctx.launchpad.default_service, b)
             #print("DRY-RUN: op={} ppa={}\n".format(args.op, args.ppa))
             wb.debs.send_testing_requests(op=args.op, ppa=args.ppa)
 
@@ -127,6 +124,11 @@ if __name__ == '__main__':
     else:
         log_format = "%(message)s"
         basicConfig(level=INFO, format=log_format)
+
+    ctx.launchpad = lambda : Launchpad()
+    ctx.lp = lambda : ctx.launchpad.default_service.launchpad
+    ctx.sc = lambda : SruCycle()
+    ctx.ks = lambda : KernelSeries()
 
     center('__main__')
     try:
