@@ -1675,6 +1675,38 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-cvm:
+            routing:
+              <<: &routing-table-security-build
+              build:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+            Variants: ['--']
+            packages:
+                linux-azure-cvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-cvm']
+                linux-restricted-modules-azure-cvm:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal', 'azure-cvm']
+                linux-restricted-generate-azure-cvm:
+                    type: lrg
+                linux-restricted-signatures-azure-cvm:
+                    type: lrs
+            supported: true
+            derived-from: [ '20.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: false
+            invalid-tasks:
+              - automated-testing
+              - boot-testing
+              - certification-testing
+              - promote-to-proposed
+              - promote-to-security
+              - promote-to-updates
+              - regression-testing
+              - security-signoff
+
         linux-azure-fde:
             routing:
               build:
