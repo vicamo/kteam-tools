@@ -99,16 +99,6 @@ class SnapPrepare(KernelSnapBase):
         # We ARE aware of invalid bugs.
         return s.jumper[state]()
 
-    # kernel_block_source
-    #
-    def kernel_block_source(s):
-        return 'kernel-block' in s.bug.tags or 'kernel-block-source' in s.bug.tags
-
-    # trello_block_source
-    #
-    def trello_block_source(s):
-        return 'kernel-trello-blocked-snap-prepare' in s.bug.tags
-
     # _new
     #
     def _new(s):
@@ -142,13 +132,10 @@ class SnapPrepare(KernelSnapBase):
                 break
 
             # Are we blocked.
-            if s.trello_block_source():
-                cinfo('    snap is in Blocked on SRU board', 'yellow')
-                s.task.reason = 'Stalled -- blocked on SRU board'
-                break
-            if s.kernel_block_source():
-                cinfo('    A kernel-block/kernel-block-source tag exists on this tracking bug', 'yellow')
-                s.task.reason = 'Stalled -- manual kernel-block/kernel-block-source present'
+            block = s.bug.source_block_present()
+            if block is not None:
+                cinfo('    snap is in blocked via ' + block, 'yellow')
+                s.task.reason = 'Stalled -- blocked via ' + block
                 break
 
             s.task.status = 'Confirmed'
@@ -174,11 +161,9 @@ class SnapPrepare(KernelSnapBase):
             if s.oldest_tracker is not None:
                 cinfo('            A previous cycle tracker is active pulling back from Confirmed', 'yellow')
                 pull_back = True
-            if s.trello_block_source():
-                cinfo('            Blocked on the SRU board pulling back from Confirmed', 'yellow')
-                pull_back = True
-            if s.kernel_block_source():
-                cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+            block = s.bug.source_block_present()
+            if block is not None:
+                cinfo('            Blocked via {} pulling back from Confirmed'.format(block), 'yellow')
                 pull_back = True
             if s.debs_bug.task_status('promote-to-proposed') != 'Fix Released':
                 cinfo('    task promote-to-proposed is not \'Fix Released\' pulling back from Confirmed', 'yellow')

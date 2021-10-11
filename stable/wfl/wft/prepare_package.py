@@ -48,28 +48,6 @@ class PreparePackage(TaskHandler):
             return False
         return s.jumper[state]()
 
-    # _trello_block_source
-    #
-    def _trello_block_source(s):
-        if 'kernel-trello-blocked-debs-prepare' in s.bug.tags or 'kernel-trello-blocked-prepare-packages' in s.bug.tags:
-            return True
-        return False
-
-    # _kernel_block_source
-    #
-    def _kernel_block_source(s):
-        '''
-        If a 'kernel-block-source' tag exist return True.
-        '''
-        center(s.__class__.__name__ + '._kernel_block_source')
-        retval = False
-
-        if 'kernel-block' in s.bug.tags or 'kernel-block-source' in s.bug.tags:
-            retval = True
-
-        cleave(s.__class__.__name__ + '._kernel_block_source (%s)' % retval)
-        return retval
-
     # _package_name
     #
     def _package_name(s):
@@ -137,7 +115,8 @@ class PreparePackage(TaskHandler):
                 break
 
             # Are we blocked.
-            if s._trello_block_source():
+            block = s.bug.source_block_present()
+            if block is not None:
                 break
 
             # For derivative bugs we wait until the parent has at least got its
@@ -156,10 +135,6 @@ class PreparePackage(TaskHandler):
                 not s.bug.is_valid
                ):
                 retval = False
-                break
-
-            if s._kernel_block_source():
-                s.task.reason = 'Stalled -- manual kernel-block/kernel-block-source present'
                 break
 
             s.task.status = 'Confirmed'
@@ -188,11 +163,9 @@ class PreparePackage(TaskHandler):
             if s.bug.debs.older_tracker_in_ppa:
                 cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
                 pull_back = True
-            if s._trello_block_source():
-                cinfo('            Blocked on the SRU board pulling back from Confirmed', 'yellow')
-                pull_back = True
-            if s._kernel_block_source():
-                cinfo('            A kernel-block/kernel-block-source tag exists on this tracking bug pulling back from Confirmed', 'yellow')
+            block = s.bug.source_block_present()
+            if block is not None:
+                cinfo('            Blocked via {} pulling back from Confirmed'.format(block), 'yellow')
                 pull_back = True
             if not s.master_prepare_ready():
                 cinfo('            Master kernel no longer ready pulling back from Confirmed', 'yellow')
