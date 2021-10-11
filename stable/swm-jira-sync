@@ -18,6 +18,8 @@ from datetime import datetime, timedelta, timezone
 from jira import JIRA
 from jira.resources import GreenHopperResource
 
+from wfl.launchpad import LaunchpadDirect
+
 
 # SwmStatus
 #
@@ -123,7 +125,8 @@ if __name__ == '__main__':
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
 
-    blocked = set()
+    blocked_seen = set()
+    blocked_want = set()
 
     for cycle in sorted(cycles):
         print("Cycle:", cycle)
@@ -224,6 +227,12 @@ if __name__ == '__main__':
             # Determine swm's view of its disposition.
             tracker_id = trackers[key].get('_id')
             tracker_tasks = trackers[key].get('task', {})
+            tracker_flags = trackers[key].get('flag', {})
+
+            if tracker_flags.get('jira-preparation-block', False):
+                blocked_seen.add(tracker_id)
+
+            tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
 
             ready_started = False
             ready_complete = True
@@ -293,11 +302,15 @@ if __name__ == '__main__':
                     target_state = 'Kernel Not Ready'
 
                 elif starting_state == 'Kernel Not Ready':
-                    if ready_started:
+                    if tracker_trello_block:
+                        target_state = 'Kernel Blocked'
+                    elif ready_started:
                         target_state = 'Kernel Ready'
 
                 elif starting_state == 'Kernel Ready':
-                    if not ready_started:
+                    if tracker_trello_block:
+                        target_state = 'Kernel Blocked'
+                    elif not ready_started:
                         target_state = 'Kernel Not Ready'
                     elif ready_complete:
                         target_state = 'Kernel Preparing'
@@ -362,7 +375,10 @@ if __name__ == '__main__':
                         target_state = 'Kernel Testing'
 
                 elif starting_state == 'Kernel Blocked':
-                    blocked.add(tracker_id)
+                    # XXX: we are not primary for blocked.
+                    #blocked_want.add(tracker_id)
+                    if not tracker_trello_block:
+                        target_state = 'Kernel Not Ready'
 
                 #print("SYNC ISSUE", issue, starting_state, target_state)
                 if starting_state == target_state:
@@ -381,9 +397,32 @@ if __name__ == '__main__':
                     print(issue, "adding label", label_with)
                     issue.add_field_value('labels', label_with)
 
-    #with open("swm-jira.yaml.new", "w") as sfd:
-    #    state = {'disposition': disposition}
-    #    yaml.dump(state, sfd, default_flow_style=False)
-    #os.rename("swm-jira.yaml.new", "swm-jira.yaml")
+    # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
+    blocked_add = blocked_want - blocked_seen
+    blocked_del = blocked_seen - blocked_want
+    if len(blocked_del) > 0 or len(blocked_add) > 0:
+        lp = LaunchpadDirect.login()
+        tag = 'kernel-jira-preparation-blocked'
+        for bug_id in blocked_del:
+            bug = lp.bugs[bug_id]
+            if tag not in bug.tags:
+                print("LP #{} -- removing {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- removing {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.remove(tag)
+            bug.tags = tags
+            bug.lp_save()
+
+        for bug_id in blocked_add:
+            bug = lp.bugs[bug_id]
+            if tag in bug.tags:
+                print("LP #{} -- added {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- adding {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.append(tag)
+            bug.tags = tags
+            bug.lp_save()
 
     print(datetime.now(), "complete")
