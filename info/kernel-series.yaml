@@ -1716,13 +1716,7 @@ defaults:
               - security-signoff
 
         linux-azure-fde:
-            routing:
-              build:
-                - ['ppa:canonical-kernel-team/ubuntu/azure', 'Release']
-              proposed:
-                - ['ppa:canonical-kernel-team/ubuntu/azure-test', 'Release']
-              signing:
-                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            routing: classic-fde
             variants: ['--']
             packages:
                 linux-azure-fde:
@@ -1733,9 +1727,8 @@ defaults:
                 linux-signed-azure-fde:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde']
-            supported: false
-            development: true
-            derived-from: [ '20.04', 'linux-azure' ]
+            supported: true
+            derived-from: [ '20.04', 'linux-azure-cvm' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -1744,7 +1737,7 @@ defaults:
                     azure:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
-            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            invalid-tasks: [ 'certification-testing', 'verification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.8:
