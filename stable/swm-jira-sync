@@ -15,10 +15,25 @@ import yaml
 
 from datetime import datetime, timedelta, timezone
 
-from jira import JIRA
-from jira.resources import GreenHopperResource
+from jira import JIRA as BrokenJIRA
+from jira.resources import GreenHopperResource, User
 
 from wfl.launchpad import LaunchpadDirect
+
+
+class JIRA(BrokenJIRA):
+
+    # XXX: switch this from a `username` to a `query`.  In strict GDPR mode we no longer have
+    # a username, only an accountID.  See python3-jira/client.py for signature.
+    def search_users(
+        self, user, startAt=0, maxResults=50, includeActive=True, includeInactive=False
+    ):
+        params = {
+            "query": user,
+            "includeActive": includeActive,
+            "includeInactive": includeInactive,
+        }
+        return self._fetch_pages(User, None, "user/search", startAt, maxResults, params)
 
 
 # SwmStatus
@@ -59,6 +74,19 @@ def key_to_title(key):
 
 if __name__ == '__main__':
 
+    jira_id_cache = {}
+    def email_to_jira_id(email):
+        if email not in jira_id_cache:
+            jira_id = None
+            print("LOOKUP", email)
+            users = jira.search_users(email)
+            if users is not None and len(users) > 0:
+                jira_id = users[0].accountId
+            else:
+                jira_id = None
+            jira_id_cache[email] = jira_id
+        return jira_id_cache[email]
+
     parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
     args = parser.parse_args()
 
@@ -67,6 +95,10 @@ if __name__ == '__main__':
     # Load up the Swm Status data.  This tells us what trackers exist
     # and provides us with status information for each.
     status = SwmStatus()
+
+    # Load the usertable.
+    with open("kernel-users/users.yaml") as ufd:
+        users = yaml.safe_load(ufd)
 
     # Record card dispositions.
     disposition = {}
@@ -226,6 +258,7 @@ if __name__ == '__main__':
 
             # Determine swm's view of its disposition.
             tracker_id = trackers[key].get('_id')
+            tracker_owner = trackers[key].get('owner')
             tracker_tasks = trackers[key].get('task', {})
             tracker_flags = trackers[key].get('flag', {})
 
@@ -396,6 +429,26 @@ if __name__ == '__main__':
                 if label_with not in issue.fields.labels:
                     print(issue, "adding label", label_with)
                     issue.add_field_value('labels', label_with)
+
+            # Copy over any ownership information.
+            #print("OWNERS:", issue, tracker_owner, users.get(tracker_owner))
+            if tracker_owner is not None and tracker_owner in users:
+                owner_email = users[tracker_owner].get('email')
+                owner_jira_id = email_to_jira_id(owner_email)
+                jira_assignee = issue.fields.assignee
+                if jira_assignee is None or jira_assignee.accountId != owner_jira_id:
+                    if owner_jira_id is not None:
+                        print("ASSIGN:", issue, jira_assignee, owner_email, owner_jira_id)
+                        jira.assign_issue(issue, owner_email)
+                    else:
+                        print("ASSIGN:", issue, jira_assignee, owner_email, "FAILED")
+                    # Not all users have accounts, if we cannot find the account by email
+                    # assignment would creater, skip it.
+                    #jira_users = jira.search_users(user_email)
+                    #if len(jira_users) == 1:
+                    #    jira.assign_issue(issue, user_email)
+                    #else:
+                    #    print("ASSIGN:", issue, jira_assignee, user_email, "FAILED")
 
     # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
     blocked_add = blocked_want - blocked_seen
