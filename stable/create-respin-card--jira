@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+
+import argparse
+import re
+
+from jira import JIRA
+from jira.exceptions import JIRAError
+from jira.resources import GreenHopperResource
+
+
+class SRUBoardError(Exception):
+    pass
+
+class SRUBoard:
+    def __init__(self, cycle):
+        '''
+        :param cycle: The SRU cycle date of the board
+        '''
+        self.jira = JIRA('https://warthogs.atlassian.net/',
+            options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+
+        self.project_key = 'KSRU'
+        self.sprint_name = cycle
+
+        self.board = self.jira.boards(projectKeyOrID=self.project_key, name='SRU Cycles')[0]
+        for sprint in self.jira.sprints(board_id=self.board.id, state='active,future'):
+            if sprint.name == cycle:
+                self.sprint = sprint
+                break
+        else:
+            raise SRUBoardError("{}: cycle sprint not found".format(cycle))
+
+    respin_re = re.compile("^Re-spin \(#([0-9]+)\) *(.*)?$")
+    def get_latest_spin(self):
+        '''
+        Get all respin issues from the project.
+
+        :returns: list()
+        '''
+        latest = 1
+        chunk_offset = 0
+        chunk_size = 50
+        while True:
+            issues = self.jira.search_issues('project="{}" and sprint={} and summary~"Re-spin #"'.format(self.project_key, self.sprint.id), startAt=chunk_offset, maxResults=chunk_size)
+            chunk_offset += chunk_size
+            if len(issues) == 0:
+                break
+
+            for issue in issues:
+                title = issue.fields.summary
+                match = self.respin_re.match(title)
+                if not match:
+                    continue
+                print(issue.fields.summary)
+                this_spin = int(match.group(1))
+                if this_spin > latest:
+                    latest = this_spin
+
+        print("LATEST", latest)
+        return latest
+
+    def add_issue(self, issue ,dryrun=False):
+        '''
+        Add a new issue to the Notice column.
+
+        :param issue:    This is a dictionary which should contain at least
+                         'summary' and 'description' keywords.
+        '''
+
+        params = {
+            'project': {'key': self.project_key},
+            'issuetype': {'name': 'Task'},
+        }
+        params.update(issue)
+
+        if dryrun:
+            print('DRY: Add {}'.format(str(params)))
+        else:
+            print('Adding {}'.format(params['summary']))
+            issue = self.jira.create_issue(fields=params)
+            print(issue, 'https://warthogs.atlassian.net/browse/' + issue.key)
+            self.jira.add_issues_to_sprint(sprint_id=self.sprint.id, issue_keys=[issue.key])
+            self.jira.transition_issue(issue, transition='Kernel Notice')
+
+if __name__ == '__main__':
+    description = 'Add a new respin card for a cycle'
+    epilog = '''
+This script will reserve a new spin number for the given cycle and then adds
+a Notification card for it with some skeleton description to be completed
+before starting to create trackers.
+
+Examples:
+    Run with the default options:
+    $ create-respin-card 2020.03.02
+
+    Do not create anything, just print what would be done:
+    $ create-respin-card --dry-run 2018.03.02
+'''
+    parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('cycle', metavar='<cycle>',
+                        help='cycle tag (expected format: YYYY.MM.DD)',
+                        action='store')
+    parser.add_argument('--dry-run', required=False, action='store_true', default=False,
+                        help='only print steps, no action done')
+    args = parser.parse_args()
+
+    try:
+        board = SRUBoard(args.cycle)
+
+        spin = board.get_latest_spin() + 1
+
+        name  = 'Re-spin (#{}): <fill reason>'.format(spin)
+        desc  = 'Justification:\n==============\n'
+        desc += '<fill in details here>\n\n'
+
+        issue = {
+            'summary': name,
+            'description': desc,
+        }
+        board.add_issue(issue, dryrun=args.dry_run)
+    except SRUBoardError as e:
+        print(e)
+        exit(1)
+
+    exit(0)
