@@ -156,6 +156,7 @@ if __name__ == '__main__':
     jira_issues = {}
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
+    respin_re = re.compile("^Re-spin +\(#([0-9]+)\) *(.*)$")
 
     blocked_seen = set()
     blocked_want = set()
@@ -174,6 +175,8 @@ if __name__ == '__main__':
 
         jira_cycle = jira_cycles[cycle]
 
+        jira_key_to_respin = {}
+        jira_respin_to_key = {}
         jira_issues = {}
         chunk_offset = 0
         chunk_size = 50
@@ -184,19 +187,25 @@ if __name__ == '__main__':
                 break
             for issue in issues:
                 summary = issue.fields.summary
-                match = crank_re.match(summary)
-                if not match:
-                    continue
-                #print("APW", issue, summary, match.group(1), match.group(2))
 
-                bits = [match.group(2)] + match.group(1).split(':')
-                if len(bits) == 3:
-                    bits.append(bits[-1])
-                key = tuple(bits)
-                if key in jira_issues:
-                    print("DUPLICATE", jira_issues[key])
-                    jira_issues[key].delete()
-                jira_issues[key] = issue
+                match = crank_re.match(summary)
+                if match:
+                    #print("APW", issue, summary, match.group(1), match.group(2))
+                    bits = [match.group(2)] + match.group(1).split(':')
+                    if len(bits) == 3:
+                        bits.append(bits[-1])
+                    key = tuple(bits)
+                    if key in jira_issues:
+                        print("DUPLICATE", jira_issues[key])
+                        jira_issues[key].delete()
+                    jira_issues[key] = issue
+                    continue
+
+                match = respin_re.match(summary)
+                if match:
+                    #print("APW", issue, summary)
+                    jira_key_to_respin[issue.key] = match.group(1)
+                    jira_respin_to_key[match.group(1)] = issue.key
 
         #print(trackers)
         #print(jira_issues.keys())
@@ -449,6 +458,26 @@ if __name__ == '__main__':
                     #    jira.assign_issue(issue, user_email)
                     #else:
                     #    print("ASSIGN:", issue, jira_assignee, user_email, "FAILED")
+
+            # Linkage for respins.
+            #print(issue.fields.issuelinks)
+            linked = False
+            for link in issue.fields.issuelinks:
+                if hasattr(link, 'inwardIssue'):
+                    if link.inwardIssue.key in jira_key_to_respin:
+                        #print(" ", link.inwardIssue.key)
+                        linked = True
+            if not linked:
+                summary = issue.fields.summary
+                match = crank_re.match(summary)
+                spin_number = match.group(2)
+
+                respin_key = jira_respin_to_key.get(spin_number)
+                if respin_key is not None:
+                    print(issue, "split from", respin_key)
+                    jira.create_issue_link('Issue split', respin_key, issue.key)
+                else:
+                    print(issue, "NO RESPIN CARD FOUND FOR", spin_number)
 
     # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
     blocked_add = blocked_want - blocked_seen
