@@ -1,0 +1,301 @@
+#!/usr/bin/env python3
+import yaml
+import argparse
+import os
+import re
+from datetime   import datetime, timedelta
+
+from ktl.kernel_series                  import KernelSeries
+from ktl.utils                          import run_command
+
+from jira import JIRA
+from jira.exceptions import JIRAError
+from jira.resources import GreenHopperResource
+
+
+class SRUBoardError(Exception):
+    pass
+
+
+class SRUBoard:
+    def __init__(self, cycle, dryrun=False):
+        '''
+        :param cycle: The SRU cycle date of the board
+        '''
+        self.jira = JIRA('https://warthogs.atlassian.net/',
+            options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+
+        self.cycle = cycle
+        self.dryrun = dryrun
+
+        self.project_key = 'KSRU'
+        self.sprint_name = cycle
+
+        self.board = self.jira.boards(projectKeyOrID=self.project_key, name='SRU Cycles')[0]
+
+    def create(self):
+        """
+        Create the Jira cycle
+
+        :return None
+        """
+        self.sprint = None
+        for sprint in self.jira.sprints(board_id=self.board.id, state='active,future'):
+            if sprint.name == self.cycle:
+                self.sprint = sprint
+                break
+
+        else:
+            if self.dryrun:
+                print('DRY: Create sprint: "{}"'.format(self.name))
+            else:
+                start_date = datetime.strptime(self.cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
+                end_date = start_date + timedelta(days=21)
+                self.sprint = jira.create_sprint(name=self.cycle, board_id=self.board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
+
+    def add_issue(self, name, desc=None, state=None):
+        """
+        Add the given card to the board.
+
+        :param name: card name
+        :param desc: card description
+        :param list_name: optional alternative list target
+        :return: None
+        """
+
+        params = {
+            'project': {'key': self.project_key},
+            'summary': name,
+            'issuetype': {'name': 'Task'},
+        }
+        if desc is not None:
+            params['description'] = desc
+
+        if self.dryrun:
+            print('DRY: Add "{}" issue in "{}"'.format(name, state))
+            if desc:
+                print('DRY:     "{}"'.format(desc))
+        else:
+            print('Adding issue: {}'.format(name))
+            issue = self.jira.create_issue(fields=params)
+            print(issue)
+            self.jira.add_issues_to_sprint(sprint_id=self.sprint.id, issue_keys=[issue.key])
+            if state == 'On Deck':
+                self.jira.transition_issue(issue, transition='To Do')
+
+
+class SRUCreator:
+    def __init__(self, args):
+        """
+        :param args: argparse args object
+        """
+
+        self.args = args
+        self.cycle = args.cycle
+        self.config_file = args.config
+        self.config = {}
+        self.config_load()
+
+    def config_load(self):
+        with open(self.config_file, 'r') as cfd:
+            self.config = yaml.safe_load(cfd)
+
+    def get_supported_series_sources(self):
+        series_sources = []
+        kernel_series = KernelSeries()
+
+        for master_series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+            if master_series.supported:
+                for series in sorted(kernel_series.series, key=KernelSeries.key_series_name, reverse=True):
+                    for source in sorted(series.sources, key=lambda x: x.name):
+                        if not source.supported:
+                            continue
+                        if source.copy_forward:
+                            continue
+                        derived_from = source.derived_from
+                        if derived_from:
+                            if derived_from.series != master_series:
+                                continue
+                        else:
+                            if series != master_series:
+                                continue
+                        series_sources.append((series, source))
+        return series_sources
+
+    def create(self):
+        """
+        Create the board, the lists and the cards and add the initial members
+        of the board, taking the info from the config file
+
+        :return: None
+        """
+        # create the board with the lists on the organization
+        board = SRUBoard(self.cycle, dryrun=self.args.dry_run)
+        board.create()
+
+        # Cache the tuples (series, source) of supported sources
+        series_sources_list = self.get_supported_series_sources()
+
+        # add the cards to the board, under the default list
+        for card in self.config['cards']:
+            if card['name'] == 'Turn the crank':
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        card_name = 'Crank %s/%s' % (series.codename, source.name)
+                        card_desc = None
+                        if series.esm:
+                            card_desc = 'ESM mode: Note different git location and build PPA'
+                        if source.name == 'linux-euclid':
+                            card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
+                        board.add_issue(card_name, card_desc)
+                continue
+            if card['name'] == 'Produce kernel snaps':
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        for snap in sorted(source.snaps, key=lambda x: x.name):
+                            if not snap.repo:
+                                continue
+                            card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
+                            card_desc = 'Update version in %s and push' % (snap.repo)
+                            board.add_issue(card_name, card_desc)
+                continue
+            if card['name'] == 'Release kernel snaps':
+                if self.args.crank_turn:
+                    for (series, source) in series_sources_list:
+                        for snap in sorted(source.snaps, key=lambda x: x.name):
+                            if not snap.repo:
+                                continue
+
+                            card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
+                            card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
+                            board.add_issue(card_name, card_desc)
+
+                            if not snap.stable:
+                                continue
+
+                            card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
+                            card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
+                            board.add_issue(card_name, card_desc)
+                continue
+
+            card_desc = None
+            if 'description' in card:
+                # Fields in the yaml file get encoded with escapes when it's loaded.
+                # Un-escape the card description so they have the desired formatting.
+                card_desc = card['description'].encode().decode('unicode_escape')
+
+            card_list = None
+            if 'list' in card:
+                card_list = card['list']
+
+            card_state = 'In Backlog'
+            if card_list == 'On Deck':
+                card_state = 'To Do'
+            board.add_issue(card['name'], card_desc, card_state)
+
+        if self.args.dry_run:
+            print("This was a dry-run - sprint was NOT created")
+        else:
+            print("Sprint '%s' created" % (board.sprint,))
+
+
+def update_cycle_info(args):
+    """
+    Add a new entry on the sru-cycle info file for the given cycle.
+
+    :param args: ArgumentParser Namespace object
+    """
+    file_name = args.cycle_info
+    cycle = args.cycle
+    # sanity check the cycle date (must be on the right format and be a monday)
+    date_re = re.compile("^\d\d\d\d\.\d\d\.\d\d$")
+    match = date_re.match(cycle)
+    if match is not None:
+        date = datetime.strptime(cycle, '%Y.%m.%d')
+        if date.isoweekday() != 1:
+            raise SRUBoardError('Date provided is not a Monday')
+
+        release_date = date + timedelta(days=21)
+        new_entry = "\'{0}\':\n    release-date: \'{1}\'".format(cycle,
+                                                                 release_date.strftime('%Y-%m-%d'))
+
+        with open(file_name, "r") as f:
+            new_file = ""
+            entry_added = False
+            for line in f:
+                if not entry_added and line[0] != "#":
+                    # this should be the first non commented line of the file
+                    new_file += "\n{0}\n".format(new_entry)
+                    entry_added = True
+                elif line.partition('\n')[0] == new_entry.partition('\n')[0]:
+                    raise SRUBoardError('SRU cycle entry already present on the info file')
+                new_file += line
+        if not entry_added:
+            raise('Could not find a place on the file for the new entry')
+
+        print("Adding following entry to {0}".format(file_name))
+        print("-----")
+        print(new_entry)
+        print("-----")
+        if not args.dry_run:
+            with open(file_name, "w") as f:
+                f.write(new_file)
+
+        # commit the file change
+        commit_subject = "sru-cycle: Add {0} cycle info".format(cycle)
+        if not args.dry_run:
+            cmd = "git commit -sm '{0}' {1}".format(commit_subject, file_name)
+            run_command(cmd)
+        print("Added commit '{0}' to {1}".format(commit_subject, file_name))
+    else:
+        raise SRUBoardError('Wrong date format')
+
+
+if __name__ == '__main__':
+    retval = 0
+    default_config = '%s/create-sru-cards.yaml' % os.path.dirname(__file__)
+    default_cycle_info = '%s/../info/sru-cycle.yaml' % os.path.dirname(__file__)
+    description = 'Create a JIRA sprint with cards for SRU cycles'
+    epilog = '''
+The script reads the configuration from a yaml file, updates the sru-cycle info
+yaml and creates a new JIRA sprint board, adding the initial issues.
+
+Examples:
+    Run with the default options:
+    $ create-sru-cards 2018.09.10
+
+    Do not create anything, just print what would be done:
+    $ create-sru-cards --dry-run 2018.09.10
+
+    Create also the 'Turn the crank' cards:
+    $ create-sru-cards --crank-turn 2018.09.10
+
+    Do not add the new cycle entry to the cycle info file
+    $ create-sru-cards --no-cycle-info 2018.09.10
+'''.format(default_config)
+    parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('cycle', metavar='CYCLE', help='cycle tag (expected format: YYYY.MM.DD)',
+                        action='store')
+    parser.add_argument('--config', metavar='CONFIG',
+                        help='config yaml file (default: {0})'.format(default_config),
+                        required=False, action='store', default=default_config)
+    parser.add_argument('--cycle-info', metavar='CYCLE_INFO',
+                        help='sru cycle info yaml file (default: {0})'.format(default_cycle_info),
+                        required=False, action='store', default=default_cycle_info)
+    parser.add_argument('--no-cycle-info', help='do not add an entry to the cycle info yaml file',
+                        required=False, action='store_true', default=False)
+    parser.add_argument('--crank-turn', help='create the \'Turn the crank\' and snap-related cards (defaul: False)',
+                        required=False, action='store_true', default=False)
+    parser.add_argument('--dry-run', help='only print steps, no action done', required=False,
+                        action='store_true', default=False)
+    args = parser.parse_args()
+    try:
+        if not args.no_cycle_info:
+            update_cycle_info(args)
+        SRUCreator(args).create()
+    except SRUBoardError as e:
+        retval = 1
+        print('Error: {}'.format(e))
+
+    exit(retval)
