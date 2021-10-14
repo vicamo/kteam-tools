@@ -1685,7 +1685,7 @@ defaults:
 
         linux-azure-cvm:
             routing:
-              <<: &routing-table-security-build
+              <<: *routing-table-security-build
               build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
