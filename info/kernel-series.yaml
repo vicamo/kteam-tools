@@ -317,8 +317,8 @@ defaults:
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: *routing-table
     sources:
         linux-unstable:
@@ -342,6 +342,7 @@ defaults:
                 linux-restricted-signatures-unstable:
                     type: lrs
             supported: false
+            development: true
             testing:
                 flavours:
                     generic:
@@ -356,7 +357,7 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
-            routing: devel-drivers
+            routing: stable-drivers
             versions: ['5.13.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -375,7 +376,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: false
+            supported: true
             swm:
                 kernel-testing: true
             testing:
@@ -399,7 +400,7 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/impish']
-            supported: false
+            supported: true
             derived-from: [ '21.10', 'linux' ]
             swm:
                 kernel-testing: true
@@ -430,7 +431,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -445,8 +446,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -459,7 +459,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -477,8 +477,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -493,7 +492,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -511,8 +510,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -547,7 +545,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: devel-drivers
+            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -565,8 +563,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1099,8 +1096,8 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.13:
-            routing: prerelease-drivers
-            variants: [ '-hwe-20.04-edge-wip' ]
+            routing: stable-drivers
+            variants: [ '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.13:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13-next']
@@ -1117,8 +1114,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.13:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
+            development: false
             backport: true
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1137,7 +1134,7 @@ defaults:
 
         linux-hwe-5.11:
             routing: stable-drivers
-            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
+            variants: [ '-hwe-20.04' ]
             packages:
                 linux-hwe-5.11:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11']
