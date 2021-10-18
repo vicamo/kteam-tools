@@ -1,0 +1,62 @@
+#!/bin/bash -eu
+# update readme file
+
+# shellcheck disable=SC1090
+. "$(dirname "$0")"/lib.sh
+
+# Only applies to primary trees.
+case "$FIX_TYPE" in
+main)	;;
+*)	fix_verbose "not a main package"; exit 0 ;;
+esac
+
+readme="Ubuntu.md"
+if [ -e "$readme" ]; then
+	fix_verbose "readme file already exists"
+	exit 0
+fi
+
+# shellcheck disable=SC1091
+. debian/debian.env
+
+# Kernel source package name
+package=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SSource)
+
+# Kernel major version
+version=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SVersion)
+version="${version%%-*}"
+
+# Ubuntu series
+codename=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SDistribution)
+# artful = 17.10 and 'a' = 97
+n=$(printf '%d' "'$codename")
+# 't' = 116, starting from trusty those are older releases
+# We have time to update that until the next T release
+(( "$n" >= 116 )) && n=$(( n - 26 ))
+n=$(( n - 97 )) # n=0 for artfull
+year=$(( 17 + (n + 1) / 2 ))
+month=$(( 4 + 6 * ((n + 1) % 2) ))
+series=$(printf '%d.%02d' "$year" "$month")
+
+# Flavours and archs
+flavours=
+for vars in "$DEBIAN"/control.d/vars.*; do
+	flavours+="${vars#*vars.}, "
+done
+flavours="${flavours%, }"
+
+# Create readme from template
+cat <<EOF > "$readme"
+Name:    ${package}
+Version: ${version}
+Series:  ${series} (${codename})
+Description:
+    This is the source code for the Ubuntu linux kernel for the ${series} series. This
+    source tree is used to produce the flavours: ${flavours}.
+    This kernel is configured to support the widest range of desktop, laptop and
+    server configurations.
+EOF
+
+msg="UBUNTU: [Packaging] update ${readme}"
+commit "$msg" "${readme}"
+exit 0
