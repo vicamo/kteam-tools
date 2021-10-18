@@ -397,6 +397,14 @@ class WorkflowBug():
 
         return s._master_bug
 
+    # master_bug_swmstatus
+    #
+    @property
+    def master_bug_swmstatus(self):
+        if not self.is_derivative_package:
+            return None
+        return self.manager.status_get(str(self.master_bug_id))
+
     # dup_replaces
     #
     def dup_replaces(s, inactive_only=False):
@@ -621,6 +629,8 @@ class WorkflowBug():
             return None
 
         # Add the current tasks status information.
+        owner = None
+        owner_pp = None
         task = status.setdefault('task', {})
         for taskname in s.tasks_by_name:
             task[taskname] = {
@@ -629,12 +639,36 @@ class WorkflowBug():
             assignee = s.tasks_by_name[taskname].assignee
             if assignee is not None:
                 task[taskname]['assignee'] = assignee.username
+                # Record the overall owner if we have one.
+                if taskname == 'kernel-sru-workflow':
+                    owner = assignee.username
+                # XXX: lpltk does not expose `is_team` so just bodge it.
+                elif taskname == 'prepare-package' and assignee.username != 'canonical-kernel-team':
+                    owner_pp = assignee.username
 
             # XXX: ownership of tasks should be more obvious, but this is
             # only needed while we have combo bugs in reality.
             if (taskname.startswith('snap-') and s.snap is not None and
                 s.snap.name != s.name):
                 task[taskname]['target'] = s.snap.name
+
+        # If the workflow task is assigned assume that as owner.  If not
+        # and the kernel-series object has an owner use that.  If neither
+        # of those is valid, use the prepare-package owner.
+        if owner is None and s.source is not None and s.source.owner is not None:
+            owner = s.source.owner
+        elif owner is None and owner_pp is not None:
+            owner = owner_pp
+
+        # If we still have no owner and we are a snap-debs tracker
+        # pull the owner from our parent.
+        if owner is None and s.variant == 'snap-debs':
+            master_status = s.master_bug_swmstatus
+            if master_status is not None:
+                owner = master_status.get('owner')
+
+        if owner is not None:
+            status['owner'] = owner
 
         if s.refresh[0] is not None:
             status['refresh'] = s.refresh
