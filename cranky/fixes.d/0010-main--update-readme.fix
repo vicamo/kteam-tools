@@ -11,10 +11,6 @@ main)	;;
 esac
 
 readme="Ubuntu.md"
-if [ -e "$readme" ]; then
-	fix_verbose "readme file already exists"
-	exit 0
-fi
 
 # shellcheck disable=SC1091
 . debian/debian.env
