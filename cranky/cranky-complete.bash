@@ -18,6 +18,7 @@ _cranky() {
 		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle"
 		"list-routing -h --help -v --verbose HANDLE"
 		"list-derivatives -h --help -v --verbose --has-lrm --has-signed HANDLE"
+		"list-owners -h --help -v --verbose --include-esm --include-devel --by-owner HANDLE"
 		"open -h --help -d --dry-run -r --reuse-abi"
 		"promote-snap -h --help --dry-run --debug"
 		"pull-source -h --help"

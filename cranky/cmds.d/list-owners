@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+#
+# cranky list-owners: List the supported kernels and their respective owners.
+#                     Can also be used to show a list of owners and how many
+#                     kernels are assigned to each.
+#
+# Copyright (C) 2021, Canonical Ltd.
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+
+import argparse
+import logging
+import sys
+
+from crl.handle import Handle, HandleError
+from ktl.log import cdebug, cerror
+from ktl.kernel_series import KernelSeries
+
+
+class SourceCollection:
+    def __init__(self, ks=None):
+        if ks is None:
+            self._ks = KernelSeries()
+        else:
+            self._ks = ks
+        self.data = dict()
+
+    def __normalized_source_name(self, source_name):
+        if '-' in source_name:
+            (part1, tmp) = source_name.rsplit('-', 1)
+            if '.' in tmp:
+                (mv, sv) = tmp.rsplit('.', 1)
+                try:
+                    part1 += '-{:03n}.{:03n}'.format(int(mv), int(sv))
+                except ValueError:
+                    part1 += '-' + tmp
+            source_name = part1
+
+        return source_name
+
+    def add(self, ks_source, filters=None):
+        key_series = ks_source.series.name
+        key_source = ks_source.name
+        if filters is None:
+            filters = []
+
+        series_branch = self.data.setdefault(key_series, dict())
+        if key_source in series_branch:
+            return
+
+        cn     = ks_source.series.codename
+        wanted = False
+        if ks_source.supported:
+            if ks_source.series.supported and not ks_source.series.esm:
+                wanted = True
+            elif ks_source.series.esm:
+                # If the series is ESM things should be included if the
+                # ESM filter is set or if a supported source is a backport
+                # from a supported series
+                if ks_source.derived_from is not None:
+                    ks_origin = ks_source.derived_from.series
+                    if ks_origin.supported and not ks_origin.esm:
+                        cdebug('Included by parent: {}:{}'.format(cn, key_source))
+                        wanted = True
+                if 'esm' in filters:
+                    cdebug('Included by ESM: {}:{}'.format(cn, key_source))
+                    wanted = True
+        elif ks_source.development and 'devel' in filters:
+            cdebug('Included by devel: {}:{}'.format(cn, key_source))
+            wanted = True
+
+        if wanted:
+            cdebug('Add[{}:{}]'.format(cn, key_source))
+            series_branch.setdefault(key_source, ks_source)
+
+    def list_by_owners(self):
+        byowner = dict()
+
+        for series_name in sorted(self.data.keys(), reverse=True):
+            for source_name in sorted(self.data[series_name], key=self.__normalized_source_name):
+                ks_source = self.data[series_name][source_name]
+                owner_key = ks_source.owner if ks_source.owner is not None else "UNASSIGNED"
+                if owner_key not in byowner:
+                    byowner[owner_key] = [ks_source]
+                else:
+                    byowner[owner_key].append(ks_source)
+        for owner_name in sorted(byowner):
+            print('* {}({})'.format(owner_name, len(byowner[owner_name])))
+            for ks_source in byowner[owner_name]:
+                print('  - {}:{}'.format(ks_source.series.codename, ks_source.name))
+
+    def __repr__(self):
+        text = ''
+        for series_name in sorted(self.data.keys(), reverse=True):
+            cs = None
+            for source_name in sorted(self.data[series_name], key=self.__normalized_source_name):
+                ks_source = self.data[series_name][source_name]
+                if cs is None:
+                    cs = ks_source.series.codename
+                if ks_source.owner is None:
+                    on = " (UNASSIGNED)"
+                else:
+                    on = " (" + ks_source.owner + ")"
+                text += '* {}:{}{}\n'.format(cs, source_name, on)
+        return text.rstrip()
+
+
+if __name__ == "__main__":
+    desc = """
+Query the kernel-series.yaml database and produce a list of kernels in the
+handle format (<series>:<source>) and the assigned owner (the shown owner
+is either a Launchpad Id or "UNASSIGNED").
+"""
+
+    epilog = """
+Examples:
+  $ cranky list-owners
+
+  This produces a list of all currently supported kernel sources and who owns
+  it. (* <series>:<source> (<owner>))
+
+  $ cranky list-owners focal:linux bionic:linux
+
+  Only shows the selected two kernels and their owners.
+
+  $ cranky list-owners --by-owner
+
+  Selects all currently supported kernel sources but arranges the output to
+  show each owner with at least one source, the number or sources they own
+  and which those are.
+
+"""
+
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog=epilog,
+                                     prog="cranky list-owners")
+    parser.add_argument("handle", nargs='*', metavar="<handle>",
+                        help="Handle to a kernel source "
+                        "tree, either a path to a kernel source tree or a "
+                        "handle in <series>:<package> format. If not given "
+                        "all supported kernel sources are selected.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Increase verbosity.")
+    parser.add_argument("--include-esm", dest="filters", action="append_const", const="esm",
+                        help="Also include kernel sources which are in ESM.")
+    parser.add_argument("--include-devel", dest="filters", action="append_const", const="devel",
+                        help="Also include kernel sources which are under development.")
+    parser.add_argument("--by-owner", action="store_true",
+                        help="Change the output to list owners and their kernel sources.")
+    args = parser.parse_args()
+
+    # Setup the logger
+    level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=level, format="%(message)s")
+
+    if args.filters is None:
+        args.filters = []
+
+    ks      = KernelSeries()
+    sources = SourceCollection(ks=ks)
+    if len(args.handle) > 0:
+        for h in args.handle:
+            try:
+                handle = Handle(ks=ks).lookup_tree(h, validate=False)
+            except HandleError as e:
+                cerror(e)
+                sys.exit(1)
+            sources.add(handle.package.source, filters=args.filters)
+    else:
+        for ks_series in sorted(ks.series, key=lambda x: x.name, reverse=True):
+            for ks_source in sorted(ks_series.sources, key=lambda x: x.name):
+                sources.add(ks_source, filters=args.filters)
+
+    if args.by_owner:
+        sources.list_by_owners()
+    else:
+        print(sources)
