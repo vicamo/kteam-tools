@@ -132,15 +132,25 @@ class MsgQueueService(MsgQueue):
     authentication.  Start with hardwired data.
     """
 
+    server_argyle = '10.131.229.185'
+    server_ps45 = '10.15.182.2'
+    server_ps5 = '10.131.229.185'
+    server_map = {
+    }
+    local_map = {
+        server_argyle: 9123,
+        server_ps45: 9124,
+        server_ps5: 9125,
+    }
+
     # __init__
     #
     def __init__(s, service=None, local=False, **kwargs):
-        # Services are all on the "new" rabbitmq server by default.
+        # Find the service rabbitmq server.
+        kwargs.setdefault('host', s.server_map.get(service, s.server_ps45))
         if local:
+            kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
             kwargs['host'] = 'localhost'
-            kwargs['port'] = 9124
-        else:
-            kwargs.setdefault('host', '10.15.182.2')
 
         # Use the service prefix for the virtual_host name.
         if '-' in service:
