@@ -325,6 +325,7 @@ defaults:
       autopkgtest: true
       archive-open: true
       debootstrap: true
+      repositories: true
     routing-table: *routing-table
     sources:
         linux-unstable:
