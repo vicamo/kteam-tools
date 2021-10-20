@@ -320,6 +320,7 @@ defaults:
     development: true
     supported: false
     opening:
+      archive-closed: true
     routing-table: *routing-table
     sources:
         linux-unstable:
