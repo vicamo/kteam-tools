@@ -2065,7 +2065,7 @@ defaults:
 
         linux-azure-5.8:
             routing: stable-drivers
-            variants: [ '--' ]
+            variants: []
             packages:
                 linux-azure-5.8:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.8-next']
@@ -2082,7 +2082,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-5.8:
                     type: lrs
-            supported: true
+            supported: false
             owner: mhcerri
             backport:  false
             derived-from: [ '20.04', 'linux-hwe-5.8' ]
@@ -2099,7 +2099,7 @@ defaults:
 
         linux-azure-5.11:
             routing: stable-drivers
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.11-next']
