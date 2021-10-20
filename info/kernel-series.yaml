@@ -321,6 +321,7 @@ defaults:
     supported: false
     opening:
       archive-closed: true
+      britney: true
     routing-table: *routing-table
     sources:
         linux-unstable:
