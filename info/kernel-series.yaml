@@ -319,14 +319,6 @@ defaults:
     codename: jammy
     development: true
     supported: false
-    opening:
-      archive-closed: true
-      britney: true
-      autopkgtest: true
-      archive-open: true
-      debootstrap: true
-      repositories: true
-      chroots: true
     routing-table: *routing-table
     sources:
         linux-unstable:
