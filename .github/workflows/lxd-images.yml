@@ -1,0 +1,102 @@
+name: LXD images
+on: [pull_request]
+
+jobs:
+  builder-image:
+    name: Builder image from chroot-setup/
+    runs-on: ubuntu-latest
+    env:
+      KTEAMTOOLS_DIR: /opt/canonical/kteam-tools
+      KTEAMTOOLS_CHROOTS_DIR: /usr3/chroots
+
+      LXC_PROFILE: kteam-tools
+      LXC_INSTANCE: builder
+    steps:
+      - name: Configure LXD
+        run: |
+          sudo groupadd --force --system lxd
+          sudo usermod --append --groups lxd ${USER}
+          sudo apt-get remove -qy lxd lxd-client || true
+          sudo snap install lxd
+          sudo lxd waitready
+          sudo lxd init --auto
+          sudo chmod a+wr /var/snap/lxd/common/lxd/unix.socket
+          lxc network set lxdbr0 ipv6.address none
+          sudo usermod -a -G lxd ${USER}
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: LXD instance profile setup
+        run: |
+          lxc profile show default
+
+          lxc profile create ${LXC_PROFILE}
+          lxc profile set ${LXC_PROFILE} \
+              environment.KTEAMTOOLS_DIR ${KTEAMTOOLS_DIR}
+          lxc profile set ${LXC_PROFILE} security.nesting true
+          lxc profile set ${LXC_PROFILE} security.privileged true
+          lxc profile show ${LXC_PROFILE}
+      - name: LXD instance setup
+        run: |
+          lxc launch --quiet ubuntu ${LXC_INSTANCE} -p default -p ${LXC_PROFILE}
+          lxc config show ${LXC_INSTANCE} --verbose
+
+          lxc exec ${LXC_INSTANCE} -- systemctl is-system-running --wait || true
+          lxc info ${LXC_INSTANCE} --verbose
+          lxc exec ${LXC_INSTANCE} -- mount
+
+          lxc exec ${LXC_INSTANCE} -- mkdir -p ${KTEAMTOOLS_DIR}
+          git archive HEAD | \
+              lxc exec ${LXC_INSTANCE} --cwd ${KTEAMTOOLS_DIR} -- tar xf -
+
+          lxc exec ${LXC_INSTANCE} -- apt-get update --quiet
+          lxc exec ${LXC_INSTANCE} --env DEBIAN_FRONTEND=noninteractive -- \
+              apt-get install --no-install-recommends --yes sbuild
+          lxc exec ${LXC_INSTANCE} -- \
+              sh -c "getent group sbuild || addgroup --system sbuild"
+          lxc exec ${LXC_INSTANCE} -- mkdir -p ${KTEAMTOOLS_CHROOTS_DIR}
+      - name: Chroots setup
+        run: |
+          for chroot in \
+                  trusty-amd64 \
+                  trusty-i386 \
+                  xenial-amd64 \
+                  xenial-i386 \
+                  bionic-amd64 \
+                  bionic-i386 \
+                  focal-amd64 \
+                  hirsute-amd64 \
+                  impish-amd64 \
+                  ; \
+          do \
+              series="${chroot%-*}"; \
+              arch="${chroot#*-}"; \
+              if ! lxc exec ${LXC_INSTANCE} -- \
+                      ${KTEAMTOOLS_DIR}/chroot-setup/make_chroot \
+                      "${series}" "${arch}"; then \
+                  debootstrap_log="${KTEAMTOOLS_CHROOTS_DIR}/${chroot}/debootstrap/debootstrap.log"; \
+                  lxc exec ${LXC_INSTANCE} -- \
+                      sh -c "[ ! -e ${debootstrap_log} ] || cat ${debootstrap_log}"; \
+                  exit 1; \
+              fi; \
+              \
+              lxc exec ${LXC_INSTANCE} --cwd / -- \
+                  schroot -c ${chroot} -- \
+                      sh -c 'if dpkg-query --status fonts-noto-cjk >/dev/null 2>&1; then apt-get purge --yes fonts-noto-cjk; fi'; \
+              lxc exec ${LXC_INSTANCE} --cwd / -- \
+                  schroot -c ${chroot} -- \
+                      sh -c 'rm -rf /var/lib/apt/lists/*_dists_*'; \
+              lxc exec ${LXC_INSTANCE} --cwd / -- \
+                  schroot -c ${chroot} -- apt-get clean; \
+              lxc exec ${LXC_INSTANCE} --cwd / -- \
+                  schroot -c ${chroot} -- du -sh /var/cache/apt /var/lib/apt; \
+              lxc exec ${LXC_INSTANCE} -- \
+                  du -sh ${KTEAMTOOLS_CHROOTS_DIR}/${chroot}; \
+          done
+      - name: Post chroots setup
+        run: |
+          lxc exec ${LXC_INSTANCE} -- \
+              sed -i -e 's!^\(/home\s\+.*\),bind!\1,rbind!' \
+                  /etc/schroot/default/fstab
+
+          lxc exec ${LXC_INSTANCE} -- sh -c 'rm -rf /var/lib/apt/lists/*_dists_*'
+          lxc exec ${LXC_INSTANCE} -- apt-get clean
