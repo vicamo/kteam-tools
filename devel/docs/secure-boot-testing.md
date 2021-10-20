@@ -22,7 +22,7 @@ The script `kteam-tools/devel/mk-uefi-vm` can be used to easily create a vm
 which uses UEFI firmware. First you need to install the prerquisites:
 
 ```
-sudo apt-get install qemu-kvm libvirt-daemon-system virtinst ovmf
+sudo apt-get install qemu-kvm qemu-system-arm libvirt-daemon-system virtinst ovmf
 ```
 
 The script uses cloud images, and will automatically enable ssh access with
