@@ -137,6 +137,7 @@ class MsgQueueService(MsgQueue):
     server_ps5 = '10.131.229.185'
     server_map = {
         'dashboard': server_ps5,
+        'mainline': server_ps5,
     }
     local_map = {
         server_argyle: 9123,
