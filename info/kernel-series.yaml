@@ -4075,6 +4075,37 @@ defaults:
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm-5.4:
+            routing: stable-drivers
+            variants: ['--', '-edge']
+            packages:
+                linux-ibm-5.4:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/bionic', 'ibm-5.4-next']
+                linux-meta-ibm-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/bionic', 'ibm-5.4']
+                linux-signed-ibm-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
+                linux-restricted-modules-ibm-5.4:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/bionic', 'ibm-5.4']
+                linux-restricted-generate-ibm-5.4:
+                    type: lrg
+                linux-restricted-signatures-ibm-5.4:
+                    type: lrs
+            supported: true
+            backport: true
+            derived-from: [ '20.04', 'linux-ibm' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gke-4.15:
             variants: ['--','-4.15']
             packages:
