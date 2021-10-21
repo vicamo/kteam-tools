@@ -2,6 +2,9 @@
  - ubuntu-kernel-release: add stable series branch
     - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
        - create the new ubuntu/<stable-series> branch off of the devel branch
+ - linux-firmware: add new series branch
+    - In lp:~ubuntu-kernel/ubuntu/+source/linux-firmware
+       - create the new <development-series> branch off of the existing <stable-series> branch
  - Apply git gc to all mirrors
     - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
  - Archive opening -- closed
@@ -12,7 +15,7 @@
     - NOTE: Only needed on LTSs for their corresponding ucNN
     - NOTE: Likely is already created so we can test against development.
     - git fetch origin
-    - git push lp:~ubuntu-kernel/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
+    - git push lp:~canonical-kernel-snaps/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
  - Request new snap tracks
     - NOTE: Only needed on LTSs for their corresponding ucNN
     - NOTE: Likely is already created so we can test against development.
@@ -40,14 +43,16 @@
     - OPENING: opening: autopkgtest: true
  - Create snap build recipies
     - PREREQ: Archive opening -- closed
-    - NEEDS: linux-snap git repository created
+    - PREREQ: Create new linux-snap git repository
     - NEEDS: new series tracks created
     - Create recipies (Producing snaps documentation)
  - Create new primary repositories
     - PREREQ: Add new series to Ubuntu KTL
     - NEEDS: launchpad admin for ubuntu-kernel/canonical-kernel/canonical-kernel-security-team
-    - run the admin/admin-seed-repositories script to initialise
-      the primary and security repositories
+    - fork the security repositories for the previous cycle into your account,
+      rename them to the new series, and then move them back to
+      canonical-kernel-security-team ownership.
+    - run publish-tags to populate the main repositories
     - OPENING: opening: repositories: true
     - run the admin/admin-lp-git-permissions sync-primary to add acls to the new repositories
  - Confirm britney is running in development
@@ -56,7 +61,6 @@
     - Confirm that ubuntu-kernel-release ubuntu/devel branch has all new series kernels
     - OPENING: opening: britney: true
  - Add repositories to wani mirroring
-    - PREREQ: Apply git gc to all mirrors
     - PREREQ: Create new primary repositories
     - Wait for mirroring to create repos
     - add symlinks to ubuntu directory to expose the primary kernel (only) for legacy users
