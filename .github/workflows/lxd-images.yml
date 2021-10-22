@@ -50,7 +50,9 @@ jobs:
 
           lxc exec ${LXC_INSTANCE} -- apt-get update --quiet
           lxc exec ${LXC_INSTANCE} --env DEBIAN_FRONTEND=noninteractive -- \
-              apt-get install --no-install-recommends --yes sbuild
+              apt-get install --no-install-recommends --yes \
+                  debootstrap \
+                  sbuild
           lxc exec ${LXC_INSTANCE} -- \
               sh -c "getent group sbuild || addgroup --system sbuild"
           lxc exec ${LXC_INSTANCE} -- mkdir -p ${KTEAMTOOLS_CHROOTS_DIR}
@@ -66,10 +68,16 @@ jobs:
                   focal-amd64 \
                   hirsute-amd64 \
                   impish-amd64 \
+                  jammy-amd64 \
                   ; \
           do \
               series="${chroot%-*}"; \
               arch="${chroot#*-}"; \
+              if ! lxc exec ${LXC_INSTANCE} -- \
+                      stat -L /usr/share/debootstrap/scripts/${series} >/dev/null 2>&1; then \
+                  lxc exec ${LXC_INSTANCE} -- \
+                      ls -sf gutsy /usr/share/debootstrap/scripts/${series}; \
+              fi; \
               if ! lxc exec ${LXC_INSTANCE} -- \
                       ${KTEAMTOOLS_DIR}/chroot-setup/make_chroot \
                       "${series}" "${arch}"; then \
