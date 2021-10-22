@@ -59,15 +59,6 @@ jobs:
       - name: Chroots setup
         run: |
           for chroot in \
-                  trusty-amd64 \
-                  trusty-i386 \
-                  xenial-amd64 \
-                  xenial-i386 \
-                  bionic-amd64 \
-                  bionic-i386 \
-                  focal-amd64 \
-                  hirsute-amd64 \
-                  impish-amd64 \
                   jammy-amd64 \
                   ; \
           do \
