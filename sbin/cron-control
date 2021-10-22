@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# cron-control -- Add, remove, enable, and disable crontab entries.
+
+usage()
+{
+	echo "Usage: cronctl add <key> <entry>" 1>&2
+	echo "       cronctl remove|enable|disable <key>" 1>&2
+	exit 1
+}
+
+if [ "$#" -lt 2 ]; then
+	usage
+fi
+cmd="$1"
+key="$2"
+shift 2
+
+case "$cmd" in
+add)
+	;;
+remove|enable|disable)
+	if [ "$#" != 0 ]; then
+		usage
+	fi
+	;;
+*)
+	usage
+	;;
+esac
+
+# Get us out cleaning up all of our temporary files.
+clean_exit()
+{
+	[ "$crontab" != '' ] && rm -f "$crontab"
+	[ "$cronent" != '' ] && rm -f "$cronent"
+	exit "$1"
+}
+
+key_cmt="# cm-key: $key"
+
+crontab=$(mktemp)
+cronent=$(mktemp)
+echo "crontab<$crontab> cronent<$cronent>"
+
+# Grab a copy of the existing crontab.
+crontab -l >"$crontab"
+
+make_entry()
+{
+	count=$(grep -c "$key_cmt\$" "$crontab")
+	if [ "$count" -eq 0 ]; then
+		echo "$@ $key_cmt" >>"$crontab"
+	else
+		echo "$@ $key_cmt" >"$cronent"
+		sed -i \
+			-e "/.*$key_cmt$/ {" \
+			-e "r $cronent" \
+			-e 'd' \
+			-e "}" \
+		    "$crontab"
+		rm -f "$cronent"
+	fi
+}
+
+remove_entry()
+{
+	sed -i -e "/.*$key_cmt$/d" "$crontab"
+}
+
+enable_entry()
+{
+	sed -i -e 's/^#*\(.*'"$key_cmt"'\)$/\1/' "$crontab"
+}
+
+disable_entry()
+{
+	sed -i -e 's/^#*\(.*'"$key_cmt"'\)$/#\1/' "$crontab"
+}
+
+case "$cmd" in
+add)
+	make_entry "$@"
+	;;
+remove)
+	remove_entry
+	;;
+enable)
+	enable_entry
+	;;
+disable)
+	disable_entry
+	;;
+esac
+
+# Load the crontab back up.
+crontab "$crontab"
+
+clean_exit 0
