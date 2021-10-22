@@ -2023,6 +2023,7 @@ defaults:
                     type: lrs
             supported: true
             owner: mhcerri
+            backport: true
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
