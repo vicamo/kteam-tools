@@ -24,6 +24,10 @@ version="${version%%-*}"
 
 # Ubuntu series
 codename=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SDistribution)
+if [ "$codename" = "UNRELEASED" ]; then
+	fix_verbose "invalid series"
+	exit 0
+fi
 # artful = 17.10 and 'a' = 97
 n=$(printf '%d' "'$codename")
 # 't' = 116, starting from trusty those are older releases
