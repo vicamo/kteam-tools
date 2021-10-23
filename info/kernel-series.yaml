@@ -2010,6 +2010,9 @@ defaults:
               build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+              build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
             Variants: ['--']
             packages:
                 linux-azure-cvm:
