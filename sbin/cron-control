@@ -41,7 +41,7 @@ key_cmt="# cm-key: $key"
 
 crontab=$(mktemp)
 cronent=$(mktemp)
-echo "crontab<$crontab> cronent<$cronent>"
+##echo "crontab<$crontab> cronent<$cronent>"
 
 # Grab a copy of the existing crontab.
 crontab -l >"$crontab"
