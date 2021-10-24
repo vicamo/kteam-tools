@@ -37,7 +37,7 @@ clean_exit()
 	exit "$1"
 }
 
-key_cmt="# cm-key: $key"
+key_cmt="# cc-key: $key"
 
 crontab=$(mktemp)
 cronent=$(mktemp)
