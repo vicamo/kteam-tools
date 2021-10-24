@@ -24,7 +24,7 @@ class AnnounceDeliver:
         defaults = {}
         paths = []
         if 'HOME' in os.environ:
-            paths.append(os.path.join(os.environ['HOME'], '.ktl-announce.yaml'))
+            paths.append(os.path.join(os.environ['HOME'], '.kernel-announcer-routing.yaml'))
         paths.append(os.path.join(os.path.dirname(__file__), 'announce.yaml'))
         for path in paths:
             if os.path.exists(path):
@@ -175,7 +175,7 @@ class TheApp():
         retval = 1
 
         try:
-            s.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
+            s.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-core.yaml'))
 
             # Pass in credentials if we have them, else use the limited defaults.
             hostname = s.secrets.data.get('amqp-hostname')

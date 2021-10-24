@@ -240,7 +240,7 @@ class TheApp():
         retval = 1
 
         try:
-            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-secrets.yaml'))
+            secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-mattermost.yaml'))
 
             exiting = threading.Condition()
 
