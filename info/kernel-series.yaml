@@ -2005,14 +2005,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-cvm:
-            routing:
-              <<: *routing-table-security-build
-              build:
-                - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
-              build-private:
-                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
+            routing: stable-drivers
             Variants: ['--']
             packages:
                 linux-azure-cvm:
@@ -2035,9 +2028,6 @@ defaults:
               - automated-testing
               - boot-testing
               - certification-testing
-              - promote-to-proposed
-              - promote-to-security
-              - promote-to-updates
               - regression-testing
               - security-signoff
 
