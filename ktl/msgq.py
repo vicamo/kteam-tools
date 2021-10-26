@@ -150,7 +150,8 @@ class MsgQueueService(MsgQueue):
     #
     def __init__(s, service=None, local=False, **kwargs):
         # Find the service rabbitmq server.
-        kwargs.setdefault('host', s.server_map.get(service, s.server_ps45))
+        if kwargs.get('host') is None:
+            kwargs['host'] = s.server_map.get(service, s.server_ps45)
         if local:
             kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
             kwargs['host'] = 'localhost'
