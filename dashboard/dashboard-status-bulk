@@ -3,11 +3,12 @@
 
 import sys
 import os
+import time
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from logging                            import basicConfig, WARNING, info, warning, DEBUG
 from ktl.log                            import cdebug, center, cleave
 from ktl.msgq                           import MsgQueueService
-import json
+import yaml
 
 #from lib.grinder                        import JenkinsTestResultsTree, JenkinsTestResultsTreeError
 #from lib.utils                          import string_to_date
@@ -36,6 +37,21 @@ class TheApp():
         '''
         s.args = args
 
+    # default_host
+    #
+    def default_host(s):
+        host = None
+
+        host_override = os.path.expanduser("~/.kernel-dashboard.yaml")
+        if os.path.exists(host_override):
+            with open(host_override) as hofd:
+                cfg = yaml.safe_load(hofd)
+            host = cfg.get('host')
+
+        if host is None:
+            host = os.uname().nodename
+
+        return host
 
     # main
     #
@@ -62,6 +78,11 @@ class TheApp():
                         for kv in a[1:]:
                             (k, v) = kv.split('=', 1)
                             entry[k] = v
+                            # Default the host if missing.
+                            if 'host' not in entry:
+                                entry['host'] = s.default_host()
+                            if 'stamp' not in entry:
+                                entry['stamp'] = str(int(time.time()))
                     else:
                         (entry['section'],entry['host'],entry['title'], \
                          entry['stamp'], entry['warn'], entry['alert']) = a[0:6]

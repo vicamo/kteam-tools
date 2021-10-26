@@ -23,7 +23,6 @@ do
 	shift
 done
 
-host=0
 stamp=0
 for arg in "$@"
 do
@@ -40,9 +39,5 @@ do
 	keys[${#keys[*]}]="$value"
 	shift
 done
-
-# Fill in required and defaulted values.
-[ "$host" -eq 0 ] && keys[${#keys[*]}]="host=`uname -n`"
-[ "$stamp" -eq 0 ] && keys[${#keys[*]}]="stamp=`date +%s`"
 
 echo "V2 ${keys[*]}" | "$0-bulk" "$name"
