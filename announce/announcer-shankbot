@@ -11,8 +11,9 @@ import traceback
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 from subprocess                         import run, PIPE, STDOUT, CalledProcessError
 
-from ktl.msgq                           import MsgQueueService
+from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
 
+from secrets import Secrets
 
 # TheApp
 #
@@ -106,7 +107,18 @@ class AnnouncerShankbot():
 
         try:
             self.log.info("Starting")
-            self.mq = MsgQueueService(service='announce', local=self.args.local, exchange='announce-todo', heartbeat_interval=60)
+
+            self.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-shankbot.yaml'))
+
+            # Pass in credentials if we have them, else use the limited defaults.
+            hostname = self.secrets.data.get('amqp-hostname')
+            username = self.secrets.data.get('amqp-username')
+            password = self.secrets.data.get('amqp-password')
+            credentials = None
+            if username is not None and password is not None:
+                credentials = MsgQueueCredentials(username, password)
+
+            self.mq = MsgQueueService(service='announce', local=self.args.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
 
             self._announce('announce-control', 'shankbot start')
 

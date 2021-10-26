@@ -9,7 +9,9 @@ import sys
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
 
 from ktl.messaging                      import Email
-from ktl.msgq                           import MsgQueue, MsgQueueService
+from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCredentials
+
+from secrets import Secrets
 
 
 class MessageError(Exception):
@@ -102,7 +104,18 @@ class TheApp():
 
         try:
             s.log.info("Starting")
-            s.mq = MsgQueueService(service='announce', local=s.local, exchange='announce-todo', heartbeat_interval=60)
+
+            s.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-email.yaml'))
+
+            # Pass in credentials if we have them, else use the limited defaults.
+            hostname = s.secrets.data.get('amqp-hostname')
+            username = s.secrets.data.get('amqp-username')
+            password = s.secrets.data.get('amqp-password')
+            credentials = None
+            if username is not None and password is not None:
+                credentials = MsgQueueCredentials(username, password)
+
+            s.mq = MsgQueueService(service='announce', local=s.local, host=hostname, credentials=credentials, exchange='announce-todo', heartbeat_interval=60)
 
             s._announce('announce-control', 'start')
 
