@@ -149,19 +149,19 @@ class MsgQueueService(MsgQueue):
     # __init__
     #
     def __init__(s, service=None, local=False, **kwargs):
-        # Find the service rabbitmq server.
-        if kwargs.get('host') is None:
-            kwargs['host'] = s.server_map.get(service, s.server_ps45)
-        if local:
-            kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
-            kwargs['host'] = 'localhost'
-
         # Use the service prefix for the virtual_host name.
         if '-' in service:
             vhost = service.split('-')[0]
         else:
             vhost = service
         kwargs.setdefault('virtual_host', vhost)
+
+        # Find the service rabbitmq server.
+        if kwargs.get('host') is None:
+            kwargs['host'] = s.server_map.get(vhost, s.server_ps45)
+        if local:
+            kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
+            kwargs['host'] = 'localhost'
 
         # The new server always wants a service specific username.  For now
         # there is effectivly no password on those.  We will add this to a
