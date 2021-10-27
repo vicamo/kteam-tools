@@ -10,7 +10,7 @@ from logging                            import basicConfig, DEBUG, WARNING, erro
 import socket
 import threading
 from ktl.log                            import cdebug, center, cleave, cerror
-from ktl.msgq                           import MsgQueueService
+from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
 import time
 from subprocess                         import Popen
 from ktl.announce                       import Announce
