@@ -88,6 +88,12 @@ class TheApp():
                          entry['stamp'], entry['warn'], entry['alert']) = a[0:6]
                         if len(a) == 7:
                             entry['note'] = a[6]
+
+                    # Subsitute in the offical host entry, for example into group and title.
+                    for k in ('section', 'title'):
+                        if '%H' in entry[k]:
+                            entry[k] = entry[k].replace('%H', entry.get('host', '??'))
+
                     bulk.append(entry)
 
             details['op']  = 'update'
