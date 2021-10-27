@@ -90,8 +90,8 @@ class TheApp():
                             entry['note'] = a[6]
 
                     # Subsitute in the offical host entry, for example into group and title.
-                    for k in ('section', 'title'):
-                        if '%H' in entry[k]:
+                    for k in ('group', 'title'):
+                        if k in entry and '%H' in entry[k]:
                             entry[k] = entry[k].replace('%H', entry.get('host', '??'))
 
                     bulk.append(entry)
