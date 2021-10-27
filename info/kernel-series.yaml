@@ -1530,7 +1530,6 @@ defaults:
                         clouds: ['metal']
 
         linux-intel-5.13:
-            routing: prerelease
             variants: [ '--' ]
             packages:
                 linux-intel-5.13:
