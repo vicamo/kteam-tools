@@ -128,7 +128,17 @@ class TheApp():
         s.valid = valid
 
         try:
-            s.mq = MsgQueueService(service='mainline', local=s.args.local, exchange='mainline-todo', heartbeat_interval=60)
+            s.secrets = Secrets(os.path.expanduser('~/.kernel-mainline-worker.yaml'))
+
+            # Pass in credentials if we have them, else use the limited defaults.
+            hostname = s.secrets.data.get('amqp-hostname')
+            username = s.secrets.data.get('amqp-username')
+            password = s.secrets.data.get('amqp-password')
+            credentials = None
+            if username is not None and password is not None:
+                credentials = MsgQueueCredentials(username, password)
+
+            s.mq = MsgQueueService(service='mainline', local=s.args.local, host=hostname, credentials=credentials, exchange='mainline-todo', heartbeat_interval=60)
 
             #s.mq.queue_delete(s.args.queue)
             #raise "FOO"
