@@ -49,7 +49,7 @@ class TheApp():
             host = cfg.get('host')
 
         if host is None:
-            host = os.uname().nodename
+            host = os.uname()[1] # .nodename
 
         return host
 
