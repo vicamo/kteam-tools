@@ -2016,7 +2016,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    azure:
+                    azure-fde:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing', 'verification-testing' ]
