@@ -1,15 +1,13 @@
 #!/bin/bash
 
-if [ "$#" -gt 1 ]; then
-	echo "Usage: [<host>]" 1>&2
-elif [ "$#" -eq 0 ]; then
-	set - $(uname -n)
+if [ "$#" -ne 0 ]; then
+	echo "Usage: $0" 1>&2
+	exit 1
 fi
-host="$1"
 
 now=$(date +%s)
 
-group="RabbitMQ:%s$host"
+group="RabbitMQ:%s%H"
 for vhost in $(sudo rabbitmqctl -q list_vhosts)
 do
 	sudo rabbitmqctl -q list_queues -p $vhost messages name | \
@@ -27,7 +25,7 @@ do
 			state="G"
 			order="30"
 		fi
-		echo "V2 host=$host group=$group title=Queue:%s$vhost:$name note=Messages:%s$messages state=$state order=$order"
+		echo "V2 group=$group title=Queue:%s$vhost:$name note=Messages:%s$messages state=$state order=$order"
 	done
 done
 sudo rabbitmqctl -q list_connections vhost user peer_host peer_port state | \
@@ -35,12 +33,12 @@ while read vhost user peer_host peer_port state
 do
 	state=$(echo "$state" | sed -e 's/%/%p/g' -e 's/ /%s/g')
 	if [ "$state" != 'running' ]; then
-		echo "V2 host=$host group=$group title=Connection:%s$vhost:$user%s$state note=Connection%snot%srunning state=W order=60"
+		echo "V2 group=$group title=Connection:%s$vhost:$user%s$state note=Connection%snot%srunning state=W order=60"
 	fi
 done
 sudo rabbitmqctl -q list_connections vhost | sort | uniq -c | \
 while read count vhost
 do
-	echo "V2 host=$host group=$group title=VHost:%s$vhost note=$count%sconnections state=G order=70"
+	echo "V2 group=$group title=VHost:%s$vhost note=$count%sconnections state=G order=70"
 done
-echo "V2 host=$host group=$group title=RabbitMQ%sMonitor stamp=$now warning=1200 alert=1800 order=10"
+echo "V2 group=$group title=RabbitMQ%sMonitor stamp=$now warning=1200 alert=1800 order=10"
