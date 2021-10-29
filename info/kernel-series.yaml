@@ -5371,10 +5371,10 @@ defaults:
                 flavours:
                     generic:
                         arches: ['amd64', 'i386', 'ppc64el', 'arm64', 'armhf']        # test system arch names
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                        clouds: ['metal', 'kvm', 'aws']
                     lowlatency:
                         arches: ['amd64', 'i386']        # test system arch names
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                        clouds: ['metal', 'kvm', 'aws']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
