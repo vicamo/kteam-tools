@@ -136,6 +136,7 @@ cards:
       - Confirm adt-matrix updated with new series
       - Add a sensible version seed (for each live package) to the primary-hints.d and push
          - kteam-tools/adt-matrix/adt-gen-seed impish linux-meta http://people.canonical.com/~kernel/status/adt-matrix/hirsute-linux-meta.latest.json >primary-hints.d/impish--linux--seed.conf
+      - Add ADT matrix config for new series to canonical-kernel-team--bootstrap.conf and canonical-kernel-team--unstable.conf
     prerequisites:
       - "Confirm ADT running for series"
       - "Confirm britney is running in development"
