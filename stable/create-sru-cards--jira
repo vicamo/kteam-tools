@@ -5,83 +5,9 @@ import os
 import re
 from datetime   import datetime, timedelta
 
+from ktl.sruboard                       import SRUBoard, SRUBoardError
 from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import run_command
-
-from jira import JIRA
-from jira.exceptions import JIRAError
-from jira.resources import GreenHopperResource
-
-
-class SRUBoardError(Exception):
-    pass
-
-
-class SRUBoard:
-    def __init__(self, cycle, dryrun=False):
-        '''
-        :param cycle: The SRU cycle date of the board
-        '''
-        self.jira = JIRA('https://warthogs.atlassian.net/',
-            options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
-
-        self.cycle = cycle
-        self.dryrun = dryrun
-
-        self.project_key = 'KSRU'
-        self.sprint_name = cycle
-
-        self.board = self.jira.boards(projectKeyOrID=self.project_key, name='SRU Cycles')[0]
-
-    def create(self):
-        """
-        Create the Jira cycle
-
-        :return None
-        """
-        self.sprint = None
-        for sprint in self.jira.sprints(board_id=self.board.id, state='active,future'):
-            if sprint.name == self.cycle:
-                self.sprint = sprint
-                break
-
-        else:
-            if self.dryrun:
-                print('DRY: Create sprint: "{}"'.format(self.name))
-            else:
-                start_date = datetime.strptime(self.cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
-                end_date = start_date + timedelta(days=21)
-                self.sprint = jira.create_sprint(name=self.cycle, board_id=self.board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
-
-    def add_issue(self, name, desc=None, state=None):
-        """
-        Add the given card to the board.
-
-        :param name: card name
-        :param desc: card description
-        :param list_name: optional alternative list target
-        :return: None
-        """
-
-        params = {
-            'project': {'key': self.project_key},
-            'summary': name,
-            'issuetype': {'name': 'Task'},
-        }
-        if desc is not None:
-            params['description'] = desc
-
-        if self.dryrun:
-            print('DRY: Add "{}" issue in "{}"'.format(name, state))
-            if desc:
-                print('DRY:     "{}"'.format(desc))
-        else:
-            print('Adding issue: {}'.format(name))
-            issue = self.jira.create_issue(fields=params)
-            print(issue)
-            self.jira.add_issues_to_sprint(sprint_id=self.sprint.id, issue_keys=[issue.key])
-            if state == 'On Deck':
-                self.jira.transition_issue(issue, transition='To Do')
 
 
 class SRUCreator:
@@ -130,8 +56,7 @@ class SRUCreator:
         :return: None
         """
         # create the board with the lists on the organization
-        board = SRUBoard(self.cycle, dryrun=self.args.dry_run)
-        board.create()
+        board = SRUBoard(self.cycle, create_sprint=True, dryrun=self.args.dry_run)
 
         # Cache the tuples (series, source) of supported sources
         series_sources_list = self.get_supported_series_sources()
