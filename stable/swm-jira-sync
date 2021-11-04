@@ -274,7 +274,7 @@ if __name__ == '__main__':
             if tracker_flags.get('jira-preparation-block', False):
                 blocked_seen.add(tracker_id)
 
-            tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
+            #tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
 
             ready_started = False
             ready_complete = True
@@ -344,15 +344,17 @@ if __name__ == '__main__':
                     target_state = 'Kernel Not Ready'
 
                 elif starting_state == 'Kernel Not Ready':
-                    if tracker_trello_block:
-                        target_state = 'Kernel Blocked'
-                    elif ready_started:
+                    #if tracker_trello_block:
+                    #    target_state = 'Kernel Blocked'
+                    #elif ready_started:
+                    if ready_started:
                         target_state = 'Kernel Ready'
 
                 elif starting_state == 'Kernel Ready':
-                    if tracker_trello_block:
-                        target_state = 'Kernel Blocked'
-                    elif not ready_started:
+                    #if tracker_trello_block:
+                    #    target_state = 'Kernel Blocked'
+                    #elif not ready_started:
+                    if not ready_started:
                         target_state = 'Kernel Not Ready'
                     elif ready_complete:
                         target_state = 'Kernel Preparing'
@@ -417,10 +419,9 @@ if __name__ == '__main__':
                         target_state = 'Kernel Testing'
 
                 elif starting_state == 'Kernel Blocked':
-                    # XXX: we are not primary for blocked.
-                    #blocked_want.add(tracker_id)
-                    if not tracker_trello_block:
-                        target_state = 'Kernel Not Ready'
+                    blocked_want.add(tracker_id)
+                    #if not tracker_trello_block:
+                    #    target_state = 'Kernel Not Ready'
 
                 #print("SYNC ISSUE", issue, starting_state, target_state)
                 if starting_state == target_state:
