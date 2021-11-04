@@ -421,7 +421,10 @@ defaults:
                 linux-meta-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/jammy']
-            supported: true
+            # We were told to not work on realtime in Impish, so that is not supported.
+            # To be consistent the Jammy version also should be unsupported until it is a
+            # native kernel.
+            supported: false
             #derived-from: [ '22.04', 'linux' ]
             derived-from: [ '21.10', 'linux-realtime' ]
             swm:
