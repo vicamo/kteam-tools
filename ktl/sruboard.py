@@ -2,6 +2,7 @@ import os
 import re
 import yaml
 
+from collections import namedtuple
 from datetime import datetime, timezone, timedelta
 
 from jira import JIRA
@@ -58,6 +59,7 @@ class SRUBoard:
         if desc is not None:
             params['description'] = desc
 
+        issue = None
         if self.dryrun:
             print('DRY: Add "{}" issue in "{}"'.format(name, state))
             if desc:
@@ -70,6 +72,12 @@ class SRUBoard:
             if state is not None:
                 self.jira.transition_issue(issue, transition=state)
 
+        return issue
+
+    def order_issue(self, issue, before):
+        self.jira.rank(issue, before)
+
+    LatestSpin = namedtuple("LatestSpin", ['spin', 'issue'])
     respin_re = re.compile("^Re-spin \(#([0-9]+)\) *(.*)?$")
     def get_latest_spin(self):
         '''
@@ -78,6 +86,7 @@ class SRUBoard:
         :returns: list()
         '''
         latest = 0
+        latest_issue = None
         chunk_offset = 0
         chunk_size = 50
         while True:
@@ -95,6 +104,7 @@ class SRUBoard:
                 this_spin = int(match.group(1))
                 if this_spin > latest:
                     latest = this_spin
+                    latest_issue = issue
 
-        print("LATEST", latest)
-        return latest
+        print("LATEST", latest, latest_issue)
+        return self.LatestSpin(latest, latest_issue)

@@ -32,13 +32,16 @@ Examples:
     try:
         board = SRUBoard(args.cycle, dryrun=args.dry_run)
 
-        spin = board.get_latest_spin() + 1
+        latest_spin = board.get_latest_spin()
+        spin = latest_spin.spin + 1
 
         name  = 'Re-spin (#{}): <fill reason>'.format(spin)
         desc  = 'Justification:\n==============\n'
         desc += '<fill in details here>\n\n'
 
-        board.add_issue(name, desc, state='Kernel Notice')
+        issue = board.add_issue(name, desc, state='Kernel Notice')
+        if latest_spin.issue is not None:
+            board.order_issue(issue.key, latest_spin.issue.key)
     except SRUBoardError as e:
         print(e)
         exit(1)
