@@ -357,7 +357,7 @@ defaults:
 
         linux:
             routing: devel-drivers
-            versions: ['5.13.0']
+            versions: ['5.15.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux:
@@ -376,7 +376,6 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             supported: false
-            derived-from: ['21.10', 'linux']
             swm:
                 kernel-testing: true
             testing:
