@@ -547,6 +547,9 @@ class MonitorLaunchpadProject:
                 if (activity.whatchanged == 'kernel-sru-workflow: status' and
                         activity.newvalue == 'In Progress'):
                     pass
+                # We change tags and do want to scan in that case.
+                elif activity.whatchanged == 'tags':
+                    pass
                 elif activity.person_link.endswith("/~ubuntu-kernel-bot"):
                     continue
                 print("Y", bug_id, activity, activity.person_link)
