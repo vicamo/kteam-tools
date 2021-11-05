@@ -5,148 +5,12 @@ import os
 import re
 from datetime   import datetime, timedelta
 
-# the so-trello root dir needs to be on PYTHONPATH
-from trellotool.trellotool              import TrelloTool
+from ktl.sruboard                       import SRUBoard, SRUBoardError
 from ktl.kernel_series                  import KernelSeries
 from ktl.utils                          import run_command
 
-class TrelloError(Exception):
-    pass
 
-
-class SRUBoard:
-    def __init__(self, tt, name, dryrun=False):
-        """
-        :param tt: TrelloTool object
-        :param name: name of the board
-        """
-        self.dryrun = dryrun
-        self.tt = tt
-        self.name = name
-        self.id = None
-        self.url = None
-        self.default_list_name = None
-        self.lists = {}
-
-    def create(self, org):
-        """
-        Create the Trello board
-
-        :param org: Trello organization (team)
-        :return None
-        """
-        params = {
-            'name': self.name,
-            'idOrganization': org,
-            'prefs_permissionLevel': 'org',
-            'defaultLists': 'false'
-        }
-
-        if self.dryrun:
-            print('DRY: Create board: "{}"'.format(self.name))
-        else:
-            print('Create board: "{}"'.format(self.name))
-            self.tt.trello.board_create(**params)
-        self.lookup_board_id()
-
-    def lookup_board_id(self):
-        if self.dryrun:
-            self.id = 0
-            self.url = 'http://this.is.a.dryrun.info'
-            return
-
-        for board in self.tt.trello.member_boards('me'):
-            if board['name'] == self.name:
-                self.id = board['id']
-                self.url = board['url']
-                return
-        raise TrelloError("Could not find id for board '%s'" % self.name)
-
-    def add_lists(self, list_names, default_list):
-        """
-        Add the lists to the board and save the default list
-        to be used to later add the cards to
-
-        :param list_names: list with the list names
-        :param default_list: default list to add the cards to
-        :return: None
-        """
-        self.default_list_name = default_list
-        if self.dryrun:
-            list_id = 1
-            for list_name in list_names:
-                isdefault = ''
-                if list_name == default_list:
-                    isdefault = '*'
-                print('DRY: Add list: {}{}'.format(list_name, isdefault))
-                self.lists[list_name] = list_id
-                list_id += 1
-            return
-
-        for list_name in list_names:
-            params = {
-                'name': list_name,
-                'pos': 'bottom'
-            }
-            self.tt.trello.board_addlist(self.id, **params)
-
-        for board_list in self.tt.trello.board_lists(self.id):
-            self.lists[board_list['name']] = board_list['id']
-
-    def add_card(self, name, desc=None, list_name=None):
-        """
-        Add the given card to the default list board
-
-        :param name: card name
-        :param desc: card description
-        :param list_name: optional alternative list target
-        :return: None
-        """
-        if list_name is not None:
-            if list_name not in self.lists:
-                raise TrelloError("Undefined list target for '{}'({})".format(name, list_name))
-        else:
-            list_name = self.default_list_name
-        list_id = self.lists[list_name]
-
-        params = {
-            'name': name,
-            'pos': 'bottom',
-        }
-        if desc:
-            params['desc'] = desc
-
-        if self.dryrun:
-            print('DRY: Add "{}" card to "{}"'.format(name, list_name))
-            if desc:
-                print('DRY:     "{}"'.format(desc))
-        else:
-            print('Adding card: {}'.format(name))
-            self.tt.trello.list_addcard(list_id, **params)
-
-    def add_member(self, member_id, member_type):
-        """
-        Add a given member ID as the specified type to the board
-
-        :param member_id: member ID
-        :param member_type: member type ('admin', 'normal', 'observer')
-        :return: None
-        """
-        params = {
-            'idMember': member_id,
-            'type': member_type,
-        }
-        if self.dryrun:
-            print('DRY: Add member: {} as {}'.format(member_id, member_type))
-        else:
-            if member_type == 'admin':
-                print('Adding {} as an administrator'.format(member_id))
-            else:
-                print('Adding {} as normal user'.format(member_id))
-            self.tt.trello.board_addmember(self.id, **params)
-
-
-class SRUCardsCreator:
+class SRUCreator:
     def __init__(self, args):
         """
         :param args: argparse args object
@@ -157,9 +21,6 @@ class SRUCardsCreator:
         self.config_file = args.config
         self.config = {}
         self.config_load()
-
-        self.tt = TrelloTool()
-        self.tt.assert_authenticated()
 
     def config_load(self):
         with open(self.config_file, 'r') as cfd:
@@ -195,16 +56,7 @@ class SRUCardsCreator:
         :return: None
         """
         # create the board with the lists on the organization
-        board_title = self.config['board']['prefix_name'] + self.cycle
-        board = SRUBoard(self.tt, board_title, dryrun=self.args.dry_run)
-        board.create(self.config['board']['trello_organization'])
-        board.add_lists(self.config['board']['lists'], self.config['board']['default_list'])
-
-        # Add the initial members of the board
-        for member_id in self.config['board'].get('admin_members'):
-            board.add_member(member_id, 'admin')
-        for member_id in self.config['board'].get('normal_members'):
-            board.add_member(member_id, 'normal')
+        board = SRUBoard(self.cycle, create_sprint=True, dryrun=self.args.dry_run)
 
         # Cache the tuples (series, source) of supported sources
         series_sources_list = self.get_supported_series_sources()
@@ -220,7 +72,7 @@ class SRUCardsCreator:
                             card_desc = 'ESM mode: Note different git location and build PPA'
                         if source.name == 'linux-euclid':
                             card_desc = 'No rebase to be done. Only needed if there are high and critical CVEs to be fixed.'
-                        board.add_card(card_name, card_desc)
+                        board.add_issue(card_name, card_desc)
                 continue
             if card['name'] == 'Produce kernel snaps':
                 if self.args.crank_turn:
@@ -230,7 +82,7 @@ class SRUCardsCreator:
                                 continue
                             card_name = 'Produce %s/%s snap' % (series.codename, snap.name)
                             card_desc = 'Update version in %s and push' % (snap.repo)
-                            board.add_card(card_name, card_desc)
+                            board.add_issue(card_name, card_desc)
                 continue
             if card['name'] == 'Release kernel snaps':
                 if self.args.crank_turn:
@@ -241,14 +93,14 @@ class SRUCardsCreator:
 
                             card_name = 'Release %s/%s to candidate channel' % (series.codename, snap.name)
                             card_desc = 'Once the snap-release-to-candidate task in the tracking bug becomes confirmed'
-                            board.add_card(card_name, card_desc)
+                            board.add_issue(card_name, card_desc)
 
                             if not snap.stable:
                                 continue
 
                             card_name = 'Release %s/%s to stable channel' % (series.codename, snap.name)
                             card_desc = 'Once the snap-release-to-stable task in the tracking bug becomes confirmed'
-                            board.add_card(card_name, card_desc)
+                            board.add_issue(card_name, card_desc)
                 continue
 
             card_desc = None
@@ -257,16 +109,15 @@ class SRUCardsCreator:
                 # Un-escape the card description so they have the desired formatting.
                 card_desc = card['description'].encode().decode('unicode_escape')
 
-            card_list = None
-            if 'list' in card:
-                card_list = card['list']
-
-            board.add_card(card['name'], card_desc, card_list)
+            card_state = card.get('list', self.config['board']['default_list'])
+            if card_state not in self.config['board']['lists']:
+                raise SRUBoardError("Undefined list target for '{}'({})".format(card['name'], card_list))
+            board.add_issue(card['name'], card_desc, card_state)
 
         if self.args.dry_run:
-            print("This was a dry-run - board was NOT created")
+            print("This was a dry-run - sprint was NOT created")
         else:
-            print("Board '%s' created: %s" % (board.name, board.url))
+            print("Sprint '%s' created" % (board.sprint,))
 
 
 def update_cycle_info(args):
@@ -283,7 +134,7 @@ def update_cycle_info(args):
     if match is not None:
         date = datetime.strptime(cycle, '%Y.%m.%d')
         if date.isoweekday() != 1:
-            raise TrelloError('Date provided is not a Monday')
+            raise SRUBoardError('Date provided is not a Monday')
 
         release_date = date + timedelta(days=21)
         new_entry = "\'{0}\':\n    release-date: \'{1}\'".format(cycle,
@@ -298,7 +149,7 @@ def update_cycle_info(args):
                     new_file += "\n{0}\n".format(new_entry)
                     entry_added = True
                 elif line.partition('\n')[0] == new_entry.partition('\n')[0]:
-                    raise TrelloError('SRU cycle entry already present on the info file')
+                    raise SRUBoardError('SRU cycle entry already present on the info file')
                 new_file += line
         if not entry_added:
             raise('Could not find a place on the file for the new entry')
@@ -318,17 +169,17 @@ def update_cycle_info(args):
             run_command(cmd)
         print("Added commit '{0}' to {1}".format(commit_subject, file_name))
     else:
-        raise TrelloError('Wrong date format')
+        raise SRUBoardError('Wrong date format')
 
 
 if __name__ == '__main__':
     retval = 0
     default_config = '%s/create-sru-cards.yaml' % os.path.dirname(__file__)
     default_cycle_info = '%s/../info/sru-cycle.yaml' % os.path.dirname(__file__)
-    description = 'Create a Trello board with cards for SRU cycles'
+    description = 'Create a JIRA sprint with cards for SRU cycles'
     epilog = '''
 The script reads the configuration from a yaml file, updates the sru-cycle info
-yaml and creates a new Trello board, adding the initial cards and members.
+yaml and creates a new JIRA sprint board, adding the initial issues.
 
 Examples:
     Run with the default options:
@@ -363,8 +214,8 @@ Examples:
     try:
         if not args.no_cycle_info:
             update_cycle_info(args)
-        SRUCardsCreator(args).create()
-    except TrelloError as e:
+        SRUCreator(args).create()
+    except SRUBoardError as e:
         retval = 1
         print('Error: {}'.format(e))
 
