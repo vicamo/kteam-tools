@@ -109,13 +109,9 @@ class SRUCreator:
                 # Un-escape the card description so they have the desired formatting.
                 card_desc = card['description'].encode().decode('unicode_escape')
 
-            card_list = None
-            if 'list' in card:
-                card_list = card['list']
-
-            card_state = 'In Backlog'
-            if card_list == 'On Deck':
-                card_state = 'To Do'
+            card_state = card.get('list', self.config['board']['default_list'])
+            if card_state not in self.config['board']['lists']:
+                raise SRUBoardError("Undefined list target for '{}'({})".format(card['name'], card_list))
             board.add_issue(card['name'], card_desc, card_state)
 
         if self.args.dry_run:
