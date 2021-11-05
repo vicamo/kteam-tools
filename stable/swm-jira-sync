@@ -443,10 +443,10 @@ if __name__ == '__main__':
             # Copy over any ownership information.
             #print("OWNERS:", issue, tracker_owner, users.get(tracker_owner))
             if tracker_owner is not None and tracker_owner in users:
-                owner_email = users[tracker_owner].get('email')
-                owner_jira_id = email_to_jira_id(owner_email)
                 jira_assignee = issue.fields.assignee
-                if jira_assignee is None or jira_assignee.accountId != owner_jira_id:
+                if jira_assignee is None:
+                    owner_email = users[tracker_owner].get('email')
+                    owner_jira_id = email_to_jira_id(owner_email)
                     if owner_jira_id is not None:
                         print("ASSIGN:", issue, jira_assignee, owner_email, owner_jira_id)
                         jira.assign_issue(issue, owner_email)
