@@ -358,6 +358,8 @@ class PackageBuild:
                 break
 
         # If we have a match use that, else use the first one.
+        if len(publications) == 0:
+            publications = [(False, None, None, None, None, '', None, None)]
         if publications[-1][5] != '':
             info = publications[-1]
         else:
