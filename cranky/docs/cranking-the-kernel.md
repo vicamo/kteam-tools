@@ -90,27 +90,6 @@ in your `~/.gitconfig` file:
 	insteadof = "git+ssh://git.launchpad.net/"
 ```
 
-### dkms package update stage - `update-version-dkms`
-<!--cheatsheet-->
-```
-./update-version-dkms POCKET
-```
-<!--/cheatsheet-->
-
-In bionic and newer, this updates the package versions in `debian/dkms-versions`
-to match those currently present in the specified pocket. For SRU kernels
-`POCKET` should be `updates`.  For development kernels it will typically be
-`proposed`.
-
-**Note**: `update-version-dkms` should only need to be run for primary kernels
-and kernels forward-ported to the development release. Other derivatives
-generally should not be deviating from the versions in the primary kernel.
-
-Example:
-```
-./update-version-dkms updates
-```
-
 ### Tool sync stage - `cranky fix`
 <!--cheatsheet-->
 ```
@@ -265,6 +244,33 @@ $ cranky link-tb
 
 **Note** this command is making public changes, it's not only affecting your
 local repository. Make sure to skip this test if you're doing local tests.
+
+### dkms package update stage - `update-dkms-versions`
+<!--cheatsheet-->
+```
+./update-dkms-versions
+```
+<!--/cheatsheet-->
+
+In bionic and newer, this updates the package versions in `debian/dkms-versions`
+to match the ones expected for the SRU cycle. By default this script will fetch
+the data from a git repository containing a database of the dkms versions to be
+used on each series for the given SRU cycle. The cycle date used is the one from
+`debian.<variant>/tracking-bug`, so this script needs to be run after `cranky
+link-tb`.
+
+The git repository location and the SRU cycle date can be provided manually to
+the script via optional parameters. However, in the normal cases a manual
+override should never be needed.
+
+**Note**: `update-dkms-versions` should only need to be run for primary kernels
+and kernels forward-ported to the development release. Other derivatives
+generally should not be deviating from the versions in the primary kernel.
+
+Example:
+```
+./update-dkms-versions
+```
 
 ### Closing commit - `cranky close`
 <!--cheatsheet-->
