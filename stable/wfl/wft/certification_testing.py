@@ -52,18 +52,19 @@ class CertificationTesting(TaskHandler):
         center(s.__class__.__name__ + '._status_check')
         retval = False
 
-        present = s.bug.debs.all_built_and_in_pocket('Proposed')
-        if not present:
-            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
-                cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
-                s.task.status = 'Opinion'
-                retval = True
+        #present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        #if not present:
+        #    if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
+        #        cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
+        #        s.task.status = 'Opinion'
+        #        retval = True
 
-        elif present and s.task.status == 'Opinion':
-            s.task.status = 'New'
-            retval = True
+        #elif present and s.task.status == 'Opinion':
+        #    s.task.status = 'New'
+        #    retval = True
 
-        elif 'certification-testing-failed' in s.bug.tags:
+        #elif 'certification-testing-failed' in s.bug.tags:
+        if 'certification-testing-failed' in s.bug.tags:
             cdebug('Certification Testing tagged as FAIL', 'yellow')
             if s.task.status != 'Confirmed' and s.task.status != 'Incomplete':
                 msgbody = 'The bug was tagged as certification-testing-failed\n'

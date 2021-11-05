@@ -164,18 +164,19 @@ class AutomatedTesting(TaskHandler):
             cinfo('kernels promoted successfully from Proposed', 'green')
             return retval
 
-        present = s.bug.debs.all_built_and_in_pocket('Proposed')
-        if not present:
-            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
-                cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
-                s.task.status = 'Opinion'
-                retval = True
+        #present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        #if not present:
+        #    if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
+        #        cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
+        #        s.task.status = 'Opinion'
+        #        retval = True
 
-        elif present and s.task.status == 'Opinion':
-            s.task.status = 'New'
-            retval = True
+        #elif present and s.task.status == 'Opinion':
+        #    s.task.status = 'New'
+        #    retval = True
 
-        elif 'automated-testing-failed' in s.bug.tags:
+        #elif 'automated-testing-failed' in s.bug.tags:
+        if 'automated-testing-failed' in s.bug.tags:
             cdebug('Automated Testing tagged as FAILED', 'yellow')
             if s.task.status != 'Incomplete':
                 s.task.status = 'Incomplete'
