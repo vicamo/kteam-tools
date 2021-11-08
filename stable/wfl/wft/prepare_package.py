@@ -110,10 +110,6 @@ class PreparePackage(TaskHandler):
                 retval = True
                 break
 
-            # Check for blocking trackers in a previous cycle.
-            if s.bug.debs.older_tracker_in_ppa:
-                break
-
             # Are we blocked.
             block = s.bug.source_block_present()
             if block is not None:
@@ -125,6 +121,10 @@ class PreparePackage(TaskHandler):
             if not s.master_prepare_ready():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Holding -- waiting for master bug'
+                break
+
+            # Check for blocking trackers in a previous cycle.
+            if s.bug.debs.older_tracker_in_ppa:
                 break
 
             # If we are not the primary-package and there is a primary package
@@ -160,15 +160,15 @@ class PreparePackage(TaskHandler):
                 break
 
             pull_back = False
-            if s.bug.debs.older_tracker_in_ppa:
-                cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
-                pull_back = True
             block = s.bug.source_block_present()
             if block is not None:
                 cinfo('            Blocked via {} pulling back from Confirmed'.format(block), 'yellow')
                 pull_back = True
             if not s.master_prepare_ready():
                 cinfo('            Master kernel no longer ready pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.bug.debs.older_tracker_in_ppa:
+                cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
                 pull_back = True
 
             if pull_back:
