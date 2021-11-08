@@ -21,16 +21,11 @@ used.
 
 1. sudo apt install python3-launchpadlib
 
-2. Install so-trello:
-   a) via snap (so-trello by shadowen)
-   b) via git clone lp:~apw/+git/so-trello
+2. ensure that vendored support packages are installed
+   a) ./deploy --update-deps
 
-3. Authenticate trellotool:
-   a) so-trello authenticate
-   b) visit the URL that gets printed copy that number
-   c) create ~/.trellotool with the following content:
-      trello_token: <number copied>
-
+3. authenticate Jira API:
+   a) see README.JIRA
 
 Scripts
 ----------------------

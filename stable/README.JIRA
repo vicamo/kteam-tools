@@ -1,0 +1,17 @@
+JIRA Authentication for kteam-tools
+===================================
+To use Jira API you need to allocate an API-token and add it to your .netrc.
+To allocate an API token visit the URL below and add a new one for this
+purpose:
+
+  https://id.atlassian.com/manage-profile/security/api-tokens
+
+This will produce a 24 character random password which is then injected
+into .netrc as below:
+
+  machine warthogs.atlassian.net
+   login <formal-canonical-email>
+   password <24-character-token>
+
+Do ensure the machine directive is in the first column and that .netrc
+is chmod 600.
