@@ -1,109 +1,9 @@
 #!/usr/bin/env python3
+
 import argparse
+import re
 
-# the so-trello root dir needs to be on PYTHONPATH
-from trellotool.trellotool              import TrelloTool
-
-class TrelloError(Exception):
-    pass
-
-class SRUBoard:
-    def __init__(self, cycle):
-        '''
-        :param cycle: The SRU cycle date of the board
-        '''
-        self.tt = TrelloTool()
-        self.tt.assert_authenticated()
-
-        self.name = 'SRU Cycle {}'.format(cycle)
-        self.default_list_name = 'Notice'
-        self.lists = list()
-
-        for board in self.tt.trello.member_boards('me'):
-            if board['name'] == self.name:
-                self.data = board
-                self.lists = self.tt.trello.board_lists(self.data['id'])
-                return
-        raise TrelloError("Could not find id for board '%s'" % self.name)
-
-    def get_lists(self):
-        '''
-        Get a list of board lists, sorted by "id"
-
-        :returns: list()
-        '''
-        return(sorted(self.lists, key=lambda x: x['id']))
-
-    def get_list(self, name):
-        '''
-        Get the list on the board which has 'name' set the content of
-        the name argument.
-
-        :param name: String to search for.
-
-        :returns: dict()
-        '''
-        for l in self.lists:
-            if l['name'] == name:
-                return l
-        else:
-            raise TrelloError("Could not find list '{}'".format(name))
-
-    def get_cards(self, listname):
-        '''
-        Get all cards from the named list.
-
-        :param listname: Name of the list to use
-
-        :returns: list()
-        '''
-        tlist = self.get_list(listname)
-        return(sorted(self.tt.trello.list_cards(tlist['id']), key=lambda x: x['pos']))
-
-    def get_latest_spin(self, listname='Notice'):
-        '''
-        Get the most recent respin card (or None)
-
-        :returns: int
-        '''
-        spin = 1
-        for tcard in self.get_cards(listname):
-            if tcard['name'].startswith('Re-spin (#'):
-                card_spin = int(tcard['name'].split('#', 1)[1].split(')', 1)[0])
-                if card_spin > spin:
-                    spin = card_spin
-
-        return(spin)
-
-    def add_card_after(self, card, posname, listname=None, dryrun=False):
-        '''
-        Add a new card after a certain reference card. If the reference
-        card is not found, then the new card will be added to the top
-        of the list.
-
-        :param card:     This is a dictionary which should contain at least
-                         'name' and 'desc' keywords.
-        :param posname:  The 'name' key of the card which the new one should
-                         be sorted after.
-        :param listname: The 'name' key of the list to which the new card is
-                         to be added (defaults to "Notice")
-        '''
-        if listname is None:
-            listname = self.default_list_name
-        tlist = self.get_list(listname)
-
-        for tcard in self.get_cards(listname):
-            if tcard['name'] == posname:
-                card['pos'] = tcard['pos']
-                break
-        else:
-            card['pos'] = 'top'
-
-        if dryrun:
-            print('DRY: Add {}'.format(str(card)))
-        else:
-            print('Addding {}'.format(card['name']))
-            self.tt.trello.list_addcard(tlist['id'], **card)
+from ktl.sruboard import SRUBoard, SRUBoardError
 
 
 if __name__ == '__main__':
@@ -130,27 +30,20 @@ Examples:
     args = parser.parse_args()
 
     try:
-        board = SRUBoard(args.cycle)
-    except TrelloError as e:
+        board = SRUBoard(args.cycle, dryrun=args.dry_run)
+
+        latest_spin = board.get_latest_spin()
+        spin = latest_spin.spin + 1
+
+        name  = 'Re-spin (#{}): <fill reason>'.format(spin)
+        desc  = 'Justification:\n==============\n'
+        desc += '<fill in details here>\n\n'
+
+        issue = board.add_issue(name, desc, state='Kernel Notice')
+        if latest_spin.issue is not None:
+            board.order_issue(issue.key, latest_spin.issue.key)
+    except SRUBoardError as e:
         print(e)
         exit(1)
-
-    try:
-        spin = board.get_latest_spin() + 1
-    except TrelloError as e:
-        print(e)
-        exit(1)
-
-    name  = 'Re-spin (#{}): <fill reason>'.format(spin)
-    desc  = 'Justification:\n==============\n'
-    desc += '<fill in details here>\n\n'
-    desc += 'Affected kernels:\n=================\n\n'
-    desc += '* <list series/sources to be respun>'
-
-    card = {
-        'name': name,
-        'desc': desc,
-    }
-    board.add_card_after(card, 'Project Status', dryrun=args.dry_run)
 
     exit(0)

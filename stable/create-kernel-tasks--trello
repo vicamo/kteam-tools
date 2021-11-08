@@ -13,7 +13,7 @@ sys.path.append(os.path.realpath(
 from ktl.log            import Clog, cerror, cwarn, cinfo, cdebug
 from ktl.kernel_series  import KernelSeries
 from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
-from ktl.sruboard       import SRUBoard, SRUBoardError
+from ktl.cycleboard     import CycleBoard, CycleBoardError
 
 class Task():
     def __init__(self, taskset, ks_source, ks_snap=None):
@@ -171,23 +171,45 @@ class Task():
             sp = self.taskset.spin_nr
             cb = self.taskset.board
             if self.sourcetype == 'deb':
-                card_txt = 'Crank {}:{} #{}'.format(cn, sn, sp)
+                card_txt = 'Crank (#{}) {}/{} kernel'.format(sp, cn, sn)
                 card_dsc = 'Use cranky tools and process to get the kernel set uploaded.'
                 if self.ks_source.series.esm is True:
                     card_dsc += ' Note the different location and requirements for ESM!'
                 cinfo('Create "{}" card'.format(card_txt))
                 if dryrun is False:
-                    cb.add_issue(card_txt, card_dsc)
+                    cb.add_card(card_txt, card_dsc)
             elif self.sourcetype == 'snap':
                 snn = self.ks_snap.name
                 pt = self.ks_snap.publish_to
-                card_txt = 'Crank {}:{}:{} #{}'.format(cn, sn, snn, sp)
+                card_txt = 'Produce (#{}) {}/{}/{} snap'.format(sp, cn, sn, snn)
                 card_dsc = 'Use `cranky update-snap` in related branch and push the branch '
                 card_dsc += '**and** the new tag.'
                 cinfo('Create "{}" card'.format(card_txt))
                 cdebug('  Desc: {}'.format(card_dsc))
                 if dryrun is False:
-                    cb.add_issue(card_txt, card_dsc)
+                    cb.add_card(card_txt, card_dsc)
+
+                for risk in ['candidate', 'stable']:
+                    if self.ks_snap.promote_to_risk(risk) is True:
+                        # For the summary just check for the first track of whichever
+                        # arch comes first.
+                        for arch in pt.keys():
+                            track = pt[arch][0]
+                            break
+                        if '-' in track:
+                            track = track.split('-')[0]
+                        if track == 'latest':
+                            track = risk
+                        else:
+                            track = '{}/{}'.format(track, risk)
+                        card_txt  = 'Release (#{}) {}/{}/{} snap '.format(sp, cn, sn, snn)
+                        card_txt += 'to {} channel'.format(track)
+                        card_dsc  = 'When task switches to "confirmed" state, release '
+                        card_dsc += 'to {} channel.'.format(track)
+                        cinfo('Create "{}" card'.format(card_txt))
+                        cdebug('  Desc: {}'.format(card_dsc))
+                        if dryrun is False:
+                            cb.add_card(card_txt, card_dsc)
 
         for subtask in self.subtasks:
             subtask.CreateCards(dryrun=dryrun)
@@ -436,9 +458,11 @@ class TaskSet():
 
     def CreateCards(self, boardname, dryrun=False):
         if dryrun is False and self.board is None:
+            self.board = CycleBoard()
             try:
-                self.board = SRUBoard(self.cycletag)
-            except SRUBoardError as e:
+                self.board.lookup_board_id(boardname)
+                self.board.lookup_list_id('Backlog')
+            except CycleBoardError as e:
                 cerror(e)
                 return
         for tkey in self.tasks.keys():
