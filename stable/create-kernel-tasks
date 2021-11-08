@@ -177,7 +177,7 @@ class Task():
                     card_dsc += ' Note the different location and requirements for ESM!'
                 cinfo('Create "{}" card'.format(card_txt))
                 if dryrun is False:
-                    cb.add_issue(card_txt, card_dsc)
+                    cb.add_issue(card_txt, card_dsc, state='Kernel Not Ready')
             elif self.sourcetype == 'snap':
                 snn = self.ks_snap.name
                 pt = self.ks_snap.publish_to
@@ -187,7 +187,7 @@ class Task():
                 cinfo('Create "{}" card'.format(card_txt))
                 cdebug('  Desc: {}'.format(card_dsc))
                 if dryrun is False:
-                    cb.add_issue(card_txt, card_dsc)
+                    cb.add_issue(card_txt, card_dsc, state='Kernel Not Ready')
 
         for subtask in self.subtasks:
             subtask.CreateCards(dryrun=dryrun)
