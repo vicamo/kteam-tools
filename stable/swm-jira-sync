@@ -217,10 +217,12 @@ if __name__ == '__main__':
                 status = str(issue.fields.status)
                 # If we have no swm tracker for this card, it is either new and
                 # should be ignored till the tracker appears, or it has been
-                # closed in our absense and should be closed.  If it is In
-                # Backlog then we have never seen it before, so leave it be;
+                # closed in our absense and should be closed.  If we have not
+                # yet tagged it with its variant then it cannot have ever had a
+                # tracker, assume it will appear shortly and leave it be;
                 # otherwise we need to shove it into Kernel Complete.
-                if status == 'In Backlog':
+                if ('kernel-debs' not in issue.fields.labels and
+                        'kernel-snap-debs' not in issue.fields.labels):
                     print("NEW/UNKNOWN ISSUE")
 
                 elif status != 'Kernel Complete':
