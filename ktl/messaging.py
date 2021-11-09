@@ -57,7 +57,7 @@ class Email:
         s.ehlo()
         s.starttls()
         if self.smtp_user is not None and self.smtp_password is not None:
-            s.login(self.smtp_user.encode('UTF-8'),self.smtp_password.encode('UTF-8'))
+            s.login(self.smtp_user,self.smtp_password)
         s.sendmail(from_address, to_list, msg.as_string())
         s.quit()
         return
