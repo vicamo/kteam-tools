@@ -75,7 +75,9 @@ class TheApp():
 
                 try:
                     email = Email(smtp_server=destination['smtp-server'],
-                        smtp_port=destination['smtp-port'])
+                        smtp_port=destination.get('smtp-port'),
+                        smtp_user=destination.get('smtp-username'),
+                        smtp_password=destination.get('smtp-password'))
                     email.send(destination['from'], destination['to'],
                         message.get('subject', '??'), message.get('body', '??'))
                     s.log.info("Send successfully")
