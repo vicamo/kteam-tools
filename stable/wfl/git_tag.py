@@ -37,8 +37,9 @@ class GitTag():
             try:
                 self._refs = remote.refs
                 self._verifiable = True
-            except GitTagError:
-                pass
+            except GitTagError as e:
+                self._refs = {}
+                cdebug("GitTag: remote lookup failed -- {}".format(str(e)))
 
             tag_prefix = 'Ubuntu{}-'.format(
                 package.source.name.replace('linux', ''))
