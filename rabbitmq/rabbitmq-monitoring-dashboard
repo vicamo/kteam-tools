@@ -8,9 +8,9 @@ fi
 now=$(date +%s)
 
 group="RabbitMQ:%s%H"
-for vhost in $(sudo rabbitmqctl -q list_vhosts)
+for vhost in $(sudo rabbitmqctl -q list_vhosts --no-table-headers)
 do
-	sudo rabbitmqctl -q list_queues -p $vhost messages name | \
+	sudo rabbitmqctl -q list_queues -p $vhost --no-table-headers messages name | \
 	while read messages name
 	do
 		if [ "$messages" -eq 0 ]; then
@@ -28,7 +28,7 @@ do
 		echo "V2 group=$group title=Queue:%s$vhost:$name note=Messages:%s$messages state=$state order=$order"
 	done
 done
-sudo rabbitmqctl -q list_connections vhost user peer_host peer_port state | \
+sudo rabbitmqctl -q list_connections --no-table-headers vhost user peer_host peer_port state | \
 while read vhost user peer_host peer_port state
 do
 	state=$(echo "$state" | sed -e 's/%/%p/g' -e 's/ /%s/g')
@@ -36,7 +36,7 @@ do
 		echo "V2 group=$group title=Connection:%s$vhost:$user%s$state note=Connection%snot%srunning state=W order=60"
 	fi
 done
-sudo rabbitmqctl -q list_connections vhost | sort | uniq -c | \
+sudo rabbitmqctl -q list_connections --no-table-headers vhost | sort | uniq -c | \
 while read count vhost
 do
 	echo "V2 group=$group title=VHost:%s$vhost note=$count%sconnections state=G order=70"
