@@ -278,6 +278,8 @@ if __name__ == '__main__':
 
             #tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
 
+            snap_tracker = 'snap-prepare' in tracker_tasks
+
             ready_started = False
             ready_complete = True
             preparation_started = False
@@ -304,15 +306,15 @@ if __name__ == '__main__':
             earlytest_started = False
             earlytest_complete = True
             earlytest_failed = False
-            ptp_started = False
-            ptp_complete = True
+            promote_started = False
+            promote_complete = True
             testing_started = False
             testing_complete = True
             testing_failed = False
-            signoff_started = False
-            signoff_complete = True
+            #signoff_started = False
+            #signoff_complete = True
             for task_name, task in tracker_tasks.items():
-                if task_name == 'boot-testing':
+                if task_name == 'boot-testing' or (snap_tracker and task_name == 'certification-testing'):
                     if task.get('status', 'Invalid') not in ('New', 'Invalid'):
                         earlytest_started = True
                     if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
@@ -326,16 +328,17 @@ if __name__ == '__main__':
                         testing_complete = False
                     if task.get('status', 'Invalid') == 'Incomplete':
                         testing_failed = True
-                if task_name.endswith('-signoff'):
+                #if task_name.endswith('-signoff'):
+                #    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                #        signoff_started = True
+                #    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                #        signoff_complete = False
+                elif (task_name in ('promote-to-proposed', 'promote-signing-to-proposed') or
+                        task_name.startswith('snap-release-to-')):
                     if task.get('status', 'Invalid') not in ('New', 'Invalid'):
-                        signoff_started = True
+                        promote_started = True
                     if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
-                        signoff_complete = False
-                if task_name in ('promote-to-proposed', 'promote-signing-to-proposed'):
-                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
-                        ptp_started = True
-                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
-                        ptp_complete = False
+                        promote_complete = False
 
             starting_state = str(issue.fields.status)
             while True:
@@ -373,7 +376,10 @@ if __name__ == '__main__':
                     if not preparation_complete:
                         target_state = 'Kernel Preparing'
                     elif builds_complete:
-                        target_state = 'Kernel Early Testing'
+                        if snap_tracker:
+                            target_state = 'Kernel Promotion'
+                        else:
+                            target_state = 'Kernel Early Testing'
 
                 elif starting_state == 'Kernel Early Testing':
                     if not builds_complete:
@@ -384,21 +390,30 @@ if __name__ == '__main__':
                         target_state = 'Kernel Testing Failed'
 
                 elif starting_state == 'Kernel Promotion':
-                    if not earlytest_complete:
+                    if not promote_complete and earlytest_started and not earlytest_complete:
                         target_state = 'Kernel Early Testing'
-                    elif ptp_complete:
+                    elif promote_complete and testing_started and not testing_complete:
                         target_state = 'Kernel Testing'
+                    elif promote_complete:
+                        if testing_complete:
+                            target_state = 'Kernel Complete'
+                        elif earlytest_complete:
+                            target_state = 'Kernel Testing'
+                        elif builds_complete:
+                            target_state = 'Kernel Early Testing'
 
                 elif starting_state == 'Kernel Testing':
-                    #print("ptp_complete<{}> testing_complete<{}> testing_failed<{}>".format(ptp_complete, testing_complete, testing_failed))
-                    if not ptp_complete:
+                    #print("promote_complete<{}> testing_complete<{}> testing_failed<{}>".format(promote_complete, testing_complete, testing_failed))
+                    if promote_started and not promote_complete:
                         target_state = 'Kernel Promotion'
                     elif testing_complete:
-                        target_state = 'Kernel Complete'
+                        target_state = 'Kernel Promotion'
                     elif testing_failed:
                         target_state = 'Kernel Testing Failed'
 
                 elif starting_state == 'Kernel Complete':
+                    if promote_started and not promote_complete:
+                        target_state = 'Kernel Promotion'
                     if not testing_complete:
                         target_state = 'Kernel Testing'
 
