@@ -16,6 +16,15 @@ EOF
 
 	for log_raw in $(cd "$HOME" && ls -1 "$logs/"*.log)
 	do
+		logrotate_fragment=$(echo "$HOME/$log_raw" | sed -e 's/$/rotate/')
+		if [ -f "$logrotate_fragment" ]; then
+			sed \
+				-e 's@{LOG}@'"$HOME/$log_raw"'@g' \
+				-e 's@{TOOLS}@'"$(dirname $(dirname $(readlink -f "$0")))"'@g' \
+				"$logrotate_fragment"
+			continue
+		fi
+
 		log="\"$HOME/$log_raw\""
 
 		case "$host::$log_raw" in
@@ -58,5 +67,6 @@ EOF
 	done
 }
 
-generate_config >"$HOME/.logrotate.conf"
-/usr/sbin/logrotate -s "$HOME/.logrotate.state" "$HOME/.logrotate.conf"
+generate_config
+#generate_config >"$HOME/.logrotate.conf"
+#/usr/sbin/logrotate -s "$HOME/.logrotate.state" "$HOME/.logrotate.conf"
