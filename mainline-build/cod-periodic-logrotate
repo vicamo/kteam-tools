@@ -67,6 +67,5 @@ EOF
 	done
 }
 
-generate_config
-#generate_config >"$HOME/.logrotate.conf"
-#/usr/sbin/logrotate -s "$HOME/.logrotate.state" "$HOME/.logrotate.conf"
+generate_config >"$HOME/.logrotate.conf"
+/usr/sbin/logrotate -s "$HOME/.logrotate.state" "$HOME/.logrotate.conf"
