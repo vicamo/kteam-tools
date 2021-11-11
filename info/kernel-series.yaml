@@ -4346,6 +4346,7 @@ defaults:
 
         linux-ibm-gt:
             routing: ibm-gt
+            variants: ['--']
             packages:
                 linux-ibm-gt:
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'master-next']
@@ -4386,6 +4387,29 @@ defaults:
                 flavours:
                     ibm-gt-fips:
                         arches: ['amd64']   # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
+        linux-ibm-gt-5.4:
+            routing: ibm-gt
+            variants: ['-edge']
+            packages:
+                linux-ibm-gt-5.4:
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'ibm-gt-5.4']
+                linux-meta-ibm-gt-5.4:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-bionic', 'ibm-gt-5.4']
+                linux-signed-ibm-gt-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic', 'ibm-gt-5.4']
+            supported: true
+            owner: krzk
+            private: true
+            derived-from: ['20.04', 'linux']
+            testing:
+                flavours:
+                    ibm-gt:
+                        arches: ['amd64', 's390x.LPAR']   # test system arch names
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
