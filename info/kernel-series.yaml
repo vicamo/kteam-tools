@@ -1466,7 +1466,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.8:
                     type: lrs
-            supported: true
+            supported: false
             owner: smb
             backport: false
             # derived-from: [ '20.10', 'linux' ]
