@@ -4087,13 +4087,6 @@ defaults:
                 linux-signed-ibm-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
-                linux-restricted-modules-ibm-5.4:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-ibm/+git/bionic', 'ibm-5.4']
-                linux-restricted-generate-ibm-5.4:
-                    type: lrg
-                linux-restricted-signatures-ibm-5.4:
-                    type: lrs
             supported: true
             backport: true
             derived-from: [ '20.04', 'linux-ibm' ]
