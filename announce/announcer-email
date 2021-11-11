@@ -58,7 +58,7 @@ class TheApp():
 
     def sanitise(s, payload):
         clean = deepcopy(payload)
-        destination = payload.get('destination')
+        destination = clean.get('destination')
         if destination:
             for key in list(destination):
                 if 'password' in key or 'token' in key:
