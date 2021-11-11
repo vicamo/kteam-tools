@@ -55,10 +55,19 @@ class TheApp():
         key = 'announce.' + payload['destination']['type']
         s.mq.publish_threadsafe(key, payload)
 
+    def sanitise(s, payload):
+        clean = {}
+        for key in payload:
+            if 'password' in key or 'token' in key:
+                clean[key] = '--redacted--'
+            else:
+                clean[key] = payload[key]
+        return clean
+
     # _handler
     #
     def _handler(s, payload):
-        s.log.info("handler payload={}".format(payload))
+        s.log.info("handler payload={}".format(s.sanitise(update)))
 
         try:
             what = payload.get('type', 'message')
