@@ -68,7 +68,7 @@ class TheApp():
     # _handler
     #
     def _handler(s, payload):
-        s.log.info("handler payload={}".format(s.sanitise(update)))
+        s.log.info("handler payload={}".format(s.sanitise(payload)))
 
         try:
             what = payload.get('type', 'message')
