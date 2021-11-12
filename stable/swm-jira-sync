@@ -225,8 +225,8 @@ if __name__ == '__main__':
                         'kernel-snap-debs' not in issue.fields.labels):
                     print("NEW/UNKNOWN ISSUE")
 
-                elif status != 'Kernel Complete':
-                    print("LOST/COMPLETE ISSUE")
+                elif status not in ('Kernel Complete', 'Rejected'):
+                    print(issue, "LOST/COMPLETE ISSUE", status)
                     step_to_done = {
                         'kernel not ready': 'Kernel Ready',
                         'kernel ready': 'Kernel Preparing',
@@ -234,7 +234,7 @@ if __name__ == '__main__':
                         'kernel building': 'Kernel Early Testing',
                         'kernel early testing': 'Kernel Promotion',
                         'kernel promotion': 'Kernel Testing',
-                        'kernel testing': 'Kernel Complete',
+                        'kernel testing': 'Rejected',
                         'kernel testing failed': 'Kernel Testing',
                         'kernel review failed': 'Kernel Preparing',
                     }
