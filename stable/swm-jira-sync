@@ -228,6 +228,7 @@ if __name__ == '__main__':
                 elif status not in ('Kernel Complete', 'Rejected'):
                     print(issue, "LOST/COMPLETE ISSUE", status)
                     step_to_done = {
+                        'in backlog': 'Kernel Not Ready',
                         'kernel not ready': 'Kernel Ready',
                         'kernel ready': 'Kernel Preparing',
                         'kernel preparing': 'Kernel Building',
