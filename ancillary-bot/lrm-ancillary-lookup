@@ -8,7 +8,7 @@ import sys
 from launchpadlib.credentials import AuthorizeRequestTokenWithURL
 from launchpadlib.launchpad import Launchpad
 
-cred_file = os.path.join(os.path.expanduser("~/.config"), "credentials-ancillary-bot", "credentials-production")
+cred_file = os.path.join(os.path.expanduser("~/.config"), "ancillary-bot", "credentials-production")
 authorization_engine = AuthorizeRequestTokenWithURL(service_root='production',
     consumer_name='ancillary-bot')
 lp = Launchpad.login_with(service_root='production', version='devel',
