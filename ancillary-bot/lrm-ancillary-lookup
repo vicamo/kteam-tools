@@ -5,13 +5,14 @@ import json
 import os
 import sys
 
+from launchpadlib.credentials import AuthorizeRequestTokenWithURL
 from launchpadlib.launchpad import Launchpad
 
-cred_file = os.path.join(".config", "credentials-ancillary-bot")
-if not os.path.exists(cred_file):
-    cred_file = None
-lp = Launchpad.login_with('lrm-ancillary-builder', 'production', version='devel',
-    credentials_file=cred_file)
+cred_file = os.path.join(os.path.expanduser('~'), ".config", "credentials-ancillary-bot")
+authorization_engine = AuthorizeRequestTokenWithURL(service_root='production',
+    consumer_name='ancillary-bot')
+lp = Launchpad.login_with(service_root='production', version='devel',
+    authorization_engine=authorization_engine, credentials_file=cred_file)
 
 # Work around a redirect handling issue in python3-lazr.restfulclient
 # which fails when trying to carry over non-GET requests.  Look up
