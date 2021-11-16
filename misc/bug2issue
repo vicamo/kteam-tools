@@ -81,7 +81,8 @@ def main():
                                                                   indent=4)))
         else:
             jira_issue = jira.create_issue(fields=jira_fields)
-            print('{}/browse/{} ({})'.format(jira_server, jira_issue.key, jira_summary))
+            print('{}/browse/{} ({})'.format(jira_server, jira_issue.key,
+                                             jira_issue.fields.summary))
 
         # Add a link to the LP bug
         simple_link = {
