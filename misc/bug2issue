@@ -20,6 +20,8 @@ def main():
     parser = argparse.ArgumentParser(description='Create Jira issue(s) from LP bug(s).')
     parser.add_argument('-c', '--component', required=True, help='Jira component name.')
     parser.add_argument('-d', '--dry-run', action='store_true', help='Enable dry-run mode.')
+    parser.add_argument('-f', '--force', action='store_true', help='Create card even ' +
+                        'if it exists already')
     parser.add_argument('-p', '--project', default='KERN', help='Jira project key. ' +
                         'If not provided, defaults to \'KERN\'')
     parser.add_argument('-s', '--status', default='Notice', help='Jira issue status. ' +
@@ -40,6 +42,19 @@ def main():
     for bug in args.bug:
         # Fetch the LP bug
         lp_bug = lp.bugs[bug]
+
+        # Check if the card exists already
+        if not args.force:
+            jql = 'project = "{}" and component = "{}" and summary ~ "#{} "'.format(
+                args.project, args.component, bug)
+            issues = jira.search_issues(jql)
+            if issues:
+                print('Issue might exist already:')
+                for issue in issues:
+                    print('{}/browse/{} ({})'.format(jira_server, issue.key,
+                                                     issue.fields.summary))
+                print('Use -f, --force to create it anyways')
+                sys.exit(1)
 
         # Populate the necessary fields for the new Jira issue
         jira_summary = 'LP: #{} - {}'.format(bug, lp_bug.title)
