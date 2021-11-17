@@ -1975,6 +1975,9 @@ defaults:
             packages:
                 linux-azure-cvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-cvm']
+                linux-meta-azure-cvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-cvm']
                 linux-restricted-modules-azure-cvm:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal', 'azure-cvm']
@@ -1990,7 +1993,6 @@ defaults:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: false
             invalid-tasks:
-              - automated-testing
               - boot-testing
               - certification-testing
               - regression-testing
@@ -2020,7 +2022,10 @@ defaults:
                         meta-pkg: linux-azure-fde
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
-            invalid-tasks: [ 'certification-testing', 'verification-testing' ]
+            invalid-tasks:
+              - automated-testing
+              - certification-testing
+              - verification-testing
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.8:
