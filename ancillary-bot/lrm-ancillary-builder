@@ -28,6 +28,14 @@ do
 			echo "$id: ignored (v3)"
 			continue
 		fi
+		(
+			cd "$id" || exit 1
+			# If the uploads failed, the we should retry them periodically.
+			for changes in *_source.changes
+			do
+				dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$ppa_ps" "$changes"
+			done
+		) || exit "$?"
 		echo "$id: complete"
 		continue
 	fi
