@@ -48,7 +48,11 @@ for lrm in lrms:
     lrg_version = lrm.source_package_version
     #print(" ", lrg_name, lrg_version)
     lrgs = adjunct.getPublishedSources(exact_match=True, source_name=lrg_name, version=lrg_version)
-    if len(lrgs) == 0:
+    lrs_name = lrm.source_package_name.replace('linux-restricted-modules', 'linux-restricted-signatures')
+    lrs_version = lrm.source_package_version
+    #print(" ", lrs_name, lrs_version)
+    lrss = adjunct.getPublishedSources(exact_match=True, source_name=lrs_name, version=lrs_version)
+    if len(lrgs) == 0 or len(lrss) == 0:
         urls = []
         for url in lrm.sourceFileUrls():
             if subscription:
