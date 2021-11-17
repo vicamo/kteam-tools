@@ -503,7 +503,7 @@ if __name__ == '__main__':
     blocked_add = blocked_want - blocked_seen
     blocked_del = blocked_seen - blocked_want
     if len(blocked_del) > 0 or len(blocked_add) > 0:
-        lp = LaunchpadDirect.login()
+        lp = LaunchpadDirect.login_application('swm-jira-sync')
         tag = 'kernel-jira-preparation-blocked'
         for bug_id in blocked_del:
             bug = lp.bugs[bug_id]
