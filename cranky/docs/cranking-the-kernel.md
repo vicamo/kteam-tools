@@ -260,12 +260,20 @@ used on each series for the given SRU cycle. The cycle date used is the one from
 link-tb`.
 
 The git repository location and the SRU cycle date can be provided manually to
-the script via optional parameters. However, in the normal cases a manual
+the script via optional parameters. However, in the normal case a manual
 override should never be needed.
 
-**Note**: `update-dkms-versions` should only need to be run for primary kernels
-and kernels forward-ported to the development release. Other derivatives
-generally should not be deviating from the versions in the primary kernel.
+**Note**: `update-version-dkms` used to be required only for primary kernels
+and kernels forward-ported to the development release. However, it has been
+deprecated in favor of `update-dkms-versions` which is safe and even expected to
+be run for all derivatives and backports as well. So always run this script to
+make sure the main package has the most up-to-date versions.
+
+In most cases there would be no change committed as the up-to-date versions
+should have been committed on the master kernel and picked-up by the derivative
+or backport on rebase. However, if there is any change, check that the version
+numbers only become higher and nothing gets dropped completely. In case anything
+looks suspicious, don't hesitate to ask the team if the changes are expected.
 
 Example:
 ```
