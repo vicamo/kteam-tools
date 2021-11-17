@@ -159,11 +159,25 @@ if ! output=$(git fetch "$RELEASE_REPO" "$base_tag" 2>&1); then
 	exit 1
 fi
 
-echo "Listing changes in \"${DEBIAN_MASTER}/\" since $base_tag..."
+# Get the commit message for the previous base version
+prev_commit_message=$(git rev-list --format=%s --max-count=1 FETCH_HEAD | tail +2)
+if [ -z "$prev_commit_message" ]; then
+	echo "Failed to get commit message for tag \"$base_tag\""
+	exit 1
+fi
+
+# Find the previous commit ID in the current tree
+prev_commit_id=$(git rev-list --max-count=1 -F --grep "$prev_commit_message" HEAD)
+if [ -z "$prev_commit_id" ]; then
+	echo "Failed to get the previous base commit id in the current branch."
+	exit 1
+fi
+
+echo "Listing changes in \"${DEBIAN_MASTER}/\" since $prev_commit_id..."
 echo
 
 exclude_arg=()
 if [ "$exclude" != '' ]; then
 	exclude_arg=('--invert-grep' '-E' "--grep=$exclude")
 fi
-$git_cmd "${exclude_arg[@]}" FETCH_HEAD.. -- "${DEBIAN_MASTER}/"
+$git_cmd "${exclude_arg[@]}" "$prev_commit_id".. -- "${DEBIAN_MASTER}/"
