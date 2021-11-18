@@ -734,7 +734,7 @@ class MonitorFactory:
     @property
     def lp(self):
         if self._lp is None:
-            self._lp = LaunchpadDirect.login()
+            self._lp = LaunchpadDirect.login_application('swm-publishing')
         return self._lp
 
     @property
