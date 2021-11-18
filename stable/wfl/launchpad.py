@@ -2,7 +2,10 @@ import os
 
 from lpltk.LaunchpadService import LaunchpadService
 
-from launchpadlib.credentials import AuthorizeRequestTokenWithURL
+try:
+    from launchpadlib.credentials import AuthorizeRequestTokenWithURL
+except ImportError:
+    from .launchpad_compat import AuthorizeRequestTokenWithURL
 from .launchpad_cache import LaunchpadCache
 
 
