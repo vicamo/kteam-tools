@@ -8,8 +8,4 @@ cd "$here" || exit 1
 # Run swm as requested and record a copy to the persistent log.
 set -o pipefail
 
-case "$HOME" in
-*/shankbot)	HOME="${HOME%/shankbot}" ;;
-esac
-
-HOME=$HOME/shankbot timeout 3600 "$here/swm-instantiate" "$@" 2>&1 | tee -a "$HOME/logs/swm-instantiate.log"
+timeout 3600 "$here/swm-instantiate" "$@" 2>&1 | tee -a "$HOME/logs/swm-instantiate.log"

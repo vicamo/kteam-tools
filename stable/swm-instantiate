@@ -30,7 +30,7 @@ class TrackerProduction:
 
     def __init__(self, project, lp=None, ks=None, wf=None):
         if lp is None:
-            lp = LaunchpadDirect.login()
+            lp = LaunchpadDirect.login_application('swm-instantiate')
         if ks is None:
             ks = KernelSeries()
         if wf is None:
