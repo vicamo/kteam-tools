@@ -146,30 +146,28 @@ for versions_path_tail in \
 	"$our_mainline"
 do
 	echo "II: trying $versions_path_tail ..."
-	versions_path=$(echo $(cat_file -p "$git_base:map/dkms-versions/$versions_path_tail" 2>/dev/null))
-	[ -n "$versions_path" ] && break
+	versions_paths=$(echo $(cat_file -p "$git_base:map/dkms-versions/$versions_path_tail" 2>/dev/null))
+	[ -n "$versions_paths" ] && break
 done
 
-if [ -z "$versions_path" ]; then
+if [ -z "$versions_paths" ]; then
 	echo "$0: unable to identify dkms-versions mapping" 1>&2
 	exit 1
 fi
 
-echo "git_base<$git_base> versions_path<$versions_path>"
-echo "II: grabbing dkms-versions from $sru_cycle $versions_path"
+echo "git_base<$git_base> versions_paths<$versions_paths>"
+echo "II: grabbing dkms-versions from $sru_cycle $versions_paths"
 
-cat_file -p "$git_base:$versions_path" >"debian/dkms-versions.new"
-rc="$?"
-if [ "$rc" -ne 0 ]; then
-	echo "$0: unable to download an updated dkms-versions file" 1>&2
-	exit 1
-
-elif [ "$rc" -eq 0 ]; then
-	mv "debian/dkms-versions.new" "debian/dkms-versions"
-
-else
-	rm -f "debian/dkms-versions.new"
-fi
+: ">debian/dkms-versions.new"
+for versions_path in $versions_paths
+do
+	cat_file -p "$git_base:$versions_path" >>"debian/dkms-versions.new"
+	if [ "$?" -ne 0 ]; then
+		echo "$0: unable to download an updated dkms-versions file" 1>&2
+		exit 1
+	fi
+done
+mv "debian/dkms-versions.new" "debian/dkms-versions"
 
 thing="debian/dkms-versions"
 if ! git diff --exit-code -- "$thing" >/dev/null; then
@@ -180,4 +178,4 @@ else
 	echo "$thing: no changes from kernel-versions"
 fi
 
-exit "$rc"
+exit 0
