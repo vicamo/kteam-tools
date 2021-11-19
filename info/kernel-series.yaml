@@ -4083,7 +4083,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm-5.4:
-            routing: stable-drivers
             variants: ['--', '-edge']
             packages:
                 linux-ibm-5.4:
