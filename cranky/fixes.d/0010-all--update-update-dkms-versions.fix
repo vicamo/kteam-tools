@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# shellcheck source=./cranky/fixes.d/lib.sh
+. "$(dirname "$0")"/lib.sh
+
+resync_batch_start
+resync_batch_master_sync_if_here "update-dkms-versions"
+resync_batch_commit "UBUNTU: [Packaging] resync update-dkms-versions helper"
+
+exit 0
