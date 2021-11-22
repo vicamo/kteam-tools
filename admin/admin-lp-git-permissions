@@ -90,6 +90,29 @@ def update_subscriptions(git_repo, crankers, dry_run=False):
 
 webhook_url = 'http://10.15.182.10/webhooks'
 webhook_events = ['git:push:0.1']
+#def update_webhooks(git_repo, dry_run=False):
+#    live_hook = None
+#    for hook in git_repo.webhooks:
+#        print(hook, hook.delivery_url, hook.event_types, hook.active)
+#        if hook.delivery_url == webhook_url:
+#            live_hook = hook
+#            break
+#    else:
+#        live_hook = git_repo.newWebhook(delivery_url=webhook_url, event_types=webhook_events, active=True)
+#
+#    update_hook = False
+#    if live_hook.active != True:
+#        live_hook.active = True
+#        update_hook = True
+#    if live_hook.event_types != webhook_events:
+#        live_hook.event_types = webhook_events
+#        update_hook = True
+#    if update_hook:
+#        if dry_run:
+#            print(" dry run, webhooks not updated")
+#        else:
+#            live_hook.lp_save()
+
 def update_webhooks(git_repo, dry_run=False):
     live_hook = None
     for hook in git_repo.webhooks:
@@ -97,21 +120,12 @@ def update_webhooks(git_repo, dry_run=False):
         if hook.delivery_url == webhook_url:
             live_hook = hook
             break
-    else:
-        live_hook = git_repo.newWebhook(delivery_url=webhook_url, event_types=webhook_events, active=True)
 
-    update_hook = False
-    if live_hook.active != True:
-        live_hook.active = True
-        update_hook = True
-    if live_hook.event_types != webhook_events:
-        live_hook.event_types = webhook_events
-        update_hook = True
-    if update_hook:
+    if live_hook is not None:
         if dry_run:
-            print(" dry run, webhooks not updated")
+            print(" dry run, webhooks not removed")
         else:
-            live_hook.lp_save()
+            live_hook.lp_delete()
 
 def list_all(args):
     me = lp.people(args.user)
