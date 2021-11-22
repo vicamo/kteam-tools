@@ -146,7 +146,7 @@ of tracks.
 '''
 
     epilog = '''
-Example: cranky snap-promote bionic/linux-raspi2/pi-kernel
+Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
 
   This will execute all promotions needed for the pi-kernel
   snap which is based on bionic/linux-raspi2.
