@@ -65,6 +65,24 @@ cranky chroot create-session configs xenial:linux
 
 ## Build
 
+### Update the kteam-tools repo
+<!--cheatsheet-->
+```
+cd <kteam-tools repo>
+git pull
+```
+<!--/cheatsheet-->
+
+Before starting the crank (or at least once at the beginning of each SRU cycle),
+update the kteam-tools repository to make sure the tools have any possible
+recent changes that could impact cranking.
+
+Example:
+```
+cd $HOME/canonical/kteam-tools
+git pull
+```
+
 ### Clone and checkout the kernel repository - `cranky checkout`
 <!--cheatsheet-->
 ```
