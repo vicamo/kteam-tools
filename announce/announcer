@@ -70,7 +70,10 @@ class AnnounceDeliver:
             body = subject
 
         key = str(destination['key'])
-        routing = self.routing.get(key, [])
+        routing = self.routing.get(key)
+        # If the key is present but empty in the config ...
+        if routing is None:
+            routing = []
         cwarn("key {} routing {}".format(key, routing))
         for route in routing:
             cwarn("route {}".format(route))
