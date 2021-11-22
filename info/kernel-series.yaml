@@ -2527,6 +2527,37 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-aws-fips:
+            routing: fips
+            packages:
+                linux-aws-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'aws-fips']
+                linux-meta-aws-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'aws-fips']
+                linux-signed-aws-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'aws-fips']
+                linux-restricted-modules-aws-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'aws-fips']
+                linux-restricted-generate-aws-fips:
+                    type: lrg
+                linux-restricted-signatures-aws-fips:
+                    type: lrs
+            supported: true
+            owner: mhcerri
+            private: true
+            derived-from: ['20.04', 'linux-aws']
+            backport: true # use local-mangle to keep it in sync with linux-aws
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws-fips:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-larch:
             routing:
