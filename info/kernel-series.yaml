@@ -4408,7 +4408,7 @@ defaults:
             supported: true
             owner: krzk
             private: true
-            derived-from: ['20.04', 'linux']
+            derived-from: ['18.04', 'linux-hwe-5.4']
             testing:
                 flavours:
                     ibm-gt:
