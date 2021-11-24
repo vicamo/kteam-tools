@@ -20,6 +20,12 @@ package="$2"
 version="$3"
 tag="$4"
 
+case "$package" in
+*-uc20-*)
+	echo "NO CONFIG IN $series:$package"
+	exit 0 ;;
+esac
+
 master_tree_select
 
 # Ensure we have the commit identified.
