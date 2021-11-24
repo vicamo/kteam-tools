@@ -125,10 +125,9 @@ class Task():
                 if old_tb.wf_status_get() == 'In Progress':
                     # Add a hint about the old tracking bug which should be replaced by the
                     # new tracking bug as a SWM property of the new tracking bug.
-                    replaces = 'bug {}'.format(old_tb.id)
-                    cinfo('  + replaces: {}'.format(replaces))
+                    cinfo('  + replaces LP: #{}'.format(old_tb.id))
                     if dryrun is False:
-                        self.tb.wf_set_property('replaces', replaces)
+                        self.tb.wf_set_property('replaces', 'bug {}'.format(old_tb.id))
 
         # Add the tracking bugs of the subtasks to this tasks tracking bug
         # as derivatives.
