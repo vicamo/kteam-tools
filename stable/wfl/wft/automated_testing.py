@@ -160,9 +160,6 @@ class AutomatedTesting(TaskHandler):
         promote_status = s.bug.task_status('promote-to-updates')
         if promote_status == 'Invalid':
             promote_status = s.bug.task_status('promote-to-release')
-        if promote_status == 'Fix Released':
-            cinfo('kernels promoted successfully from Proposed', 'green')
-            return retval
 
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
         if not present:
@@ -186,6 +183,9 @@ class AutomatedTesting(TaskHandler):
             if s.task.status != 'Fix Released':
                 s.task.status = 'Fix Released'
                 retval = True
+
+        elif s.task.status != 'In Progress' and promote_status not in ('New', 'Confirmed', 'Invalid'):
+            cinfo('kernels promoted successfully from Proposed', 'green')
 
         # Otherwise use the testing status as posted by adt-matrix summariser.
         else:
