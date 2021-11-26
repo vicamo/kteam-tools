@@ -191,7 +191,7 @@ hirsute|groovy|focal)
 	;;
 esac
 case "$SUITE" in
-groovy)
+groovy|focal)
 	ADDPKG="$ADDPKG dwarves"
 	;;
 esac
