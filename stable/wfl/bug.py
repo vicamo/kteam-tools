@@ -515,6 +515,19 @@ class WorkflowBug():
             'kernel-trello-blocked-snap-prepare' in s.tags)
         s._flag_assign('trello-preparation-block', block)
 
+        # Sync over the jira-issue link.
+        issue_key = None
+        prefix = 'kernel-jira-issue-'
+        for tag in s.tags:
+            if tag.startswith(prefix):
+                issue_key = tag[len(prefix):].upper()
+                break
+        if issue_key is None:
+            if 'issue' in s.bprops:
+                del s.bprops['issue']
+        else:
+            s.bprops['issue'] = issue_key
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
     # properties_for_description
