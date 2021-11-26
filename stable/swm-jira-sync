@@ -161,6 +161,8 @@ if __name__ == '__main__':
     blocked_seen = set()
     blocked_want = set()
 
+    issuelink_want = {}
+
     for cycle in sorted(cycles):
         print("Cycle:", cycle)
         trackers = cycle_trackers[cycle]
@@ -274,9 +276,12 @@ if __name__ == '__main__':
             tracker_owner = trackers[key].get('owner')
             tracker_tasks = trackers[key].get('task', {})
             tracker_flags = trackers[key].get('flag', {})
+            tracker_issue = trackers[key].get('issue')
 
             if tracker_flags.get('jira-preparation-block', False):
                 blocked_seen.add(tracker_id)
+            if tracker_issue != issue.key:
+                issuelink_want[tracker_id] = issue.key
 
             #tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
 
@@ -499,11 +504,13 @@ if __name__ == '__main__':
                 else:
                     print(issue, "NO RESPIN CARD FOUND FOR", spin_number)
 
-    # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
+    # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen
     blocked_del = blocked_seen - blocked_want
-    if len(blocked_del) > 0 or len(blocked_add) > 0:
+    if len(blocked_del) > 0 or len(blocked_add) > 0 or len(issuelink_want) > 0:
         lp = LaunchpadDirect.login_application('swm-jira-sync')
+
+        # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
         tag = 'kernel-jira-preparation-blocked'
         for bug_id in blocked_del:
             bug = lp.bugs[bug_id]
@@ -517,6 +524,21 @@ if __name__ == '__main__':
             bug.lp_save()
 
         for bug_id in blocked_add:
+            bug = lp.bugs[bug_id]
+            if tag in bug.tags:
+                print("LP #{} -- added {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- adding {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.append(tag)
+            bug.tags = tags
+            bug.lp_save()
+
+        # Handle adding issue links.
+        print("ISSUELINKS", len(issuelink_want))
+        for bug_id, issue_key in issuelink_want.items():
+            issue_key = issuelink_want[bug_id]
+            tag = 'kernel-jira-issue-' + issue_key.lower()
             bug = lp.bugs[bug_id]
             if tag in bug.tags:
                 print("LP #{} -- added {} (noop)".format(bug_id, tag))
