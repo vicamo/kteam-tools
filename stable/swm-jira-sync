@@ -455,6 +455,15 @@ if __name__ == '__main__':
                 jira.transition_issue(issue, transition=target_state)
                 starting_state = target_state
 
+            # Detect new issues and link them to their tracker.
+            if 'kernel-tracker-v1' not in issue.fields.labels:
+                print(issue, "adding tracker link ")
+                jira.add_simple_link(issue, {
+                    'title': 'Tracker',
+                    'url': 'https://bugs.launchpad.net/bugs/' + tracker_id})
+                print(issue, "marking as v1")
+                issue.add_field_value('labels', 'kernel-tracker-v1')
+
             # Add labels based on the variant type so we can colourise cards.
             tracker_variant = trackers[key].get('variant')
             #print(issue, tracker_variant)
