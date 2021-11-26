@@ -214,6 +214,7 @@ if __name__ == '__main__':
         print("  JIRA Issues:", len(jira_issues))
 
         for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
+            sys.stdout.flush()
             if key not in trackers:
                 issue = jira_issues[key]
                 status = str(issue.fields.status)
