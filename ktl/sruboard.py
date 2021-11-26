@@ -65,9 +65,8 @@ class SRUBoard:
             if desc:
                 print('DRY:     "{}"'.format(desc))
         else:
-            print('Adding issue: {}'.format(name))
             issue = self.jira.create_issue(fields=params)
-            print(issue)
+            print('Added respin: {} ({})'.format(name, issue.permalink()))
             self.jira.add_issues_to_sprint(sprint_id=self.sprint.id, issue_keys=[issue.key])
             if state is not None:
                 self.jira.transition_issue(issue, transition=state)
@@ -100,11 +99,11 @@ class SRUBoard:
                 match = self.respin_re.match(title)
                 if not match:
                     continue
-                print(issue.fields.summary)
+                print("Existing respin: {} ({})".format(issue.fields.summary, issue))
                 this_spin = int(match.group(1))
                 if this_spin > latest:
                     latest = this_spin
                     latest_issue = issue
 
-        print("LATEST", latest, latest_issue)
+        print("Latest respin: {} ({})".format(latest, latest_issue))
         return self.LatestSpin(latest, latest_issue)
