@@ -2559,6 +2559,40 @@ defaults:
                         clouds: ['aws']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-azure-fips:
+            routing: fips
+            packages:
+                linux-azure-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'azure-fips']
+                linux-meta-azure-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'azure-fips']
+                linux-signed-azure-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'azure-fips']
+                linux-restricted-modules-azure-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'azure-fips']
+                linux-restricted-generate-azure-fips:
+                    type: lrg
+                linux-restricted-signatures-azure-fips:
+                    type: lrs
+            supported: true
+            owner: mhcerri
+            private: true
+            derived-from: ['20.04', 'linux-azure']
+            backport: true # use local-mangle to keep it in sync with linux-azure
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure-fips:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+            stakeholder: 'linux-azure-signoff'
+
         linux-larch:
             routing:
                 build:
