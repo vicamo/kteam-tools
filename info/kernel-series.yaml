@@ -2593,6 +2593,31 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
             stakeholder: 'linux-azure-signoff'
 
+        linux-gcp-fips:
+            routing: fips
+            packages:
+                linux-gcp-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'gcp-fips']
+                linux-meta-gcp-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'gcp-fips']
+                linux-signed-gcp-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'gcp-fips']
+            supported: true
+            owner: mhcerri
+            private: true
+            derived-from: ['20.04', 'linux-gcp']
+            backport: true # use local-mangle to keep it in sync with linux-gcp
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp-fips:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-larch:
             routing:
                 build:
