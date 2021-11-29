@@ -1099,7 +1099,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/hirsute']
             supported: true
-            owner: kleber-souza
+            owner: lukenow
             derived-from: [ '21.04', 'linux' ]
             swm:
                 kernel-testing: true
