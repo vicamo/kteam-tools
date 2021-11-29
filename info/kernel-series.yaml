@@ -1496,6 +1496,8 @@ defaults:
                     - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
                 proposed:
                     - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
+                updates:
+                    - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
             variants: ['--']
             packages:
                 linux-nv-dgx:
