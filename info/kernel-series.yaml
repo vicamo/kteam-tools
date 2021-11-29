@@ -2545,7 +2545,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-fips:
                     type: lrs
-            supported: true
+            supported: false
+            development: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-aws']
@@ -2577,7 +2578,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-fips:
                     type: lrs
-            supported: true
+            supported: false
+            development: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-azure']
@@ -2604,7 +2606,8 @@ defaults:
                 linux-signed-gcp-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'gcp-fips']
-            supported: true
+            supported: false
+            development: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-gcp']
