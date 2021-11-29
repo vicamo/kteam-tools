@@ -20,6 +20,11 @@ esac
 "$here/cod-ubuntu-config-trigger"
 
 #
+# UBUNTU VERSION MAP: use the (above) triggered configuration jobs to extract
+# the required data and tabulate.
+"$here/cod-version-map-builder"
+
+#
 # STABLE QUEUE: coversion of the stable queue quilt trees
 #
 "$here/cod-stable-queue" "/srv/kernel.ubuntu.com/git/kernel-ppa/stable-queue-branches.git"
