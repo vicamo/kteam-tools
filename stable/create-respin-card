@@ -40,7 +40,7 @@ Examples:
         desc += '<fill in details here>\n\n'
 
         issue = board.add_issue(name, desc, state='Kernel Notice')
-        if latest_spin.issue is not None:
+        if latest_spin.issue is not None and issue is not None:
             board.order_issue(issue.key, latest_spin.issue.key)
     except SRUBoardError as e:
         print(e)
