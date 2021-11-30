@@ -26,6 +26,8 @@ case "$package" in
 	exit 0 ;;
 esac
 
+start_time=$(date +%s)
+
 master_tree_select
 
 # Ensure we have the commit identified.
@@ -63,5 +65,13 @@ mainline_ver=$(<Makefile awk '
 	($1 == "NAME") {print(v "." p "." s); last}
 ')
 
-echo "$mainline_ver" >"$html/mainline-base"
+end_time=$(date +%s)
+
+cat - >"$html/summary.yaml" <<EOL
+build-host: $(uname -n)
+start-time: $start_time
+end-time: $start_time
+ubuntu-tag: $tag
+mainline-version: $mainline_ver
+EOL
 cp -p CONFIGS/* "$html"
