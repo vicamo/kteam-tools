@@ -70,7 +70,7 @@ end_time=$(date +%s)
 cat - >"$html/summary.yaml" <<EOL
 build-host: $(uname -n)
 start-time: $start_time
-end-time: $start_time
+end-time: $end_time
 ubuntu-tag: $tag
 mainline-version: $mainline_ver
 EOL
