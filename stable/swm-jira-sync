@@ -157,6 +157,7 @@ if __name__ == '__main__':
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
     respin_re = re.compile("^Re-spin +\(#([0-9]+)\) *(.*)$")
+    summary_re = re.compile("^Review +([^ ]+) results")
 
     blocked_seen = set()
     blocked_want = set()
@@ -180,6 +181,8 @@ if __name__ == '__main__':
         jira_key_to_respin = {}
         jira_respin_to_key = {}
         jira_issues = {}
+        jira_summary = {}
+        jira_summary_detail = {}
         chunk_offset = 0
         chunk_size = 50
         while True:
@@ -208,6 +211,11 @@ if __name__ == '__main__':
                     #print("APW", issue, summary)
                     jira_key_to_respin[issue.key] = match.group(1)
                     jira_respin_to_key[match.group(1)] = issue.key
+                    continue
+
+                match = summary_re.match(summary)
+                if match:
+                    jira_summary[match.group(1)] = issue
 
         #print(trackers)
         #print(jira_issues.keys())
@@ -513,6 +521,52 @@ if __name__ == '__main__':
                     jira.create_issue_link('Issue split', respin_key, issue.key)
                 else:
                     print(issue, "NO RESPIN CARD FOUND FOR", spin_number)
+
+            # Testing Summary data.
+            for task_name, task in tracker_tasks.items():
+                if not task_name.endswith('-testing'):
+                    continue
+                task_disposition = {
+                    'Incomplete':    (1, 'Failed'),
+                    'Confirmed':     (2, 'No Results'),
+                    'In Progress':   (3, 'In Progress'),
+                    'Fix Committed': (4, 'In Progress'),
+                    'Fix Released':  (5, 'Complete'),
+                    'New':           (6, 'Not Started'),
+                    'Invalid':       None,
+                    }.get(task.get('status'), (0, 'Unknown'))
+                if task_disposition is None:
+                    continue
+                jira_summary_detail.setdefault(task_name, {}).setdefault(task_disposition, []).append((issue, tracker_owner))
+
+        for task_name, issue in jira_summary.items():
+            #print("APW", task_name)
+            bits = []
+            counts = {'all': 0}
+            for key, data in jira_summary_detail.get(task_name, {}).items():
+                order, status = key
+                counts[status] = counts.get(status, 0) + len(data)
+                counts['all'] += len(data)
+            for key, data in sorted(jira_summary_detail.get(task_name, {}).items()):
+                order, status = key
+                status_percentage = (counts.get(status, 0) * 100) / counts['all']
+                bits.append("* {} ({:.1f}%)".format(status, status_percentage))
+                entries = []
+                for entry, owner in data:
+                    match = crank_re.match(entry.fields.summary)
+                    entries.append((match.group(1), "** [{}|/browse/{}] {}".format(match.group(1), entry.key, owner)))
+                bits += [x[1] for x in sorted(entries)]
+            complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
+            bits.insert(0, "Overall: {:.1f}% complete".format(complete_percentage))
+            summary = "Review {} results ({:.1f}%)".format(task_name, complete_percentage)
+            if issue.fields.description is not None:
+                description = issue.fields.description.split('-- summary --', 1)[0].rstrip()
+            else:
+                description = ''
+            description += '\n-- summary --\n'
+            description += '\n'.join(bits)
+            if issue.fields.summary != summary or issue.fields.description != description:
+                issue.update(summary=summary, description=description)
 
     # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen
