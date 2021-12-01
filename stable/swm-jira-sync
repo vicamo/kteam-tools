@@ -198,7 +198,7 @@ if __name__ == '__main__':
                         bits.append(bits[-1])
                     key = tuple(bits)
                     if key in jira_issues:
-                        print("DUPLICATE", jira_issues[key])
+                        print("DUPLICATE", jira_issues[key], issue)
                         jira_issues[key].delete()
                     jira_issues[key] = issue
                     continue
