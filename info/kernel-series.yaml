@@ -409,7 +409,6 @@ defaults:
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-realtime:
             routing: realtime
@@ -1706,7 +1705,6 @@ defaults:
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-raspi2:
             variants: ['--']
