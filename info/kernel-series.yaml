@@ -2164,6 +2164,38 @@ defaults:
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gcp-5.13:
+            routing: stable-drivers
+            variants: [ '--', '-edge' ]
+            packages:
+                linux-gcp-5.13:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.13-next']
+                linux-meta-gcp-5.13:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal', 'gcp-5.13']
+                linux-signed-gcp-5.13:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal', 'gcp-5.13']
+                linux-restricted-modules-gcp-5.13:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal', 'gcp-5.13']
+                linux-restricted-generate-gcp-5.13:
+                    type: lrg
+                linux-restricted-signatures-gcp-5.13:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '21.10', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gcp-5.11:
             routing: stable-drivers
             variants: [ '--', '-edge' ]
