@@ -238,27 +238,11 @@ if __name__ == '__main__':
 
                 elif status not in ('Kernel Complete', 'Rejected'):
                     print(issue, "LOST/COMPLETE ISSUE", status)
-                    step_to_done = {
-                        'in backlog': 'Kernel Not Ready',
-                        'kernel not ready': 'Kernel Ready',
-                        'kernel ready': 'Kernel Preparing',
-                        'kernel preparing': 'Kernel Building',
-                        'kernel building': 'Kernel Early Testing',
-                        'kernel early testing': 'Kernel Promotion',
-                        'kernel promotion': 'Kernel Testing',
-                        'kernel testing': 'Rejected',
-                        'kernel testing failed': 'Kernel Testing',
-                        'kernel review failed': 'Kernel Preparing',
-                        'kernel blocked': 'Kernel Not Ready',
-                    }
-                    while True:
-                        status_key = status.lower()
-                        status_step = step_to_done.get(status_key)
-                        if status_step is None:
-                            break
-                        print(issue.key, status, '->', status_step)
-                        jira.transition_issue(issue, transition=status_step)
-                        status = status_step
+                    print(issue.key, status, '->', 'Rejected')
+                    # Transition us to Rejected using the hidden transition
+                    # Force Rejected.  Note as it is hidden we have to use the
+                    # transitionId for it; this is looked up in the workflow.
+                    jira.transition_issue(issue, transition=671) # 'Force Rejected'
                 continue
 
             if key not in jira_issues:
