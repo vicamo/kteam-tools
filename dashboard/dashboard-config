@@ -25,7 +25,7 @@ if mode == 'britney':
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
         if not series.opening_allow('britney'):
             continue
-        if not series.supported and not series.development:
+        if not series.supported and not series.development or series.esm:
             continue
 
         print("{series} http://people.canonical.com/~ubuntu-archive/proposed-migration/{series} {series} {series}-updates {series}-proposed".format(series=series.codename))
