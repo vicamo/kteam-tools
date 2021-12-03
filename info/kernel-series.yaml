@@ -3868,6 +3868,9 @@ defaults:
                 linux-meta-aws-5.4:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/bionic', 'aws-5.4']
+                linux-signed-aws-5.4:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/bionic', 'aws-5.4']
                 linux-restricted-modules-aws-5.4:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/bionic', 'aws-5.4']
