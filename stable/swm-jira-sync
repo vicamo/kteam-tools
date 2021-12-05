@@ -181,6 +181,7 @@ if __name__ == '__main__':
 
         jira_key_to_respin = {}
         jira_respin_to_key = {}
+        jira_cycle_status_key = None
         jira_issues = {}
         jira_summary = {}
         jira_summary_detail = {}
@@ -207,6 +208,10 @@ if __name__ == '__main__':
                     jira_issues[key] = issue
                     continue
 
+                if summary == 'Cycle Status':
+                    jira_cycle_status_key = issue.key
+                    continue
+
                 match = respin_re.match(summary)
                 if match:
                     #print("APW", issue, summary)
@@ -219,6 +224,8 @@ if __name__ == '__main__':
                     match = progress_re.match(summary)
                 if match:
                     jira_summary[match.group(1)] = issue
+                    if 'kernel-status' not in issue.fields.labels:
+                        issue.add_field_value('labels', 'kernel-status')
 
         #print(trackers)
         #print(jira_issues.keys())
@@ -528,6 +535,19 @@ if __name__ == '__main__':
 
         for task_name, issue in jira_summary.items():
             #print("APW", task_name)
+            # Check we are linked to the master status if we have one.
+            if jira_cycle_status_key is not None:
+                linked = False
+                for link in issue.fields.issuelinks:
+                    if hasattr(link, 'inwardIssue'):
+                        if link.inwardIssue.key == jira_cycle_status_key:
+                            #print(" ", link.inwardIssue.key)
+                            linked = True
+                if not linked:
+                    print(issue, "split from", jira_cycle_status_key)
+                    jira.create_issue_link('Issue split', jira_cycle_status_key, issue.key)
+
+            # Generate a new summary/description and replace as needed.
             bits = []
             counts = {'all': 0}
             for key, data in jira_summary_detail.get(task_name, {}).items():
