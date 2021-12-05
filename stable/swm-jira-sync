@@ -158,6 +158,7 @@ if __name__ == '__main__':
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
     respin_re = re.compile("^Re-spin +\(#([0-9]+)\) *(.*)$")
     summary_re = re.compile("^Review +([^ ]+) results")
+    progress_re = re.compile("^Overall +([^ ]+) progress")
 
     blocked_seen = set()
     blocked_want = set()
@@ -214,6 +215,8 @@ if __name__ == '__main__':
                     continue
 
                 match = summary_re.match(summary)
+                if not match:
+                    match = progress_re.match(summary)
                 if match:
                     jira_summary[match.group(1)] = issue
 
@@ -508,7 +511,7 @@ if __name__ == '__main__':
 
             # Testing Summary data.
             for task_name, task in tracker_tasks.items():
-                if not task_name.endswith('-testing'):
+                if not task_name in jira_summary:
                     continue
                 task_disposition = {
                     'Incomplete':    (1, 'Failed'),
@@ -542,7 +545,7 @@ if __name__ == '__main__':
                 bits += [x[1] for x in sorted(entries)]
             complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
             bits.insert(0, "Overall: {:.1f}% complete".format(complete_percentage))
-            summary = "Review {} results ({:.1f}%)".format(task_name, complete_percentage)
+            summary = issue.fields.summary.rsplit(' (')[0] + ' ({:.1f}%)'.format(complete_percentage)
             if issue.fields.description is not None:
                 description = issue.fields.description.split('-- summary --', 1)[0].rstrip()
             else:
