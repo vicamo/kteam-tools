@@ -79,7 +79,7 @@ do
     esac
 
     echo "*** $alt_url -> $url ..."
-    repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/ubuntu/@/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/@' )
+    repo=$( echo "$url" | sed -e 's@git://kernel.ubuntu.com/ubuntu/@/srv/kernel.ubuntu.com/git/kernel-ppa/.mirror/@')
 
     if [ ! -d "$repo" ]; then
 	(
@@ -97,7 +97,7 @@ done <"$here/../info/repositories.txt"
 while read series package name url type
 do
     echo "*** $series $package $url -> $name"
-    repo="/srv/kernel.ubuntu.com/git/kernel-ppa/mirror/$name"
+    repo="/srv/kernel.ubuntu.com/git/kernel-ppa/.mirror/$name"
 
     if [ ! -d "$repo" ]; then
 	(
