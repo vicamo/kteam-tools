@@ -26,7 +26,7 @@ name="$name$instance"
 
 # Pull the command line apart, everything before -- is the daemon
 # command, the remainder for dashboard-status
-declare -A args
+declare -a args
 while [ "$#" -gt 0 -a "$1" != '--' ]
 do
     args[${#args[*]}]="$1"
