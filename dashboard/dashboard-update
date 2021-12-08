@@ -6,8 +6,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-out="$HOME/public_html/status"
-state="$out/dashboard-status"
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 <out>" 1>&2
+	exit 1
+fi
+out="$1"
+state="$out"
 
 mkdir -p "$state"
 
