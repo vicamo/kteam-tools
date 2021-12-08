@@ -80,6 +80,9 @@ class VerificationTesting(TaskHandler):
             master_report = s._sru_report(master_bug.series, master_bug.name)
             master_bugs = master_report['releases'][master_bug.series][master_bug.name]['bugs']
 
+            if master_bugs is None:
+                raise BugSpamError("master-bug has no bugs list yet...")
+
             cdebug("SPAM master_bugs {} {}".format(len(master_bugs), master_bugs))
 
             # sru_bugs = sru_bugs - master_bugs
