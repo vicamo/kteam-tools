@@ -8,9 +8,10 @@ import signal
 import traceback
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
-from ktl.log                            import center, cleave, Clog
+from ktl.log                            import center, cleave, Clog, cerror
 from wfl.launchpad                      import Launchpad
 from wfl.bug                            import WorkflowBug
+from wfl.package                        import PackageError
 from wfl.context                        import ctx
 
 # TheApp
@@ -84,7 +85,11 @@ class Tasks(object):
         for b in args.bugs:
             wb = WorkflowBug(ctx.launchpad.default_service, b)
             #print("DRY-RUN: op={} ppa={}\n".format(args.op, args.ppa))
-            wb.debs.send_testing_requests(op=args.op, ppa=args.ppa)
+            try:
+                wb.debs.send_testing_requests(op=args.op, ppa=args.ppa)
+            except PackageError as e:
+                cerror("ERROR: {} -- failed to request testing".format(e.args[0]))
+                retval = 1
 
         cleave(s.__class__.__name__ + '.retest')
         return retval
