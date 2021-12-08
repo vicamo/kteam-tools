@@ -8,7 +8,7 @@ import signal
 import traceback
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
-from ktl.log                            import center, cleave, Clog, cerror
+from wfl.log                            import center, cleave, Clog, cerror
 from wfl.launchpad                      import Launchpad
 from wfl.bug                            import WorkflowBug
 from wfl.package                        import PackageError
@@ -129,6 +129,8 @@ if __name__ == '__main__':
     else:
         log_format = "%(message)s"
         basicConfig(level=INFO, format=log_format)
+        Clog.dbg = False
+    Clog.color = False
 
     ctx.launchpad = lambda : Launchpad()
     ctx.lp = lambda : ctx.launchpad.default_service.launchpad
