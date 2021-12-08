@@ -89,7 +89,8 @@ class Tasks(object):
                 wb.debs.send_testing_requests(op=args.op, ppa=args.ppa)
             except PackageError as e:
                 cerror("ERROR: {} -- failed to request testing".format(e.args[0]))
-                retval = 1
+                # Indicate we are a non-oops failure.
+                retval = 2
 
         cleave(s.__class__.__name__ + '.retest')
         return retval
