@@ -1410,6 +1410,11 @@ class Package():
     def bugs(self):
         center(self.__class__.__name__ + '.bugs')
 
+        # If we have no version, we can have no build, if we have no build we 
+        # do not know what bugs we have.
+        if self.version is None:
+            return None
+
         # Find an upload record for the main package.
         changes_url = None
         bugs = None
