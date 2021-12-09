@@ -5079,7 +5079,7 @@ defaults:
                     lowlatency:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing' ]
 
         linux-aws:
             packages:
