@@ -1,0 +1,17 @@
+#!/bin/bash
+
+which="$1"
+shift
+
+here=$(dirname "$(readlink -f "${0}")")
+
+# Run in the announcer directory, then any mess we make will
+# be more easily traced to us.
+cd "$here" || exit 1
+
+export http_proxy="http://squid.internal:3128"
+export https_proxy="https://squid.internal:3128"
+export no_proxy="launchpad.net,.launchpad.net,kernel.ubuntu.com,.canonical.com"
+
+set -o pipefail
+exec "$here/$which" "$@"

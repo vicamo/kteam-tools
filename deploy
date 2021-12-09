@@ -48,3 +48,4 @@ ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/so-trello/trellotool) stable
 ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/python-jira/jira) stable
 
 ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-mattermost-driver/src/mattermostdriver) announce
+ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-jira/jira) announce
