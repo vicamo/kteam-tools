@@ -1952,6 +1952,9 @@ defaults:
                 linux-meta-aws-5.13:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.13']
+                linux-signed-aws-5.13:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/focal', 'aws-5.13']
                 linux-restricted-modules-aws-5.13:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal', 'aws-5.13']
