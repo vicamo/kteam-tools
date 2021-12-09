@@ -44,6 +44,7 @@ python-mattermost-driver	git://git.launchpad.net/~canonical-kernel-team/+git/pyt
 python-jira			git://git.launchpad.net/~canonical-kernel-team/+git/python-jira  https://github.com/pycontribs/jira
 EOL
 
-ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/so-trello/trellotool) stable/trellotool
-ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-mattermost-driver/src/mattermostdriver) announce/mattermostdriver
-ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-jira/jira) stable/jira
+ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/so-trello/trellotool) stable
+ln -sf $(realpath --relative-to=stable $DEPLOY_DEPS/python-jira/jira) stable
+
+ln -sf $(realpath --relative-to=announce $DEPLOY_DEPS/python-mattermost-driver/src/mattermostdriver) announce
