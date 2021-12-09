@@ -2229,7 +2229,7 @@ defaults:
 
         linux-gcp-5.13:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '-edge' ]
             packages:
                 linux-gcp-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.13-next']
@@ -2261,7 +2261,7 @@ defaults:
 
         linux-gcp-5.11:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-gcp-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.11-next']
@@ -2475,7 +2475,7 @@ defaults:
 
         linux-oracle-5.13:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '-edge' ]
             packages:
                 linux-oracle-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.13-next']
@@ -2507,7 +2507,7 @@ defaults:
 
         linux-oracle-5.11:
             routing: stable-drivers
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-oracle-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.11-next']
