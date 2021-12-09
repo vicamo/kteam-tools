@@ -5119,6 +5119,9 @@ defaults:
                 linux-meta-aws-hwe:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-xenial', 'aws-hwe']
+                linux-signed-aws-hwe:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-aws-xenial', 'aws-hwe']
             supported: true
             owner: timg-tpi
             backport: true
