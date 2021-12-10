@@ -1107,7 +1107,7 @@ class TrackingBugs():
                 s.add(bug_id)
                 cnt = cnt + 1
                 if debug:
-                    print('\rInstantinating bugs... %i' % cnt, end='', flush=True)
+                    print('\rInstantiating bugs... %i' % cnt, end='', flush=True)
             except TrackingBugError as e:
                 cerror('LP: #%i: %s (skipped)' % (bug_id, e.msg))
                 pass
