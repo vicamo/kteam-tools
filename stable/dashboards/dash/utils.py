@@ -91,9 +91,9 @@ def dump(obj):
 # data_load
 #
 def data_load(file_name):
-    if filename.endswith('.rc') or filename.endswith('.json'):
+    if file_name.endswith('.rc') or file_name.endswith('.json'):
         return json_load(file_name)
-    if filename.endswith('.yaml'):
+    if file_name.endswith('.yaml'):
         return yaml_load(file_name)
     raise ValueError("unknown file type for {}".format(file_name))
 

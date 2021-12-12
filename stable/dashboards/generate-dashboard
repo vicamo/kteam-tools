@@ -10,7 +10,7 @@ import logging
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 
-from dash.utils                         import stdo, error, json_load, file_load, FileDoesntExist
+from dash.utils                         import stdo, error, data_load, file_load, FileDoesntExist
 from dash.dbg                           import Dbg
 from dash.cfg                           import Cfg, CfgError
 
@@ -154,7 +154,7 @@ class GenerateDashboard():
 
             # Load the reports configuration file
             #
-            self.dash = json_load(self.cfg['rc'])
+            self.dash = data_load(self.cfg['rc'])
             self.mako_template = Template(file_load(self.dash['template']))
 
         except FileDoesntExist as e:
@@ -185,7 +185,7 @@ class GenerateDashboard():
             try:
                 for section in self.dash['data']:
                     file_name = self.dash['data'][section]
-                    data[section] = json_load(file_name)
+                    data[section] = data_load(file_name)
             except FileDoesntExist as e:
                 e.print_std_error()
                 raise Exit()
