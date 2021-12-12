@@ -6,6 +6,8 @@ from os                                 import path
 from datetime                           import datetime
 import json
 
+import yaml
+
 from .dbg                               import Dbg
 
 # Exit
@@ -86,6 +88,15 @@ def dump(obj):
     stdo(json.dumps(obj, sort_keys=True, indent=4))
     stdo('\n')
 
+# data_load
+#
+def data_load(file_name):
+    if filename.endswith('.rc') or filename.endswith('.json'):
+        return json_load(file_name)
+    if filename.endswith('.yaml'):
+        return yaml_load(file_name)
+    raise ValueError("unknown file type for {}".format(file_name))
+
 # json_load
 #
 def json_load(file_name):
@@ -102,6 +113,24 @@ def json_load(file_name):
         raise FileDoesntExist(file_name)
 
     Dbg.leave("json_load")
+    return retval
+
+# yaml_load
+#
+def yaml_load(file_name):
+    """
+    Load the indicated yaml format file, returning the created object.
+    """
+    Dbg.enter("yaml_load")
+
+    retval = None
+    if path.exists(file_name):
+        with open(file_name, 'r') as f:
+            retval = yaml.safe_load(f)
+    else:
+        raise FileDoesntExist(file_name)
+
+    Dbg.leave("yaml_load")
     return retval
 
 # file_load
