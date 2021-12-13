@@ -1537,6 +1537,19 @@ class Package():
             found = False
             if bi[pkg][pocket]['version'] is None:
                 found = True
+            ancillary_for = s.ancillary_package_for(pkg)
+            if ancillary_for is not None:
+                pkg_af = ancillary_for
+            else:
+                pkg_af = pkg
+            # If the version is our version then ultimatly we won't copy this item, all is well.
+            if bi[pkg][pocket]['version'] == s.bug.bprops.get('versions', {}).get(pkg_af, []):
+                cinfo('            {} has {} pending in {} -- my version so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
+                found = True
+            # If the versions is a version we have replaced within the life of this tracker, all is well.
+            if bi[pkg][pocket]['version'] in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
+                cinfo('            {} has {} pending in {} -- an old version of mine so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
+                found = True
             for pocket_next in pockets_srch:
                 if found:
                     break
