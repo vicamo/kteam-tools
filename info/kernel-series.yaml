@@ -2733,6 +2733,13 @@ defaults:
                 linux-signed-gcp-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'gcp-fips']
+                linux-restricted-modules-gcp-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-restricted-modules-fips', 'gcp-fips']
+                linux-restricted-generate-gcp-fips:
+                    type: lrg
+                linux-restricted-signatures-gcp-fips:
+                    type: lrs
             supported: false
             development: true
             owner: mhcerri
