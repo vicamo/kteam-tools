@@ -1,0 +1,623 @@
+#!/usr/bin/env python3
+#
+from __future__             import print_function
+
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+import argparse
+import os
+import re
+import sys
+import yaml
+
+from datetime import datetime, timedelta, timezone
+
+from jira import JIRA as BrokenJIRA
+from jira.resources import GreenHopperResource, User
+
+from wfl.launchpad import LaunchpadDirect
+
+
+class JIRA(BrokenJIRA):
+
+    # XXX: switch this from a `username` to a `query`.  In strict GDPR mode we no longer have
+    # a username, only an accountID.  See python3-jira/client.py for signature.
+    def search_users(
+        self, user, startAt=0, maxResults=50, includeActive=True, includeInactive=False
+    ):
+        params = {
+            "query": user,
+            "includeActive": includeActive,
+            "includeInactive": includeInactive,
+        }
+        return self._fetch_pages(User, None, "user/search", startAt, maxResults, params)
+
+
+# SwmStatus
+#
+class SwmStatus:
+    _url = 'https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
+
+    def __init__(self, url=None, data=None, use_local=False):
+        if data is None and url is None:
+            url = self._url
+        if data is None and url:
+            response = urlopen(url)
+            data = response.read()
+            if not isinstance(data, str):
+                data = data.decode('utf-8')
+
+        self._data = yaml.safe_load(data)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def items(self):
+        return self._data.items()
+
+    def __getitem__(self, *args, **kwargs):
+        return self._data.__getitem__(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        return self._data.get(*args, **kwargs)
+
+
+def key_to_title(key):
+    end = 4
+    if key[2] == key[3]:
+        end = 3
+    return ':'.join(key[1:end]) + ' #' + key[0]
+
+
+if __name__ == '__main__':
+
+    jira_id_cache = {}
+    def email_to_jira_id(email):
+        if email not in jira_id_cache:
+            jira_id = None
+            print("LOOKUP", email)
+            users = jira.search_users(email)
+            if users is not None and len(users) > 0:
+                jira_id = users[0].accountId
+            else:
+                jira_id = None
+            jira_id_cache[email] = jira_id
+        return jira_id_cache[email]
+
+    parser = argparse.ArgumentParser(description='SWM JIRA card syncer')
+    args = parser.parse_args()
+
+    print(datetime.now(), "starting")
+
+    # Load up the Swm Status data.  This tells us what trackers exist
+    # and provides us with status information for each.
+    status = SwmStatus()
+
+    # Load the usertable.
+    with open("kernel-users/users.yaml") as ufd:
+        users = yaml.safe_load(ufd)
+
+    # Record card dispositions.
+    disposition = {}
+
+    # Run the list of tracks and extract the live cycles and create
+    # a tracker mapping.  Ensure this is done in bug_id order so
+    # we use a consistent tracker.
+    cycles = set()
+    cycle_trackers = {}
+    for bug_id, bug_data in sorted(status.items()):
+        (cycle, spin) = bug_data['cycle'].rsplit('-', 1)
+        if cycle[0] == 'd':
+            continue
+        cycles.add(cycle)
+
+        #print(bug_id, cycle, spin, bug_data['phase'])
+
+        bug_data['_id'] = bug_id
+        cycle_trackers.setdefault(cycle, {})[(spin, bug_data.get('series', '-'), bug_data.get('source', '-'), bug_data.get('target', '-'))] = bug_data
+
+    print("SWM Cycles:", len(cycles))
+    for cycle in sorted(cycles):
+        print(" ", cycle)
+
+    # Connect us to JIRA.
+    jira = JIRA('https://warthogs.atlassian.net/',
+        options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+
+    # Lookup custom fields we are going to use.
+    #for field in jira.fields():
+    #    if field['name'] == 'Epic Link':
+    #        custom_epic_link = field['key']
+    #    if field['name'] == 'Sprint':
+    #        custom_sprint = field['key']
+
+    project_key, board_name = 'KSRU', 'SRU Cycles'
+
+    # Lookup the sprint board in its project.
+    boards = jira.boards(projectKeyOrID=project_key, name=board_name)
+    board = boards[0]
+
+    # Find the active sprints.
+    sprints = jira.sprints(board_id=board.id, state='active,future')
+    #print(sprints)
+    print("JIRA Sprints:", len(sprints))
+    jira_cycles = {}
+    for sprint in sprints:
+        #print(story, story.fields.summary, getattr(story.fields, custom_epic_link))
+        jira_cycles[sprint.name] = sprint
+
+    #print(jira_cycles)
+    for cycle in sorted(jira_cycles.keys()):
+        print(" ", cycle)
+
+    jira_issues = {}
+
+    crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
+    respin_re = re.compile("^Re-spin +\(#([0-9]+)\) *(.*)$")
+    summary_re = re.compile("^Review +([^ ]+) results")
+    progress_re = re.compile("^Overall +([^ ]+) progress")
+
+    blocked_seen = set()
+    blocked_want = set()
+
+    issuelink_want = {}
+
+    for cycle in sorted(cycles):
+        print("Cycle:", cycle)
+        trackers = cycle_trackers[cycle]
+        print("  SWM Trackers:", len(trackers))
+
+        if cycle not in jira_cycles:
+            print("{}: new sprint ...".format(cycle))
+            start_date = datetime.strptime(cycle, '%Y.%m.%d').replace(tzinfo=timezone.utc, microsecond=0)
+            end_date = start_date + timedelta(days=21)
+            new_sprint = jira.create_sprint(name=cycle, board_id=board.id, startDate=start_date.isoformat(), endDate=end_date.isoformat())
+            jira_cycles[cycle] = new_sprint
+
+        jira_cycle = jira_cycles[cycle]
+
+        jira_key_to_respin = {}
+        jira_respin_to_key = {}
+        jira_cycle_status_key = None
+        jira_issues = {}
+        jira_summary = {}
+        jira_summary_detail = {}
+        chunk_offset = 0
+        chunk_size = 50
+        while True:
+            issues = jira.search_issues('project="{}" and sprint={}'.format(project_key, jira_cycle.id), startAt=chunk_offset, maxResults=chunk_size)
+            chunk_offset += chunk_size
+            if len(issues) == 0:
+                break
+            for issue in issues:
+                summary = issue.fields.summary
+
+                match = crank_re.match(summary)
+                if match:
+                    #print("APW", issue, summary, match.group(1), match.group(2))
+                    bits = [match.group(2)] + match.group(1).split(':')
+                    if len(bits) == 3:
+                        bits.append(bits[-1])
+                    key = tuple(bits)
+                    if key in jira_issues:
+                        print("DUPLICATE", jira_issues[key], issue)
+                        jira_issues[key].delete()
+                    jira_issues[key] = issue
+                    continue
+
+                if summary == 'Cycle Status':
+                    jira_cycle_status_key = issue.key
+                    continue
+
+                match = respin_re.match(summary)
+                if match:
+                    #print("APW", issue, summary)
+                    jira_key_to_respin[issue.key] = match.group(1)
+                    jira_respin_to_key[match.group(1)] = issue.key
+                    continue
+
+                match = summary_re.match(summary)
+                if not match:
+                    match = progress_re.match(summary)
+                if match:
+                    jira_summary[match.group(1)] = issue
+                    if 'kernel-status' not in issue.fields.labels:
+                        issue.add_field_value('labels', 'kernel-status')
+
+        #print(trackers)
+        #print(jira_issues.keys())
+        print("  JIRA Issues:", len(jira_issues))
+
+        for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
+            sys.stdout.flush()
+            if key not in trackers:
+                issue = jira_issues[key]
+                status = str(issue.fields.status)
+                # If we have no swm tracker for this card, it is either new and
+                # should be ignored till the tracker appears, or it has been
+                # closed in our absense and should be closed.  If we have not
+                # yet tagged it with its variant then it cannot have ever had a
+                # tracker, assume it will appear shortly and leave it be;
+                # otherwise we need to shove it into Kernel Complete.
+                if ('kernel-debs' not in issue.fields.labels and
+                        'kernel-snap-debs' not in issue.fields.labels):
+                    print("NEW/UNKNOWN ISSUE")
+
+                elif status not in ('Kernel Complete', 'Rejected'):
+                    print(issue, "LOST/COMPLETE ISSUE", status)
+                    print(issue.key, status, '->', 'Rejected')
+                    # Transition us to Rejected using the hidden transition
+                    # Force Rejected.  Note as it is hidden we have to use the
+                    # transitionId for it; this is looked up in the workflow.
+                    jira.transition_issue(issue, transition=671) # 'Force Rejected'
+                continue
+
+            if key not in jira_issues:
+                print("MISSING ISSUE")
+                print("{}: new issue ...".format(cycle))
+                title = key_to_title(key)
+                issue_dict = {
+                    'project': {'key': project_key},
+                    'summary': 'Crank ' + title,
+                    'description': 'Tasks related to cranking ' + title + '.',
+                    'issuetype': {'name': 'Task'},
+                }
+                issue = jira.create_issue(fields=issue_dict)
+                print(issue)
+                jira.add_issues_to_sprint(sprint_id=jira_cycle.id, issue_keys=[issue.key])
+                #jira.transition_issue(issue, transition='Kernel Not Ready')
+                jira_issues[key] = issue
+
+            else:
+                issue = jira_issues[key]
+
+            # Determine swm's view of its disposition.
+            tracker_id = trackers[key].get('_id')
+            tracker_owner = trackers[key].get('owner')
+            tracker_tasks = trackers[key].get('task', {})
+            tracker_flags = trackers[key].get('flag', {})
+            tracker_issue = trackers[key].get('issue')
+
+            if tracker_flags.get('jira-preparation-block', False):
+                blocked_seen.add(tracker_id)
+            if tracker_issue != issue.key:
+                issuelink_want[tracker_id] = issue.key
+
+            #tracker_trello_block = tracker_flags.get('trello-preparation-block', False)
+
+            snap_tracker = 'snap-prepare' in tracker_tasks
+
+            ready_started = False
+            ready_complete = True
+            preparation_started = False
+            preparation_complete = True
+            builds_started = False
+            builds_complete = True
+            for task_name in (':prepare-packages', 'snap-prepare'):
+                status = tracker_tasks.get(task_name, {}).get('status', 'Invalid')
+                if status in ('Confirmed', 'In Progress', 'Fix Committed', 'Fix Released'):
+                    ready_started = True
+                if status not in ('Invalid', 'In Progress', 'Fix Committed', 'Fix Released'):
+                    ready_complete = False
+
+                if status in ('In Progress', 'Fix Committed', 'Fix Released'):
+                    preparation_started = True
+                if status not in ('Invalid', 'Fix Committed', 'Fix Released'):
+                    preparation_complete = False
+
+                if status in ('In Progress', 'Fix Committed'):
+                    builds_started = True
+                if status not in ('Invalid', 'Fix Released'):
+                    builds_complete = False
+
+            earlytest_started = False
+            earlytest_complete = True
+            earlytest_failed = False
+            promote_started = False
+            promote_complete = True
+            testing_started = False
+            testing_complete = True
+            testing_failed = False
+            #signoff_started = False
+            #signoff_complete = True
+            for task_name, task in tracker_tasks.items():
+                if task_name == 'boot-testing' or (snap_tracker and task_name == 'certification-testing'):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        earlytest_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        earlytest_complete = False
+                    if task.get('status', 'Invalid') == 'Incomplete':
+                        earlytest_failed = True
+                elif task_name.endswith('-testing'):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        testing_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        testing_complete = False
+                    if task.get('status', 'Invalid') == 'Incomplete':
+                        testing_failed = True
+                #if task_name.endswith('-signoff'):
+                #    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                #        signoff_started = True
+                #    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                #        signoff_complete = False
+                elif (task_name in ('promote-to-proposed', 'promote-signing-to-proposed') or
+                        task_name.startswith('snap-release-to-')):
+                    if task.get('status', 'Invalid') not in ('New', 'Invalid'):
+                        promote_started = True
+                    if task.get('status', 'Invalid') not in ('Invalid', 'Fix Released'):
+                        promote_complete = False
+
+            starting_state = str(issue.fields.status)
+            while True:
+                # We can only follow the workflow so determine our starting point.
+                target_state = starting_state
+
+                if starting_state == 'In Backlog':
+                    target_state = 'Kernel Not Ready'
+
+                elif starting_state == 'Kernel Not Ready':
+                    #if tracker_trello_block:
+                    #    target_state = 'Kernel Blocked'
+                    #elif ready_started:
+                    if ready_started:
+                        target_state = 'Kernel Ready'
+
+                elif starting_state == 'Kernel Ready':
+                    #if tracker_trello_block:
+                    #    target_state = 'Kernel Blocked'
+                    #elif not ready_started:
+                    if not ready_started:
+                        target_state = 'Kernel Not Ready'
+                    elif ready_complete:
+                        target_state = 'Kernel Preparing'
+
+                elif starting_state == 'Kernel Preparing':
+                    # Allow us to move to kernel-preparing manually as an interlock.
+                    if not ready_started:
+                    #if not ready_complete:
+                        target_state = 'Kernel Ready'
+                    elif preparation_complete:
+                        target_state = 'Kernel Building'
+
+                elif starting_state == 'Kernel Building':
+                    if not preparation_complete:
+                        target_state = 'Kernel Preparing'
+                    elif builds_complete:
+                        if snap_tracker:
+                            target_state = 'Kernel Promotion'
+                        else:
+                            target_state = 'Kernel Early Testing'
+
+                elif starting_state == 'Kernel Early Testing':
+                    if not builds_complete:
+                        target_state = 'Kernel Building'
+                    elif earlytest_complete:
+                        target_state = 'Kernel Promotion'
+                    elif earlytest_failed:
+                        target_state = 'Kernel Testing Failed'
+
+                elif starting_state == 'Kernel Promotion':
+                    if not promote_complete and earlytest_started and not earlytest_complete:
+                        target_state = 'Kernel Early Testing'
+                    elif promote_complete and testing_started and not testing_complete:
+                        target_state = 'Kernel Testing'
+                    elif promote_complete:
+                        if testing_complete:
+                            target_state = 'Kernel Complete'
+                        elif earlytest_complete:
+                            target_state = 'Kernel Testing'
+                        elif builds_complete:
+                            target_state = 'Kernel Early Testing'
+
+                elif starting_state == 'Kernel Testing':
+                    #print("promote_complete<{}> testing_complete<{}> testing_failed<{}>".format(promote_complete, testing_complete, testing_failed))
+                    if promote_started and not promote_complete:
+                        target_state = 'Kernel Promotion'
+                    elif testing_complete:
+                        target_state = 'Kernel Promotion'
+                    elif testing_failed:
+                        target_state = 'Kernel Testing Failed'
+
+                elif starting_state == 'Kernel Complete':
+                    if promote_started and not promote_complete:
+                        target_state = 'Kernel Promotion'
+                    if not testing_complete:
+                        target_state = 'Kernel Testing'
+
+                elif starting_state == 'Kernel Testing Failed':
+                    # If a test phase is:
+                    #  failed, stay here;
+                    #  successful, move to the latest such phase,
+                    #  not-started, move to the earliest such phase,
+                    # For these latter two we are cirtain to step onwards
+                    # in the same direction.
+                    if testing_failed or earlytest_failed:
+                        pass
+                    elif testing_complete:
+                        target_state = 'Kernel Testing'
+                    elif earlytest_complete:
+                        target_state = 'Kernel Early Testing'
+                    elif not earlytest_started:
+                        target_state = 'Kernel Early Testing'
+                    elif not testing_started:
+                        target_state = 'Kernel Testing'
+
+                elif starting_state == 'Kernel Blocked':
+                    blocked_want.add(tracker_id)
+                    #if not tracker_trello_block:
+                    #    target_state = 'Kernel Not Ready'
+
+                #print("SYNC ISSUE", issue, starting_state, target_state)
+                if starting_state == target_state:
+                    break
+
+                print(issue.key, starting_state, '->', target_state)
+                jira.transition_issue(issue, transition=target_state)
+                starting_state = target_state
+
+            # Detect new issues and link them to their tracker.
+            if 'kernel-tracker-v1' not in issue.fields.labels:
+                print(issue, "adding tracker link ")
+                jira.add_simple_link(issue, {
+                    'title': 'Tracker',
+                    'url': 'https://bugs.launchpad.net/bugs/' + tracker_id})
+                print(issue, "marking as v1")
+                issue.add_field_value('labels', 'kernel-tracker-v1')
+
+            # Add labels based on the variant type so we can colourise cards.
+            tracker_variant = trackers[key].get('variant')
+            #print(issue, tracker_variant)
+            if tracker_variant is not None:
+                label_with = 'kernel-' + tracker_variant
+                if label_with not in issue.fields.labels:
+                    print(issue, "adding label", label_with)
+                    issue.add_field_value('labels', label_with)
+
+            # Copy over any ownership information.
+            #print("OWNERS:", issue, tracker_owner, users.get(tracker_owner))
+            if tracker_owner is not None and tracker_owner in users:
+                jira_assignee = issue.fields.assignee
+                if jira_assignee is None:
+                    owner_email = users[tracker_owner].get('email')
+                    owner_jira_id = email_to_jira_id(owner_email)
+                    if owner_jira_id is not None:
+                        print("ASSIGN:", issue, jira_assignee, owner_email, owner_jira_id)
+                        jira.assign_issue(issue, owner_email)
+                    else:
+                        print("ASSIGN:", issue, jira_assignee, owner_email, "FAILED")
+                    # Not all users have accounts, if we cannot find the account by email
+                    # assignment would creater, skip it.
+                    #jira_users = jira.search_users(user_email)
+                    #if len(jira_users) == 1:
+                    #    jira.assign_issue(issue, user_email)
+                    #else:
+                    #    print("ASSIGN:", issue, jira_assignee, user_email, "FAILED")
+
+            # Linkage for respins.
+            #print(issue.fields.issuelinks)
+            linked = False
+            for link in issue.fields.issuelinks:
+                if hasattr(link, 'inwardIssue'):
+                    if link.inwardIssue.key in jira_key_to_respin:
+                        #print(" ", link.inwardIssue.key)
+                        linked = True
+            if not linked:
+                summary = issue.fields.summary
+                match = crank_re.match(summary)
+                spin_number = match.group(2)
+
+                respin_key = jira_respin_to_key.get(spin_number)
+                if respin_key is not None:
+                    print(issue, "split from", respin_key)
+                    jira.create_issue_link('Issue split', respin_key, issue.key)
+                else:
+                    print(issue, "NO RESPIN CARD FOUND FOR", spin_number)
+
+            # Testing Summary data.
+            for task_name, task in tracker_tasks.items():
+                if not task_name in jira_summary:
+                    continue
+                task_disposition = {
+                    'Incomplete':    (1, 'Failed'),
+                    'Confirmed':     (2, 'No Results'),
+                    'In Progress':   (3, 'In Progress'),
+                    'Fix Committed': (4, 'In Progress'),
+                    'Fix Released':  (5, 'Complete'),
+                    'New':           (6, 'Not Started'),
+                    'Invalid':       None,
+                    }.get(task.get('status'), (0, 'Unknown'))
+                if task_disposition is None:
+                    continue
+                jira_summary_detail.setdefault(task_name, {}).setdefault(task_disposition, []).append((issue, tracker_owner))
+
+        for task_name, issue in jira_summary.items():
+            #print("APW", task_name)
+            # Check we are linked to the master status if we have one.
+            if jira_cycle_status_key is not None:
+                linked = False
+                for link in issue.fields.issuelinks:
+                    if hasattr(link, 'inwardIssue'):
+                        if link.inwardIssue.key == jira_cycle_status_key:
+                            #print(" ", link.inwardIssue.key)
+                            linked = True
+                if not linked:
+                    print(issue, "split from", jira_cycle_status_key)
+                    jira.create_issue_link('Issue split', jira_cycle_status_key, issue.key)
+
+            # Generate a new summary/description and replace as needed.
+            bits = []
+            counts = {'all': 0}
+            for key, data in jira_summary_detail.get(task_name, {}).items():
+                order, status = key
+                counts[status] = counts.get(status, 0) + len(data)
+                counts['all'] += len(data)
+            for key, data in sorted(jira_summary_detail.get(task_name, {}).items()):
+                order, status = key
+                status_percentage = (counts.get(status, 0) * 100) / counts['all']
+                bits.append("* {} ({:.1f}%)".format(status, status_percentage))
+                entries = []
+                for entry, owner in data:
+                    match = crank_re.match(entry.fields.summary)
+                    entries.append((match.group(1), "** [{}|/browse/{}] {}".format(match.group(1), entry.key, owner)))
+                bits += [x[1] for x in sorted(entries)]
+            complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
+            bits.insert(0, "Overall: {:.1f}% complete".format(complete_percentage))
+            summary = issue.fields.summary.rsplit(' (')[0] + ' ({:.1f}%)'.format(complete_percentage)
+            if issue.fields.description is not None:
+                description = issue.fields.description.split('-- summary --', 1)[0].rstrip()
+            else:
+                description = ''
+            description += '\n-- summary --\n'
+            description += '\n'.join(bits)
+            if issue.fields.summary != summary or issue.fields.description != description:
+                issue.update(summary=summary, description=description)
+
+    # Update the Launchpad tracker to record jira blocks and jira issue linkage.
+    blocked_add = blocked_want - blocked_seen
+    blocked_del = blocked_seen - blocked_want
+    if len(blocked_del) > 0 or len(blocked_add) > 0 or len(issuelink_want) > 0:
+        lp = LaunchpadDirect.login_application('swm-jira-sync')
+
+        # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
+        tag = 'kernel-jira-preparation-blocked'
+        for bug_id in blocked_del:
+            bug = lp.bugs[bug_id]
+            if tag not in bug.tags:
+                print("LP #{} -- removing {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- removing {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.remove(tag)
+            bug.tags = tags
+            bug.lp_save()
+
+        for bug_id in blocked_add:
+            bug = lp.bugs[bug_id]
+            if tag in bug.tags:
+                print("LP #{} -- added {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- adding {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.append(tag)
+            bug.tags = tags
+            bug.lp_save()
+
+        # Handle adding issue links.
+        print("ISSUELINKS", len(issuelink_want))
+        for bug_id, issue_key in issuelink_want.items():
+            issue_key = issuelink_want[bug_id]
+            tag = 'kernel-jira-issue-' + issue_key.lower()
+            bug = lp.bugs[bug_id]
+            if tag in bug.tags:
+                print("LP #{} -- added {} (noop)".format(bug_id, tag))
+                continue
+            print("LP #{} -- adding {}".format(bug_id, tag))
+            tags = bug.tags
+            tags.append(tag)
+            bug.tags = tags
+            bug.lp_save()
+
+    print(datetime.now(), "complete")
