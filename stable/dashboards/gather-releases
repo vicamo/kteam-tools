@@ -21,6 +21,7 @@ examples:
     '''
     parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--all', action='store_true', default=False, help='Include all series.')
 
     args = parser.parse_args()
 
@@ -37,9 +38,7 @@ examples:
         rls = {}
         ks = KernelSeries()
         for series in ks.series:
-            if series.development:
-                rls[series.name] = series.codename
-            if series.supported:
+            if args.all or series.development or series.supported:
                 rls[series.name] = series.codename
         print(json.dumps(rls, sort_keys=True, indent=4))
         retval = 0

@@ -3,7 +3,7 @@
     "title"    : "Kernel Stable Team Dashboard",
     "data"     : {
         "swm": "swm-status.json",
-        "releases" : "supported-releases.json",
+        "releases" : "all-releases.json",
         "testing": "testing.json"
     }
 }

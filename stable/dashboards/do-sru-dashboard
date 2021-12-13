@@ -1,5 +1,6 @@
 curl -L https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml | ./convert-swm-status >swm-status.json
 #curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
 ./gather-releases > supported-releases.json
+./gather-releases --all > all-releases.json
 ./generate-dashboard kernel-stable-dashboard.rc > kernel-stable-dashboard.tmp && mv kernel-stable-dashboard.tmp web/kernel-stable-dashboard.html
 

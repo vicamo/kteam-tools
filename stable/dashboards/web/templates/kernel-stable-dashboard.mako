@@ -332,6 +332,7 @@ import urllib.parse
 
 cycles = {}
 cadence = {}
+owners = {}
 for bid in sorted(data['swm']):
     b = data['swm'][bid]
 
@@ -384,9 +385,61 @@ for bid in sorted(data['swm']):
     status_list = __status_bites(b, attrs)
     first = True
     #row_style = ' background: #f0f0f0;' if row_number % 2 == 0 else ''
+    row_class = ['entry-any']
     master_class = 'master' if 'master-bug' not in b else 'derivative'
+
+    row_owner = b.get('owner', 'unassigned')
+    row_class.append('owner-' + row_owner)
+    if row_owner != 'unassigned':
+        owners[row_owner] = row_class
+
+    sru_review_status = __task_status(b, 'sru-review')
+    ptp_status = __task_status(b, 'promote-to-proposed')
+    if (sru_review_status not in ('n/a', 'Invalid', 'New', 'Fix Released') or
+            ptp_status not in ('n/a', 'Invalid', 'New', 'Fix Released')):
+        row_class.append('phase-reviews')
+
+    snap_tasks = ['snap-prepare']
+    for risk in ('edge', 'beta', 'candidate', 'stable'):
+        snap_tasks.append('snap-release-to-' + risk)
+    for snap_task in snap_tasks:
+        status = __task_status(b, snap_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-snap-promotions')
+            break
+
+    for testing_task in ('boot-testing', 'automated-testing',
+            'certification-testing', 'regression-testing', 'verification-testing'):
+        status = __task_status(b, testing_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-testing')
+            break
+
+    for testing_task in ('boot-testing', 'automated-testing',
+            'certification-testing', 'regression-testing', 'verification-testing',
+            'snap-certification-testing', 'snap-qa-testing'):
+        status = __task_status(b, testing_task)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            testing_task = testing_task.replace('snap-', '')
+            row_class.append('phase-' + testing_task)
+
+    for task_name in ('promote-to-updates', 'promote-to-security',
+            'promote-to-release'):
+        status = __task_status(b, task_name)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-deb-promotions')
+            break
+
+    for task_name in b['task']:
+        if not task_name.startswith('prepare-package') and task_name != 'snap-prepare':
+            continue
+        status = __task_status(b, task_name)
+        if status not in ('n/a', 'Invalid', 'New', 'Fix Released'):
+            row_class.append('phase-prepare')
+            break
+
     for status in status_list:
-        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class}
+        status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
         if first:
             status_row['bug'] = bid
             status_row['version'] = version
@@ -448,6 +501,34 @@ for bid in sorted(data['swm']):
                                     <table width="100%"> <tr><td><h3><a href="http://people.canonical.com/~kernel/reports/sru-report.html">SRUs</a></h3></td></tr> <tr><td><hr /></td></tr> </table>
                                     -->
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
+                                    <tr><td>
+                                    <label for="limit-owner">Owner:</lable>
+                                    <select name="limit-owner" id="limit-owner" onchange=selectAll() style="font-size: 0.8em">
+                                        <option value="all">All</option>
+                                    % for owner in sorted(owners):
+                                        <!-- <button class="toggle-pressed" onclick="toggleOwners('${owner}')" id="toggle-${owner}">${owner}</button> -->
+                                        <option value="${owner}">${owner}</option>
+                                    % endfor
+                                        <option value="unassigned">Unassigned</option>
+                                    </select>
+                                    &nbsp;
+                                    <label for="limit-phase">Phase:</lable>
+                                    <select name="limit-phase" id="limit-phase" onchange=selectAll() style="font-size: 0.8em">
+                                        <option value="all">All</option>
+                                        <option value="prepare">prepare</option>
+                                        <option value="reviews">reviews</option>
+                                        <option value="deb-promotions">deb-promotions</option>
+                                        <option value="snap-promotions">snap-promotions</option>
+                                        <option value="testing">testing</option>
+                                        <option value="boot-testing">&nbsp;&nbsp;boot-testing</option>
+                                        <option value="automated-testing">&nbsp;&nbsp;automated-testing</option>
+                                        <option value="certification-testing">&nbsp;&nbsp;certification-testing</option>
+                                        <option value="regression-testing">&nbsp;&nbsp;regression-testing</option>
+                                        <option value="verification-testing">&nbsp;&nbsp;verification-testing</option>
+                                    </select>
+                                    </td></tr>
+
+                                    <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
                                     <%
                                         releases = data['releases']
                                         releases['00.00'] = 'unknown'
@@ -488,7 +569,7 @@ for bid in sorted(data['swm']):
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
                                                         %>
-                                                        <tr style="line-height: 100%;${row_style}">
+                                                        <tr class="${bug['row-class']}" style="line-height: 100%;${row_style}">
                                                             <td>&nbsp;</td>
                                                             <td width="120" align="right" class="${bug['master-class']}">${cell_version}</td>
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>
