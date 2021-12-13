@@ -5,7 +5,7 @@ import re
 from datetime                           import datetime, timedelta, timezone
 import json
 
-from lazr.restfulclient.errors          import NotFound
+from lazr.restfulclient.errors          import NotFound, Unauthorized
 
 from ktl.kernel_series                  import KernelSeries
 from ktl.msgq                           import MsgQueue, MsgQueueCkct
@@ -199,9 +199,11 @@ class PackageBuild:
                     'target': s.bug.target,
                     'detail': {
                         'state': buildstate,
+                        'type': s.dependent,
                         'package': build.source_package_name,
                         'url': build.web_link,
                         'lp-api': build.self_link,
+                        'log': build.build_log_url,
                     }})
 
             # Accumulate the latest build completion.
@@ -460,6 +462,17 @@ class Package():
         return {
                 'lrs': 'lrm',
                 'signed': 'main',
+            }.get(pkg)
+
+    # feeder_package_for
+    #
+    def feeder_package_for(self, pkg):
+        return {
+                'signed': 'main',
+                'lrm': 'main',
+                'lrg': 'lrm',
+                'lrs': 'lrg',
+                'meta': 'main',
             }.get(pkg)
 
     # adjunct_package
@@ -956,11 +969,71 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket_for (%s)' % (retval))
         return retval
 
+    # attempt_retry_logless
+    #
+    def attempt_retry_logless(s, pkg):
+        retried = False
+        for maint in s.bug.maintenance:
+            if maint['type'] == 'deb-build' and maint['detail']['type'] == pkg:
+                # If we have a maintenance record and it is in 'Failed to build'
+                # and we have no log then this is a clear retry candidate.
+                if (maint is not None and
+                        maint['detail']['state'] == 'Failed to build' and
+                        maint['detail']['log'] is None):
+                    cinfo("RETRY: {} (logless failure)".format(maint['detail']['lp-api']))
+                    if s.attempt_retry(pkg):
+                        retried = True
+        return retried
+
+    # attempt_retry
+    #
+    def attempt_retry(s, pkg):
+        retried = False
+        for record in s.bug.maintenance:
+            if record['type'] == 'deb-build' and record['detail']['type'] == pkg:
+                cinfo("RETRY: {}".format(record['detail']['lp-api']))
+                lp_build = s.lp.launchpad.load(record['detail']['lp-api'])
+                if lp_build is None:
+                    cinfo("RETRY: {} build not found".format(
+                        record['detail']['lp-api']))
+                elif not lp_build.can_be_retried:
+                    cinfo("RETRY: {} not retryable (state={})".format(
+                        record['detail']['lp-api'], lp_build.buildstate))
+                    # If this is not retryable but is in progress now,
+                    # so just behave as if we retried it.
+                    if lp_build.buildstate in (
+                            'Needs building',
+                            'Currently building',
+                            'Uploading build'):
+                        retried = True
+                else:
+                    try:
+                        lp_build.retry()
+                        retried = True
+                        cinfo("RETRY: {} retry successful".format(
+                            record['detail']['lp-api']))
+                    except Unauthorized as e:
+                        cinfo("RETRY: {} retry unsuccessful -- marked manual-retry".format(
+                            record['detail']['lp-api']))
+                        record['detail']['manual-retry'] = True
+        return retried
+
     # all_failures_in_pocket
     #
     def all_failures_in_pocket(s, pocket, ignore_all_missing=False):
         packages = s.dependent_packages_for_pocket(pocket)
         return s.delta_failures_in_pocket(packages, pocket, ignore_all_missing)
+
+    def __feeder_completed(s, feeder, pocket):
+        published = s.srcs[feeder].get(pocket, {}).get('published')
+        built = s.srcs[feeder].get(pocket, {}).get('most_recent_build')
+        if published is None:
+            return built
+        if built is None:
+            return published
+        if built > published:
+            return built
+        return published
 
     # delta_failures_in_pocket
     #
@@ -973,21 +1046,82 @@ class Package():
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 failures.append("{}:building".format(pkg))
-            elif status == 'DEPWAIT':
-                failures.append("{}:depwait".format(pkg))
-            elif status == 'FAILEDTOBUILD':
-                # Signed is allowed to be broken until we have built the main kernel.
-                if pkg != 'signed':
-                    failures.append("{}:failed".format(pkg))
+            elif status in ('DEPWAIT', 'FAILEDTOBUILD'):
+                real_status = 'depwait' if status == 'DEPWAIT' else 'failed'
+                wait_status = 'depwait' if status == 'DEPWAIT' else 'failwait'
+
+                # Check if we failed without a log, if so, hit retry regardless
+                # or any feeder existance.
+                if status == 'FAILEDTOBUILD':
+                    # If we successfully retried it then we should report it as
+                    # building.
+                    if s.attempt_retry_logless(pkg):
+                        failures.append("{}:building".format(pkg))
+                        continue
+
+                # Look up the dependancy chain looking for something which
+                # can be retried.
+                active_feeder = pkg
+                while True:
+                    previous_feeder = active_feeder
+                    active_feeder = s.feeder_package_for(active_feeder)
+                    if active_feeder is None:
+                        break
+                    active_feeder_state = s.srcs.get(active_feeder, {}).get(pocket, {}).get('status')
+                    if active_feeder_state not in ('DEPWAIT', 'FAILEDTOBUILD'):
+                       break
+
+                # If there is nothing above us doing anything.  Then our status
+                # is real.
+                if active_feeder is None:
+                    failures.append("{}:{}".format(pkg, real_status))
+                    continue
+
+                # If the active feeder is incomplete then we should continue
+                # waiting for it.
+                if active_feeder_state != 'FULLYBUILT':
+                    failures.append("{}:{}".format(pkg, wait_status))
+                    continue
+
+                # Work out if the previous_feeder is retryable.
+                previous_feeder_completed = s.__feeder_completed(previous_feeder, pocket)
+                active_feeder_completed = s.__feeder_completed(active_feeder, pocket)
+                cinfo("completions {} => {} {} -> {} {}".format(pkg, previous_feeder_completed, previous_feeder, active_feeder, active_feeder_completed))
+                previous_feeder_retry = (
+                        previous_feeder_completed is not None and
+                        active_feeder_completed is not None and
+                        previous_feeder_completed - timedelta(hours=2) <= active_feeder_completed)
+
+                # If the previous_feeder is actually us and can be retried
+                # actually attempt it.
+                if previous_feeder_retry and previous_feeder == pkg:
+                    # If the retry fails this requirs a manual retry,
+                    # mark us and annotate the maintenance record.
+                    if not s.attempt_retry(pkg):
+                        failures.append("{}:retry-needed".format(pkg))
+
+                    # If it works it should end up in Needs Building state
+                    # which implies we should report it as :building.
+                    else:
+                        failures.append("{}:building".format(pkg))
+
+                    # Otherwise we made progress, so no mark is needed.
+                    continue
+
+                # If the previous_feeder can be retried, assume it will
+                # elsewhere in the pass.  Mark ourselves as waiting.
+                if previous_feeder_retry:
+                    failures.append("{}:{}".format(pkg, wait_status))
+
+                # Otherwise we are genuinely broken.
+                else:
+                    failures.append("{}:{}".format(pkg, real_status))
+
             elif status == '':
                 failures.append("{}:missing".format(pkg))
                 missing += 1
             elif status == 'FULLYBUILT_PENDING':
                 failures.append("{}:queued".format(pkg))
-
-        if (s.srcs.get('signed', {}).get(pocket, {}).get('status') == 'FAILEDTOBUILD' and
-                s.srcs.get('main', {}).get(pocket, {}).get('status') == 'FULLYBUILT'):
-            failures.append("signed:retry-needed")
 
         if ignore_all_missing and sources == missing:
                 failures = []

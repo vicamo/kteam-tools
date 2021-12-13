@@ -59,6 +59,7 @@ class SwmMaintenance:
                         if key in ('lp-api'):
                             detail['lp-api'] = value
                             continue
+                        value = str(value)
                         if ' ' in value:
                             fmt += " {0}<{{detail-{0}}}>".format(key)
                         else:
