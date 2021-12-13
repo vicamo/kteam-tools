@@ -5,10 +5,11 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 import lazr
-from launchpadlib.launchpad import Launchpad
 
 from ktl.kernel_series import KernelSeries
 from ktl.swm_status import SwmStatus
+
+from wfl.launchpad import LaunchpadDirect
 
 #parser = argparse.ArgumentParser()
 #parser.add_argument('--no-header', action='store_true')
@@ -18,7 +19,7 @@ from ktl.swm_status import SwmStatus
 
 #pocket = args.pocket
 
-lp = Launchpad.login_with('test-lp', 'production', version='devel')
+lp = LaunchpadDirect.login()
 lp_distro = lp.distributions['ubuntu']
 lp_archive = lp_distro.getArchive(name='primary')
 lp_ckt = lp.people['canonical-kernel-team']
