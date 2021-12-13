@@ -573,7 +573,7 @@ if __name__ == '__main__':
             description += '\n-- summary --\n'
             description += '\n'.join(bits)
             if issue.fields.summary != summary or issue.fields.description != description:
-                issue.update(summary=summary, description=description)
+                issue.update(summary=summary, description=description, notify=False)
 
     # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen
