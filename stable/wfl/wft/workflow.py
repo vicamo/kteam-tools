@@ -28,8 +28,10 @@ class Workflow(TaskHandler):
     def evaluate_status(s, state):
         return s.jumper[state]()
 
-    PHASE_MAX=10       # Maximum primary phases.
+    PHASE_MAX=16       # Maximum primary phases.
     PHASE_BETWEEN=2    # Maximum number of sub-phases 'between' phases.
+    STAGE_BETWEEN=4    # Stage information is externally visible so widen range to stablise.
+    STAGE_GROUP=PHASE_MAX*STAGE_BETWEEN
 
     # _complete
     #
@@ -47,6 +49,7 @@ class Workflow(TaskHandler):
         # Make sure we start higher than that.
         phase_section = s.PHASE_MAX + (s.PHASE_BETWEEN * s.PHASE_MAX) + 1
         phase_text = None
+        phase_stage = None
         while True:
             for (taskname, task) in s.bug.tasks_by_name.items():
                 if task.status in ['Invalid', 'Opinion', 'Fix Released', "Won't Fix"]:
@@ -57,8 +60,6 @@ class Workflow(TaskHandler):
                 if s.bug.variant in ('debs', 'combo'):
                     # 1: Packaging
                     if taskname == ':prepare-packages':
-                        if task.status == 'Fix Committed':
-                            continue
                         (task_section, task_text) = (1, 'Packaging')
 
                     # 2: Promote to Proposed
@@ -122,18 +123,25 @@ class Workflow(TaskHandler):
                 # interesting.  Jack those so they are less interesting than
                 # active tasks.  Jack New slightly more than Confirmed as we
                 # care to see Ready in preference to Holding.
+                task_stage = task_section * (s.PHASE_BETWEEN + 1)
+                if s.bug.variant == 'snap-debs':
+                    task_stage += 1 * s.STAGE_GROUP
                 if task.status == 'New':
                     (task_section, task_text) = (s.PHASE_MAX +
                         (task_section * s.PHASE_BETWEEN) + 1,
                         "Holding before " + task_text)
+                    task_stage += 0
                 elif task.status == 'Confirmed':
                     (task_section, task_text) = (s.PHASE_MAX +
                         (task_section * s.PHASE_BETWEEN) + 0,
                         "Ready for " + task_text)
+                    task_stage += 1
+                else:
+                    task_stage += 2
 
                 # Ratchet down to the earliest phase.
                 if task_section < phase_section:
-                    (phase_section, phase_text) = (task_section, task_text)
+                    (phase_section, phase_text, phase_stage) = (task_section, task_text, task_stage)
 
             # SAFETY CHECKS:
             #
@@ -157,6 +165,7 @@ class Workflow(TaskHandler):
 
             if phase_text is not None:
                 s.bug.phase = phase_text
+                s.bug.stage = phase_stage
 
             #
             # Calculate interlock blocks.

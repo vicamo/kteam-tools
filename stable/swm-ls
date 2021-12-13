@@ -18,7 +18,7 @@ def bug_prefix(bugid):
     return bugid
 
 
-def generate_sort(entry):
+def sort_by_cycle_series(entry):
     cycle = entry.get('cycle')
     if cycle != '-':
         cycle_bits = cycle.split('-')
@@ -29,6 +29,9 @@ def generate_sort(entry):
 
     return "{cycle_pad} {series} {bugid_parent} {bugid}".format(cycle_pad=cycle_pad, **entry)
 
+def sort_by_phase(entry):
+    stage = entry.get('stage')
+    return (stage, sort_by_cycle_series(entry))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SWM status tool')
@@ -42,6 +45,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--show-assignee', help='Display task assignee',
         action='store_true', default=False)
+    parser.add_argument('--sort-phase', help='Sort by phase (including entry and exit)',
+        action='store_true', default=False)
     args = parser.parse_args()
 
     # Ask for nothing, get reasons only.
@@ -51,6 +56,10 @@ if __name__ == '__main__':
     status = SwmStatus()
 
     results = []
+
+    generate_sort = sort_by_cycle_series
+    if args.sort_phase:
+        generate_sort = sort_by_phase
 
     for (bug_id, bug_data) in status.trackers.items():
         for key in bug_data.keys():
@@ -74,6 +83,7 @@ if __name__ == '__main__':
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task_name,
                     'phase_status':     bug_data['task'][task]['status'],
+                    'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'][task].get('assignee', 'unassigned'),
                     }
                 results.append((generate_sort(entry), entry))
@@ -91,6 +101,7 @@ if __name__ == '__main__':
                     'version':          bug_data.get('version', '--not-specified--'),
                     'phase':            task_name,
                     'phase_status':     bug_data['reason'][task],
+                    'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'].get(task, {}).get('assignee', 'unassigned'),
                     }
                 results.append((generate_sort(entry), entry))
@@ -106,6 +117,7 @@ if __name__ == '__main__':
                 'version':          bug_data.get('version', '--not-specified--'),
                 'phase':            'overall',
                 'phase_status':     bug_data.get('phase', 'Not Ready'),
+                'stage':            bug_data.get('stage', 10000),
                 'assignee':         '--',
                 }
             results.append((generate_sort(entry), entry))
