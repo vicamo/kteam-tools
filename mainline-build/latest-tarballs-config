@@ -168,7 +168,7 @@ class TarballMirror:
                     if version == latest_version:
                         flags.append('latest')
                         version_cmp = [int(x) for x in version.replace('-', '.').split('.')[0:3]]
-                        if version_cmp < [5, 6, 0]:
+                        if source.name == 'linux' and version_cmp < [5, 6, 0]:
                             flags.append('wireguard')
                     flags_str = ','.join(flags)
                     tag = 'Ubuntu{}-{}'.format(main.name[5:], version.replace('~', '_'))
