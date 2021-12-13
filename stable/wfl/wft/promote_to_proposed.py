@@ -60,10 +60,10 @@ class PromoteFromTo(Promoter):
         delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
 
         while not retval:
-            if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
+            if s.bug.task_status(s.task_src) not in ('Fix Committed', 'Fix Released'):
                 break
 
-            if len(delta) == 0 or not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
+            if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 break
 
             s.task.status = 'Fix Committed'
@@ -73,10 +73,10 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
-            if s.bug.task_status(':prepare-packages') != 'Fix Released':
+            if s.bug.task_status(s.task_src) != 'Fix Released':
                 break
 
-            if len(delta) == 0 or not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
+            if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -313,6 +313,7 @@ class PromoteToProposed(PromoteFromTo):
                         s.bug.tasks_by_name[task_name].status != 'Invalid'):
                     has_signables = True
 
+        s.task_src = ':prepare-packages'
         s.pocket_src = 'ppa'
         if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_dest = 'Signing'
@@ -365,6 +366,7 @@ class PromoteSigningToProposed(PromoteFromTo):
                     has_signables = True
 
         cdebug("signing={} has_signables={}".format(s.bug.debs.routing('Signing'), has_signables))
+        s.task_src = 'promote-to-proposed'
         if s.bug.debs.routing('Signing') and has_signables:
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'

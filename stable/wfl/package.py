@@ -791,7 +791,7 @@ class Package():
             pkg_in_src = s.__pkg_in(pkg, src)
             pocket = dst
             for pocket in s.__pockets_from(dst):
-                pkg_in_dst = s.__pkg_in(pkg, pocket)
+                pkg_in_dst = s.__pkg_built(pkg, pocket)
                 if pkg_in_dst:
                     break
 
