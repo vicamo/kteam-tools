@@ -87,29 +87,32 @@ class Workflow(TaskHandler):
 
                 if s.bug.variant == 'snap-debs':
                     # SNAPS:
-                    # 1: Promote to Edge
-                    if taskname == 'snap-release-to-edge':
-                        (task_section, task_text) = (1, 'Promote to Edge')
+                    if taskname == 'snap-prepare':
+                        (task_section, task_text) = (1, 'Prepare Snap')
 
-                    # 2: Promote to Beta
+                    # 2: Promote to Edge
+                    elif taskname == 'snap-release-to-edge':
+                        (task_section, task_text) = (2, 'Promote to Edge')
+
+                    # 3: Promote to Beta
                     elif taskname == 'snap-release-to-beta':
-                        (task_section, task_text) = (2, 'Promote to Beta')
+                        (task_section, task_text) = (3, 'Promote to Beta')
 
-                    # 3: Testing
+                    # 4: Testing
                     elif taskname == 'snap-certification-testing':
-                        (task_section, task_text) = (3, 'Certification Testing')
+                        (task_section, task_text) = (4, 'Certification Testing')
 
-                    # 4: Promote to Candidate
+                    # 5: Promote to Candidate
                     elif taskname == 'snap-release-to-candidate':
-                        (task_section, task_text) = (4, 'Promote to Candidate')
+                        (task_section, task_text) = (5, 'Promote to Candidate')
 
-                    # 5: Testing (again)
+                    # 6: Testing (again)
                     elif taskname == 'snap-qa-testing':
-                        (task_section, task_text) = (5, 'Q/A Testing')
+                        (task_section, task_text) = (6, 'Q/A Testing')
 
-                    # 4: Promote to Candidate
+                    # 7: Promote to Candidate
                     elif taskname == 'snap-release-to-stable':
-                        (task_section, task_text) = (6, 'Promote to Stable')
+                        (task_section, task_text) = (7, 'Promote to Stable')
 
                 if task_section is None:
                     continue
