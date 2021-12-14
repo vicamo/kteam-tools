@@ -2913,6 +2913,27 @@ defaults:
             derived-from: [ '20.04', 'linux-iot' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
+        linux-xilinx-zynqmp:
+            variants: [ '--' ]
+            packages:
+                linux-xilinx-zynqmp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/focal', 'master-next']
+                linux-meta-xilinx-zynqmp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/focal', 'master']
+            supported: false
+            owner: wenchien
+            development: true
+            derived-from: [ '20.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    xilinx-zynqmp:
+                        arches: ['arm64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
