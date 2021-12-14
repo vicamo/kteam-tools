@@ -93,8 +93,16 @@ def main():
             print('{}/browse/{} ({})'.format(jira_server, jira_issue.key,
                                              jira_issue.fields.summary))
 
+
+        # Tag the LP bug
+        if args.dry_run:
+            print('[dry-run] Tagging LP: #{}'.format(bug))
+        else:
+            lp_bug.tags += [jira_issue.key.lower()]
+            lp_bug.lp_save()
+
+        # Add a link to the LP bug
         if not lp_link_added:
-            # Add a link to the LP bug
             simple_link = {
                 'url': 'https://bugs.launchpad.net/bugs/{}'.format(bug),
                 'title': 'LP: #{}'.format(bug),
