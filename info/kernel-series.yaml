@@ -2866,8 +2866,7 @@ defaults:
             supported: false
 
         linux-iot:
-            routing: prerelease
-            variants: [ '-wip' ]
+            variants: [ '--' ]
             packages:
                 linux-iot:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-iot/+git/focal', 'master-next']
