@@ -56,8 +56,13 @@ class PromoteFromTo(Promoter):
             retval = True
             break
 
-        # Identify the packages which are incomplete.
-        delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
+        # Identify the packages which are incomplete -- first step.
+        for pocket in s.pockets_watch:
+            delta = s.bug.debs.delta_src_dst(s.pocket_src, pocket)
+            # If everything which is not fully published is in the pocket
+            # this is the pocket for us.
+            if s.bug.debs.delta_in_pocket(delta, pocket):
+                break
 
         while not retval:
             if s.bug.task_status(s.task_src) not in ('Fix Committed', 'Fix Released'):
@@ -95,9 +100,13 @@ class PromoteFromTo(Promoter):
                     s.task.reason = 'Holding -- master bug not ready for proposed'
                     break
 
-            if (not s.bug.debs.pocket_clear(s.pocket_dest, s.pockets_after) and
-                not s._kernel_unblock_ppa()):
-                s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(s.pocket_dest)
+            clear = True
+            for pocket_dest, pockets_after in s.pockets_clear:
+                if not s.bug.debs.pocket_clear(pocket_dest, pockets_after):
+                    clear = False
+                    break
+            if not clear and not s._kernel_unblock_ppa():
+                s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(pocket_dest)
                 break
 
             if s.bug.debs.older_tracker_in_proposed:
@@ -152,11 +161,19 @@ class PromoteFromTo(Promoter):
             break
 
         # Identify the packages which are incomplete.
-        delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
+        cdebug("promote-to-proposed: checking delta in {}".format(s.pockets_watch))
+        for pocket in s.pockets_watch:
+            delta = s.bug.debs.delta_src_dst(s.pocket_src, pocket)
+            # If everything which is not fully published is in the pocket
+            # this is the pocket for us.
+            if s.bug.debs.delta_in_pocket(delta, pocket):
+                break
+        cdebug("promote-to-proposed: pocket={} delta={}".format(pocket, delta))
 
         while not retval:
             # Check if the packages are published completely yet.
-            if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
+            found = s.bug.debs.delta_in_pocket(delta, pocket)
+            if not found:
                 # Confirm the packages remain available to copy.
                 if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
                     s.task.reason = 'Alert -- packages no longer available'
@@ -188,14 +205,24 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- copy FAILED'
                 break
 
-            # If they are now all built ...
-            if not s.bug.debs.delta_built_pocket(delta, s.pocket_dest):
-                failures = s.bug.debs.delta_failures_in_pocket(delta, s.pocket_dest)
+            # If they are not all built ...
+            lcl_delta = s.bug.debs.delta_src_dst(s.pocket_src, s.pocket_dest)
+            if not s.bug.debs.delta_built_pocket(lcl_delta, s.pocket_dest):
+                for pocket in s.pockets_watch:
+                    lcl_delta = s.bug.debs.delta_src_dst(s.pocket_src, pocket)
+                    failures = s.bug.debs.delta_failures_in_pocket(lcl_delta, pocket)
+                    interesting = False
+                    for failure in failures:
+                        if failure != 'missing':
+                            interesting = True
+                            break
+                    if interesting:
+                        break
                 state = s.task.reason_state('Ongoing', timedelta(hours=4))
                 for failure in failures:
                     if not failure.endswith(':building') and not failure.endswith(':depwait'):
                         state = 'Pending'
-                reason = '{} -- packages copying to {}'.format(state, s.pocket_dest)
+                reason = '{} -- packages copying to {}'.format(state, pocket)
                 if failures is not None:
                     reason += ' ' + ' '.join(failures)
                 s.task.reason = reason
@@ -282,6 +309,25 @@ class PromoteFromTo(Promoter):
         cleave(s.__class__.__name__ + '._verify_promotion')
         return retval
 
+    @property
+    def via_signing(s):
+        has_signables = False
+        for task_name in s.bug.tasks_by_name:
+            if task_name.startswith('prepare-package-'):
+                pkg = task_name.replace('prepare-package-', '')
+                if (s.bug.debs.signing_package_for(pkg) and
+                        s.bug.tasks_by_name[task_name].status != 'Invalid'):
+                    has_signables = True
+
+        cinfo("via_signing: routing={} has_signables={}".format(
+            s.bug.debs.routing('Signing') is not None, has_signables))
+
+        return s.bug.debs.routing('Signing') is not None and has_signables
+
+    @property
+    def signing_bot(s):
+        return 'kernel-signing-bot' in s.bug.tags
+
 
 class PromoteToProposed(PromoteFromTo):
     '''
@@ -308,22 +354,26 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        has_signables = False
-        for task_name in s.bug.tasks_by_name:
-            if task_name.startswith('prepare-package-'):
-                pkg = task_name.replace('prepare-package-', '')
-                if (s.bug.debs.signing_package_for(pkg) and
-                        s.bug.tasks_by_name[task_name].status != 'Invalid'):
-                    has_signables = True
-
         s.task_src = ':prepare-packages'
         s.pocket_src = 'ppa'
-        if s.bug.debs.routing('Signing') and has_signables:
-            s.pocket_dest = 'Signing'
-            s.pockets_after = ['Proposed', 'Release/Updates']
-        else:
+        s.pockets_clear = []
+        s.pockets_watch = []
+        if s.signing_bot and s.via_signing:
+            cinfo("mode=canonical-signing-bot")
             s.pocket_dest = 'Proposed'
-            s.pockets_after = ['Release/Updates']
+            s.pockets_clear.append(('Signing', ['Proposed', 'Release/Updates']))
+            s.pockets_watch.append('Proposed')
+            s.pockets_watch.append('Signing')
+        elif s.via_signing:
+            cinfo("mode=indirect-via-signing")
+            s.pocket_dest = 'Signing'
+            s.pockets_clear.append(('Signing', ['Proposed', 'Release/Updates']))
+            s.pockets_watch.append('Signing')
+        else:
+            cinfo("mode=direct")
+            s.pocket_dest = 'Proposed'
+            s.pockets_watch.append('Proposed')
+        s.pockets_clear.append(('Proposed', ['Release/Updates']))
 
         # If we have no source pocket, then there can be nothing to copy.
         if s.bug.debs.routing(s.pocket_src) is None:
@@ -360,20 +410,14 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        has_signables = False
-        for task_name in s.bug.tasks_by_name:
-            if task_name.startswith('prepare-package-'):
-                pkg = task_name.replace('prepare-package-', '')
-                if (s.bug.debs.signing_package_for(pkg) and
-                        s.bug.tasks_by_name[task_name].status != 'Invalid'):
-                    has_signables = True
-
-        cdebug("signing={} has_signables={}".format(s.bug.debs.routing('Signing'), has_signables))
         s.task_src = 'promote-to-proposed'
-        if s.bug.debs.routing('Signing') and has_signables:
+        s.pockets_clear = []
+        s.pockets_watch = []
+        if not s.signing_bot and s.via_signing:
             s.pocket_src = 'Signing'
             s.pocket_dest = 'Proposed'
-            s.pockets_after = ['Release/Updates']
+            s.pockets_clear.append(('Proposed', ['Release/Updates']))
+            s.pockets_watch.append('Proposed')
         else:
             s.pocket_src = None
             s.pocket_dest = None

@@ -47,7 +47,9 @@ class SynPromoteToAsProposed(TaskHandler):
         retval = False
 
         while not retval:
-            status_ptp = s.bug.task_status('promote-to-proposed')
+            status_ptp = s.bug.task_status('promote-signing-to-proposed')
+            if status_ptp == 'Invalid':
+                status_ptp = s.bug.task_status('promote-to-proposed')
             if (status_ptp == 'Invalid' or
                     s.bug.debs.routing('as-proposed') is None or
                     s.bug.source.private):
