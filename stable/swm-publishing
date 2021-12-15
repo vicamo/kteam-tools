@@ -806,22 +806,17 @@ class MonitorSnapStore:
 
 class MonitorStatusSwmStatus:
 
-    def __init__(self, status_path, project, lp=None, bs=None):
-        if lp is None:
-            raise ValueError("launchpad not specified")
-        if bs is None:
-            raise ValueError("backing store not specified")
+    def __init__(self, factory=None):
+        if factory is None:
+            raise ValueError("factory required")
 
-        self.status_path = status_path
-        self.lp = lp
-        self.project_name = project
-        self.project = self.lp.projects[project]
+        self.factory = factory
 
-        bs.attach(status_path + '--' + project, self)
+        #bs.attach(status_path + '--' + project, self)
 
-    new_bugs = MonitorStoreAttr(default={})
-    new_bugs_last = MonitorStoreAttr(default=datetime.now(timezone.utc) - timedelta(days=90))
-
+    @property
+    def ss(self):
+        return self.factory.ss
 
     def status_key(self, item):
         (bug_id, bug_data) = item
@@ -834,7 +829,7 @@ class MonitorStatusSwmStatus:
         changed = set()
         start_date = datetime.utcnow() # - timedelta(minutes=60)
 
-        status = SwmStatus(path=self.status_path)
+        status = self.ss
 
         # Scan the live trackers and trigger any which have past their refresh
         # time.  Also accumulate any which have not been scanned for 4 hours.
@@ -887,43 +882,6 @@ class MonitorStatusSwmStatus:
 
         #print("REFRESH", changed)
 
-#        # Record all newly added trackers.  If they are not in status trigger them.
-#        # Keep track of such newly added trackers until they are added to status
-#        # as these are seemingly lost.
-#        start_date = self.new_bugs_last
-#        tasks = self.project.searchTasks(
-#            status=['In Progress'],
-#            tags=['kernel-release-tracking-bug-live'],
-#            modified_since=self.new_bugs_last)
-#        for task in tasks:
-#            bug = task.bug
-#            if bug.date_last_updated > self.new_bugs_last:
-#                self.new_bugs_last = bug.date_last_updated
-#            print("TASK", task, task.status, bug, bug.date_last_updated)
-#
-#            # If we have it in status we are good to ignore it.
-#            bug_id = str(bug.id)
-#            if bug_id in status.trackers:
-#                continue
-#
-#            print("NEW-ADDED", bug_id)
-#            self.new_bugs[bug_id] = True
-#        # Drop any which have now been seen.
-#        for bug_id in list(self.new_bugs):
-#            if bug_id in status.trackers:
-#                print("NEW-REMOVED", bug_id)
-#                del self.new_bugs[bug_id]
-#                continue
-#
-#            bug = self.lp.bugs[bug_id]
-#            if bug.duplicate_of is not None:
-#                print("NEW-DUPLICATE", bug_id)
-#                del self.new_bugs[bug_id]
-#                continue
-#
-#            print("NEW", bug_id)
-#            changed.add(bug_id)
-
         return changed
 
     def __str__(self):
@@ -966,10 +924,12 @@ class MonitorAutomatedTesting:
 
 class MonitorFactory:
 
-    def __init__(self, lp=None, ks=None, bs=None):
+    def __init__(self, lp=None, ks=None, bs=None, ss=None, ss_file=None):
         self._lp = lp
         self._ks = ks
         self._bs = bs
+        self._ss = ss
+        self.ss_file = ss_file
 
     @property
     def lp(self):
@@ -988,6 +948,14 @@ class MonitorFactory:
         if self._bs is None:
             self._bs = MonitorStore('swm-publishing.yaml')
         return self._bs
+
+    @property
+    def ss(self):
+        if self._ss is None:
+            if self.ss_file is None:
+                raise ValueError("ss_file not specified")
+            self._ss = SwmStatus(path=self.ss_file)
+        return self._ss
 
     def kernel_series_archives(self):
         # Find out which archives we may be publishing to and which
@@ -1042,8 +1010,8 @@ class MonitorFactory:
                             snaps.append(MonitorSnapStore(snap, bs=self.bs))
         return snaps
 
-    def swm_status(self, status_path, project):
-        return [MonitorStatusSwmStatus(status_path, project, lp=self.lp, bs=self.bs)]
+    def swm_status(self):
+        return [MonitorStatusSwmStatus(factory=self)]
 
     def trello_disposition(self, trello_path):
         return [MonitorTrelloDisposition(trello_path, lp=self.lp, bs=self.bs)]
@@ -1060,20 +1028,24 @@ class MonitorFactory:
 
 class FilterSwmStatus:
 
-    def __init__(self, status_path, bs=None):
-        if bs is None:
-            raise ValueError("backing store not specified")
+    def __init__(self, factory=None):
+        if factory is None:
+            raise ValueError("factory required")
 
-        self.status_path = status_path
+        self.factory = factory
 
-        bs.attach(status_path, self)
+        self.factory.bs.attach(self.factory.ss_file, self)
 
     last_scanned = MonitorStoreAttr(default={})
+
+    @property
+    def ss(self):
+        return self.factory.ss
 
     def filter(self, trackers):
         changed = set()
 
-        status = SwmStatus(path=self.status_path)
+        status = self.ss
 
         trackers_mapped = set()
         for tracker in trackers:
@@ -1133,13 +1105,13 @@ class FilterSwmStatus:
 
 
 if __name__ == '__main__':
-    factory = MonitorFactory()
+    factory = MonitorFactory(ss_file='status.yaml')
 
     monitors = []
     monitors += factory.kernel_series_archives()
     monitors += factory.launchpad_project('kernel-sru-workflow')
     monitors += factory.kernel_series_snaps()
-    monitors += factory.swm_status('status.yaml', 'kernel-sru-workflow')
+    monitors += factory.swm_status()
     monitors += factory.trello_disposition('swm-trello.yaml')
     monitors += factory.automated_testing('https://people.canonical.com/~kernel/status/adt-matrix/overall.txt')
     monitors += factory.launchpad_queues()
@@ -1158,7 +1130,7 @@ if __name__ == '__main__':
         changed = changed | new
     print("CHANGED", len(changed), changed)
 
-    swm_filter = FilterSwmStatus('status.yaml', bs=factory.bs)
+    swm_filter = FilterSwmStatus(factory=factory)
     changed = swm_filter.filter(changed)
     print("NEEDED", len(changed), changed)
 
