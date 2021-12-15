@@ -298,7 +298,7 @@ class PackageBuild:
 
         # If we find a build is now complete, record _where_ it was built.
         if ((self.pocket == 'ppa' or self.pocket.startswith('build')) and
-                self._data['built'] == True):
+                self._data['status'] != ''):
             # NOTE: copy-proposed-kernel et al treat auto select build-private so just call this build.
             self.bug.bprops.setdefault('built', {})[self.dependent] = "build#{}".format(archive_num)
 
@@ -750,6 +750,14 @@ class Package():
             if found_from:
                 pockets.append(pocket_next)
         return pockets
+
+    # pocket_after
+    #
+    def pocket_after(s, pocket_from):
+        pockets = s.__pockets_from(pocket_from)
+        if len(pockets) < 2:
+            return None
+        return pockets[1]
 
     # __pkg_in
     #
