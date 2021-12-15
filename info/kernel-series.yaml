@@ -90,9 +90,6 @@
 #       below).
 #
 # Snap record fields:
-#  * primary (bool)
-#       this is the primary snap for this package, will be conflated with the
-#       main tracking bug.
 #  * repo (Repository)
 #       the repository for the source for the snapcraft.yaml etc for this snap
 #       package; a Repository record (see below).
@@ -112,6 +109,9 @@
 #       a list of risks to which we are allowed to publish, either
 #       specified as a literal list or as the 'lowest' risk acceptable.
 # Snap record fields (deprecated):
+#  * primary (bool)
+#       this is the primary snap for this package, will be conflated with the
+#       main tracking bug.
 #  * arches (list)
 #       list of architectures which the snap is built for.
 #  * track (string)
