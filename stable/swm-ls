@@ -45,6 +45,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--show-assignee', help='Display task assignee',
         action='store_true', default=False)
+    parser.add_argument('--show-owner', help='Display target owner',
+        action='store_true', default=False)
     parser.add_argument('--sort-phase', help='Sort by phase (including entry and exit)',
         action='store_true', default=False)
     args = parser.parse_args()
@@ -85,6 +87,7 @@ if __name__ == '__main__':
                     'phase_status':     bug_data['task'][task]['status'],
                     'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'][task].get('assignee', 'unassigned'),
+                    'owner':            bug_data.get('owner', '-'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -103,6 +106,7 @@ if __name__ == '__main__':
                     'phase_status':     bug_data['reason'][task],
                     'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'].get(task, {}).get('assignee', 'unassigned'),
+                    'owner':            bug_data.get('owner', '-'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -119,6 +123,7 @@ if __name__ == '__main__':
                 'phase_status':     bug_data.get('phase', 'Not Ready'),
                 'stage':            bug_data.get('stage', 10000),
                 'assignee':         '--',
+                'owner':            bug_data.get('owner', '-'),
                 }
             results.append((generate_sort(entry), entry))
 
@@ -137,12 +142,17 @@ if __name__ == '__main__':
             if len(entry.get(key, '')) > sizes.get(lkey, 0):
                 sizes[lkey] = len(entry[key])
 
+    fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}}"
     if args.separate_target:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {source:{len_source}} {target:{len_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
+        fmt += " {source:{len_source}} {target:{len_target}}"
     else:
-        fmt = "{bugid:13} {bugid_parent:13} {cycle:15} {series:{len_series}} {full_target:{len_full_target}} {version:{len_version}}  {phase:{len_phase}} {phase_status:20}"
+        fmt += " {full_target:{len_full_target}}"
+    fmt += " {version:{len_version}}"
+    if args.show_owner:
+        fmt += " {owner:20}"
     if args.show_assignee:
         fmt += ' {assignee:20}'
+    fmt += "  {phase:{len_phase}} {phase_status:35}"
     sort_prev = None
     count = 0
     for (sort, entry) in results:
