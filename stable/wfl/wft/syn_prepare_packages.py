@@ -91,17 +91,23 @@ class SynPreparePackages(TaskHandler):
             building = False
             state = 'Ongoing'
             for failure in failures:
-                if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                if failure not in ('building', 'depwait', 'failwait'):
                     state = 'Pending'
-                if failure.endswith(':building'):
-                    building = True
+                #if failure == 'building':
+                #    building = True
+            if 'failed' in failures:
+                state = 'Stalled'
             # If something is building elide any depwaits.  These are almost cirtainly waiting
             # for that build to complete.  Only show them when nothing else is showing.
-            if building:
-                failures = [failure for failure in failures if not failure.endswith(':depwait')]
-            reason = '{} -- building in {}'.format(state, "ppa")
-            if failures is not None:
-                reason += ' ' + ' '.join(failures)
+            #if building:
+            #    failures = [failure for failure in failures if not failure.endswith(':depwait')]
+            reason = '{} -- {} in {}'.format(state,
+                    "build FAILED" if state == 'Stalled' else "building",
+                    "ppa")
+            if len(failures) > 0:
+                reason += ' (' + s.bug.debs.failures_to_text(failures) + ')'
+            else:
+                reason += ' (builds complete)'
             s.task.reason = reason
 
         cleave(s.__class__.__name__ + '._common')

@@ -220,11 +220,10 @@ class PromoteFromTo(Promoter):
                         break
                 state = s.task.reason_state('Ongoing', timedelta(hours=4))
                 for failure in failures:
-                    if not failure.endswith(':building') and not failure.endswith(':depwait'):
+                    if failure not in ('building', 'depwait', 'failwait'):
                         state = 'Pending'
                 reason = '{} -- packages copying to {}'.format(state, pocket)
-                if failures is not None:
-                    reason += ' ' + ' '.join(failures)
+                reason += ' ' + s.bug.debs.failures_to_text(failures)
                 s.task.reason = reason
                 break
 
