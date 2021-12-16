@@ -156,5 +156,29 @@ elif mode == 'changeset':
                 branch = repo.branch
 
                 print(series.codename, source.name, branch)
+
+elif mode == 'config-list':
+    for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
+        if not series.supported and not series.development:
+            continue
+        # The bot cannot currently get these sources.
+        if series.esm:
+            continue
+        for source in sorted(series.sources, key=lambda x: x.name):
+            if source.private:
+                continue
+            if (series.supported and not source.supported) and not source.development:
+                    continue
+
+            for package in sorted(source.packages, key=lambda x: x.name):
+                if package.type not in (None, 'main'):
+                    continue
+
+                repo = package.repo
+                if not repo:
+                    continue
+
+                print(series.codename, source.name, repo.url, source.name.replace('linux', 'Ubuntu'))
+
 else:
     usage()

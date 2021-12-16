@@ -1,0 +1,99 @@
+#!/bin/bash
+P="cod-version-map-builder"
+
+#set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+config_data="$HOME/public_html/config"
+info="$HOME/public_html/info"
+
+#
+# UBUNTU TAGS: Find all the new Ubuntu release tags.
+#
+"$here/mainline-config" config-list | \
+while read series source repo tag_prefix
+do
+	[ ! -d "$config_data/$series/$source" ] && continue
+
+	(
+		cd "$config_data/$series/$source" || exit 1
+		for package_ver in *
+		do
+			if [ -f "$package_ver/summary.yaml" ]; then
+				ubuntu_tag=$(awk '/ubuntu-tag:/ {print($2);}' <"$package_ver/summary.yaml")
+				mainline_base=$(awk '/mainline-version:/ {print($2);}' <"$package_ver/summary.yaml")
+			elif [ -f "$package_ver/mainline-base" ]; then
+				ubuntu_tag="-"
+				mainline_base=$(cat "$package_ver/mainline-base")
+			else
+				continue
+			fi
+			echo "$series $source $package_ver $ubuntu_tag $mainline_base"
+		done
+	)
+done | sort -k1,1 -k2,2 -k3,3V >"$info/kernel-version-map.txt.new"
+
+# Produce the html table from the raw data.
+{
+	cat - <<EOL
+<html>
+<head>
+<title>Ubuntu to Mainline kernel version mapping</title>
+<style>
+table.matrix {
+    border-collapse: collapse;
+}
+table.matrix th {
+    background-color: #eeeeee;
+    text-align: left;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+table.matrix th.handle {
+    text-align: center;
+}
+table.matrix td {
+    text-align: left;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+</style>
+</head>
+<body>
+<table class="matrix">
+EOL
+	old_handle=""
+	while read series source package_ver ubuntu_tag mainline_base x
+	do
+		handle="$series:$source"
+		if [ "$handle" != "$old_handle" ]; then
+			if [ -n "$old_handle" ]; then
+cat - <<EOL
+<tr><td>&nbsp;</tr>
+EOL
+			fi
+			old_handle="$handle"
+			cat - <<EOL
+<tr><th class="handle" colspan="3">$handle</tr>
+<tr><th>Package Version<th>Ubuntu Tag<th>Mainline Base</tr>
+EOL
+		fi
+		cat - <<EOL
+<tr><td>$package_ver<td>$ubuntu_tag<td>$mainline_base</tr>
+EOL
+	done <"$info/kernel-version-map.txt.new"
+
+	cat - <<EOL
+</table>
+</body>
+</html>
+EOL
+} >"$info/kernel-version-map.html.new"
+
+mv -f "$info/kernel-version-map.txt.new" "$info/kernel-version-map.txt"
+mv -f "$info/kernel-version-map.html.new" "$info/kernel-version-map.html"

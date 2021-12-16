@@ -254,12 +254,16 @@ if [ -d "$incoming/ubuntu-stable" ]; then
 	publish_tip "ubuntu-stable"
 
 	rebuild_indexes 'ubuntu-stable' '*'
+
+	rmdir "$incoming/ubuntu-stable"
 fi
 
 if [ -d "$incoming/test-build" ]; then
 	publish_tip "test-build"
 
 	rebuild_indexes 'test-build' '*/*'
+
+	rmdir "$incoming/test-build"
 fi
 
 if [ -d "$incoming/static-analysis" ]; then

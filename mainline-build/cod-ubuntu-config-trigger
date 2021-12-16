@@ -9,8 +9,6 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-url="http://people.canonical.com/~kernel/info/kernel-version-map.txt"
-
 . "$here/lib-build" 
 
 master_tags="$master_state/ubuntu"
@@ -22,7 +20,16 @@ mkdir -p "$master_tags"
 #
 # UBUNTU TAGS: Find all the new Ubuntu release tags.
 #
-wget -q -O "$tags_list.new" "$url" || exit 1
+"$here/mainline-config" config-list | \
+while read series source repo tag_prefix
+do
+	git ls-remote --refs "$repo" "$tag_prefix-[0-9]*" | sed -e 's@.*/@@' | \
+	while read tag
+	do
+		version=$(echo "$tag" | sed -e "s/^$tag_prefix-//" -e 's/_/~/')
+		echo "$series $source $version $tag"
+	done
+done | sort -k1,1 -k2,2 -k3,3V >"$tags_list.new"
 
 count=$(wc -l <"$tags_list.new")
 if [ "$count" -eq 0 ]; then
@@ -54,7 +61,7 @@ fi
 mv "$tags_list.new" "$tags_list"
 
 # Run the list.
-while read added series package package_ver ubuntu_ver mainline_ver
+while read added series package package_ver ubuntu_ver
 do
 	[ "$ubuntu_ver" = 'UNKNOWN' ] && continue
 

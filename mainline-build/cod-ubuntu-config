@@ -17,7 +17,7 @@ esac
 
 series="$1"
 package="$2"
-version="$3"
+#version="$3"  # XXX: we no longer need this because we look it up below.
 tag="$4"
 
 case "$package" in
@@ -54,10 +54,10 @@ git checkout -b "config-$tag" "$tag"
 do_chroot "$build_release-amd64" \
 	fakeroot debian/rules clean genconfigs
 
-# Output.
-html="$HOME/public_html/config/$series/$package/$version"
-mkdir -p "$html"
+# Pick out the actual changelog version from debian/changelog.
+version=$(dpkg-parsechangelog -Sversion)
 
+# Pick out the mainline base kernel version from the Makefile.
 mainline_ver=$(<Makefile awk '
 	($1 == "VERSION") {v=$3;}
 	($1 == "PATCHLEVEL") {p=$3;}
@@ -67,11 +67,16 @@ mainline_ver=$(<Makefile awk '
 
 end_time=$(date +%s)
 
+# Output.
+html="$HOME/public_html/config/$series/$package/$version"
+mkdir -p "$html"
+
 cat - >"$html/summary.yaml" <<EOL
 build-host: $(uname -n)
 start-time: $start_time
 end-time: $end_time
 ubuntu-tag: $tag
+ubuntu-version: $version
 mainline-version: $mainline_ver
 EOL
 cp -p CONFIGS/* "$html"
