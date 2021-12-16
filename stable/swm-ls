@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     for (bug_id, bug_data) in status.trackers.items():
         # Limits.
-        if args.limit_owner is not None and bug_data.get('owner') not in args.limit_owner:
+        if args.limit_owner and bug_data.get('owner') not in args.limit_owner:
             continue
         for key in bug_data.keys():
             if ord(key[0]) == 160:
