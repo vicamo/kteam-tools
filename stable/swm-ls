@@ -135,7 +135,7 @@ if __name__ == '__main__':
     results.sort(key=lambda x: x[0])
 
     # Size the various stretchy fields.
-    measure = ('series', 'source', 'target', 'version', 'full_target', 'phase')
+    measure = ('series', 'source', 'target', 'version', 'full_target', 'phase', 'owner', 'assignee')
     sizes = {}
     for (sort, entry) in results:
         entry['full_target'] = entry['source']
@@ -154,9 +154,9 @@ if __name__ == '__main__':
         fmt += " {full_target:{len_full_target}}"
     fmt += " {version:{len_version}}"
     if args.show_owner:
-        fmt += " {owner:20}"
+        fmt += " {owner:{len_owner}}"
     if args.show_assignee:
-        fmt += ' {assignee:20}'
+        fmt += ' {assignee:{len_assignee}}'
     fmt += "  {phase:{len_phase}} {phase_status:35}"
     sort_prev = None
     count = 0
