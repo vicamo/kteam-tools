@@ -56,11 +56,12 @@ class SynPreparePackages(TaskHandler):
 
         status = s.task.status
         if status == 'New':
-            if s.bug.debs.older_tracker_in_ppa:
+            older = s.bug.debs.older_tracker_in_ppa
+            if older is not None:
                 s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
-                s.bug.refresh_at(datetime.now(timezone.utc) + timedelta(minutes=30),
-                    '{}:{} polling previous cycle tracker'.format(
-                    s.bug.series, s.bug.name))
+                s.bug.monitor_add({
+                    "type": "tracker-modified",
+                    "watch": str(older)})
 
             elif s._trello_block_source():
                 s.task.reason = 'Stalled -- blocked on SRU board'
@@ -75,40 +76,43 @@ class SynPreparePackages(TaskHandler):
             failures = None
             if s.bug.version is not None:
                 # Work on the assumption that eventually we end up in -proposed.
-                #if s.bug.task_status('promote-signing-to-proposed') != 'Invalid':
-                #    dst_pocket = "Signing"
-                #else:
-                #    dst_pocket = "Proposed"
-                dst_pocket = "Proposed"
-                delta = s.bug.debs.delta_src_dst("ppa", dst_pocket)
+                delta = s.bug.debs.delta_src_dst("ppa", "Proposed")
+                # XXX: we need to figure out how to represent this.
+                if "lrs" in delta and "lrg" not in delta:
+                    delta.append("lrg")
                 failures = s.bug.debs.delta_failures_in_pocket(delta, "ppa", ignore_all_missing=True)
             if failures is None:
                 if 'kernel-trello-review-prepare-packages' in s.bug.tags:
                     s.task.reason = 'Stalled -b Debs waiting for peer-review on SRU board'
                 else:
                     s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
-                return
-            building = False
-            state = 'Ongoing'
-            for failure in failures:
-                if failure not in ('building', 'depwait', 'failwait'):
-                    state = 'Pending'
-                #if failure == 'building':
-                #    building = True
-            if 'failed' in failures:
-                state = 'Stalled'
-            # If something is building elide any depwaits.  These are almost cirtainly waiting
-            # for that build to complete.  Only show them when nothing else is showing.
-            #if building:
-            #    failures = [failure for failure in failures if not failure.endswith(':depwait')]
-            reason = '{} -- {} in {}'.format(state,
-                    "build FAILED" if state == 'Stalled' else "building",
-                    "ppa")
-            if len(failures) > 0:
-                reason += ' (' + s.bug.debs.failures_to_text(failures) + ')'
             else:
-                reason += ' (builds complete)'
-            s.task.reason = reason
+                building = False
+                state = 'Ongoing'
+                for failure in failures:
+                    if failure not in ('building', 'depwait', 'failwait'):
+                        state = 'Pending'
+                    #if failure == 'building':
+                    #    building = True
+                if 'failed' in failures:
+                    state = 'Stalled'
+                # If something is building elide any depwaits.  These are almost cirtainly waiting
+                # for that build to complete.  Only show them when nothing else is showing.
+                #if building:
+                #    failures = [failure for failure in failures if not failure.endswith(':depwait')]
+                reason = '{} -- {} in {}'.format(state,
+                        "build FAILED" if state == 'Stalled' else "building",
+                        "ppa")
+                if len(failures) > 0:
+                    reason += ' (' + s.bug.debs.failures_to_text(failures) + ')'
+                else:
+                    reason += ' (builds complete)'
+                s.task.reason = reason
+
+        # If we are a live task by here request monitoring for
+        # all interesting routes.
+        if s.bug.is_valid and s.task.status not in ('New', 'Fix Released', 'Invalid'):
+            s.bug.debs.monitor_routes(["build", "build-private"])
 
         cleave(s.__class__.__name__ + '._common')
         return retval

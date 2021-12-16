@@ -65,7 +65,11 @@ class PromoteFromTo(Promoter):
                 break
 
         while not retval:
-            if s.bug.task_status(s.task_src) not in ('Fix Committed', 'Fix Released'):
+            task_src_ready = True
+            for task_src in s.task_srcs:
+                if s.bug.task_status(task_src) not in ('Fix Committed', 'Fix Released', 'Invalid'):
+                    task_src_ready = False
+            if not task_src_ready:
                 break
 
             if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
@@ -78,10 +82,11 @@ class PromoteFromTo(Promoter):
             break
 
         while not retval:
-            if s.task_src == ':prepare-packages' and s.bug.task_status('sru-review') not in ('Fix Released', 'Invalid'):
-                break
-
-            if s.bug.task_status(s.task_src) != 'Fix Released':
+            task_src_ready = True
+            for task_src in s.task_srcs:
+                if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
+                    task_src_ready = False
+            if not task_src_ready:
                 break
 
             if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
@@ -90,10 +95,6 @@ class PromoteFromTo(Promoter):
             if not s.bug.all_dependent_packages_published_tag:
                 s.task.reason = 'Pending -- source package tags missing'
                 break
-
-            if 'boot-testing-requested' not in s.bug.bprops:
-                s.bug.debs.send_boot_testing_requests()
-                s.bug.bprops['boot-testing-requested'] = True
 
             if s.bug.is_derivative_package:
                 if not s.master_bug_ready_for_proposed():
@@ -109,8 +110,12 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- another kernel is currently pending in {}'.format(pocket_dest)
                 break
 
-            if s.bug.debs.older_tracker_in_proposed:
+            older = s.bug.debs.older_tracker_in_proposed
+            if older is not None:
                 s.task.reason = 'Stalled -- tracker for earlier spin still active in Proposed'
+                s.bug.monitor_add({
+                    "type": "tracker-modified",
+                    "watch": str(older)})
                 break
 
             if s._kernel_block_ppa():
@@ -147,7 +152,7 @@ class PromoteFromTo(Promoter):
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
-            if s.bug.debs.older_tracker_in_proposed:
+            if s.bug.debs.older_tracker_in_proposed is not None:
                 cinfo('            A previous spin tracker is active in proposed pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s._cycle_hold():
@@ -223,7 +228,9 @@ class PromoteFromTo(Promoter):
                     if failure not in ('building', 'depwait', 'failwait'):
                         state = 'Pending'
                 reason = '{} -- packages copying to {}'.format(state, pocket)
-                reason += ' ' + s.bug.debs.failures_to_text(failures)
+                failures_text = s.bug.debs.failures_to_text(failures)
+                if failures_text != '':
+                    reason += ' (' + failures_text + ')'
                 s.task.reason = reason
                 break
 
@@ -305,6 +312,12 @@ class PromoteFromTo(Promoter):
             retval = True
             break
 
+        # If we are a live task by here request monitoring for
+        # all interesting routes.
+        if s.task.status not in ('New', 'Confirmed', 'Fix Released', 'Invalid'):
+            s.bug.debs.monitor_routes([s.pocket_src])
+            s.bug.debs.monitor_routes(s.pockets_watch)
+
         cleave(s.__class__.__name__ + '._verify_promotion')
         return retval
 
@@ -353,7 +366,7 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_src = ':prepare-packages'
+        s.task_srcs = ['boot-testing', 'sru-review']
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []
@@ -409,7 +422,7 @@ class PromoteSigningToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteSigningToProposed, s).__init__(lp, task, bug)
 
-        s.task_src = 'promote-to-proposed'
+        s.task_srcs = ['promote-to-proposed']
         s.pockets_clear = []
         s.pockets_watch = []
         if not s.signing_bot and s.via_signing:

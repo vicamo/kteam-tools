@@ -11,6 +11,7 @@ from copy import copy
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from subprocess import Popen
+from time import time, perf_counter
 #from logging import DEBUG, INFO, WARNING, basicConfig
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
@@ -31,6 +32,8 @@ from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
 from wfl.snap import SnapStore, SnapStoreError
+from wfl.wft.regression_testing import RegressionTestingResults
+from wfl.wft.automated_testing import AutomatedTestingResults
 
 
 class MonitorIncompatible(Exception):
@@ -152,338 +155,6 @@ class MonitorStoreAttr:
     def __set__(self, obj, value):
         #print("__set__", self.attr, obj, value)
         obj._store[self.attr] = value
-
-
-class MonitorLaunchpadArchive:
-
-    def __init__(self, archive, lp=None, ks=None, bs=None):
-        if lp is None:
-            raise ValueError("launchpad not specified")
-        if ks is None:
-            ks = KernelSeries()
-        if bs is None:
-            raise ValueError("backing store not specified")
-
-        self.lp = lp
-        self.ks = ks
-        self.reference = archive
-        self.archive = lp.archives.getByReference(reference=archive)
-
-        if self.archive is None:
-            print("MonitorLaunchpadArchive: archive not found reference={}".format(archive))
-            raise MonitorIncompatible()
-
-        bs.attach(self.reference, self)
-
-        # Make a quick lookup for all valid source packages.
-        self.source_packages = {}
-        for series in self.ks.series:
-            for source in series.sources:
-                for package in source.packages:
-                    self.source_packages["{}:{}".format(series.codename, package.name)] = source.name
-
-        # Validate that this archive is sufficiently public.
-        try:
-            self.archive.getPublishedBinaries(order_by_date=True,
-                status='Published', created_since_date=self.bin_date)
-        except Unauthorized:
-            raise MonitorIncompatible()
-
-    scan_base = MonitorStoreAttr(default=datetime.now(timezone.utc))
-    src_date = MonitorStoreAttr(default=datetime.now(timezone.utc))
-    src_replay = MonitorStoreAttr(default={})
-    bin_date = MonitorStoreAttr(default=datetime.now(timezone.utc))
-    bin_replay = MonitorStoreAttr(default={})
-
-    def changed(self):
-        sources = set()
-        things_seen = set()
-
-        #print(self.archive, self.src_date, self.bin_date)
-
-        scan_base = self.scan_base - timedelta(hours=1)
-        scan_base_update = datetime.utcnow()
-
-        # Transactions can be assigned a time stamp but not committed and thus
-        # not visible within the window we are scanning.  They can then commit
-        # after our scan has past them and we have recorded our new start
-        # point; leading us to miss them completely.  Always scan from the
-        # older of the src_date and an hour window back from the last scan so
-        # that we will detect such late commits.  We will detect the ones we
-        # have already handled via the replay cache.
-        oldest = self.src_date
-        if oldest < scan_base:
-            oldest = scan_base
-
-        # Purge replay records for source publications.
-        for replay_id, replay_date in list(self.src_replay.items()):
-            if replay_date < oldest:
-                del self.src_replay[replay_id]
-
-        # Accumulate new source package publications.
-        changed = self.archive.getPublishedSources(order_by_date=True,
-            source_name='linux', exact_match=False,
-            status='Published', created_since_date=oldest)
-        changed_count = len(changed)
-        replay_count = len(self.src_replay)
-        start = changed_count - replay_count - 2000
-        if start > 0:
-            print("EXCESS SOURCE PUBLICATIONS: changed_count={} replay_count={} start={} handling={}".format(changed_count, replay_count, start, changed_count - start))
-            changed = changed[start:changed_count]
-            changed_count = len(changed)
-            scan_base_update = None
-        if changed_count > 0:
-            if start == 0:
-                self.src_date = changed[0].date_created
-            for pub in changed:
-                # Ignore this if this record is a replay.
-                replay = pub.self_link.split('/')[-1]
-                if replay in self.src_replay:
-                    print("S", replay, "replay")
-                    continue
-                self.src_replay[replay] = pub.date_created
-
-                print("S", pub, pub.date_published, pub.distro_series_link,
-                    pub.source_package_name, pub.source_package_version)
-
-                series_name = pub.distro_series_link.split('/')[-1]
-                series_source_key = "{}:{}".format(series_name, pub.source_package_name)
-                if series_source_key not in self.source_packages:
-                    continue
-                sources.add("{}:{}".format(series_name,
-                    self.source_packages[series_source_key]))
-
-        # Again transactions can retrospectivly appear in the historical
-        # record, scan the older of the src_date and an hour window back from
-        # the last scan.
-        oldest = self.bin_date
-        if oldest < scan_base:
-            oldest = scan_base
-
-        # Purge replay records for source publications.
-        for replay_id, replay_date in list(self.bin_replay.items()):
-            if replay_date < oldest:
-                del self.bin_replay[replay_id]
-
-        # Accumulate new binary package publications.
-        changed = self.archive.getPublishedBinaries(order_by_date=True,
-            binary_name='linux-', exact_match=False,
-            status='Published', created_since_date=oldest)
-        changed_count = len(changed)
-        replay_count = len(self.bin_replay)
-        start = changed_count - replay_count - 2000
-        if start < 0:
-            start = 0
-        if start > 0:
-            print("EXCESS BINARY PUBLICATIONS: changed_count={} replay_count={} start={} handling={}".format(changed_count, replay_count, start, changed_count - start))
-            changed = changed[start:changed_count]
-            changed_count = len(changed)
-            scan_base_update = None
-        if changed_count > 0:
-            if start == 0:
-                self.bin_date = changed[0].date_created
-            for pub in changed:
-                # Ignore this if this record is a replay.
-                replay = pub.self_link.split('/')[-1]
-                if replay in self.bin_replay:
-                    print("B", replay, "replay")
-                    continue
-                self.bin_replay[replay] = pub.date_created
-
-                #print("B?", pub, pub.date_published, pub.binary_package_name,
-                #    pub.binary_package_version, pub.distro_arch_series_link)
-                # All binary packages in a build is associated with the same source.
-                if pub.build_link in things_seen:
-                    continue
-                things_seen.add(pub.build_link)
-                try:
-                    print("B", pub, pub.date_published,
-                        pub.distro_arch_series_link, pub.build.source_package_name,
-                        pub.binary_package_version)
-                except ValueError:
-                    print("B-", pub, "private?!?")
-                    continue
-                series_name = pub.distro_arch_series_link.split('/')[-2]
-                series_source_key = "{}:{}".format(series_name, pub.build.source_package_name)
-                if series_source_key not in self.source_packages:
-                    continue
-                sources.add("{}:{}".format(series_name,
-                    self.source_packages[series_source_key]))
-
-        if scan_base_update is not None:
-            self.scan_base = scan_base_update
-
-        #print("SOURCES", sources)
-        #print("APW", self._backing_store)
-        return sources
-
-    def __str__(self):
-        return "Launchpad Archive Monitor {}".format(self.reference)
-
-
-class MonitorLaunchpadArchivePrivate:
-
-    def __init__(self, archive, lp=None, ks=None, bs=None):
-        if lp is None:
-            raise ValueError("launchpad not specified")
-        if ks is None:
-            ks = KernelSeries()
-        if bs is None:
-            raise ValueError("backing store not specified")
-
-        self.lp = lp
-        self.ks = ks
-        self.reference = archive
-        self.archive = lp.archives.getByReference(reference=archive)
-
-        bs.attach(self.reference, self)
-
-        # Get the callers private subscription URL so we can look at the
-        # InRelease files later.
-
-        # XXX: paper over a redirect issue in lazr.restfulclient.
-        me = self.lp.people[self.lp.me.name]
-        # Lookup the subscription and instantiate the access key.
-        self.subscription = me.getArchiveSubscriptionURL(archive=self.archive)
-
-        # The current InRelease data for the archive pocket.  This will change
-        # iff we have a publication change in the archive.  There is no point
-        # in doing an expensive by package scan if it has not changed.  We assume
-        # this is a PPA and only look at the release pocket.
-        ##self.series_inrelease = {}
-
-        # Make a quick lookup for source packages which may route here.
-        self.poll_sources = []
-        for series in self.ks.series:
-            for source in series.sources:
-                if source.supported or source.development:
-                    if not source.routing:
-                        continue
-                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
-                            'release'):
-                        dest = source.routing.lookup_destination(pocket)
-                        if not dest:
-                            continue
-                        for route in dest:
-                            if route[0] == self.reference:
-                                lp_series = lp.distributions['ubuntu'].getSeries(name_or_version=series.codename)
-                                self.poll_sources.append((lp_series, source))
-                                self.series_inrelease.setdefault(series.codename, None)
-                                #print("PP", lp_series, source)
-        #print("POLL", len(self.poll_sources))
-
-    series_inrelease = MonitorStoreAttr(default={})
-    src_date = MonitorStoreAttr(default={})
-    bin_date = MonitorStoreAttr(default={})
-
-    def changed(self):
-        sources = set()
-        things_seen = set()
-
-        #print(self.archive)
-
-        series_changed = set()
-        for series, series_data in self.series_inrelease.items():
-            url = os.path.join(self.subscription, 'dists', series, 'InRelease')
-            url_split = urlsplit(url)
-
-            # Form the URL without username:password information.  We cannot
-            # actually connect to things with this embedded as it gets miss
-            # recognised as a bad port.
-            clean_split = [url_split.scheme, url_split.hostname,
-                url_split.path, url_split.query, url_split.fragment]
-            clean_url = urlunsplit(clean_split)
-
-            # Attach the authentication infomation to the whole domain.
-            domain_split = [url_split.scheme, url_split.hostname, '/', None, None]
-            domain_url =  urlunsplit(domain_split)
-            #print("APW", len(domain_split), domain_url)
-
-            # create a password manager
-            password_mgr = HTTPPasswordMgrWithDefaultRealm()
-
-            # Add the username and password.
-            # If we knew the realm, we could use it instead of None.
-            password_mgr.add_password(None, domain_url, url_split.username, url_split.password)
-
-            # Instantiate the authentication handler.
-            handler = HTTPBasicAuthHandler(password_mgr)
-
-            # create "opener" (OpenerDirector instance)
-            opener = build_opener(handler)
-
-            # Grab the InRelease file using a URL without password.
-            status_code = None
-            try:
-                inrelease = opener.open(clean_url)
-                status_code = inrelease.status
-            except HTTPError as e:
-                status_code = e.code
-
-            print("APW status_code={}".format(status_code))
-
-            # If we are unable to obtain the series InRelease file assume it is changed.
-            if status_code != 200:
-                series_changed.add(series)
-                continue
-
-            last_modified = inrelease.getheader('Last-Modified')
-            if last_modified != series_data:
-                print("I?", series, series_data, '->', last_modified)
-                self.series_inrelease[series] = last_modified
-                series_changed.add(series)
-
-        for series_lp, source in self.poll_sources:
-            if source.series.codename not in series_changed:
-                continue
-            for package in source.packages:
-                key = "{}:{}".format(source.series.codename, package.name)
-                src_start_date = self.src_date.setdefault(key, datetime.now(timezone.utc)) # - timedelta(days=10))
-                bin_start_date = self.bin_date.setdefault(key, datetime.now(timezone.utc)) # - timedelta(days=10))
-
-                # Accumulate new source package publications.
-                present = self.archive.getPublishedSources(order_by_date=True,
-                    distro_series=series_lp, status='Published',
-                    exact_match=True, source_name=package.name)
-                for pub in present:
-                    print("S?", pub, pub.date_published, pub.distro_series_link,
-                        pub.source_package_name, pub.source_package_version)
-                    if pub.date_published > src_start_date:
-                        if pub.date_published > self.src_date[key]:
-                            self.src_date[key] = pub.date_published
-
-                        print("S", pub, pub.date_published, pub.distro_series_link,
-                            pub.source_package_name, pub.source_package_version)
-                        sources.add("{}:{}".format(source.series.codename, source.name))
-
-                    # Accumulate new binary package publications.
-                    changed = pub.getPublishedBinaries()
-                    print("B?", len(changed))
-                    for pub in changed:
-                        if pub.date_published is None:
-                            print("B", "no-date-published")
-                            continue
-                        if pub.date_published <= bin_start_date:
-                            print("B", "too-old")
-                            continue
-                        if pub.date_published > self.bin_date[key]:
-                            self.bin_date[key] = pub.date_published
-                        #print("B?", pub, pub.date_published, pub.binary_package_name,
-                        #    pub.binary_package_version, pub.distro_arch_series_link)
-                        # All binary packages in a build is associated with the same source.
-                        if pub.build_link in things_seen:
-                            continue
-                        things_seen.add(pub.build_link)
-                        print("B", pub, pub.date_published,
-                            pub.distro_arch_series_link, pub.build.source_package_name,
-                            pub.binary_package_version)
-                        sources.add("{}:{}".format(source.series.codename, source.name))
-
-        #print("SOURCES", sources)
-        return sources
-
-    def __str__(self):
-        return "Launchpad Private Archive Monitor {} ({})".format(self.reference, len(self.poll_sources))
 
 
 class MonitorLaunchpadProject:
@@ -739,71 +410,6 @@ class MonitorTrelloDisposition:
         return "Trello Disposition Monitor {}".format(self.path)
 
 
-class MonitorSnapStore:
-
-    def __init__(self, snap, bs=None):
-        if bs is None:
-            raise ValueError("backing store not specified")
-        if snap.publish_to is None:
-            raise ValueError("snap {} is not published to any tracks".format(snap.name))
-        if snap.promote_to is None:
-            raise ValueError("snap {} is not promoted to any risks".format(snap.name))
-
-        self.snap = snap
-        self.snap_store = SnapStore(snap)
-
-        bs.attach(str(self.snap), self)
-
-    last_date = MonitorStoreAttr(default=datetime.now(timezone.utc))
-
-    def changed(self):
-        changed = set()
-        start_date = self.last_date
-
-        #print(self.snap)
-
-        try:
-            data = self.snap_store.channel_map()
-        except SnapStoreError as e:
-            print("Snap lookup failed: " + str(e))
-            return changed
-
-        for arch, tracks in self.snap.publish_to.items():
-            for track in tracks:
-                for risk in self.snap.promote_to:
-                    channel = "{}/{}".format(track, risk)
-                    #print("?", self.snap.name, arch, channel)
-                    key = (arch, channel)
-                    if key not in data:
-                        continue
-
-                    # Convert the iso8601 format timestring into one
-                    # which strptime actually can parse.
-                    released_at = data[key]['released-at']
-                    released_at = released_at[:-3] + released_at[-2:]
-                    #print("D?", released_at)
-
-                    date_published = datetime.strptime(released_at,
-                        "%Y-%m-%dT%H:%M:%S.%f%z")
-                    #print(date_published, '>', self.last_date)
-                    if date_published > self.last_date:
-                        self.last_date = date_published
-
-                    #print(date_published, start_date)
-                    if date_published > start_date:
-                        print("P", self.snap.name, arch, channel)
-                        changed.add("{}:{}:{}".format(
-                            self.snap.source.series.codename,
-                            self.snap.source.name, self.snap.name))
-
-        return changed
-
-    def __str__(self):
-        return "Snapstore Snap Monitor {}:{}:{}".format(
-            self.snap.source.series.codename,
-            self.snap.source.name, self.snap.name)
-
-
 class MonitorStatusSwmStatus:
 
     def __init__(self, factory=None):
@@ -853,19 +459,6 @@ class MonitorStatusSwmStatus:
                     print("LAGGING {} time={} delta={} trigger={}".format(bug_id, scan_refresh, delta, scan_refresh < start_date))
                     lagging.append((scan_refresh, delta, bug_id))
 
-            # Scan
-            for maint in bug_data.get('maintenance', []):
-                if maint['type'] == 'deb-build':
-                    lp_api = maint['detail']['lp-api']
-                    state = maint['detail']['state']
-
-                    build = self.lp.load(lp_api)
-                    buildstate = build.buildstate
-                    print("BUILD {} state={} buildstate={}".format(lp_api, state, buildstate))
-                    if state != buildstate:
-                        print("BUILD {} state={} buildstate={} changed".format(lp_api, state, buildstate))
-                        changed.add(bug_id)
-
         # Run the list of lagging trackers and try and spread them out over the cycle without
         # letting them lag too long.  Try not to batch up too many updates either as a timeout
         # in a batch is fatal.  Basically, spread out the entire pending pile over the 'next'
@@ -887,39 +480,229 @@ class MonitorStatusSwmStatus:
     def __str__(self):
         return "Status refresh_time Monitor"
 
+class MonitorSwmStatusMonitor:
 
-class MonitorAutomatedTesting:
+    def __init__(self, factory=None):
+        if factory is None:
+            raise ValueError("factory required")
 
-    def __init__(self, adt_url, bs=None):
-        if bs is None:
-            raise ValueError("backing store not specified")
-        self.adt_url = adt_url
+        self.factory = factory
 
-        bs.attach(self.adt_url, self)
+        #self.factory.bs.attach(status_path + '--' + project, self)
 
-    test_status = MonitorStoreAttr(default={})
+    @property
+    def lp(self):
+        return self.factory.lp
+
+    @property
+    def ss(self):
+        return self.factory.ss
+
+    @property
+    def ks(self):
+        return self.factory.ks
+
+    def regression_testing(self, bug_id, bug_data, monitor):
+        sru_cycle = bug_data.get('cycle')
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        version = bug_data.get('version')
+        op = monitor.get('op')
+        existing = monitor.get('status')
+
+        current = RegressionTestingResults.lookup_result(sru_cycle, series, source, version, op)
+        print("regression_testing: existing={} current={} change={}".format(existing, current, existing != current))
+        return existing != current
+
+    def automated_testing(self, bug_id, bug_data, monitor):
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        version = bug_data.get('version')
+        existing = monitor.get('status')
+
+        result = AutomatedTestingResults.lookup_result(series, source, version)
+        current = result.status
+        print("automated_testing: existing={} current={} change={}".format(existing, current, existing != current))
+        return existing != current
+
+    def snap_publishing(self, bug_id, bug_data, monitor):
+        series = bug_data.get('series')
+        source = bug_data.get('source')
+        snap = bug_data.get('snap-name')
+        last_published = monitor.get('last-published')
+        if last_published is not None:
+            last_published = last_published.replace(tzinfo=timezone.utc)
+
+        ks_series = self.ks.lookup_series(codename=series)
+        if ks_series is None:
+            return False
+        ks_source = ks_series.lookup_source(source)
+        if ks_source is None:
+            return False
+        ks_snap = ks_source.lookup_snap(snap)
+        if ks_snap is None:
+            return False
+        snap_store = SnapStore(ks_snap)
+        if snap_store is None:
+            return False
+
+        current_published = snap_store.last_published
+        print("snap_publishing: last_published={} current_published={} change={}".format(last_published, current_published, current_published != last_published))
+        return current_published != last_published
+
+    def launchpad_source(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        archive_reference = monitor.get('reference')
+        archive_pocket = monitor.get('pocket')
+        series = bug_data.get('series')
+        package_name = monitor.get('package')
+        status = monitor.get('status')
+        lp_api = monitor.get('lp-api')
+
+        lp_archive = self.lp.archives.getByReference(reference=archive_reference)
+        if lp_archive is None:
+            print(tag, "no-archive change=False")
+            return False
+
+        # Grab the current latest publication, if it is a different lp_api
+        # then things are changing.
+        srcs = lp_archive.getPublishedSources(exact_match=True, order_by_date=True,
+            pocket=archive_pocket, distro_series='/ubuntu/' + series,
+            source_name=package_name)
+
+        if lp_api is None and len(srcs) == 0:
+            print(tag, "expected=no-package current=no-package change=False")
+            return False
+
+        src = srcs[0]
+        if src.self_link != lp_api:
+            print(tag, "expected={} current={} change=True".format(lp_api, src.self_link))
+            return True
+
+        print(tag, "expected={} current={} change={}".format(status, src.status, src.status != status))
+        return src.status != status
+
+    def launchpad_nobuilds(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
+        #status = monitor.get('status')
+
+        # Grab us the object in question.
+        src = self.lp.load(lp_api)
+        if build is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        builds = len(src.getBuilds())
+
+        print(tag, "expected={} current={} change={}".format(0, builds, builds != 0))
+        return builds != 0
+
+    def launchpad_build(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        last_scanned = monitor.get('last-scanned').replace(tzinfo=timezone.utc)
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        build = self.lp.load(lp_api)
+        if build is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        if build.date_started is not None and build.date_started > last_scanned:
+            print(tag, "time_floor={} time_current={} change={}".format(last_scanned, build.date_started, True))
+            return True
+
+        print(tag, "expected={} current={} change={}".format(status, build.buildstate, build.buildstate != status))
+        return build.buildstate != status
+
+    def launchpad_upload(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        upload = self.lp.load(lp_api)
+        if upload is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        print(tag, "expected={} current={} change={}".format(status, upload.status, upload.status != status))
+        return upload.status != status
+
+    def launchpad_binary(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        #archive_reference = monitor.get('reference')
+        #archive_pocket = monitor.get('pocket')
+        lp_api = monitor.get('lp-api')
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        binary = self.lp.load(lp_api)
+        if binary is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        print(tag, "expected={} current={} change={}".format(status, binary.status, binary.status != status))
+        return binary.status != status
+
+    def tracker_modified(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        watch = monitor.get('watch')
+        watch_data = self.ss.trackers.get(watch, {})
+
+        bug_scanned = bug_data.get('manager', {}).get('time-scanned')
+        watch_modified = watch_data.get('manager', {}).get('time-modified')
+
+        if bug_scanned is None:
+            print(tag, "tracker has no time-scanned change=True")
+            return True
+        if watch_modified is None:
+            print(tag, "watch has no time-modified change=True")
+            return True
+
+        print(tag, "time_floor={} time_current={} change={}".format(watch_modified, bug_scanned, (bug_scanned < watch_modified)))
+        return bug_scanned < watch_modified
 
     def changed(self):
         changed = set()
 
-        with urlopen(self.adt_url) as status:
-            ##print(status, status.status)
-            for line in status.read().decode('utf-8').split('\n'):
-                bits = line.split(None, 4)
-                if len(bits) < 4:
-                    continue
-                (series, source, version, state) = bits[0:4]
-                key = "{}:{}".format(series, source)
-                if self.test_status.setdefault(key, state) != state:
-                    changed.add(key)
-                    self.test_status[key] = state
+        status = self.ss
 
-        #print("TESTING", changed)
+        # Scan the live trackers and pick out their monitor records.
+        for bug_id, bug_data in sorted(status.trackers.items()):
+            # Scan monitor records.
+            for monitor in bug_data.get("monitor", []):
+                print("{}: bug={} monitor={}".format(monitor.get("type", "????"), bug_id, monitor))
+                handler = {
+                    'regression-testing':   self.regression_testing,
+                    'automated-testing':    self.automated_testing,
+                    'snap-publishing':      self.snap_publishing,
+                    'launchpad-source':     self.launchpad_source,
+                    'launchpad-nobuilds':   self.launchpad_nobuilds,
+                    'launchpad-build':      self.launchpad_build,
+                    'launchpad-upload':     self.launchpad_upload,
+                    'launchpad-binary':     self.launchpad_binary,
+                    'tracker-modified':     self.tracker_modified,
+                    }.get(monitor.get("type"))
+                if handler is not None and handler(bug_id, bug_data, monitor):
+                    changed.add(bug_id)
+                    break
+            sys.stdout.flush()
+        print("REFRESH", changed)
 
         return changed
 
     def __str__(self):
-        return "Automated Testing Monitor"
+        return "SwmStatus monitor Monitor"
 
 
 class MonitorFactory:
@@ -957,67 +740,20 @@ class MonitorFactory:
             self._ss = SwmStatus(path=self.ss_file)
         return self._ss
 
-    def kernel_series_archives(self):
-        # Find out which archives we may be publishing to and which
-        # series/package combinations are interesting to us.
-        archive_names = set()
-        for series in self.ks.series:
-            for source in series.sources:
-                if source.supported or source.development:
-                    if not source.routing:
-                        continue
-                    for pocket in ('build', 'build-private', 'proposed', 'signing', 'updates', 'security',
-                            'release', 'as-proposed'):
-                        dest = source.routing.lookup_destination(pocket)
-                        if not dest:
-                            continue
-                        for route in dest:
-                            archive_names.add(route[0])
-
-        monitors = []
-        for archive_name in archive_names:
-            monitor = None
-            try:
-                monitor = MonitorLaunchpadArchive(archive_name, lp=self.lp, ks=self.ks, bs=self.bs)
-            except MonitorIncompatible:
-                pass
-            if monitor is None:
-                try:
-                    monitor = MonitorLaunchpadArchivePrivate(archive_name, lp=self.lp, ks=self.ks, bs=self.bs)
-                except MonitorIncompatible:
-                    pass
-            if monitor is not None:
-                monitors.append(monitor)
-            else:
-                print("WARNING: {}: archive cannot be scanned", archive_name)
-
-        return monitors
-
     def launchpad_project(self, project):
         return [MonitorLaunchpadProject(project, lp=self.lp, bs=self.bs)]
 
     def launchpad_queues(self):
         return [MonitorLaunchpadQueues(lp=self.lp, ks=self.ks, bs=self.bs)]
 
-    def kernel_series_snaps(self):
-        snaps = []
-        for series in self.ks.series:
-            for source in series.sources:
-                if source.supported or source.development:
-                    for snap in source.snaps:
-                        if (snap.promote_to is not None and
-                                snap.publish_to is not None):
-                            snaps.append(MonitorSnapStore(snap, bs=self.bs))
-        return snaps
-
     def swm_status(self):
         return [MonitorStatusSwmStatus(factory=self)]
 
+    def swm_monitor(self):
+        return [MonitorSwmStatusMonitor(factory=self)]
+
     def trello_disposition(self, trello_path):
         return [MonitorTrelloDisposition(trello_path, lp=self.lp, bs=self.bs)]
-
-    def automated_testing(self, adt_url):
-        return [MonitorAutomatedTesting(adt_url, bs=self.bs)]
 
     def sync(self):
         self.bs.sync()
@@ -1108,27 +844,32 @@ if __name__ == '__main__':
     factory = MonitorFactory(ss_file='status.yaml')
 
     monitors = []
-    monitors += factory.kernel_series_archives()
     monitors += factory.launchpad_project('kernel-sru-workflow')
-    monitors += factory.kernel_series_snaps()
     monitors += factory.swm_status()
+    monitors += factory.swm_monitor()
     monitors += factory.trello_disposition('swm-trello.yaml')
-    monitors += factory.automated_testing('https://people.canonical.com/~kernel/status/adt-matrix/overall.txt')
     monitors += factory.launchpad_queues()
 
     command = None
+
+    updates_before = perf_counter()
 
     # Look for updates in each monitor.
     changed = set()
     for monitor in monitors:
         print("***", monitor)
         sys.stdout.flush()
+        before = perf_counter()
         new = monitor.changed()
-        if len(new) > 0:
-            print(monitor, "CHANGED", list(new))
+        after = perf_counter()
+        #if len(new) > 0:
+        #    print(monitor, "CHANGED", list(new))
+        print(monitor, "changed={} time={}".format(new, after - before))
         sys.stdout.flush()
         changed = changed | new
-    print("CHANGED", len(changed), changed)
+
+    updates_after = perf_counter()
+    print("CHANGED changed={} time={} wall={}".format(changed, updates_after - updates_before, time()))
 
     swm_filter = FilterSwmStatus(factory=factory)
     changed = swm_filter.filter(changed)
@@ -1141,12 +882,14 @@ if __name__ == '__main__':
     sys.stdout.flush()
 
     if len(changed) > 0:
+        cmd_before = perf_counter()
         cmd = ['./swm-cron'] + list(changed)
         command = Popen(cmd)
         print("COMMAND STARTED", command.pid)
         sys.stdout.flush()
         status = command.wait()
-        print("COMMAND COMPLETE", status)
+        cmd_after = perf_counter()
+        print("COMMAND COMPLETE rc={} time={} wall={}".format(status, cmd_after - cmd_before, time()))
         if status != 0:
             sys.exit(1)
 

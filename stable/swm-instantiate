@@ -16,9 +16,9 @@ import yaml
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
 
 from ktl.kernel_series import KernelSeries
-from ktl.log                            import cdebug, cinfo, cerror, cwarn, center, cleave
 from ktl.workflow import Workflow, DefaultAssigneeMissing
 from lazr.restfulclient.errors import BadRequest
+from wfl.log import Clog, cdebug, cinfo, cerror, cwarn, center, cleave
 from wfl.launchpad import LaunchpadDirect
 
 
@@ -203,6 +203,7 @@ class TrackerProduction:
 if __name__ == '__main__':
     log_format = "%(levelname)05s - %(message)s"
     basicConfig(level='DEBUG', format=log_format)
+    Clog.color = False
 
     line = TrackerProduction('kernel-sru-workflow')
     line.instantiate_all()

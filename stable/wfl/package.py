@@ -4,6 +4,7 @@
 import re
 from datetime                           import datetime, timedelta, timezone
 import json
+from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized
 
@@ -69,9 +70,9 @@ class PackageBuild:
         # Do a loose match, we will select for the specific version we wanted
         # in __find_matches but this way we have the published version for
         # pocket emptyness checks.
-        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, status='Published', pocket=pocket, order_by_date=True)
+        ps = archive.getPublishedSources(distro_series=s.series, exact_match=True, source_name=package, pocket=pocket, order_by_date=True)
         matches = s.__find_matches(ps, abi, release, sloppy)
-        if len(matches) > 0:
+        if len(matches) > 0 and matches[0].status in ('Pending', 'Published'):
             cdebug('    match: %s (%s)' % (release, abi), 'green')
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
             version = matches[0].source_package_version
@@ -84,9 +85,24 @@ class PackageBuild:
             published = None
             most_recent_build = None
             version = None
-            if len(ps) > 0:
-                version = ps[0].source_package_version
             changes = None
+            source = None
+            if len(ps) > 0:
+                source = ps[0]
+                if source.status in ('Pending', 'Published'):
+                    version = source.source_package_version
+
+            monitor = {
+                'type': 'launchpad-source',
+                'reference': archive.reference,
+                'pocket': pocket,
+                #'series': s.series,
+                'package': package,
+                'last-scanned': s.bug.tracker_instantiated}
+            if source:
+                monitor['status'] = source.status
+                monitor['lp-api'] = source.self_link
+            s.bug.debs.monitor_debs_add(monitor)
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
         return fullybuilt, creator, signer, published, most_recent_build, status, version, changes
@@ -153,7 +169,7 @@ class PackageBuild:
 
         cdebug("source status={}".format(source.status))
         if source.status in ('Pending'):
-            status.add('BUILDING')
+            status.add('PENDING')
         elif source.status in ('Published'):
             status.add('FULLYBUILT')
         else:
@@ -166,6 +182,14 @@ class PackageBuild:
         arch_build = set()
         arch_complete = set()
         builds = source.getBuilds()
+        if len(builds) == 0:
+            s.bug.debs.monitor_debs_add({
+                    'type': 'launchpad-nobuilds',
+                    'reference': archive.reference,
+                    'pocket': pocket,
+                    #'status': source.status,
+                    'lp-api': source.self_link,
+                    'last-scanned': s.bug.tracker_instantiated})
         for build in builds:
             buildstate = build.buildstate
             ##print(build, build.buildstate, build.datebuilt)
@@ -193,6 +217,20 @@ class PackageBuild:
                 #  Cancelled build
                 status.add('FAILEDTOBUILD')
 
+            if build.buildstate in (
+                    'Failed to build',
+                    'Needs building',
+                    'Currently building',
+                    'Uploading build',
+                    'Dependency wait'):
+                s.bug.debs.monitor_debs_add({
+                        'type': 'launchpad-build',
+                        'reference': archive.reference,
+                        'pocket': pocket,
+                        'status': buildstate,
+                        'lp-api': build.self_link,
+                        'last-scanned': s.bug.tracker_instantiated})
+
             if buildstate != 'Successfully built':
                 s.bug.maintenance_add({
                     'type': 'deb-build',
@@ -207,12 +245,13 @@ class PackageBuild:
                     }})
 
             # Accumulate the latest build completion.
-            if build.datebuilt is not None and latest_build < build.datebuilt:
+            if build.datebuilt is not None and (latest_build is None or latest_build < build.datebuilt):
                 latest_build = build.datebuilt
 
             # Accumulate the architectures we are meant to build for.
             arch_build.add(build.arch_tag)
 
+        one_per_build = set()
         arch_published = set()
         binaries = source.getPublishedBinaries()
         for binary in binaries:
@@ -222,9 +261,9 @@ class PackageBuild:
             else:
                 arch_tag = 'all'
             cdebug("binary arch={} status={}".format(arch_tag, binary.status))
-            if binary.status in ('Pending'):
-                status.add('BUILDING')
-            elif binary.status in ('Published'):
+            if binary.status == 'Pending':
+                status.add('PENDING')
+            elif binary.status  == 'Published':
                 status.add('FULLYBUILT')
             else:
                 # Anything else is broken.
@@ -232,6 +271,16 @@ class PackageBuild:
                 #  Deleted
                 #  Obsolete
                 status.add('FAILEDTOBUILD')
+
+            if binary.status == 'Pending' and binary.build_link not in one_per_build:
+                one_per_build.add(binary.build_link)
+                s.bug.debs.monitor_debs_add({
+                        'type': 'launchpad-binary',
+                        'reference': archive.reference,
+                        'pocket': pocket,
+                        'status': binary.status,
+                        'lp-api': binary.self_link,
+                        'last-scanned': s.bug.tracker_instantiated})
 
             # Accumulate the latest publication time.
             if binary.date_published is not None and published < binary.date_published:
@@ -246,17 +295,39 @@ class PackageBuild:
         # missing because they are in flight.
         if arch_build != arch_published:
             if arch_build == arch_complete:
-                status.add('FULLYBUILT_PENDING')
+                uploads = source.distro_series.getPackageUploads(exact_match=True,
+                        archive=archive, pocket=pocket, name=source.source_package_name,
+                        version=source.source_package_version)
+                queued = False
+                for upload in uploads:
+                    if upload.status not in ('Done', 'Rejected'):
+                        if upload.status in ('New', 'Unapproved'):
+                            queued = True
+                        cinfo("upload not complete status={}".format(upload.status))
+                        s.bug.debs.monitor_debs_add({
+                                'type': 'launchpad-upload',
+                                'reference': archive.reference,
+                                'pocket': pocket,
+                                'status': upload.status,
+                                'lp-api': upload.self_link,
+                                'last-scanned': s.bug.tracker_instantiated})
+                if queued:
+                    status.add('FULLYBUILT_PENDING')
+                else:
+                    status.add('PENDING')
+
             else:
                 status.add('BUILDING')
 
         # Pick out the stati in a severity order.
-        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'FULLYBUILT', 'UNKNOWN'):
+        for state in ('FAILEDTOBUILD', 'DEPWAIT', 'BUILDING', 'FULLYBUILT_PENDING', 'PENDING', 'FULLYBUILT', 'UNKNOWN'):
             if state in status:
                 break
 
-        published = published.replace(tzinfo=None)
-        latest_build = latest_build.replace(tzinfo=None)
+        if published is not None:
+            published = published.replace(tzinfo=None)
+        if latest_build is not None:
+            latest_build = latest_build.replace(tzinfo=None)
 
         cleave('Sources::__sources_built' )
         return state == 'FULLYBUILT', package_creator, package_signer, published, latest_build, state
@@ -353,6 +424,7 @@ class Package():
         if s.source is not None and s.source.routing:
             for (key, destination) in (
                 ('ppa', 'build'),
+                ('build', 'build'),
                 ('build-private', 'build-private'),
                 ('Signing', 'signing'),
                 ('Proposed', 'proposed'),
@@ -394,7 +466,17 @@ class Package():
         s._cache = None
         s._version_tried = {}
 
+        s._monitor_debs = []
+
         cleave('package::__init__')
+
+    @property
+    def monitor_debs(s):
+        return s._monitor_debs
+
+    def monitor_debs_add(s, what):
+        if what not in s._monitor_debs:
+            s._monitor_debs.append(what)
 
 
     def routing(self, pocket):
@@ -402,6 +484,28 @@ class Package():
         routes = self._routing.get(pocket)
         cleave(self.__class__.__name__ + '.routing')
         return routes
+
+    def monitor_routes(self, routes):
+        if 'ppa' in routes:
+            routes.remove('ppa')
+            routes.append('build')
+            routes.append('build-private')
+        for route_name in routes:
+            route_found = self.pocket_route(route_name)
+            if route_found is not None:
+                cinfo("monitor_routes: {} location found {}".format(route_name, route_found))
+                route_list = [route_found]
+            else:
+                route_list = self.routing(route_name)
+            if route_list is None:
+                continue
+            cinfo("monitor_routes: {} using {}".format(route_name, route_list))
+            for route_archive, route_pocket in route_list:
+                # Copy over any build related monitors for this archive/pocket.
+                for monitor in self.monitor_debs:
+                    if (monitor['reference'] == route_archive.reference and
+                            monitor['pocket'] == route_pocket):
+                        self.bug.monitor_add(monitor)
 
     def package_version(s, pkg):
         # Look up the specific version of a package for this tracker.
@@ -533,18 +637,16 @@ class Package():
             if not s.bug.is_development_series:
                 cdebug('Stable Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates')
+                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Security', 'Updates']
             else:
                 cdebug('Development Package', 'cyan')
                 cdebug('')
-                scan_pockets = ('ppa', 'Signing', 'Proposed', 'as-proposed', 'Release')
-            s.scan_pockets = scan_pockets
+                scan_pockets = ['ppa', 'Signing', 'Proposed', 'as-proposed', 'Release']
+            s.scan_pockets = list(scan_pockets)
+            scan_pockets[0] = 'build' if not s.adjunct_package(dep) else 'build-private'
 
             for pocket in scan_pockets:
                 pocket_from = pocket
-                if pocket == 'ppa' and s.adjunct_package(dep):
-                    pocket_from = 'build-private'
-
                 if pocket_from not in s._routing:
                     continue
                 if s._routing[pocket_from] is None:
@@ -553,6 +655,8 @@ class Package():
                     continue
 
                 s._cache[dep][pocket] = PackageBuild(s.bug, s.distro_series, dep, pocket_from, s._routing[pocket_from], s.pkgs[dep], version, abi, sloppy)
+                if pocket == scan_pockets[0]:
+                    s._cache[dep]['ppa'] = s._cache[dep][pocket]
                 #cinfo('%-8s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (pocket, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
             Clog.indent -= 4
 
@@ -605,7 +709,7 @@ class Package():
         cleave(s.__class__.__name__ + '__all_arches_built (%s)' % retval)
         return retval
 
-    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
+    __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'PENDING', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
     __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
 
     # build_info
@@ -1137,6 +1241,8 @@ class Package():
             elif status == '':
                 failures.setdefault('missing', []).append(pkg)
                 missing += 1
+            elif status == 'PENDING':
+                failures.setdefault('pending', []).append(pkg)
             elif status == 'FULLYBUILT_PENDING':
                 failures.setdefault('queued', []).append(pkg)
 
@@ -1148,10 +1254,26 @@ class Package():
     # failures_to_text
     #
     def failures_to_text(self, summary):
+        type_state = {}
+        for state, members in summary.items():
+            state_text = {
+                    'missing': 'M',
+                    'queued': 'Q',
+                    'pending': 'P',
+                    'building': 'B',
+                    'depwait': 'D',
+                    'retry-needed': 'R',
+                    'failwait': 'D*',
+                    'failed': 'F',
+                }.get(state, state)
+            for member in members:
+                type_state[member] = state_text
         bits = []
-        for state, members in sorted(summary.items()):
-            members = sorted(members, key=self.feeder_key)
-            bits.append(','.join(members) + ':' + state)
+        #for state, members in sorted(summary.items()):
+        #    members = sorted(members, key=self.feeder_key)
+        #    bits.append(','.join(members) + ':' + state)
+        for member in sorted(type_state, key=self.feeder_key):
+            bits.append("{}:{}".format(member, type_state[member]))
         return ' '.join(bits)
 
     # creator
@@ -1284,9 +1406,7 @@ class Package():
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
-            if s.ancillary_package_for(pkg) is not None:
-                continue
-            if bi[pkg][pocket]['built'] is True:
+            if bi[pkg][pocket]['status'] != "":
                 retval = bi[pkg][pocket]['route']
                 cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
                 break
@@ -1321,10 +1441,14 @@ class Package():
                     break
                 if pocket_next not in bi[pkg]:
                     continue
-                if bi[pkg][pocket]['version'] == bi[pkg][pocket_next]['version']:
-                    found = True
+                try:
+                    if version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version']) <= 0:
+                        found = True
+                except ValueError:
+                    pass
                 if pkg not in s.dependent_packages_for_pocket(pocket_next):
                     found = True
+                cinfo("APW: {} <= {} = {}".format(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'], version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'])))
             if not found:
                 cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 retval = False
@@ -1358,6 +1482,7 @@ class Package():
         for pocket in s.__pockets_uploaded:
             if pocket not in bi[pkg]:
                 continue
+            cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
             if bi[pkg][pocket]['status'] in s.__states_present:
                 retval = True
                 break
@@ -1471,23 +1596,23 @@ class Package():
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
             if tracker_nr == my_id:
-                return False
+                return None
 
             # If we find we have an older cycle than the current entry we are older
             # than it.  This only can occur when we are new and have not yet saved
             # a single status.
             if my_cycle_key < tracker_data.get('cycle', '-'):
-                return False
+                return None
 
             # Consider if this is a blocker if it promote-to-proposed is not
             # Fix Released.
-            cinfo("    considering {} {}".format(tracker_nr, tracker_data))
+            cinfo("    considering {}".format(tracker_nr))
             ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
             if ptp_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
-                return True
+                return tracker_nr
 
-        return False
+        return None
 
     # older_tracker_in_proposed
     #
@@ -1500,19 +1625,19 @@ class Package():
         for tracker_nr, tracker_data in target_trackers:
             # If we find ourselves then we have considered everything "older".
             if tracker_nr == str(s.bug.lpbug.id):
-                return False
+                return None
             # Consider if this is a blocker if it promote-to-proposed is
             # Fix Released and promote-to-updates/release is not Fix Released.
-            cinfo("    considering {} {}".format(tracker_nr, tracker_data))
+            cinfo("    considering {}".format(tracker_nr))
             ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
             ptu_status = tracker_data.get('task', {}).get('promote-to-updates', {}).get('status', 'Invalid')
             if ptu_status == 'Invalid':
                 ptu_status = tracker_data.get('task', {}).get('promote-to-release', {}).get('status', 'Invalid')
             if ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} plus promote-to-{{updates,release}} {} considered blocking".format(ptp_status, ptu_status))
-                return True
+                return tracker_nr
 
-        return False
+        return None
 
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
@@ -1653,7 +1778,7 @@ class Package():
         msg['sru-cycle'] = s.bug.sru_cycle
 
         if ppa:
-            routing = s.pocket_route('ppa')
+            routing = s.pocket_route('build')
         else:
             # If we have an as-proposed route we will get here when that publishes
             # and we should be preferring it for testing as there is no cache on the

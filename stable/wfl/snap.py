@@ -9,6 +9,7 @@ except ImportError:
 
 import json
 from .errors import ShankError
+from datetime import datetime
 
 from ktl.kernel_series                          import KernelSeries
 
@@ -128,6 +129,37 @@ class SnapStore:
             s._versions[key] = s.channel_map()
         return s._versions.get(key, {}).get('revision', None)
 
+    @property
+    def last_published(self):
+        try:
+            data = self.channel_map()
+        except SnapStoreError as e:
+            return None
+
+        last_published = None
+        for arch, tracks in self.snap.publish_to.items():
+            for track in tracks:
+                for risk in self.snap.promote_to:
+                    channel = "{}/{}".format(track, risk)
+                    #print("?", self.snap.name, arch, channel)
+                    key = (arch, channel)
+                    if key not in data:
+                        continue
+
+                    # Convert the iso8601 format timestring into one
+                    # which strptime actually can parse.
+                    released_at = data[key]['released-at']
+                    released_at = released_at[:-3] + released_at[-2:]
+                    #print("D?", released_at)
+
+                    date_published = datetime.strptime(released_at,
+                        "%Y-%m-%dT%H:%M:%S.%f%z")
+                    #print(date_published, '>', self.last_date)
+                    if last_published is None or date_published > last_published:
+                        last_published = date_published
+
+        return last_published
+
 
 # SnapDebs
 #
@@ -195,6 +227,10 @@ class SnapDebs:
         if s._snap_store is None:
             s._snap_store = SnapStore(s.snap_info)
         return s._snap_store
+
+    @property
+    def last_published(self):
+        return self.snap_store.last_published
 
     def is_in_tracks(s, risk):
         center(s.__class__.__name__ + '.is_in_tracks')

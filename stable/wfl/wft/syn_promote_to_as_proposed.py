@@ -101,6 +101,11 @@ class SynPromoteToAsProposed(TaskHandler):
                 retval = True
             break
 
+        # If we are a live task by here request monitoring for
+        # all interesting routes.
+        if s.task.status not in ('New', 'Confirmed', 'Fix Released', 'Invalid'):
+            s.bug.debs.monitor_routes(['as-proposed'])
+
         cleave(s.__class__.__name__ + '._common')
         return retval
 

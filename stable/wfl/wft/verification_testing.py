@@ -210,40 +210,40 @@ class VerificationTesting(TaskHandler):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
-    # _confirmed
-    #
-    def _status_check(s):
-        center(s.__class__.__name__ + '._confirmed')
+    def _status_check_payload(s):
         retval = False
 
-        while not retval:
-            present = s.bug.debs.all_built_and_in_pocket('Proposed')
-            if not present:
-                if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
-                    cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
-                    s.task.status = 'Opinion'
-                    retval = True
-                break
+        promote_status = s.bug.task_status('promote-to-updates')
+        if promote_status == 'Invalid':
+            promote_status = s.bug.task_status('promote-to-release')
+        if promote_status == 'Fix Released':
+            cinfo('kernels promoted successfully from Proposed', 'green')
+            return retval
 
-            elif present and s.task.status == 'Opinion':
-                s.task.status = 'New'
+        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        if not present:
+            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
+                cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
+                s.task.status = 'Opinion'
                 retval = True
-                break
 
-            elif 'verification-testing-failed' in s.bug.tags:
-                cdebug('Verification Testing tagged as FAILED', 'yellow')
-                if s.task.status != 'Incomplete':
-                    s.task.status = 'Incomplete'
-                    retval = True
-                break
+        elif present and s.task.status == 'Opinion':
+            s.task.status = 'New'
+            retval = True
 
-            elif 'verification-testing-passed' in s.bug.tags:
-                cdebug('Verification Testing tagged as PASSED', 'yellow')
-                if s.task.status != 'Fix Released':
-                    s.task.status = 'Fix Released'
-                    retval = True
-                break
+        elif 'verification-testing-failed' in s.bug.tags:
+            cdebug('Verification Testing tagged as FAILED', 'yellow')
+            if s.task.status != 'Incomplete':
+                s.task.status = 'Incomplete'
+                retval = True
 
+        elif 'verification-testing-passed' in s.bug.tags:
+            cdebug('Verification Testing tagged as PASSED', 'yellow')
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
+
+        else:
             # Spam bugs against this package (but not those against our master)
             # if they haven't been spammed already.
             if 'bugs-spammed' not in s.bug.bprops:
@@ -280,7 +280,14 @@ class VerificationTesting(TaskHandler):
                 s.task.status = 'Fix Released'
                 retval = True
 
-            break
+        return retval
+
+    # _status_check
+    #
+    def _status_check(s):
+        center(s.__class__.__name__ + '._confirmed')
+
+        retval = s._status_check_payload()
 
         if s.task.status == 'Fix Released':
             pass
