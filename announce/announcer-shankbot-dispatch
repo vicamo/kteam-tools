@@ -5,6 +5,13 @@ here=$(dirname "$(readlink -f "${0}")")
 cmd="$1"
 shift
 
+# We are passed the following fds:
+#  1: output stream, which will be sent to the user
+#  2: control stream, used to control disposition
+# to simplify programming shift these so our 1 & 2 both
+# contribute to our output.  Wire up 3 as control.
+exec 3>&2 2>&1
+
 case "$cmd" in
 testing)
 	case "$1" in
@@ -45,6 +52,16 @@ retest)
 		exit 1
 	fi
 	"$here/../sbin/oops-run" shiv-retest "$here/../stable/tbt" retest "$@"
+	;;
+help)
+	# Select direct incusion of the output in the message.
+	echo "DIRECT" 1>&3
+	cat - <<EOH
+    shank <tracker>...
+        Request SWM rescan of the listed trackers.
+    retest [--ppa] [--op boot|sru] <tracker> ...
+        Request SWM request testing of the listed trackers.
+EOH
 	;;
 *)
 	echo "shankbot: $cmd: unknown command"

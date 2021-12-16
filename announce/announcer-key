@@ -70,7 +70,10 @@ class AnnounceDeliver:
             body = subject
 
         key = str(destination['key'])
-        routing = self.routing.get(key, [])
+        routing = self.routing.get(key)
+        # If the key is present but empty in the config ...
+        if routing is None:
+            routing = []
         cwarn("key {} routing {}".format(key, routing))
         for route in routing:
             cwarn("route {}".format(route))
@@ -175,7 +178,7 @@ class TheApp():
         retval = 1
 
         try:
-            s.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-core.yaml'))
+            s.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-announcer-key.yaml'))
 
             # Pass in credentials if we have them, else use the limited defaults.
             hostname = s.secrets.data.get('amqp-hostname')
