@@ -51,12 +51,12 @@ class SnapStore:
         :param bug: WorkflowBug object
         """
         s.snap = snap
-        s._versions = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
+        s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
         s.secrets = Secrets().get('snaps')
 
-    # channel_map
+    # channel_map_lookup
     #
-    def channel_map(s):
+    def channel_map_lookup(s):
         """
         Query the snap store URL to get the information about the kernel snap
         publishing.
@@ -78,7 +78,9 @@ class SnapStore:
             url = "{}?{}".format(urljoin(s.base_url, s.snap.name), params)
             req = Request(url, headers=headers)
             with urlopen(req) as resp:
-                response = json.loads(resp.read().decode('utf-8'))
+                raw_data = resp.read().decode('utf-8')
+                cinfo("SNAP JSON: {}".format(raw_data))
+                response = json.loads(raw_data)
                 cdebug(response)
                 for channel_rec in response['channel-map']:
                     channel = (channel_rec['channel']['architecture'],
@@ -113,28 +115,26 @@ class SnapStore:
                                  (type(e), str(e)))
         return result
 
+    def channel_map(s):
+        if s._channel_map is None:
+            s._channel_map = s.channel_map_lookup()
+        return s._channel_map
+
     # channel_version
     #
     def channel_version(s, arch, channel):
         key = (arch, channel)
-        if s._versions is None:
-            s._versions = s.channel_map()
-        return s._versions.get(key, {}).get('version', None)
+        return s.channel_map().get(key, {}).get('version', None)
 
     # channel_revision
     #
     def channel_revision(s, arch, channel):
         key = (arch, channel)
-        if s._versions is None:
-            s._versions[key] = s.channel_map()
-        return s._versions.get(key, {}).get('revision', None)
+        return s.channel_map().get(key, {}).get('revision', None)
 
     @property
     def last_published(self):
-        try:
-            data = self.channel_map()
-        except SnapStoreError as e:
-            return None
+        data = self.channel_map()
 
         last_published = None
         for arch, tracks in self.snap.publish_to.items():
@@ -154,7 +154,7 @@ class SnapStore:
 
                     date_published = datetime.strptime(released_at,
                         "%Y-%m-%dT%H:%M:%S.%f%z")
-                    #print(date_published, '>', self.last_date)
+                    cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(data[key]['released-at'], date_published, last_published))
                     if last_published is None or date_published > last_published:
                         last_published = date_published
 
@@ -369,14 +369,19 @@ class SnapDebs:
         status.add('BUILD-MISSING')
         arches_seen = {}
 
-        # Assume we are incomplete if there are any build pending as we have no way
-        # to know which revision they will refer supply for once built.
+        # Assume we are incomplete if there are any build-requests pending.
+        if len(lp_snap.pending_build_requests) != 0:
+            status.add('BUILD-PENDING')
+
+        # Assume we are incomplete if there are any build pending without a
+        # revision-id as we have no way to know which revision they will refer
+        # supply for once built.
         for build in lp_snap.pending_builds:
             cinfo("snap build pending: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
-            arch_tag = build.arch_tag
-            arches_seen[arch_tag] = True
-
-            status.add('BUILD-PENDING')
+            if build.revision_id is None:
+                arch_tag = build.arch_tag
+                arches_seen[arch_tag] = True
+                status.add('BUILD-PENDING')
 
         for build in lp_snap.builds:
             cinfo("snap build complete: {} {} {} {}".format(build, build.arch_tag, build.buildstate, build.revision_id))
@@ -418,23 +423,25 @@ class SnapDebs:
                 #  Cancelling build
                 #  Cancelled build
 
-            if build.store_upload_status in (
-                    'Pending',
-                    'Unscheduled'):
-                status.add('UPLOAD-PENDING')
+            if build.buildstate == 'Successfully built':
+                if build.store_upload_status == 'Unscheduled':
+                    status.add('UPLOAD-DISABLED')
 
-            elif build.store_upload_status == 'Uploaded':
-                status.add('UPLOAD-COMPLETE')
+                elif build.store_upload_status == 'Pending':
+                    status.add('UPLOAD-PENDING')
 
-            else:
-                status.add('UPLOAD-FAILED')
-                # Anything else is a failure, currently:
-                #  Failed to upload
-                #  Failed to release to channels
+                elif build.store_upload_status == 'Uploaded':
+                    status.add('UPLOAD-COMPLETE')
+
+                else:
+                    status.add('UPLOAD-FAILED')
+                    # Anything else is a failure, currently:
+                    #  Failed to upload
+                    #  Failed to release to channels
 
         # Find the 'worst' state and report that for everything.
         for state in (
-                'BUILD-FAILED', 'UPLOAD-FAILED',                                     # Errors: earliest first
+                'BUILD-FAILED', 'UPLOAD-FAILED', 'UPLOAD-DISABLED',                  # Errors: earliest first
                 'BUILD-PENDING', 'BUILD-DEPWAIT', 'BUILD-ONGOING', 'UPLOAD-PENDING', # Pending: earliest first
                 'UPLOAD-COMPLETE', 'BUILD-COMPLETE',                                 # Finished: latest first
                 'BUILD-MISSING'):

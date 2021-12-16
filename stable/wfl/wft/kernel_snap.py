@@ -203,7 +203,7 @@ class SnapPrepare(KernelSnapBase):
             except GitTagError as e:
                 raise WorkflowCrankError("unable to fetch tag information -- {}".format(e.args[0]))
 
-            if version != s.bug.version:
+            if version != s.bug.version and (version is None or not version.startswith(s.bug.version + '.')):
                 if s.task.status == 'Confirmed':
                     s.task.reason = 'Pending -b Snap ready to be cranked'
                 else:
@@ -220,7 +220,7 @@ class SnapPrepare(KernelSnapBase):
                 retval = True
 
             # Check for a snap build in this version.
-            sha = git_repo.lookup_version(s.bug.version)[-1]
+            sha = git_repo.lookup_version(version)[-1]
             snap_status = s.bug.snap.snap_status(sha)
             if snap_status == 'SNAP-MISSING':
                 pass
