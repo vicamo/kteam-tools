@@ -2,9 +2,15 @@ import json
 from urllib.request import urlopen
 from urllib.error import HTTPError
 
+from wfl.bug                                    import WorkflowBugTaskError
+from wfl.errors                                 import ShankError
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 import requests
+
+
+class AutomatedTestingResultsError(ShankError):
+    pass
 
 
 class AutomatedTestingResultsOne:
@@ -62,10 +68,12 @@ class AutomatedTestingResultsOverall:
                 response = urlopen(url)
                 data = response.read()
             except HTTPError as e:
-                if e.code != 404:
-                    raise e
-                data = None
-        if data is not None:
+                data = AutomatedTestingResultsError("overall-results-data fetch failure -- " + str(e.reason))
+
+        if isinstance(data, Exception):
+            self.data = data
+
+        elif data is not None:
             if not isinstance(data, str):
                 data = data.decode('utf-8')
             self.data = json.loads(data)
@@ -73,6 +81,9 @@ class AutomatedTestingResultsOverall:
             self.data = {}
 
     def lookup_result(self, series, source, version):
+        if isinstance(self.data, Exception):
+            raise self.data
+
         for record in self.data:
             if (record.get('series') == series and
                     record.get('source') == source and
@@ -178,18 +189,25 @@ class AutomatedTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by adt-matrix summariser.
         else:
-            result = AutomatedTestingResults.lookup_result(s.bug.series, s.bug.name, s.bug.version)
-            task_status = result.task_status
-            if s.task.status != task_status:
-                cinfo("AutomatedTestingResults {} -> status {}".format(result.summary, task_status))
-                s.task.status = task_status
-                retval = True
-            s.bug.monitor_add({
-                "type": "automated-testing",
-                #"series": s.bug.series,
-                #"source": s.bug.name,
-                #"version": s.bug.version,
-                "status": result.status})
+            try:
+                result = AutomatedTestingResults.lookup_result(s.bug.series, s.bug.name, s.bug.version)
+                task_status = result.task_status
+                if s.task.status != task_status:
+                    cinfo("AutomatedTestingResults {} -> status {}".format(result.summary, task_status))
+                    s.task.status = task_status
+                    retval = True
+                s.bug.monitor_add({
+                    "type": "automated-testing",
+                    #"series": s.bug.series,
+                    #"source": s.bug.name,
+                    #"version": s.bug.version,
+                    "status": result.status})
+            except AutomatedTestingResultsError as e:
+                s.bug.monitor_add({
+                    "type": "automated-testing",
+                    "status": '--broken--'})
+                raise WorkflowBugTaskError(str(e))
+
 
         return retval
 
