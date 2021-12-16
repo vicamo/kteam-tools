@@ -47,6 +47,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--show-owner', help='Display target owner',
         action='store_true', default=False)
+    parser.add_argument('--limit-owner', help='Limit display target to owner',
+        action='append')
     parser.add_argument('--sort-phase', help='Sort by phase (including entry and exit)',
         action='store_true', default=False)
     args = parser.parse_args()
@@ -64,6 +66,9 @@ if __name__ == '__main__':
         generate_sort = sort_by_phase
 
     for (bug_id, bug_data) in status.trackers.items():
+        # Limits.
+        if args.limit_owner is not None and bug_data.get('owner') not in args.limit_owner:
+            continue
         for key in bug_data.keys():
             if ord(key[0]) == 160:
                 print(bug_id, bug_data)
