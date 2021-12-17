@@ -152,6 +152,7 @@ if __name__ == '__main__':
     #print(jira_cycles)
     for cycle in sorted(jira_cycles.keys()):
         print(" ", cycle)
+        cycles.add(cycle)
 
     jira_issues = {}
 
@@ -167,7 +168,7 @@ if __name__ == '__main__':
 
     for cycle in sorted(cycles):
         print("Cycle:", cycle)
-        trackers = cycle_trackers[cycle]
+        trackers = cycle_trackers.get(cycle, {})
         print("  SWM Trackers:", len(trackers))
 
         if cycle not in jira_cycles:
