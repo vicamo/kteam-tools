@@ -557,14 +557,20 @@ if __name__ == '__main__':
                 counts['all'] += len(data)
             for key, data in sorted(jira_summary_detail.get(task_name, {}).items()):
                 order, status = key
-                status_percentage = (counts.get(status, 0) * 100) / counts['all']
+                if counts['all'] == 0:
+                    status_percentage = 0
+                else:
+                    status_percentage = (counts.get(status, 0) * 100) / counts['all']
                 bits.append("* {} ({:.1f}%)".format(status, status_percentage))
                 entries = []
                 for entry, owner in data:
                     match = crank_re.match(entry.fields.summary)
                     entries.append((match.group(1), "** [{}|/browse/{}] {}".format(match.group(1), entry.key, owner)))
                 bits += [x[1] for x in sorted(entries)]
-            complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
+            if counts['all'] == 0:
+                complete_percentage = 0
+            else:
+                complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
             bits.insert(0, "Overall: {:.1f}% complete".format(complete_percentage))
             summary = issue.fields.summary.rsplit(' (')[0] + ' ({:.1f}%)'.format(complete_percentage)
             if issue.fields.description is not None:
