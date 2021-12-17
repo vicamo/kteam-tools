@@ -234,6 +234,14 @@ if __name__ == '__main__':
 
         for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
             sys.stdout.flush()
+
+            # Tag up all crank trackers so then end up in the right section.
+            if key in jira_issues:
+                issue = jira_issues[key]
+                if 'kernel-crank' not in issue.fields.labels:
+                    print(issue, "marking as crank")
+                    issue.add_field_value('labels', 'kernel-crank')
+
             if key not in trackers:
                 issue = jira_issues[key]
                 status = str(issue.fields.status)
