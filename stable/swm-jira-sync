@@ -211,6 +211,8 @@ if __name__ == '__main__':
 
                 if summary == 'Cycle Status':
                     jira_cycle_status_key = issue.key
+                    if 'kernel-status' not in issue.fields.labels:
+                        issue.add_field_value('labels', 'kernel-status')
                     continue
 
                 match = respin_re.match(summary)
