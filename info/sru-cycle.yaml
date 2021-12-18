@@ -15,11 +15,19 @@
 #       the release date of this SRU cycle; YYYY-MM-DD format
 #  * hold (bool)
 #       the cycle is on hold; infer kernel-block on all active packages
+#  * current (bool)
+#       indicates which sru cycle is the current cycle. the current field only
+#       needs to exist on the current cycle entry
+#  * cutoff-date (string)
+#       the date patches are no longer applied to the git repos for the given
+#       cycle
 
 '2022.01.03':
     release-date: '2022-01-24'
 
 '2021.11.29':
+    current: true,
+    cutoff-date: 2021.11.24,
     release-date: '2022-01-04'
 
 '2021.11.08':
