@@ -172,6 +172,10 @@ class PromoteFromTo(Promoter):
             if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
                 cinfo('            new-review no longer ready pulling back from Confirmed', 'yellow')
                 pull_back = True
+            for task_src in s.task_srcs:
+                if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
+                    cinfo('            {} no longer ready pulling back from Confirmed'.format(task_src), 'yellow')
+                    pull_back = True
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
