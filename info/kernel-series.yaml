@@ -4941,7 +4941,35 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-fde/+git/bionic']
             supported: false
+            owner: wenchien
+            development: true
             private: true
+            derived-from: ['18.04', 'linux']
+            snaps:
+                abb-dfa-apc2200-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'vasteras']
+                    gated: false
+                    promote-to: 'stable'
+                    publish-to:
+                        amd64: ['latest']
+                    qa: false
+                    hw-cert: true
+                bar-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'fortknox']
+                    gated: false
+                    promote-to: 'stable'
+                    publish-to:
+                        amd64: ['latest']
+                    qa: false
+                    hw-cert: true
+                interactive-strength-fs0001-kernel:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'presidio']
+                    gated: false
+                    promote-to: 'stable'
+                    publish-to:
+                        amd64: ['latest']
+                    qa: true
+                    hw-cert: true
 
 # 17.10 (artful)
 '17.10':
