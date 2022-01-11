@@ -3,6 +3,8 @@
 # Upload a set of kernel source packages to a PPA
 #
 
+UPLOAD_DIR=$PWD
+
 function out()
 {
 	local rc=$?
@@ -34,12 +36,17 @@ function get_changes_file()
 		version=$(dpkg-parsechangelog -l "${DEBIAN}"/changelog -S Version)
 		changes=${src}_${version}_source.changes
 
-		if ! [ -e "../${changes}" ] ; then
-			echo "No such changes file: ${changes}" >&2
-			exit 1
+		if [ -e "../${changes}" ] ; then
+			echo "../${changes}"
+			exit 0
+		fi
+		if [ -e "${UPLOAD_DIR}/${changes}" ] ; then
+			echo "${UPLOAD_DIR}/${changes}"
+			exit 0
 		fi
 
-		echo "$changes"
+		echo "No such changes file: ${changes}" >&2
+		exit 1
 	)
 }
 
@@ -62,7 +69,7 @@ function sign_src()
 		fi
 
 		# shellcheck disable=SC2086
-		debsign ${sign_opts[*]} "../${changes}"
+		debsign ${sign_opts[*]} "${changes}"
 	)
 }
 
@@ -76,7 +83,7 @@ function dput_src()
 		changes="$(get_changes_file "$dir")"
 		echo "${changes}"
 
-		dput "${ppa}" "../${changes}"
+		dput "${ppa}" "${changes}"
 	)
 }
 
