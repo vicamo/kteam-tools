@@ -1373,7 +1373,7 @@ defaults:
 
         linux-hwe-5.13:
             routing: stable-drivers
-            variants: [ '-hwe-20.04-edge' ]
+            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.13:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13-next']
@@ -1411,7 +1411,7 @@ defaults:
 
         linux-hwe-5.11:
             routing: stable-drivers
-            variants: [ '-hwe-20.04' ]
+            variants: [ ]
             packages:
                 linux-hwe-5.11:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11']
@@ -1428,7 +1428,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: smb
             development: false
             backport: true
