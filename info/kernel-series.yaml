@@ -1534,6 +1534,7 @@ defaults:
                     nv-dgx:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing', 'verification-testing']
 
         linux-intel-5.13:
             variants: [ '--' ]
