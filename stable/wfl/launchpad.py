@@ -5,8 +5,8 @@ from lpltk.LaunchpadService import LaunchpadService
 try:
     from launchpadlib.credentials import AuthorizeRequestTokenWithURL
 except ImportError:
-    from .launchpad_compat import AuthorizeRequestTokenWithURL
-from .launchpad_cache import LaunchpadCache
+    from ktl.launchpad_compat import AuthorizeRequestTokenWithURL
+from ktl.launchpad_cache import LaunchpadCache
 
 
 # Launchpad
