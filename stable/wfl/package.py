@@ -814,7 +814,12 @@ class Package():
                 pkgs[package.type if package.type else 'main'] = package.name
             s.bug.bprops['packages'] = pkgs
 
-        return s.bug.bprops['packages']
+        retval = {}
+        for package_type, package_name in sorted(s.bug.bprops['packages'].items()):
+            if s.bug.task_status(s.__pkg_task(package_type)) != 'Invalid':
+                retval[package_type] = package_name
+
+        return retval
 
     # dependent_packages_for_pocket
     #
