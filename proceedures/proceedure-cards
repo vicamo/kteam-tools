@@ -1,171 +1,103 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-so_trello()
-{
-	so-trello-dev "$@"
-}
+import argparse
+import os
+import sys
+import yaml
 
-list()
-{
-	local board="$1"
-	local list="$2"
+from jira import JIRA
+from jira.exceptions import JIRAError
+from jira.resources import GreenHopperResource
 
-	echo "LIST $board $list ..."
-	so_trello board-addlist \
-		--board "$board" \
-		--with-name "$list"
-}
 
-card()
-{
-	local board="$1"
-	local list="$2"
-	local name="$3"
-	local body="$4"
+class SRUBoardError(Exception):
+    pass
 
-	echo "CARD $board/$list $name ..."
-	so_trello list-addcard \
-		--board "$board" \
-		--list "$list" \
-		--with-name "$name" \
-		--with-desc "$body"
-}
 
-checklist()
-{
-	local board="$1"
-	local card="$2"
-	local name="$3"
+class JIRAIssues:
+    def __init__(self, project_key, component=None, dryrun=False):
+        '''
+        :param project_key: The project in which the issues will be created
+        :param component: The component to add to the issues
+        '''
+        self.jira = JIRA('https://warthogs.atlassian.net/',
+            options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
 
-	echo "CHECKLIST $board/$card $name ..."
-	so_trello card-addchecklist \
-		--board "$board" \
-		--card "$card" \
-		--with-name "$name"
-}
-checkitem()
-{
-	local board="$1"
-	local card="$2"
-	local checklist="$3"
-	local name="$4"
+        self.project_key = project_key
+        self.component = component
+        self.dryrun = dryrun
 
-	echo "CHECKITEM $board/$card/$checklist $name ..."
-	so_trello checklist-addcheckitem \
-		--board "$board" \
-		--card "$card" \
-		--checklist "$checklist" \
-		--with-name "$name"
-}
+        self.issues = {}
 
-if false; then
-	list()
-	{
-		echo "LIST:"
-		echo " board<$1>"
-		echo " list<$2>"
-	}
-	card()
-	{
-		echo "CARD:"
-		echo " board<$1>"
-		echo " list<$2>"
-		echo " title<$3>"
-		echo " body<$4>"
-	}
-	checklist()
-	{
-		echo "CHECKLIST:"
-		echo " board<$1>"
-		echo " card<$2>"
-		echo " name<$3>"
-	}
-	checkitem()
-	{
-		echo "CHECKITEM:"
-		echo " board<$1>"
-		echo " card<$2>"
-		echo " checklist<$3>"
-		echo " name<$4>"
-	}
-fi
+    def add_issue(self, name, desc=None, state=None, prereqs=None):
+        """
+        Add the given card to the board.
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $0 <board> <proceedure-file>" 1>&2
-	exit 1
-fi
-trello_board="$1"
-proceedure="$2"
+        :param name: card name
+        :param desc: card description
+        :param state: initial issue state
+        :return: None
+        """
 
-list "$trello_board" "Done"
-list "$trello_board" "In Progress"
+        if prereqs is None:
+            prereqs = []
 
-sed \
-	-e 's///g' \
-	-e "s/‘/'/g" \
-	-e "s/’/'/g" \
-	-e 's/“/"/g' \
-	-e 's/”/"/g' \
- <"$proceedure" | \
-awk '
-	BEGIN				{ emit=0 }
-	/== /				{ emit=1; print "EOC"; print; next }
-	/^$/				{ next }
-	/^[^ -]/			{ emit=0; next }
-	(/^ -/ && emit)			{ print "EOC" }
-	(emit == 1)			{ print $0 }
-	END				{ print "EOC" }
-' | {
-	title=""
-	body=""
-	trello_list="Backlog"
-	while IFS='' read -r line
-	do
-		##echo "LINE: $line" | cat -vet
-		case "$line" in
-		EOC)
-			if [ "$title" != '' ]; then
-				card "$trello_board" "$trello_list" "$title" "$body"
-				trello_card="$title"
-			fi
-			# Add any checklists and items.
-			echo "$body" | \
-			{
-				let n=0
-				while read mark type text
-				do
-					[ "$type" != 'PREREQ:' ] && continue
-					let n="$n+1"
-					echo "0 checklist Prerequisites"
-					echo "$n checkitem Prerequisites $text"
-				done | sort -u | \
-				while read order cmd checklist text
-				do
-					"$cmd" "$trello_board" "$trello_card" "$checklist" "$text"
-				done
-			}
-			title=''
-			body=''
-			;;
-		'== '*)
-			trello_list="$line"
-			trello_list="${trello_list% ==}"
-			trello_list="${trello_list#== }"
-			##echo "LIST: $trello_list"
-			list "$trello_board" "$trello_list"
-			;;
-		' - '*)
-			title=$( echo "$line" | sed -e 's/^ - //' )
-			;;
-		*)
-			##echo "BODY: $line"
-			if [ "$body" = '' ]; then
-				body="$line"
-			else
-				body="$body
-$line"
-			fi
-			;;
-		esac
-	done
-}
+        params = {
+            'project': {'key': self.project_key},
+            'summary': name,
+            'issuetype': {'name': 'Task'},
+        }
+        if desc is not None:
+            params['description'] = desc
+        if self.component is not None:
+            print(" ", "add component", self.component)
+            params['components'] = [{'name': self.component}]
+
+        if self.dryrun:
+            print('DRY: Add "{}" issue in "{}"'.format(name, state))
+            if desc:
+                print('DRY:     "{}"'.format(desc))
+        else:
+            print('Adding issue: {}'.format(name))
+            issue = self.jira.create_issue(fields=params)
+            print(issue)
+
+            #if self.component is not None:
+            #    print(" ", "add component", self.component)
+            #    issue.add_field_value('components', {'name': self.component})
+
+            if state == 'On Deck':
+                print(" ", "move -> To Do")
+                self.jira.transition_issue(issue, transition='To Do')
+            self.issues[name] = issue.key
+
+            for prereq in prereqs:
+                print(" ", "add prereq", prereq)
+                prereq_key = self.issues[prereq]
+                self.jira.create_issue_link('Blocks', prereq_key, issue.key)
+
+
+    def add_bulk(self, issues):
+        for issue in issues:
+            self.add_issue(issue['name'], issue.get('description', ''), issue.get('list', 'In Backlog'), issue.get('prerequisites'))
+
+
+if __name__ == '__main__':
+
+    description = 'Create a set of JIRA issues'
+    epilog = '''
+The script reads the configuration from a yaml file, creates issues
+in a selected project.
+'''
+    parser = argparse.ArgumentParser(description=description, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('project', help='JIRA project key', action='store')
+    parser.add_argument('config', help='issue configuration yaml file', action='store')
+    parser.add_argument('--component', help='issue component with project', action='store')
+    parser.add_argument('--dry-run', help='dry-run option', action='store_true')
+    args = parser.parse_args()
+
+    with open(args.config) as cfd:
+        config = yaml.safe_load(cfd)
+    issues = JIRAIssues(args.project, args.component, dryrun=args.dry_run)
+    issues.add_bulk(config['cards'])
