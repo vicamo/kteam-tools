@@ -210,9 +210,12 @@ defaults:
         classic-fde:
             <<: *routing-table-stable-drivers
             security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/classic-fde', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/classic-fde2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/classic-fde3', 'Release']
+                #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde', 'Release']
+                #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde2', 'Release']
+                #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde3', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-1', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde', 'Release']
         prerelease:
