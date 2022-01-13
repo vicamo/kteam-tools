@@ -1,0 +1,40 @@
+cards:
+  - name: "Identify formal EOL date"
+    description: |
+      - Liase with Foundations to get the official EOL date.
+    prerequisites:
+    list: Backlog
+  - name: "Pick last SRU cycle and announce"
+    description: |
+      - Pick a likely last SRU cycle announce this via email
+    prerequisites:
+    list: Backlog
+  - name: "Review CVEs for must haves"
+    description: |
+      - Review open CVEs for must have fixes to hit before the last SRU cycle is committed
+    prerequisites:
+    list: Backlog
+  - name: "Mark series as unsupported in Ubuntu KTL"
+    description: |
+      - NEEDS: EOL date formally past
+      - kteam-tools/info/kernel-series.yaml
+    prerequisites:
+    list: Backlog
+  - name: "Disable chroots"
+    description: |
+      - kteam-tools/chroot-setup
+      - Add series to expired_releases list in scripts/chroots-defs.conf
+      - Remove chroots from builders
+    prerequisites:
+    list: Backlog
+  - name: "Drop series from ADT matrix"
+    description: |
+      - drop series specific hints
+    prerequisites:
+    list: Backlog
+  - name: "Close series nominations Won't Fix"
+    description: |
+      - NEEDS: EOL date formally past
+      - kteam-tools/bugs/close-eol-nominations <series>
+    prerequisites:
+    list: Backlog

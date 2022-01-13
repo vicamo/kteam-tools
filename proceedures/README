@@ -10,4 +10,6 @@ Create a new board for the checklist to populate.  The proceedure-cards
 script will use the so-trello (snap install so-trello) command to create
 the lists and cards from the proceedure file:
 
-  ./proceedure-cards 'Artful Opening' series-opening
+  ./proceedure-cards [--component <component>] <project> <proceedure.yaml>
+
+  ./proceedure-cards --component SPOC KERN series-opening.yaml

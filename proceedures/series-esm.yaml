@@ -1,0 +1,36 @@
+cards:
+  - name: "Pick last SRU cycle and announce"
+    description: |
+      - Pick a likely last SRU cycle announce this via email
+    prerequisites:
+    list: Backlog
+  - name: "Last public SRU cycle: <date>"
+    description: |
+      - Close this when the final cycle completes
+    prerequisites:
+    list: Backlog
+  - name: "Review CVEs for must haves"
+    description: |
+      - Review open CVEs for must have fixes to hit before the last SRU cycle is committed
+    prerequisites:
+    list: Backlog
+  - name: "Mark series as ESM in kernel-series"
+    description: |
+      - NEEDS: EOL date formally past
+      - kteam-tools/info/kernel-series.yaml
+    prerequisites:
+      - "Last public SRU cycle: <date>"
+    list: Backlog
+  - name: "Create ESM git repositories"
+    description: |
+      - create and seed initial repositories
+        - use publish-tags once ESM status is set.
+    prerequisites:
+      - "Last public SRU cycle: <date>"
+      - "Mark series as ESM in kernel-series"
+    list: Backlog
+  - name: "Confirm cve-autotriage working"
+    description: |
+    prerequisites:
+      - "Create ESM git repositories"
+    list: Backlog

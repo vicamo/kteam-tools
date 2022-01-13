@@ -1,0 +1,71 @@
+cards:
+  - name: "Choose unique kernel name"
+    description: |
+    - Pick a sensible name which will not collide with other projects from
+      the same customer/hardware etc.
+    prerequisites:
+    list: To Do
+  - name: "Create source repositories"
+    description: |
+    - PUBLIC: create new repositories for the various components in
+      lp:~canonical-kernel/ubuntu/+source/linux-<kernel-name>/+git/<series>.
+    - PRIVATE: create appropriate repositories in our private project.
+    prerequisites:
+    list: To Do
+  - name: "Add new kernel to kernel-series"
+    description: |
+    - Add the new kernel to kernel-series marked supported: false so we
+      reserve the name.
+    - Ensure we have appropriate repo definitions so that reviewer can find
+      the trees.
+    prerequisites:
+    list: To Do
+  - name: "Identify package routing"
+    description: |
+    - PUBLIC: we will use default routing and the archive.
+    - PRIVATE: figure out where this will be built and published.  We will
+      require a build PPA, possibly a signing PPA, a proposed PPA, and an updates
+      PPA.
+    - Add this information to kernel-series.
+    prerequisites:
+    list: To Do
+  - name: "Plumb project into CVE tracker"
+    description: |
+    - If needed plumb this kernel into the CVE tracker.
+    prerequisites:
+    list: To Do
+  - name: "Review Initial Tree"
+    description: |
+    - review the current version of the tree with a view to maintainability
+    prerequisites:
+    list: To Do
+  - name: "Review Final Tree"
+    description: |
+    - review the current version of the tree with a view to maintainability
+    prerequisites:
+    list: Backlog
+  - name: "Confirm Team Access (private only)"
+    description: |
+    - PRIVATE: add ~canonical-kernel-uploaders to the project
+    - PRIVATE: give ~canonical-kernel-uploaders write access to the git
+      repositories (admin-lp-update-permissions should do this once it is
+      in kernel-series)
+    - PRIVATE: subscribe ~canonical-kernel-crankers to the build, proposed,
+      and updates PPAs
+    - PRIVATE: subscribe ~canonical-kernel-crankers to the git repositories
+    prerequisites:
+    list: Backlog
+  - name: "Confirm ubuntu-bot Access (private only)"
+    description: |
+    - PRIVATE: add ~ubuntu-kernel-bot to the project so it has permission
+      to acccess the repositories and PPAs
+    - PRIVATE: add a git insteadOf configuration for this on wani
+     - wani.canonical.com:~kernel-ppa/shankbot/.gitconfig
+    prerequisites:
+    list: Backlog
+  - name: "Mark the kernel supported in kernel-series"
+    description: |
+    - Where the kernel is to follow the primary SRU cycle we will mark it
+      supported: true in kernel-series.
+    prerequisites:
+    list: Backlog
