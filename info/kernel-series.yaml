@@ -1377,6 +1377,44 @@ defaults:
                         arches: ['amd64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
+        linux-hwe-5.15:
+            routing: stable-drivers
+            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
+            packages:
+                linux-hwe-5.15:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.15-next']
+                linux-meta-hwe-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.15']
+                linux-signed-hwe-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'hwe-5.15']
+                linux-restricted-modules-hwe-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/focal', 'hwe-5.15']
+                linux-restricted-generate-hwe-5.15:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.15:
+                    type: lrs
+            supported: true
+            owner: arighi
+            development: false
+            backport: true
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    lowlatency:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+
         linux-hwe-5.13:
             routing: stable-drivers
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
