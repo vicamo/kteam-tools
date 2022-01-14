@@ -152,6 +152,7 @@ if __name__ == '__main__':
     #print(jira_cycles)
     for cycle in sorted(jira_cycles.keys()):
         print(" ", cycle)
+        cycles.add(cycle)
 
     jira_issues = {}
 
@@ -167,7 +168,7 @@ if __name__ == '__main__':
 
     for cycle in sorted(cycles):
         print("Cycle:", cycle)
-        trackers = cycle_trackers[cycle]
+        trackers = cycle_trackers.get(cycle, {})
         print("  SWM Trackers:", len(trackers))
 
         if cycle not in jira_cycles:
@@ -210,6 +211,8 @@ if __name__ == '__main__':
 
                 if summary == 'Cycle Status':
                     jira_cycle_status_key = issue.key
+                    if 'kernel-status' not in issue.fields.labels:
+                        issue.add_field_value('labels', 'kernel-status')
                     continue
 
                 match = respin_re.match(summary)
@@ -233,6 +236,14 @@ if __name__ == '__main__':
 
         for key in sorted(set(list(trackers.keys()) + list(jira_issues.keys()))):
             sys.stdout.flush()
+
+            # Tag up all crank trackers so then end up in the right section.
+            if key in jira_issues:
+                issue = jira_issues[key]
+                if 'kernel-crank' not in issue.fields.labels:
+                    print(issue, "marking as crank")
+                    issue.add_field_value('labels', 'kernel-crank')
+
             if key not in trackers:
                 issue = jira_issues[key]
                 status = str(issue.fields.status)
@@ -556,14 +567,20 @@ if __name__ == '__main__':
                 counts['all'] += len(data)
             for key, data in sorted(jira_summary_detail.get(task_name, {}).items()):
                 order, status = key
-                status_percentage = (counts.get(status, 0) * 100) / counts['all']
+                if counts['all'] == 0:
+                    status_percentage = 0
+                else:
+                    status_percentage = (counts.get(status, 0) * 100) / counts['all']
                 bits.append("* {} ({:.1f}%)".format(status, status_percentage))
                 entries = []
                 for entry, owner in data:
                     match = crank_re.match(entry.fields.summary)
                     entries.append((match.group(1), "** [{}|/browse/{}] {}".format(match.group(1), entry.key, owner)))
                 bits += [x[1] for x in sorted(entries)]
-            complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
+            if counts['all'] == 0:
+                complete_percentage = 0
+            else:
+                complete_percentage = (counts.get('Complete', 0) * 100) / counts['all']
             bits.insert(0, "Overall: {:.1f}% complete".format(complete_percentage))
             summary = issue.fields.summary.rsplit(' (')[0] + ' ({:.1f}%)'.format(complete_percentage)
             if issue.fields.description is not None:
@@ -573,7 +590,7 @@ if __name__ == '__main__':
             description += '\n-- summary --\n'
             description += '\n'.join(bits)
             if issue.fields.summary != summary or issue.fields.description != description:
-                issue.update(summary=summary, description=description)
+                issue.update(summary=summary, description=description, notify=False)
 
     # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen
