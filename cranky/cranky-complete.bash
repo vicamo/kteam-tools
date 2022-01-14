@@ -15,7 +15,7 @@ _cranky() {
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
 		"fdr -h --help -c --clean"
 		"fix -h --help"
-		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle"
+		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle -c --cve"
 		"list-routing -h --help -v --verbose HANDLE"
 		"list-derivatives -h --help -v --verbose --has-lrm --has-signed HANDLE"
 		"list-owners -h --help -v --verbose --include-esm --include-devel --by-owner HANDLE"
