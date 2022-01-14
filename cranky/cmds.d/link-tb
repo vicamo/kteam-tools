@@ -17,6 +17,10 @@ Optional arguments:
                                      link-tb has been run before
   -s, --sru-cycle <SRU_CYCLE>        Specify the SRU cycle tag to look for
                                      when looking for a TB
+  -c, --cve                          For embargoed CVE cranks. Do not update
+                                     the tracking bug, update only the local
+                                     file ('tracking-bug') committing with the
+                                     private BugLink format.
 Examples:
   Running without arguments will try to locate the right tracking bug from the
   most recent SRU cycle:
@@ -54,6 +58,10 @@ while [ "${#}" -gt 0 ] ; do
 		-r|--re-run)
 			echo "(This is a re-run)"
 			args+=('--re-run')
+			;;
+		-c|--cve)
+			echo "(Running in CVE mode)"
+			args+=('--cve')
 			;;
 		-h|--help)
 			usage

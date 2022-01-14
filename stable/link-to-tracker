@@ -303,12 +303,18 @@ class Tracking():
                 with open(tracking, 'w') as f:
                     print(bugid, s.bug_to_sru_cycle(lpbug), file=f)
 
+                if s.args.cve:
+                    bug_msg = "{} ({} (LP: #{}))".format(bugid, title, bugid)
+                else:
+                    bug_msg = bugid
+
                 msg = """
 UBUNTU: link-to-tracker: update tracking bug
 
 BugLink: https://bugs.launchpad.net/bugs/{}
 Properties: no-test-build
-                """.strip().format(bugid)
+                """.strip().format(bug_msg)
+
                 retval, out = sh('git add %s' % (tracking), quiet=True)
                 if retval != 0:
                     raise AppError('Unable to add tracking bug number')
@@ -319,18 +325,19 @@ Properties: no-test-build
 
             retval = 0
 
-            lpbug.title = title
-            lpbug.lp_save()
+            if not s.args.cve:
+                lpbug.title = title
+                lpbug.lp_save()
 
-            for task_name in tasks_by_name:
-                if 'prepare-package' not in task_name:
-                    continue
-                task = tasks_by_name[task_name].lp_task
-                if task.status == 'Invalid':
-                    continue
-                task.status = "In Progress"
-                task.assignee = s.launchpad.me
-                task.lp_save()
+                for task_name in tasks_by_name:
+                    if 'prepare-package' not in task_name:
+                        continue
+                    task = tasks_by_name[task_name].lp_task
+                    if task.status == 'Invalid':
+                        continue
+                    task.status = "In Progress"
+                    task.assignee = s.launchpad.me
+                    task.lp_save()
 
         except AppError as e:
             print("ERROR: " + str(e), file=sys.stderr)
@@ -363,6 +370,7 @@ if __name__ == '__main__':
     parser.add_argument('--re-run', action='store_true', default=False, help='')
     parser.add_argument('--sru-cycle', action='store', help='')
     parser.add_argument('--compat', action='store_true', default=False, help='Use compatibility (old process) mode')
+    parser.add_argument('--cve', action='store_true', default=False, help='CVE mode')
     args = parser.parse_args()
 
     # If logging parameters were set on the command line, handle them
