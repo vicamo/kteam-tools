@@ -100,7 +100,7 @@ class Tracking():
         search_status          = ["New", "In Progress", "Incomplete", "Fix Committed"]
         # The tracking bugs that we are interested in should have been created recently (days).
         #
-        search_since           = datetime.utcnow() - timedelta(days=30)
+        search_since           = datetime.utcnow() - timedelta(days=45)
         lp_project = s.launchpad.projects[project]
         tasks = lp_project.searchTasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
