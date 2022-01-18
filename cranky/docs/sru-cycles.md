@@ -116,3 +116,87 @@ Again, "2019.09.24" is a real SRU cycle, so update accordingly. For more
 options, see the "--help" output.
 
 ## The next several steps are performed by all Stable Team crank-turners
+
+## LRM-only respin as a non-forward port kernel
+
+During Jammy devel cycle, we didn't want to create forward ports of
+the cloud kernels, yet had a new upload of nvidia-drivers and wanted
+to do lrm-only respin, without rebuilding cloud kernels as forward
+ports. Here is what we did to achieve that.
+
+Edit kernel-series.yaml to specify that linux-azure is derived from
+the devel series linux kernel, instead of deriving from current stable
+series.
+
+Export `USE_LOCAL_KERNEL_SEREIS_YAML=1` from now on.
+
+Run create-kernel-tasks, whilst limiting it to the current series and
+handle:
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 ~/canonical/kteam-tools/stable/create-kernel-tasks --handle jammy:linux-azure --allow-nomaster --spin 1 2021.10.26
+```
+
+Where the 2021.10.26 is the last devel cycle.
+
+Wait for the bot to populate the tracking bug with all the tasks.
+
+Remove the kernel-stable-master-bug key, and under packages key remove
+main & meta & signed (if present) packages from packages under swm
+properties, and mark the tasks for main, meta, signed (if present) as
+invalid. And expect the prepare-packages status to be ready to create
+lrm, lrs, lrg packages only.
+
+At this point one can checkout the handle jammy:linux-azure
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky checkout jammy:linux-azure
+```
+
+If you need to change the series, create new changelog entry, with the
+same version number as before but update the series from previous
+stable (impish in our case) to current devel series (jammy).
+
+Do cranky open and link tb:
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky open -r
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky link-tb
+```
+
+Make sure `link-tb` is successful, such that swm is in a happy state.
+
+If you need to change the series, similarly edit changelog entry in
+lrm from stable to devel (impish to jammy) across all the packages
+(main, meta, signed, etc) and then run cranky update-dependent in the
+lrm package.
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky update-dependent
+```
+
+Check that new entry is for devel series (jammy), and potentially
+revert the old debian/changelog entry back to impish to ensure there
+is no spurious diff of the old changelog. Ideally the version number
+will be the same as before, but with `+1` number after it.
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky tag
+```
+
+If all looks good, one can build lrm source only and upload it alone:
+
+```
+USE_LOCAL_KERNEL_SERIES_YAML=1 cranky build-sources --current
+```
+
+and upload to the build routing, and push lrm repository only.
+
+```
+git push --follow-tags master
+```
+
+Revert any changes from the main linux package.
+
+The sample tracking bug for this is
+https://bugs.launchpad.net/bugs/1958256
