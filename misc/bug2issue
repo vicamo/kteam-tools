@@ -64,7 +64,7 @@ def main():
                     'name': args.component,
                 },
             ],
-            'description': lp_bug.description,
+            'description': lp_bug.description[:4000],
             'issuetype': {
                 'name': 'Task',
                 'subtask': False,
