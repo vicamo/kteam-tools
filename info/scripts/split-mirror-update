@@ -1,0 +1,31 @@
+#!/bin/bash
+
+here=$(dirname $(readlink -f "$0"))
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <published-info-directory>" 1>&2
+	exit 1
+fi
+out="$1"
+
+cd "$out" || exit 1
+
+if [ ! -f "split/.kernel-series.yaml" ]; then
+	update=y
+
+elif ! cmp -s "kernel-series.yaml" "split/.kernel-series.yaml"; then
+	update=y
+
+else
+	update=
+fi
+
+if [ "$update" ]; then
+	echo "II: upstream kernel-series.yaml changed ..."
+	"$here/ks-split" "kernel-series.yaml" "split" && cp "kernel-series.yaml" "split/.kernel-series.yaml"
+	ls -1t "split" | tail -n +10 | \
+	while IFS= read -r old
+	do
+		rm -rf "split/$old"
+	done
+fi
