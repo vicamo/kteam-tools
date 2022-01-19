@@ -34,17 +34,13 @@ version = version_dir.split('/')[-1]
 with open(ks_file) as kfd:
     raw = yaml.safe_load(kfd)
 
-routing_rest = None
+routing_tables = []
 top_rest = {}
 
 for series_name, series_data in raw.items():
     if series_name == 'defaults':
         continue
     series_codename = series_data['codename']
-
-    # XXX: we assume there is only one of these ... check?
-    if routing_rest is None and 'routing-table' in series_data:
-        routing_rest = series_data['routing-table']
 
     series_rest = copy.deepcopy(series_data)
     if 'sources' in series_rest:
@@ -63,9 +59,16 @@ for series_name, series_data in raw.items():
 
     # Drop the routing-table data -- it is duplicated into each
     # and every series.
-    if 'routing-table' in series_rest:
+    if 'routing-table' in series_rest :
+        routing_table = series_rest['routing-table']
+        try:
+            index = routing_tables.index(routing_table)
+        except ValueError:
+            index = len(routing_tables)
+            routing_tables.append(routing_table)
+        routing_file = 'routing-table{}.json'.format(index)
         del series_rest['routing-table']
-        series_rest['routing-table'] = {'__l': "{}/routing-table.json".format(version)}
+        series_rest['routing-table'] = {'__l': "{}/{}".format(version, routing_file)}
 
     series_rest['name'] = series_name
     # Accumulate the series set.
@@ -75,7 +78,10 @@ for series_name, series_data in raw.items():
     if 'sources' in series_data:
         json_dumper(series_data['sources'], os.path.join(version, series_codename, "sources.json"))
 
-json_dumper(routing_rest, os.path.join(version, "routing-table.json"))
+index = 0
+for routing_table in routing_tables:
+    json_dumper(routing_table, os.path.join(version, "routing-table{}.json".format(index)))
+    index += 1
 json_dumper(top_rest, "kernel-series.json.new")
 top = os.path.join(out, "kernel-series.json")
 os.rename(top + ".new", top)
