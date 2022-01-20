@@ -50,13 +50,13 @@ for series_name, series_data in raw.items():
         if True: #series_rest.get('supported', False) or series_rest.get('development', False):
             for source_name, source_data in series_data['sources'].items():
                 data = {
-                    '__k': "{}/{}/sources.json".format(version, series_codename),
+                    '__k': "{}/{}/sources".format(version, series_codename),
                     'supported': source_data.get('supported'),
                     'development': source_data.get('development')}
                 series_rest['sources'][source_name] = data
         else:
             series_rest['sources'] = {
-                    '__l': "{}/{}/sources.json".format(version, series_codename)}
+                    '__l': "{}/{}/sources".format(version, series_codename)}
 
     # Drop the routing-table data -- it is duplicated into each
     # and every series.
@@ -67,7 +67,7 @@ for series_name, series_data in raw.items():
         except ValueError:
             index = len(routing_tables)
             routing_tables.append(routing_table)
-        routing_file = 'routing-table{}.json'.format(index)
+        routing_file = 'routing-table{}'.format(index)
         del series_rest['routing-table']
         series_rest['routing-table'] = {'__l': "{}/{}".format(version, routing_file)}
 
@@ -77,11 +77,11 @@ for series_name, series_data in raw.items():
 
     # Dump the full sources list.
     if 'sources' in series_data:
-        json_dumper(series_data['sources'], os.path.join(version, series_codename, "sources.json"))
+        json_dumper(series_data['sources'], os.path.join(version, series_codename, "sources"))
 
 index = 0
 for routing_table in routing_tables:
-    json_dumper(routing_table, os.path.join(version, "routing-table{}.json".format(index)))
+    json_dumper(routing_table, os.path.join(version, "routing-table{}".format(index)))
     index += 1
 json_dumper(top_rest, "kernel-series.json.new")
 top = os.path.join(out, "kernel-series.json")
