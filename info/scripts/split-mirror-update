@@ -8,7 +8,17 @@ if [ "$#" -ne 1 ]; then
 fi
 out="$1"
 
-cd "$out" || exit 1
+echo "$(date): starting"
+
+cd "$out" || exit "$?"
+
+# Update the data and tooling.
+(
+	cd "$here" || exit "$?"
+
+	git fetch origin
+	git reset --hard origin/master
+) || exit "$?"
 
 if [ ! -f "split/.kernel-series.yaml" ]; then
 	update=y
@@ -29,3 +39,5 @@ if [ "$update" ]; then
 		rm -rf "split/$old"
 	done
 fi
+
+echo "$(date): complete"
