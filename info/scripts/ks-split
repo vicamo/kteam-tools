@@ -4,9 +4,9 @@ import argparse
 import copy
 import os
 import stat
+import string
 import sys
 import json
-import tempfile
 import yaml
 
 
@@ -27,9 +27,11 @@ out = args.output
 os.makedirs(out, exist_ok=True)
 
 # Make us a version directory to hold sub-components.
-version_dir = tempfile.mkdtemp(dir=out, prefix='', suffix='')
-os.chmod(version_dir, stat.S_IRWXU|stat.S_IRGRP|stat.S_IXGRP|stat.S_IROTH|stat.S_IXOTH)
-version = version_dir.split('/')[-1]
+for version in string.ascii_lowercase:
+    if not os.path.exists(os.path.join("split", version)):
+        break
+else:
+    raise ValueError()
 
 with open(ks_file) as kfd:
     raw = yaml.safe_load(kfd)
