@@ -77,11 +77,11 @@ for series_name, series_data in raw.items():
 
     # Dump the full sources list.
     if 'sources' in series_data:
-        json_dumper(series_data['sources'], os.path.join(version, series_codename, "sources"))
+        json_dumper(series_data['sources'], os.path.join(version, series_codename, "sources.json"))
 
 index = 0
 for routing_table in routing_tables:
-    json_dumper(routing_table, os.path.join(version, "routing-table{}".format(index)))
+    json_dumper(routing_table, os.path.join(version, "routing-table{}.json".format(index)))
     index += 1
 json_dumper(top_rest, "kernel-series.json.new")
 top = os.path.join(out, "kernel-series.json")
