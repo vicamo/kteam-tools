@@ -436,6 +436,30 @@ defaults:
             updates:
             security:
             release:
+        esm-v1: &routing-table-esm
+            <<: *routing-table-security-proposed
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
+        esm-v2:
+            <<: *routing-table-esm
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
   package-relations:
       default:
           meta:
@@ -7143,27 +7167,9 @@ defaults:
     supported: true
     lts: true
     esm: true
-    routing-table:
-        <<: *routing-table
-        esm:
-            <<: *routing-table-security-proposed
-            security-test:
-                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
-                - ['ubuntu', 'Updates']
-            release:
-                - ['ubuntu', 'Release']
+    routing-table: *routing-table
+    routing-map:
+        esm: esm-v2
     sources:
         linux:
             versions: ['4.4.0']
@@ -7747,27 +7753,9 @@ defaults:
     supported: true
     lts: true
     esm: true
-    routing-table:
-        <<: *routing-table
-        esm:
-            <<: *routing-table-security-proposed
-            security-test:
-                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
-                - ['ubuntu', 'Updates']
-            release:
-                - ['ubuntu', 'Release']
+    routing-table: *routing-table
+    routing-map:
+        esm: esm-v2
     sources:
         linux:
             versions: ['3.13.0']
@@ -8023,27 +8011,9 @@ defaults:
     supported: false
     lts: true
     esm: true
-    routing-table:
-        <<: *routing-table
-        esm:
-            <<: *routing-table-security-proposed
-            security-test:
-                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
-                - ['ubuntu', 'Updates']
-            release:
-                - ['ubuntu', 'Release']
+    routing-table: *routing-table
+    routing-map:
+        esm: esm-v1
     sources:
         linux:
             versions: ['3.2.0']
