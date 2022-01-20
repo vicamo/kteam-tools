@@ -20,17 +20,9 @@ cd "$out" || exit "$?"
 	git reset --hard origin/master
 ) || exit "$?"
 
-if [ ! -f "split/.kernel-series.yaml" ]; then
-	update=y
-
-elif ! cmp -s "kernel-series.yaml" "split/.kernel-series.yaml"; then
-	update=y
-
-else
-	update=
-fi
-
-if [ "$update" ]; then
+esum=$(cat "split/.kernel-series.yaml" 2>/dev/null)
+nsum=$(cat "$0" "$here/ks-split" "kernel-series.yaml" | md5sum | awk '{print($1);}')
+if [ "$esum" != "$nsum" ]; then
 	echo "II: upstream kernel-series.yaml changed ..."
 	"$here/ks-split" "kernel-series.yaml" "split" && cp "kernel-series.yaml" "split/.kernel-series.yaml"
 	ls -1t "split" | tail -n +10 | \
@@ -38,6 +30,7 @@ if [ "$update" ]; then
 	do
 		rm -rf "split/$old"
 	done
+	echo "$nsum" >"split/.kernel-series.yaml"
 fi
 
 echo "$(date): complete"
