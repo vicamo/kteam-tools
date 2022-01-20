@@ -81,6 +81,6 @@ index = 0
 for routing_table in routing_tables:
     json_dumper(routing_table, os.path.join(version, "routing-table{}.json".format(index)))
     index += 1
-json_dumper(top_rest, "kernel-seriesources.json.new")
-top = os.path.join(out, "kernel-seriesources.json")
+json_dumper(top_rest, "kernel-series.json.new")
+top = os.path.join(out, "kernel-series.json")
 os.rename(top + ".new", top)
