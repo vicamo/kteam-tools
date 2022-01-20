@@ -532,6 +532,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-kvm:
@@ -542,8 +543,9 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/jammy']
-            supported: true
-            backport: true
+            supported: false
+            development: true
+            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
