@@ -9,11 +9,16 @@ except ImportError:
 import os
 import yaml
 
+
 class KernelRoutingEntry:
     def __init__(self, ks, source, data):
         name = "{}:{}".format(source.series.codename, source.name)
         if isinstance(data, str):
+            # Map the name via the routing-map if present.
+            data = source.series.routing_map.get(data, data)
             name = data
+
+            # Look the name up in the routing table.
             table = source.series.routing_table
             if table is None:
                 raise ValueError("unable to map routing alias {}, "
@@ -568,6 +573,10 @@ class KernelSeriesEntry:
     @property
     def routing_table(self):
         return self._data.get('routing-table', None)
+
+    @property
+    def routing_map(self):
+        return self._data.get('routing-map', {})
 
     def lookup_source(self, source_key):
         sources = self._data.get('sources')
