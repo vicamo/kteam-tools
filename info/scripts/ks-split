@@ -40,7 +40,7 @@ top_rest = {}
 for series_name, series_data in raw.items():
     if series_name == 'defaults':
         continue
-    series_codename = series_data['codename']
+    series_codename = series_name
 
     series_rest = copy.deepcopy(series_data)
     if 'sources' in series_rest:
@@ -48,8 +48,7 @@ for series_name, series_data in raw.items():
         if True: #series_rest.get('supported', False) or series_rest.get('development', False):
             for source_name, source_data in series_data['sources'].items():
                 data = {
-                    '__l': "{}/{}/sources.json".format(version, series_codename),
-                    '__k': source_name,
+                    '__k': "{}/{}/sources.json".format(version, series_codename),
                     'supported': source_data.get('supported'),
                     'development': source_data.get('development')}
                 series_rest['sources'][source_name] = data
@@ -82,6 +81,6 @@ index = 0
 for routing_table in routing_tables:
     json_dumper(routing_table, os.path.join(version, "routing-table{}.json".format(index)))
     index += 1
-json_dumper(top_rest, "kernel-series.json.new")
-top = os.path.join(out, "kernel-series.json")
+json_dumper(top_rest, "kernel-seriesources.json.new")
+top = os.path.join(out, "kernel-seriesources.json")
 os.rename(top + ".new", top)
