@@ -20,17 +20,14 @@ cd "$out" || exit "$?"
 	git reset --hard origin/master
 ) || exit "$?"
 
-esum=$(cat "split/.kernel-series.yaml" 2>/dev/null)
-nsum=$(cat "$0" "$here/ks-split" "kernel-series.yaml" | md5sum | awk '{print($1);}')
+esum=$(cat ".kernel-series.csum" 2>/dev/null)
+nsum=$(cat "$0" "$here/ks-convert" "kernel-series.yaml" | md5sum | awk '{print($1);}')
 if [ "$esum" != "$nsum" ]; then
 	echo "II: upstream kernel-series.yaml changed ..."
-	"$here/ks-split" "kernel-series.yaml" "split" && cp "kernel-series.yaml" "split/.kernel-series.yaml"
-	ls -1t "split" | tail -n +10 | \
-	while IFS= read -r old
-	do
-		rm -rf "split/$old"
-	done
-	echo "$nsum" >"split/.kernel-series.yaml"
+	"$here/ks-convert" "kernel-series.yaml" "kernel-series.json.new"
+	gzip -9 "kernel-series.json.new"
+	mv "kernel-series.json.new.gz" "kernel-series.json.gz"
+	echo "$nsum" >".kernel-series.csum"
 fi
 
 echo "$(date): complete"

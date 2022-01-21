@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import argparse
+import json
+import yaml
+
+
+parser = argparse.ArgumentParser(description='Convert kernel-series.yaml to split json form.')
+parser.add_argument('input', help="Path to kernel-series.yaml")
+parser.add_argument('output', help="Path to split json directory")
+args = parser.parse_args()
+
+with open(args.input) as rfd:
+    data = yaml.safe_load(rfd)
+with open(args.output, "w") as wfd:
+    json.dump(data, fp=wfd, separators=(',', ':'))
