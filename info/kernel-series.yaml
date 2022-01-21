@@ -308,6 +308,8 @@ defaults:
             #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
         realtime:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
+            test:
+                - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
             proposed:
