@@ -433,7 +433,8 @@ class MonitorStatusSwmStatus:
 
     def changed(self):
         changed = set()
-        start_date = datetime.utcnow() # - timedelta(minutes=60)
+        #start_date = datetime.utcnow() # - timedelta(minutes=60)
+        start_date = datetime.now(timezone.utc)
 
         status = self.ss
 
@@ -444,6 +445,7 @@ class MonitorStatusSwmStatus:
         for bug_id, bug_data in sorted(status.trackers.items(), key=self.status_key):
             if 'refresh' in bug_data:
                 (when, why) = bug_data['refresh']
+                when = when.replace(tzinfo=timezone.utc)
                 print("REFRESH {} time={} delta={} trigger={} reason={}".format(bug_id, when, when - start_date, when < start_date, why))
                 #print("APW", bug_id, bug_data['refresh-time'], start_date)
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
@@ -452,6 +454,7 @@ class MonitorStatusSwmStatus:
                     changed.add(bug_id)
 
             scanned = bug_data.get('manager', {}).get('time-scanned')
+            scanned = scanned.replace(tzinfo=timezone.utc)
             if scanned is not None:
                 scan_refresh = scanned + timedelta(hours=3, minutes=30)
                 if scan_refresh < start_date:
