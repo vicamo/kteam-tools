@@ -92,8 +92,8 @@ class WorkflowManager():
         # do this if the bug is present at the start of our run to prevent
         # us cleansing bugs which were newly created and shanked by other
         # instances.
-        s.status_path = 'status.yaml'
-        s.status_altpath = 'status.json'
+        s.status_path = 'status.json'
+        s.status_altpath = 'status.yaml'
         s.status_validator = None
         s.Status_current = None
         with s.lock_status():
@@ -163,6 +163,27 @@ class WorkflowManager():
 
             s.status_save(status)
 
+    def _json_object_decode(self, obj):
+        isoformat = obj.get('_isoformat')
+        if isoformat is not None:
+            #return datetime.fromisoformat(isoformat)
+            # XXX: before python 3.6 fromisoformat is not available.
+            if isoformat[-3] == ':':
+                isoformat = isoformat[0:-3] + isoformat[-2:]
+            for fmt in (
+                    '%Y-%m-%dT%H:%M:%S.%f%z',
+                    '%Y-%m-%dT%H:%M:%S%z',
+                    '%Y-%m-%dT%H:%M:%S.%f',
+                    '%Y-%m-%dT%H:%M:%S'):
+                try:
+                    obj = datetime.strptime(isoformat, fmt)
+                    break
+                except ValueError:
+                    pass
+            else:
+                raise ValueError("isoformat: {} invalid format".format(isoformat))
+        return obj
+
     def status_load(s):
         status = {}
         if os.path.exists(s.status_path):
@@ -171,14 +192,14 @@ class WorkflowManager():
                 validator = (stat.st_ino, stat.st_mtime)
                 cinfo("VALIDATOR: {} {}".format(s.status_validator, validator))
                 if validator != s.status_validator:
-                    data = yaml.safe_load(rfd)
+                    data = json.load(rfd, object_hook=s._json_object_decode)
                     s.status_current = data.get('trackers', data)
                     s.status_validator = validator
             status = s.status_current
 
         return status
 
-    def json_object_encode(self, obj):
+    def _json_object_encode(self, obj):
         if isinstance(obj, datetime):
             return { '_isoformat': obj.isoformat() }
         raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
@@ -189,11 +210,11 @@ class WorkflowManager():
         data = {'trackers': status}
 
         with open(s.status_path + '.new', 'w') as wfd:
-            yaml.dump(data, wfd, default_flow_style=False)
+            json.dump(data, fp=wfd, default=s._json_object_encode, separators=(',', ':'))
         os.rename(s.status_path + '.new', s.status_path)
 
         with open(s.status_altpath + '.new', 'w') as wfd:
-            json.dump(data, fp=wfd, default=s.json_object_encode, separators=(',', ':'))
+            yaml.dump(data, wfd, default_flow_style=False)
         os.rename(s.status_altpath + '.new', s.status_altpath)
 
         # We are writing the file, update our cache.
