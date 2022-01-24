@@ -169,15 +169,20 @@ class WorkflowManager():
                 validator = (stat.st_ino, stat.st_mtime)
                 cinfo("VALIDATOR: {} {}".format(s.status_validator, validator))
                 if validator != s.status_validator:
-                    s.status_current = yaml.safe_load(rfd)
+                    data = yaml.safe_load(rfd)
+                    s.status_current = data.get('trackers', data)
                     s.status_validator = validator
             status = s.status_current
 
         return status
 
     def status_save(s, status):
-        with open(s.status_path + '.new', 'w') as rfd:
-            yaml.dump(status, rfd, default_flow_style=False)
+        # Use a top-level trackers collection to allow us to extend with
+        # non-tracker information later.
+        data = {'trackers': status}
+
+        with open(s.status_path + '.new', 'w') as wfd:
+            yaml.dump(data, wfd, default_flow_style=False)
         os.rename(s.status_path + '.new', s.status_path)
 
         # We are writing the file, update our cache.
