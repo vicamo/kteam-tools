@@ -5,6 +5,7 @@ from contextlib                         import contextmanager
 from copy                               import copy
 from datetime                           import datetime
 from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
+import json
 import os
 import yaml
 
@@ -92,6 +93,7 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.yaml'
+        s.status_altpath = 'status.json'
         s.status_validator = None
         s.Status_current = None
         with s.lock_status():
@@ -176,6 +178,11 @@ class WorkflowManager():
 
         return status
 
+    def json_object_encode(self, obj):
+        if isinstance(obj, datetime):
+            return { '_isoformat': obj.isoformat() }
+        raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
+
     def status_save(s, status):
         # Use a top-level trackers collection to allow us to extend with
         # non-tracker information later.
@@ -184,6 +191,10 @@ class WorkflowManager():
         with open(s.status_path + '.new', 'w') as wfd:
             yaml.dump(data, wfd, default_flow_style=False)
         os.rename(s.status_path + '.new', s.status_path)
+
+        with open(s.status_altpath + '.new', 'w') as wfd:
+            json.dump(data, fp=wfd, default=s.json_object_encode, separators=(',', ':'))
+        os.rename(s.status_altpath + '.new', s.status_altpath)
 
         # We are writing the file, update our cache.
         stat = os.stat(s.status_path)
