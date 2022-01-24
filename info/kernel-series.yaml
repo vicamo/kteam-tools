@@ -403,6 +403,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/jammy']
             supported: false
+            owner: juergh
             derived-from: ['22.04', 'linux']
             swm:
                 kernel-testing: true
