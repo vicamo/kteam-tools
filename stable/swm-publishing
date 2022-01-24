@@ -849,7 +849,7 @@ class FilterSwmStatus:
 
 
 if __name__ == '__main__':
-    factory = MonitorFactory(ss_file='status.yaml')
+    factory = MonitorFactory(ss_file='status.json')
 
     monitors = []
     monitors += factory.launchpad_project('kernel-sru-workflow')
