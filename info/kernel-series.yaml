@@ -590,17 +590,18 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            routing: devel-drivers
+            variants: ['--']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy']
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
-            supported: true
-            backport: true
-            #derived-from: [ '22.04', 'linux' ]
-            derived-from: [ '21.10', 'linux-riscv' ]
+            supported: false
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
