@@ -161,22 +161,6 @@ class WorkflowManager():
 
             s.status_save(status)
 
-    def status_clean(s):
-        with s.lock_status():
-            status = {}
-            if os.path.exists(s.status_path):
-                with open(s.status_path) as rfd:
-                    status = yaml.safe_load(rfd)
-
-            for bugid in dict(status):
-                if (bugid in s.status_start and
-                    s.status_wanted.get(bugid, False) is False
-                    ):
-                    cinfo('overall status {} dropping'.format(bugid))
-                    del status[bugid]
-
-            s.status_save(status)
-
     def status_load(s):
         status = {}
         if os.path.exists(s.status_path):
@@ -514,9 +498,6 @@ class WorkflowManager():
                     buglist_rescan += s.live_dependants_rescan()
 
                 buglist = buglist_rescan
-
-            #if not s.args.bugs and not s.args.dependants_only:
-            #    s.status_clean()
 
         except BugMailConfigFileMissing as e:
             print(e.message)
