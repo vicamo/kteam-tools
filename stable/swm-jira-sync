@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from jira import JIRA as BrokenJIRA
 from jira.resources import GreenHopperResource, User
 
+from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 
 
@@ -34,35 +35,6 @@ class JIRA(BrokenJIRA):
             "includeInactive": includeInactive,
         }
         return self._fetch_pages(User, None, "user/search", startAt, maxResults, params)
-
-
-# SwmStatus
-#
-class SwmStatus:
-    _url = 'https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml'
-
-    def __init__(self, url=None, data=None, use_local=False):
-        if data is None and url is None:
-            url = self._url
-        if data is None and url:
-            response = urlopen(url)
-            data = response.read()
-            if not isinstance(data, str):
-                data = data.decode('utf-8')
-
-        self._data = yaml.safe_load(data)
-
-    def __iter__(self):
-        return iter(self._data)
-
-    def items(self):
-        return self._data.items()
-
-    def __getitem__(self, *args, **kwargs):
-        return self._data.__getitem__(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        return self._data.get(*args, **kwargs)
 
 
 def key_to_title(key):
@@ -108,7 +80,7 @@ if __name__ == '__main__':
     # we use a consistent tracker.
     cycles = set()
     cycle_trackers = {}
-    for bug_id, bug_data in sorted(status.items()):
+    for bug_id, bug_data in sorted(status.trackers.items()):
         (cycle, spin) = bug_data['cycle'].rsplit('-', 1)
         if cycle[0] == 'd':
             continue
