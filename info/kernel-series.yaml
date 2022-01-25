@@ -1456,11 +1456,11 @@ defaults:
                         clouds: ['metal']
 
         linux-hwe-5.11:
-            routing: stable-drivers
+            routing: prerelease-drivers
             variants: [ ]
             packages:
                 linux-hwe-5.11:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11']
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11-next']
                 linux-meta-hwe-5.11:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.11']
@@ -1474,11 +1474,11 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.11:
                     type: lrs
-            supported: false
+            supported: true
             owner: smb
             development: false
-            backport: true
-            derived-from: [ '21.04', 'linux' ]
+            backport: false
+            # derived-from: [ '21.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
