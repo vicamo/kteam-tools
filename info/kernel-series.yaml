@@ -398,8 +398,11 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
                     lowlatency:
-                        arches: ['amd64']
+                        arches: ['amd64', 'arm64']
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
 
         linux-raspi:
             variants: ['--']
