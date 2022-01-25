@@ -333,8 +333,9 @@ import urllib.parse
 cycles = {}
 cadence = {}
 owners = {}
-for bid in sorted(data['swm']):
-    b = data['swm'][bid]
+swm_trackers = data['swm'].get('trackers', data['swm'])
+for bid in sorted(swm_trackers):
+    b = swm_trackers[bid]
 
     try:
         cycle = 'unknown'

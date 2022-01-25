@@ -5,6 +5,7 @@ from contextlib                         import contextmanager
 from copy                               import copy
 from datetime                           import datetime
 from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
+import json
 import os
 import yaml
 
@@ -91,7 +92,8 @@ class WorkflowManager():
         # do this if the bug is present at the start of our run to prevent
         # us cleansing bugs which were newly created and shanked by other
         # instances.
-        s.status_path = 'status.yaml'
+        s.status_path = 'status.json'
+        s.status_altpath = 'status.yaml'
         s.status_validator = None
         s.Status_current = None
         with s.lock_status():
@@ -161,21 +163,26 @@ class WorkflowManager():
 
             s.status_save(status)
 
-    def status_clean(s):
-        with s.lock_status():
-            status = {}
-            if os.path.exists(s.status_path):
-                with open(s.status_path) as rfd:
-                    status = yaml.safe_load(rfd)
-
-            for bugid in dict(status):
-                if (bugid in s.status_start and
-                    s.status_wanted.get(bugid, False) is False
-                    ):
-                    cinfo('overall status {} dropping'.format(bugid))
-                    del status[bugid]
-
-            s.status_save(status)
+    def _json_object_decode(self, obj):
+        isoformat = obj.get('_isoformat')
+        if isoformat is not None:
+            #return datetime.fromisoformat(isoformat)
+            # XXX: before python 3.6 fromisoformat is not available.
+            if isoformat[-3] == ':':
+                isoformat = isoformat[0:-3] + isoformat[-2:]
+            for fmt in (
+                    '%Y-%m-%dT%H:%M:%S.%f%z',
+                    '%Y-%m-%dT%H:%M:%S%z',
+                    '%Y-%m-%dT%H:%M:%S.%f',
+                    '%Y-%m-%dT%H:%M:%S'):
+                try:
+                    obj = datetime.strptime(isoformat, fmt)
+                    break
+                except ValueError:
+                    pass
+            else:
+                raise ValueError("isoformat: {} invalid format".format(isoformat))
+        return obj
 
     def status_load(s):
         status = {}
@@ -185,16 +192,30 @@ class WorkflowManager():
                 validator = (stat.st_ino, stat.st_mtime)
                 cinfo("VALIDATOR: {} {}".format(s.status_validator, validator))
                 if validator != s.status_validator:
-                    s.status_current = yaml.safe_load(rfd)
+                    data = json.load(rfd, object_hook=s._json_object_decode)
+                    s.status_current = data.get('trackers', data)
                     s.status_validator = validator
             status = s.status_current
 
         return status
 
+    def _json_object_encode(self, obj):
+        if isinstance(obj, datetime):
+            return { '_isoformat': obj.isoformat() }
+        raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
+
     def status_save(s, status):
-        with open(s.status_path + '.new', 'w') as rfd:
-            yaml.dump(status, rfd, default_flow_style=False)
+        # Use a top-level trackers collection to allow us to extend with
+        # non-tracker information later.
+        data = {'trackers': status}
+
+        with open(s.status_path + '.new', 'w') as wfd:
+            json.dump(data, fp=wfd, default=s._json_object_encode, separators=(',', ':'))
         os.rename(s.status_path + '.new', s.status_path)
+
+        with open(s.status_altpath + '.new', 'w') as wfd:
+            yaml.dump(data, wfd, default_flow_style=False)
+        os.rename(s.status_altpath + '.new', s.status_altpath)
 
         # We are writing the file, update our cache.
         stat = os.stat(s.status_path)
@@ -514,9 +535,6 @@ class WorkflowManager():
                     buglist_rescan += s.live_dependants_rescan()
 
                 buglist = buglist_rescan
-
-            #if not s.args.bugs and not s.args.dependants_only:
-            #    s.status_clean()
 
         except BugMailConfigFileMissing as e:
             print(e.message)
