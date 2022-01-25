@@ -1398,9 +1398,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.15:
                     type: lrs
-            supported: true
+            supported: false
             owner: arighi
-            development: false
+            development: true
             backport: true
             derived-from: [ '22.04', 'linux' ]
             swm:
