@@ -439,10 +439,13 @@ defaults:
             variants: ['--']
             packages:
                 linux-aws:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'master-next']
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy']
+                linux-signed-aws:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy']
                 linux-restricted-modules-aws:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy']
@@ -453,8 +456,7 @@ defaults:
             supported: false
             development: true
             backport: false
-            #derived-from: [ '22.04', 'linux' ]
-            derived-from: [ '21.10', 'linux-aws' ]
+            derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
