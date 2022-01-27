@@ -1991,8 +1991,8 @@ defaults:
                     type: lrs
             supported: true
             owner: timg-tpi
-            backport: true
-            derived-from: [ '21.04', 'linux-aws' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2182,8 +2182,8 @@ defaults:
                     type: lrs
             supported: true
             owner: mhcerri
-            backport: true
-            derived-from: [ '21.04', 'linux-azure' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -2344,8 +2344,8 @@ defaults:
                     type: lrs
             supported: true
             owner: ian-may
-            backport: true
-            derived-from: [ '21.04', 'linux-gcp' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2590,8 +2590,8 @@ defaults:
                     type: lrs
             supported: true
             owner: timg-tpi
-            backport: true
-            derived-from: [ '21.04', 'linux-oracle' ]
+            backport: false
+            derived-from: [ '20.04', 'linux-hwe' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2646,8 +2646,8 @@ defaults:
             supported: true
             owner: lukenow
             development: false
-            backport: true
-            derived-from: ['21.04', 'linux-riscv']
+            backport: false
+            derived-from: ['20.04', 'linux-hwe']
             swm:
                 kernel-testing: true
             testing:
