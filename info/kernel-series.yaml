@@ -2635,7 +2635,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.11:
-            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            variants: ['--', '-hwe-20.04']
             packages:
                 linux-riscv-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.11-next']
@@ -2647,6 +2647,27 @@ defaults:
             development: false
             backport: false
             derived-from: ['20.04', 'linux-hwe-5.11']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
+        linux-riscv-5.13:
+            variants: ['-hwe-20.04-edge']
+            packages:
+                linux-riscv-5.13:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.13-next']
+                linux-meta-riscv-5.13:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.13']
+            supported: true
+            owner: lukenow
+            development: false
+            backport: true
+            derived-from: ['21.10', 'linux-riscv']
             swm:
                 kernel-testing: true
             testing:
