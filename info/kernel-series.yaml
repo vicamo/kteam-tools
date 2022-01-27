@@ -1992,7 +1992,7 @@ defaults:
             supported: true
             owner: timg-tpi
             backport: false
-            derived-from: [ '20.04', 'linux-hwe' ]
+            derived-from: [ '20.04', 'linux-hwe-5.11' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2183,7 +2183,7 @@ defaults:
             supported: true
             owner: mhcerri
             backport: false
-            derived-from: [ '20.04', 'linux-hwe' ]
+            derived-from: [ '20.04', 'linux-hwe-5.11' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -2345,7 +2345,7 @@ defaults:
             supported: true
             owner: ian-may
             backport: false
-            derived-from: [ '20.04', 'linux-hwe' ]
+            derived-from: [ '20.04', 'linux-hwe-5.11' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2591,7 +2591,7 @@ defaults:
             supported: true
             owner: timg-tpi
             backport: false
-            derived-from: [ '20.04', 'linux-hwe' ]
+            derived-from: [ '20.04', 'linux-hwe-5.11' ]
             swm:
                 kernel-testing: true
             testing:
@@ -2647,7 +2647,7 @@ defaults:
             owner: lukenow
             development: false
             backport: false
-            derived-from: ['20.04', 'linux-hwe']
+            derived-from: ['20.04', 'linux-hwe-5.11']
             swm:
                 kernel-testing: true
             testing:
