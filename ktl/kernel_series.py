@@ -490,12 +490,13 @@ class KernelSourceTestingFlavourEntry:
         return self._meta_pkg
 
 class KernelSeriesEntry:
-    def __init__(self, ks, name, data, defaults=None):
+    def __init__(self, ks, name, data):
         self._ks = ks
         self._name = name
         self._data = {}
-        if defaults is not None:
-            self._data.update(defaults)
+        self.defaults = self._ks.defaults.get('series', self._ks.defaults)
+        if self.defaults is not None:
+            self._data.update(self.defaults)
         if data is not None:
             self._data.update(data)
 
@@ -628,10 +629,13 @@ class KernelSeries:
                 self._codename_to_series[series['codename']] = series_key
 
         # Pull out the defaults.
-        self._defaults_series = {}
+        self.defaults = {}
         if 'defaults' in self._data:
-            self._defaults_series = self._data['defaults']
+            self.defaults = self._data['defaults']
             del self._data['defaults']
+            # Strip the assets as they are only used for YAML instantiation.
+            if 'assets' in self.defaults:
+                del self.defaults['assets']
 
     @staticmethod
     def key_series_name(series):
@@ -639,8 +643,7 @@ class KernelSeries:
 
     @property
     def series(self):
-        return [KernelSeriesEntry(self, series_key, series,
-                defaults=self._defaults_series)
+        return [KernelSeriesEntry(self, series_key, series)
                 for series_key, series in self._data.items()]
 
     def lookup_series(self, series=None, codename=None, development=False):
@@ -656,8 +659,7 @@ class KernelSeries:
             series = self._development_series
         if series and series not in self._data:
             return None
-        return KernelSeriesEntry(self, series, self._data[series],
-                                 defaults=self._defaults_series)
+        return KernelSeriesEntry(self, series, self._data[series])
 
 
 if __name__ == '__main__':
