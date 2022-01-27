@@ -673,6 +673,23 @@ class WorkflowBug():
 
         s.blockers = blockers
 
+    def manual_block(s, task):
+        """
+        Return state of the kernel-block tracker tag for ``task``.
+
+        :param task:
+            name of the workflow tracker task we are examining
+        :return:
+            boolean indicating whether the block tag is present
+        """
+        tag = 'kernel-block-' + task
+
+        if tag in s.tags:
+            cinfo("{} manual task block present".format(task))
+            return True
+
+        return False
+
     def block_present(s, block):
         if block not in s.blockers:
             return None
