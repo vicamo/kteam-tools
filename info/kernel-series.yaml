@@ -2114,6 +2114,7 @@ defaults:
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
+                testing-ppas: ['ppa:canonical-kernel-team/ubuntu/ppa']
             testing:
                 flavours:
                     azure-cvm:
