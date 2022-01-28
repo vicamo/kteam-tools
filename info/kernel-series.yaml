@@ -4416,6 +4416,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
             supported: true
+            owner: kmously
             backport: true
             derived-from: [ '20.04', 'linux-ibm' ]
             swm:
