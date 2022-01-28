@@ -63,6 +63,15 @@ cranky chroot create-base xenial:linux
 cranky chroot create-session configs xenial:linux
 ```
 
+After your chroot environment is initialized, you only need to update your
+chroots before cranking each cycle. Do this by re-running `cranky chroot
+create-session`.
+
+Example:
+```
+cranky chroot create-session configs xenial:linux
+```
+
 ## Build
 
 ### Update the kteam-tools repo
