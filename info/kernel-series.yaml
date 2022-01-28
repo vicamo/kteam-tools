@@ -498,8 +498,7 @@ defaults:
             supported: false
             development: true
             backport: false
-            #derived-from: [ '22.04', 'linux' ]
-            derived-from: [ '21.10', 'linux-azure' ]
+            derived-from: [ '22.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
