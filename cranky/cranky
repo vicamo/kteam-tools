@@ -10,7 +10,7 @@ fi
 cmd="$1"
 shift
 
-if ! [ -f "$cranky_root/cmds.d/$cmd" ]; then
+if ! [ -x "$cranky_root/cmds.d/$cmd" ]; then
 	echo "$cranky: $cmd: command unknown" 1>&2
 	exit 1
 fi
