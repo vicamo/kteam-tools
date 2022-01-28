@@ -145,6 +145,11 @@ session_chroot_create()
 		# Compiling Hirsute and later kernels requires dctrl-tools
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install dctrl-tools
 	fi
+
+	if [ "${series}" = "bionic" ] ; then
+		# Compiling Focal and later kernels requires dwarves
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install dwarves
+	fi
 }
 
 chroot_update() {
