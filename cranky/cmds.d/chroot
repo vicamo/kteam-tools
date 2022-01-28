@@ -108,6 +108,12 @@ session_chroot_create()
 	session="session:$session"
 	OUT_SESSION=${session}   # Used by the exit handler
 
+	# Add the builder-extra PPA to keep the chroots consistent with the
+	# packages used during the sources build
+	repo_pub_key=$(cat $(dirname "$C")/cmds.d/builder-extra.asc)
+	schroot -u root -r -c "$session" -- sh -c "echo '${repo_pub_key}' > /etc/apt/trusted.gpg.d/builder-extra.asc"
+	schroot -u root -r -c "$session" -- sh -c "echo 'deb http://ppa.launchpad.net/canonical-kernel-team/builder-extra/ubuntu ${series} main' > /etc/apt/sources.list.d/builder-extra.list"
+
 	schroot -u root -r -c "$session" -- apt-get update
 	schroot -u root -r -c "$session" -- apt-get -y dist-upgrade
 
