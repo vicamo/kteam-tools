@@ -97,7 +97,8 @@ class SruCycleSpinEntry:
 # SruCycle
 #
 class SruCycle:
-    _url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/sru-cycle.yaml'
+    #_url = 'https://git.launchpad.net/~canonical-kernel/+git/kteam-tools/plain/info/sru-cycle.yaml'
+    _url = 'https://kernel.ubuntu.com/info/sru-cycle.yaml'
     _url_local = 'file://' + os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                            '..', 'info', 'sru-cycle.yaml'))
     #_url = 'file:///home/apw/git2/kteam-tools/info/kernel-series.yaml'
