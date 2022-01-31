@@ -208,6 +208,8 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+        uc22:
+            <<:             *routing-table-uc20
         newparis-uc20:
             <<:             *routing-table-uc20
             build:
@@ -412,6 +414,17 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/jammy']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
+                    gated: false
+                    promote-to: ['edge', 'beta']
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        armhf: [ '22' ]
+                        arm64: [ '22' ]
             supported: false
             owner: juergh
             derived-from: ['22.04', 'linux']
@@ -621,6 +634,40 @@ defaults:
                     generic:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-uc22:
+            routing: uc22
+            packages:
+                linux-uc22:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy', 'master-next']
+                linux-signed-uc22:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy']
+            supported: false
+            snaps:
+                pc-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc']
+                    gated: false
+                    stable: false
+                    promote-to: ['edge', 'beta']
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['22']
+                        arm64: ['22']
+                        armhf: ['22']
+                pc-lowlatency-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc-lowlatency']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['22']
+            derived-from: [ '22.04', 'linux' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
 # 21.10 (Impish Indri)
 '21.10':
