@@ -184,7 +184,7 @@ class WorkflowBug():
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
-        if 'versions' in s.bprops and 'source' in s.bprops['versions'] and s.bprops['versions']['source'] != s.version:
+        if 'versions' in s.bprops and s.bprops['versions'].get('source') != s.version:
             cinfo("tracker version has changed dropping package version data")
             del s.bprops['versions']
 
