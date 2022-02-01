@@ -1515,7 +1515,7 @@ defaults:
 
         linux-hwe-5.11:
             routing: prerelease-drivers
-            variants: [ ]
+            variants: [ '-eol-hwe-5.11' ]
             packages:
                 linux-hwe-5.11:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.11-next']
