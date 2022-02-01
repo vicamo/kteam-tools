@@ -879,7 +879,7 @@ defaults:
 '21.04':
     codename: hirsute
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
@@ -927,7 +927,7 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/hirsute']
-            supported: true
+            supported: false
             owner: juergh
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -978,7 +978,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -1009,7 +1009,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: true
+            supported: false
             owner: mhcerri
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -1042,7 +1042,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            supported: true
+            supported: false
             owner: kmously
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -1065,7 +1065,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/hirsute']
-            supported: true
+            supported: false
             owner: lukenow
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -1096,7 +1096,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             derived-from: [ '21.04', 'linux' ]
             swm:
@@ -1116,7 +1116,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/hirsute']
-            supported: true
+            supported: false
             owner: lukenow
             derived-from: [ '21.04', 'linux' ]
             swm:
