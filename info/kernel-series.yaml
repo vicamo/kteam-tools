@@ -639,10 +639,10 @@ defaults:
             routing: uc22
             packages:
                 linux-uc22:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy', 'main']
                 linux-signed-uc22:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'main']
             supported: false
             snaps:
                 pc-kernel:
