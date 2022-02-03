@@ -214,7 +214,7 @@ class Tracking():
                 for (bugid, tasks_by_name, lpbug) in found:
                     print("FOUND: LP: #{} ({}) {}".format(bugid, lpbug.title, s.bug_to_sru_cycle(lpbug)))
 
-                raise AppError('Multiple tracking bug matching package %s series %s' % (target_package,target_series))
+                raise AppError('Multiple tracking bugs matching package %s series %s' % (target_package,target_series))
                 exit(retval)
 
             (bugid, tasks_by_name, lpbug) = found[0]
