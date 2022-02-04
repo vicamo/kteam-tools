@@ -696,6 +696,40 @@ defaults:
             derived-from: [ '22.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
+        linux-intel-iotg:
+            variants: ['--']
+            packages:
+                linux-intel-iotg:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel-iotg/+git/jammy']
+                linux-meta-intel-iotg:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel-iotg/+git/jammy']
+                linux-signed-intel-iotg:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel-iotg/+git/jammy']
+                linux-restricted-modules-intel-iotg:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-intel-iotg/+git/jammy']
+                linux-restricted-generate-intel-iotg:
+                    type: lrg
+                linux-restricted-signatures-intel-iotg:
+                    type: lrs
+            supported: false
+            owner: philcox
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel-iotg:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
+            # TODO: Add linux-uc20-intel-iotg
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
