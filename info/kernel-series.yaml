@@ -406,6 +406,39 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
 
+        linux-lowlatency:
+            routing: devel-drivers
+            variants: [ '--' ]
+            packages:
+                linux-lowlatency:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-next']
+                linux-meta-lowlatency:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency']
+                linux-signed-lowlatency:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency']
+                linux-restricted-modules-lowlatency:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'lowlatency']
+                linux-restricted-generate-lowlatency:
+                    type: lrg
+                linux-restricted-signatures-lowlatency:
+                    type: lrs
+            supported: false
+            development: true
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+
         linux-raspi:
             variants: ['--']
             packages:
