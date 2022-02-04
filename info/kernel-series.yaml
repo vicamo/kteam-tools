@@ -1947,10 +1947,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-5.10:
                     type: lrs
-            supported: true
+            supported: false
             owner: acelankao
-            swm:
-                kernel-testing: true
             testing:
                 flavours:
                     oem:
@@ -1977,11 +1975,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: tjaalton
             derived-from: [ '21.10', 'linux' ]
-            swm:
-                kernel-testing: true
             testing:
                 flavours:
                     oem:
