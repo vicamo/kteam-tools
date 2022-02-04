@@ -337,6 +337,8 @@ def sync_primary(args):
                 snap_master_added = True
                 branches.insert(0, 'master')
                 branches.insert(0, 'master-test')
+                branches.insert(0, 'main')
+                branches.insert(0, 'main-test')
             # debs repositories have a -prep branch.
             if thing_type in (None, 'main'):
                 branches.append(branches[0] + '-prep')
