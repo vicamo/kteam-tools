@@ -428,10 +428,10 @@ defaults:
                 flavours:
                     lowlatency:
                         arches: ['amd64', 'arm64']
-                        clouds: ['metal']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
                     lowlatency-64k:
                         arches: ['arm64']
-                        clouds: ['metal']
+                        clouds: ['metal', 'aws']
 
         linux-raspi:
             variants: ['--']
