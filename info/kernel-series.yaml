@@ -682,7 +682,21 @@ defaults:
                         amd64: ['22']
                         arm64: ['22']
                         armhf: ['22']
+            derived-from: [ '22.04', 'linux' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+
+        linux-uc22-lowlatency:
+            routing: uc22
+            packages:
+                linux-uc22-lowlatency:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy', 'lowlatency']
+                linux-signed-uc22-lowlatency:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'lowlatency']
+            supported: false
+            snaps:
                 pc-lowlatency-kernel:
+                    primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc-lowlatency']
                     gated: false
                     stable: false
@@ -691,7 +705,8 @@ defaults:
                     hw-cert: false
                     publish-to:
                         amd64: ['22']
-            derived-from: [ '22.04', 'linux' ]
+                        arm64: ['22']
+            derived-from: [ '22.04', 'linux-lowlatency' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-intel-iotg:
