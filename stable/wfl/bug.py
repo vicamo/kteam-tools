@@ -184,17 +184,6 @@ class WorkflowBug():
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
-        if 'versions' in s.bprops and s.bprops['versions'].get('source') != s.version:
-            cinfo("tracker version has changed dropping package version data")
-            del s.bprops['versions']
-
-            # XXX: task reset should be a task thing.  But we have no "old" version
-            #      at the package level.
-            for taskname, task in s.tasks_by_name.items():
-                if (taskname.startswith('prepare-package') or 
-                        taskname == 'sru-review'):
-                    task.status = 'New'
-
     @property
     def sc(self):
         return ctx.sc

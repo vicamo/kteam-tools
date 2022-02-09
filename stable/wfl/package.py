@@ -407,6 +407,16 @@ class Package():
         s.bug.version_from_title()
         s.bug.update_title()
 
+        # Handle version changes.
+        if (s.bug.version is not None and
+                s.bug.version != s.bug.bprops.get('versions-clamp', {}).get('self')):
+            cinfo("tracker version has changed resetting tracker")
+            s.bug.bprops.setdefault('versions-clamp', {})['self'] = s.bug.version
+
+            if 'versions' in s.bug.bprops:
+                cinfo("tracker version has changed dropping package version data")
+                del s.bug.bprops['versions']
+
         # Pick up versions from our bug as needed.
         s.series = s.bug.series
         s.name = s.bug.name
@@ -555,7 +565,7 @@ class Package():
 
             # Cache any positive version matches.
             if version is not None:
-                s.bug.bprops.setdefault('versions', {'source': s.bug.version})[pkg] = version
+                s.bug.bprops.setdefault('versions', {})[pkg] = version
 
         return version
 
