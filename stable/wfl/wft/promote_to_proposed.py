@@ -137,8 +137,21 @@ class PromoteFromTo(Promoter):
                 s.task.reason = 'Stalled -- cycle on hold'
                 break
 
-            # Record what is missing as we move to Confirmed.
-            s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            # Record what is missing as we move to Confirmed.  This is everything
+            # we will need to move at any stage of the (potentially) multi-step
+            # copy.
+            # NOTE: we are open-coding this rather than using the list(set(X))
+            # idiom to retain ordering as far as possible.
+            max_delta = []
+            for pocket in s.pockets_watch:
+                for pkg in s.bug.debs.delta_src_dst(s.pocket_src, pocket):
+                    if pkg not in max_delta:
+                        max_delta.append(pkg)
+            # XXX: when everything is in signing we will drop lrg from the list...
+            if 'lrs' in max_delta and 'lrg' not in max_delta:
+                max_delta.append('lrg')
+            s.bug.bprops.setdefault('delta', {})[s.task.name] = max_delta
+
             s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
 
             # If this was pre-approved and things are ready, then move it to in-progress
