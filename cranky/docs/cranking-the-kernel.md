@@ -72,6 +72,36 @@ Example:
 cranky chroot create-session configs xenial:linux
 ```
 
+### Removing a chroot environment
+
+Once a non-LTS Ubuntu release reach end of life, you can remove the
+corresponding chroot from your system.
+
+First remove the session created by `cranky chroot`:
+
+```
+cranky chroot destroy-session configs RELEASE:linux
+```
+
+Then find the directory listed in the schroot configuration file under
+`/etc/schroot/chroot.d/sbuild-RELEASE-amd64` and remove this
+directory.
+
+Finally, remove the file `/etc/schroot/chroot.d/sbuild-RELEASE-amd64`.
+
+Example:
+
+```
+$ cranky chroot destroy-session configs groovy:linux
+
+$ grep directory= /etc/schroot/chroot.d/sbuild-groovy-amd64
+directory=/var/lib/schroot/chroots/groovy-amd64
+
+$ rm -rf /var/lib/schroot/chroots/groovy-amd64
+
+$ rm /etc/schroot/chroot.d/sbuild-groovy-amd64
+```
+
 ## Build
 
 ### Update the kteam-tools repo
