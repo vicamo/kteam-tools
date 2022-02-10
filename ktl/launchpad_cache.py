@@ -129,7 +129,7 @@ class LaunchpadCache(Launchpad):
             # Work around a redirect handling issue in python3-lazr.restfulclient
             # which fails when trying to carry over non-GET requests.  Look up
             # my name (via +me), and then manually resolve that name to a user.
-            self._me = self.people[self.lp.me.name]
+            self._me = self.people[super().__getattr__('me').name]
         return self._me
 
     @classmethod
