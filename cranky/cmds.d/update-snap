@@ -172,12 +172,14 @@ class UpdateSnap():
                 scy_content = re.sub(r'version: .*', 'version: {}'.format(version), scy_content)
                 cinfo("INFO: update version from %s to %s" %
                       (self.scy['version'], version))
-            if self.scy['parts']['kernel']['source'] != self.snap.repo.url:
-                scy_content = re.sub(r'( *source: ) *{}'.format(
-                    re.escape(self.scy['parts']['kernel']['source'])),
-                    r'\1{}'.format(url), scy_content)
-                cinfo("INFO: update url:\n      %s\n      %s" %
-                      (self.scy['parts']['kernel']['source'], self.snap.repo.url))
+            # A recent change which was partially reverted has now created a case where
+            # snapcraft.yaml contains a version but not the source (URL) part.
+            if 'source' in self.scy['parts']['kernel'].keys():
+                src = self.scy['parts']['kernel']['source']
+                if src != self.snap.repo.url:
+                    scy_content = re.sub(r'( *source: ) *{}'.format(re.escape(src)),
+                                         r'\1{}'.format(url), scy_content)
+                    cinfo("INFO: update url:\n      %s\n      %s" % (src, self.snap.repo.url))
 
         if self.krn is not None:
             with open(self.krn_file_name, 'r') as krn_file:
