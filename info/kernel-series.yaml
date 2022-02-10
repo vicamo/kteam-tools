@@ -354,6 +354,7 @@ defaults:
                 linux-restricted-signatures-unstable:
                     type: lrs
             supported: false
+            owner: arighi
             testing:
                 flavours:
                     generic:
@@ -388,6 +389,7 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             supported: false
+            owner: arighi
             swm:
                 kernel-testing: true
             testing:
@@ -420,6 +422,7 @@ defaults:
                 linux-restricted-signatures-lowlatency:
                     type: lrs
             supported: false
+            owner: ppisati
             development: true
             derived-from: [ '22.04', 'linux' ]
             swm:
@@ -474,6 +477,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/jammy']
             supported: false
+            owner: krzk
             development: true
             derived-from: [ '22.04', 'linux' ]
             swm:
@@ -504,6 +508,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: false
+            owner: rtg
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -536,6 +541,7 @@ defaults:
                 linux-restricted-signatures-azure:
                     type: lrs
             supported: false
+            owner: mhcerri
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -570,6 +576,7 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             supported: false
+            owner: kmously
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -595,6 +602,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/jammy']
             supported: false
+            owner: arighi
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -627,6 +635,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: false
+            owner: krzk
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -649,6 +658,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
             supported: false
+            owner: xnox
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -669,6 +679,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'main']
             supported: false
+            owner: xnox
             snaps:
                 pc-kernel:
                     primary: true
@@ -694,6 +705,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'lowlatency']
             supported: false
+            owner: xnox
             snaps:
                 pc-lowlatency-kernel:
                     primary: true
