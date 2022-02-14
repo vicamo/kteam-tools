@@ -1639,6 +1639,7 @@ defaults:
                     lowlatency:
                         arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing', 'regression-testing' ]
 
         linux-hwe-5.8:
             routing: prerelease-drivers
