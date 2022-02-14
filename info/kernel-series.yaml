@@ -447,7 +447,7 @@ defaults:
             snaps:
                 pi-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
                     gated: false
                     promote-to: ['edge', 'beta']
                     qa: false
@@ -683,7 +683,7 @@ defaults:
             snaps:
                 pc-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc']
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc']
                     gated: false
                     stable: false
                     promote-to: ['edge', 'beta']
@@ -709,7 +709,7 @@ defaults:
             snaps:
                 pc-lowlatency-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc-lowlatency']
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc-lowlatency']
                     gated: false
                     stable: false
                     promote-to: [ 'edge', 'beta' ]
