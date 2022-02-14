@@ -3179,6 +3179,40 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
 
+        linux-intel-iotg-5.15:
+            variants: ['--']
+            packages:
+                linux-intel-iotg-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel-iotg/+git/focal']
+                linux-meta-intel-iotg-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel-iotg/+git/focal']
+                linux-signed-intel-iotg-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel-iotg/+git/focal']
+                linux-restricted-modules-intel-iotg-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-intel-iotg/+git/focal']
+                linux-restricted-generate-intel-iotg:
+                    type: lrg
+                linux-restricted-signatures-intel-iotg:
+                    type: lrs
+            supported: false
+            owner: philcox
+            development: true
+            backport: true
+            derived-from: [ '22.04', 'linux-intel-iotg' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel-iotg-5.15:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
+            # TODO: Add linux-uc20-intel-iotg-5.15
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
