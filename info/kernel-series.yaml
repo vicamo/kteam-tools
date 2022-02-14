@@ -2322,6 +2322,7 @@ defaults:
             testing:
                 flavours:
                     azure:
+                        meta-pkg: linux-azure-eol-5.11
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks: [ 'certification-testing' ]
