@@ -2294,7 +2294,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.11:
-            routing: stable-drivers
+            routing: prerelease-drivers
             variants: [ '-eol-5.11' ]
             packages:
                 linux-azure-5.11:
