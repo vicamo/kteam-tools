@@ -3180,7 +3180,7 @@ defaults:
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
 
         linux-intel-iotg-5.15:
-            variants: ['--']
+            variants: ['-edge']
             packages:
                 linux-intel-iotg-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel-iotg/+git/focal']
