@@ -2134,8 +2134,8 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.11:
-            routing: stable-drivers
-            variants: [ '--' ]
+            routing: prerelease-drivers
+            variants: [ '-eol-5.11' ]
             packages:
                 linux-aws-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.11-next']
@@ -2167,7 +2167,7 @@ defaults:
 
         linux-aws-5.13:
             routing: stable-drivers
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-aws-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.13-next']
