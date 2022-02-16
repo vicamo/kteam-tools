@@ -1592,6 +1592,41 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal']
 
+        linux-lowlatency-hwe-5.15:
+            routing: stable-drivers
+            variants: [ '-hwe-20.04-edge' ]
+            packages:
+                linux-lowlatency-hwe-5.15:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lowlatency/+git/focal', 'hwe-5.15-next']
+                linux-meta-lowlatency-hwe-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-lowlatency/+git/focal', 'hwe-5.15']
+                linux-signed-lowlatency-hwe-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed-lowlatency/+git/focal', 'hwe-5.15']
+                linux-restricted-modules-lowlatency-hwe-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules-lowlatency/+git/focal', 'hwe-5.15']
+                linux-restricted-generate-lowlatency-hwe-5.15:
+                    type: lrg
+                linux-restricted-signatures-lowlatency-hwe-5.15:
+                    type: lrs
+            supported: false
+            owner: arighi
+            development: true
+            backport: true
+            derived-from: [ '22.04', 'linux-lowlatency' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+
         linux-hwe-5.13:
             routing: stable-drivers
             variants: [ '-hwe-20.04' ]
