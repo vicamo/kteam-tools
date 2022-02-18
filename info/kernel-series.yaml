@@ -3227,9 +3227,9 @@ defaults:
                 linux-restricted-modules-intel-iotg-5.15:
                     type: lrm
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-intel-iotg/+git/focal']
-                linux-restricted-generate-intel-iotg:
+                linux-restricted-generate-intel-iotg-5.15:
                     type: lrg
-                linux-restricted-signatures-intel-iotg:
+                linux-restricted-signatures-intel-iotg-5.15:
                     type: lrs
             supported: false
             owner: philcox
