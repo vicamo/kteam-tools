@@ -753,6 +753,7 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-intel-iotg:
+            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-intel-iotg:
@@ -3212,6 +3213,7 @@ defaults:
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
 
         linux-intel-iotg-5.15:
+            routing: stable-drivers
             variants: ['-edge']
             packages:
                 linux-intel-iotg-5.15:
