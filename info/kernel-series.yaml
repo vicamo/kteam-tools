@@ -829,6 +829,23 @@ defaults:
 
             # TODO: Add linux-uc20-intel-iotg
 
+        linux-xilinx-zynqmp:
+            variants: ['--']
+            packages:
+                linux-xilinx-zynqmp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/jammy']
+                linux-meta-xilinx-zynqmp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/jammy']
+            supported: false
+            owner: wenchien
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: false
+            invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
