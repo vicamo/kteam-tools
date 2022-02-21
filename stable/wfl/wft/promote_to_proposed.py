@@ -35,6 +35,7 @@ class PromoteFromTo(Promoter):
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
+        s.jumper['Fix Released']  = s._recind
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -321,6 +322,19 @@ class PromoteFromTo(Promoter):
             s.bug.debs.monitor_routes(s.pockets_watch)
 
         cleave(s.__class__.__name__ + '._verify_promotion')
+        return retval
+
+    # _recind
+    #
+    def _recind(s):
+        center(s.__class__.__name__ + '._recind')
+        retval = False
+
+        if s.bug.task_status(':prepare-packages') != 'Fix Released':
+            s.task.status = 'New'
+            retval = True
+
+        cleave(s.__class__.__name__ + '._recind (%s)' % retval)
         return retval
 
     @property
