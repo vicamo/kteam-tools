@@ -43,6 +43,10 @@ class AutomatedTestingResultsOne:
         return self.status is not None and self.status.upper() in ['GOOD', 'FAIL', 'NEUTRAL']
 
     @property
+    def is_noseed(self):
+        return 'SEED-AWOL' in self.data.get('summary', '')
+
+    @property
     def task_status(self):
         if self.is_awol:
             return 'Triaged'
@@ -202,6 +206,8 @@ class AutomatedTesting(TaskHandler):
                     #"source": s.bug.name,
                     #"version": s.bug.version,
                     "status": result.status})
+                if result.is_noseed:
+                    raise WorkflowBugTaskError('results not valid, seeds missing')
             except AutomatedTestingResultsError as e:
                 s.bug.monitor_add({
                     "type": "automated-testing",
