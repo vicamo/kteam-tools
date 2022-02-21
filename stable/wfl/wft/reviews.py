@@ -16,6 +16,7 @@ class SruReview(TaskHandler):
         s.jumper['Confirmed']      = s._confirmed
         s.jumper['In Progress']    = s._confirmed
         s.jumper['Fix Committed']  = s._confirmed
+        s.jumper['Fix Released']   = s._recind
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -59,6 +60,19 @@ class SruReview(TaskHandler):
                 s.task.reason_state('Ongoing', timedelta(hours=4)))
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
+        return retval
+
+    # _recind
+    #
+    def _recind(s):
+        center(s.__class__.__name__ + '._recind')
+        retval = False
+
+        if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
+            s.task.status = 'New'
+            retval = True
+
+        cleave(s.__class__.__name__ + '._recind (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
