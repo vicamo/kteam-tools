@@ -7,7 +7,7 @@
         default_list: 'In Backlog'
     cards:
         - name: 'Cycle Lead: <insert name>'
-          description: 'Title needs to be updated with the name of the current lead. Lead (and backup) to be assigned as member(s) of the card.\n\nRole description and tasks: https://docs.google.com/document/d/1iI7NIsG6ymYtT7vNEets91SUfNgAvqenhjeh69JwRec/'
+          description: 'Title needs to be updated with the name of the current lead. Lead to be assigned to the card.\n\nRole description and tasks: https://docs.google.com/document/d/1iI7NIsG6ymYtT7vNEets91SUfNgAvqenhjeh69JwRec/'
           list: 'Kernel Notice'
         - name: 'Cycle Status'
           description: 'Overall cycle status.'
@@ -60,9 +60,6 @@
         - name: 'Update master branches after promotion to -updates'
         - name: 'Cycle Retrospective'
           description: 'After the cycle, run a SRU retrospective (hangout).'
-        - name: 'Assign lead and cranker roles'
-          description: 'Fill the "Cycle Roles" list (lead and crankers pool) with content.'
-          list: 'To Do'
         - name: 'Cleanup old PPAs content'
           description: 'While in theory doable at any time, the best time is to do this before doing the new cranking. This is done by running the mainline-build/ppa-package-cleaner script for the primary ppas (ppa-package-cleaner ppa-package-cleaner-primary.conf) repeatedly until it reports no more deletions.'
           list: 'To Do'
