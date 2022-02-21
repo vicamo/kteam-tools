@@ -3240,7 +3240,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    intel-iotg-5.15:
+                    intel-iotg:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
