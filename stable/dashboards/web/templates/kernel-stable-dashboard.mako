@@ -297,13 +297,13 @@ def __status_bites(bug, attrs):
         }
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
-        if (task.startswith('prepare-package') and
-                not reason.startswith('Stalled -- ')):
+        (state, flags, reason) = reason.split(' ', 2)
+        if task.startswith('prepare-package') and state != 'Stalled':
             continue
         # Elide things which are on one of the three "status box" rows.
-        if task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review':
+        if ((task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review') and
+                's' in flags):
             continue
-        (state, flags, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
         # Initial tasks are emitted without their task name.
         if 'b' in flags:
