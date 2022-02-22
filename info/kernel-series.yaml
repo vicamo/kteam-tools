@@ -4828,7 +4828,6 @@ defaults:
             swm:
                 kernel-testing: true
                 gke-releases:
-                    - '1.17'
                     - '1.18'
                     - '1.19'
                 gke-nvidia-packages:
