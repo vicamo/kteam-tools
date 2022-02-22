@@ -207,7 +207,7 @@ class Workflow(TaskHandler):
                         s.bug.reasons['snap-lagging'] = blocks
                 for task_name in ('promote-to-updates', 'promote-to-release'):
                     task = s.bug.tasks_by_name.get(task_name)
-                    if task is not None and task.status != 'New':
+                    if task is not None and task.status not in ('Invalid', 'New'):
                         blocks = s.bug.block_present('hold-promote-to-updates')
                         if blocks is not None:
                             cinfo("snap-not-in-candidate snap-lagging {}".format(blocks))
