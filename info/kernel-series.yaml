@@ -3252,7 +3252,30 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
-            # TODO: Add linux-uc20-intel-iotg-5.15
+        linux-uc20-intel-iotg:
+            routing: uc20
+            packages:
+                linux-uc20-intel-iotg:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-intel-iotg/+git/focal', 'master-next']
+                linux-signed-uc20-intel-iotg:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel-iotg/+git/focal']
+            supported: false
+            owner: philcox
+            development: true
+            snaps:
+                intel-iotg-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel-iotg']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['20']
+            derived-from: [ '20.04', 'linux-intel-iotg-5.15' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
 # 19.10 (Eoan Ermine)
 '19.10':
