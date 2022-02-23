@@ -5197,6 +5197,8 @@ defaults:
                     - ['ppa:canonical-signing/ubuntu/uc18-fde', 'Release']
                 proposed:
                     - ['ppa:canonical-kernel-team/ubuntu/uc18-fde-proposed', 'Release']
+                updates:
+                    - ['ppa:canonical-kernel-team/ubuntu/uc18-fde-release', 'Release']
             packages:
                 linux-fde:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-fde/+git/bionic', 'master-next']
