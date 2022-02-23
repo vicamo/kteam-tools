@@ -251,6 +251,13 @@ defaults:
             build-private:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
+        devel-unstable-drivers:
+            <<:             *routing-table-devel-drivers
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
+            as-proposed:
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
         devel-prerelease:
             <<:             *routing-table-devel
             updates:
@@ -334,7 +341,7 @@ defaults:
     routing-table: *routing-table
     sources:
         linux-unstable:
-            routing: devel-prerelease-drivers
+            routing: devel-unstable-drivers
             versions: ['5.17.0']
             variants: ['-wip']
             packages:
