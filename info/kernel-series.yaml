@@ -602,6 +602,7 @@ defaults:
             # for GKE but consistent with other derivatives. Additionally
             # we have the kernel version as variant so image building can
             # use that as a selection.
+            routing: devel-drivers
             variants: ['--', '-5.15']
             packages:
                 linux-gke:
@@ -612,8 +613,9 @@ defaults:
                 linux-signed-gke:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy']
-            supported: true
+            supported: false
             owner: kmously
+            development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
