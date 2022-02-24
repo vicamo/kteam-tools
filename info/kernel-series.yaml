@@ -596,6 +596,39 @@ defaults:
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gke:
+            # For Jammy, we want linux-gke to stay at the version that is
+            # native to the release. This is not how things get selected
+            # for GKE but consistent with other derivatives. Additionally
+            # we have the kernel version as variant so image building can
+            # use that as a selection.
+            variants: ['--', '-5.15']
+            packages:
+                linux-gke:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/jammy', 'master-next']
+                linux-meta-gke:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/jammy']
+                linux-signed-gke:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy']
+            supported: true
+            owner: kmously
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+                gke-releases:
+                    - '1.24'
+                nvidia-releases:
+                    - 450
+            testing:
+                flavours:
+                    gke:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['gke']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-kvm:
             routing: devel-drivers
             variants: ['--']
