@@ -371,9 +371,6 @@ defaults:
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
-                    lowlatency:
-                        arches: ['amd64']
-                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux:
             routing: devel-drivers
