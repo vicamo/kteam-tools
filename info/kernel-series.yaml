@@ -208,6 +208,22 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+        nv-dgx:
+            <<: *routing-table-security-proposed
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx3', 'Release']
+            build:
+                - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
+            proposed:
+                - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
         uc22:
             <<:             *routing-table-uc20
         newparis-uc20:
@@ -1827,20 +1843,7 @@ defaults:
                         clouds: ['metal']
 
         linux-nv-dgx:
-            routing:
-                <<:
-                    - *routing-table-security-build
-                    - *routing-table-security-proposed
-                build:
-                    - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
-                build-private:
-                    - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
-                signing:
-                    - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
-                proposed:
-                    - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
-                updates:
-                    - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
+            routing: nv-dgx
             variants: ['--']
             packages:
                 linux-nv-dgx:
