@@ -830,7 +830,7 @@ defaults:
             variants: ['--']
             packages:
                 linux-xilinx-zynqmp:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-xilinx-zynqmp/+git/jammy', 'master-next']
                 linux-meta-xilinx-zynqmp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/jammy']
