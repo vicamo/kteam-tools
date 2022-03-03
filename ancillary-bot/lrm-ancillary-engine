@@ -23,7 +23,9 @@ do
 		"$builder" ppa:canonical-kernel-security-team/ubuntu/devel  ppa:canonical-kernel-security-team/ubuntu/devel
 		"$builder" ppa:canonical-kernel-security-team/ubuntu/devel2 ppa:canonical-kernel-security-team/ubuntu/devel2
 		"$builder" ppa:canonical-kernel-security-team/ubuntu/devel3 ppa:canonical-kernel-security-team/ubuntu/devel3
-
+		"$builder" ppa:canonical-kernel-security-team/ubuntu/nv-dgx  ppa:canonical-kernel-security-team/ubuntu/nv-dgx
+		"$builder" ppa:canonical-kernel-security-team/ubuntu/nv-dgx2 ppa:canonical-kernel-security-team/ubuntu/nv-dgx2
+		"$builder" ppa:canonical-kernel-security-team/ubuntu/nv-dgx3 ppa:canonical-kernel-security-team/ubuntu/nv-dgx3
 	;;
 	regular)
 		"$builder" ppa:canonical-kernel-team/ubuntu/ppa       ppa:canonical-kernel-team/ubuntu/ppa-ps
