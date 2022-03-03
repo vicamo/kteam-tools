@@ -1835,7 +1835,7 @@ defaults:
                     - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
                 build-private:
                     - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
-                security-signing:
+                signing:
                     - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
                 proposed:
                     - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
