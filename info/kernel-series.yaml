@@ -5302,7 +5302,7 @@ defaults:
                     fde-coral:
                         arches: ['amd64']
                         clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing' ]
             snaps:
                 abb-dfa-apc2200-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'vasteras']
