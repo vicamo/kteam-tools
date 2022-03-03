@@ -1828,6 +1828,9 @@ defaults:
 
         linux-nv-dgx:
             routing:
+                <<:
+                    - *routing-table-security-build
+                    - *routing-table-security-proposed
                 build:
                     - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
                 build-private:
