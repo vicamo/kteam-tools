@@ -628,6 +628,33 @@ defaults:
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm-gt:
+            routing: ibm-gt
+            variants: ['--']
+            packages:
+                linux-ibm-gt:
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-jammy', 'master-next']
+                linux-meta-ibm-gt:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-jammy']
+                linux-signed-ibm-gt:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy']
+            supported: false
+            owner: krzk
+            private: true
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm-gt:
+                        arches: ['amd64', 's390x.LPAR']   # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-kvm:
             routing: devel-drivers
             variants: ['--']
