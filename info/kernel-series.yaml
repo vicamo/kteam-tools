@@ -2274,7 +2274,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.11' ]
@@ -2465,7 +2465,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: mhcerri
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.11' ]
@@ -2628,7 +2628,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: ian-may
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.11' ]
@@ -2874,7 +2874,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: false
             derived-from: [ '20.04', 'linux-hwe-5.11' ]
