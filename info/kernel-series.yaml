@@ -3047,8 +3047,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-fips:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-aws']
@@ -3080,8 +3079,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-fips:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-azure']
@@ -3115,8 +3113,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp-fips:
                     type: lrs
-            supported: false
-            development: true
+            supported: true
             owner: mhcerri
             private: true
             derived-from: ['20.04', 'linux-gcp']
