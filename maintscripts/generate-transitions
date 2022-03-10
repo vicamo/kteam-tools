@@ -1,0 +1,76 @@
+#!/usr/bin/python3
+import sys
+import argparse
+import re
+from debian import deb822
+
+_description = """This script aids in generating debian/control.d/ snippets that
+correctly generate transitional packages between releases. By default
+input and output files are standard input and standard output, for
+interactive and scripting usage. Alternatively one can specify input
+and output file paths with command line arguments.
+
+An example scenario: imagine one wants to generate
+transitional packages from focal's hwe-20.04 packages to hwe-22.04,
+excluding hwe-20.04-edge ones. One can call this tool like so:
+
+   ./generate-transitions \\
+     --input  focal/linux-meta-hwe-5.15/debian/control \\
+     --output jammy/linux-meta/debian/control.d/transitions-hwe-20.04 \\
+     'hwe-20.04$' 'hwe-22.04'
+"""
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=_description, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "pattern", help="re.sub() pattern to match from packages to transition"
+    )
+    parser.add_argument("replace", help="re.sub() replace to generate new dependency")
+    parser.add_argument(
+        "--input",
+        help="input debian/control to parse (default stdin)",
+        type=argparse.FileType("r"),
+        default=sys.stdin,
+    )
+    parser.add_argument(
+        "--output",
+        help="output file to write transitionals to (default stdout)",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+    )
+    args = parser.parse_args()
+
+    print(
+        """#
+# Generated using kteam-tools script:
+# {0}
+#""".format(
+            " ".join(sys.argv)
+        ),
+        file=args.output,
+    )
+    for pkg in deb822.Packages.iter_paragraphs(args.input):
+        if "Package" not in pkg.keys():
+            continue
+        to_pkg = re.sub(args.pattern, args.replace, pkg["Package"])
+        if to_pkg == pkg["Package"]:
+            continue
+        newpkg = deb822.Packages()
+        newpkg.update(
+            {
+                "Package": pkg["Package"],
+                "Architecture": pkg["Architecture"],
+                "Section": "oldlibs",
+                "Depends": to_pkg,
+                "Description": pkg["Description"].splitlines()[0]
+                + " (dummy transitional package)\n Transitional package for upgrades. This package can be safely removed.",
+            }
+        )
+        print(newpkg, file=args.output)
+
+
+if __name__ == "__main__":
+    main()
