@@ -4234,7 +4234,7 @@ defaults:
             supported: true
             owner: smb
             derived-from: [ '18.04', 'linux' ]
-            invalid-tasks: [ 'boot-testing', 'regression-testing' ]
+            invalid-tasks: [ 'boot-testing', 'certification-testing', 'regression-testing' ]
             testing:
                 flavours:
                    snapdragon:
