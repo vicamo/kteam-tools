@@ -244,27 +244,40 @@ $ cranky open
 ```
 
 **Note** `cranky start` is still available but `cranky open` usage is
-preferable. Use `cranky start --force` if you find any blocking issues
-with `cranky open`.
+preferable. Use `cranky start --force` if you find any blocking issues with
+`cranky open`.
 
-**Note** regarding private kernels: One of the steps performed by
-`cranky open` is to download and update the ABI files based on the
-last release and those files are obtained from a list of
-repositories. For regular kernels that list is kept in-tree in the
-file `debian.<variant>/etc/getabis`. For private kernels, this list is
-retrieved from the file `~/.getabis.<series>-<variant>` (for instance:
-`~/.getabis.bionic-fips`). That file should be created manually
-containing on each line an URL (that can be obtained from the
-`kteam-tools/info/kernel-series.yaml` file), but including your
-subscription credentials to the PPA.
+**Note** regarding private kernels: One of the steps performed by `cranky open`
+is to download and update the ABI files based on the last release. Those files
+are obtained from a list of repositories, which is configured via
+`debian.<variant>/etc/getabis`.
+
+This file can either have the list of the repositories itself, in case of
+regular public kernels, or for private kernels it reads the list from an
+external source. The name of the external file depends on the kernel source
+package and is also set on `debian.<variant>/etc/getabis`, the general pattern
+being `${HOME}/.getabis.<series>-<variant>` (for instance: 
+`~/.getabis.bionic-fips`).
+
+That file should be created manually containing on each line an URL for each of
+the repositories which can be a destination where the binary packages were
+published to. The list of destinations can be obtained by running
+`cranky list-routing [handle]`. However, given that for private kernels those
+repositories have access control, the URLs need to include your subscription
+credentials to the PPA.
 
 An example of an URL is:
 
 ```
-https://USER:PASS@private-ppa.launchpad.net/ubuntu-advantage/fips-kernel-source/ubuntu
+https://USER:PASS@private-ppa.launchpad.net/ubuntu-advantage/fips-updates/ubuntu
 ```
 
-The username and password can be obtained from
+It is recommended to add multiple destination repositories to that file, as
+usually there is no single destination which will be guaranteed to have the
+binaries for the last release. However having the `build`, `proposed` and
+`updates` destinations should cover most of the cases.
+
+The URLs with username and password can be obtained from
 <https://launchpad.net/~/+archivesubscriptions>.
 
 
