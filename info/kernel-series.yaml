@@ -3251,6 +3251,7 @@ defaults:
             testing:
                 flavours:
                     iot:
+                        meta-pkg: linux-iot
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
