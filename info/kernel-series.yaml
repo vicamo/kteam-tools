@@ -393,7 +393,7 @@ defaults:
         linux:
             routing: devel-drivers
             versions: ['5.15.0']
-            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'master-next']
