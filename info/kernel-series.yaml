@@ -5933,16 +5933,8 @@ defaults:
             private: true
             derived-from: ['18.04', 'linux']
             swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    fde:
-                        arches: ['amd64']
-                        clouds: ['metal']
-                    fde-coral:
-                        arches: ['amd64']
-                        clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing' ]
+                kernel-testing: false
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             snaps:
                 abb-dfa-apc2200-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'vasteras']
