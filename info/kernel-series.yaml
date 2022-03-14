@@ -228,6 +228,16 @@ defaults:
             <<:             *routing-table-uc20
             build:
                 - ['ppa:oem-archive/ubuntu/newparis', 'Release']
+        denver:
+            <<: [*routing-table-security-build, *routing-table-security-proposed]
+            build:
+                - ['ppa:denver-team/ubuntu/denver-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
+            proposed:
+                - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
+            updates:
+                - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -3151,31 +3161,36 @@ defaults:
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
             stakeholder: 'kernel-sru-bluefield-signoff'
 
+        linux-denver:
+            routing: denver
+            variants: ['--']
+            packages:
+                linux-denver:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-denver', 'master-next']
+                linux-meta-denver:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-meta-denver']
+            supported: false
+            owner: wenchien
+            development: true
+            derived-from: [ '20.04', 'linux-raspi' ]
+            swm:
+                kernel-testing: false
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+
         linux-uc20-denver:
-            routing:
-                security-build:
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
-                build:
-                    - ['ppa:denver-team/ubuntu/denver-build', 'Release']
-                signing:
-                    - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
-                proposed:
-                    - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
-                updates:
-                    - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
+            routing: denver
             packages:
                 linux-uc20-denver:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-uc20-denver']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-uc20-denver', 'master-next']
                 linux-signed-uc20-denver:
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-signed-uc20-denver']
                     type: signed
-                linux-denver:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-denver', 'denver']
-                    type: extra
             supported: false
-            derived-from: [ '20.04', 'linux-raspi' ]
+            owner: wenchien
+            development: true
+            derived-from: [ '20.04', 'linux-denver' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
         linux-adv-uno420:
             routing: newparis-uc20
@@ -4081,25 +4096,12 @@ defaults:
             invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-denver:
-            routing:
-                security-build:
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
-                    - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
-                build:
-                    - ['ppa:denver-team/ubuntu/denver-build', 'Release']
-                signing:
-                    - ['ppa:canonical-signing/ubuntu/ke-denver', 'Release']
-                proposed:
-                    - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
-                updates:
-                    - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
+            routing: denver
             packages:
                 cert-denver:
                 cert-denver-signed:
                     type: signed
             supported: false
-
 
         linux-raspi2:
             packages:
