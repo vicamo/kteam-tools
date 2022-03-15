@@ -2924,14 +2924,14 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-riscv-5.11:
-            variants: ['--', '-hwe-20.04']
+            variants: ['-eol-riscv-5.11']
             packages:
                 linux-riscv-5.11:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.11-next']
                 linux-meta-riscv-5.11:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.11']
-            supported: true
+            supported: false
             owner: lukenow
             development: false
             backport: false
@@ -2945,7 +2945,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-riscv-5.13:
-            variants: ['-hwe-20.04-edge']
+            variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
                 linux-riscv-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/focal', 'riscv-5.13-next']
