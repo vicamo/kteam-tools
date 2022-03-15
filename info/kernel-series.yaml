@@ -646,6 +646,33 @@ defaults:
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-ibm:
+            routing: devel-drivers
+            variants: ['--']
+            packages:
+                linux-ibm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/jammy', 'master-next']
+                linux-meta-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/jammy']
+                linux-signed-ibm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/jammy']
+            supported: false
+            owner: kmously
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        meta-pkg: linux-ibm
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-ibm-gt:
             routing: ibm-gt
             variants: ['--']
