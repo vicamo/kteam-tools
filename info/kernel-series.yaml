@@ -177,6 +177,9 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/primary', 'Release']
             proposed:
@@ -189,11 +192,6 @@ defaults:
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
-        stable-drivers: &routing-table-stable-drivers
-            <<:             *routing-table-default
-            build-private:
-                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
         uc20: &routing-table-uc20
             <<: *routing-table-security-proposed
             security-build:
@@ -231,7 +229,7 @@ defaults:
             build:
                 - ['ppa:oem-archive/ubuntu/newparis', 'Release']
         classic-fde:
-            <<: *routing-table-stable-drivers
+            <<: *routing-table-default
             security-build:
                 #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde', 'Release']
                 #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde2', 'Release']
@@ -247,12 +245,6 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
-        prerelease-drivers:
-            <<:             *routing-table-stable-drivers
-            updates:
-                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
-            security:
-            release:
         devel: &routing-table-devel
             <<: [*routing-table-default, *routing-table-security-proposed]
             security-build:
@@ -262,13 +254,11 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
-        devel-drivers: &routing-table-devel-drivers
-            <<:             *routing-table-devel
             build-private:
                 - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
-        devel-unstable-drivers:
-            <<:             *routing-table-devel-drivers
+        devel-unstable:
+            <<:             *routing-table-devel
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
             as-proposed:
@@ -278,12 +268,6 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
         devel-prerelease:
             <<:             *routing-table-devel
-            updates:
-            security:
-            release:
-                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
-        devel-prerelease-drivers:
-            <<:             *routing-table-devel-drivers
             updates:
             security:
             release:
@@ -359,7 +343,7 @@ defaults:
     routing-table: *routing-table
     sources:
         linux-unstable:
-            routing: devel-unstable-drivers
+            routing: devel-unstable
             versions: ['5.17.0']
             variants: ['-wip']
             packages:
@@ -391,7 +375,6 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
-            routing: devel-drivers
             versions: ['5.15.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
@@ -425,7 +408,6 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            routing: devel-drivers
             variants: [ '--' ]
             packages:
                 linux-lowlatency:
@@ -511,7 +493,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -544,7 +525,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -579,7 +559,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -617,7 +596,6 @@ defaults:
             # for GKE but consistent with other derivatives. Additionally
             # we have the kernel version as variant so image building can
             # use that as a selection.
-            routing: devel-drivers
             variants: ['--', '-5.15']
             packages:
                 linux-gke:
@@ -647,7 +625,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-ibm:
@@ -701,7 +678,6 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-kvm:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-kvm:
@@ -727,7 +703,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-5.17:
-            routing: devel-drivers
             versions: ['5.17.0']
             variants: ['-22.04', '-22.04a']
             packages:
@@ -758,7 +733,6 @@ defaults:
                         clouds: ['metal']
 
         linux-oracle:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -791,7 +765,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-riscv:
@@ -864,7 +837,6 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-intel-iotg:
-            routing: devel-drivers
             variants: ['--']
             packages:
                 linux-intel-iotg:
@@ -923,7 +895,6 @@ defaults:
     routing-table: *routing-table
     sources:
         linux:
-            routing: stable-drivers
             versions: ['5.13.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -1000,7 +971,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -1032,7 +1002,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -1066,7 +1035,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -1121,7 +1089,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -1179,7 +1146,6 @@ defaults:
     routing-table: *routing-table
     sources:
         linux:
-            routing: stable-drivers
             versions: ['5.11.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -1256,7 +1222,6 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -1287,7 +1252,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -1320,7 +1284,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -1374,7 +1337,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -1431,7 +1393,6 @@ defaults:
     routing-table: *routing-table
     sources:
         linux:
-            routing: stable-drivers
             versions: ['5.8.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -1486,7 +1447,6 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-aws:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-aws:
@@ -1513,7 +1473,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-azure:
@@ -1545,7 +1504,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-gcp:
@@ -1597,7 +1555,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: stable-drivers
             variants: ['--']
             packages:
                 linux-oracle:
@@ -1653,7 +1610,6 @@ defaults:
     routing-table: *routing-table
     sources:
         linux:
-            routing: stable-drivers
             versions: ['5.4.0']
             variants: ['--']
             packages:
@@ -1687,7 +1643,6 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.15:
-            routing: stable-drivers
             variants: [ '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.15:
@@ -1722,7 +1677,6 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.15:
-            routing: stable-drivers
             variants: [ '-hwe-20.04-edge' ]
             packages:
                 linux-lowlatency-hwe-5.15:
@@ -1757,7 +1711,6 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-hwe-5.13:
-            routing: stable-drivers
             variants: [ '-hwe-20.04' ]
             packages:
                 linux-hwe-5.13:
@@ -1795,7 +1748,7 @@ defaults:
                         clouds: ['metal']
 
         linux-hwe-5.11:
-            routing: prerelease-drivers
+            routing: prerelease
             variants: [ '-eol-hwe-5.11' ]
             packages:
                 linux-hwe-5.11:
@@ -1834,7 +1787,7 @@ defaults:
             invalid-tasks: [ 'certification-testing', 'regression-testing' ]
 
         linux-hwe-5.8:
-            routing: prerelease-drivers
+            routing: prerelease
             versions: ['5.8.0']
             variants: [ '-eol-hwe-5.8' ]
             packages:
@@ -2112,7 +2065,6 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem-5.6:
-            routing: stable-drivers
             versions: ['5.6.0']
             variants: ['-20.04a']
             packages:
@@ -2139,7 +2091,6 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.10:
-            routing: stable-drivers
             versions: ['5.10.0']
             variants: ['-20.04b']
             packages:
@@ -2167,7 +2118,6 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.13:
-            routing: stable-drivers
             versions: ['5.13.0']
             variants: ['-20.04c']
             packages:
@@ -2196,7 +2146,6 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.14:
-            routing: stable-drivers
             versions: ['5.14.0']
             variants: ['-20.04', '-20.04d']
             packages:
@@ -2226,7 +2175,6 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
-            routing: stable-drivers
             variants: ['-lts-20.04']
             packages:
                 linux-aws:
@@ -2257,7 +2205,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.8:
-            routing: stable-drivers
             variants: []
             packages:
                 linux-aws-5.8:
@@ -2285,7 +2232,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.11:
-            routing: prerelease-drivers
+            routing: prerelease
             variants: [ '-eol-5.11' ]
             packages:
                 linux-aws-5.11:
@@ -2317,7 +2264,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.13:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-aws-5.13:
@@ -2349,7 +2295,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: stable-drivers
             variants: ['-lts-20.04']
             packages:
                 linux-azure:
@@ -2382,7 +2327,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-cvm:
-            routing: stable-drivers
             Variants: ['--']
             packages:
                 linux-azure-cvm:
@@ -2442,7 +2386,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.8:
-            routing: stable-drivers
             variants: []
             packages:
                 linux-azure-5.8:
@@ -2476,7 +2419,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.11:
-            routing: prerelease-drivers
+            routing: prerelease
             variants: [ '-eol-5.11' ]
             packages:
                 linux-azure-5.11:
@@ -2511,7 +2454,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.13:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.13:
@@ -2545,7 +2487,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: stable-drivers
             variants: ['-lts-20.04']
             packages:
                 linux-gcp:
@@ -2576,7 +2517,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.8:
-            routing: stable-drivers
             variants: []
             packages:
                 linux-gcp-5.8:
@@ -2607,7 +2547,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.13:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-gcp-5.13:
@@ -2639,7 +2578,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.11:
-            routing: stable-drivers
             variants: [ '-eol-5.11' ]
             packages:
                 linux-gcp-5.11:
@@ -2743,7 +2681,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
-            routing: stable-drivers
             variants: ['-lts-20.04', '--']
             packages:
                 linux-ibm:
@@ -2791,7 +2728,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: stable-drivers
             variants: ['-lts-20.04']
             packages:
                 linux-oracle:
@@ -2822,7 +2758,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.8:
-            routing: stable-drivers
             variants: []
             packages:
                 linux-oracle-5.8:
@@ -2853,7 +2788,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.13:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-oracle-5.13:
@@ -2885,7 +2819,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.11:
-            routing: stable-drivers
             variants: [ '-eol-5.11' ]
             packages:
                 linux-oracle-5.11:
@@ -3329,7 +3262,6 @@ defaults:
             invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
 
         linux-intel-iotg-5.15:
-            routing: stable-drivers
             variants: ['-edge']
             packages:
                 linux-intel-iotg-5.15:
@@ -3945,7 +3877,6 @@ defaults:
     routing-table: *routing-table
     sources:
         linux:
-            routing: stable-drivers
             versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
@@ -4052,7 +3983,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.4:
-            routing: stable-drivers
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
             # transitionals: [ '-oem-osp1', '-oem' ]
             packages:
@@ -4335,7 +4265,6 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
-            routing: stable-drivers
             variants: ['-lts-18.04']
             packages:
                 linux-aws:
@@ -4409,7 +4338,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
-            routing: stable-drivers
             variants: ['--', '-edge']
             packages:
                 linux-aws-5.4:
@@ -4494,7 +4422,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-4.15:
-            routing: stable-drivers
             variants: [ '-lts-18.04' ]
             packages:
                 linux-azure-4.15:
@@ -4588,7 +4515,6 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.4:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.4:
@@ -4755,7 +4681,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
-            routing: stable-drivers
             variants: ['--', '-edge']
             packages:
                 linux-gcp-5.4:
@@ -5128,7 +5053,6 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-oracle:
-            routing: stable-drivers
             variants: [ '-lts-18.04' ]
             packages:
                 linux-oracle:
@@ -5206,7 +5130,6 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.4:
-            routing: stable-drivers
             variants: [ '--', '-edge' ]
             packages:
                 linux-oracle-5.4:
