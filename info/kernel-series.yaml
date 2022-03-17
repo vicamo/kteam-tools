@@ -420,7 +420,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            variants: [ '--' ]
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-next']
