@@ -126,10 +126,10 @@ for name, member in uploaders.direct_members.items():
     #print("UPLOADERS", name, member.is_admin)
     if member.is_admin:
         continue
-    if name in uploaders.indirect_members:
-        print("WARNING: {}: {} is a direct and indirect member".format(committers.name, name))
+    if name in uploaders.indirect_members and not uploaders.indirect_members[name].is_admin:
+        print("WARNING: {}: {} is a direct and indirect member".format(uploaders.name, name))
     if name not in ubuntu.direct_members:
-        print("WARNING: {}: {} is a direct member and not a member of {}".format(committers.name, name, ubuntu.name))
+        print("WARNING: {}: {} is a direct member and not a member of {}".format(uploaders.name, name, ubuntu.name))
 # Check that everyone on ubuntu-kernel-uploaders who is also a member of canonical-kernel-team
 # is on canonical-kernel-uploaders
 for name, member in ubuntu.direct_members.items():
@@ -139,5 +139,5 @@ for name, member in ubuntu.direct_members.items():
     if name not in ckt.members:
         print("UBUNTU {} not in ckt ... ignored".format(name))
         continue
-    if name not in uploaders.members:
+    if name not in uploaders.members and not uploaders.indirect_members[name].is_admin:
         print("WARNING: {}: {} is a direct member and not a member of {}".format(ubuntu.name, name, uploaders.name))
