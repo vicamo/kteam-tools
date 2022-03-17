@@ -22,6 +22,9 @@
 #       the date patches are no longer applied to the git repos for the given
 #       cycle
 
+'2022.03.21':
+    release-date: '2022-04-11'
+
 '2022.02.21':
     current: true
     cutoff-date: '2022-02-17'
