@@ -206,6 +206,8 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
         nv-dgx:
             <<: *routing-table-security-proposed
             security-build:
