@@ -308,6 +308,14 @@ class BootTesting(TaskHandler):
                 s.bug.debs.send_boot_testing_requests()
                 s.bug.bprops['boot-testing-requested'] = True
 
+            # If this tracker is marked for early regression-testing then
+            # also fire this off.
+            # XXX: We will not currently track it.
+            if ('kernel-regression-testing-early' in s.bug.tags and
+                    'proposed-testing-requested' not in s.bug.bprops):
+                s.bug.debs.send_testing_requests(op="sru", ppa=True)
+                s.bug.bprops['proposed-testing-requested'] = True
+
             try:
                 result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')
                 task_status = {
