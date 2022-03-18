@@ -176,6 +176,12 @@ class RegressionTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by rt testing.
         else:
+            # If we are checking results and we have not requested sru testing
+            # do that now.
+            if 'proposed-testing-requested' not in s.bug.bprops:
+                s.bug.debs.send_proposed_testing_requests()
+                s.bug.bprops['proposed-testing-requested'] = True
+
             try:
                 result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
                 task_status = {
