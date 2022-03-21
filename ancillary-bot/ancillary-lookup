@@ -38,30 +38,32 @@ if primary.private:
     if subscription is None:
         raise ValueError("no private subscription")
 
-lrms = []
-lrms += list(primary.getPublishedSources(source_name='linux-restricted-modules', status='Published'))
-#lrms += list(primary.getPublishedSources(source_name='linux-restricted-modules', status='Pending'))
-for lrm in lrms:
-    #print(lrm)
-    lrm_id = os.path.basename(lrm.self_link)
-    lrg_name = lrm.source_package_name.replace('linux-restricted-modules', 'linux-restricted-generate')
-    lrg_version = lrm.source_package_version
-    #print(" ", lrg_name, lrg_version)
-    lrgs = adjunct.getPublishedSources(exact_match=True, source_name=lrg_name, version=lrg_version)
-    lrs_name = lrm.source_package_name.replace('linux-restricted-modules', 'linux-restricted-signatures')
-    lrs_version = lrm.source_package_version
-    #print(" ", lrs_name, lrs_version)
-    lrss = adjunct.getPublishedSources(exact_match=True, source_name=lrs_name, version=lrs_version)
-    if len(lrgs) == 0 or len(lrss) == 0:
-        urls = []
-        for url in lrm.sourceFileUrls():
-            if subscription:
-                deb = os.path.basename(url)
-                package = deb.split('_')[0]
-                prefix = package[0]
-                url = os.path.join(subscription, 'pool', 'main', prefix, package, deb)
-            urls.append(url)
-        print(lrm_id, lrm.source_package_name, ' '.join(urls))
+for prime_prefix, ancillary_ppa, ancillary_prefixes in (
+        ['linux-signed', primary, ['linux-generate']],
+        ['linux-restricted-modules', adjunct, ['linux-restricted-generate', 'linux-restricted-signatures']],
+    ):
 
-    else:
-        print(lrm_id, lrm.source_package_name, '-')
+    primaries = []
+    primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published'))
+    for prime in primaries:
+        #print(prime)
+        prime_id = os.path.basename(prime.self_link)
+        wanted = '-'
+        for ancillary_prefix in ancillary_prefixes:
+            ancillary_name = prime.source_package_name.replace(prime_prefix, ancillary_prefix)
+            ancillary_version = prime.source_package_version
+            #print(" ", ancillary_name, ancillary_version)
+            ancillaries = ancillary_ppa.getPublishedSources(exact_match=True, source_name=ancillary_name, version=ancillary_version)
+            if len(ancillaries) == 0:
+                urls = []
+                for url in prime.sourceFileUrls():
+                    if subscription:
+                        deb = os.path.basename(url)
+                        package = deb.split('_')[0]
+                        prefix = package[0]
+                        url = os.path.join(subscription, 'pool', 'main', prefix, package, deb)
+                    urls.append(url)
+                wanted = ' '.join(urls)
+                break
+
+        print(prime_id, prime.source_package_name, wanted)
