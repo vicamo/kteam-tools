@@ -31,7 +31,7 @@
         - name: 'Review sprint Backlog'
           description: 'Review any tasks in the sprint Backlog (which represents "For next cycle") and pull up any relevant to this cycle to In Backlog.'
         - name: 'Get pre-cycle boot tests done'
-          description: 'Someone should crank the main kernels on the Friday before the cycle starts so they can be boot tested over the weekend.\n\nResults: http://10.246.72.4/test-results/index.html or http://10.246.72.4/test-results/tracker-index.html\nTo access the Jenkins server: http://10.246.72.4:8080/'
+          description: 'Someone should crank the main kernels on the Friday before the cycle starts so they can be boot tested over the weekend.\n\nResults: http://10.246.75.167/rtr-lvl0.html\nTo access the Jenkins server: http://10.246.72.4:8080/'
         - name: 'Update Mattermost topic(s)'
           description: 'Update the topic of ~Kernel on Mattermost with the current cycle date and lead.'
         - name: 'Update SRU dates on kernel.ubuntu.com'
