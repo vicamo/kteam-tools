@@ -2,8 +2,8 @@
 
 here=$(dirname $(readlink -f "$0"))
 
-builder="$here/lrm-ancillary-builder"
-#builder="$here/lrm-ancillary-lookup"
+builder="$here/ancillary-builder"
+#builder="$here/ancillary-lookup"
 
 if [ "$#" -eq 0 ]; then
 	set - 'regular'

@@ -12,7 +12,7 @@ ppa_ps="$2"
 
 here=$(dirname $(readlink -f "$0"))
 
-"$here/lrm-ancillary-lookup" "$ppa" "$ppa_ps" | \
+"$here/ancillary-lookup" "$ppa" "$ppa_ps" | \
 while read id source urls
 do
 	if [ "$urls" = '-' ]; then

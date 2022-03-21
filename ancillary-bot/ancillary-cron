@@ -8,5 +8,5 @@ if [ -f ".dput.cf" ]; then
 fi
 
 echo "Starting: $(date)"
-"$here/lrm-ancillary-engine" "$@"
+"$here/ancillary-engine" "$@"
 echo "Complete: $(date)"
