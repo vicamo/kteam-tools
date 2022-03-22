@@ -8,6 +8,8 @@ import sys
 from launchpadlib.credentials import AuthorizeRequestTokenWithURL
 from launchpadlib.launchpad import Launchpad
 
+from ktl.kernel_series import KernelSeries
+
 cred_file = os.path.join(os.path.expanduser("~/.config"), "ancillary-bot", "credentials-production")
 authorization_engine = AuthorizeRequestTokenWithURL(service_root='production',
     consumer_name='ancillary-bot')
@@ -29,6 +31,8 @@ primary = lp.archives.getByReference(reference=primary_ref)
 adjunct = lp.archives.getByReference(reference=adjunct_ref)
 #print(adjunct)
 
+ks = KernelSeries()
+
 # For private PPAs we will have to use the users subscription
 # to form the URLs to download the components.  Lookup up any
 # such subscription if needed.
@@ -38,20 +42,33 @@ if primary.private:
     if subscription is None:
         raise ValueError("no private subscription")
 
-for prime_prefix, ancillary_ppa, ancillary_prefixes in (
-        ['linux-signed', primary, ['linux-generate']],
-        ['linux-restricted-modules', adjunct, ['linux-restricted-generate', 'linux-restricted-signatures']],
+for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
+        ['linux-signed', 'signed', ['generate'], primary],
+        ['linux-restricted-modules', 'lrm', ['lrg', 'lrs'], adjunct],
     ):
 
     primaries = []
-    primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published'))
+    primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published', order_by_date=True))
     for prime in primaries:
+        # Find the appropriate kernel in kernel-series based on the package name.
+        series_name = prime.distro_series_link.split('/')[-1]
+        source_name = prime.source_package_name.replace(prime_prefix, 'linux')
+        ks_series = ks.lookup_series(codename=series_name)
+        ancillary_names = []
+        if ks_series is not None:
+            ks_source = ks_series.lookup_source(source_name)
+            if ks_source is not None:
+                for ks_package in ks_source.packages:
+                    if ks_package.type in ancillary_types:
+                        ancillary_names.append(ks_package.name)
+        if not len(ancillary_names):
+            continue
+
         #print(prime)
         prime_id = os.path.basename(prime.self_link)
         wanted = '-'
-        for ancillary_prefix in ancillary_prefixes:
-            ancillary_name = prime.source_package_name.replace(prime_prefix, ancillary_prefix)
-            ancillary_version = prime.source_package_version
+        ancillary_version = prime.source_package_version
+        for ancillary_name in ancillary_names:
             #print(" ", ancillary_name, ancillary_version)
             ancillaries = ancillary_ppa.getPublishedSources(exact_match=True, source_name=ancillary_name, version=ancillary_version)
             if len(ancillaries) == 0:
