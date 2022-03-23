@@ -335,12 +335,14 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
-            proposed:
+            as-proposed:
                 - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
+            proposed:
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-proposed', 'Release']
             updates:
-                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
             release:
-                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
         eol:
             proposed:
             updates:
