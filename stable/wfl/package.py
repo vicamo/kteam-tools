@@ -1497,6 +1497,23 @@ class Package():
 
         return retval
 
+    # pocket_routing
+    #
+    def pocket_routing(s, pocket):
+        '''
+        '''
+        retval = None
+
+        bi = s.build_info
+        for pkg in bi:
+            if pocket not in bi[pkg]:
+                continue
+            retval = bi[pkg][pocket].routing
+            cinfo('            pocket {} packages found in {}'.format(pocket, retval), 'yellow')
+            break
+
+        return retval
+
     # pocket_clear
     #
     def pocket_clear(s, pocket, pockets_after):

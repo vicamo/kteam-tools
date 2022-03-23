@@ -141,7 +141,21 @@ class PromoteToRelease(Promoter):
                         retval = True
                     break
 
+                # If this is travelling to -release in the main archive
+                # then britney is in charge of the package.  Move us to
+                # Triaged and report britney ownership.
+                release_reference = None
+                release_routes = s.bug.debs.pocket_routing('Release')
+                if release_routes is not None:
+                    if release_routes[0] is not None:
+                        release_reference = release_routes[0][0].reference
+                if release_reference == 'ubuntu' and s.task.status == 'Confirmed':
+                    s.task.status = 'Triaged'
+                    retval = True
+
                 if s.task.status == 'Confirmed':
+                    s.task.reason = 'Pending -- ready to copy'
+                elif s.task.status == 'Triaged':
                     s.task.reason = 'Pending -- britney unblocked'
                 else:
                     s.task.reason = 'Ongoing -- packages not yet published'
