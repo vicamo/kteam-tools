@@ -822,6 +822,8 @@ defaults:
                         armhf: ['22']
             derived-from: [ '22.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-uc22-lowlatency:
             routing: uc22
@@ -847,6 +849,8 @@ defaults:
                         arm64: ['22']
             derived-from: [ '22.04', 'linux-lowlatency' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-intel-iotg:
             variants: ['--']
@@ -1945,6 +1949,8 @@ defaults:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel-5.13' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-uc20-efi:
             routing: uc20
@@ -1979,6 +1985,8 @@ defaults:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-uc20-ambarella-honeywell:
             routing:
@@ -3193,6 +3201,8 @@ defaults:
             development: true
             derived-from: [ '20.04', 'linux-denver' ]
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-adv-uno420:
             routing: newparis-uc20
@@ -3256,6 +3266,8 @@ defaults:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-iot' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-xilinx-zynqmp:
             variants: [ '--' ]
@@ -3334,6 +3346,8 @@ defaults:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel-iotg-5.15' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
 # 19.10 (Eoan Ermine)
 '19.10':
