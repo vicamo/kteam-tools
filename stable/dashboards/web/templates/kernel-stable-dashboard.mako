@@ -179,6 +179,9 @@ def __status_bites(bug, attrs):
         retval += tagged_block('', '')
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
+        promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
+        if promote_to_proposed_status == 'Triaged':
+            sru_review_status += '*'
         retval += tagged_block_valid('sr:', sru_review_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
