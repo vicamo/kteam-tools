@@ -31,7 +31,7 @@ class PromoteFromTo(Promoter):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._verify_promotion
-        s.jumper['Triaged']       = s._verify_promotion
+        s.jumper['Triaged']       = s._new
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
@@ -133,7 +133,14 @@ class PromoteFromTo(Promoter):
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
             s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
 
-            s.task.status = 'Confirmed'
+            # If this was pre-approved and things are ready, then move it to in-progress
+            # so it is not listed as needing manual review.
+            if s.task.status == 'Triaged':
+                s.task.status = 'In Progress'
+
+            else:
+                s.task.status = 'Confirmed'
+
             s.task.timestamp('started')
 
             retval = True
