@@ -309,7 +309,7 @@ map-session)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		echo "$RET"
 	else
-		echo "$P: No chroot session available for $handle" 1>&2
+		echo "$P: No chroot session available for $series:$src" 1>&2
 		echo "Use \"$P create-session\" to create one" 1>&2
 		exit 1
 	fi
@@ -318,7 +318,7 @@ run)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		schroot -p -r -c "$RET" -- "$@"
 	else
-		echo "$P: No chroot session available for $handle" 1>&2
+		echo "$P: No chroot session available for $series:$src" 1>&2
 		echo "Use \"$P create-session\" to create one" 1>&2
 		exit 1
 	fi
@@ -327,7 +327,7 @@ destroy-session)
 	if session_chroot_available "$series" "amd64" "$src" "$session"; then
 		schroot -e -c "$RET"
 	else
-		echo "$P: No chroot session available for $handle" 1>&2
+		echo "$P: No chroot session available for $series:$src" 1>&2
 		exit 1
 	fi
 	;;
