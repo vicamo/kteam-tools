@@ -3,6 +3,7 @@
 
 import re
 from datetime                           import datetime, timedelta, timezone
+from hashlib                            import sha384
 import json
 from  debian.debian_support             import version_compare
 
@@ -525,6 +526,18 @@ class Package():
                     if (monitor['reference'] == route_archive.reference and
                             monitor['pocket'] == route_pocket):
                         self.bug.monitor_add(monitor)
+
+    @property
+    def prepare_id(s):
+        # If we have no versions, then special case the result as None.
+        if 'versions' not in s.bug.bprops:
+            return None
+
+        # Create a stable hash of the versions table for this package.
+        signature = sorted(s.bug.bprops.get('versions', {}).items())
+        id_hash = sha384()
+        id_hash.update(str(signature).encode())
+        return id_hash.hexdigest()[:16]
 
     def package_version(s, pkg):
         # Look up the specific version of a package for this tracker.
