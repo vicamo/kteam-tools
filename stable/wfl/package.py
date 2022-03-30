@@ -408,10 +408,10 @@ class Package():
         s.bug.update_title()
 
         # Handle version changes.
-        if (s.bug.version is not None and
-                s.bug.version != s.bug.bprops.get('versions-clamp', {}).get('self')):
-            cinfo("tracker version has changed resetting tracker")
-            s.bug.bprops.setdefault('versions-clamp', {})['self'] = s.bug.version
+        clamp = s.bug.clamp('self')
+        if s.bug.version != s.bug.clamp('self'):
+            cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
+            s.bug.clamp_assign('self', s.bug.version)
 
             if 'versions' in s.bug.bprops:
                 cinfo("tracker version has changed dropping package version data")
