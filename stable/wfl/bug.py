@@ -653,6 +653,20 @@ class WorkflowBug():
         if len(flags) == 0:
             del s.bprops['flag']
 
+    def clamp_assign(s, clamp, value):
+        clamps = s.private_props.setdefault('clamps', {})
+        if value is not None:
+            clamps[clamp] = value
+
+        elif clamp in clamps:
+            del clamps[clamp]
+
+        if len(clamps) == 0:
+            del s.private_props['clamps']
+
+    def clamp(s, clamp):
+        return s.private_props.get('clamps', {}).get(clamp)
+
     def _source_block_present(s):
         if 'kernel-block-source' in s.tags:
             return "Manual tag kernel-block-source"
