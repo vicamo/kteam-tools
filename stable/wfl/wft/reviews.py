@@ -33,7 +33,7 @@ class SruReview(TaskHandler):
             # Record the delta between the build ppa and whatever follows.
             delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
-            s.bug.private_props['sru-review-id'] = s.bug.debs.prepare_id
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
 
             s.task.status = 'Confirmed'
             retval = True
@@ -47,6 +47,8 @@ class SruReview(TaskHandler):
     def _confirmed(s):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
+
+        retval = s._recind()
 
         status = s.task.status
         if status == 'Confirmed':
@@ -69,7 +71,9 @@ class SruReview(TaskHandler):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
-        if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
+        clamp = s.bug.clamp('sru-review')
+        if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
+            cinfo("sru-review id has changed, recinding sru-review")
             s.task.status = 'New'
             retval = True
 
