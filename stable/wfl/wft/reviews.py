@@ -33,6 +33,7 @@ class SruReview(TaskHandler):
             # Record the delta between the build ppa and whatever follows.
             delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            s.bug.private_props['sru-review-id'] = s.bug.debs.prepare_id
 
             s.task.status = 'Confirmed'
             retval = True
