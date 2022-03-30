@@ -331,6 +331,11 @@ class PromoteFromTo(Promoter):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
+        # XXX: TRANSITION
+        clamp = s.bug.clamp('promote-to-proposed')
+        if clamp is None:
+            s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
+
         clamp = s.bug.clamp('promote-to-proposed')
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
             cinfo("promote-to-proposed id has changed, recinding promote-to-proposed")
