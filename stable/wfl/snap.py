@@ -185,16 +185,15 @@ class SnapDebs:
 
             # Handle version changes.
             parent_wb = s.bug.master_bug
-            if (parent_wb is not None and
-                    parent_wb.version is not None and
-                    parent_wb.version != s.bug.bprops.get('versions-clamp', {}).get('parent')):
-                cinfo("parent tracker version has changed resetting snap versioning")
+            clamp = s.bug.clamp('parent')
+            if parent_wb is not None and parent_wb.version != clamp:
+                cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
                 s.bug.version = parent_wb.version
-                s.bug.bprops.setdefault('versions-clamp', {})['parent'] = parent_wb.version
-            if (s.bug.version is not None and
-                    s.bug.version != s.bug.bprops.get('versions-clamp', {}).get('self')):
-                cinfo("tracker version has changed resetting tracker")
-                s.bug.bprops.setdefault('versions-clamp', {})['self'] = s.bug.version
+                s.bug.clamp_assign('parent', parent_wb.version)
+            clamp = s.bug.clamp('self')
+            if s.bug.version != clamp:
+                cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
+                s.bug.clamp_assign('self', s.bug.version)
                 # XXX: likely we should be pulling tasks back here.
 
             # Expect this bug to have the data we need to identify the
