@@ -50,6 +50,11 @@ class SruReview(TaskHandler):
 
         retval = s._recind()
 
+        # XXX: TRANSITION
+        clamp = s.bug.clamp('sru-review')
+        if clamp is None:
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
+
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
@@ -70,6 +75,11 @@ class SruReview(TaskHandler):
     def _recind(s):
         center(s.__class__.__name__ + '._recind')
         retval = False
+
+        # XXX: TRANSITION
+        clamp = s.bug.clamp('sru-review')
+        if clamp is None:
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
 
         clamp = s.bug.clamp('sru-review')
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
