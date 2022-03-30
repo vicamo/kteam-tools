@@ -131,6 +131,7 @@ class PromoteFromTo(Promoter):
 
             # Record what is missing as we move to Confirmed.
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
 
             s.task.status = 'Confirmed'
             s.task.timestamp('started')
@@ -330,7 +331,9 @@ class PromoteFromTo(Promoter):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
-        if s.bug.task_status(':prepare-packages') != 'Fix Released':
+        clamp = s.bug.clamp('promote-to-proposed')
+        if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
+            cinfo("promote-to-proposed id has changed, recinding promote-to-proposed")
             s.task.status = 'New'
             retval = True
 
