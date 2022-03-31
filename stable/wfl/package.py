@@ -756,16 +756,34 @@ class Package():
             s.__determine_build_status()
         return s._cache
 
+    # built_set
+    #
+    def built_set(s, field, value):
+        hold = s.bug.bprops.setdefault('built', {})
+        if value is not None:
+            hold[field] = value
+
+        elif field in hold:
+            del hold[field]
+
+        if len(hold) == 0:
+            del s.bug.bprops['built']
+
+    # built_get
+    #
+    def built_get(s, field):
+        return s.bug.bprops.get('built', {}).get(field)
+
     # built_in
     #
     @property
     def built_in(self):
-        return self.bug.bprops.get('built', {}).get('route-entry')
+        return self.built_get('route-entry')
 
     @built_in.setter
     def built_in(self, route):
-        if self.bug.bprops.get('built', {}).get('route-entry') is None:
-            self.bug.bprops.setdefault('built', {})['route-entry'] = route
+        if self.built_get('route-entry') is None:
+            self.built_set('route-entry', route)
 
     # srcs
     #
