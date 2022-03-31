@@ -240,6 +240,16 @@ defaults:
                 - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
             updates:
                 - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
+        imx:
+            <<: [*routing-table-security-build, *routing-table-security-proposed]
+            build:
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
+            proposed:
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed', 'Release']
+            updates:
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-release', 'Release']
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -3348,6 +3358,38 @@ defaults:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel-iotg-5.15' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
+
+        linux-imx:
+            routing: imx
+            packages:
+                linux-imx:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-imx/+git/focal', 'master-next']
+                linux-meta-imx:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-imx/+git/focal']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            derived-from: [ '20.04', 'linux']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+
+        linux-uc20-imx:
+            routing: imx
+            packages:
+                linux-uc20-imx:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-uc20-imx/+git/focal', 'master-next']
+                linux-signed-uc20-imx:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-signed-uc20-imx/+git/focal']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            derived-from: [ '20.04', 'linux-imx']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
 
