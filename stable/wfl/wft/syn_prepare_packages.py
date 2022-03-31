@@ -109,6 +109,11 @@ class SynPreparePackages(TaskHandler):
         if s.bug.is_valid and s.task.status not in ('New', 'Fix Released', 'Invalid'):
             s.bug.debs.monitor_routes(["build", "build-private"])
 
+        # Record what we are currently built from (based on recorded versions).  This
+        # is used by external processes to detect updates to packages which may invalidate
+        # their processing.
+        s.bug.debs.built_set('from', s.bug.debs.prepare_id)
+
         cleave(s.__class__.__name__ + '._common')
         return retval
 
