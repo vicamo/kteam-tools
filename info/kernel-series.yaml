@@ -525,7 +525,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: false
-            owner: rtg
+            owner: timg-tpi
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
