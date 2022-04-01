@@ -765,7 +765,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: false
-            owner: krzk
+            owner: juergh
             development: true
             backport: false
             derived-from: [ '22.04', 'linux' ]
@@ -1038,7 +1038,7 @@ defaults:
                 linux-restricted-signatures-azure:
                     type: lrs
             supported: true
-            owner: ian-may
+            owner: timg-tpi
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1071,7 +1071,7 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             supported: true
-            owner: timg-tpi
+            owner: kmously
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1125,7 +1125,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: true
-            owner: krzk
+            owner: juergh
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -2335,7 +2335,7 @@ defaults:
                 linux-restricted-signatures-azure:
                     type: lrs
             supported: true
-            owner: krzk
+            owner: timg-tpi
             derived-from: [ '20.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -2494,7 +2494,7 @@ defaults:
                 linux-restricted-signatures-azure-5.13:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: timg-tpi
             backport: true
             derived-from: [ '21.10', 'linux-azure' ]
             swm:
@@ -2714,7 +2714,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
             supported: true
-            owner: kmously
+            owner: jsalisbury
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -2768,7 +2768,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: true
-            owner: timg-tpi
+            owner: ian-may
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -2828,7 +2828,7 @@ defaults:
                 linux-restricted-signatures-oracle-5.13:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: juergh
             backport: true
             derived-from: [ '21.10', 'linux-oracle' ]
             swm:
@@ -2999,7 +2999,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: lukenow
             private: true
             derived-from: ['20.04', 'linux']
             swm:
@@ -4460,7 +4460,7 @@ defaults:
                 linux-restricted-signatures-azure-4.15:
                     type: lrs
             supported: true
-            owner: krzk
+            owner: mhcerri
             backport: false
             derived-from: [ '18.04', 'linux' ]
             swm:
@@ -4493,7 +4493,7 @@ defaults:
                 linux-restricted-signatures-azure-fips:
                     type: lrs
             supported: true
-            owner: krzk
+            owner: ztahenakos
             private: true
             derived-from: ['18.04', 'linux-azure-4.15']
             swm:
@@ -4563,7 +4563,7 @@ defaults:
                     arches: ['amd64']
                     track: '18'
             supported: true
-            owner: krzk
+            owner: timg-tpi
             backport: true
             derived-from: [ '20.04', 'linux-azure' ]
             swm:
@@ -4664,7 +4664,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'gcp-fips']
             supported: true
-            owner: ian-may
+            owner: lukenow
             private: true
             derived-from: ['18.04', 'linux-gcp-4.15']
             swm:
@@ -4753,7 +4753,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
             supported: true
-            owner: kmously
+            owner: jsalisbury
             backport: true
             derived-from: [ '20.04', 'linux-ibm' ]
             swm:
@@ -5016,7 +5016,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic']
             supported: true
-            owner: krzk
+            owner: bzolnier
             private: true
             derived-from: ['18.04', 'linux']
             testing:
@@ -5062,7 +5062,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic', 'ibm-gt-5.4']
             supported: true
-            owner: krzk
+            owner: bzolnier
             private: true
             derived-from: ['18.04', 'linux-hwe-5.4']
             testing:
@@ -5091,7 +5091,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: juergh
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -5199,7 +5199,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: krzk
+            owner: kleber-souza
             private: true
             derived-from: ['18.04', 'linux']
             testing:
@@ -5568,7 +5568,7 @@ defaults:
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            owner: krzk
+            owner: ian-may
             derived-from: [ '16.04', 'linux' ]
             testing:
                 flavours:
@@ -5871,7 +5871,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-oracle-xenial']
             supported: true
-            owner: krzk
+            owner: juergh
             backport: true
             derived-from: [ '18.04', 'linux-oracle' ]
             testing:
@@ -5945,7 +5945,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed']
             supported: true
-            owner: mhcerri
+            owner: kleber-souza
             private: true
             derived-from: ['16.04', 'linux']
             testing:
@@ -6160,7 +6160,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-trusty']
             supported: true
-            owner: krzk
+            owner: mhcerri
             backport: true
             derived-from: [ '18.04', 'linux-azure-4.15' ]
             swm:
