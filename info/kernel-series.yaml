@@ -1017,7 +1017,7 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             supported: true
-            owner: ian-may
+            owner: timg-tpi
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
