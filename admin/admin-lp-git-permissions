@@ -154,6 +154,7 @@ def sync_misc(args):
             ['~canonical-kernel/+git/kteam-tools', [('master', False)], None],
             ['~canonical-kernel/+git/adt-matrix-hints', [('master', False)], None],
             ['~canonical-kernel/+git/kernel-versions', [('*', True)], None],
+            ['~canonical-kernel/+git/cbd', [('*', True)], None],
             ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches, "Ubuntu-*"],
             ]:
 
