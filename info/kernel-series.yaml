@@ -1081,7 +1081,7 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: ztahenakos
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1135,7 +1135,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: true
-            owner: juergh
+            owner: jsalisbury
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -2597,7 +2597,7 @@ defaults:
                 linux-restricted-signatures-gcp-5.13:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: jsalisbury
             backport: true
             derived-from: [ '21.10', 'linux-gcp' ]
             swm:
@@ -2724,7 +2724,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
             supported: true
-            owner: jsalisbury
+            owner: bzolnier
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -2778,7 +2778,7 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             supported: true
-            owner: ian-may
+            owner: jsalisbury
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -2838,7 +2838,7 @@ defaults:
                 linux-restricted-signatures-oracle-5.13:
                     type: lrs
             supported: true
-            owner: juergh
+            owner: jsalisbury
             backport: true
             derived-from: [ '21.10', 'linux-oracle' ]
             swm:
@@ -3040,7 +3040,7 @@ defaults:
                 linux-restricted-signatures-aws-fips:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: philcox
             private: true
             derived-from: ['20.04', 'linux-aws']
             backport: true # use local-mangle to keep it in sync with linux-aws
@@ -4144,7 +4144,7 @@ defaults:
                    type: signed
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
             supported: true
-            owner: kleber-souza
+            owner: ztahenakos
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -4274,7 +4274,7 @@ defaults:
                     publish-to:
                         arm64: [ '18' ]
             supported: true
-            owner: smb
+            owner: ztahenakos
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'certification-testing', 'regression-testing' ]
             testing:
@@ -4428,7 +4428,7 @@ defaults:
                     arches: ['amd64']
                     track: '18'
             supported: true
-            owner: timg-tpi
+            owner: jsalisbury
             backport: true
             derived-from: [ '20.04', 'linux-aws' ]
             swm:
@@ -4706,7 +4706,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'gcp-fips']
             supported: true
-            owner: lukenow
+            owner: philcox
             private: true
             derived-from: ['18.04', 'linux-gcp-4.15']
             swm:
@@ -4795,7 +4795,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
             supported: true
-            owner: jsalisbury
+            owner: bzolnier
             backport: true
             derived-from: [ '20.04', 'linux-ibm' ]
             swm:
@@ -5241,7 +5241,7 @@ defaults:
                 linux-restricted-signatures-fips:
                     type: lrs
             supported: true
-            owner: kleber-souza
+            owner: philcox
             private: true
             derived-from: ['18.04', 'linux']
             testing:
@@ -5630,7 +5630,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-aws-xenial', 'aws-hwe']
             supported: true
-            owner: timg-tpi
+            owner: bzolnier
             backport: true
             derived-from: [ '18.04', 'linux-aws' ]
             testing:
