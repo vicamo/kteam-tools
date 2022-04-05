@@ -416,6 +416,45 @@ class MonitorTrelloDisposition:
         return "Trello Disposition Monitor {}".format(self.path)
 
 
+class MonitorKernelSeries:
+
+    def __init__(self, factory=None):
+        if factory is None:
+            raise ValueError("factory required")
+
+        self.factory = factory
+
+        self.factory.bs.attach('main', self)
+
+    owners = MonitorStoreAttr(default={})
+
+    @property
+    def ks(self):
+        return self.factory.ks
+
+    def changed(self):
+        changed = set()
+
+        for ks_series in self.ks.series:
+            for ks_source in ks_series.sources:
+                ks_owner = ks_source.owner
+                if ks_owner is None:
+                    continue
+                handle = ks_series.codename + ':' + ks_source.name
+                previous_owner = self.owners.get(handle)
+                if previous_owner is not None:
+                    if previous_owner != ks_owner:
+                        changed.add(('shank', handle))
+                self.owners[handle] = ks_owner
+
+        #print("REFRESH", changed)
+
+        return changed
+
+    def __str__(self):
+        return "Status kernel-series (owner) Monitor"
+
+
 class MonitorStatusSwmStatus:
 
     def __init__(self, factory=None):
@@ -766,6 +805,9 @@ class MonitorFactory:
     def swm_status(self):
         return [MonitorStatusSwmStatus(factory=self)]
 
+    def kernel_series(self):
+        return [MonitorKernelSeries(factory=self)]
+
     def swm_monitor(self):
         return [MonitorSwmStatusMonitor(factory=self)]
 
@@ -867,6 +909,7 @@ if __name__ == '__main__':
     monitors = []
     monitors += factory.launchpad_project('kernel-sru-workflow')
     monitors += factory.swm_status()
+    monitors += factory.kernel_series()
     monitors += factory.swm_monitor()
     monitors += factory.trello_disposition('swm-trello.yaml')
     monitors += factory.launchpad_queues()
