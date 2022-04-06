@@ -508,6 +508,8 @@ class WorkflowBug():
         # a scan of the tracker has happened.
         block = 'kernel-jira-preparation-blocked' in s.tags
         s._flag_assign('jira-preparation-block', block)
+        block = 'kernel-jira-in-review' in s.tags
+        s._flag_assign('jira-in-review', block)
         block = ('kernel-trello-blocked-debs-prepare' in s.tags or
             'kernel-trello-blocked-prepare-packages' in s.tags or
             'kernel-trello-blocked-snap-prepare' in s.tags)
