@@ -410,6 +410,9 @@ for bid in sorted(swm_trackers):
             ptp_status not in ('n/a', 'Invalid', 'New', 'Fix Released')):
         row_class.append('phase-reviews')
 
+    if b.get('flag', {}).get('jira-in-review', False):
+        row_class.append('phase-peer-reviews')
+
     snap_tasks = ['snap-prepare']
     for risk in ('edge', 'beta', 'candidate', 'stable'):
         snap_tasks.append('snap-release-to-' + risk)
@@ -528,6 +531,7 @@ for bid in sorted(swm_trackers):
                                         <option value="all">All</option>
                                         <option value="prepare">prepare</option>
                                         <option value="reviews">reviews</option>
+                                        <option value="peer-reviews">peer-reviews</option>
                                         <option value="deb-promotions">deb-promotions</option>
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
