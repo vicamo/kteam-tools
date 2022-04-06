@@ -659,6 +659,9 @@ class WorkflowBug():
         if len(flags) == 0:
             del s.bprops['flag']
 
+    def flag(s, flag):
+        return s.bprops.get('flag', {}).get(flag)
+
     def clamp_assign(s, clamp, value):
         clamps = s.private_props.setdefault('clamps', {})
         if value is not None:
