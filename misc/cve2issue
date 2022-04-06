@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+#
+# Create Jira issue(s) from LP bug(s)
+#
+
+# if you get an error like:
+#   AttributeError: 'Magic' object has no attribute 'cookie'
+# then:
+#   apt purge python3-magic OR
+#   pip3 install filemagic
+
+import argparse
+import json
+import sys
+
+from jira import JIRA
+
+def main():
+    parser = argparse.ArgumentParser(description='Create Jira issue(s) from LP bug(s).')
+    parser.add_argument('-p', '--priority', required=False, help='Jira priority.')
+    parser.add_argument('-d', '--dry-run', action='store_true', help='Enable dry-run mode.')
+    parser.add_argument('-f', '--force', action='store_true', help='Create card even ' +
+                        'if it exists already')
+    parser.add_argument('cve', nargs='+',
+                        help='CVE to create the Jira issue.')
+    args = parser.parse_args()
+
+    jira_server = 'https://warthogs.atlassian.net'
+    jira_options = {
+        'server': jira_server,
+    }
+
+    component = 'CVE'
+    project = 'KERN'
+
+    # Note: Python JIRA uses ~/.netrc for authentication
+    jira = JIRA(jira_options)
+
+    for cve in args.cve:
+        # Check if the card exists already
+        if not args.force:
+            jql = 'project = "{}" and component = "{}" and summary ~ "#{} "'.format(
+                project, component, cve)
+            issues = jira.search_issues(jql)
+            if issues:
+                print('Issue might exist already:')
+                for issue in issues:
+                    print('{}/browse/{} ({})'.format(jira_server, issue.key,
+                                                     issue.fields.summary))
+                print('Use -f, --force to create it anyways')
+                sys.exit(1)
+
+        description = 'https://ubuntu.com/security/{}'.format(cve)
+        # Populate the necessary fields for the new Jira issue
+        jira_summary = '{}'.format(cve)
+        jira_fields = {
+            'components': [
+                {
+                    'name': component,
+                },
+            ],
+            'description': description,
+            'issuetype': {
+                'name': 'Task',
+                'subtask': False,
+            },
+            'project': {
+                'key': project,
+            },
+            'summary': jira_summary,
+        }
+
+        if args.priority:
+            jira_fields['priority'] = args.priority
+
+        # Create the Jira issue
+        if args.dry_run:
+            print('[dry-run] Create issue ({})'.format(json.dumps(jira_fields,
+                                                                  indent=4)))
+        else:
+            jira_issue = jira.create_issue(fields=jira_fields)
+            print('{}/browse/{} ({})'.format(jira_server, jira_issue.key,
+                                             jira_issue.fields.summary))
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
