@@ -194,6 +194,10 @@ class Workflow(TaskHandler):
                         s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- snap not yet in ' + risk
                     if task.status != 'Invalid':
                         break
+                # Block release if the snap is not prepared.
+                task = s.bug.tasks_by_name.get('snap-prepare')
+                if task is not None and task.status not in ('Invalid', 'Fix Released'):
+                    s.bug.interlocks['hold-promote-to-updates'] = 'Pending -- snap not yet prepared'
 
             #
             # Check interlock blocks.
