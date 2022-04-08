@@ -640,7 +640,7 @@ defaults:
                 gke-releases:
                     - '1.24'
                 nvidia-releases:
-                    - 450
+                    - 470
             testing:
                 flavours:
                     gke:
