@@ -726,6 +726,31 @@ defaults:
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-nv-bluefield:
+            variants: ['--']
+            packages:
+                linux-nv-bluefield:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv-bluefield/+git/jammy', 'master-next']
+                linux-meta-nv-bluefield:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv-bluefield/+git/jammy']
+                linux-signed-nv-bluefield:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv-bluefield/+git/jammy']
+            supported: false
+            owner: arighi
+            development: true
+            backport: false
+            derived-from: [ '22.04', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['arm64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-oem-5.17:
             versions: ['5.17.0']
             variants: ['-22.04', '-22.04a']
