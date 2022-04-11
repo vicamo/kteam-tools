@@ -849,9 +849,8 @@ defaults:
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc']
                     gated: false
                     stable: false
-                    promote-to: ['edge', 'beta']
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         amd64: ['22']
                         arm64: ['22']
