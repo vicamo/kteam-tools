@@ -426,6 +426,9 @@ class AutoPackageTest(object):
                             for tpkgtver in val.split():
                                 if '/' in tpkgtver:
                                     modern = True
+                                    # Skip magic trigger that fixes arm firmware
+                                    if tpkgtver == "qemu-efi-noacpi/0":
+                                        continue
                                     (tpkg, tver) = tpkgtver.split('/')
 
                                     if tver == 'None':
