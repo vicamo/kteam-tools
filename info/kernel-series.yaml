@@ -464,6 +464,40 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
 
+        linux-hwe-5.17:
+            variants: [ '-wip' ]
+            packages:
+                linux-hwe-5.17:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.17-next']
+                linux-meta-hwe-5.17:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'hwe-5.17']
+                linux-signed-hwe-5.17:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'hwe-5.17']
+                linux-restricted-modules-hwe-5.17:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'hwe-5.17']
+                linux-restricted-generate-hwe-5.17:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.17:
+                    type: lrs
+            supported: false
+            owner: arighi
+            development: true
+            backport: true
+            derived-from: [ '22.04', 'linux-unstable' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+
         linux-raspi:
             variants: ['--']
             packages:
