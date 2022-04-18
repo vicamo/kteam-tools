@@ -1334,6 +1334,38 @@ defaults:
                 kernel-testing: false
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
+        linux-fips:
+            routing: fips-prerelease
+            packages:
+                linux-fips:
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/jammy-linux-fips', 'master-next']
+                linux-meta-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/jammy-linux-meta-fips']
+                linux-signed-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/jammy-linux-signed-fips']
+                linux-restricted-modules-fips:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~fips-cc-stig/+git/jammy-linux-restricted-modules-fips']
+                linux-restricted-generate-fips:
+                    type: lrg
+                linux-restricted-signatures-fips:
+                    type: lrs
+            supported: true
+            owner: mhcerri
+            private: true
+            derived-from: ['22.04', 'linux']
+            backport: true # use local-mangle to keep it in sync with the generic kernel
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    fips:
+                        arches: ['amd64', 'arm64', 's390x']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
