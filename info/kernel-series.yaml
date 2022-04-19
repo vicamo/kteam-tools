@@ -805,6 +805,7 @@ defaults:
                     type: lrs
             supported: false
             owner: tjaalton
+            derived-from: [ '22.04', 'linux-unstable' ]
             swm:
                 kernel-testing: true
             testing:
