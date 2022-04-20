@@ -1294,7 +1294,10 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-intel-iotg:
                     type: lrs
+            supported: true
             owner: philcox
+            development: false
+            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1304,8 +1307,6 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
-
-            # TODO: Add linux-uc20-intel-iotg
 
         linux-xilinx-zynqmp:
             variants: ['--']
@@ -3920,9 +3921,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-intel-iotg-5.15:
                     type: lrs
-            supported: false
+            supported: true
             owner: philcox
-            development: true
+            development: false
             backport: true
             derived-from: [ '22.04', 'linux-intel-iotg' ]
             swm:
@@ -3942,9 +3943,9 @@ defaults:
                 linux-signed-uc20-intel-iotg:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel-iotg/+git/focal']
-            supported: false
+            supported: true
             owner: philcox
-            development: true
+            development: false
             snaps:
                 intel-iotg-kernel:
                     primary: true
