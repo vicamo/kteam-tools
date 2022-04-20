@@ -1851,7 +1851,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.11:
                     type: lrs
-            supported: true
+            supported: false
             owner: smb
             development: false
             backport: false
