@@ -465,7 +465,6 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-hwe-5.17:
-            routing: prerelease
             variants: [ '-wip' ]
             packages:
                 linux-hwe-5.17:
