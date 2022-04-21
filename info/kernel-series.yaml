@@ -345,6 +345,8 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
             as-proposed:
                 - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
             proposed:
