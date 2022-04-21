@@ -1958,7 +1958,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal', 'intel-5.13']
             supported: false
-            owner: jesse
+            owner: wenchien
             development: true
             derived-from: [ '20.04', 'linux-hwe-5.13' ]
             swm:
