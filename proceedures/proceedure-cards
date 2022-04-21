@@ -15,7 +15,7 @@ class SRUBoardError(Exception):
 
 
 class JIRAIssues:
-    def __init__(self, project_key, component=None, dryrun=False):
+    def __init__(self, project_key, component=None, epic_key=None, dryrun=False):
         '''
         :param project_key: The project in which the issues will be created
         :param component: The component to add to the issues
@@ -25,7 +25,13 @@ class JIRAIssues:
 
         self.project_key = project_key
         self.component = component
+        self.epic_key = epic_key
         self.dryrun = dryrun
+
+        # Lookup custom fields we are going to use.
+        for field in self.jira.fields():
+            if field['name'] == 'Epic Link':
+                self.epic_link = field['key']
 
         self.issues = {}
 
@@ -52,6 +58,9 @@ class JIRAIssues:
         if self.component is not None:
             print(" ", "add component", self.component)
             params['components'] = [{'name': self.component}]
+        if self.epic_key is not None:
+            print(" ", "add epic-key", self.epic_key)
+            params[self.epic_link] = self.epic_key
 
         if self.dryrun:
             print('DRY: Add "{}" issue in "{}"'.format(name, state))
@@ -94,10 +103,11 @@ in a selected project.
     parser.add_argument('project', help='JIRA project key', action='store')
     parser.add_argument('config', help='issue configuration yaml file', action='store')
     parser.add_argument('--component', help='issue component with project', action='store')
+    parser.add_argument('--epic-key', help='EPIC issue XXXX-nnn', action='store')
     parser.add_argument('--dry-run', help='dry-run option', action='store_true')
     args = parser.parse_args()
 
     with open(args.config) as cfd:
         config = yaml.safe_load(cfd)
-    issues = JIRAIssues(args.project, args.component, dryrun=args.dry_run)
+    issues = JIRAIssues(args.project, args.component, args.epic_key, dryrun=args.dry_run)
     issues.add_bulk(config['cards'])
