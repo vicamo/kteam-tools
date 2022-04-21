@@ -737,6 +737,13 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-nv-bluefield:
+            routing: 
+                <<: [*routing-table-devel]
+                as-proposed:
+                proposed:
+                updates:
+                security:
+                release:
             variants: ['--']
             packages:
                 linux-nv-bluefield:
