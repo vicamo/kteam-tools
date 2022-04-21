@@ -548,7 +548,7 @@ defaults:
                 linux-restricted-signatures-realtime:
                     type: lrs
             supported: false
-            owner: krzk
+            owner: jsalisbury
             development: true
             derived-from: [ '22.04', 'linux' ]
             swm:
