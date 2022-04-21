@@ -537,6 +537,16 @@ defaults:
                 linux-meta-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/jammy']
+                linux-signed-realtime:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/jammy']
+                linux-restricted-modules-realtime:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-realtime/+git/jammy']
+                linux-restricted-generate-realtime:
+                    type: lrg
+                linux-restricted-signatures-realtime:
+                    type: lrs
             supported: false
             owner: krzk
             development: true
