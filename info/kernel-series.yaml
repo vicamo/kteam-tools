@@ -364,8 +364,8 @@ defaults:
 # 22.04 (Jammy Jellyfish)
 '22.04':
     codename: jammy
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: *routing-table
     sources:
         linux-unstable:
@@ -419,7 +419,6 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: false
             owner: arighi
             swm:
                 kernel-testing: true
@@ -451,9 +450,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency:
                     type: lrs
-            supported: false
             owner: ppisati
-            development: true
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -484,9 +481,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.17:
                     type: lrs
-            supported: false
             owner: arighi
-            development: true
             backport: true
             swm:
                 kernel-testing: true
@@ -518,7 +513,6 @@ defaults:
                     publish-to:
                         armhf: [ '22' ]
                         arm64: [ '22' ]
-            supported: false
             owner: juergh
             derived-from: ['22.04', 'linux']
             swm:
@@ -549,9 +543,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-realtime:
                     type: lrs
-            supported: false
             owner: jsalisbury
-            development: true
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -579,10 +571,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: false
             owner: timg-tpi
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -611,10 +600,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: false
             owner: mhcerri
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -645,10 +631,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            supported: false
             owner: kmously
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -675,10 +658,7 @@ defaults:
                 linux-signed-gke:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy']
-            supported: false
             owner: kmously
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -704,10 +684,7 @@ defaults:
                 linux-signed-ibm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/jammy']
-            supported: false
             owner: kmously
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -731,11 +708,8 @@ defaults:
                 linux-signed-ibm-gt:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy']
-            supported: false
             owner: krzk
             private: true
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -757,10 +731,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/jammy']
-            supported: false
             owner: arighi
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -782,10 +753,7 @@ defaults:
                 linux-signed-nv-bluefield:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv-bluefield/+git/jammy']
-            supported: false
             owner: arighi
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux-aws' ]
             swm:
                 kernel-testing: true
@@ -815,7 +783,6 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-5.17:
                     type: lrs
-            supported: false
             owner: tjaalton
             derived-from: [ '22.04', 'linux-unstable' ]
             swm:
@@ -844,10 +811,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            supported: false
             owner: juergh
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -866,10 +830,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
-            supported: false
             owner: xnox
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -887,7 +848,6 @@ defaults:
                 linux-signed-uc22:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'main']
-            supported: false
             owner: xnox
             snaps:
                 pc-kernel:
@@ -914,7 +874,6 @@ defaults:
                 linux-signed-uc22-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'lowlatency']
-            supported: false
             owner: xnox
             snaps:
                 pc-lowlatency-kernel:
@@ -951,10 +910,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-intel-iotg:
                     type: lrs
-            supported: false
             owner: philcox
-            development: true
-            backport: false
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
