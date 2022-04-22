@@ -536,13 +536,7 @@ defaults:
                 linux-signed-realtime:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/jammy']
-                linux-restricted-modules-realtime:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-realtime/+git/jammy']
-                linux-restricted-generate-realtime:
-                    type: lrg
-                linux-restricted-signatures-realtime:
-                    type: lrs
+                # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
             owner: jsalisbury
             derived-from: [ '22.04', 'linux' ]
             swm:
