@@ -15,6 +15,53 @@ readme="Ubuntu.md"
 # shellcheck disable=SC1091
 . debian/debian.env
 
+CONF="$DEBIAN/etc/update.conf"
+
+if ! [ -f "$CONF" ]; then
+	# Do not update the readme file for master kernels if it
+	# already exists.
+	if [ -f "$readme" ]; then
+        	fix_verbose "Skipping updating '$readme' on master kernel"
+        	exit 0
+	fi
+else 
+	# On a derivative kernel, check whether local modifications has already
+	# been made to the readme file. In this case skip updating it to prevent
+	# overwriting manual changes.
+
+	DEBIAN_MASTER=
+	# shellcheck disable=SC1090
+	. "$CONF"
+
+	if [ "$DEBIAN_MASTER" = "" ]; then
+		fix_verbose "DEBIAN_MASTER should be defined either in $DEBIAN/etc/update.conf or the environment"
+		exit 1
+	fi
+
+	if [ -d "$DEBIAN_MASTER" ]; then
+		# Find the last commit from the master kernel
+		local_base_search=$(git rev-list --max-count=1 HEAD -- "$DEBIAN_MASTER")
+		if [ -z "$local_base_search" ]; then
+			fix_verbose "Could not find last master commit"
+			exit 1
+		fi
+	else
+		# They are some special trees, which started with uc20-efi,
+		# which have DEBIAN_MASTER defined but the directory doesn't
+		# exist as they are not rebase kernels. In that case use the
+		# first commit of the branch as the base for the local changes
+		# search.
+		local_base_search=$(git rev-list --max-parents=0 HEAD)
+	fi
+
+	# Check for local changes
+	local_changes=$(git rev-list --max-count=1 ${local_base_search}..HEAD -- "$readme")
+	if [ ! -z "$local_changes" ]; then
+		fix_verbose "Skipping updating '$readme' with local changes"
+		exit 0
+	fi
+fi
+
 # Kernel source package name
 package=$(dpkg-parsechangelog -l"$DEBIAN/changelog" -SSource)
 
