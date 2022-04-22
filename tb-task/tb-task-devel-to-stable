@@ -1,0 +1,96 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import argparse
+import logging
+
+sys.path.append(os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, 'libs')))
+
+from ktl.log import Clog, cerror, cinfo, cdebug
+#from ktl.tracking_bug2 import TrackingBugs, TrackingBugError
+
+from launchpadlib.launchpad import Launchpad
+
+
+if __name__ == '__main__':
+
+    desc = '''
+Convert a developemnt tracker into a stable tracker
+'''
+
+    epilog = '''
+EXAMPLE:
+
+    tb-task-devel-to-stable
+'''
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(description=desc, epilog=epilog,
+                                     formatter_class=formatter)
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='do not make any changes, ' +
+                        'just show what would be done')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='output debug level logs')
+    parser.add_argument('bug_id', metavar='<bugid>', type=int,
+                        help='LP bug number of the tracking bug to be converted')
+    args = parser.parse_args()
+
+    Clog.color = False
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)s - %(message)s')
+        Clog.dbg = True
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+    # Main app run
+    lp = Launchpad.login_with('tb-task-devel-to-stable', 'production', version='devel')
+
+    bug_id = args.bug_id
+
+    #source_version = lrm_version.rsplit('+', 1)[0]
+
+    try:
+        cdebug('lookup {}'.format(bug_id))
+        tb = lp.bugs[bug_id]
+    except KeyError as e:
+        cerror('EE: {}'.format(e.msg))
+        cerror('Failed to load LP: #{}. Skipping...'.format(bug_id))
+        sys.exit(1)
+
+    tb_tasks = {}
+    for lp_task in tb.bug_tasks:
+        #print(lp_task, lp_task.bug_target_name)
+        tb_tasks[lp_task.bug_target_name.split('/')[-1]] = lp_task
+
+    prefix = "DRYRUN: " if args.dry_run else ""
+    prefix += "LP: #{}: ".format(bug_id)
+    dirty = False
+
+    for task_name, status in (
+            ('certification-testing', 'New'),
+            ('verification-testing', 'New'),
+            ('promote-to-updates', 'New'),
+            ('promote-to-security', 'New'),
+            ('promote-to-release', 'Invalid'),
+            ('security-signoff', 'New'),
+            ):
+        cinfo("{}Setting {} to {}".format(prefix, task_name, status))
+        lp_task = tb_tasks.get(task_name)
+        if lp_task is None:
+            cinfo("{}  adding {}".format(prefix, task_name))
+            if not args.dry_run:
+                lp_task = tb.addTask(target='/kernel-sru-workflow/' + task_name)
+        if lp_task is not None and lp_task.status != status:
+            cinfo("{}  pulling back {}".format(prefix, task_name))
+            if not args.dry_run:
+                lp_task.status = status
+                lp_task.lp_save()
+
+    if dirty:
+        tb.save()
+
+# vi:set ts=4 sw=4 expandtab syntax=python:
