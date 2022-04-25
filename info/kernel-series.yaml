@@ -361,16 +361,17 @@ defaults:
             security:
             release:
 
-# 22.04 (Jammy Jellyfish)
-'22.04':
-    codename: jammy
-    development: false
-    supported: true
+# 22.10 (Kinetic Kudo)
+'22.10':
+    codename: kinetic
+    development: true
+    supported: false
+    opening:
     routing-table: *routing-table
     sources:
         linux-unstable:
             routing: devel-unstable
-            versions: ['5.17.0']
+            versions: ['5.18.0']
             variants: ['-wip']
             packages:
                 linux-unstable:
@@ -400,6 +401,387 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
 
+        linux:
+            versions: ['5.15.0']
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/kinetic']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/kinetic']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/kinetic']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
+            owner: arighi
+            derived-from: [ '22.04', 'linux' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+
+        linux-lowlatency:
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            packages:
+                linux-lowlatency:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'lowlatency-next']
+                linux-meta-lowlatency:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/kinetic', 'lowlatency']
+                linux-signed-lowlatency:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/kinetic', 'lowlatency']
+                linux-restricted-modules-lowlatency:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/kinetic', 'lowlatency']
+                linux-restricted-generate-lowlatency:
+                    type: lrg
+                linux-restricted-signatures-lowlatency:
+                    type: lrs
+            owner: ppisati
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-lowlatency' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/kinetic', 'master-next']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/kinetic']
+            snaps:
+                pi-kernel:
+                    primary: true
+                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
+                    gated: false
+                    promote-to: ['edge', 'beta']
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        armhf: [ '22' ]
+                        arm64: [ '22' ]
+            owner: juergh
+            #derived-from: ['22.10', 'linux']
+            derived-from: ['22.04', 'linux-raspi']
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-realtime:
+            routing: realtime
+            versions: ['5.15.0']
+            variants: ['--']
+            packages:
+                linux-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/kinetic', 'master-next']
+                linux-meta-realtime:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/kinetic']
+                linux-signed-realtime:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/kinetic']
+                # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
+            owner: jsalisbury
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-realtime' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    realtime:
+                        arches: ['amd64', 'arm64']        # test system arch names
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-aws:
+            variants: ['--']
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/kinetic', 'master-next']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/kinetic']
+                linux-signed-aws:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/kinetic']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/kinetic']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
+            owner: timg-tpi
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-aws' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-azure:
+            variants: ['--']
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/kinetic', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/kinetic']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/kinetic']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/kinetic']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
+            owner: mhcerri
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-azure' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-gcp:
+            variants: ['--']
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/kinetic', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/kinetic']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/kinetic']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/kinetic']
+                linux-restricted-generate-gcp:
+                    type: lrg
+                linux-restricted-signatures-gcp:
+                    type: lrs
+            owner: kmously
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-gcp' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-ibm:
+            variants: ['--']
+            packages:
+                linux-ibm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/kinetic', 'master-next']
+                linux-meta-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/kinetic']
+                linux-signed-ibm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/kinetic']
+            owner: kmously
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-ibm' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        meta-pkg: linux-ibm
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-kvm:
+            variants: ['--']
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/kinetic', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/kinetic']
+                linux-signed-kvm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/kinetic']
+            owner: arighi
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-kvm' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oem-5.17:
+            versions: ['5.17.0']
+            variants: ['-22.04', '-22.04a']
+            packages:
+                linux-oem-5.17:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/kinetic', 'oem-5.17-next']
+                linux-meta-oem-5.17:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/kinetic', 'oem-5.17']
+                linux-signed-oem-5.17:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/kinetic', 'oem-5.17']
+                linux-restricted-modules-oem-5.17:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/kinetic', 'oem-5.17']
+                linux-restricted-generate-oem-5.17:
+                    type: lrg
+                linux-restricted-signatures-oem-5.17:
+                    type: lrs
+            owner: tjaalton
+            #derived-from: [ '22.10', 'linux-unstable' ]
+            derived-from: [ '22.04', 'linux-oem-5.17' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-oracle:
+            variants: ['--']
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/kinetic', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/kinetic']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/kinetic']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/kinetic']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
+            owner: juergh
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-oracle' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-riscv:
+            variants: ['--']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/kinetic']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic']
+            owner: xnox
+            #derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-riscv' ]
+            backport: true
+            stable: true
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+# 22.04 (Jammy Jellyfish)
+'22.04':
+    codename: jammy
+    development: false
+    supported: true
+    routing-table: *routing-table
+    sources:
         linux:
             versions: ['5.15.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
