@@ -24,6 +24,8 @@ if __name__ == '__main__':
         series.append(ks_series)
     if len(series) == 0:
         for ks_series in ks.series:
+            if not ks_series.opening_ready('archive-closed'):
+                continue
             if ks_series.supported or ks_series.development:
                 series.append(ks_series)
 
