@@ -361,7 +361,7 @@ defaults:
             security:
             release:
 
-# 22.10 (Kinetic Kudo)
+# 22.10 (Kinetic Kudu)
 '22.10':
     codename: kinetic
     development: true
