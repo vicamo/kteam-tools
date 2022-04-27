@@ -801,7 +801,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            owner: arighi
+            owner: smb
             swm:
                 kernel-testing: true
             testing:
@@ -832,7 +832,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency:
                     type: lrs
-            owner: ppisati
+            owner: smb
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1107,7 +1107,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/jammy']
-            owner: arighi
+            owner: lukenow
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1213,7 +1213,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
-            owner: xnox
+            owner: lukenow
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -1231,7 +1231,7 @@ defaults:
                 linux-signed-uc22:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'main']
-            owner: xnox
+            owner: smb
             snaps:
                 pc-kernel:
                     primary: true
@@ -1257,7 +1257,7 @@ defaults:
                 linux-signed-uc22-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22/+git/jammy', 'lowlatency']
-            owner: xnox
+            owner: smb
             snaps:
                 pc-lowlatency-kernel:
                     primary: true
