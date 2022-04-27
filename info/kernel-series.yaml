@@ -267,6 +267,15 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
+        wip:
+            <<:             *routing-table-default
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
+            as-proposed:
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
+            security:
+            release:
         devel: &routing-table-devel
             <<: [*routing-table-default, *routing-table-security-proposed]
             security-build:
@@ -846,6 +855,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-hwe-5.17:
+            routing: wip
             variants: [ '-wip' ]
             packages:
                 linux-hwe-5.17:
