@@ -5187,7 +5187,7 @@ defaults:
             testing:
                 flavours:
                     gcp:
-                        arches: ['amd64']        # test system arch names
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
