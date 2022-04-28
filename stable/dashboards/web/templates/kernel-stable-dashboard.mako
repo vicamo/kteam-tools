@@ -339,6 +339,13 @@ def __status_bites(bug, attrs):
 import re
 import urllib.parse
 
+def cycle_key(cycle):
+    # Move any cycle type prefix character to the end.
+    if not cycle[0].isdigit():
+        cycle = cycle[1:] + cycle[0]
+    return cycle
+
+
 cycles = {}
 cadence = {}
 owners = {}
@@ -549,7 +556,7 @@ for bid in sorted(swm_trackers):
                                         releases['00.00'] = 'unknown'
                                         cycle_first = True
                                     %>
-                                    % for cycle in sorted(cycles):
+                                    % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
                                             <tr>
                                                 <td colspan="5">&nbsp;</td>
