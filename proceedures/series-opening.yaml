@@ -1,4 +1,9 @@
 cards:
+  - name: "External Stimuli"
+    description: |
+      - Examine each of the sub-tasks and any such stimuli which are complete
+        can be moved Done.
+    list: On Deck
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
