@@ -287,7 +287,13 @@ class WorkflowManager():
                 cycle_spin = int(cycle_bits[-1])
             except ValueError:
                 cycle_spin = 0
+            # Move any cycle type prefix character to the end of the cycle
+            # number.  Also expand the spin number to three digits so it
+            # sorts correctly:
+            # s2023.08.07-1 -> 2023.08.07s-001
             cycle_bits[-1] = '{:03}'.format(cycle_spin)
+            if not cycle_bits[0][0].isdigit():
+                cycle_bits[0] = cycle_bits[0][1:] + cycle_bits[0][0]
             cycle = '-'.join(cycle_bits)
         return cycle
 
