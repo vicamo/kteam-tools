@@ -4,6 +4,11 @@ cards:
       - Examine each of the sub-tasks and any such stimuli which are complete
         can be moved Done.
     list: On Deck
+  - name: "Archive: new series initialised"
+    description: |
+      - When the new series is created, formally initialised, and fully published to the
+        mirrors; it does not need to be open for uploads yet.
+    subtask-of: "External Stimuli"
   - name: "Updated debootstrap in the archive"
     description: |
       - When all relevant series have an updated debootstrap capable of bootstrapping
@@ -28,9 +33,9 @@ cards:
     list: On Deck
   - name: "Archive opening -- closed"
     description: |
-      - NEEDS: archive initialised and published
       - OPENING: opening: archive-closed: true
     prerequisites:
+      - "Archive: new series initialised"
     list: On Deck
   - name: "Create new linux-snap git repository"
     description: |
@@ -84,7 +89,7 @@ cards:
       - NEEDS: new series tracks created
       - Create recipies (Producing snaps documentation)
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: new series initialised"
       - "Create new linux-snap git repository"
     list: Backlog
   - name: "Create new primary repositories"
@@ -121,7 +126,7 @@ cards:
        - mark-suite-dirty -A ppa:canonical-kernel-team/ubuntu/builder-extra -s disco
       - Copy any valid packages in old series to new series
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: new series initialised"
     list: Backlog
   - name: "Install updated debootstrap onto builders"
     description: |
