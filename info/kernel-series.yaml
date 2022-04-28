@@ -1146,8 +1146,10 @@ defaults:
                 linux-signed-nv-bluefield:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv-bluefield/+git/jammy']
-            owner: arighi
-            derived-from: [ '22.04', 'linux-aws' ]
+            supported: false
+            development: true
+            owner: ztahenakos
+            derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
             testing:
