@@ -4,6 +4,11 @@ cards:
       - Examine each of the sub-tasks and any such stimuli which are complete
         can be moved Done.
     list: On Deck
+  - name: "Updated debootstrap in the archive"
+    description: |
+      - When all relevant series have an updated debootstrap capable of bootstrapping
+        the opening series, this can be moved Done.
+    subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
@@ -120,12 +125,12 @@ cards:
     list: Backlog
   - name: "Install updated debootstrap onto builders"
     description: |
-      - NEEDS: updated debootstrap in primary archive
       - NEEDS: builder admin (has root on builders)
-      - copy to builders and install manually
+      - update from new version in updates
+        (or copy to builders and install manually if in proposed)
       - OPENING: opening: debootstrap: true
     prerequisites:
-      - "Prime builder-extras for the new series"
+      - "Updated debootstrap in the archive"
     list: Backlog
   - name: "Add series to chroot creation"
     description: |
