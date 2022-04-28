@@ -14,6 +14,10 @@ cards:
       - When all relevant series have an updated debootstrap capable of bootstrapping
         the opening series, this can be moved Done.
     subtask-of: "External Stimuli"
+  - name: "Archive: open for uploads"
+    description: |
+      - When the archive is formally open for uploads.
+    subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
@@ -31,7 +35,7 @@ cards:
       - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
     prerequisites:
     list: On Deck
-  - name: "Archive opening -- closed"
+  - name: "Mark series archive-closed"
     description: |
       - OPENING: opening: archive-closed: true
     prerequisites:
@@ -70,12 +74,11 @@ cards:
     prerequisites:
       - "Switch development series to stable"
     list: Backlog
-  - name: "Archive opening -- open"
+  - name: "Mark series archive-open"
     description: |
-      - NEEDS: final name set and archive accepting uploads
       - OPENING: opening: archive-open: true
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: open for uploads"
     list: Backlog
   - name: "Confirm ADT running for series"
     description: |
@@ -161,12 +164,12 @@ cards:
       - remove "opening" from series stanza
     prerequisites:
       - "Create new primary repositories"
-      - "Archive opening -- closed"
+      - "Mark series archive-closed"
       - "Install updated debootstrap onto builders"
       - "Add series to chroot creation"
       - "Confirm britney is running in development"
       - "Confirm ADT running for series"
-      - "Archive opening -- open"
+      - "Mark series archive-open"
     list: Backlog
   - name: "Update opening proceedure"
     description: |
