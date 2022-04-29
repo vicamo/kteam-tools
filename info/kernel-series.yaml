@@ -377,6 +377,7 @@ defaults:
     supported: false
     opening:
         archive-closed: true
+        autopkgtest: true
     routing-table: *routing-table
     sources:
         linux-unstable:
