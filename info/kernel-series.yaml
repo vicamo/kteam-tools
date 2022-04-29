@@ -435,7 +435,7 @@ defaults:
             owner: arighi
             derived-from: [ '22.04', 'linux' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -471,7 +471,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-lowlatency' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -507,7 +507,7 @@ defaults:
             #derived-from: ['22.10', 'linux']
             derived-from: ['22.04', 'linux-raspi']
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -535,7 +535,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-realtime' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -567,7 +567,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-aws' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -600,7 +600,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-azure' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 deployment-blackout: *swm-azure-blackout
@@ -635,7 +635,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-gcp' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -661,7 +661,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-ibm' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -688,7 +688,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-kvm' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -722,7 +722,7 @@ defaults:
             #derived-from: [ '22.10', 'linux-unstable' ]
             derived-from: [ '22.04', 'linux-oem-5.17' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -754,7 +754,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-oracle' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
@@ -777,7 +777,7 @@ defaults:
             #derived-from: [ '22.10', 'linux' ]
             derived-from: [ '22.04', 'linux-riscv' ]
             backport: true
-            stable: true
+            supported: true
             development: false
             swm:
                 kernel-testing: true
