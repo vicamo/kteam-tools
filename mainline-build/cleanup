@@ -17,7 +17,7 @@ done
 for which in "$HOME/public_html/test-build"/*/*/order
 do
 	which=`dirname "$which"`
-	"$here/cleanup-daily-one" "$which" 50
+	"$here/cleanup-daily-one" "$which" 40
 done
 
 # Cleanup the ubuntu-stable.
