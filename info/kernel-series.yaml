@@ -381,6 +381,7 @@ defaults:
         archive-open: true
         britney: true
         debootstrap: true
+        chroots: true
     routing-table: *routing-table
     sources:
         linux-unstable:
