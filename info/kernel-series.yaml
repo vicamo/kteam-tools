@@ -379,6 +379,7 @@ defaults:
         archive-closed: true
         autopkgtest: true
         archive-open: true
+        britney: true
     routing-table: *routing-table
     sources:
         linux-unstable:
