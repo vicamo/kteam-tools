@@ -96,11 +96,11 @@ cards:
     list: Backlog
   - name: "Create snap build recipies"
     description: |
-      - NEEDS: new series tracks created
       - Create recipies (Producing snaps documentation)
     prerequisites:
       - "Archive: new series initialised"
       - "Create new linux-snap git repository"
+      - "Request new snap tracks"
     list: Backlog
   - name: "Create new primary repositories"
     description: |
