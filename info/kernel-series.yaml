@@ -375,14 +375,6 @@ defaults:
     codename: kinetic
     development: true
     supported: false
-    opening:
-        archive-closed: true
-        autopkgtest: true
-        archive-open: true
-        britney: true
-        debootstrap: true
-        chroots: true
-        repositories: true
     routing-table: *routing-table
     sources:
         linux-unstable:
