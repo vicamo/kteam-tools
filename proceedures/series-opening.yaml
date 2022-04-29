@@ -1,4 +1,31 @@
 cards:
+  - name: "External Stimuli"
+    description: |
+      - Examine each of the sub-tasks and any such stimuli which are complete
+        can be moved Done.
+    list: On Deck
+  - name: "Archive: new series initialised"
+    description: |
+      - When the new series is created, formally initialised, and fully published to the
+        mirrors; it does not need to be open for uploads yet.
+    subtask-of: "External Stimuli"
+  - name: "Updated debootstrap in the archive"
+    description: |
+      - When all relevant series have an updated debootstrap capable of bootstrapping
+        the opening series, this can be moved Done.
+    subtask-of: "External Stimuli"
+  - name: "Archive: open for uploads"
+    description: |
+      - When the archive is formally open for uploads.
+    subtask-of: "External Stimuli"
+  - name: "Britney running in development"
+    description: |
+      - Britney is running against the newly opened series.
+    subtask-of: "External Stimuli"
+  - name: "ADT running in development"
+    description: |
+      - ADT is running against the newly opened series.
+    subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
@@ -16,16 +43,16 @@ cards:
       - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
     prerequisites:
     list: On Deck
-  - name: "Archive opening -- closed"
+  - name: "Mark series archive-closed"
     description: |
-      - NEEDS: archive initialised and published
       - OPENING: opening: archive-closed: true
     prerequisites:
+      - "Archive: new series initialised"
     list: On Deck
   - name: "Create new linux-snap git repository"
     description: |
       - NEEDS: launchpad admin for ubuntu-kernel
-      - NOTE: Only needed on LTSs for their corresponding ucNN
+      - NOTE: Only needed on LTS+1 for their corresponding ucNN
       - NOTE: Likely is already created so we can test against development.
       - git fetch origin
       - git push lp:~canonical-kernel-snaps/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
@@ -33,7 +60,7 @@ cards:
     list: On Deck
   - name: "Request new snap tracks"
     description: |
-      - NOTE: Only needed on LTSs for their corresponding ucNN
+      - NOTE: Only needed on LTS+1 for their corresponding ucNN
       - NOTE: Likely is already created so we can test against development.
       - Email snap-store-admins@lists.canonical.com requesting all the new tracks needed,
         should mirror those in previous ucNN mostly.
@@ -55,27 +82,25 @@ cards:
     prerequisites:
       - "Switch development series to stable"
     list: Backlog
-  - name: "Archive opening -- open"
+  - name: "Mark series archive-open"
     description: |
-      - NEEDS: final name set and archive accepting uploads
       - OPENING: opening: archive-open: true
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: open for uploads"
     list: Backlog
-  - name: "Confirm ADT running for series"
+  - name: "Mark series autopkgtest"
     description: |
-      - NEEDS: ADT running tests successfully in series
       - OPENING: opening: autopkgtest: true
     prerequisites:
-      - "Archive opening -- closed"
+      - "ADT running in development"
     list: Backlog
   - name: "Create snap build recipies"
     description: |
-      - NEEDS: new series tracks created
       - Create recipies (Producing snaps documentation)
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: new series initialised"
       - "Create new linux-snap git repository"
+      - "Request new snap tracks"
     list: Backlog
   - name: "Create new primary repositories"
     description: |
@@ -89,12 +114,13 @@ cards:
     prerequisites:
       - "Add new series to Ubuntu KTL"
     list: Backlog
-  - name: "Confirm britney is running in development"
+  - name: "Validate ubuntu-kernel-release devel branch"
     description: |
       - NEEDS: britney running in production
       - Confirm that ubuntu-kernel-release ubuntu/devel branch has all new series kernels
       - OPENING: opening: britney: true
     prerequisites:
+      - "Britney running in development"
       - "Add new series to Ubuntu KTL"
     list: Backlog
   - name: "Add repositories to wani mirroring"
@@ -111,16 +137,16 @@ cards:
        - mark-suite-dirty -A ppa:canonical-kernel-team/ubuntu/builder-extra -s disco
       - Copy any valid packages in old series to new series
     prerequisites:
-      - "Archive opening -- closed"
+      - "Archive: new series initialised"
     list: Backlog
   - name: "Install updated debootstrap onto builders"
     description: |
-      - NEEDS: updated debootstrap in primary archive
       - NEEDS: builder admin (has root on builders)
-      - copy to builders and install manually
+      - update from new version in updates
+        (or copy to builders and install manually if in proposed)
       - OPENING: opening: debootstrap: true
     prerequisites:
-      - "Prime builder-extras for the new series"
+      - "Updated debootstrap in the archive"
     list: Backlog
   - name: "Add series to chroot creation"
     description: |
@@ -139,19 +165,18 @@ cards:
       - Add ADT matrix config for new series to canonical-kernel-team--bootstrap.conf and canonical-kernel-team--unstable.conf
     prerequisites:
       - "Confirm ADT running for series"
-      - "Confirm britney is running in development"
     list: Backlog
   - name: "Remove opening tag"
     description: |
       - remove "opening" from series stanza
     prerequisites:
       - "Create new primary repositories"
-      - "Archive opening -- closed"
+      - "Mark series archive-closed"
       - "Install updated debootstrap onto builders"
       - "Add series to chroot creation"
-      - "Confirm britney is running in development"
+      - "Validate ubuntu-kernel-release devel branch"
       - "Confirm ADT running for series"
-      - "Archive opening -- open"
+      - "Mark series archive-open"
     list: Backlog
   - name: "Update opening proceedure"
     description: |

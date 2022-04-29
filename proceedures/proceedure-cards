@@ -35,13 +35,15 @@ class JIRAIssues:
 
         self.issues = {}
 
-    def add_issue(self, name, desc=None, state=None, prereqs=None):
+    def add_issue(self, name, desc=None, state=None, prereqs=None, subtask_of=None):
         """
         Add the given card to the board.
 
         :param name: card name
         :param desc: card description
         :param state: initial issue state
+        :param pereqs: blocking issues
+        :param subtask_of: parent issue
         :return: None
         """
 
@@ -51,16 +53,23 @@ class JIRAIssues:
         params = {
             'project': {'key': self.project_key},
             'summary': name,
-            'issuetype': {'name': 'Task'},
         }
+        if subtask_of is None:
+            task_key = self.issues[subtask_of]
+            print(" ", "subtask with parent", task_key)
+            params['issuetype'] = {'name': 'Sub-task'}
+            params['parent'] = {'key': task_key}
+        else:
+            print(" ", "task")
+            params['issuetype'] = {'name': 'Task'}
+            if self.epic_key is not None:
+                print(" ", "add epic-key", self.epic_key)
+                params[self.epic_link] = self.epic_key
         if desc is not None:
             params['description'] = desc
         if self.component is not None:
             print(" ", "add component", self.component)
             params['components'] = [{'name': self.component}]
-        if self.epic_key is not None:
-            print(" ", "add epic-key", self.epic_key)
-            params[self.epic_link] = self.epic_key
 
         if self.dryrun:
             print('DRY: Add "{}" issue in "{}"'.format(name, state))
@@ -88,7 +97,7 @@ class JIRAIssues:
 
     def add_bulk(self, issues):
         for issue in issues:
-            self.add_issue(issue['name'], issue.get('description', ''), issue.get('list', 'In Backlog'), issue.get('prerequisites'))
+            self.add_issue(issue['name'], issue.get('description', ''), issue.get('list', 'In Backlog'), issue.get('prerequisites'), issue.get('subtask-of'))
 
 
 if __name__ == '__main__':
