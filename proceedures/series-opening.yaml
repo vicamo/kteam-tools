@@ -22,6 +22,10 @@ cards:
     description: |
       - Britney is running against the newly opened series.
     subtask-of: "External Stimuli"
+  - name: "ADT running in development"
+    description: |
+      - ADT is running against the newly opened series.
+    subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
@@ -84,12 +88,11 @@ cards:
     prerequisites:
       - "Archive: open for uploads"
     list: Backlog
-  - name: "Confirm ADT running for series"
+  - name: "Mark series autopkgtest"
     description: |
-      - NEEDS: ADT running tests successfully in series
       - OPENING: opening: autopkgtest: true
     prerequisites:
-      - "Archive opening -- closed"
+      - "ADT running in development"
     list: Backlog
   - name: "Create snap build recipies"
     description: |
