@@ -18,6 +18,10 @@ cards:
     description: |
       - When the archive is formally open for uploads.
     subtask-of: "External Stimuli"
+  - name: "Britney running in development"
+    description: |
+      - Britney is running against the newly opened series.
+    subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
@@ -107,12 +111,13 @@ cards:
     prerequisites:
       - "Add new series to Ubuntu KTL"
     list: Backlog
-  - name: "Confirm britney is running in development"
+  - name: "Validate ubuntu-kernel-release devel branch"
     description: |
       - NEEDS: britney running in production
       - Confirm that ubuntu-kernel-release ubuntu/devel branch has all new series kernels
       - OPENING: opening: britney: true
     prerequisites:
+      - "Britney running in development"
       - "Add new series to Ubuntu KTL"
     list: Backlog
   - name: "Add repositories to wani mirroring"
@@ -157,7 +162,6 @@ cards:
       - Add ADT matrix config for new series to canonical-kernel-team--bootstrap.conf and canonical-kernel-team--unstable.conf
     prerequisites:
       - "Confirm ADT running for series"
-      - "Confirm britney is running in development"
     list: Backlog
   - name: "Remove opening tag"
     description: |
@@ -167,7 +171,7 @@ cards:
       - "Mark series archive-closed"
       - "Install updated debootstrap onto builders"
       - "Add series to chroot creation"
-      - "Confirm britney is running in development"
+      - "Validate ubuntu-kernel-release devel branch"
       - "Confirm ADT running for series"
       - "Mark series archive-open"
     list: Backlog
