@@ -380,6 +380,7 @@ defaults:
         autopkgtest: true
         archive-open: true
         britney: true
+        debootstrap: true
     routing-table: *routing-table
     sources:
         linux-unstable:
