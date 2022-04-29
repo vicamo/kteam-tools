@@ -52,7 +52,7 @@ cards:
   - name: "Create new linux-snap git repository"
     description: |
       - NEEDS: launchpad admin for ubuntu-kernel
-      - NOTE: Only needed on LTSs for their corresponding ucNN
+      - NOTE: Only needed on LTS+1 for their corresponding ucNN
       - NOTE: Likely is already created so we can test against development.
       - git fetch origin
       - git push lp:~canonical-kernel-snaps/+git/kernel-snaps-ucNN refs/remotes/origin/master:refs/heads/master
@@ -60,7 +60,7 @@ cards:
     list: On Deck
   - name: "Request new snap tracks"
     description: |
-      - NOTE: Only needed on LTSs for their corresponding ucNN
+      - NOTE: Only needed on LTS+1 for their corresponding ucNN
       - NOTE: Likely is already created so we can test against development.
       - Email snap-store-admins@lists.canonical.com requesting all the new tracks needed,
         should mirror those in previous ucNN mostly.
