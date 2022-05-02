@@ -648,7 +648,7 @@ class MonitorSwmStatusMonitor:
 
         # Grab us the object in question.
         src = self.lp.load(lp_api)
-        if build is None:
+        if src is None:
             print(tag, "no-api-object change=False")
             return False
 
