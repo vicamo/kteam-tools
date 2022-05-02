@@ -898,9 +898,9 @@ defaults:
                     primary: true
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
                     gated: false
-                    promote-to: stable
+                    promote-to: ['edge', 'beta']
                     qa: false
-                    hw-cert: true
+                    hw-cert: false
                     publish-to:
                         armhf: [ '22' ]
                         arm64: [ '22' ]
@@ -910,7 +910,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    raspi:
+                   raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
 
