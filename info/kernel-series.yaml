@@ -2958,6 +2958,39 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-5.15:
+            variants: [ '-edge' ]
+            packages:
+                linux-azure-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.15-next']
+                linux-meta-azure-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/focal', 'azure-5.15']
+                linux-signed-azure-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-5.15']
+                linux-restricted-modules-azure-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/focal', 'azure-5.15']
+                linux-restricted-generate-azure-5.15:
+                    type: lrg
+                linux-restricted-signatures-azure-5.15:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '22.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
         linux-gcp:
             variants: ['-lts-20.04']
             packages:
