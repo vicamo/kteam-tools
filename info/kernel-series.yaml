@@ -1178,7 +1178,7 @@ defaults:
                 linux-restricted-signatures-oem-5.17:
                     type: lrs
             owner: tjaalton
-            derived-from: [ '22.04', 'linux-unstable' ]
+            derived-from: [ '22.04', 'linux-hwe-5.17' ]
             swm:
                 kernel-testing: true
             testing:
