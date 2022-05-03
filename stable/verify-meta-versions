@@ -66,16 +66,19 @@ than those of the respective master.
         for ks_source1 in ks_series.sources:
             if not ks_source1.backport:
                 continue
-            ks_source2 = ks_source1.derived_from
+            if ks_source1.derived_from is None:
+                continue
 
-            variants1 = ks_source1.variants
-            variants2 = ks_source2.variants
+            ks_source2 = ks_source1.derived_from
 
             if not ks_source1.supported:
                 continue
 
             if ks_source1.name == 'linux-hwe' or ks_source1.name.startswith('linux-lts-'):
                 continue
+
+            variants1 = ks_source1.variants
+            variants2 = ks_source2.variants
 
             #print(ks_source1.name, variants1, ks_source2.name, variants2)
             if ((variants1 is None or '--' in variants1) and
