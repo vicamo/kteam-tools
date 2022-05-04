@@ -2766,6 +2766,37 @@ defaults:
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-aws-5.15:
+            variants: [ '-edge' ]
+            packages:
+                linux-aws-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.15-next']
+                linux-meta-aws-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.15']
+                linux-signed-aws-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/focal', 'aws-5.15']
+                linux-restricted-modules-aws-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/focal', 'aws-5.15']
+                linux-restricted-generate-aws-5.15:
+                    type: lrg
+                linux-restricted-signatures-aws-5.15:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '22.04', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-azure:
             variants: ['-lts-20.04']
             packages:
