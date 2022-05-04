@@ -488,17 +488,6 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/kinetic']
-            snaps:
-                pi-kernel:
-                    primary: true
-                    repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
-                    gated: false
-                    promote-to: ['edge', 'beta']
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        armhf: [ '22' ]
-                        arm64: [ '22' ]
             owner: juergh
             #derived-from: ['22.10', 'linux']
             derived-from: ['22.04', 'linux-raspi']
