@@ -2371,9 +2371,8 @@ defaults:
                 linux-signed-intel-5.13:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal', 'intel-5.13']
-            supported: false
-            owner: wenchien
-            development: true
+            supported: true
+            owner: jianhuilee
             derived-from: [ '20.04', 'linux-hwe-5.13' ]
             swm:
                 kernel-testing: true
@@ -2415,18 +2414,15 @@ defaults:
                 linux-signed-uc20-intel:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-intel/+git/focal']
-            supported: false
-            owner: wenchien
-            development: true
+            supported: true
+            owner: jianhuilee
             snaps:
                 intel-kernel:
-                    primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel']
                     gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
+                    promote-to: stable
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel-5.13' ]
