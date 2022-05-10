@@ -3082,8 +3082,39 @@ defaults:
                         clouds: ['gcp']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gcp-5.15:
+            variants: [ '-edge' ]
+            packages:
+                linux-gcp-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.15-next']
+                linux-meta-gcp-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal', 'gcp-5.15']
+                linux-signed-gcp-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal', 'gcp-5.15']
+                linux-restricted-modules-gcp-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/focal', 'gcp-5.15']
+                linux-restricted-generate-gcp-5.15:
+                    type: lrg
+                linux-restricted-signatures-gcp-5.15:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '22.04', 'linux-gcp' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gcp-5.13:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-gcp-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.13-next']
