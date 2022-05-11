@@ -416,6 +416,12 @@ def add_primary(repo_set):
                 branches.append(branch[:-5])
             #print(thing, branch)
             branches.append(branch)
+            # Inclusive naming migration rules
+            if branch == 'master-next':
+                branches.append('main-next')
+                branches.append('main')
+            if branch == 'master':
+                branches.append('main')
             # snap repositories should also have a -test branch.
             if thing_type == 'snap':
                 branches.append(branch + '-test')
