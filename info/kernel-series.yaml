@@ -1360,13 +1360,13 @@ defaults:
             variants: ['--']
             packages:
                 linux-nv:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv/+git/jammy', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv/+git/jammy', 'main-next']
                 linux-meta-nv:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv/+git/jammy', 'main']
                 linux-signed-nv:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv/+git/jammy']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv/+git/jammy', 'main']
             owner: ztahenakos
             development: true
             supported: false
