@@ -3354,8 +3354,39 @@ defaults:
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oracle-5.15:
+            variants: [ '-edge' ]
+            packages:
+                linux-oracle-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.15-next']
+                linux-meta-oracle-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal', 'oracle-5.15']
+                linux-signed-oracle-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal', 'oracle-5.15']
+                linux-restricted-modules-oracle-5.15:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/focal', 'oracle-5.15']
+                linux-restricted-generate-oracle-5.15:
+                    type: lrg
+                linux-restricted-signatures-oracle-5.15:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '22.04', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-oracle-5.13:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-oracle-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.13-next']
