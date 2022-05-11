@@ -1355,6 +1355,35 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-nv:
+            routing: wip
+            variants: ['--']
+            packages:
+                linux-nv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv/+git/jammy', 'master-next']
+                linux-meta-nv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv/+git/jammy']
+                linux-signed-nv:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv/+git/jammy']
+            owner: ztahenakos
+            development: true
+            supported: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
