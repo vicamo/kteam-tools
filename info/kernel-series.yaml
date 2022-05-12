@@ -1043,7 +1043,7 @@ defaults:
             testing:
                 flavours:
                     gke:
-                        arches: ['amd64']        # test system arch names
+                        arches: ['amd64', 'arm64']        # test system arch names
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
