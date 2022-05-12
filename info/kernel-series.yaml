@@ -5927,15 +5927,16 @@ defaults:
                 linux-signed-fde:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-fde/+git/bionic']
-            supported: false
-            owner: wenchien
-            development: true
+            supported: true
+            owner: smb
+            development: false
             private: true
             derived-from: ['18.04', 'linux']
             swm:
                 kernel-testing: false
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             snaps:
+                # EOL: 2022-12-19
                 abb-dfa-apc2200-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'vasteras']
                     gated: false
@@ -5944,14 +5945,17 @@ defaults:
                         amd64: ['latest']
                     qa: false
                     hw-cert: true
-                bar-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'fortknox']
-                    gated: false
-                    promote-to: 'stable'
-                    publish-to:
-                        amd64: ['latest']
-                    qa: false
-                    hw-cert: true
+                # EOL: is already EOL
+                # bar-kernel:
+                #     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'fortknox']
+                #     gated: false
+                #     promote-to: 'stable'
+                #     publish-to:
+                #         amd64: ['latest']
+                #     qa: false
+                #     hw-cert: true
+                #
+                # EOL: 2022-07-01 (renewable)
                 interactive-strength-fs0001-kernel:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'presidio']
                     gated: false
