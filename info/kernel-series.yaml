@@ -861,7 +861,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.17:
                     type: lrs
-            owner: arighi
+            owner: ppisati
             backport: true
             swm:
                 kernel-testing: true
