@@ -1166,6 +1166,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-5.17:
                     type: lrs
+            supported: true
             owner: tjaalton
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
             swm:
