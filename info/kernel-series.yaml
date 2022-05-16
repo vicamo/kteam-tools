@@ -1356,18 +1356,25 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
-        linux-nv:
+        linux-nvidia:
             routing: wip
             variants: ['--']
             packages:
-                linux-nv:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv/+git/jammy', 'main-next']
-                linux-meta-nv:
+                linux-nvidia:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'main-next']
+                linux-meta-nvidia:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv/+git/jammy', 'main']
-                linux-signed-nv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/jammy', 'main']
+                linux-signed-nvidia:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv/+git/jammy', 'main']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/jammy', 'main']
+                linux-restricted-modules-nvidia:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/jammy', 'main']
+                linux-restricted-generate-nvidia:
+                    type: lrg
+                linux-restricted-signatures-nvidia:
+                    type: lrs
             owner: ztahenakos
             development: true
             supported: false
