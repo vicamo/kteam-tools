@@ -2766,7 +2766,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.13:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-aws-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.13-next']
@@ -2987,7 +2987,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.13:
-            variants: [ '--', '-edge' ]
+            variants: [ '--' ]
             packages:
                 linux-azure-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.13-next']
