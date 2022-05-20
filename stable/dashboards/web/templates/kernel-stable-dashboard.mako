@@ -164,12 +164,7 @@ def __status_bites(bug, attrs):
     boot_testing_status = __task_status(bug, 'boot-testing')
     promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
-    if promote_to_proposed_status == 'Triaged':
-        new_review_status = 'Fix Released'
-    elif promote_to_proposed_status == 'New' and sru_review_status == 'Fix Released':
-        new_review_status = 'Confirmed'
-    else:
-        new_review_status = 'Invalid'
+    new_review_status = __task_status(bug, 'new-review')
     testing_valid = (
             boot_testing_status not in test_set_invalid or
             new_review_status not in test_set_invalid or
