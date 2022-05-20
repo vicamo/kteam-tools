@@ -91,5 +91,39 @@ class NewReview(SourceReview):
 
     review_task = 'new-review'
 
+    def evaluate_status(self, status):
+        # SIGNING-BOT: we have two different workflows for reviewing and
+        # promoting kernels to proposed: the manual two step process which
+        # utilises a pair of copy-proposed-kernel incantations, and signing-bot
+        # driven workflow.
+        #
+        # When performing the manual two step process we implicitly perform the
+        # new-review as part of the promote-to-proposed copy, so we effectivly
+        # ignore that task and let promote-to-proposed move Confirmed once the
+        # kernels are otherwise ready to promote.  If the new-review is then
+        # signed off we will also switch into canonical-signing-bot mode, and
+        # that task becomes blocking on our workflow.
+        if 'kernel-signing-bot' not in self.bug.tags:
+            # Interlock with manual promotion.  If we move beyond confirmed and
+            # we are not under the control of canonical-signing-bot then
+            # promote-to-proposed status defines new-review status. Copy it over.
+            nr_status = self.task.status
+            sr_status = self.bug.task_status('promote-to-proposed')
+            if sr_status == 'In Progress':
+                 nr_status = 'In Progress'
+
+            elif sr_status == 'Fix Committed':
+                 nr_status = 'Fix Released'
+
+            elif sr_status == 'Incomplete':
+                 nr_status = 'Incomplete'
+
+            if self.task.status != nr_status:
+                cinfo('            no canonical-signing-bot tracking manual promotion promote-to-proposed={} new-review={}'.format(sr_status, nr_status))
+                self.task.status = nr_status
+                return True
+
+        return super().evaluate_status(status)
+
 
 # vi: set ts=4 sw=4 expandtab syntax=python
