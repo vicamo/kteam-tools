@@ -4,7 +4,7 @@ from wfl.log                                    import center, cleave, cinfo
 from .base                                      import TaskHandler
 
 
-class SruReview(TaskHandler):
+class SourceReview(TaskHandler):
 
     # __init__
     #
@@ -33,7 +33,7 @@ class SruReview(TaskHandler):
             # Record the delta between the build ppa and whatever follows.
             delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
-            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
+            s.bug.clamp_assign(s.review_task, s.bug.debs.prepare_id)
 
             s.task.status = 'Confirmed'
             retval = True
@@ -49,11 +49,6 @@ class SruReview(TaskHandler):
         retval = False
 
         retval = s._recind()
-
-        # XXX: TRANSITION
-        clamp = s.bug.clamp('sru-review')
-        if clamp is None:
-            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
 
         status = s.task.status
         if status == 'Confirmed':
@@ -76,19 +71,25 @@ class SruReview(TaskHandler):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
-        # XXX: TRANSITION
-        clamp = s.bug.clamp('sru-review')
-        if clamp is None:
-            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
-
-        clamp = s.bug.clamp('sru-review')
+        clamp = s.bug.clamp(s.review_task)
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
-            cinfo("sru-review id has changed, recinding sru-review")
+            cinfo("{} id has changed, recinding {}".format(s.review_task, s.review_task))
             if s.task.status != 'New':
                 s.task.status = 'New'
                 retval = True
 
         cleave(s.__class__.__name__ + '._recind (%s)' % retval)
         return retval
+
+
+class SruReview(SourceReview):
+
+    review_task = 'sru-review'
+
+
+class NewReview(SourceReview):
+
+    review_task = 'new-review'
+
 
 # vi: set ts=4 sw=4 expandtab syntax=python
