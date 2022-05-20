@@ -1259,7 +1259,8 @@ class WorkflowBug():
                     cinfo(l, 'red')
                 continue
 
-            if not dup_wb.is_workflow or not dup_wb.is_valid or dup_wb.is_gone:
+            cdebug("workflow_duplicates: checking {} is_workflow={} is_valid={}".format(dup.id, dup_wb.is_workflow, dup_wb.is_valid))
+            if not dup_wb.is_workflow or not dup_wb.is_valid:
                 continue
             retval.append(dup_wb)
 

@@ -1582,24 +1582,20 @@ class Package():
                 # Stop scanning out duplicates if we manage to account for everything.
                 if len(pkg_outstanding) == 0:
                     break
-                # Only debs trackers are relevant.
-                if dup_wb.debs is None:
-                    continue
                 found = False
-                ds = dup_wb.debs
                 for pkg in list(pkg_outstanding):
                     if bi[pkg][pocket]['version'] is None:
                         found = True
-                    ancillary_for = ds.ancillary_package_for(pkg)
+                    ancillary_for = s.ancillary_package_for(pkg)
                     if ancillary_for is not None:
                         pkg_af = ancillary_for
                     else:
                         pkg_af = pkg
                     # If the version is our version then ultimatly we won't copy this item, all is well.
-                    if bi[pkg][pocket]['version'] == ds.bug.bprops.get('versions', {}).get(pkg_af, []):
+                    if bi[pkg][pocket]['version'] == dup_wb.bprops.get('versions', {}).get(pkg_af, []):
                         found = True
                     # If the versions is a version we have replaced within the life of this tracker, all is well.
-                    if bi[pkg][pocket]['version'] in ds.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
+                    if bi[pkg][pocket]['version'] in dup_wb.bprops.get('versions-replace', {}).get(pkg_af, []):
                         found = True
                     # If we have found it then all is good for this package.
                     if found:
