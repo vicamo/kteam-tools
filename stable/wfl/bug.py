@@ -528,6 +528,11 @@ class WorkflowBug():
         else:
             s.bprops['issue'] = issue_key
 
+        # XXX: TRANSITION -- copy sru-review clamp over to new-review clamp if present.
+        clamp = s.clamp('new-review')
+        if clamp is None:
+            s.clamp_assign('new-review', s.clamp('sru-review'))
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
     # properties_for_description
