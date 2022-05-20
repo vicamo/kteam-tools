@@ -893,6 +893,39 @@ class WorkflowBug():
                 cinfo('        %-25s' % (task_name), 'magenta')
                 cinfo('            Action: Skipping non-workflow task', 'magenta')
 
+        # TRANSITION: add any missing new-review tasks.
+        redo = False
+        if 'sru-review' in tasks_by_name and 'new-review' not in tasks_by_name:
+            cinfo("    new-review missing")
+            tasks_by_name['new-review'] = s.lpbug.lpbug.addTask(target='/kernel-sru-workflow/new-review')
+            task_sr = tasks_by_name['sru-review']
+            task_nr = tasks_by_name['new-review']
+
+            task_nr.status = task_sr.status
+            task_nr.lp_save()
+
+            cinfo("    new-review added {} status={}".format(tasks_by_name['new-review'], task_nr.status))
+
+            redo = True
+
+        if redo:
+            cinfo('    Re-scanning bug tasks:', 'cyan')
+            for t in s.lpbug.tasks:
+                task_name       = t.bug_target_name
+
+                if task_name.startswith(s.workflow_project):
+                    if '/' in task_name:
+                        task_name = task_name[len(s.workflow_project) + 1:].strip()
+                    tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
+
+                    # Synthetic tasks.
+                    if task_name.startswith('prepare-package'):
+                        synthesise.add(':prepare-packages')
+
+                else:
+                    cinfo('        %-25s' % (task_name), 'magenta')
+                    cinfo('            Action: Skipping non-workflow task', 'magenta')
+
         # Add our synthetic tasks.
         if ':prepare-packages' in synthesise:
             task = WorkflowBugTaskSynPreparePackages(':prepare-packages', s)
