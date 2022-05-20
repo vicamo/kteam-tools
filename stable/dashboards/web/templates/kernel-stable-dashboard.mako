@@ -301,8 +301,7 @@ def __status_bites(bug, attrs):
         if task.startswith('prepare-package') and state != 'Stalled':
             continue
         # Elide things which are on one of the three "status box" rows.
-        if ((task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review') and
-                's' in flags):
+        if 's' in flags:
             continue
         colour = status_colour.get(state, 'blue')
         # Initial tasks are emitted without their task name.
