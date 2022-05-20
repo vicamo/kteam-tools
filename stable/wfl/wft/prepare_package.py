@@ -214,6 +214,9 @@ class PreparePackage(TaskHandler):
                 if not upload_present:
                     missing.append('package not uploaded')
                 s.task.reason = '{} -- {}'.format(reason_state, ' and '.join(missing))
+                if s.task.status == 'Fix Committed':
+                    s.task.status = 'In Progress'
+                    retval = True
                 break
 
             # If we have a ppa route, then we should check these packages were
