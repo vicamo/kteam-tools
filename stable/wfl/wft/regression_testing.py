@@ -149,7 +149,7 @@ class RegressionTesting(TaskHandler):
             cinfo('kernels promoted successfully from Proposed', 'green')
             return retval
 
-        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
@@ -271,19 +271,18 @@ class BootTesting(TaskHandler):
             cinfo('kernels promoted successfully from the PPA', 'green')
             return retval
 
-        #present = s.bug.debs.all_built_and_in_pocket('ppa')
-        #if not present:
-        #    if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
-        #        cinfo('Kernels no longer present in PPA moving Incomplete', 'yellow')
-        #        s.task.status = "Won't Fix"
-        #        retval = True
+        present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
+        if not present:
+            if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix"):
+                cinfo('Kernels no longer present in PPA moving Incomplete', 'yellow')
+                s.task.status = "Opinion"
+                retval = True
 
-        #elif present and s.task.status == "Won't Fix":
-        #    s.task.status = 'New'
-        #    retval = True
+        elif present and s.task.status == "Opinion":
+            s.task.status = 'New'
+            retval = True
 
-        #elif 'boot-testing-failed' in s.bug.tags:
-        if 'boot-testing-failed' in s.bug.tags:
+        elif 'boot-testing-failed' in s.bug.tags:
             cdebug('Boot Testing tagged as FAIL', 'yellow')
             if s.task.status != 'Incomplete':
                 s.task.status = 'Incomplete'
