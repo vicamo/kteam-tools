@@ -454,6 +454,7 @@ class WorkflowBug():
         keep = False
         if inactive_only:
             cinfo("replaces={} detected checking target inactive".format(dup_pointer))
+            trash = False
             for taskname, task in dup_wb.tasks_by_name.items():
                 if (taskname.endswith('-testing') and task.status in
                         ['Confirmed', 'Triaged', 'In Progress',
@@ -467,6 +468,11 @@ class WorkflowBug():
                         ['Confirmed', 'Triaged', 'In Progress',
                         'Fix Committed', 'Fix Released']):
                     keep = True
+                elif (taskname in ('sru-review', 'new-review') and
+                        task.status == 'Incomplete'):
+                    trash = True
+            if trash:
+                keep = False
 
         # If we deem this ready for duplication wack it.
         if not keep:
