@@ -768,6 +768,28 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-starfive:
+            versions: ['5.17.0']
+            variants: ['--']
+            packages:
+                linux-starfive:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/kinetic', 'starfive-next']
+                linux-meta-starfive:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'starfive']
+            owner: xnox
+            derived-from: [ '22.04', 'linux-starfive-5.17' ]
+            backport: true
+            supported: false
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    starfive:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
 # 22.04 (Jammy Jellyfish)
 '22.04':
     codename: jammy
@@ -869,6 +891,27 @@ defaults:
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal']
+
+        linux-starfive-5.17:
+            versions: ['5.17.0']
+            variants: ['--']
+            packages:
+                linux-starfive-5.17:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'starfive-5.17-next']
+                linux-meta-starfive-5.17:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.17']
+            owner: xnox
+            derived-from: [ '22.04', 'linux-hwe-5.17' ]
+            supported: false
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    starfive:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-raspi:
             variants: ['--']
