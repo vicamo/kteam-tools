@@ -27,7 +27,12 @@ class SourceReview(TaskHandler):
         retval = False
 
         while True:
-            if s.bug.task_status(':prepare-packages') not in ('Fix Committed', 'Fix Released'):
+            ready = True
+            for task_name, ready_stati in s.prerequisites:
+                cinfo("{}: {} ? {}".format(s.review_task, task_name, ready_stati))
+                if s.bug.task_status(task_name) not in ready_stati:
+                    ready = False
+            if not ready:
                 break
 
             # Record the delta between the build ppa and whatever follows.
@@ -85,11 +90,16 @@ class SourceReview(TaskHandler):
 class SruReview(SourceReview):
 
     review_task = 'sru-review'
+    prerequisites = [
+            [':prepare-packages', ['Fix Committed', 'Fix Released']]]
 
 
 class NewReview(SourceReview):
 
     review_task = 'new-review'
+    prerequisites = [
+            [':prepare-packages', ['Fix Committed', 'Fix Released']],
+            ['sru-review', ['Fix Released']]]
 
     def evaluate_status(self, status):
         # SIGNING-BOT: we have two different workflows for reviewing and
