@@ -5,6 +5,8 @@ import re
 from datetime                           import datetime, timedelta, timezone
 from hashlib                            import sha384
 import json
+import yaml
+
 from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized
@@ -1602,9 +1604,14 @@ class Package():
                         cinfo('            {} has {} pending in {} -- belongs to duplicate so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket, ), 'yellow')
                         pkg_outstanding.discard(pkg)
 
+        outstanding = {}
         for pkg in pkg_outstanding:
             cinfo('            {} has {} pending in {} -- unaccounted for so blocking.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
             retval = False
+            outstanding[pkg] = [bi[pkg][pocket]['version']]
+
+        if len(outstanding):
+            s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
 
         return retval
 
