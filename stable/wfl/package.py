@@ -1625,6 +1625,14 @@ class Package():
         cleave(s.__class__.__name__ + '.delta_built_pocket(...)={}'.format(retval))
         return retval
 
+    # delta_record
+    def delta_record(s, which, pocket_src, pocket_dest):
+        delta = s.delta_src_dst(pocket_src, pocket_dest)
+        # XXX: when everything is in signing we will drop lrg from the list...
+        if pocket_src == 'ppa' and 'lrs' in delta and 'lrg' not in delta:
+            delta.append('lrg')
+        s.bug.bprops.setdefault('delta', {})[which] = delta
+
     # all_built_and_in_pocket
     #
     def all_built_and_in_pocket(s, pocket):
