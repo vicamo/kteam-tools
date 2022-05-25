@@ -1342,7 +1342,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-fips:
                     type: lrs
-            supported: true
+            development: true
+            supported: false
             owner: mhcerri
             private: true
             derived-from: ['22.04', 'linux']
