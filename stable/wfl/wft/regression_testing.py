@@ -280,6 +280,20 @@ class BootTesting(TaskHandler):
     def _status_check_payload(s):
         retval = False
 
+        if 'boot-testing-failed' in s.bug.tags:
+            cdebug('Boot Testing tagged as FAIL', 'yellow')
+            if s.task.status != 'Incomplete':
+                s.task.status = 'Incomplete'
+                retval = True
+            return retval
+
+        if 'boot-testing-passed' in s.bug.tags:
+            cdebug('Boot Testing tagged as PASSED', 'yellow')
+            if s.task.status != 'Fix Released':
+                s.task.status = 'Fix Released'
+                retval = True
+            return retval
+
         if s.bug.task_status('promote-to-proposed') == 'Fix Released':
             cinfo('kernels promoted successfully from the PPA', 'green')
             return retval
@@ -294,18 +308,6 @@ class BootTesting(TaskHandler):
         elif present and s.task.status == "Opinion":
             s.task.status = 'New'
             retval = True
-
-        elif 'boot-testing-failed' in s.bug.tags:
-            cdebug('Boot Testing tagged as FAIL', 'yellow')
-            if s.task.status != 'Incomplete':
-                s.task.status = 'Incomplete'
-                retval = True
-
-        elif 'boot-testing-passed' in s.bug.tags:
-            cdebug('Boot Testing tagged as PASSED', 'yellow')
-            if s.task.status != 'Fix Released':
-                s.task.status = 'Fix Released'
-                retval = True
 
         # Otherwise use the testing status as posted by rt testing.
         else:
