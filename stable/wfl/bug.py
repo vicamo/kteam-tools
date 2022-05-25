@@ -299,7 +299,7 @@ class WorkflowBug():
     #
     def _remove_live_tag(s):
         # If this task is now closed, also drop the live tag.
-        if s.is_valid and s.is_closed:
+        if s.is_valid and s.is_purgable:
             if s._dryrun:
                 cinfo('    dryrun - workflow task is closed -- removing -live tag', 'red')
             else:
@@ -834,6 +834,7 @@ class WorkflowBug():
         s.is_crankable = False
         s.is_closed = False
         s.is_gone = False
+        s.is_purgable = False
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
@@ -845,8 +846,11 @@ class WorkflowBug():
                     s.is_crankable = True
                 elif t.status == 'In Progress':
                     s.is_crankable = True
+                elif t.status == 'Fix Committed':
+                    s.is_closed = True
                 elif t.status == 'Fix Released':
                     s.is_closed = True
+                    s.is_purgable = True
                 elif t.status == 'Invalid':
                     s.is_gone = True
                 break

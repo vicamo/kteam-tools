@@ -664,8 +664,9 @@ class WorkflowManager():
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))
                 bug.save()
-                s.status_set(bugid, None)
-                raise WorkflowBugError('is closed, skipping (and dropping)')
+                status = None if bug.is_purgable else bug.status_summary()
+                s.status_set(bugid, status, modified=False)
+                raise WorkflowBugError('is closed and purgable, skipping (dropping={})'.format(bug.is_purgable))
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
