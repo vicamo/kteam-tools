@@ -3224,7 +3224,7 @@ defaults:
             supported: true
             owner: kmously
             backport: true
-            derived-from: [ '22.04', 'linux-gcp' ]
+            derived-from: [ '22.04', 'linux-gke' ]
             swm:
                 kernel-testing: true
             testing:
