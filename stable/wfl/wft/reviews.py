@@ -84,8 +84,9 @@ class SruReview(TaskHandler):
         clamp = s.bug.clamp('sru-review')
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
             cinfo("sru-review id has changed, recinding sru-review")
-            s.task.status = 'New'
-            retval = True
+            if s.task.status != 'New':
+                s.task.status = 'New'
+                retval = True
 
         cleave(s.__class__.__name__ + '._recind (%s)' % retval)
         return retval
