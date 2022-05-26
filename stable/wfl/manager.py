@@ -335,7 +335,7 @@ class WorkflowManager():
 
                     # If our scanned time is before the modified time then we need
                     # to be rescanned.
-                    if scanned < modified:
+                    if modified is not None and scanned < modified:
                         cinfo('    LP: #{} parent LP: #{} modified since scanned -- triggering ({}, {})'.format(child_nr, parent_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
                         rescan = True
 
