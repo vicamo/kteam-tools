@@ -14,6 +14,7 @@ class SourceReview(TaskHandler):
 
         s.jumper['New']            = s._new
         s.jumper['Confirmed']      = s._confirmed
+        s.jumper['Triaged']        = s._new
         s.jumper['In Progress']    = s._confirmed
         s.jumper['Fix Committed']  = s._confirmed
         s.jumper['Fix Released']   = s._recind
@@ -38,9 +39,19 @@ class SourceReview(TaskHandler):
             # Record the delta between the build ppa and whatever follows.
             delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
-            s.bug.clamp_assign(s.review_task, s.bug.debs.prepare_id)
 
-            s.task.status = 'Confirmed'
+            # For pre-approval we reviewed against the sru-review proffered
+            # stamp, so copy that over; and then move directly to approved.
+            if s.task.status == 'Triaged' and s.review_task == 'new-review':
+                cinfo("pre-approval detected, approving")
+                s.bug.clamp_assign(s.review_task, s.bug.clamp('sru-review'))
+                s.task.status = 'Fix Released'
+
+            # Otherwise take the current build stamp, and ask for review.
+            else:
+                s.bug.clamp_assign(s.review_task, s.bug.debs.prepare_id)
+                s.task.status = 'Confirmed'
+
             retval = True
             break
 
@@ -77,7 +88,7 @@ class SourceReview(TaskHandler):
         retval = False
 
         clamp = s.bug.clamp(s.review_task)
-        if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
+        if clamp is None or str(clamp) != str(s.bug.debs.prepare_id):
             cinfo("{} id has changed, recinding {}".format(s.review_task, s.review_task))
             if s.task.status != 'New':
                 s.task.status = 'New'
