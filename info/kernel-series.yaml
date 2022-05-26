@@ -3211,7 +3211,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.15:
-            variants: [ '-edge' ]
+            variants: [ '-edge', '-5.15' ]
             packages:
                 linux-gke-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gke-5.15-next']
