@@ -335,7 +335,9 @@ def __status_bites(bug, attrs):
         #colour = status_colour.get(state, 'blue')
         retval = __coloured(retval, colour)
 
-        bites.append(bite_format(thing_prefix, retval, thing_in))
+        workflow_status = __task_status(bug, 'kernel-sru-workflow')
+        if workflow_status not in ('Invalid', 'Fix Committed', 'Fix Released'):
+            bites.append(bite_format(thing_prefix, retval, thing_in))
 
     return bites
 
