@@ -2902,7 +2902,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde']
             supported: true
             owner: mhcerri
-            derived-from: [ '20.04', 'linux-azure-cvm' ]
+            derived-from: [ '20.04', 'linux-azure-5.15' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
