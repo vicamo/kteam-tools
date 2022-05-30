@@ -1068,13 +1068,13 @@ class TrackingBugs():
             else:
                 search_tag = s.__tbd.tag_names['default']['valid']
 
-        #tasks = s.__lps.launchpad.projects[s.project].searchTasks(
         tasks = s.__lps.launchpad.bugs.searchTasks(
-                    tags=search_tag,
-                    status=valid_states)
+                    tags=search_tag)
 
         bug_ids = []
         for task in tasks:
+            if task.status not in valid_states:
+                continue
             tlink = task.target_link
             # Is this a snap-debs task in that case the series is part of the title.
             # To make things not that easy the tasks.title is something in the form:
