@@ -410,8 +410,8 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
-            versions: ['5.15.0']
-            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            versions: ['5.18.0']
+            variants: ['-wip']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'master-next']
@@ -429,10 +429,8 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             owner: arighi
-            derived-from: [ '22.04', 'linux' ]
-            backport: true
-            supported: true
-            development: false
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -446,7 +444,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            variants: ['-wip']
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'lowlatency-next']
@@ -464,11 +462,9 @@ defaults:
                 linux-restricted-signatures-lowlatency:
                     type: lrs
             owner: ppisati
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-lowlatency' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
