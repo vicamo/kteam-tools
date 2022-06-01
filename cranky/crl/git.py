@@ -257,7 +257,6 @@ class GitHandle():
         '''
         repo_dir = self.directory
         repo_url = self.get_url()
-        pkg_type = self.package.type
         codename = self.package.series.codename
 
         # Add the default mailing list address for sending patches
@@ -272,6 +271,11 @@ class GitHandle():
         run(["git", "config", "--local", "sendemail.suppresscc", "all"],
             cwd=repo_dir)
 
+        self.fetch_security(fetch=False)
+
+    def fetch_security(self, fetch=False):
+        pkg_type = self.package.type
+        codename = self.package.series.codename
         # Add a remote for the (private) security repo
         if pkg_type is None:
             security_repo = "linux-{}".format(codename)
@@ -283,7 +287,7 @@ class GitHandle():
 
         try:
             # Add the security repo without fetching it
-            self.update_remote("security", security_url, fetch=False)
+            self.update_remote("security", security_url, fetch)
         except SystemExit:
             cwarn('Could not add remote "security" {}'.format(security_url))
 
