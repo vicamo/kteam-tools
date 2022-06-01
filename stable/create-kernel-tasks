@@ -433,10 +433,10 @@ class TaskSet():
         for tkey in self.tasks.keys():
             self.tasks[tkey].FinalizeTrackingBugs(dryrun=dryrun)
 
-    def CreateCards(self, boardname, dryrun=False):
+    def CreateCards(self, boardname, dryrun=False, cve=False):
         if dryrun is False and self.board is None:
             try:
-                self.board = SRUBoard(self.cycletag)
+                self.board = SRUBoard(self.cycletag, cve=cve)
             except SRUBoardError as e:
                 cerror(e)
                 return
@@ -485,6 +485,8 @@ Examples:
                         help='forcefully disable the creation of tracking bugs')
     parser.add_argument('--allow-nomaster', action='store_true', default=False,
                         help='allow a derivative task to be created without a master ')
+    parser.add_argument('--cve', action='store_true', default=False,
+                        help='create tasks for embargoed CVE, bugs are not created')
     grp1 = parser.add_mutually_exclusive_group()
     grp1.add_argument('--handle', action='append', default=[], metavar='<series>:<source>',
                       help='limit task creation to specific sources given in <series>:<source> format.')
@@ -515,6 +517,9 @@ Examples:
     if args.spin is None:
         cerror('The spin number must be specified (--spin)!')
         sys.exit(1)
+
+    if args.cve:
+        args.force_nobugs = True
 
     if args.force_nocards and args.force_nobugs:
         cerror('Forcing no cards and no tracking bugs is not allowed')
@@ -616,7 +621,7 @@ Examples:
                             ks_orig = ks_orig.derived_from
                         if ks_orig.series != ks_series:
                             continue
-                if ks_source.development:
+                if ks_source.development and not args.cve:
                     cwarn('{}:{} ignored for stable cycle')
                     continue
                 ks_source_list.append(ks_source)
@@ -628,7 +633,7 @@ Examples:
     except:
         cerror('The provided cycle date could not be parsed!')
         sys.exit(2)
-    if not args.devel:
+    if not args.devel and not args.cve:
         if cycledate.isoweekday() != 1:
             cerror('The provided date is not a Monday when not using --devel!')
             sys.exit(3)
@@ -681,7 +686,7 @@ Examples:
             boardname = 'SRU Cycle {}'.format(ts.cycletag)
 
         cdebug('Creating cards on: {}'.format(boardname))
-        ts.CreateCards(boardname, dryrun=args.dry_run)
+        ts.CreateCards(boardname, dryrun=args.dry_run, cve=args.cve)
     if not args.force_nobugs:
         ts.CreateTrackingBugs(dryrun=args.dry_run)
         ts.FinalizeTrackingBugs(dryrun=args.dry_run)
