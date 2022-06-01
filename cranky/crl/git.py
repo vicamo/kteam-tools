@@ -96,12 +96,15 @@ class GitHandle():
 
         return sha1
 
-    def get_cranky_branch_name(self):
+    def get_cranky_branch_name(self, crd=None):
         '''
         Return the local branch name which is used by cranky.
         '''
         pkg    = self.package
         remote = self.remote
+        prefix = 'cranky/'
+        if crd:
+            prefix = "CRD-" + crd + "+"
 
         # Cranky branch is the real branch name if we are checking out against 'origin',
         # the derivative's source name otherwise.
@@ -109,7 +112,7 @@ class GitHandle():
         if remote != 'origin':
             branch_suffix = pkg.source.name.replace('linux-', '')
 
-        return 'cranky/' + branch_suffix
+        return prefix + branch_suffix
 
     def get_url(self):
         '''
