@@ -14,7 +14,7 @@ from crl.handle import HandleError
 from ktl.log import cerror, cnotice
 
 
-def checkout_repos(handle, reference=None, dissociate=False, depth=None):
+def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None):
     """
     Clone the repos that make up the set of kernel packages
     """
@@ -47,13 +47,15 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None):
         pkg        = gh.package
         remote     = gh.remote
         rmt_branch = gh.remote_branch
-        branch     = gh.get_cranky_branch_name()
+        branch     = gh.get_cranky_branch_name(crd)
 
         # Add info for the summary
         summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
                         "branch": branch})
 
         gh.checkout(remote, rmt_branch, branch)
+        if crd:
+            gh.set_upstream(branch, 'security')
 
     # Print the summary
     cnotice("Summary:")
@@ -109,6 +111,10 @@ Examples:
   $ cranky checkout --depth 1 xenial:linux-raspi2
       Checkout a shallow clone of all repos for this handle.
 
+  $ cranky checkout --crd 2018-01-07 xenial:linux
+      Checks out as CRD-2018-01-07+master branch.
+      It also sets 'security' as the upstream remote.
+
 Notes:
   Some kernel variants have their own repos (like aws, for example) whereas
   others simply reside on branches of the main repos (like raspi2). Depending
@@ -146,6 +152,10 @@ Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
 """
 
+    help_crd = """
+Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
+"""
+
     formatter = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=formatter,
@@ -161,6 +171,9 @@ traffic. This is a git clone option, check 'git help clone' for more details.
     parser.add_argument("--depth",
                         default=None,
                         help="Perform a shallow clone with --depth <int>")
+    parser.add_argument("-C", "--crd",
+                        default=None,
+                        help=help_crd)
 
     try:
         checkout_repos(**vars(parser.parse_args()))
