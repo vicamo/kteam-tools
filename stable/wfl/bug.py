@@ -30,6 +30,16 @@ class WorkflowBugTaskError(WorkflowBugError):
     pass
 
 
+class ListFlowSafeDumper(yaml.SafeDumper):
+
+    @classmethod
+    def represent_list_always_flow(cls, dumper, data):
+        #cinfo("APW yaml<{}>".format(data))
+        return dumper.represent_sequence(u'tag:yaml.org,2002:seq', list(data), flow_style=True)
+
+ListFlowSafeDumper.add_representer(list, ListFlowSafeDumper.represent_list_always_flow)
+
+
 # WorkflowBug
 #
 class WorkflowBug():
@@ -568,7 +578,7 @@ class WorkflowBug():
     # than corrupt the contents.
     #
     def properties_for_description(s, props):
-        lines = yaml.safe_dump(props, default_flow_style=False, width=10000).split('\n')
+        lines = yaml.dump(props, default_flow_style=False, width=10000, Dumper=ListFlowSafeDumper).split('\n')
         props_bits = []
         for line in lines:
             prefix = (len(line) - len(line.lstrip()) + 2) * ' '
