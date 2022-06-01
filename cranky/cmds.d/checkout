@@ -43,6 +43,9 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         # changed, for example when a release transitions to ESM.
         gh.configure()
 
+        if crd:
+            gh.fetch_security(fetch=True)
+
     for gh in ghs:
         pkg        = gh.package
         remote     = gh.remote
