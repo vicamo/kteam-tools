@@ -56,7 +56,14 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
                         "branch": branch})
 
-        gh.checkout(remote, rmt_branch, branch)
+        if crd:
+            try:
+                gh.checkout('security', branch, branch)
+            except:
+                gh.checkout(remote, rmt_branch, branch)
+        else:
+            gh.checkout(remote, rmt_branch, branch)
+
         if crd:
             gh.set_upstream(branch, 'security')
 
