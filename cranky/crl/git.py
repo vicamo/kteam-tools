@@ -136,6 +136,20 @@ class GitHandle():
 
         return repo_url
 
+    def set_upstream(self, branch, remote):
+        cmd = [ "git", "config", "branch."+branch+".remote", remote ]
+        result = run(cmd, cwd=self.directory)
+        if result.returncode != 0:
+            raise GitError("git config branch.<branch>.remote failed rc={}".format(result.returncode))
+        cmd = [ "git", "config", "branch."+branch+".pushRemote", remote ]
+        result = run(cmd, cwd=self.directory)
+        if result.returncode != 0:
+            raise GitError("git config branch.<branch>.pushRemote failed rc={}".format(result.returncode))
+        cmd = [ "git", "config", "branch."+branch+".merge", "refs/heads/"+branch ]
+        result = run(cmd, cwd=self.directory)
+        if result.returncode != 0:
+            raise GitError("git config branch.<branch>.merge failed rc={}".format(result.returncode))
+
     def checkout(self, remote, rmt_branch, branch):
         rmt_ref = 'refs/remotes/{}/{}'.format(remote, rmt_branch)
         lcl_ref = 'refs/heads/{}'.format(branch)
