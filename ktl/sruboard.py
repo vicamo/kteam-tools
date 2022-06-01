@@ -15,7 +15,7 @@ class SRUBoardError(Exception):
 
 
 class SRUBoard:
-    def __init__(self, cycle, create_sprint=False, dryrun=False):
+    def __init__(self, cycle, create_sprint=False, dryrun=False, cve=False):
         '''
         :param cycle: The SRU cycle date of the board
         '''
@@ -26,6 +26,9 @@ class SRUBoard:
         self.dryrun = dryrun
 
         self.project_key = 'KSRU'
+        if cve:
+            self.project_key = 'KSEC'
+
         self.sprint_name = cycle
 
         self.board = self.jira.boards(projectKeyOrID=self.project_key, name='SRU Cycles')[0]
