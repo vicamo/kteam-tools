@@ -928,7 +928,7 @@ defaults:
                     gated: false
                     promote-to: ['edge', 'beta']
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         armhf: [ '22' ]
                         arm64: [ '22' ]
@@ -938,7 +938,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                   raspi:
+                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
 
