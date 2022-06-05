@@ -2952,7 +2952,7 @@ defaults:
                 testing-ppas: ['ppa:canonical-kernel-team/ubuntu/ppa']
             testing:
                 flavours:
-                    azure:
+                    azure-cvm:
                         meta-pkg: linux-azure-fde
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
