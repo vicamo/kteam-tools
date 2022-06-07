@@ -657,6 +657,7 @@ class WorkflowManager():
                 raise bug.error
             if lpbug.duplicate_of is not None:
                 cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
+                bug.close()
                 status = None if bug.is_purgable else bug.status_summary()
                 s.status_set(bugid, status, modified=False)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))

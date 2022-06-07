@@ -320,6 +320,15 @@ class WorkflowBug():
             s.lpbug.lpbug.lp_save()
             s.tracker_modified = False
 
+    # close
+    #
+    def close(s):
+        task = s.tasks_by_name.get('kernel-sru-workflow')
+        if task is not None and task.status not in ('Fix Committed', 'Fix Released'):
+            cinfo("Tracker closing, moving fix-committed")
+            task.status = 'Fix Committed'
+            #task.lp_save()
+
     @property
     def _dryrun(s):
         return WorkflowBug.dryrun
@@ -820,6 +829,11 @@ class WorkflowBug():
             status['master-bug'] = status[master_bug]
             del status[master_bug]
 
+        if s.is_duplicate:
+            status['task'] = {'kernel-sru-workflow': status['task']['kernel-sru-workflow']}
+            status['reason'] = {}
+            status['phase'] = 'Complete'
+
         return status
 
     # check_is_valid
@@ -835,6 +849,7 @@ class WorkflowBug():
         s.is_closed = False
         s.is_gone = False
         s.is_purgable = False
+        s.is_duplicate = s.lpbug.duplicate_of is not None
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
