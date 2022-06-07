@@ -411,7 +411,7 @@ defaults:
 
         linux:
             versions: ['5.18.0']
-            variants: ['-wip']
+            variants: ['--']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'master-next']
@@ -444,7 +444,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            variants: ['-wip']
+            variants: ['--']
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'lowlatency-next']
