@@ -545,11 +545,9 @@ defaults:
                 linux-restricted-signatures-aws:
                     type: lrs
             owner: timg-tpi
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-aws' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
