@@ -786,6 +786,28 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-nezha:
+            versions: ['5.17.0']
+            variants: ['--']
+            packages:
+                linux-nezha:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/kinetic', 'nezha-next']
+                linux-meta-nezha:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'nezha']
+            owner: xnox
+            derived-from: [ '22.04', 'linux-nezha-5.17' ]
+            backport: true
+            supported: false
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    nezha:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
 # 22.04 (Jammy Jellyfish)
 '22.04':
     codename: jammy
@@ -906,6 +928,27 @@ defaults:
             testing:
                 flavours:
                     starfive:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-nezha-5.17:
+            versions: ['5.17.0']
+            variants: ['--']
+            packages:
+                linux-nezha-5.17:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'nezha-5.17-next']
+                linux-meta-nezha-5.17:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'nezha-5.17']
+            owner: xnox
+            derived-from: [ '22.04', 'linux-hwe-5.17' ]
+            supported: false
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    nezha:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
