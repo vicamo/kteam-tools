@@ -143,6 +143,7 @@ class WorkflowBug():
         except (PackageError, SnapError) as e:
             s.debs = None
             s.error = WorkflowCrankError(e.args[0])
+            cdebug("CRASH: {}".format(s.error))
 
         # If we have no series/package/source by now we are dead in the
         # water kill this bug hard.
