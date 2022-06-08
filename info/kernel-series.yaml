@@ -576,11 +576,9 @@ defaults:
                 linux-restricted-signatures-azure:
                     type: lrs
             owner: mhcerri
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-azure' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
