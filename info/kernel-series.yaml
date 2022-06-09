@@ -660,11 +660,9 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/kinetic']
             owner: arighi
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-kvm' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
