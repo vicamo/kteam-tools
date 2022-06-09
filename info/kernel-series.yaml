@@ -724,11 +724,9 @@ defaults:
                 linux-restricted-signatures-oracle:
                     type: lrs
             owner: juergh
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-oracle' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
