@@ -633,11 +633,9 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/kinetic']
             owner: kmously
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-ibm' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
