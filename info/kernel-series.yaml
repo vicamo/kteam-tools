@@ -2238,7 +2238,7 @@ defaults:
                 linux-restricted-signatures-hwe-5.15:
                     type: lrs
             supported: true
-            owner: arighi
+            owner: kleber-souza
             development: false
             backport: true
             derived-from: [ '22.04', 'linux' ]
