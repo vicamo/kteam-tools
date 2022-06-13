@@ -1,5 +1,4 @@
-#!/usr/bin/python
-from __future__ import print_function
+#!/usr/bin/python3
 
 # -*- coding: utf-8 -*-
 
@@ -31,10 +30,10 @@ import copy
 import itertools
 import re
 import apt_pkg
-#from urllib.parse import urlencode
-#from urllib.request import urlopen
-from urllib import urlencode
-from urllib2 import urlopen
+#from urllib import urlencode
+#from urllib2 import urlopen
+from urllib.parse import urlencode
+from urllib.request import urlopen
 from functools import cmp_to_key
 from datetime import datetime
 import shlex
