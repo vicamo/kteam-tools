@@ -743,11 +743,9 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic']
             owner: xnox
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-riscv' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
