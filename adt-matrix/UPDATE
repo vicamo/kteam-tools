@@ -24,7 +24,7 @@ if [ -e "$hints-britney/.bzr" ]; then
 	rm -rf "$hints-britney"
 fi
 if [ ! -d "$hints-britney" ]; then
-	git clone lp:~ubuntu-release/britney/+git/hints-ubuntu "$hints-britney"
+	git clone git://git.launchpad.net/~ubuntu-release/britney/+git/hints-ubuntu "$hints-britney"
 else
 	(cd "$hints-britney" && git fetch origin && git reset --hard origin/devel)
 fi
