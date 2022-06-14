@@ -577,6 +577,7 @@ class AutoPackageTest(object):
             for arch in archs:
                 if not adt.fetch_swift_results('https://autopkgtest.ubuntu.com/results/', pkg, arch):
                     return
+            self.save()
 
 
     def save(self):
