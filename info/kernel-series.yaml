@@ -537,13 +537,13 @@ defaults:
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/kinetic']
-                linux-restricted-modules-aws:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/kinetic']
-                linux-restricted-generate-aws:
-                    type: lrg
-                linux-restricted-signatures-aws:
-                    type: lrs
+                #linux-restricted-modules-aws:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/kinetic']
+                #linux-restricted-generate-aws:
+                #    type: lrg
+                #linux-restricted-signatures-aws:
+                #    type: lrs
             owner: timg-tpi
             derived-from: [ '22.10', 'linux' ]
             supported: false
