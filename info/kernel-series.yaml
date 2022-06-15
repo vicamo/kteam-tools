@@ -601,13 +601,13 @@ defaults:
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/kinetic']
-                linux-restricted-modules-gcp:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/kinetic']
-                linux-restricted-generate-gcp:
-                    type: lrg
-                linux-restricted-signatures-gcp:
-                    type: lrs
+                #linux-restricted-modules-gcp:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/kinetic']
+                #linux-restricted-generate-gcp:
+                #    type: lrg
+                #linux-restricted-signatures-gcp:
+                #    type: lrs
             owner: kmously
             derived-from: [ '22.10', 'linux' ]
             supported: false
@@ -714,13 +714,13 @@ defaults:
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/kinetic']
-                linux-restricted-modules-oracle:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/kinetic']
-                linux-restricted-generate-oracle:
-                    type: lrg
-                linux-restricted-signatures-oracle:
-                    type: lrs
+                #linux-restricted-modules-oracle:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/kinetic']
+                #linux-restricted-generate-oracle:
+                #    type: lrg
+                #linux-restricted-signatures-oracle:
+                #    type: lrs
             owner: juergh
             derived-from: [ '22.10', 'linux' ]
             supported: false
