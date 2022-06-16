@@ -267,6 +267,18 @@ if __name__ == '__main__':
             tracker_flags = trackers[key].get('flag', {})
             tracker_issue = trackers[key].get('issue')
 
+            tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
+            if tracker_overall in ('Fix Committed', 'Fix Released'):
+                status = str(issue.fields.status)
+                if status not in ('Kernel Complete', 'Rejected'):
+                    print(issue, "LOST/COMPLETE ISSUE {} (kernel-sru-workflow={})".format(status, tracker_overall))
+                    print(issue.key, status, '->', 'Rejected')
+                    # Transition us to Rejected using the hidden transition
+                    # Force Rejected.  Note as it is hidden we have to use the
+                    # transitionId for it; this is looked up in the workflow.
+                    jira.transition_issue(issue, transition=671) # 'Force Rejected'
+                continue
+
             if tracker_flags.get('jira-preparation-block', False):
                 blocked_seen.add(tracker_id)
             if tracker_flags.get('jira-in-review', False):
