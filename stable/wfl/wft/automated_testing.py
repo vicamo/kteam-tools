@@ -55,7 +55,7 @@ class AutomatedTestingResultsOne:
 
 class AutomatedTestingResultsOverall:
 
-    _url = "https://people.canonical.com/~kernel/status/adt-matrix/overall-results-data.json"
+    _url = "https://kernel.ubuntu.com/adt-matrix/overall-results-data.json"
 
     def __init__(self, url=None, data=None):
         if url is None:
