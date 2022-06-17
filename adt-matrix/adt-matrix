@@ -718,7 +718,7 @@ class AutoPackageTest(object):
                     # cell, once we have seen a result it should be reported as a MISS.  However, for the
                     # latest version we should consider anything seeded as expected, if this is not true
                     # the seed entry can be removed or hinted GONE.
-                    elif arch in some_ever or ver == verlist[-1]:
+                    elif arch in some_ever:
                         status = 'MISS'
 
                     # HINTS: override results using hint data.
@@ -750,6 +750,8 @@ class AutoPackageTest(object):
                         elif status == 'GONE':
                             status = None
                             good_ever = False
+                            if arch in some_ever:
+                                del some_ever[arch]
 
                     if hints:
                         (lstatus, reason) = hints
@@ -764,8 +766,7 @@ class AutoPackageTest(object):
 
                     # This is only missing if the latest and greatest tests included it.
                     if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
-                        if ver != verlist[-1] or (len(verlist) != 1 and arch not in result.get(verlist[-2], {}).get(pkg, {})):
-                            status = None
+                        status = None
 
                     # Track previous state so we can detect and differentiate new
                     # regressions.
