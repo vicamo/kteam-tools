@@ -51,7 +51,7 @@ class AdtMatrixSeed(object):
                 for member in self.latest[master]:
                     for key in self.latest[master][member]:
                         tmp = latest_merged[master].setdefault(key, [])
-                        new = list(set(tmp + self.latest[master][member][key].keys()))
+                        new = list(set(tmp + list(self.latest[master][member][key].keys())))
                         latest_merged[master][key] = new
 
             out = {
@@ -67,7 +67,7 @@ class AdtMatrixSeed(object):
     def britney_load(self, series, britney):
         if series not in self.britney_cache:
             with open(britney) as britneyf:
-                self.britney_cache[series] = yaml.load(britneyf)
+                self.britney_cache[series] = yaml.safe_load(britneyf)
 
         return self.britney_cache[series]
 
