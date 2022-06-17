@@ -513,11 +513,9 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/kinetic']
                 # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
             owner: jsalisbury
-            #derived-from: [ '22.10', 'linux' ]
-            derived-from: [ '22.04', 'linux-realtime' ]
-            backport: true
-            supported: true
-            development: false
+            derived-from: [ '22.10', 'linux' ]
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
