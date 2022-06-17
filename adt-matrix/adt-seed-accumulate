@@ -172,7 +172,7 @@ class AdtMatrixSeed(object):
         print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
 
 
-matrix_seed = AdtMatrixSeed('test--package-relation.json')
+matrix_seed = AdtMatrixSeed('package-relation.json')
 for line in sys.stdin:
     (series, package, parent, flags, britney) = line.strip().split()
     matrix_seed.accumulate(series, package, flags.split(','), britney)
