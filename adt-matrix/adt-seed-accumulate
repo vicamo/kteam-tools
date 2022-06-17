@@ -157,6 +157,9 @@ class AdtMatrixSeed(object):
                 # If we have a list, this becomes the new list.
                 tcache = lcache[record['source']] = {}
                 for pkg in record['policy_info']['autopkgtest']:
+                    if pkg == 'verdict':
+                        #print(" verdict " + record['policy_info']['autopkgtest']['verdict'])
+                        continue
                     for arch in record['policy_info']['autopkgtest'][pkg]:
                         if '/' in pkg:
                             bits = pkg.split('/')
