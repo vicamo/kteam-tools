@@ -1245,11 +1245,6 @@ table.matrix td {{
         if not seen:
             seed.append([package, ['amd64', 'i386', 'ppc64el', 'armhf']])
 
-        if key in package_cache['seeds-latest']:
-            latest = package_cache['seeds-latest'][key]
-        else:
-            latest = seed
-
         live = True
         #if migration == 'MIGRATED':
         #    live = False
@@ -1269,6 +1264,11 @@ table.matrix td {{
                     ks_source = source_ks
         series_source_packages = sorted(series_source_packages)
         ks_source_name = "unknown" if ks_source is None else ks_source.name
+
+        # Merge the test list for each member package of this kernel.
+        latest = {}
+        for sub_name, sub_data in package_cache['cache-latest'].get(key, {}).items():
+            latest.update(sub_data)
 
         adt = AutoPackageTest(
                 stamp = stamp,
