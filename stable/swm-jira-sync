@@ -256,7 +256,7 @@ if __name__ == '__main__':
                 # otherwise we need to shove it into Kernel Complete.
                 if ('kernel-debs' not in issue.fields.labels and
                         'kernel-snap-debs' not in issue.fields.labels):
-                    print("NEW/UNKNOWN ISSUE")
+                    print(issue, "NEW/UNKNOWN ISSUE", status)
 
                 elif status not in ('Kernel Complete', 'Rejected'):
                     print(issue, "LOST/COMPLETE ISSUE", status)
