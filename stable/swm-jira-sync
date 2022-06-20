@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from jira import JIRA as BrokenJIRA
 from jira.resources import GreenHopperResource, User
 
+from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 
@@ -63,6 +64,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(datetime.now(), "starting")
+
+    sc = SruCycle()
 
     # Load up the Swm Status data.  This tells us what trackers exist
     # and provides us with status information for each.
@@ -126,6 +129,15 @@ if __name__ == '__main__':
         print(" ", cycle)
         cycles.add(cycle)
 
+    # Run the list of cycles and work out if they are marked complete.
+    print("Cycle Status:", len(cycles))
+    cycle_complete = {}
+    for cycle in sorted(cycles):
+        sru_cycle = sc.lookup_cycle(cycle)
+        if sru_cycle is not None:
+            cycle_complete[cycle] = sru_cycle.complete
+        print(" {} complete={}".format(cycle, cycle_complete.get(cycle, False)))
+
     jira_issues = {}
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
@@ -169,6 +181,20 @@ if __name__ == '__main__':
             if len(issues) == 0:
                 break
             for issue in issues:
+                if cycle_complete.get(cycle, False):
+                    issue_status = str(issue.fields.status)
+                    if issue_status not in ('Done', 'Rejected', 'Done', 'Kernel Complete'):
+                        if issue_status == 'Kernel Notice':
+                            new_status = 'Kernel Notice Complete'
+                        else:
+                            new_status = 'Rejected'
+                        print("CLOSE: {} {} -> {}".format(str(issue.key), str(issue.fields.status), new_status))
+                        if new_status == 'Rejected':
+                            jira.transition_issue(issue, transition=671) # 'Force Rejected'
+                        else:
+                            jira.transition_issue(issue, transition=new_status)
+                    continue
+
                 summary = issue.fields.summary
 
                 match = crank_re.match(summary)
@@ -241,7 +267,7 @@ if __name__ == '__main__':
                     jira.transition_issue(issue, transition=671) # 'Force Rejected'
                 continue
 
-            if key not in jira_issues:
+            if key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
                 print("MISSING ISSUE")
                 print("{}: new issue ...".format(cycle))
                 title = key_to_title(key)
