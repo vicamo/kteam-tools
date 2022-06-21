@@ -593,7 +593,7 @@ class AutoPackageTest(object):
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
             self.log_verbose('Saved results to {}'.format(self.cache_file))
-            dirty = False
+            self.dirty = False
 
 
     # XXX: There should only be one hint type, the hint_status ones with
@@ -650,7 +650,7 @@ class AutoPackageTest(object):
                 if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
                     latest = self.latest[key]
                 key += ' -proposed'
-                if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
+                if key in self.latest and self.latest[key] != 'unknown' and (not latest_proposed or apt_pkg.version_compare(self.latest[key], latest_proposed) > 0):
                     latest_proposed = self.latest[key]
 
             for arch in archs:
