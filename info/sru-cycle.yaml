@@ -22,6 +22,9 @@
 #       the date patches are no longer applied to the git repos for the given
 #       cycle
 
+'2022.06.20':
+    release-date: '2022-07-11'
+
 '2022.05.30':
     release-date: '2022-06-20'
 
