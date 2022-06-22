@@ -500,7 +500,6 @@ defaults:
 
         linux-realtime:
             routing: realtime
-            versions: ['5.15.0']
             variants: ['--']
             packages:
                 linux-realtime:
