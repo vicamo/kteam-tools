@@ -454,13 +454,13 @@ defaults:
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/kinetic', 'lowlatency']
-                linux-restricted-modules-lowlatency:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/kinetic', 'lowlatency']
-                linux-restricted-generate-lowlatency:
-                    type: lrg
-                linux-restricted-signatures-lowlatency:
-                    type: lrs
+                #linux-restricted-modules-lowlatency:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/kinetic', 'lowlatency']
+                #linux-restricted-generate-lowlatency:
+                #    type: lrg
+                #linux-restricted-signatures-lowlatency:
+                #    type: lrs
             owner: ppisati
             derived-from: [ '22.10', 'linux' ]
             supported: false
