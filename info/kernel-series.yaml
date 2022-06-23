@@ -1112,6 +1112,32 @@ defaults:
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gkeop:
+            # As for linux-gke, the main variant is for consistency with other
+            # derivatives. The version based variant is for imaging.
+            variants: ['--', '-5.15']
+            packages:
+                linux-gkeop:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/jammy', 'gkeop-next']
+                linux-meta-gkeop:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/jammy', 'gkeop']
+                linux-signed-gkeop:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy', 'gkeop']
+            supported: true
+            owner: kmously
+            backport: false
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gkeop:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-ibm:
             variants: ['--']
             packages:
