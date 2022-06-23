@@ -690,7 +690,7 @@ defaults:
             #derived-from: [ '22.10', 'linux-unstable' ]
             derived-from: [ '22.04', 'linux-oem-5.17' ]
             backport: true
-            supported: true
+            supported: false
             development: false
             swm:
                 kernel-testing: true
