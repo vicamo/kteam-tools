@@ -773,17 +773,17 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
-        linux-nezha:
+        linux-allwinner:
             versions: ['5.17.0']
             variants: ['--']
             packages:
-                linux-nezha:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/kinetic', 'nezha-next']
-                linux-meta-nezha:
+                linux-allwinner:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/kinetic', 'allwinner-next']
+                linux-meta-allwinner:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'nezha']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'allwinner']
             owner: xnox
-            derived-from: [ '22.04', 'linux-nezha-5.17' ]
+            derived-from: [ '22.04', 'linux-allwinner-5.17' ]
             backport: true
             supported: false
             development: true
@@ -791,7 +791,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    nezha:
+                    allwinner:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
@@ -918,15 +918,15 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
-        linux-nezha-5.17:
+        linux-allwinner-5.17:
             versions: ['5.17.0']
             variants: ['--']
             packages:
-                linux-nezha-5.17:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'nezha-5.17-next']
-                linux-meta-nezha-5.17:
+                linux-allwinner-5.17:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'allwinner-5.17-next']
+                linux-meta-allwinner-5.17:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'nezha-5.17']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'allwinner-5.17']
             owner: xnox
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
             supported: false
@@ -935,7 +935,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    nezha:
+                    allwinner:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
