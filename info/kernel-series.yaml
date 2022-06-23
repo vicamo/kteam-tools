@@ -3479,7 +3479,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.15:
-            variants: [ '-edge' ]
+            variants: [ '-edge', '--' ]
             packages:
                 linux-oracle-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.15-next']
@@ -3510,7 +3510,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.13:
-            variants: [ '--' ]
+            variants: []
             packages:
                 linux-oracle-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.13-next']
