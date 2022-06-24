@@ -2249,7 +2249,7 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.15:
-            variants: [ '-hwe-20.04' ]
+            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-lowlatency-hwe-5.15:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lowlatency/+git/focal', 'hwe-5.15-next']
