@@ -1870,6 +1870,8 @@ class Package():
     # send_testing_message
     #
     def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
+        cdebug("send_testing_message: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
+
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.
         #
@@ -2009,12 +2011,14 @@ class Package():
     # send_testing_requests
     #
     def send_testing_requests(s, op="sru", ppa=False):
+        cdebug("send_testing_requests: op={} ppa={}".format(op, ppa))
         for flavour_meta in s.test_flavour_meta():
             s.send_testing_request(op=op, ppa=ppa, flavour=flavour_meta[0], meta=flavour_meta[1])
 
     # send_testing_request
     #
     def send_testing_request(s, op="sru", ppa=False, flavour="generic", meta=None):
+        cdebug("send_testing_request: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
         msg = s.send_testing_message(op, ppa, flavour, meta)
 
         where = " uploaded" if not ppa else " available in ppa"
