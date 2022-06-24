@@ -2215,7 +2215,7 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.15:
-            variants: [ '-hwe-20.04-edge' ]
+            variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.15:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.15-next']
@@ -2283,7 +2283,8 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-hwe-5.13:
-            variants: [ '-hwe-20.04' ]
+            variants: [ 'eol-hwe-20.04' ]
+            routing: prerelease
             packages:
                 linux-hwe-5.13:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13-next']
