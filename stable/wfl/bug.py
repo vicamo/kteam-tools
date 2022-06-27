@@ -415,9 +415,13 @@ class WorkflowBug():
                         cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, duplicate_of.id))
                         master = WorkflowBug(s.lp, duplicate_of.id)
                     error = None
+
                     if master.is_gone:
-                        error = WorkflowCrankError("master tracker link points to invalidated tracker")
-                    if not master.is_crankable and not master.is_closed:
+                        #error = WorkflowCrankError("master tracker link points to invalidated tracker")
+                        del s.bprops[s.master_bug_property_name]
+                        master = None
+
+                    elif not master.is_crankable and not master.is_closed:
                         error = WorkflowCrankError("master tracker link points to uninstantiated tracker")
 
                     if error is not None:
