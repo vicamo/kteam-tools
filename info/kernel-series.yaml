@@ -2953,9 +2953,7 @@ defaults:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: false
             invalid-tasks:
-              - boot-testing
               - certification-testing
-              - regression-testing
               - security-signoff
 
         linux-azure-fde:
