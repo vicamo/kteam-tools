@@ -6269,7 +6269,7 @@ defaults:
                     hw-cert: true
                     arches: ['amd64']
             supported: true
-            owner: smb
+            owner: cascardo
             testing:
                 flavours:
                     generic:
@@ -6297,7 +6297,7 @@ defaults:
                     hw-cert: false
                     arches: ['amd64']
             supported: true
-            owner: ian-may
+            owner: cascardo
             derived-from: [ '16.04', 'linux' ]
             testing:
                 flavours:
@@ -6674,7 +6674,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel-signed']
             supported: true
-            owner: kleber-souza
+            owner: cascardo
             private: true
             derived-from: ['16.04', 'linux']
             testing:
