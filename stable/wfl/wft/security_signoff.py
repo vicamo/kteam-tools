@@ -53,7 +53,7 @@ class SecuritySignoff(TaskHandler):
 
             # For backport kernels the security signoff in the master is valid in the
             # derivative.  Copy it over if different.
-            if s.bug.is_derivative_package and s.bug.source.backport:
+            if s.bug.source.backport and s.bug.master_bug is not None:
                 master = s.bug.master_bug
                 try:
                     if s.task.status != master.tasks_by_name['security-signoff'].status:
@@ -83,7 +83,7 @@ class SecuritySignoff(TaskHandler):
 
         # For backport kernels the security signoff in the master is valid in the
         # derivative.  Copy it over if different.
-        if s.bug.is_derivative_package and s.bug.source.backport:
+        if s.bug.source.backport and s.bug.master_bug is not None:
             master = s.bug.master_bug
             try:
                 if s.task.status != master.tasks_by_name['security-signoff'].status:
