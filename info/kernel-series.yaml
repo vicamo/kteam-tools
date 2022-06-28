@@ -410,7 +410,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
-            versions: ['5.18.0']
+            versions: ['5.19.0']
             variants: ['--']
             packages:
                 linux:
