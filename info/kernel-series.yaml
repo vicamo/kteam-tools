@@ -2310,7 +2310,6 @@ defaults:
 
         linux-hwe-5.13:
             variants: [ 'eol-hwe-20.04' ]
-            routing: prerelease
             packages:
                 linux-hwe-5.13:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.13-next']
