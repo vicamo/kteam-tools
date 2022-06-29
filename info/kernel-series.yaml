@@ -1485,6 +1485,36 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-nvidia-tegra:
+            variants: ['--']
+            packages:
+                linux-nvidia-tegra:
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-jammy', 'master-next']
+                linux-meta-nvidia-tegra:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-jammy', 'master']
+                linux-signed-nvidia-tegra:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-jammy', 'master']
+            owner: ian-may
+            development: true
+            supported: false
+            derived-from: [ '22.04', 'linux-realtime' ]
+            swm:
+                kernel-testing: false
+            testing:
+                flavours:
+                    generic:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    realtime:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
