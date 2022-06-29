@@ -6,10 +6,10 @@ checklist.  Each section represents a list to create and populate.
 Within each section each top level list item represents a separate card
 in that checklist.
 
-Create a new board for the checklist to populate.  The proceedure-cards
-script will use the so-trello (snap install so-trello) command to create
-the lists and cards from the proceedure file:
+Create a new jira EPIC on the Proceedures board in the KERN project.  The
+proceedure-cards script will use the jira API create the issues from the
+proceedure file:
 
-  ./proceedure-cards [--component <component>] <project> <proceedure.yaml>
+  ./proceedure-cards [--component <component>] [--epic-key <epic-key>] <project> <proceedure.yaml>
 
-  ./proceedure-cards --component SPOC KERN series-opening.yaml
+  ./proceedure-cards --component SPOC --epic-key KERN-3021 KERN series-opening.yaml
