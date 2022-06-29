@@ -54,7 +54,7 @@ class JIRAIssues:
             'project': {'key': self.project_key},
             'summary': name,
         }
-        if subtask_of is None:
+        if subtask_of is not None:
             task_key = self.issues[subtask_of]
             print(" ", "subtask with parent", task_key)
             params['issuetype'] = {'name': 'Sub-task'}
