@@ -1136,7 +1136,7 @@ class Package():
         '''
         center(s.__class__.__name__ + '.all_built_and_in_pocket_for({}, {})'.format(pocket, period))
         retval = False
-        if s.all_built_and_in_pocket(pocket):
+        if s.all_built_and_in_pocket_or_after(pocket):
 
             # Find the most recent date of either the publish date/time or the
             # date/time of the last build of any arch of any of the dependent
@@ -1797,7 +1797,7 @@ class Package():
         # If the packages are not all built and in -proposed then just bail out of
         # here.
         #
-        if not s.bug.debs.all_built_and_in_pocket(pocket):
+        if not s.bug.debs.all_built_and_in_pocket_or_after(pocket):
             cleave(s.__class__.__name__ + '.check_component_in_pocket (False)')
             return (None, [])
 
