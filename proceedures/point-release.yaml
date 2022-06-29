@@ -1,16 +1,13 @@
 cards:
   - name: "Point Release Owner: <insert name>"
-    list: On Deck
   - name: "Identify point release owner"
     description: |
       - Identify the formal owner for the cycle.
-    prerequisites:
     list: On Deck
   - name: "Identify formal release date"
     description: |
       - Find the formal release date for use in cycle selection.
       - Update the board title with this date.
-    prerequisites:
     list: On Deck
   - name: "Pick point release kernel cut over cycle and announce"
     description: |
@@ -18,7 +15,7 @@ cards:
         should be two cycles before the point release.
       - announce to kernel-team@ mailing list etc
     prerequisites:
-    list: On Deck
+    - "Identify formal release date"
   - name: "Identify kernels to be rolled with the point release"
     description: |
       - Copy "Roll linux-foo-edge to point release version" card for
@@ -26,26 +23,17 @@ cards:
         column.
       - Copy "Roll linux-foo to linux-foo-edge package" cards for the same
         list of kernels to the "At Cut Over" column.
-    prerequisites:
-    list: On Deck
   - name: "Roll linux-foo-edge to point release version"
     description: |
       - Prepare and upload updates to the linux-foo-edge package moving it
         to the release kernel base version as soon as the primary series
         kernel reaches the final version.
     prerequisites:
-    list: On Deck
-  - name: "Review linux-*-edge testing"
-    description: |
-      - Once kernels are rolled review ADT testing for those and create
-        cards to fix any issues found.
-    prerequisites:
-    list: On Deck
+    - "Identify kernels to be rolled with the point release"
   - name: "Review linux-*-edge upgrade testing and approve"
     description: |
       - Review all of the ADT and upgrade testing and approve rolls
     prerequisites:
-    list: In Backlog
   - name: "Roll linux-foo to linux-foo-edge package"
     description: |
       - Update the variants of the linux-foo-edge package to '-foo' so the
@@ -54,4 +42,11 @@ cards:
       - Note: we need to confirm testing and have stakeholder-signoff for
         these.
     prerequisites:
-    list: In Backlog
+    - "Pick point release kernel cut over cycle and announce"
+    - "Identify kernels to be rolled with the point release"
+  - name: "Review linux-*-edge testing"
+    description: |
+      - Once kernels are rolled review ADT testing for those and create
+        cards to fix any issues found.
+    prerequisites:
+    - "Roll linux-foo to linux-foo-edge package"
