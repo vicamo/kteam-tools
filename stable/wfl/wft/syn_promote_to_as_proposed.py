@@ -69,7 +69,7 @@ class SynPromoteToAsProposed(TaskHandler):
                 cinfo("promote-to-proposed: {}, waiting for likely completion".format(status_ptp))
                 break
 
-            if not s.bug.debs.all_built_and_in_pocket('Proposed'):
+            if not s.bug.debs.all_built_and_in_pocket_or_after('Proposed'):
                 cinfo("packages are not all in Proposed")
                 break
 
