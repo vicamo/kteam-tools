@@ -782,8 +782,10 @@ class PackageBuild:
                         version=source.source_package_version)
                 queued = False
                 for upload in uploads:
-                    if upload.status not in ('Done', 'Rejected'):
-                        if upload.status in ('New', 'Unapproved'):
+                    if upload.status == 'Rejected':
+                        status.add('FAILEDTOBUILD')
+                    elif upload.status != 'Done':
+                        if upload.status in ('New', 'Unapproved', 'Accepted'):
                             queued = True
                         cinfo("upload not complete status={}".format(upload.status))
                         s.bug.debs.monitor_debs_add({
