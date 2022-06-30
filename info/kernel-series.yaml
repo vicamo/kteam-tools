@@ -461,7 +461,7 @@ defaults:
                 #    type: lrg
                 #linux-restricted-signatures-lowlatency:
                 #    type: lrs
-            owner: ppisati
+            owner: p-pisati
             derived-from: [ '22.10', 'linux' ]
             supported: false
             development: true
@@ -884,7 +884,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.17:
                     type: lrs
-            owner: ppisati
+            owner: p-pisati
             backport: true
             swm:
                 kernel-testing: true
