@@ -200,6 +200,10 @@ class WorkflowBug():
     def kernel_series(self):
         return ctx.ks
 
+    @property
+    def sc(self):
+        return ctx.sc
+
     def version_from_title(s):
         (s.series, s.name, s.version, s.source, s.kernel, s.abi) = (None, None, None, None, None, None)
 
@@ -868,6 +872,25 @@ class WorkflowBug():
                     s.is_purgable = True
                 elif t.status == 'Invalid':
                     s.is_gone = True
+                break
+
+        if not s.is_closed or s.is_purgable:
+            return
+
+        # Consider if we are in a closed cycle and ready for final
+        # closure.
+        sru_cycle = s.sc.lookup_cycle(s.sru_cycle)
+        cycle_complete = sru_cycle is not None and sru_cycle.complete
+        if not cycle_complete:
+            return
+
+        for task in s.lpbug.tasks:
+            task_name       = task.bug_target_name
+
+            if task_name in WorkflowBug.projects_tracked:
+                if task.status == 'Fix Committed':
+                    task.status = 'Fix Released'
+                    s.is_purgable = True
                 break
 
     # accept_new
