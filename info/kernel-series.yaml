@@ -1305,7 +1305,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
-            owner: lukenow
+            owner: esmil
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
