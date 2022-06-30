@@ -28,6 +28,7 @@ sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), os.pard
 
 from ktl.announce import Announce
 from ktl.kernel_series import KernelSeries
+from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 #from wfl.log import Clog, cdebug, center, cleave
@@ -469,6 +470,10 @@ class MonitorStatusSwmStatus:
     def ss(self):
         return self.factory.ss
 
+    @property
+    def sc(self):
+        return self.factory.sc
+
     def status_key(self, item):
         (bug_id, bug_data) = item
 
@@ -498,8 +503,11 @@ class MonitorStatusSwmStatus:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
                     changed.add(('shank', bug_id))
 
+            sru_cycle = self.sc.lookup_cycle(bug_data.get('cycle'))
+            cycle_complete = sru_cycle is not None and sru_cycle.complete
+            tracker_complete = bug_data.get('phase') == 'Complete'
             scanned = bug_data.get('manager', {}).get('time-scanned')
-            if scanned is not None:
+            if (cycle_complete or not tracker_complete) and scanned is not None:
                 scanned = scanned.replace(tzinfo=timezone.utc)
                 scan_refresh = scanned + timedelta(hours=3, minutes=30)
                 if scan_refresh < start_date:
@@ -763,12 +771,13 @@ class MonitorSwmStatusMonitor:
 
 class MonitorFactory:
 
-    def __init__(self, lp=None, ks=None, bs=None, ss=None, ss_file=None):
+    def __init__(self, lp=None, ks=None, bs=None, ss=None, ss_file=None, sc=None):
         self._lp = lp
         self._ks = ks
         self._bs = bs
         self._ss = ss
         self.ss_file = ss_file
+        self._sc = sc
 
     @property
     def lp(self):
@@ -795,6 +804,12 @@ class MonitorFactory:
                 raise ValueError("ss_file not specified")
             self._ss = SwmStatus(path=self.ss_file)
         return self._ss
+
+    @property
+    def sc(self):
+        if self._sc is None:
+            self._sc = SruCycle()
+        return self._sc
 
     def launchpad_project(self, project):
         return [MonitorLaunchpadProject(project, lp=self.lp, bs=self.bs)]
