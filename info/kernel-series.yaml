@@ -485,11 +485,9 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/kinetic']
             owner: juergh
-            #derived-from: ['22.10', 'linux']
-            derived-from: ['22.04', 'linux-raspi']
-            backport: true
-            supported: true
-            development: false
+            derived-from: ['22.10', 'linux']
+            supported: false
+            development: true
             swm:
                 kernel-testing: true
             testing:
