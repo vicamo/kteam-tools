@@ -2,6 +2,8 @@
 #
 
 import re
+
+from .context                           import ctx
 from .log                               import cdebug, cerror
 
 #
@@ -13,18 +15,21 @@ from .log                               import cdebug, cerror
 #
 class CheckComponent():
 
-    def __init__(self, lp, package):
+    def __init__(self, package):
         cdebug('CheckComponent::__init__ enter')
-        self.lp = lp
         self.package = package
 
         cdebug('CheckComponent::__init__ leave')
         return
 
+    @property
+    def lp(self):
+        return ctx.lp
+
     def get_published_sources(self, series, package, version, pocket):
         cdebug("    CheckComponent::get_published_sources enter")
         (archive, pocket) = self.package.routing(pocket.title())[0]
-        ubuntu = self.lp.launchpad.distributions["ubuntu"]
+        ubuntu = self.lp.distributions["ubuntu"]
         lp_series = ubuntu.getSeries(name_or_version=series)
         if version:
             ps = archive.getPublishedSources(exact_match=True,

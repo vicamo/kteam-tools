@@ -14,6 +14,7 @@ from lazr.restfulclient.errors          import PreconditionFailed
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 
+from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
@@ -30,7 +31,7 @@ import wfl.wft
 class WorkflowManager():
     # __init__
     #
-    def __init__(s, args, test_mode=False, ks=None, sru_cycle=None):
+    def __init__(s, args, test_mode=False):
         center('WorkflowManager.__init__')
         s.test_mode = test_mode
         s.args = args
@@ -71,8 +72,6 @@ class WorkflowManager():
             'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
             'kernel-signoff'            : wfl.wft.StakeholderSignoff,
         }
-        s.kernel_series = KernelSeries() if ks is None else ks
-        s.sru_cycle = SruCycle() if sru_cycle is None else sru_cycle
 
         WorkflowBug.sauron            = s.args.sauron
         WorkflowBug.dryrunn           = s.args.dryrun
@@ -466,10 +465,20 @@ class WorkflowManager():
         cleave('WorkflowManager.buglist')
         return retval
 
+    # initialise_context
+    #
+    def initialise_context(self):
+        # We use lambda here to convert the expression into a callable
+        # so that we can delay instantiating it until first use.
+        ctx.lp = lambda : self.lp.default_service.launchpad # XXX: this is the raw connection.
+        ctx.sc = lambda : SruCycle()
+        ctx.ks = lambda : KernelSeries()
+
     # manage
     #
     def manage(s):
         cinfo('Starting run ' + str(datetime.now()))
+        s.initialise_context()
         if s.args.dependants_only:
             try:
                 with s.single_dependants_only():
@@ -591,7 +600,7 @@ class WorkflowManager():
                 s.status_set(bugid, None)
                 s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
                 raise WorkflowBugError('is duplicated, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, ks=s.kernel_series, sru_cycle=s.sru_cycle, manager=s)
+            bug = WorkflowBug(s.lp.default_service, bug=lpbug, manager=s)
             if bug.error is not None:
                 raise bug.error
             if bug.is_closed:
