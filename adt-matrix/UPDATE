@@ -24,7 +24,7 @@ if [ -e "$hints-britney/.bzr" ]; then
 	rm -rf "$hints-britney"
 fi
 if [ ! -d "$hints-britney" ]; then
-	git clone lp:~ubuntu-release/britney/+git/hints-ubuntu "$hints-britney"
+	git clone git://git.launchpad.net/~ubuntu-release/britney/+git/hints-ubuntu "$hints-britney"
 else
 	(cd "$hints-britney" && git fetch origin && git reset --hard origin/devel)
 fi
@@ -35,6 +35,25 @@ fi
 "$here/adt-config" primary >"$hints/primary.conf" || exit 1
 
 rc=0
+
+# Update the britney data.
+proposed_migration="https://people.canonical.com/~ubuntu-archive/proposed-migration"
+echo "II: update britney data ..."
+mkdir -p "$britney"
+awk '{print $1;}' <"$hints/primary.conf" | sort -u | \
+while read series
+do
+	# Get the file update_excuses.yaml iff it has changed.
+	urlt="$proposed_migration/$series/update_excuses.yaml.xz"
+	fname_xz=`basename "$urlt"`
+	fname=`basename "$urlt" .xz`
+	mkdir -p "$britney/$series"
+	(cd "$britney/$series" && wget -qN -nd "$urlt")
+	if [ -f "$britney/$series/$fname_xz" ]; then
+		xz --decompress <"$britney/$series/$fname_xz" >"$britney/$series/$fname.live"
+		ln -f "$britney/$series/$fname.live" "$britney/$series.migration"
+	fi
+done
 
 mkdir -p "$html"
 (

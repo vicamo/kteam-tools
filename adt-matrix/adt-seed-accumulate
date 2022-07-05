@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from __future__ import print_function
 
 import sys
@@ -51,7 +51,7 @@ class AdtMatrixSeed(object):
                 for member in self.latest[master]:
                     for key in self.latest[master][member]:
                         tmp = latest_merged[master].setdefault(key, [])
-                        new = list(set(tmp + self.latest[master][member][key].keys()))
+                        new = list(set(tmp + list(self.latest[master][member][key].keys())))
                         latest_merged[master][key] = new
 
             out = {
@@ -67,7 +67,7 @@ class AdtMatrixSeed(object):
     def britney_load(self, series, britney):
         if series not in self.britney_cache:
             with open(britney) as britneyf:
-                self.britney_cache[series] = yaml.load(britneyf)
+                self.britney_cache[series] = yaml.safe_load(britneyf)
 
         return self.britney_cache[series]
 
@@ -157,6 +157,9 @@ class AdtMatrixSeed(object):
                 # If we have a list, this becomes the new list.
                 tcache = lcache[record['source']] = {}
                 for pkg in record['policy_info']['autopkgtest']:
+                    if pkg == 'verdict':
+                        #print(" verdict " + record['policy_info']['autopkgtest']['verdict'])
+                        continue
                     for arch in record['policy_info']['autopkgtest'][pkg]:
                         if '/' in pkg:
                             bits = pkg.split('/')
@@ -169,7 +172,7 @@ class AdtMatrixSeed(object):
         print('hierachy ' + series + ' ' + ' '.join(debug), file=sys.stderr)
 
 
-matrix_seed = AdtMatrixSeed('test--package-relation.json')
+matrix_seed = AdtMatrixSeed('package-relation.json')
 for line in sys.stdin:
     (series, package, parent, flags, britney) = line.strip().split()
     matrix_seed.accumulate(series, package, flags.split(','), britney)

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-from __future__ import print_function
+#!/usr/bin/python3
 
 # -*- coding: utf-8 -*-
 
@@ -31,10 +30,10 @@ import copy
 import itertools
 import re
 import apt_pkg
-#from urllib.parse import urlencode
-#from urllib.request import urlopen
-from urllib import urlencode
-from urllib2 import urlopen
+#from urllib import urlencode
+#from urllib2 import urlopen
+from urllib.parse import urlencode
+from urllib.request import urlopen
 from functools import cmp_to_key
 from datetime import datetime
 import shlex
@@ -469,8 +468,7 @@ class AutoPackageTest(object):
                     key = ' '.join((ressrc, arch))
                     if is_proposed:
                         key += ' -proposed'
-                    if key not in self.latest or self.latest[key] == 'unknown' or apt_pkg.version_compare(self.latest[key], ver) < 0:
-                        self.latest[key] = ver
+                    self.latest[key] = ver
 
                 # Report that this is a special result.
                 if is_proposed:
@@ -578,6 +576,7 @@ class AutoPackageTest(object):
             for arch in archs:
                 if not adt.fetch_swift_results('https://autopkgtest.ubuntu.com/results/', pkg, arch):
                     return
+            self.save()
 
 
     def save(self):
@@ -594,7 +593,7 @@ class AutoPackageTest(object):
                 json.dump(tmp, cfd, indent=2)
             os.rename(self.cache_file + '.new', self.cache_file)
             self.log_verbose('Saved results to {}'.format(self.cache_file))
-            dirty = False
+            self.dirty = False
 
 
     # XXX: There should only be one hint type, the hint_status ones with
@@ -651,7 +650,7 @@ class AutoPackageTest(object):
                 if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
                     latest = self.latest[key]
                 key += ' -proposed'
-                if key in self.latest and self.latest[key] != 'unknown' and (not latest or apt_pkg.version_compare(self.latest[key], latest) > 0):
+                if key in self.latest and self.latest[key] != 'unknown' and (not latest_proposed or apt_pkg.version_compare(self.latest[key], latest_proposed) > 0):
                     latest_proposed = self.latest[key]
 
             for arch in archs:
@@ -718,7 +717,7 @@ class AutoPackageTest(object):
                     # cell, once we have seen a result it should be reported as a MISS.  However, for the
                     # latest version we should consider anything seeded as expected, if this is not true
                     # the seed entry can be removed or hinted GONE.
-                    elif arch in some_ever or ver == verlist[-1]:
+                    elif arch in some_ever:
                         status = 'MISS'
 
                     # HINTS: override results using hint data.
@@ -750,6 +749,8 @@ class AutoPackageTest(object):
                         elif status == 'GONE':
                             status = None
                             good_ever = False
+                            if arch in some_ever:
+                                del some_ever[arch]
 
                     if hints:
                         (lstatus, reason) = hints
@@ -763,9 +764,8 @@ class AutoPackageTest(object):
                         version += ')'
 
                     # This is only missing if the latest and greatest tests included it.
-                    if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
-                        if ver != verlist[-1] or (len(verlist) != 1 and arch not in result.get(verlist[-2], {}).get(pkg, {})):
-                            status = None
+                    #if status in ('MISS', 'MISS-REPL') and (pkg not in self.packages_latest or arch not in self.packages_latest[pkg]):
+                    #    status = None
 
                     # Track previous state so we can detect and differentiate new
                     # regressions.
@@ -873,7 +873,7 @@ class AutoPackageTest(object):
             fmt = '<td colspan={5} class="{0}"><a href="{2}" title="{3}">{1}</a>{4}'
         else:
             fmt = '<td colspan={5} class="{0}">{1}'
-        if version != lversion:
+        if version != lversion and lversion is not None and apt_pkg.version_compare(version, lversion) < 0:
             annot += '\npackage updated to ' + str(lversion)
 
         status_class = status
@@ -1244,11 +1244,6 @@ table.matrix td {{
         if not seen:
             seed.append([package, ['amd64', 'i386', 'ppc64el', 'armhf']])
 
-        if key in package_cache['seeds-latest']:
-            latest = package_cache['seeds-latest'][key]
-        else:
-            latest = seed
-
         live = True
         #if migration == 'MIGRATED':
         #    live = False
@@ -1268,6 +1263,11 @@ table.matrix td {{
                     ks_source = source_ks
         series_source_packages = sorted(series_source_packages)
         ks_source_name = "unknown" if ks_source is None else ks_source.name
+
+        # Merge the test list for each member package of this kernel.
+        latest = {}
+        for sub_name, sub_data in package_cache['cache-latest'].get(key, {}).items():
+            latest.update(sub_data)
 
         adt = AutoPackageTest(
                 stamp = stamp,
