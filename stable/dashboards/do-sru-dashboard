@@ -1,6 +1,22 @@
-curl -L https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml | ./convert-swm-status >swm-status.json
+#!/bin/bash
+
+if [ "$#" -eq 0 ]; then
+	set - web
+fi
+out="$1"
+payload="$1/kernel-stable-dashboard.html"
+
+curl -sL https://kernel.ubuntu.com/~kernel-ppa/status/swm/status.yaml >swm-status.yaml
 #curl https://kernel.ubuntu.com/sru/kernel-sru-workflow.json --output kernel-sru-workflow.json
 ./gather-releases > supported-releases.json
 ./gather-releases --all > all-releases.json
-./generate-dashboard kernel-stable-dashboard.rc > kernel-stable-dashboard.tmp && mv kernel-stable-dashboard.tmp web/kernel-stable-dashboard.html
+./generate-dashboard kernel-stable-dashboard.rc >"$payload.tmp" && mv "$payload.tmp" "$payload"
 
+if [ ! -f "$out/kernel-stable-board.html" ]; then
+	echo LINKING BOARD
+	ln -sf $(realpath --relative-to="$out" web/kernel-stable-board.html) "$out"
+fi
+if [ ! -d "$out/media" ]; then
+	echo LINKING MEDIA
+	ln -sf $(realpath --relative-to="$out" web/media) "$out"
+fi

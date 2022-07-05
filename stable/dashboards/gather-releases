@@ -7,8 +7,6 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from logging                            import basicConfig, INFO, DEBUG, info, warning
 import json
 
-sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
 from ktl.kernel_series                  import KernelSeries
 
 if __name__ == '__main__':
