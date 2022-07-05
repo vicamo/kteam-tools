@@ -1,0 +1,112 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 -a "$#" -ne 2 ]; then
+	echo "Usage: $0 <build-ppa> [<ps-ppa>]" 1>&2
+	exit 1
+fi
+if [ "$#" -eq 1 ]; then
+	set - "$1" "$1-ps"
+fi
+ppa="$1"
+ppa_ps="$2"
+
+here=$(dirname $(readlink -f "$0"))
+
+"$here/ancillary-lookup" "$ppa" "$ppa_ps" | \
+while read id source urls
+do
+	if [ "$urls" = '-' ]; then
+		if [ -d "$id" ]; then
+			echo "$id: in -ps"
+			rm -rf "$id"
+		fi
+		continue
+	fi
+
+	if [ -d "$id" ]; then
+		if [ -f "$id/ignore" ]; then
+			echo "$id: non-ancillary form, ignored"
+			continue
+		fi
+		(
+			cd "$id" || exit 1
+			# If the uploads failed, the we should retry them periodically.
+			for upload in *_source.changes
+			do
+				case "$upload" in
+				linux-generate*)	upload_to="$ppa"; upload_name="public" ;;
+				*)			upload_to="$ppa_ps"; upload_name="private" ;;
+				esac
+				echo "$id: re-uploading $upload (to $upload_name $upload_to) ..."
+				dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
+			done
+		) || exit "$?"
+		echo "$id: complete"
+		continue
+	fi
+
+	echo "$id: needed"
+	mkdir "$id" || exit 1
+	(
+		cd "$id" || exit 1
+
+		echo "$id: downloading source ..."
+		for url in $urls
+		do
+			wget $url
+		done
+		echo "$id: extracting source ..."
+		dpkg-source -x $source*.dsc
+
+		# Confirm this is the appropriate form.
+		if [ -f $source-*/debian/scripts/gen-ancillary ]; then
+			echo "$id: triggering gen-anciallary"
+			(
+				cd $source-* || exit 2
+				./debian/scripts/gen-ancillary
+				rc="$?"
+				if [ "$rc" != 0 ]; then
+					echo "$id: gen-ancillary failed rc=$rc" 1>&2
+				fi
+				exit "$rc"
+			) || exit "$?"
+		
+		elif [ -f $source-*/debian/scripts/gen-rules.lrm ]; then
+			(
+				cd $source-* || exit 2
+
+				echo "$id: building linux-restricted-generate ..."
+				sed -i -e '1s/linux-restricted-modules/linux-restricted-generate/' debian/changelog
+				debian/rules clean
+				dpkg-buildpackage --no-sign -nc -S
+
+				echo "$id: building linux-restricted-signatures ..."
+				sed -i -e '1s/linux-restricted-generate/linux-restricted-signatures/' debian/changelog
+				debian/rules clean
+				dpkg-buildpackage --no-sign -nc -S
+			) || exit "$?"
+
+		else
+			echo "$id: non-ancillary form, marking ignored"
+			touch "ignore"
+			exit 0
+		fi
+
+		for upload in *_source.changes
+		do
+			echo "$id: signing $upload ..."
+			debsign ${ANCILLARY_KEYID:+-k $ANCILLARY_KEYID} "$upload"
+		done
+		for upload in *_source.changes
+		do
+			case "$upload" in
+			linux-generate*)	upload_to="$ppa"; upload_name="public" ;;
+			*)			upload_to="$ppa_ps"; upload_name="private" ;;
+			esac
+			echo "$id: uploading $upload (to $upload_name $upload_to) ..."
+			dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
+		done
+	)
+	rc="$?"
+	echo "$id: ancillary build complete rc=$rc"
+done
