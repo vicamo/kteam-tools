@@ -531,6 +531,16 @@ class WorkflowBug():
     def save_bug_properties(s):
         center(s.__class__.__name__ + '.save_bug_properties')
 
+        # Mirror some of our tracker tag information over to property
+        # flags so that we can get to it quickly, and also tell if
+        # a scan of the tracker has happened.
+        block = 'kernel-jira-preparation-blocked' in s.tags
+        s._flag_assign('jira-preparation-block', block)
+        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
+            'kernel-trello-blocked-prepare-packages' in s.tags or
+            'kernel-trello-blocked-snap-prepare' in s.tags)
+        s._flag_assign('trello-preparation-block', block)
+
         retval = None
         newd = ''
 
@@ -627,6 +637,44 @@ class WorkflowBug():
             return None
 
         return s.blockers[block]
+
+    def _flag_assign(s, flag, value):
+        flags = s.bprops.setdefault('flag', {})
+        if value is not False:
+            flags[flag] = value
+
+        elif flag in flags:
+            del flags[flag]
+
+        if len(flags) == 0:
+            del s.bprops['flag']
+
+    def _source_block_present(s):
+        if 'kernel-block-source' in s.tags:
+            return "Manual tag kernel-block-source"
+        if 'kernel-block' in s.tags:
+            return "Manual tag kernel-block"
+
+        block = 'kernel-jira-preparation-blocked' in s.tags
+        if block:
+            return "SRU Board (jira)"
+
+        if s.debs is not None:
+            block = 'kernel-trello-blocked-debs-prepare' in s.tags or 'kernel-trello-blocked-prepare-packages' in s.tags
+            if block:
+                return "SRU Board (trello)"
+
+        if s.snap is not None:
+            block = 'kernel-trello-blocked-snap-prepare' in s.tags
+            if block:
+                return "SRU Board (trello)"
+
+        return None
+
+    def source_block_present(s):
+        block = s._source_block_present()
+        cinfo("source_block_present: " + str(block), "yellow")
+        return block
 
     def status_summary(s):
         '''

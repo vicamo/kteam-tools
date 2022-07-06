@@ -37,13 +37,6 @@ class SynPreparePackages(TaskHandler):
             return False
         return s.jumper[state]()
 
-    # _trello_block_source
-    #
-    def _trello_block_source(s):
-        if 'kernel-trello-blocked-debs-prepare' in s.bug.tags or 'kernel-trello-blocked-prepare-packages' in s.bug.tags:
-            return True
-        return False
-
     # _common
     #
     def _common(s):
@@ -57,14 +50,15 @@ class SynPreparePackages(TaskHandler):
         status = s.task.status
         if status == 'New':
             older = s.bug.debs.older_tracker_in_ppa
+            block = s.bug.source_block_present()
             if older is not None:
                 s.task.reason = 'Stalled -- tracker for earlier spin still active in PPA'
                 s.bug.monitor_add({
                     "type": "tracker-modified",
                     "watch": str(older)})
 
-            elif s._trello_block_source():
-                s.task.reason = 'Stalled -- blocked on SRU board'
+            elif block is not None:
+                s.task.reason = 'Stalled -- blocked via ' + block
 
             else:
                 s.task.reason = 'Holding -b Not ready to be cranked'
