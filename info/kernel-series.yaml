@@ -3109,7 +3109,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.13:
-            variants: [ '--' ]
+            variants: [ '-eol-5.13' ]
             packages:
                 linux-azure-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.13-next']
@@ -3142,7 +3142,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.15:
-            variants: [ '-edge' ]
+            variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-5.15-next']
