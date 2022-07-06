@@ -179,7 +179,22 @@ class SnapDebs:
             # title to match as needed.
             if not s.bug.is_derivative_package:
                 raise SnapError("snap-debs requires a master bug pointing at the deb builds to be snapped")
-            s.bug.version_from_master()
+
+            # Default to our own version information.
+            s.bug.version_from_title()
+
+            # Handle version changes.
+            parent_wb = s.bug.master_bug
+            clamp = s.bug.clamp('parent')
+            if parent_wb is not None and parent_wb.version != clamp:
+                cinfo("parent tracker version has changed resetting snap versioning {} -> {}".format(clamp, parent_wb.version))
+                s.bug.version = parent_wb.version
+                s.bug.clamp_assign('parent', parent_wb.version)
+            clamp = s.bug.clamp('self')
+            if s.bug.version != clamp:
+                cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
+                s.bug.clamp_assign('self', s.bug.version)
+                # XXX: likely we should be pulling tasks back here.
 
             # Expect this bug to have the data we need to identify the
             # snap.

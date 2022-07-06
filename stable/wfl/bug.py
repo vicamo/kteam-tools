@@ -81,7 +81,6 @@ class WorkflowBug():
         s.error = None
         s.title = s.lpbug.title
         s._tags = None
-        s.bprops = s.load_bug_properties()
         s.reasons = {}
         s._refresh = [None, None]
         s._monitor = []
@@ -97,6 +96,7 @@ class WorkflowBug():
         s.debs = None
         s.snap = None
         s.tasks_by_name = {}
+        s.load_bug_properties()
 
         # If a bug isn't to be processed, detect this as early as possible.
         #
@@ -181,10 +181,6 @@ class WorkflowBug():
             cinfo('    SWM Properties:', 'cyan')
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
-
-        if 'versions' in s.bprops and 'source' in s.bprops['versions'] and s.bprops['versions']['source'] != s.version:
-            cinfo("tracker version has changed dropping package version data")
-            del s.bprops['versions']
 
         s.tasks_by_name = s._create_tasks_by_name_mapping()
 
@@ -496,8 +492,14 @@ class WorkflowBug():
                 error = str(e).split('\n')[0]
                 s.error = WorkflowCorruptError('failed to load swm-properties -- {}'.format(error))
 
+        # Store the main bug properties.
+        s.bprops = retval
+        s.private_props = {}
+        if '~~' in retval:
+            s.private_props = retval['~~']
+            del retval['~~']
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
-        return retval
 
     # properties_for_description
     #
@@ -547,6 +549,8 @@ class WorkflowBug():
         if len(s.bprops) > 0:
             status = s.bprops
             status.setdefault('reason', {}).update(s.reasons)
+            if len(s.private_props) > 0:
+                status['~~'] = s.private_props
             new_props = s.properties_for_description(status)
 
             description = s.lpbug.description
@@ -648,6 +652,20 @@ class WorkflowBug():
 
         if len(flags) == 0:
             del s.bprops['flag']
+
+    def clamp_assign(s, clamp, value):
+        clamps = s.private_props.setdefault('clamps', {})
+        if value is not None:
+            clamps[clamp] = value
+
+        elif clamp in clamps:
+            del clamps[clamp]
+
+        if len(clamps) == 0:
+            del s.private_props['clamps']
+
+    def clamp(s, clamp):
+        return s.private_props.get('clamps', {}).get(clamp)
 
     def _source_block_present(s):
         if 'kernel-block-source' in s.tags:
