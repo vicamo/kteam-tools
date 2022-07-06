@@ -56,43 +56,6 @@ class PreparePackage(TaskHandler):
             pkg = 'main'
         return pkg
 
-    # master_prepare_ready
-    #
-    def master_prepare_ready(s):
-        if not s.bug.is_derivative_package:
-            return True
-
-        master = s.bug.master_bug
-
-        if s.bug.swm_config.need_master_in_proposed:
-            if master.tasks_by_name['promote-to-proposed'].status != 'Fix Released':
-                return False
-
-        # If our master is marked to block derivatives block on it.
-        if 'kernel-block-derivatives' in master.tags and 'kernel-unblock-derivatives' not in master.tags:
-            wait_for = []
-            s.bug.interlocks['holding-derivative'] = s.bug.name
-
-        # If our master package is a leader (no master of its own) then we want
-        # to wait for it to be successfully built (Fix Released).
-        elif not master.is_derivative_package and 'kernel-unblock-derivatives' not in master.tags:
-            wait_for = ['Fix Released']
-
-        # Otherwise wait for it to be tagged and uploaded (Fix Committed or later).
-        else:
-            wait_for = ['Fix Committed', 'Fix Released']
-
-        for task_name in ('prepare-package', 'prepare-package-lrm'):
-            task_status = master.task_status(task_name)
-            if task_status != 'Invalid':
-                break
-
-        if task_status in wait_for:
-            return True
-
-        return False
-
-
     # _new
     #
     def _new(s):
@@ -110,10 +73,6 @@ class PreparePackage(TaskHandler):
                 retval = True
                 break
 
-            # Check for blocking trackers in a previous cycle.
-            if s.bug.debs.older_tracker_in_ppa:
-                break
-
             # Are we blocked.
             block = s.bug.source_block_present()
             if block is not None:
@@ -122,9 +81,13 @@ class PreparePackage(TaskHandler):
             # For derivative bugs we wait until the parent has at least got its
             # primary package uploaded.  Then we must have something we _could_
             # rebase on.
-            if not s.master_prepare_ready():
+            if not s.bug.debs.ready_to_prepare():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Holding -- waiting for master bug'
+                break
+
+            # Check for blocking trackers in a previous cycle.
+            if s.bug.debs.older_tracker_in_ppa:
                 break
 
             # If we are not the primary-package and there is a primary package
@@ -160,15 +123,15 @@ class PreparePackage(TaskHandler):
                 break
 
             pull_back = False
-            if s.bug.debs.older_tracker_in_ppa:
-                cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
-                pull_back = True
             block = s.bug.source_block_present()
             if block is not None:
                 cinfo('            Blocked via {} pulling back from Confirmed'.format(block), 'yellow')
                 pull_back = True
-            if not s.master_prepare_ready():
+            if not s.bug.debs.ready_to_prepare():
                 cinfo('            Master kernel no longer ready pulling back from Confirmed', 'yellow')
+                pull_back = True
+            if s.bug.debs.older_tracker_in_ppa:
+                cinfo('            A previous cycle tracker is in PPA pulling back from Confirmed', 'yellow')
                 pull_back = True
 
             if pull_back:
