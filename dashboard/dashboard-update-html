@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from __future__ import print_function
 
 import sys
@@ -143,14 +143,14 @@ for line in sys.stdin:
 
     if delta != '-':
         delta = int(delta)
-        delta = delta / 60
+        delta = int(delta / 60)
         ext = 'm'
         if delta >= 60:
-            delta = delta / 60
+            delta = int(delta / 60)
             ext = 'h'
 
             if delta >= 24:
-                delta = delta / 24
+                delta = int(delta / 24)
                 ext = 'd'
 
         delta = str(delta) + ext
