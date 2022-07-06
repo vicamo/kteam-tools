@@ -424,6 +424,7 @@ class Package():
         s.source = s.bug.source
         s.kernel = s.bug.kernel
         s.abi = s.bug.abi
+        s._pkgs = False
 
         # Look the package routing destinations up in kernel-series, convert the
         # archives to real archive objects.
@@ -464,11 +465,7 @@ class Package():
                     route_reference = "NONE" if route[0] is None else route[0].reference
                     cinfo('        {}: {} {}'.format(pocket, route_reference, route[1]), 'blue')
 
-        if s.source is not None:
-            s.pkgs = s.dependent_packages
-        else:
-            s.pkgs = None
-        if s.pkgs == None:
+        if s.source is None:
             raise PackageError('Unable to check package builds for this bug: the package/series combination is invalid')
 
         s._cache = None
@@ -494,6 +491,11 @@ class Package():
         if what not in s._monitor_debs:
             s._monitor_debs.append(what)
 
+    @property
+    def pkgs(self):
+        if self._pkgs is False:
+            self._pkgs = self.dependent_packages
+        return self._pkgs
 
     def routing(self, pocket):
         center(self.__class__.__name__ + '.routing')

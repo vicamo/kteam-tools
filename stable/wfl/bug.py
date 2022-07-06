@@ -95,7 +95,7 @@ class WorkflowBug():
         s._target_trackers = None
         s.debs = None
         s.snap = None
-        s.tasks_by_name = {}
+        s._tasks_by_name = False
         s.load_bug_properties()
 
         # If a bug isn't to be processed, detect this as early as possible.
@@ -182,7 +182,11 @@ class WorkflowBug():
             for prop in props_dump:
                 cinfo('        {}'.format(prop), 'magenta')
 
-        s.tasks_by_name = s._create_tasks_by_name_mapping()
+    @property
+    def tasks_by_name(s):
+        if s._tasks_by_name is False:
+            s._tasks_by_name = s._create_tasks_by_name_mapping()
+        return s._tasks_by_name
 
     @property
     def sc(self):
