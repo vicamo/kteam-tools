@@ -51,7 +51,7 @@ retest)
 		echo "Usage: retest <bug> ..." 1>&2
 		exit 1
 	fi
-	"$here/../sbin/oops-run" shiv-retest "$here/../stable/tbt" retest "$@"
+	"$here/../sbin/oops-run" --error-ok 2 shiv-retest "$here/../stable/tbt" retest "$@"
 	;;
 help)
 	# Select direct incusion of the output in the message.

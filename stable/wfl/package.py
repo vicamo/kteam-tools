@@ -1841,6 +1841,8 @@ class Package():
             routing = s.pocket_route('as-proposed')
             if routing is None:
                 routing = s.pocket_route('Proposed')
+        if routing is None:
+            raise PackageError("package NOT present in the requested location ppa={} op={}".format(ppa, op))
         (archive, pocket) = routing
         if archive.reference != 'ubuntu':
             msg['pocket'] = 'ppa'

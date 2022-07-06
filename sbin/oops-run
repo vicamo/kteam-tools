@@ -1,5 +1,11 @@
 #!/bin/bash
 
+error_ok=999
+if [ "$1" = "--error-ok" ]; then
+	error_ok="$2"
+	shift 2
+fi
+
 key="$1"
 shift
 
@@ -19,8 +25,13 @@ set -o pipefail
 	echo "EXIT: rc=<$rc>"
 } >"$oops" 2>&1
 
-if [ "$rc" != 0 ]; then
+if [ "$rc" = "$error_ok" ]; then
+	tail -2 "$oops" | head -1
+	rm -f "$oops"
+
+elif [ "$rc" != 0 ]; then
 	echo "OOPS: http://kernel.ubuntu.com/~kernel-ppa/oops/$(basename "$oops")"
+
 else
 	rm -f "$oops"
 fi
