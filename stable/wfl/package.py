@@ -3,6 +3,7 @@
 
 import re
 from datetime                           import datetime, timedelta, timezone
+from hashlib                            import sha384
 import json
 from  debian.debian_support             import version_compare
 
@@ -336,10 +337,15 @@ class PackageBuild:
     def instantiate(self):
         cdebug("INSTANTIATING {} {} {} {} {} {}".format(self.dependent, self.pocket, self.package, self.srch_version, self.srch_abi, self.srch_sloppy))
 
+        build_route = self.pocket == 'ppa' or self.pocket.startswith('build')
+
         publications = []
         archive_num = 0
+        archive_only = self.bug.debs.built_in if build_route else None
         for (src_archive, src_pocket) in self.routing:
             archive_num += 1
+            if archive_only is not None and archive_num != archive_only:
+                continue
             if src_archive is None:
                 raise WorkflowCrankError("Routing table entry {}#{} invalid".format(self.pocket, archive_num))
             info = self.__is_fully_built(self.package, self.srch_abi, src_archive, self.srch_version, src_pocket, self.srch_sloppy)
@@ -369,10 +375,9 @@ class PackageBuild:
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
 
         # If we find a build is now complete, record _where_ it was built.
-        if ((self.pocket == 'ppa' or self.pocket.startswith('build')) and
-                self._data['status'] != ''):
+        if build_route and self._data['status'] != '':
             # NOTE: copy-proposed-kernel et al treat auto select build-private so just call this build.
-            self.bug.bprops.setdefault('built', {})[self.dependent] = "build#{}".format(archive_num)
+            self.bug.debs.built_in = archive_num
 
     def __getattr__(self, name):
         if self._data is None:
@@ -525,6 +530,18 @@ class Package():
                     if (monitor['reference'] == route_archive.reference and
                             monitor['pocket'] == route_pocket):
                         self.bug.monitor_add(monitor)
+
+    @property
+    def prepare_id(s):
+        # If we have no versions, then special case the result as None.
+        if 'versions' not in s.bug.bprops:
+            return None
+
+        # Create a stable hash of the versions table for this package.
+        signature = sorted(s.bug.bprops.get('versions', {}).items())
+        id_hash = sha384()
+        id_hash.update(str(signature).encode())
+        return id_hash.hexdigest()[:16]
 
     def package_version(s, pkg):
         # Look up the specific version of a package for this tracker.
@@ -738,6 +755,35 @@ class Package():
         if s._cache is None:
             s.__determine_build_status()
         return s._cache
+
+    # built_set
+    #
+    def built_set(s, field, value):
+        hold = s.bug.bprops.setdefault('built', {})
+        if value is not None:
+            hold[field] = value
+
+        elif field in hold:
+            del hold[field]
+
+        if len(hold) == 0:
+            del s.bug.bprops['built']
+
+    # built_get
+    #
+    def built_get(s, field):
+        return s.bug.bprops.get('built', {}).get(field)
+
+    # built_in
+    #
+    @property
+    def built_in(self):
+        return self.built_get('route-entry')
+
+    @built_in.setter
+    def built_in(self, route):
+        if self.built_get('route-entry') is None:
+            self.built_set('route-entry', route)
 
     # srcs
     #

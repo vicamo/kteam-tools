@@ -16,6 +16,7 @@ class SruReview(TaskHandler):
         s.jumper['Confirmed']      = s._confirmed
         s.jumper['In Progress']    = s._confirmed
         s.jumper['Fix Committed']  = s._confirmed
+        s.jumper['Fix Released']   = s._recind
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -32,6 +33,7 @@ class SruReview(TaskHandler):
             # Record the delta between the build ppa and whatever follows.
             delta = s.bug.debs.delta_src_dst('ppa', s.bug.debs.pocket_after('ppa'))
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
 
             s.task.status = 'Confirmed'
             retval = True
@@ -46,6 +48,13 @@ class SruReview(TaskHandler):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
 
+        retval = s._recind()
+
+        # XXX: TRANSITION
+        clamp = s.bug.clamp('sru-review')
+        if clamp is None:
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
+
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
@@ -59,6 +68,27 @@ class SruReview(TaskHandler):
                 s.task.reason_state('Ongoing', timedelta(hours=4)))
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)
+        return retval
+
+    # _recind
+    #
+    def _recind(s):
+        center(s.__class__.__name__ + '._recind')
+        retval = False
+
+        # XXX: TRANSITION
+        clamp = s.bug.clamp('sru-review')
+        if clamp is None:
+            s.bug.clamp_assign('sru-review', s.bug.debs.prepare_id)
+
+        clamp = s.bug.clamp('sru-review')
+        if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
+            cinfo("sru-review id has changed, recinding sru-review")
+            if s.task.status != 'New':
+                s.task.status = 'New'
+                retval = True
+
+        cleave(s.__class__.__name__ + '._recind (%s)' % retval)
         return retval
 
 # vi: set ts=4 sw=4 expandtab syntax=python
