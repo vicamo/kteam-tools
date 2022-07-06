@@ -503,6 +503,31 @@ class WorkflowBug():
             s.private_props = retval['~~']
             del retval['~~']
 
+        # Mirror some of our tracker tag information over to property
+        # flags so that we can get to it quickly, and also tell if
+        # a scan of the tracker has happened.
+        block = 'kernel-jira-preparation-blocked' in s.tags
+        s._flag_assign('jira-preparation-block', block)
+        block = 'kernel-jira-in-review' in s.tags
+        s._flag_assign('jira-in-review', block)
+        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
+            'kernel-trello-blocked-prepare-packages' in s.tags or
+            'kernel-trello-blocked-snap-prepare' in s.tags)
+        s._flag_assign('trello-preparation-block', block)
+
+        # Sync over the jira-issue link.
+        issue_key = None
+        prefix = 'kernel-jira-issue-'
+        for tag in s.tags:
+            if tag.startswith(prefix):
+                issue_key = tag[len(prefix):].upper()
+                break
+        if issue_key is None:
+            if 'issue' in s.bprops:
+                del s.bprops['issue']
+        else:
+            s.bprops['issue'] = issue_key
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
     # properties_for_description
@@ -536,16 +561,6 @@ class WorkflowBug():
     #
     def save_bug_properties(s):
         center(s.__class__.__name__ + '.save_bug_properties')
-
-        # Mirror some of our tracker tag information over to property
-        # flags so that we can get to it quickly, and also tell if
-        # a scan of the tracker has happened.
-        block = 'kernel-jira-preparation-blocked' in s.tags
-        s._flag_assign('jira-preparation-block', block)
-        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
-            'kernel-trello-blocked-prepare-packages' in s.tags or
-            'kernel-trello-blocked-snap-prepare' in s.tags)
-        s._flag_assign('trello-preparation-block', block)
 
         retval = None
         newd = ''
@@ -656,6 +671,9 @@ class WorkflowBug():
 
         if len(flags) == 0:
             del s.bprops['flag']
+
+    def flag(s, flag):
+        return s.bprops.get('flag', {}).get(flag)
 
     def clamp_assign(s, clamp, value):
         clamps = s.private_props.setdefault('clamps', {})

@@ -136,6 +136,9 @@ if __name__ == '__main__':
     blocked_seen = set()
     blocked_want = set()
 
+    review_seen = set()
+    review_want = set()
+
     issuelink_want = {}
 
     for cycle in sorted(cycles):
@@ -266,6 +269,8 @@ if __name__ == '__main__':
 
             if tracker_flags.get('jira-preparation-block', False):
                 blocked_seen.add(tracker_id)
+            if tracker_flags.get('jira-in-review', False):
+                review_seen.add(tracker_id)
             if tracker_issue != issue.key:
                 issuelink_want[tracker_id] = issue.key
 
@@ -433,6 +438,9 @@ if __name__ == '__main__':
                     #if not tracker_trello_block:
                     #    target_state = 'Kernel Not Ready'
 
+                elif starting_state == 'Kernel Peer Review':
+                    review_want.add(tracker_id)
+
                 #print("SYNC ISSUE", issue, starting_state, target_state)
                 if starting_state == target_state:
                     break
@@ -567,32 +575,38 @@ if __name__ == '__main__':
     # Update the Launchpad tracker to record jira blocks and jira issue linkage.
     blocked_add = blocked_want - blocked_seen
     blocked_del = blocked_seen - blocked_want
-    if len(blocked_del) > 0 or len(blocked_add) > 0 or len(issuelink_want) > 0:
+    review_add = review_want - review_seen
+    review_del = review_seen - review_want
+    if (len(blocked_del) > 0 or len(blocked_add) > 0 or
+            len(review_del) > 0 or len(review_add) > 0 or
+            len(issuelink_want) > 0):
         lp = LaunchpadDirect.login_application('swm-jira-sync')
 
         # Handle mapping Kernel Blocked to a blocking tag on the tracker in Launchpad.
-        tag = 'kernel-jira-preparation-blocked'
-        for bug_id in blocked_del:
-            bug = lp.bugs[bug_id]
-            if tag not in bug.tags:
-                print("LP #{} -- removing {} (noop)".format(bug_id, tag))
-                continue
-            print("LP #{} -- removing {}".format(bug_id, tag))
-            tags = bug.tags
-            tags.remove(tag)
-            bug.tags = tags
-            bug.lp_save()
+        for tag, tag_add, tag_del in (
+                ('kernel-jira-preparation-blocked', blocked_add, blocked_del),
+                ('kernel-jira-in-review', review_add, review_del)):
+            for bug_id in tag_del:
+                bug = lp.bugs[bug_id]
+                if tag not in bug.tags:
+                    print("LP #{} -- removing {} (noop)".format(bug_id, tag))
+                    continue
+                print("LP #{} -- removing {}".format(bug_id, tag))
+                tags = bug.tags
+                tags.remove(tag)
+                bug.tags = tags
+                bug.lp_save()
 
-        for bug_id in blocked_add:
-            bug = lp.bugs[bug_id]
-            if tag in bug.tags:
-                print("LP #{} -- added {} (noop)".format(bug_id, tag))
-                continue
-            print("LP #{} -- adding {}".format(bug_id, tag))
-            tags = bug.tags
-            tags.append(tag)
-            bug.tags = tags
-            bug.lp_save()
+            for bug_id in tag_add:
+                bug = lp.bugs[bug_id]
+                if tag in bug.tags:
+                    print("LP #{} -- added {} (noop)".format(bug_id, tag))
+                    continue
+                print("LP #{} -- adding {}".format(bug_id, tag))
+                tags = bug.tags
+                tags.append(tag)
+                bug.tags = tags
+                bug.lp_save()
 
         # Handle adding issue links.
         print("ISSUELINKS", len(issuelink_want))
