@@ -90,3 +90,7 @@ class SwmConfig:
     @property
     def need_master_in_proposed(self):
         return self._data.get('need-promote-to-proposed', False)
+
+    @property
+    def block_parent_release(self):
+        return self._data.get('block-parent-release', False)
