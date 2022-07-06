@@ -503,6 +503,16 @@ class WorkflowBug():
             s.private_props = retval['~~']
             del retval['~~']
 
+        # Mirror some of our tracker tag information over to property
+        # flags so that we can get to it quickly, and also tell if
+        # a scan of the tracker has happened.
+        block = 'kernel-jira-preparation-blocked' in s.tags
+        s._flag_assign('jira-preparation-block', block)
+        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
+            'kernel-trello-blocked-prepare-packages' in s.tags or
+            'kernel-trello-blocked-snap-prepare' in s.tags)
+        s._flag_assign('trello-preparation-block', block)
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
     # properties_for_description
@@ -536,16 +546,6 @@ class WorkflowBug():
     #
     def save_bug_properties(s):
         center(s.__class__.__name__ + '.save_bug_properties')
-
-        # Mirror some of our tracker tag information over to property
-        # flags so that we can get to it quickly, and also tell if
-        # a scan of the tracker has happened.
-        block = 'kernel-jira-preparation-blocked' in s.tags
-        s._flag_assign('jira-preparation-block', block)
-        block = ('kernel-trello-blocked-debs-prepare' in s.tags or
-            'kernel-trello-blocked-prepare-packages' in s.tags or
-            'kernel-trello-blocked-snap-prepare' in s.tags)
-        s._flag_assign('trello-preparation-block', block)
 
         retval = None
         newd = ''
