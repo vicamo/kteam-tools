@@ -19,7 +19,7 @@ from .errors                            import WorkflowCrankError, WorkflowCorru
 from .log                               import center, cleave, cdebug, cinfo, cerror
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
-from .bug                               import WorkflowBug, WorkflowBugError
+from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
 from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
 from .bugmail                           import BugMailConfigFileMissing
@@ -741,6 +741,8 @@ class WorkflowManager():
                 for l in e.args:
                     cerror(e.__class__.__name__ + ': ' + l)
                 task.reason = 'Stalled -- ' + e.__class__.__name__ + ': ' + e.args[0]
+            except WorkflowBugTaskError as e:
+                task.reason = 'Stalled -- unable to process task: ' + e.args[0]
 
             # Insert a default reason for anything which is active and did not say why.
             if task.reason == '' and workflow_task_name not in WorkflowBug.projects_tracked:

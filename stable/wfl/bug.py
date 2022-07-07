@@ -27,6 +27,10 @@ class WorkflowBugError(ShankError):
     pass
 
 
+class WorkflowBugTaskError(WorkflowBugError):
+    pass
+
+
 # WorkflowBug
 #
 class WorkflowBug():
