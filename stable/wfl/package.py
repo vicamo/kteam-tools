@@ -1058,6 +1058,24 @@ class Package():
         cleave(s.__class__.__name__ + '.all_built_and_in_pocket ({})'.format(retval))
         return retval
 
+    # all_built_and_in_pocket_or_after
+    #
+    def all_built_and_in_pocket_or_after(s, pocket):
+        '''
+        All dependent packages are fully built and in the pocket 'pocket'.
+        '''
+        center(s.__class__.__name__ + '.all_built_and_in_pocket_or_after')
+        retval = True
+
+        for pkg in s.dependent_packages_for_pocket(pocket):
+            if not s.built_and_in_pocket_or_after(pkg, pocket):
+                cinfo('        {} is either not fully built yet or not in {} or after.'.format(pkg, pocket), 'red')
+                retval = False
+                break
+
+        cleave(s.__class__.__name__ + '.all_built_and_in_pocket_or_after ({})'.format(retval))
+        return retval
+
     # all_built_and_in_pocket_or_pocket
     #
     def all_built_in_src_dst(s, src, dst):

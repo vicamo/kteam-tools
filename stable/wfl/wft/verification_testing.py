@@ -220,7 +220,7 @@ class VerificationTesting(TaskHandler):
             cinfo('kernels promoted successfully from Proposed', 'green')
             return retval
 
-        present = s.bug.debs.all_built_and_in_pocket('Proposed')
+        present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
