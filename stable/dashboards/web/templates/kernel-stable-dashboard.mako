@@ -162,12 +162,16 @@ def __status_bites(bug, attrs):
 
     # debs: testing status mashup (early phase Touch Testing)
     boot_testing_status = __task_status(bug, 'boot-testing')
+    promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
+    new_review_status = __task_status(bug, 'new-review')
     testing_valid = (
             boot_testing_status not in test_set_invalid or
+            new_review_status not in test_set_invalid or
             sru_review_status not in test_set_invalid)
     testing_complete = (
             boot_testing_status in test_set_complete and
+            new_review_status in test_set_complete and
             sru_review_status in test_set_complete)
     if testing_valid and not testing_complete:
         retval = ''
@@ -176,10 +180,15 @@ def __status_bites(bug, attrs):
         boot_testing_status = __testing_status_text.get(boot_testing_status, boot_testing_status)
         retval += tagged_block_valid('bt:', boot_testing_status, color)
         retval += tagged_block('', '')
-        retval += tagged_block('', '')
         color = __review_status_colors[sru_review_status]
         sru_review_status = __review_status_text.get(sru_review_status, sru_review_status)
         retval += tagged_block_valid('sr:', sru_review_status, color)
+        if new_review_status != 'Invalid':
+            color = __review_status_colors[new_review_status]
+            new_review_status = __review_status_text.get(new_review_status, new_review_status)
+            retval += tagged_block_valid('nr:', new_review_status, color)
+        else:
+            retval += tagged_block('', '')
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -381,6 +390,7 @@ for bid in sorted(swm_trackers):
     attrs['tooltip-ss:'] = 'Security Signoff'
     attrs['tooltip-Ss:'] = 'Stakeholder Signoff'
     attrs['tooltip-ks:'] = 'Kernel Signoff'
+    attrs['tooltip-nr:'] = 'New Review'
     attrs['tooltip-sr:'] = 'SRU Review'
 
     status_list = __status_bites(b, attrs)

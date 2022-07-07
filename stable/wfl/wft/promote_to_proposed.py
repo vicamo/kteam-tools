@@ -31,7 +31,7 @@ class PromoteFromTo(Promoter):
 
         s.jumper['New']           = s._new
         s.jumper['Confirmed']     = s._verify_promotion
-        s.jumper['Triaged']       = s._verify_promotion
+        s.jumper['Triaged']       = s._new
         s.jumper['In Progress']   = s._verify_promotion
         s.jumper['Incomplete']    = s._verify_promotion
         s.jumper['Fix Committed'] = s._verify_promotion
@@ -70,6 +70,8 @@ class PromoteFromTo(Promoter):
             for task_src in s.task_srcs:
                 if s.bug.task_status(task_src) not in ('Fix Committed', 'Fix Released', 'Invalid'):
                     task_src_ready = False
+            if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
+                task_src_ready = False
             if not task_src_ready:
                 break
 
@@ -87,6 +89,8 @@ class PromoteFromTo(Promoter):
             for task_src in s.task_srcs:
                 if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
                     task_src_ready = False
+            if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
+                task_src_ready = False
             if not task_src_ready:
                 break
 
@@ -133,7 +137,14 @@ class PromoteFromTo(Promoter):
             s.bug.bprops.setdefault('delta', {})[s.task.name] = delta
             s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
 
-            s.task.status = 'Confirmed'
+            # If this was pre-approved and things are ready, then move it to in-progress
+            # so it is not listed as needing manual review.
+            if s.new_review_active:
+                s.task.status = 'In Progress'
+
+            else:
+                s.task.status = 'Confirmed'
+
             s.task.timestamp('started')
 
             retval = True
@@ -153,6 +164,11 @@ class PromoteFromTo(Promoter):
                 break
 
             pull_back = False
+            # If the bot is in charge, then it should hold us in New till the review is
+            # complete.  Move back to New as we know we will now hold there.
+            if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
+                cinfo('            new-review no longer ready pulling back from Confirmed', 'yellow')
+                pull_back = True
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
@@ -363,6 +379,10 @@ class PromoteFromTo(Promoter):
     @property
     def signing_bot(s):
         return 'kernel-signing-bot' in s.bug.tags
+
+    @property
+    def new_review_active(s):
+        return 'sru-review' in s.task_srcs and s.signing_bot
 
 
 class PromoteToProposed(PromoteFromTo):
