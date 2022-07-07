@@ -129,7 +129,10 @@ class RegressionTesting(TaskHandler):
                 retval = True
                 break
 
-            if not s.bug.debs.ready_for_testing_as_proposed:
+            present = s.bug.debs.ready_for_testing_as_proposed
+            if not present and 'kernel-regression-testing-early' in s.bug.tags:
+                present = s.bug.debs.all_built_and_in_pocket('ppa')
+            if not present:
                 break
 
             s.task.status = 'Confirmed'
@@ -149,7 +152,10 @@ class RegressionTesting(TaskHandler):
             cinfo('kernels promoted successfully from Proposed', 'green')
             return retval
 
+        early_testing = 'kernel-regression-testing-early' in s.bug.tags
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
+        if not present and early_testing:
+            present = s.bug.debs.all_built_and_in_pocket_or_after('ppa')
         if not present:
             if s.task.status not in ('Incomplete', 'Fix Released', "Won't Fix", 'Opinion'):
                 cinfo('Kernels no longer present in Proposed moving Aborted (Opinion)', 'yellow')
@@ -176,6 +182,13 @@ class RegressionTesting(TaskHandler):
 
         # Otherwise use the testing status as posted by rt testing.
         else:
+            # If we are checking results and we have not requested sru testing
+            # do that now.  If we are marked for early-testing we will test against
+            # the PPA version.
+            if 'proposed-testing-requested' not in s.bug.bprops:
+                s.bug.debs.send_testing_requests(op="sru", ppa=early_testing)
+                s.bug.bprops['proposed-testing-requested'] = True
+
             try:
                 result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
                 task_status = {
