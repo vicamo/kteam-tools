@@ -321,6 +321,9 @@ def is_hwe(source):
             'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde',
             'linux-intel', 'linux-iot')
 
+def is_nvidia(source):
+    return source.name == 'linux-nvidia-tegra'
+
 def add_primary(repo_set):
     admins = '/~canonical-kernel-repo-admins-active'
 
@@ -403,6 +406,8 @@ def add_primary(repo_set):
             people = ['/~canonical-kernel-committers']
             if is_hwe(thing.source):
                 people.append('/~canonical-kernel-hwe-committers')
+            if is_nvidia(thing.source):
+                people.append('/~nvidia-kernel-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
             #    admins = '/~canonical-kernel-repo-admins'
