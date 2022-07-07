@@ -78,7 +78,7 @@ class SecuritySignoff(TaskHandler):
         center(s.__class__.__name__ + '._confirmed')
         retval = False
 
-        s.task.reason = '{} -- waiting for signoff'.format(
+        s.task.reason = '{} -s waiting for signoff'.format(
             s.task.reason_state('Pending', timedelta(hours=48)))
 
         # For backport kernels the security signoff in the master is valid in the

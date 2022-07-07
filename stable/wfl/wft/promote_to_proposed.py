@@ -97,6 +97,7 @@ class PromoteFromTo(Promoter):
 
             if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
                 cinfo("debs for delta={} not all built in pocket={}".format(delta, s.pocket_src))
+                s.task.reason = 'Stalled -- sources claim built but incomplete'
                 break
 
             if not s.bug.all_dependent_packages_published_tag:
@@ -409,7 +410,7 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_srcs = ['boot-testing', 'sru-review']
+        s.task_srcs = [':prepare-packages', 'boot-testing', 'sru-review']
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []

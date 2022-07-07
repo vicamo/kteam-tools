@@ -18,6 +18,7 @@ class SourceReview(TaskHandler):
         s.jumper['In Progress']    = s._confirmed
         s.jumper['Fix Committed']  = s._confirmed
         s.jumper['Fix Released']   = s._recind
+        s.jumper['Incomplete']     = s._confirmed
 
         cleave(s.__class__.__name__ + '.__init__')
 
@@ -69,13 +70,13 @@ class SourceReview(TaskHandler):
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
-            s.task.reason = '{} -- ready for review'.format(state)
+            s.task.reason = '{} -s ready for review'.format(state)
 
         elif status == 'Incomplete':
             s.task.reason = 'Stalled -- review FAILED'
 
         elif status == 'In Progress':
-            s.task.reason = '{} -- review in progress'.format(
+            s.task.reason = '{} -s review in progress'.format(
                 s.task.reason_state('Ongoing', timedelta(hours=4)))
 
         cleave(s.__class__.__name__ + '._confirmed (%s)' % retval)

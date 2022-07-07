@@ -297,13 +297,12 @@ def __status_bites(bug, attrs):
         }
     for task in sorted(bug.get('reason', {}).keys()):
         reason = bug['reason'][task]
-        if (task.startswith('prepare-package') and
-                not reason.startswith('Stalled -- ')):
+        (state, flags, reason) = reason.split(' ', 2)
+        if task.startswith('prepare-package') and state != 'Stalled':
             continue
         # Elide things which are on one of the three "status box" rows.
-        if task.endswith('-testing') or task.endswith('-signoff') or task == 'sru-review':
+        if 's' in flags:
             continue
-        (state, flags, reason) = reason.split(' ', 2)
         colour = status_colour.get(state, 'blue')
         # Initial tasks are emitted without their task name.
         if 'b' in flags:
@@ -338,6 +337,13 @@ def __status_bites(bug, attrs):
 <%
 import re
 import urllib.parse
+
+def cycle_key(cycle):
+    # Move any cycle type prefix character to the end.
+    if not cycle[0].isdigit():
+        cycle = cycle[1:] + cycle[0]
+    return cycle
+
 
 cycles = {}
 cadence = {}
@@ -409,6 +415,9 @@ for bid in sorted(swm_trackers):
     if (sru_review_status not in ('n/a', 'Invalid', 'New', 'Fix Released') or
             ptp_status not in ('n/a', 'Invalid', 'New', 'Fix Released')):
         row_class.append('phase-reviews')
+
+    if b.get('flag', {}).get('jira-in-review', False):
+        row_class.append('phase-peer-reviews')
 
     snap_tasks = ['snap-prepare']
     for risk in ('edge', 'beta', 'candidate', 'stable'):
@@ -528,6 +537,7 @@ for bid in sorted(swm_trackers):
                                         <option value="all">All</option>
                                         <option value="prepare">prepare</option>
                                         <option value="reviews">reviews</option>
+                                        <option value="peer-reviews">peer-reviews</option>
                                         <option value="deb-promotions">deb-promotions</option>
                                         <option value="snap-promotions">snap-promotions</option>
                                         <option value="testing">testing</option>
@@ -545,7 +555,7 @@ for bid in sorted(swm_trackers):
                                         releases['00.00'] = 'unknown'
                                         cycle_first = True
                                     %>
-                                    % for cycle in sorted(cycles):
+                                    % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
                                             <tr>
                                                 <td colspan="5">&nbsp;</td>

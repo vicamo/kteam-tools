@@ -230,9 +230,9 @@ class RegressionTesting(TaskHandler):
         if s.task.status == 'Fix Released':
             pass
         elif s.task.status == 'Incomplete':
-            s.task.reason = 'Stalled -- testing FAILED'
+            s.task.reason = 'Stalled -s testing FAILED'
         else:
-            s.task.reason = 'Ongoing -- testing in progress'
+            s.task.reason = 'Ongoing -s testing in progress'
 
         cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
         return retval
@@ -356,9 +356,9 @@ class BootTesting(TaskHandler):
         if s.task.status == 'Fix Released':
             pass
         elif s.task.status == 'Incomplete':
-            s.task.reason = 'Stalled -- testing FAILED'
+            s.task.reason = 'Stalled -s testing FAILED'
         else:
-            s.task.reason = 'Ongoing -- testing in progress'
+            s.task.reason = 'Ongoing -s testing in progress'
 
         cleave(s.__class__.__name__ + '._status_check (%s)' % retval)
         return retval
