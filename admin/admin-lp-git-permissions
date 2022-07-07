@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 from __future__ import print_function
 
-from copy                               import deepcopy
+from copy import deepcopy
+from difflib import unified_diff
 import json
 import os
 import re
@@ -9,15 +10,16 @@ import sys
 import yaml
 import argparse
 
-from launchpadlib.launchpad             import Launchpad
+from launchpadlib.launchpad import Launchpad
 
 # Add ../libs to the Python search path
 sys.path.append(os.path.realpath(os.path.join(os.path.dirname(__file__),
                                               os.pardir, 'libs')))
 
-from ktl.kernel_series                  import KernelSeries
+from ktl.kernel_series import KernelSeries
 
 crankers = ['/~canonical-kernel-crankers']
+
 
 def generate_grant(create=False, push=False, rewind=False, person=None):
     grant = {}
@@ -40,23 +42,114 @@ def generate_grant(create=False, push=False, rewind=False, person=None):
 def sort_grants(grants):
     return sorted(deepcopy(grants), key=lambda x: (x['grantee_type'], x['grantee_link']))
 
+
+class RuleSet:
+
+    def __init__(self, path=None, dry_run=False):
+        self.path = path
+        self.dry_run = dry_run
+
+        self.repo_tag = set()
+        self.patterns = []
+        self.grants = {}
+        self.subs = set()
+
+    def add_tag(self, tag):
+        if tag is None:
+            raise ValueError("NONE")
+        #print(self.path, tag)
+        self.repo_tag.add(tag)
+
+    def add_grant(self, pattern, grant):
+        if isinstance(pattern, tuple):
+            raise "WTF"
+        grants = self.grants.setdefault(pattern, [])
+        if grant not in grants:
+            grants.append(grant)
+        if pattern not in self.patterns:
+            self.patterns.append(pattern)
+
+    def add_subscriptions(self, subscriptions):
+        for subscription in subscriptions:
+            self.subs.add(subscription)
+
+    def pattern_key(self, pattern):
+        if '*' in pattern:
+            return (1, )
+        else:
+            return (0, pattern)
+
+    @property
+    def rules(self):
+        return [{'ref_pattern': pattern, 'grants': sort_grants(self.grants[pattern])}
+            for pattern in sorted(self.patterns, key=self.pattern_key)]
+
+    @property
+    def subscriptions(self):
+        return list(self.subs)
+
+    def update(self):
+        git_repo = lp.git_repositories.getByPath(path=self.path)
+        if git_repo is not None:
+            update_rules(git_repo, self.rules, dry_run=self.dry_run)
+            update_subscriptions(git_repo, self.subscriptions, dry_run=self.dry_run)
+            update_webhooks(git_repo, dry_run=self.dry_run)
+
+    @property
+    def tags(self):
+        return self.repo_tag
+
+    @property
+    def subscriptions(self):
+        return self.subs
+
+    def __str__(self):
+        print(self.patterns)
+
+
+class RepoSet:
+
+    def __init__(self, dry_run=False):
+        self.dry_run = dry_run
+
+        self.repos = {}
+
+    def lookup(self, path):
+        if path not in self.repos:
+            self.repos[path] = RuleSet(path=path, dry_run=self.dry_run)
+        return self.repos[path]
+
+    def __str__(self):
+        result = []
+        for repo_path, repo_rules in sorted(self.repos.items()):
+            result.append("{}: {}".format(repo_path, repo_rules.tags))
+        return '\n'.join(result)
+
+
 def update_rules(git_repo, rules, show=False, dry_run=False):
     # Get and sort the rules so we can compare against them.
     current_rules = git_repo.getRules()
     for rule in current_rules:
         rule['grants'] = sort_grants(rule['grants'])
 
-    if current_rules != rules or show is True:
+    if show is True:
         print(" is:")
         rule_txt = yaml.dump(current_rules, default_flow_style=False)
         for line in rule_txt.split('\n'):
             print("  " + line)
 
-    if current_rules != rules:
-        print(" want:")
-        rule_txt = yaml.dump(rules, default_flow_style=False)
-        for line in rule_txt.split('\n'):
-            print("  " + line)
+    current_rules_cmp = yaml.dump(sorted(current_rules, key=lambda x: x['ref_pattern']), default_flow_style=False)
+    rules_cmp = yaml.dump(sorted(rules, key=lambda x: x['ref_pattern']), default_flow_style=False)
+
+    if current_rules != rules and current_rules_cmp == rules_cmp:
+        print(" different _but_ semantically the same")
+    elif current_rules != rules:
+        rule_is = yaml.dump(current_rules, default_flow_style=False)
+        rule_want = yaml.dump(rules, default_flow_style=False)
+        bits_is = rule_is.split('\n')
+        bits_want = rule_want.split('\n')
+        diff = unified_diff(bits_is, bits_want, lineterm="")
+        print("  " + "\n  ".join(diff))
         if dry_run:
             print(" dry run, rules not updated")
         else:
@@ -137,8 +230,14 @@ def list_all(args):
             print("  " + line)
         sys.stdout.flush()
 
-def sync_misc(args):
-    kernel_series = KernelSeries()
+def sync_tagged(repo_set, tag):
+    for repo in sorted(repo_set.repos):
+        repo_rules = repo_set.lookup(repo)
+        if tag in repo_rules.tags:
+            print(repo, repo_rules.tags)
+            repo_rules.update()
+
+def add_misc(repo_set):
 
     admins = '/~canonical-kernel-repo-admins-active'
     people = (
@@ -158,48 +257,36 @@ def sync_misc(args):
             ['~ubuntu-kernel/ubuntu/+source/linux-firmware', [('master', False)] + fw_branches, "Ubuntu-*"],
             ]:
 
-        rules = []
+        print("misc: {}".format(os.path.basename(repo_path)))
+
+        repo_rules = repo_set.lookup(repo_path)
+
+        repo_rules.add_subscriptions(crankers)
+        repo_rules.add_tag(os.path.basename(repo_path))
+        repo_rules.add_tag('misc')
 
         for branch, allow_rewind in repo_branches:
-            grants = []
-
+            ref = "refs/heads/{}".format(branch)
             for person in people:
-                grants.append(generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
-            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+                repo_rules.add_grant(ref, generate_grant(person=person, create=allow_rewind, push=True, rewind=allow_rewind))
+            repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
             if admins != 'owner':
-                grants.append(generate_grant(person='owner'))
-            rules.append(
-                {
-                    'ref_pattern': "refs/heads/{}".format(branch),
-                    'grants': sort_grants(grants),
-                },
-                )
+                repo_rules.add_grant(ref, generate_grant(person='owner'))
 
         if tags_wild is not None:
-            grants = []
+            ref = "refs/tags/{}".format(tags_wild)
+
             for person in people:
-                grants.append(generate_grant(person=person, create=True))
-            grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+                repo_rules.add_grant(ref, generate_grant(person=person, create=True))
+            repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
             if admins != 'owner':
-                grants.append(generate_grant(person='owner'))
-            rules.append(
-                {
-                    'ref_pattern': "refs/tags/{}".format(tags_wild),
-                    'grants': sort_grants(grants),
-                },
-                )
+                repo_rules.add_grant(ref, generate_grant(person='owner'))
 
-        git_repo = lp.git_repositories.getByPath(path=repo_path)
-        print(git_repo)
-        update_rules(git_repo, rules, dry_run=args.dry_run)
-        update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
-        update_webhooks(git_repo, dry_run=args.dry_run)
-        sys.stdout.flush()
+def sync_misc(args):
+    sync_tagged(args.repo_set, 'misc')
 
-def sync_esm(args):
+def add_esm(repo_set):
     admins = '/~canonical-kernel-repo-admins-active'
-
-    kernel_series = KernelSeries()
 
     in_esm = set()
     for series in sorted(kernel_series.series, key=KernelSeries.key_series_name):
@@ -207,28 +294,26 @@ def sync_esm(args):
             continue
         in_esm.add(series.codename)
 
-    grants = []
-    grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
-    if admins != 'owner':
-        grants.append(generate_grant(person='owner'))
-    rules = [
-        {
-        'ref_pattern': "*",
-        'grants': sort_grants(grants),
-        },
-        ]
-
     for team_name in ('ubuntu-kernel', 'canonical-kernel'):
         team = lp.people(team_name)
         for git_repo in lp.git_repositories.getRepositories(target=team):
             bits = git_repo.self_link.split('/')
-            if bits[-2] != '+git' or bits[-1] not in in_esm:
+            series = bits[-1]
+            if bits[-2] != '+git' or series not in in_esm:
                 continue
-            print(git_repo, 'ESM')
-            update_rules(git_repo, rules, dry_run=args.dry_run)
-            update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
-            update_webhooks(git_repo, dry_run=args.dry_run)
-            sys.stdout.flush()
+            print("esm: {}".format(git_repo.unique_name))
+            #print(git_repo, 'ESM', git_repo.unique_name)
+            repo_rules = repo_set.lookup(git_repo.unique_name)
+            repo_rules.add_tag("esm")
+            repo_rules.add_tag(series)
+            repo_rules.add_grant('*', generate_grant(person=admins, create=True, push=True, rewind=True))
+            if admins != 'owner':
+                repo_rules.add_grant('*', generate_grant(person='owner'))
+            repo_rules.add_subscriptions(crankers)
+            #update_webhooks(git_repo, dry_run=args.dry_run)
+
+def sync_esm(args):
+    sync_tagged(args.repo_set, 'esm')
 
 # XXX: we need a better way to control this.
 def is_hwe(source):
@@ -236,21 +321,11 @@ def is_hwe(source):
             'linux-cascade', 'linux-bluefield', 'linux-denver', 'linux-fde',
             'linux-intel', 'linux-iot')
 
-def sync_primary(args):
+def is_nvidia(source):
+    return source.name == 'linux-nvidia-tegra'
+
+def add_primary(repo_set):
     admins = '/~canonical-kernel-repo-admins-active'
-
-    #for person in (lp.people('ubuntu-kernel'), lp.people('canonical-kernel')):
-    #    for repo in lp.git_repositories.getRepositories(target=person):
-    #        print(repo, repo.getRules())
-    #
-    # rules = generate_rules(owner_all=True, people=[
-    #     '/~canonical-kernel-committers',
-    #     '/~canonical-kernel-hwe-committers',
-    #     ])
-    #
-    #print(json.dumps(uules, sort_keys=True, indent=4))
-
-    kernel_series = KernelSeries()
 
     repo_things = {}
 
@@ -294,29 +369,45 @@ def sync_primary(args):
 
     snap_branch_prefix_re = re.compile('^(.*?)(-[0-9\.]+)?$')
 
-    for (path, path_things) in repo_things.items():
-        rules = []
-        rules_wild = []
-        version_people = dict()
+    for path, path_things in repo_things.items():
+        repo_rules = repo_set.lookup(path)
 
+        version_people = dict()
         any_supported = False
         snap_master_added = False
         snap_prefix_added = {}
         for thing in path_things:
-            print(thing, thing.source.development, thing.source.supported)
+            print("primary: {}:{}".format(thing.source.series.codename, thing.source.name))
+            #print(thing, thing.source.development, thing.source.supported)
+            thing_type = getattr(thing, 'type', 'snap')
+            if thing_type is None:
+                thing_type = 'main'
+
+            repo_rules.add_tag(thing_type)
+            repo_rules.add_tag(thing.series.codename)
+            repo_rules.add_tag("{}:{}".format(thing.series.codename, thing.source.name))
+
             if not is_hwe(thing.source) and thing.source.development is False and thing.source.supported is False:
                 continue
             #if thing.series.supported is False:
             #    continue
 
             any_supported = True
-            print(thing, thing.source.development, thing.source.supported)
+            #print(thing, thing.source.development, thing.source.supported)
 
             thing_type = getattr(thing, 'type', 'snap')
+            if thing_type is None:
+                thing_type = 'main'
+
+            #repo_rules.add_tag(thing_type)
+            #repo_rules.add_tag(thing.series.codename)
+            repo_rules.add_subscriptions(crankers)
 
             people = ['/~canonical-kernel-committers']
             if is_hwe(thing.source):
                 people.append('/~canonical-kernel-hwe-committers')
+            if is_nvidia(thing.source):
+                people.append('/~nvidia-kernel-committers')
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
             #    admins = '/~canonical-kernel-repo-admins'
@@ -328,8 +419,14 @@ def sync_primary(args):
             # Order here matters to launchpad, see LP: #1815431.
             if branch.endswith('-next'):
                 branches.append(branch[:-5])
-            print(thing, branch)
+            #print(thing, branch)
             branches.append(branch)
+            # Inclusive naming migration rules
+            if branch == 'master-next':
+                branches.append('main-next')
+                branches.append('main')
+            if branch == 'master':
+                branches.append('main')
             # snap repositories should also have a -test branch.
             if thing_type == 'snap':
                 branches.append(branch + '-test')
@@ -352,15 +449,9 @@ def sync_primary(args):
                     rewind = True
                 else:
                     rewind = False
-                grants = []
+                ref = "refs/heads/{}".format(branch_name)
                 for person in people:
-                    grants.append(generate_grant(person=person, create=True, push=True, rewind=rewind))
-                rules.append(
-                    {
-                        'ref_pattern': "refs/heads/{}".format(branch_name),
-                        'grants': sort_grants(grants),
-                    },
-                    )
+                    repo_rules.add_grant(ref, generate_grant(person=person, create=True, push=True, rewind=rewind))
 
             # TAGS: allow Ubuntu-<branch>- prefixed tags.
             if thing_type == 'snap':
@@ -370,28 +461,24 @@ def sync_primary(args):
                     branch_prefix = '-' + match.group(1)
                 else:
                     branch_prefix = '-' + branch
+                repo_rules.add_tag("snap")
 
             else:
                 branch_prefix = thing.source.name.replace('linux', '')
+                repo_rules.add_tag("primary")
             branch_prefixes = [ branch_prefix ]
             if branch_prefix.startswith('-pc'):
                 branch_prefixes.append(branch_prefix[3:])
             elif branch_prefix.startswith('-lts-'):
                 branch_prefixes.append('-lts')
             rewind_tags = thing.series.development
-            grants = []
-            for person in people:
-                grants.append(generate_grant(person=person, create=True, rewind=rewind_tags))
             for branch_prefix in branch_prefixes:
+                ref = "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix)
                 if branch_prefix in snap_prefix_added:
                     continue
                 snap_prefix_added[branch_prefix] = True
-                rules_wild.append(
-                    {
-                        'ref_pattern': "refs/tags/Ubuntu{}-[0-9]*".format(branch_prefix),
-                        'grants': sort_grants(grants),
-                    },
-                    )
+                for person in people:
+                    repo_rules.add_grant(ref, generate_grant(person=person, create=True, rewind=rewind_tags))
 
             # TAGS: for main packages allow version tags to be pushed too.
             if thing_type in (None, 'main'):
@@ -401,53 +488,40 @@ def sync_primary(args):
                         for person in people:
                             version_people.setdefault(version, set()).add(person)
 
+        if not any_supported:
+            repo_rules.add_tag("eol")
+
         # Add the administrator rules.
-        grants = []
         series = path_things[0].series
-        grants.append(generate_grant(person=admins, create=True, push=True, rewind=True))
+        repo_rules.add_grant('*', generate_grant(person=admins, create=True, push=True, rewind=True))
         if admins != 'owner':
-            grants.append(generate_grant(person='owner'))
+            repo_rules.add_grant('*', generate_grant(person='owner'))
 
         # Add versioned tag rules.
         for version, people in version_people.items():
             if version.endswith('.0'):
                 version = version[:-2]
-            vgrants = []
+            ref = "refs/tags/v{}*".format(version)
             for person in people:
-                vgrants.append(generate_grant(person=person, create=True, push=True, rewind=rewind_tags))
-            vgrants += grants
-            rules_wild.append(
-                {
-                    'ref_pattern': "refs/tags/v{}*".format(version),
-                    'grants': sort_grants(vgrants),
-                },
-                )
+                repo_rules.add_grant(ref, generate_grant(person=person, create=True, push=True, rewind=rewind_tags))
+                repo_rules.add_grant(ref, generate_grant(person=admins, create=True, push=True, rewind=True))
+                if admins != 'owner':
+                    repo_rules.add_grant(ref, generate_grant(person='owner'))
 
-        rules_wild.append(
-            {
-                'ref_pattern': "*",
-                'grants': sort_grants(grants),
-            },
-            )
+def sync_primary(args):
+    sync_tagged(args.repo_set, 'primary')
 
-        # XXX: build rules to avoid launchpad Assertion.
-        rules_wild = sorted(rules_wild, key=lambda x: x['ref_pattern'])
-        rules = sorted(rules, key=lambda x: x['ref_pattern'])
-        rules += rules_wild
+def sync_snap(args):
+    sync_tagged(args.repo_set, 'snap')
 
-        git_repo = lp.git_repositories.getByPath(path=path)
-        if git_repo is None:
-            print("  invalid repository path {} for {}".format(path, thing.name))
-            continue
-        print(git_repo)
-        update_rules(git_repo, rules, dry_run=args.dry_run)
-        update_subscriptions(git_repo, crankers, dry_run=args.dry_run)
-        update_webhooks(git_repo, dry_run=args.dry_run)
-        sys.stdout.flush()
+def sync(args):
+    sync_tagged(args.repo_set, args.tag)
 
 def sync_all(args):
     print("SYNC: primary")
     sync_primary(args)
+    print("SYNC: snap")
+    sync_snap(args)
     print("SYNC: esm")
     sync_esm(args)
     print("SYNC: misc")
@@ -473,10 +547,35 @@ subparser.set_defaults(func=sync_esm)
 subparser = subparsers.add_parser("sync-primary", help="update primary repository permissions")
 subparser.set_defaults(func=sync_primary)
 
+subparser = subparsers.add_parser("sync-snap", help="update snap repository permissions")
+subparser.set_defaults(func=sync_snap)
+
+subparser = subparsers.add_parser("sync", help="update repository permissions by tag")
+subparser.set_defaults(func=sync)
+subparser.add_argument("tag")
+
 subparser = subparsers.add_parser("sync-all", help="update all repository permissions")
 subparser.set_defaults(func=sync_all)
 
 args = parser.parse_args()
 
 lp = Launchpad.login_with('admin-lp-git-permissions', 'production', version='devel')
+
+repo_set = RepoSet(dry_run=args.dry_run)
+
+kernel_series = KernelSeries()
+
+add_primary(repo_set)
+add_esm(repo_set)
+add_misc(repo_set)
+
+args.repo_set = repo_set
+
+#print(repo_set)
+#for repo in sorted(repo_set.repos):
+#   print(repo, repo_set.lookup(repo).tags)
+
+#repo_rules = repo_set.lookup("~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial")
+#print(repo_rules.rules())
+
 args.func(args)
