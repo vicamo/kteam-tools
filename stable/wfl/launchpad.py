@@ -2,7 +2,11 @@ import os
 
 from lpltk.LaunchpadService import LaunchpadService
 
-from .launchpad_cache import LaunchpadCache
+try:
+    from launchpadlib.credentials import AuthorizeRequestTokenWithURL
+except ImportError:
+    from ktl.launchpad_compat import AuthorizeRequestTokenWithURL
+from ktl.launchpad_cache import LaunchpadCache
 
 
 # Launchpad
@@ -46,3 +50,10 @@ class LaunchpadDirect:
         creds = os.path.expanduser(os.path.join('~/.config', client_name, 'credentials-production'))
         return LaunchpadCache.login_with(client_name, 'production', version='devel',
             credentials_file=creds)
+
+    @classmethod
+    def login_application(cld, application, service_root='production'):
+        cred_file = os.path.join(os.path.expanduser("~/.config"), application, "credentials-" + service_root)
+        authorization_engine = AuthorizeRequestTokenWithURL(service_root=service_root, consumer_name=application)
+        return LaunchpadCache.login_with(service_root=service_root, version='devel',
+            authorization_engine=authorization_engine, credentials_file=cred_file)

@@ -1,6 +1,12 @@
 #!/usr/bin/python3
 
 from launchpadlib.launchpad import Launchpad
+try:
+    from launchpadlib.credentials import AuthorizeRequestTokenWithURL
+except ImportError:
+    from .launchpad_compat import AuthorizeRequestTokenWithURL
+
+import os
 
 
 class LaunchpadCacheNamedOperation:
@@ -123,5 +129,12 @@ class LaunchpadCache(Launchpad):
             # Work around a redirect handling issue in python3-lazr.restfulclient
             # which fails when trying to carry over non-GET requests.  Look up
             # my name (via +me), and then manually resolve that name to a user.
-            self._me = self.people[self.lp.me.name]
+            self._me = self.people[super().__getattr__('me').name]
         return self._me
+
+    @classmethod
+    def login_application(cls, application, service_root='production'):
+        cred_file = os.path.join(os.path.expanduser("~/.config"), application, "credentials-" + service_root)
+        authorization_engine = AuthorizeRequestTokenWithURL(service_root=service_root, consumer_name=application)
+        return cls.login_with(service_root=service_root, version='devel',
+            authorization_engine=authorization_engine, credentials_file=cred_file)
