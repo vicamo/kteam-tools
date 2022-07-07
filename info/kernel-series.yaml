@@ -747,7 +747,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic']
-            owner: xnox
+            owner: esmil
             derived-from: [ '22.10', 'linux' ]
             supported: false
             development: true
@@ -760,7 +760,6 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-starfive:
-            versions: ['5.17.0']
             variants: ['--']
             packages:
                 linux-starfive:
@@ -768,9 +767,8 @@ defaults:
                 linux-meta-starfive:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'starfive']
-            owner: xnox
-            derived-from: [ '22.04', 'linux-starfive-5.17' ]
-            backport: true
+            owner: esmil
+            derived-from: [ '22.10', 'linux' ]
             supported: false
             development: true
             swm:
@@ -782,7 +780,6 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-allwinner:
-            versions: ['5.17.0']
             variants: ['--']
             packages:
                 linux-allwinner:
@@ -790,9 +787,8 @@ defaults:
                 linux-meta-allwinner:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'allwinner']
-            owner: xnox
-            derived-from: [ '22.04', 'linux-allwinner-5.17' ]
-            backport: true
+            owner: esmil
+            derived-from: [ '22.10', 'linux' ]
             supported: false
             development: true
             swm:
