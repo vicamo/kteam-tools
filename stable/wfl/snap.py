@@ -460,6 +460,10 @@ class SnapDebs:
             if state in status:
                 break
 
+        # XXX: enable when snap builds are not scheduling.
+        #if state == "BUILD-MISSING":
+        #    s.bug.reasons['snap-start'] = "Stalled -s {}".format(lp_snap)
+
         cdebug("snap_status: build/upload stati {} {}".format(status, state))
 
         return state

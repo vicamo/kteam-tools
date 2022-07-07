@@ -1,5 +1,5 @@
 
-from wfl.log                            import center, cleave, cinfo
+from wfl.log                            import center, cleave, cinfo, cdebug
 from .promoter                          import Promoter
 
 class PromoteToUpdates(Promoter):
@@ -53,6 +53,7 @@ class PromoteToUpdates(Promoter):
             # There is no point in considering prerequisites before we are
             # at least in proposed.
             if not s.bug.debs.all_built_in_src_dst('Proposed', 'Updates'):
+                cdebug("promote-to-updates not all built")
                 break
 
             # Note this will set appropriate reasons.
@@ -60,6 +61,7 @@ class PromoteToUpdates(Promoter):
 
             # If testing is not complete, we are not ready to release.
             if not s._testing_completed():
+                cdebug("promote-to-updates testing not complete")
                 break
 
             # See if we are blocked by a derivative.
@@ -83,6 +85,7 @@ class PromoteToUpdates(Promoter):
 
             if not s._all_signoffs_verified():
                 # Note this will set an appropriate reason.
+                cdebug("promote-to-updates signoffs not verified")
                 break
 
             if not s._cycle_ready():

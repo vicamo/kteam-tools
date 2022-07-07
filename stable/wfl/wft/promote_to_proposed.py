@@ -88,6 +88,7 @@ class PromoteFromTo(Promoter):
             task_src_ready = True
             for task_src in s.task_srcs:
                 if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
+                    cinfo("task not ready {}".format(task_src))
                     task_src_ready = False
             if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
                 task_src_ready = False
@@ -95,6 +96,7 @@ class PromoteFromTo(Promoter):
                 break
 
             if not s.bug.debs.delta_built_pocket(delta, s.pocket_src):
+                cinfo("debs for delta={} not all built in pocket={}".format(delta, s.pocket_src))
                 break
 
             if not s.bug.all_dependent_packages_published_tag:

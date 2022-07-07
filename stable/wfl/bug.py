@@ -955,7 +955,7 @@ class WorkflowBug():
     def published_tag(s, pkg):
         published = True
 
-        # Adjunct packages are wholy contained in their parent package.  That
+        # Ancillary packages are wholy contained in their parent package.  That
         # package will check its own tag.  No tag is expected.
         if s.debs.ancillary_package_for(pkg) is not None:
             return published
