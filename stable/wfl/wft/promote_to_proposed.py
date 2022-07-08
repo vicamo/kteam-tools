@@ -410,7 +410,7 @@ class PromoteToProposed(PromoteFromTo):
         center(s.__class__.__name__ + '.__init__')
         super(PromoteToProposed, s).__init__(lp, task, bug)
 
-        s.task_srcs = [':prepare-packages', 'boot-testing', 'sru-review']
+        s.task_srcs = [':prepare-packages', 'signing-signoff', 'boot-testing', 'sru-review']
         s.pocket_src = 'ppa'
         s.pockets_clear = []
         s.pockets_watch = []
