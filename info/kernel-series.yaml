@@ -1527,6 +1527,7 @@ defaults:
             owner: ian-may
             development: true
             supported: false
+            private: true
             derived-from: [ '22.04', 'linux-realtime' ]
             swm:
                 kernel-testing: false
