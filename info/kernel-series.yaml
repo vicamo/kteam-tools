@@ -1517,13 +1517,13 @@ defaults:
             variants: ['--']
             packages:
                 linux-nvidia-tegra:
-                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-jammy', 'master-next']
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-jammy', 'main-next']
                 linux-meta-nvidia-tegra:
                     type: meta
-                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-jammy', 'master']
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-jammy', 'main']
                 linux-signed-nvidia-tegra:
                     type: signed
-                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-jammy', 'master']
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-jammy', 'main']
             owner: ian-may
             development: true
             supported: false
