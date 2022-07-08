@@ -57,4 +57,27 @@ class ProposedSignoff(GeneralSignoff):
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
         return retval
 
+
+class BuildSignoff(GeneralSignoff):
+    '''
+    A Task Handler for the signoff tasks in build (signing-signoff et al)
+    '''
+
+    # _new
+    #
+    def _new(s):
+        center(s.__class__.__name__ + '._new')
+        retval = False
+
+        while True:
+            if s.bug.task_status(':prepare-packages') != 'Fix Released':
+                break
+
+            s.task.status = 'Confirmed'
+            retval = True
+            break
+
+        cleave(s.__class__.__name__ + '._new (%s)' % retval)
+        return retval
+
 # vi: set ts=4 sw=4 expandtab syntax=python

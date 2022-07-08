@@ -70,6 +70,7 @@ class WorkflowManager():
             'snap-publish'              : wfl.wft.SnapPublish,
             'sru-review'                : wfl.wft.SruReview,
             'new-review'                : wfl.wft.NewReview,
+            'signing-signoff'           : wfl.wft.BuildSignoff,
             'stakeholder-signoff'       : wfl.wft.ProposedSignoff,
             'kernel-signoff'            : wfl.wft.ProposedSignoff,
         }
