@@ -70,8 +70,8 @@ class WorkflowManager():
             'snap-publish'              : wfl.wft.SnapPublish,
             'sru-review'                : wfl.wft.SruReview,
             'new-review'                : wfl.wft.NewReview,
-            'stakeholder-signoff'       : wfl.wft.StakeholderSignoff,
-            'kernel-signoff'            : wfl.wft.StakeholderSignoff,
+            'stakeholder-signoff'       : wfl.wft.ProposedSignoff,
+            'kernel-signoff'            : wfl.wft.ProposedSignoff,
         }
 
         WorkflowBug.sauron            = s.args.sauron
