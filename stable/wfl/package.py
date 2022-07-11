@@ -734,14 +734,31 @@ class PackageBuild:
 
         one_per_build = set()
         arch_published = set()
-        binaries = source.getPublishedBinaries()
+        # Grab all the binaries, including those superseded so we can tell if
+        # we have been dominated away.
+        binaries_all = source.getPublishedBinaries(active_binaries_only=False)
+
+        # NOTE: that this set may contain more than record for a binary if that
+        # binary has been republished to change components, or if it was simply
+        # deleted and reinstated.  The records are guarenteed to be in reverse
+        # date order within an arch/package combination.  Pick just the first one
+        # for each combination.
+        binaries = []
+        binaries_seen = set()
+        for binary in binaries_all:
+            arch_tag = binary.distro_arch_series_link.split('/')[-1] if binary.architecture_specific else 'all'
+            binary_key = (binary.distro_arch_series_link, binary.binary_package_name)
+            if binary_key in binaries_seen:
+                cdebug("binary-duplicate arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
+                continue
+            binaries.append(binary)
+            binaries_seen.add(binary_key)
+
+        # Run the relevant binary records and make sure they are all live publications.
         for binary in binaries:
             ##print(binary, binary.status, binary.date_published)
-            if binary.architecture_specific:
-                arch_tag = binary.distro_arch_series_link.split('/')[-1]
-            else:
-                arch_tag = 'all'
-            cdebug("binary arch={} status={}".format(arch_tag, binary.status))
+            arch_tag = binary.distro_arch_series_link.split('/')[-1] if binary.architecture_specific else 'all'
+            cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
             if binary.status == 'Pending':
                 status.add('PENDING')
             elif binary.status  == 'Published':
@@ -751,6 +768,7 @@ class PackageBuild:
                 #  Superseded
                 #  Deleted
                 #  Obsolete
+                cinfo("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={}".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
                 status.add('FAILEDTOBUILD')
 
             if binary.status == 'Pending' and binary.build_link not in one_per_build:
