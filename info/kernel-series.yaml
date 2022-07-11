@@ -485,6 +485,7 @@ defaults:
                     lowlatency-64k:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-raspi:
             variants: ['--']
@@ -868,6 +869,7 @@ defaults:
                     lowlatency-64k:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.17:
             routing: wip
@@ -2366,6 +2368,7 @@ defaults:
                     lowlatency-64k:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.13:
             variants: [ 'eol-hwe-20.04' ]
