@@ -192,6 +192,14 @@ class TrackerProduction:
             lp_bug.tags = tags
             lp_bug.lp_save()
 
+        # If this is *:linux.
+        if ks_source.name == 'linux':
+            cinfo('requesting early testing')
+            tags = lp_bug.tags
+            tags.append('kernel-regression-testing-early')
+            lp_bug.tags = tags
+            lp_bug.lp_save()
+
         # All done, mark ready.
         lp_task = lp_tasks[self.project.self_link]
         cdebug("liven workflow task")
