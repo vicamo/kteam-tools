@@ -4189,9 +4189,9 @@ defaults:
                 linux-signed-iot:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-iot/+git/focal']
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -4210,18 +4210,16 @@ defaults:
                 linux-signed-uc20-iot:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc20-iot/+git/focal']
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             snaps:
                 iot-kernel:
-                    primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'iot']
                     gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
+                    promote-to: 'stable'
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-iot' ]
