@@ -153,6 +153,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security',
                 'stakeholder-signoff'        : 'canonical-kernel-team',
                 'kernel-signoff'             : 'canonical-kernel-team',
+                'signing-signoff'            : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
@@ -191,6 +192,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security',
                 'stakeholder-signoff'        : 'canonical-kernel-team',
                 'kernel-signoff'             : 'canonical-kernel-team',
+                'signing-signoff'            : 'canonical-kernel-team',
             },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'kernel-release-tracking-bug-live'],
@@ -386,6 +388,9 @@ class Workflow:
                 if ks_source.derived_from is not None:
                     cdebug('    no kernel-signoff (manual for derivatives)', 'yellow')
                     break
+            elif task_name == 'signing-signoff':
+                cdebug('    no signing-signoff (manual always)', 'yellow')
+                break
             elif task_name == 'promote-signing-to-proposed':
                 ks_route = ks_source.routing
                 if ks_route is not None:
