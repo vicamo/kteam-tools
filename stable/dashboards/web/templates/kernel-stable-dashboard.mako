@@ -458,6 +458,8 @@ for bid in sorted(swm_trackers):
             row_class.append('phase-prepare')
             break
 
+    row_class.append('cycle-' + cycle)
+
     for status in status_list:
         status_row = {'bug': None, 'version': None, 'phase': status, 'spin': spin, 'master-class': master_class, 'row-class': ' '.join(row_class)}
         if first:
@@ -547,6 +549,14 @@ for bid in sorted(swm_trackers):
                                         <option value="regression-testing">&nbsp;&nbsp;regression-testing</option>
                                         <option value="verification-testing">&nbsp;&nbsp;verification-testing</option>
                                     </select>
+                                    &nbsp;
+                                    <label for="limit-cycle">Cycle:</lable>
+                                    <select name="limit-cycle" id="limit-cycle" onchange=selectAll() style="font-size: 0.8em">
+                                        <option value="all">All</option>
+                                    % for cycle in sorted(cycles, key=cycle_key):
+                                        <option value="${cycle}">${cycle}</option>
+                                    % endfor
+                                    </select>
                                     </td></tr>
 
                                     <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
@@ -557,11 +567,11 @@ for bid in sorted(swm_trackers):
                                     %>
                                     % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
-                                            <tr>
+                                            <tr class="entry-any owner-any phase-any">
                                                 <td colspan="5">&nbsp;</td>
                                             </tr>
                                         % endif
-                                        <tr>
+                                        <tr class="entry-any owner-any phase-any cycle-${cycle}">
                                             <td colspan="5" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
                                         </tr>
                                         <%
@@ -573,7 +583,7 @@ for bid in sorted(swm_trackers):
                                                 row_number = 0
                                             %>
                                             % if releases[rls] in cadence[cycle]:
-                                            <tr>
+                                            <tr class="entry-any owner-any phase-any cycle-${cycle}">
                                                 <td colspan="5" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                             </tr>
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
