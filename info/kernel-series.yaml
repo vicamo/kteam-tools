@@ -388,7 +388,7 @@ defaults:
             #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
             #release:
             #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
-        realtime:
+        realtime: &routing-table-realtime
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             test:
                 - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
@@ -397,13 +397,19 @@ defaults:
             signing:
                 - ['ppa:canonical-signing/ubuntu/esm', 'Release']
             as-proposed:
-                - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/as-proposed', 'Release']
             proposed:
                 - ['ppa:ubuntu-advantage/ubuntu/realtime-proposed', 'Release']
             updates:
                 - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
             release:
                 - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
+        realtime-interim:
+            <<: *routing-table-realtime
+            updates:
+                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
         eol:
             proposed:
             updates:
@@ -538,7 +544,7 @@ defaults:
                         clouds: ['metal']
 
         linux-realtime:
-            routing: realtime
+            routing: realtime-interim
             variants: ['--']
             packages:
                 linux-realtime:
