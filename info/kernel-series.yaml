@@ -358,6 +358,36 @@ defaults:
             #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
             #release:
             #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+        nvidia:
+            <<: [*routing-table-default]
+            test-build:
+                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
+            test:
+                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
+            build:
+                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
+            build-private:
+                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
+        nvidia-tegra:
+            <<: [*routing-table-security-build, *routing-table-security-proposed]
+            test-build:
+                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
+            test:
+                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
+            build:
+                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
+            build-private:
+                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
+            #signing:
+            #    - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            proposed:
+                - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
+            #security:
+            #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
+            #release:
+            #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
         realtime:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             test:
@@ -1480,7 +1510,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-nvidia:
-            routing: wip
+            routing: nvidia
             variants: ['--']
             packages:
                 linux-nvidia:
@@ -1516,6 +1546,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-nvidia-tegra:
+            routing: nvidia-tegra
             variants: ['--']
             packages:
                 linux-nvidia-tegra:
