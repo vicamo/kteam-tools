@@ -265,14 +265,17 @@ def __status_bites(bug, attrs):
     security_signoff_status = __task_status(bug, 'security-signoff')
     kernel_signoff_status = __task_status(bug, 'kernel-signoff')
     stakeholder_signoff_status = __task_status(bug, 'stakeholder-signoff')
+    signing_signoff_status = __task_status(bug, 'signing-signoff')
     signoff_valid = (
             security_signoff_status not in ('n/a', 'New', 'Invalid') or
             kernel_signoff_status not in ('n/a', 'New', 'Invalid') or
-            stakeholder_signoff_status not in ('n/a', 'New', 'Invalid'))
+            stakeholder_signoff_status not in ('n/a', 'New', 'Invalid') or
+            signing_signoff_status not in ('n/a', 'New', 'Invalid'))
     signoff_complete = (
             security_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
             kernel_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
-            stakeholder_signoff_status in ('n/a', 'Invalid', 'Fix Released'))
+            stakeholder_signoff_status in ('n/a', 'Invalid', 'Fix Released') and
+            signing_signoff_status in ('n/a', 'Invalid', 'Fix Released'))
     if signoff_valid and not signoff_complete:
         retval = ''
 
@@ -284,6 +287,9 @@ def __status_bites(bug, attrs):
 
         color = __testing_status_colors[kernel_signoff_status]
         retval += tagged_block_valid('ks:', kernel_signoff_status, color)
+
+        color = __testing_status_colors[signing_signoff_status]
+        retval += tagged_block_valid('xs:', signing_signoff_status, color)
 
         bites.append(bite_format(thing_prefix, retval, thing_in))
 
@@ -395,6 +401,7 @@ for bid in sorted(swm_trackers):
     attrs['tooltip-bt:'] = 'Boot Testing'
     attrs['tooltip-ss:'] = 'Security Signoff'
     attrs['tooltip-Ss:'] = 'Stakeholder Signoff'
+    attrs['tooltip-xs:'] = 'Signing Signoff'
     attrs['tooltip-ks:'] = 'Kernel Signoff'
     attrs['tooltip-nr:'] = 'New Review'
     attrs['tooltip-sr:'] = 'SRU Review'
