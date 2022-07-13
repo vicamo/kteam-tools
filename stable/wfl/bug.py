@@ -572,6 +572,13 @@ class WorkflowBug():
         if clamp is None:
             s.clamp_assign('new-review', s.clamp('sru-review'))
 
+        # XXX: TRANSITION -- mirror base flags into the flags field.
+        for flag in ('boot-testing-requested', 'proposed-testing-requested',
+                'proposed-announcement-sent', 'bugs-spammed'):
+            if flag in s.bprops:
+                s.flag_assign(flag, s.bprops[flag])
+                del s.bprops[flag]
+
         cleave(s.__class__.__name__ + '.load_bug_properties')
 
     # properties_for_description
