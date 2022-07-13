@@ -526,13 +526,13 @@ class WorkflowBug():
         # flags so that we can get to it quickly, and also tell if
         # a scan of the tracker has happened.
         block = 'kernel-jira-preparation-blocked' in s.tags
-        s._flag_assign('jira-preparation-block', block)
+        s.flag_assign('jira-preparation-block', block)
         block = 'kernel-jira-in-review' in s.tags
-        s._flag_assign('jira-in-review', block)
+        s.flag_assign('jira-in-review', block)
         block = ('kernel-trello-blocked-debs-prepare' in s.tags or
             'kernel-trello-blocked-prepare-packages' in s.tags or
             'kernel-trello-blocked-snap-prepare' in s.tags)
-        s._flag_assign('trello-preparation-block', block)
+        s.flag_assign('trello-preparation-block', block)
 
         # Sync over the jira-issue link.
         issue_key = None
@@ -685,7 +685,7 @@ class WorkflowBug():
 
         return s.blockers[block]
 
-    def _flag_assign(s, flag, value):
+    def flag_assign(s, flag, value):
         flags = s.bprops.setdefault('flag', {})
         if value is not False:
             flags[flag] = value
