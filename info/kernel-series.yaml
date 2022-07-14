@@ -1540,11 +1540,11 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    generic:
+                    nvidia:
                         # arches as defined by the testing system
                         arches: ['amd64', 'arm64']
                         clouds: ['metal']
-                    generic-64k:
+                    nvidia-64k:
                         arches: ['arm64']
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
@@ -1570,13 +1570,10 @@ defaults:
                 kernel-testing: false
             testing:
                 flavours:
-                    generic:
+                    nvidia-tegra:
                         arches: ['arm64']
                         clouds: ['metal']
-                    generic-64k:
-                        arches: ['arm64']
-                        clouds: ['metal']
-                    realtime:
+                    nvidia-tegra-rt:
                         arches: ['arm64']
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
