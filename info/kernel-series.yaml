@@ -950,8 +950,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.17']
             owner: xnox
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
-            supported: false
-            development: true
+            supported: true
             swm:
                 kernel-testing: true
             testing:
@@ -971,8 +970,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'allwinner-5.17']
             owner: xnox
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
-            supported: false
-            development: true
+            supported: true
             swm:
                 kernel-testing: true
             testing:
