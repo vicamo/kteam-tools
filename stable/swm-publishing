@@ -894,7 +894,7 @@ if __name__ == '__main__':
 
     if len(changed) > 0:
         cmd_before = perf_counter()
-        cmd = ['./swm-cron'] + list(changed)
+        cmd = ['./swm-cron', '--queue-direct'] + list(changed)
         command = Popen(cmd)
         print("COMMAND STARTED", command.pid)
         sys.stdout.flush()

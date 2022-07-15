@@ -549,6 +549,10 @@ class WorkflowManager():
             bugs_pass = 0
             bugs_overall = 0
 
+            if s.args.queue_direct:
+                s.queue_cranks(buglist, dependants=True)
+                buglist=[]
+
             if s.args.dependants_only:
                 buglist = s.live_dependants_rescan()
                 if s.args.queue_only:
