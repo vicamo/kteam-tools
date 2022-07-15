@@ -102,6 +102,8 @@ class WorkflowManager():
             s.status_start = s.status_load()
         s.status_wanted = {}
 
+        s.tracker_validator = {}
+
         cleave('WorkflowManager.__init__')
 
     @contextmanager
@@ -426,8 +428,14 @@ class WorkflowManager():
         if s.args.bugs:
             bugs = []
             for bugid in s.args.bugs:
-                if bugid.isdigit():
+                if '@' in bugid:
+                    bugid, validator = bugid.split('@')
+                    s.tracker_validator[bugid] = validator
                     bugs.append(bugid)
+
+                elif bugid.isdigit():
+                    bugs.append(bugid)
+
                 elif ':' in bugid:
                     # We will search for <series>:<source>:<target>
                     # if target is missing imply it from source.
@@ -442,9 +450,9 @@ class WorkflowManager():
                             search_data.get('target', '-')]
                         if bits == search_key:
                             bugs.append(search_id)
+
                 else:
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
-                    continue
 
             for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
@@ -613,6 +621,15 @@ class WorkflowManager():
         modified = False
         bug = None
         try:
+            tracker_status = s.status_get(bugid)
+            validator = s.tracker_validator.get(bugid, False)
+            scanned = tracker_status.get('manager', {}).get('time-scanned')
+            if validator is not False:
+                cinfo('    LP: #{} (validator {} {})'.format(bugid, validator, scanned), 'magenta')
+                if validator != str(scanned):
+                    cinfo('    LP: #{} (already scanned {} {})'.format(bugid, validator, scanned), 'magenta')
+                    return []
+
             lpbug = s.lp.default_service.get_bug(bugid)
             if lpbug is None:
                 cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
@@ -641,8 +658,6 @@ class WorkflowManager():
 
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
-
-            tracker_status = s.status_get(bugid)
 
             # Catch direct modification of the bug.  We would be asked to scan
             # the bug but not ourselves modify it.

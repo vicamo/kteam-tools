@@ -2,4 +2,4 @@
 
 here=$(dirname "$(readlink -f "${0}")")
 
-exec "$here/swm-run" --log-prefix "$1:" "$2"
+exec "$here/swm-run" --log-prefix "$1:" "$2@$3"
