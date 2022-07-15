@@ -581,6 +581,9 @@ class WorkflowManager():
                     buglist_rescan += s.live_dependants_rescan()
 
                 buglist = buglist_rescan
+                if s.args.queue_only:
+                    s.queue_cranks(buglist)
+                    buglist = []
 
         except BugMailConfigFileMissing as e:
             print(e.message)
