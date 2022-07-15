@@ -16,7 +16,7 @@ from ktl.sru_cycle                      import SruCycle
 
 from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
-from .log                               import center, cleave, cdebug, cinfo, cerror
+from .log                               import center, cleave, cdebug, cinfo, cerror, cinstance
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
 from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
@@ -562,7 +562,7 @@ class WorkflowManager():
                 cinfo("manage_payload: scan={}".format(buglist))
                 for bugid in buglist:
                     bugs_scanned += 1
-                    with s.lock_bug(bugid):
+                    with cinstance("LP#" + bugid), s.lock_bug(bugid):
                         cinfo('')
                         cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.lp.bug_url(bugid)))
 
