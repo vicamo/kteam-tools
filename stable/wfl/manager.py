@@ -514,6 +514,10 @@ class WorkflowManager():
         if len(buglist) == 0:
             return
 
+        # Queue these in the most appropriate order.
+        buglist = list(set(buglist))
+        buglist = list(sorted(buglist, key=self.tracker_key))
+
         work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
 
         with self.lock_status():
