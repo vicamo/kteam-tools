@@ -23,6 +23,7 @@ from .bug                               import WorkflowBug, WorkflowBugError, Wo
 from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
 from .bugmail                           import BugMailConfigFileMissing
+from .work                              import SwmWork
 import wfl.wft
 
 
@@ -499,6 +500,23 @@ class WorkflowManager():
             s.manage_payload()
         cinfo('Completed run ' + str(datetime.now()))
 
+    # queue_cranks
+    #
+    def queue_cranks(self, buglist):
+        if len(buglist) == 0:
+            return
+
+        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+
+        with self.lock_status():
+            status = self.status_load()
+
+        for bugid in buglist:
+            manager = status.get(bugid).get('manager', {})
+            scanned = manager.get('time-scanned')
+
+            work.send_shank(bugid, scanned=scanned)
+
     # manage_payload
     #
     def manage_payload(s):
@@ -515,6 +533,9 @@ class WorkflowManager():
 
             if s.args.dependants_only:
                 buglist = s.live_dependants_rescan()
+                if s.args.queue_only:
+                    s.queue_cranks(buglist)
+                    buglist = []
 
             while len(buglist) > 0:
                 # Make sure that each bug only appears once.
