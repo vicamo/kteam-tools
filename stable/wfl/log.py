@@ -24,6 +24,15 @@ def center(msg):
 def cleave(msg):
     Clog.leave('Leave ' + msg)
 
+@contextmanager
+def cinstance(instance):
+    try:
+        Clog.instance = instance + " "
+        yield
+    finally:
+        Clog.instance = ""
+
+
 class Clog:
     '''
     Colored logging.
@@ -31,6 +40,7 @@ class Clog:
     dbg = False
     color = True
     indent = 0
+    instance = ""
 
     @classmethod
     def colored(c, msg, color):
@@ -40,12 +50,12 @@ class Clog:
 
     @classmethod
     def info(c, msg, color='white'):
-        msg = ' ' * c.indent + str(msg)
+        msg = c.instance + ' ' * c.indent + str(msg)
         info(c.colored(msg, color))
 
     @classmethod
     def debug(c, msg, color='magenta'):
-        msg = ' ' * c.indent + str(msg)
+        msg = c.instance + ' ' * c.indent + str(msg)
         debug(c.colored(msg, color))
 
     @classmethod
