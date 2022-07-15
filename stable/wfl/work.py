@@ -35,3 +35,8 @@ class SwmWork:
         payload = {"type": "shank", "tracker": tracker, "scanned": str(scanned)}
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
+
+    def send_dependants(self, priority=2):
+        payload = {"type": "dependants"}
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload, priority=priority)

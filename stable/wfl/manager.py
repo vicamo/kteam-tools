@@ -510,7 +510,7 @@ class WorkflowManager():
 
     # queue_cranks
     #
-    def queue_cranks(self, buglist):
+    def queue_cranks(self, buglist, dependants=False):
         if len(buglist) == 0:
             return
 
@@ -523,7 +523,13 @@ class WorkflowManager():
             manager = status.get(bugid).get('manager', {})
             scanned = manager.get('time-scanned')
 
+            cinfo("queuing shank {} {}".format(bugid, scanned))
             work.send_shank(bugid, scanned=scanned)
+
+        if dependants:
+            # If we had anything todo, ask for a rescan at low-priority.
+            cinfo("queuing dependants")
+            work.send_dependants()
 
     # manage_payload
     #
@@ -542,7 +548,7 @@ class WorkflowManager():
             if s.args.dependants_only:
                 buglist = s.live_dependants_rescan()
                 if s.args.queue_only:
-                    s.queue_cranks(buglist)
+                    s.queue_cranks(buglist, dependants=True)
                     buglist = []
 
             while len(buglist) > 0:
