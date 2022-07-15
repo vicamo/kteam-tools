@@ -61,10 +61,11 @@ class SwmWorker():
                 tracker = payload.get('tracker')
                 if tracker is None:
                     raise ValueError("invalid shank message")
+                scanned = payload.get('scanned')
 
                 prefix = args.name.split('-')[-1]
 
-                cmd = [os.path.join(os.path.dirname(__file__), "swm-worker-payload"), prefix, tracker]
+                cmd = [os.path.join(os.path.dirname(__file__), "swm-worker-payload"), prefix, tracker, scanned]
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
                     child = Popen(cmd)
