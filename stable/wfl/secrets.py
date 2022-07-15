@@ -3,23 +3,14 @@ import yaml
 
 # Secrets
 #
-class Secrets(object):
+class Secrets:
 
     # __init__
     #
     def __init__(self, config=None):
-        defaults = {}
-        paths = []
-        if 'HOME' in os.environ:
-            paths.append(os.path.join(os.environ['HOME'], '.swm-secrets.yaml'))
-        paths.append(os.path.join(os.path.dirname(__file__), '.swm-secrets.yaml'))
-        for path in paths:
-            if os.path.exists(path):
-                break
-
         secrets = {}
-        if os.path.exists(path):
-            with open(path) as rfd:
+        if os.path.exists(config):
+            with open(config) as rfd:
                 secrets = yaml.safe_load(rfd)
 
         self._data = secrets
