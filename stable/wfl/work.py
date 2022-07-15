@@ -26,17 +26,23 @@ class SwmWork:
 
         self.mq = MsgQueueService(service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60)
 
-    def send_admin_quit(self, name):
+    def send_admin_quit(self, name, priority=None):
+        if priority is None:
+            priority = 6
         payload = {"type": "quit"}
         key = "direct.{}.swm.{}".format(name, payload["type"])
-        self.mq.publish(key, payload, priority=6)
+        self.mq.publish(key, payload, priority=priority)
 
-    def send_shank(self, tracker, scanned=None, priority=4):
+    def send_shank(self, tracker, scanned=None, priority=None):
+        if priority is None:
+            priority = 4
         payload = {"type": "shank", "tracker": tracker, "scanned": str(scanned)}
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
 
-    def send_dependants(self, priority=2):
+    def send_dependants(self, priority=None):
+        if priority is None:
+            priority = 4
         payload = {"type": "dependants"}
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
