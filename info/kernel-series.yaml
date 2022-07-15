@@ -364,10 +364,6 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             test:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
-            build:
-                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
-            build-private:
-                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
         nvidia-tegra:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             test-build:
