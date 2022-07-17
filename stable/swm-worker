@@ -60,7 +60,7 @@ class SwmWorker():
                 self.mq.listen_stop()
 
             elif what in ("shank", "dependants"):
-                cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":"]
+                cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only"]
 
                 if what == "shank":
                     tracker = payload.get('tracker')
@@ -70,7 +70,7 @@ class SwmWorker():
                     cmd += [tracker + "@" + scanned]
 
                 elif what == "dependants":
-                    cmd += ["--dependants-only", "--queue-only"]
+                    cmd += ["--dependants-only"]
 
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
