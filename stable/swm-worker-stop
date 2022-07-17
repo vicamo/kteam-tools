@@ -1,0 +1,12 @@
+#!/usr/bin/python3
+
+import sys
+
+from wfl.work import SwmWork
+
+
+if __name__ == "__main__":
+    swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
+    swm_work.send_admin_quit(sys.argv[1])
+
+# vi:set ts=4 sw=4 expandtab:
