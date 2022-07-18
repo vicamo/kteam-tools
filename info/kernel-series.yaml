@@ -2551,7 +2551,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing', 'verification-testing']
 
         linux-intel-5.13:
-            variants: [ '--' ]
+            variants: [ '-eol-5.13' ]
             packages:
                 linux-intel-5.13:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel/+git/focal', 'intel-5.13-next']
@@ -4162,7 +4162,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-intel-iotg-5.15:
-            variants: ['-edge']
+            variants: [ '--', '-edge' ]
             packages:
                 linux-intel-iotg-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel-iotg/+git/focal']
