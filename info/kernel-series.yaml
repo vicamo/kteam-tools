@@ -1054,7 +1054,7 @@ defaults:
                         amd64: ['22']
                         arm64: ['22']
             derived-from: [ '22.04', 'linux-realtime' ]
-            invalid-tasks: [ 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-aws:
             variants: ['--']
