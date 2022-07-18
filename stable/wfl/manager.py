@@ -524,7 +524,7 @@ class WorkflowManager():
             status = self.status_load()
 
         for bugid in buglist:
-            manager = status.get(bugid).get('manager', {})
+            manager = status.get(bugid,{}).get('manager', {})
             scanned = manager.get('time-scanned')
 
             cinfo("queuing shank {} {}".format(bugid, scanned))
