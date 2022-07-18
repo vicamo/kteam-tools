@@ -48,6 +48,8 @@ class SwmWorker():
     #
     def _handler(self, channel, method, properties, payload):
         self.log.info("handler payload={}".format(payload))
+        self.log.info("handler method={}".format(method))
+        self.log.info("handler properties={}".format(properties))
 
         prefix = args.name.split('-')[-1]
 
