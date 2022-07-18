@@ -99,7 +99,6 @@ class WorkflowManager():
         # us cleansing bugs which were newly created and shanked by other
         # instances.
         s.status_path = 'status.json'
-        s.status_altpath = 'status.yaml'
         s.status_validator = None
         s.Status_current = None
         with s.lock_status():
@@ -223,10 +222,6 @@ class WorkflowManager():
         with open(s.status_path + '.new', 'w') as wfd:
             json.dump(data, fp=wfd, default=s._json_object_encode, separators=(',', ':'))
         os.rename(s.status_path + '.new', s.status_path)
-
-        with open(s.status_altpath + '.new', 'w') as wfd:
-            yaml.dump(data, wfd, default_flow_style=False)
-        os.rename(s.status_altpath + '.new', s.status_altpath)
 
         # We are writing the file, update our cache.
         stat = os.stat(s.status_path)
