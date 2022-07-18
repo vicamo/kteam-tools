@@ -140,8 +140,9 @@ class SwmWorker():
 
             self.log.info("Listening")
             self.mq.listen_start()
-
             self._announce('announce-control', 'swm-worker quit')
+
+            self.mq.close()
 
             self.log.info("Exiting")
             retval = 0
