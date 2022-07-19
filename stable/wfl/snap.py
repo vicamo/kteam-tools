@@ -136,26 +136,29 @@ class SnapStore:
         data = self.channel_map()
 
         last_published = None
-        for arch, tracks in self.snap.publish_to.items():
-            for track in tracks:
-                for risk in self.snap.promote_to:
-                    channel = "{}/{}".format(track, risk)
-                    #print("?", self.snap.name, arch, channel)
-                    key = (arch, channel)
-                    if key not in data:
-                        continue
+        publish_to = self.snap_info.publish_to
+        promote_to = self.snap_info.promote_to
+        if publish_to is not None and promote_to is not None:
+            for arch, tracks in publish_to.items():
+                for track in tracks:
+                    for risk in promote_to:
+                        channel = "{}/{}".format(track, risk)
+                        #print("?", self.snap.name, arch, channel)
+                        key = (arch, channel)
+                        if key not in data:
+                            continue
 
-                    # Convert the iso8601 format timestring into one
-                    # which strptime actually can parse.
-                    released_at = data[key]['released-at']
-                    released_at = released_at[:-3] + released_at[-2:]
-                    #print("D?", released_at)
+                        # Convert the iso8601 format timestring into one
+                        # which strptime actually can parse.
+                        released_at = data[key]['released-at']
+                        released_at = released_at[:-3] + released_at[-2:]
+                        #print("D?", released_at)
 
-                    date_published = datetime.strptime(released_at,
-                        "%Y-%m-%dT%H:%M:%S.%f%z")
-                    cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(data[key]['released-at'], date_published, last_published))
-                    if last_published is None or date_published > last_published:
-                        last_published = date_published
+                        date_published = datetime.strptime(released_at,
+                            "%Y-%m-%dT%H:%M:%S.%f%z")
+                        cinfo("SNAP-RELEASED-AT {} -> {} > {}".format(data[key]['released-at'], date_published, last_published))
+                        if last_published is None or date_published > last_published:
+                            last_published = date_published
 
         return last_published
 
