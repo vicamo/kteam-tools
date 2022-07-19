@@ -1043,12 +1043,12 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/+git/kernel-snaps-uc22', 'realtime']
                     gated: false
                     stable: false
-                    promote-to: [ 'edge', 'beta' ]
+                    #promote-to: [ 'edge', 'beta' ]
                     qa: false
                     hw-cert: false
-                    publish-to:
-                        amd64: ['22']
-                        arm64: ['22']
+                    #publish-to:
+                        #amd64: ['22']
+                        #arm64: ['22']
             derived-from: [ '22.04', 'linux-realtime' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
