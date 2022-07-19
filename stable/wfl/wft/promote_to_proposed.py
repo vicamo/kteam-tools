@@ -168,9 +168,10 @@ class PromoteFromTo(Promoter):
 
             pull_back = False
             # If the bot is in charge, then it should hold us in New till the review is
-            # complete.  Move back to New as we know we will now hold there.
-            if s.new_review_active and s.bug.task_status('new-review') != 'Fix Released':
-                cinfo('            new-review no longer ready pulling back from Confirmed', 'yellow')
+            # complete.  Move back to New as we know we will now hold there or should be
+            # in InProgress.
+            if s.new_review_active:
+                cinfo('            canonical-signing-bot now in control pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
