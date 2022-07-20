@@ -453,7 +453,7 @@ defaults:
 
         linux:
             versions: ['5.19.0']
-            variants: ['--']
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'master-next']
@@ -486,7 +486,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            variants: ['--']
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'lowlatency-next']
