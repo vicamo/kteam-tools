@@ -759,7 +759,7 @@ defaults:
                 #    type: lrg
                 #linux-restricted-signatures-oracle:
                 #    type: lrs
-            owner: juergh
+            owner: kmously
             derived-from: [ '22.10', 'linux' ]
             supported: false
             development: true
@@ -3645,7 +3645,7 @@ defaults:
                 linux-restricted-signatures-oracle-5.15:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: juergh
             backport: true
             derived-from: [ '22.04', 'linux-oracle' ]
             swm:
