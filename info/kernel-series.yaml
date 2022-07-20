@@ -4410,6 +4410,37 @@ defaults:
             swm:
                 block-parent-release: true
 
+        linux-mtk:
+            routing:
+                <<: [*routing-table-security-build, *routing-table-security-proposed]
+                build:
+                    - ['ppa:baoshan-ppa/ubuntu/baoshan-build', 'Release']
+                proposed:
+                    - ['ppa:baoshan-ppa/ubuntu/baoshan-proposed', 'Release']
+                updates:
+                    - ['ppa:baoshan-ppa/ubuntu/baoshan-updates', 'Release']
+            packages:
+                linux-mtk:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-mtk', 'master-next']
+                linux-meta-mtk:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-meta-mtk']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            derived-from: [ '20.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            snaps:
+                mediatek-aiot-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/kernel-snaps-uc20']
+                    gated: false
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: [ '20' ]
+                    promote-to: 'stable'
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
