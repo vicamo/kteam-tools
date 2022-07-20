@@ -562,7 +562,7 @@ defaults:
                 flavours:
                     realtime:
                         arches: ['amd64', 'arm64']        # test system arch names
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
             variants: ['--']
@@ -1026,7 +1026,7 @@ defaults:
                 flavours:
                     realtime:
                         arches: ['amd64', 'arm64']        # test system arch names
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-uc22-realtime:
             routing: realtime-uc22
@@ -1572,7 +1572,7 @@ defaults:
                     nvidia-tegra-rt:
                         arches: ['arm64']
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
 # 21.10 (Impish Indri)
 '21.10':
