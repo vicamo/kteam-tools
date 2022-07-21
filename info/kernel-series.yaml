@@ -3807,7 +3807,7 @@ defaults:
             owner: lukenow
             development: false
             backport: true
-            derived-from: ['21.10', 'linux-riscv']
+            derived-from: ['22.04', 'linux-riscv']
             swm:
                 kernel-testing: true
             testing:
