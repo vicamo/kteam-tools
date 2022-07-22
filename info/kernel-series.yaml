@@ -4253,6 +4253,36 @@ defaults:
             swm:
                 block-parent-release: true
 
+        linux-nvidia-tegra-5.15:
+            routing: nvidia-tegra
+            variants: ['--']
+            packages:
+                linux-nvidia-tegra-5.15:
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-focal-5.15', 'main-next']
+                linux-meta-nvidia-tegra-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-focal-5.15', 'main']
+                linux-signed-nvidia-tegra-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-focal-5.15', 'main']
+            owner: ian-may
+            development: true
+            supported: false
+            private: true
+            backport: true
+            derived-from: [ '22.04', 'linux-nvidia-tegra' ]
+            swm:
+                kernel-testing: false
+            testing:
+                flavours:
+                    nvidia-tegra:
+                        arches: ['arm64']
+                        clouds: ['metal']
+                    nvidia-tegra-rt:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+
 # 19.10 (Eoan Ermine)
 '19.10':
     codename: eoan
