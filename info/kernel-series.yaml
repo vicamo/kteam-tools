@@ -5814,11 +5814,8 @@ defaults:
                 kernel-testing: true
                 gke-releases:
                     - '1.19'
-                gke-nvidia-packages:
-                    - gke-d1903-0-amd64
                 nvidia-releases:
                     - 450
-                nvidia-driver-legacy-naming: true
             testing:
                 flavours:
                     gke:
