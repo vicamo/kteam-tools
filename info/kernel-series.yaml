@@ -260,6 +260,16 @@ defaults:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-release', 'Release']
+        imx-honeywell:
+            <<: [*routing-table-security-build, *routing-table-security-proposed]
+            build:
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
+            proposed:
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed', 'Release']
+            updates:
+                - ['ppa:canonical-hwe-imx/ubuntu/honeywell-release', 'Release']
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -4287,6 +4297,48 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+
+        linux-imx-honeywell:
+            routing: imx-honeywell
+            packages:
+                linux-imx-honeywell:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-imx-honeywell', 'master-next']
+                linux-meta-imx-honeywell:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-meta-imx-honeywell']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            derived-from: [ '20.04', 'linux-imx']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+
+        linux-uc20-imx-honeywell:
+            routing: imx-honeywell
+            packages:
+                linux-uc20-imx-honeywell:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-uc20-imx-honeywell', 'master-next']
+                linux-signed-uc20-imx-honeywell:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-signed-uc20-imx-honeywell']
+            supported: false
+            owner: wenchien
+            development: true
+            private: true
+            snaps:
+                hbt-imx-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/kernel-snaps-uc20']
+                gated: false
+                promote-to: 'stable'
+                qa: true
+                hw-cert: false
+                publish-to:
+                    arm64: ['latest']
+                    armhf: ['latest']
+            derived-from: [ '20.04', 'linux-imx-honeywell']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
 # 19.10 (Eoan Ermine)
 '19.10':
