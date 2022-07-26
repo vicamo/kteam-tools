@@ -2417,7 +2417,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: smb
             development: false
             backport: true
@@ -2562,7 +2562,7 @@ defaults:
                 linux-signed-intel-5.13:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel/+git/focal', 'intel-5.13']
-            supported: true
+            supported: false
             owner: jianhuilee
             derived-from: [ '20.04', 'linux-hwe-5.13' ]
             swm:
@@ -2970,7 +2970,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: true
             derived-from: [ '21.10', 'linux-aws' ]
@@ -3220,7 +3220,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: true
             derived-from: [ '21.10', 'linux-azure' ]
@@ -3377,7 +3377,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: jsalisbury
             backport: true
             derived-from: [ '21.10', 'linux-gcp' ]
@@ -3676,7 +3676,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle-5.13:
                     type: lrs
-            supported: true
+            supported: false
             owner: jsalisbury
             backport: true
             derived-from: [ '21.10', 'linux-oracle' ]
