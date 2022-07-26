@@ -1394,8 +1394,8 @@ defaults:
                     qa: false
                     hw-cert: true
                     publish-to:
-                        amd64: ['22']
-                        arm64: ['22']
+                        amd64: ['22', '22-hwe']
+                        arm64: ['22', '22-hwe']
                         armhf: ['22']
             derived-from: [ '22.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
