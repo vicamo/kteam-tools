@@ -4940,16 +4940,6 @@ defaults:
             owner: kleber-souza
             backport: true
             derived-from: [ '20.04', 'linux' ]
-            snaps:
-                pc-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc-hwe']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['18-hwe']
             swm:
                 kernel-testing: true
             testing:
