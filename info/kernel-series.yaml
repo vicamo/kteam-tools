@@ -1579,7 +1579,7 @@ defaults:
 '21.10':
     codename: impish
     development: false
-    supported: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux:
@@ -1601,7 +1601,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: true
+            supported: false
             owner: kleber-souza
             swm:
                 kernel-testing: true
@@ -1626,7 +1626,7 @@ defaults:
                 linux-meta-raspi:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/impish']
-            supported: true
+            supported: false
             owner: juergh
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1676,7 +1676,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: false
             derived-from: [ '21.10', 'linux' ]
@@ -1707,7 +1707,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            supported: true
+            supported: false
             owner: timg-tpi
             backport: false
             derived-from: [ '21.10', 'linux' ]
@@ -1740,7 +1740,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            supported: true
+            supported: false
             owner: ztahenakos
             backport: false
             derived-from: [ '21.10', 'linux' ]
@@ -1764,7 +1764,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/impish']
-            supported: true
+            supported: false
             owner: lukenow
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1794,7 +1794,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oracle:
                     type: lrs
-            supported: true
+            supported: false
             owner: jsalisbury
             backport: false
             derived-from: [ '21.10', 'linux' ]
@@ -1815,7 +1815,7 @@ defaults:
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/impish']
-            supported: true
+            supported: false
             owner: kleber-souza
             derived-from: [ '21.10', 'linux' ]
             swm:
@@ -1852,7 +1852,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: true
+            supported: false
             owner: smb
             swm:
                 kernel-testing: true
@@ -2099,7 +2099,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            supported: true
+            supported: false
             swm:
                 kernel-testing: true
             testing:
