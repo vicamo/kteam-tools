@@ -44,6 +44,11 @@ class SwmWorker():
         key = 'announce.' + payload['destination']['type']
         self.mq.publish(key, payload)
 
+    def send_complete(self, payload):
+        payload["type"] += "-complete"
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload)
+
     # _handler
     #
     def _handler(self, channel, method, properties, payload):
@@ -90,7 +95,6 @@ class SwmWorker():
 
                     #self._announce('cod-job-stop', 'finished ' + job_tag)
 
-
                 except OSError:
                     self.log.error("work request failed")
 
@@ -102,6 +106,9 @@ class SwmWorker():
                     self.log.error(traceback.format_exc())
 
                     #self._announce('cod-job-stop', 'exploded ' + job_tag)
+
+                # Indicate this is complete.
+                self.send_complete(payload)
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
