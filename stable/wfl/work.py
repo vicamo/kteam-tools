@@ -3,6 +3,7 @@
 import sys
 import os
 import json
+import uuid
 
 from ktl.msgq import MsgQueueService, MsgQueueCredentials
 
@@ -36,7 +37,12 @@ class SwmWork:
     def send_shank(self, tracker, scanned=None, priority=None):
         if priority is None:
             priority = 4
-        payload = {"type": "shank", "tracker": tracker, "scanned": str(scanned)}
+        payload = {
+            "type": "shank",
+            "tracker": tracker,
+            "scanned": str(scanned),
+            "id": uuid.uuid4().hex,
+        }
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
 
