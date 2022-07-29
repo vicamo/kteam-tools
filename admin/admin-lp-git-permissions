@@ -408,6 +408,7 @@ def add_primary(repo_set):
                 people.append('/~canonical-kernel-hwe-committers')
             if is_nvidia(thing.source):
                 people.append('/~nvidia-kernel-committers')
+                repo_rules.add_subscriptions(['/~nvidia-kernel-team'])
             #admins = 'owner'
             #if series.esm or package.name.endswith('ibm-gt'):
             #    admins = '/~canonical-kernel-repo-admins'
