@@ -14,9 +14,10 @@ from subprocess                         import Popen, PIPE, STDOUT, CalledProces
 from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
 
 from wfl.secrets import Secrets
+from wfl.work import SwmWorkCmds
 
 
-class SwmWorker():
+class SwmWorker(SwmWorkCmds):
 
     def __init__(self, args):
         '''
@@ -42,11 +43,6 @@ class SwmWorker():
 
     def deliver_to(self, payload):
         key = 'announce.' + payload['destination']['type']
-        self.mq.publish(key, payload)
-
-    def send_complete(self, payload):
-        payload["type"] += "-complete"
-        key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload)
 
     # _handler

@@ -10,22 +10,7 @@ from ktl.msgq import MsgQueueService, MsgQueueCredentials
 from wfl.secrets import Secrets
 
 
-class SwmWork:
-    def __init__(self, local=False, config=None):
-        if config is None:
-            raise ValueError("config required")
-
-        self.secrets = Secrets(os.path.expanduser(config))
-
-        # Pass in credentials if we have them, else use the limited defaults.
-        hostname = self.secrets.get('amqp-hostname')
-        username = self.secrets.get('amqp-username')
-        password = self.secrets.get('amqp-password')
-        credentials = None
-        if username is not None and password is not None:
-            credentials = MsgQueueCredentials(username, password)
-
-        self.mq = MsgQueueService(service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60)
+class SwmWorkCmds:
 
     def send_admin_quit(self, name, priority=None):
         if priority is None:
@@ -52,3 +37,27 @@ class SwmWork:
         payload = {"type": "dependants"}
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
+
+    def send_complete(self, payload):
+        payload["type"] += "-complete"
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload)
+
+
+class SwmWork(SwmWorkCmds):
+
+    def __init__(self, local=False, config=None):
+        if config is None:
+            raise ValueError("config required")
+
+        self.secrets = Secrets(os.path.expanduser(config))
+
+        # Pass in credentials if we have them, else use the limited defaults.
+        hostname = self.secrets.get('amqp-hostname')
+        username = self.secrets.get('amqp-username')
+        password = self.secrets.get('amqp-password')
+        credentials = None
+        if username is not None and password is not None:
+            credentials = MsgQueueCredentials(username, password)
+
+        self.mq = MsgQueueService(service="swm", local=local, host=hostname, credentials=credentials, exchange="swm", heartbeat=60)
