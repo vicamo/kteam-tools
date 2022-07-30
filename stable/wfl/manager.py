@@ -534,6 +534,7 @@ class WorkflowManager():
             # If we had anything todo, ask for a rescan at low-priority.
             cinfo("queuing dependants")
             work.send_dependants(priority=priority)
+            work.send_barrier(priority=priority)
 
     # manage_payload
     #

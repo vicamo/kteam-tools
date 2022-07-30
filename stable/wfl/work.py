@@ -43,6 +43,13 @@ class SwmWorkCmds:
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload)
 
+    def send_barrier(self, priority=None):
+        if priority is None:
+            priority = 4
+        payload = {"type": "barrier"}
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload, priority=priority)
+
 
 class SwmWork(SwmWorkCmds):
 
