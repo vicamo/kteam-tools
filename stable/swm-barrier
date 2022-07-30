@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
+import logging
+import os
+import sys
+import time
+import traceback
+
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from subprocess                         import Popen, PIPE, STDOUT, CalledProcessError
+
+from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
+
+from wfl.secrets import Secrets
+from wfl.work import SwmWorkCmds
+
+
+class SwmBarrier(SwmWorkCmds):
+
+    def __init__(self, args):
+        '''
+        '''
+        self.args = args
+
+        self.log = logger
+
+        self.queue = args.queue
+        self.direct = self.queue + '--' + self.args.name
+
+        self.groups_wanted = set()
+        self.groups = []
+
+        self.wanted = set()
+        self.seen = set()
+
+    # _announce
+    #
+    def _announce(self, to, message):
+        message = to + " " + self.args.name + " " + message
+
+        destination = {'type': 'key', 'key': to}
+        message = {'subject': message}
+
+        payload = {'destination': destination, 'message': message}
+
+        self.deliver_to(payload)
+
+    def deliver_to(self, payload):
+        key = 'announce.' + payload['destination']['type']
+        self.mq.publish(key, payload)
+
+    # _handler
+    #
+    def _handler(self, channel, method, properties, payload):
+        self.log.info("handler payload={}".format(payload))
+        self.log.info("handler method={}".format(method))
+        self.log.info("handler properties={}".format(properties))
+
+        prefix = args.name.split('-')[-1]
+
+        try:
+            what = payload.get('type')
+            if what is None:
+                raise ValueError("invalid message")
+
+            if what == 'quit':
+                self.mq.listen_stop()
+
+            elif what == 'shank':
+                shank_id = payload.get('id')
+                self.wanted.add(shank_id)
+                self.groups_wanted.add(shank_id)
+                self.log.info("wanted={}".format(self.wanted))
+                self.log.info("seen={}".format(self.seen))
+
+            elif what == 'shank-complete':
+                shank_id = payload.get('id')
+                if shank_id in self.wanted:
+                    self.seen.add(shank_id)
+                    self.log.info("wanted={}".format(self.wanted))
+                    self.log.info("seen={}".format(self.seen))
+                else:
+                    self.log.info("skipping id={}".format(shank_id))
+
+            elif what == 'barrier':
+                self.groups.append(self.groups_wanted)
+                self.groups_wanted = set()
+
+        except Exception as e:
+            self.log.error("announcement failed: {}".format(str(e)))
+            self._announce('announce-control', 'exploded')
+            raise e
+
+        request_dependants = False
+
+        groups = []
+        for wanted in list(self.groups):
+            self.log.info("GROUP {} in {} = {}".format(wanted, self.seen, wanted.issubset(self.seen)))
+            if wanted.issubset(self.seen):
+                self.log.info("GROUP {} COMPLETE".format(wanted))
+                request_dependants = True
+            else:
+                groups.append(wanted)
+        self.groups = groups
+
+        if len(self.wanted) and self.wanted == self.seen:
+            self.log.info("QUEUE EMPTY")
+            self.wanted = set()
+            self.seen = set()
+            request_dependants = True
+
+        if request_dependants:
+            self.log.info("REQUESTING DEPENDANTS")
+            self.send_dependants()
+
+
+    def main(self):
+        '''
+        '''
+        retval = 1
+
+        try:
+            self.log.info("Starting")
+
+            # XXX: should this be by "name" in general.
+            self.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-swm-worker.yaml'))
+
+            # Pass in credentials if we have them, else use the limited defaults.
+            hostname = self.secrets.get('amqp-hostname')
+            username = self.secrets.get('amqp-username')
+            password = self.secrets.get('amqp-password')
+            credentials = None
+            if username is not None and password is not None:
+                credentials = MsgQueueCredentials(username, password)
+
+            self.mq = MsgQueueService(service='swm', local=self.args.local, host=hostname, credentials=credentials, exchange='swm', heartbeat_interval=60)
+
+            self._announce('announce-control', 'swm-worker start')
+
+            shared = ['swm.shank', 'swm.shank-complete', 'swm.barrier']
+            self.mq.listen_worker(self.queue, shared, handler=self._handler)
+            direct = ['direct.{}.swm.quit'.format(self.args.name),]
+            self.mq.listen_worker(self.direct, direct, handler=self._handler, auto_delete=True)
+
+            self.log.info("Listening")
+            self.mq.listen_start()
+            self._announce('announce-control', 'swm-worker quit')
+
+            self.mq.close()
+
+            self.log.info("Exiting")
+            retval = 0
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            self.log.error("Aborting ...")
+
+        return retval
+
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+SWM AMQP listener
+    '''
+    app_epilog = '''
+examples:
+    swm-barrier --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('--local', action='store_true', default=False, help='Assume we have sshuttle setup to the MQ server.')
+    parser.add_argument('--name', default=os.uname().nodename, help='Name of this instance in the admin domain')
+    parser.add_argument('--queue', default='swm-barrier', help='Name of the queue to use')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    #
+    logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
+    logger = logging.getLogger('app')
+    logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
+
+    app = SwmBarrier(args)
+    exit(app.main())
+
+
+# vi:set ts=4 sw=4 expandtab:
+
