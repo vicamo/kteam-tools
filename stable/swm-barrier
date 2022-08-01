@@ -179,8 +179,8 @@ examples:
     # If logging parameters were set on the command line, handle them
     # here.
     #
-    logging.basicConfig(format="%(levelname)05s %(name)s %(message)s")
-    logger = logging.getLogger('app')
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger('swm-barrier')
     logger.setLevel(level=logger.DEBUG if args.debug else logging.INFO)
 
     app = SwmBarrier(args)
