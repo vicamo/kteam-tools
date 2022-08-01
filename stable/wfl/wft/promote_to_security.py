@@ -88,7 +88,7 @@ class PromoteToSecurity(Promoter):
                 s.task.reason = 'Holding -- package in development blackout'
                 break
 
-            if not s._cycle_ready():
+            if not s._cycle_ready() and not s._kernel_manual_release():
                 s.task.reason = 'Holding -- cycle not ready to release'
                 break
 
