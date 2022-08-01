@@ -17,6 +17,44 @@ from wfl.secrets import Secrets
 from wfl.work import SwmWorkCmds
 
 
+class SwmBarrierGroup:
+
+    def __init__(self):
+        self.want = set()
+        self.seen = set()
+
+    @property
+    def nascent(self):
+        return len(self.want) == 0
+
+    @property
+    def complete(self):
+        return not self.nascent and self.want == self.seen
+
+    def add(self, ident):
+        self.want.add(ident)
+        logger.info("{} ADD {}".format(self, ident))
+
+    def offer(self, ident):
+        logger.info("{} OFFER {}".format(self, ident))
+        if ident not in self.want:
+            return False
+        self.seen.add(ident)
+        return True
+
+    def __str__(self):
+        if self.nascent:
+            return "GROUP<nascent>"
+        else:
+            return "GROUP<want={} seen={} complete={}>".format(self.want, self.seen, self.complete)
+
+    def __repr__(self):
+        if self.nascent:
+            return "GROUP<nascent>"
+        else:
+            return "GROUP<wants={} sees={} complete={}>".format(len(self.want), len(self.seen), self.complete)
+
+
 class SwmBarrier(SwmWorkCmds):
 
     def __init__(self, args):
@@ -30,7 +68,7 @@ class SwmBarrier(SwmWorkCmds):
         self.direct = self.queue + '--' + self.args.name
 
         # Wanted, Seen per group.
-        self.groups = [(set(), set())]
+        self.groups = [SwmBarrierGroup()]
 
     # _announce
     #
@@ -67,21 +105,20 @@ class SwmBarrier(SwmWorkCmds):
 
             elif what == 'shank':
                 shank_id = payload.get('id')
-                self.groups[-1][0].add(shank_id)
+                self.groups[-1].add(shank_id)
                 self.log.info("groups={}".format(self.groups))
 
             elif what == 'shank-complete':
                 shank_id = payload.get('id')
                 for group in self.groups:
-                    if shank_id in group[0]:
-                        group[1].add(shank_id)
+                    if group.offer(shank_id):
                         self.log.info("groups={}".format(self.groups))
                         break
                 else:
                     self.log.info("skipping id={}".format(shank_id))
 
             elif what == 'barrier':
-                self.groups.append((set(), set()))
+                self.groups.append(SwmBarrierGroup())
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
@@ -92,13 +129,12 @@ class SwmBarrier(SwmWorkCmds):
 
         groups = []
         for group in self.groups:
-            # An empty want is an as yet unclaimed group and should be
-            # ignored.
-            if len(group[0]) == 0:
+            if group.nascent:
+                groups.append(group)
                 continue
-            self.log.info("GROUP {} ready? {}".format(group, group[0] == group[1]))
-            if group[0] == group[1]:
-                self.log.info("GROUP {} COMPLETE".format(group))
+            self.log.info("{}".format(group))
+            if group.complete:
+                self.log.info("FLAGGING DEPENDANTS")
                 request_dependants = True
             else:
                 groups.append(group)
@@ -106,7 +142,7 @@ class SwmBarrier(SwmWorkCmds):
 
         if len(self.groups) == 0:
             self.log.info("QUEUE EMPTY")
-            self.groups = [(set(), set())]
+            self.groups = [SwmBarrierGroup()]
             request_dependants = True
 
         if request_dependants:
