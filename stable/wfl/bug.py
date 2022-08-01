@@ -60,18 +60,17 @@ class WorkflowBug():
 
     # __init__
     #
-    def __init__(s, lp, bugid=None, bug=None, manager=None):
+    def __init__(s, bugid=None, bug=None, manager=None):
         '''
         When instantiated the bug's title is processed to find out information about the
         related package. This information is cached.
         '''
-        s.lp = lp
         if bug is not None:
             s.lpbug = bug
 
         elif bugid is not None:
             try:
-                s.lpbug = s.lp.get_bug(bugid)
+                s.lpbug = ctx.lp.bugs[bugid]
             except KeyError:
                 s.is_valid = False
                 cdebug('Failed to get bug #%s' % bugid, 'red')
@@ -117,7 +116,7 @@ class WorkflowBug():
         s.check_is_valid()
         if not s.is_workflow:
             raise WorkflowBugError('Bug is not a workflow bug')
-        s.properties = s.lpbug.properties
+        ##s.properties = s.lpbug.properties
 
         # If this tracker is_closed drop out quietly and quickly.
         if s.is_gone:
@@ -341,7 +340,7 @@ class WorkflowBug():
         s._remove_live_tag()
         if s.tracker_modified:
             cinfo("Tracker modified, saving")
-            s.lpbug.lpbug.lp_save()
+            s.lpbug.lp_save()
             s.tracker_modified = False
 
     # close
@@ -414,12 +413,12 @@ class WorkflowBug():
         if s._master_bug is False:
             if s.is_derivative_package:
                 try:
-                    master = WorkflowBug(s.lp, s.master_bug_id)
+                    master = WorkflowBug(s.master_bug_id)
                     # check if our master is a duplicate, and if so follow the chain.
-                    duplicate_of = master.lpbug.lpbug.duplicate_of
+                    duplicate_of = master.lpbug.duplicate_of
                     if duplicate_of is not None:
                         cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, duplicate_of.id))
-                        master = WorkflowBug(s.lp, duplicate_of.id)
+                        master = WorkflowBug(duplicate_of.id)
                     error = None
 
                     if master.is_gone:
@@ -466,7 +465,7 @@ class WorkflowBug():
             return
         dup_id = dup_pointer.split()[1]
         try:
-            dup_wb = WorkflowBug(s.lp, dup_id)
+            dup_wb = WorkflowBug(dup_id)
         except WorkflowBugError:
             raise WorkflowBugError("invalid replaces pointer {}".dup_id)
 
@@ -499,9 +498,8 @@ class WorkflowBug():
         # If we deem this ready for duplication wack it.
         if not keep:
             cinfo("replaces={} detected duplicating {} to {}".format(dup_pointer, dup_wb.lpbug.id, s.lpbug.id))
-            # XXX: lpltk does not a allow access to the duplicates.
-            dup_wb.lpbug.lpbug.duplicate_of = s.lpbug.lpbug
-            dup_wb.lpbug.lpbug.lp_save()
+            dup_wb.lpbug.duplicate_of = s.lpbug
+            dup_wb.lpbug.lp_save()
 
             del s.bprops['replaces']
 
@@ -826,13 +824,13 @@ class WorkflowBug():
                 }
             assignee = s.tasks_by_name[taskname].assignee
             if assignee is not None:
-                task[taskname]['assignee'] = assignee.username
+                task[taskname]['assignee'] = assignee.name
                 # Record the overall owner if we have one.
                 if taskname == 'kernel-sru-workflow':
-                    owner = assignee.username
+                    owner = assignee.name
                 # XXX: lpltk does not expose `is_team` so just bodge it.
-                elif taskname == 'prepare-package' and assignee.username != 'canonical-kernel-team':
-                    owner_pp = assignee.username
+                elif taskname == 'prepare-package' and assignee.name != 'canonical-kernel-team':
+                    owner_pp = assignee.name
 
             # XXX: ownership of tasks should be more obvious, but this is
             # only needed while we have combo bugs in reality.
@@ -914,7 +912,7 @@ class WorkflowBug():
         s.is_gone = False
         s.is_purgable = False
         s.is_duplicate = s.lpbug.duplicate_of is not None
-        for t in s.lpbug.tasks:
+        for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
@@ -944,7 +942,7 @@ class WorkflowBug():
         if not cycle_complete:
             return
 
-        for task in s.lpbug.tasks:
+        for task in s.lpbug.bug_tasks:
             task_name       = task.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
@@ -959,12 +957,13 @@ class WorkflowBug():
         if not self.is_new:
             return
 
-        for t in self.lpbug.tasks:
+        for t in self.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
             if task_name in WorkflowBug.projects_tracked:
                 cinfo("accept_new: Triaged tracker now tracked flipping In Progress")
                 t.status = 'In Progress'
+                t.lp_save()
                 break
 
         self.check_is_valid()
@@ -983,7 +982,7 @@ class WorkflowBug():
 
         synthesise = set()
 
-        for t in s.lpbug.tasks:
+        for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
             if task_name.startswith(s.workflow_project):
@@ -1003,7 +1002,7 @@ class WorkflowBug():
         redo = False
         if 'sru-review' in tasks_by_name and 'new-review' not in tasks_by_name:
             cinfo("    new-review missing")
-            tasks_by_name['new-review'] = s.lpbug.lpbug.addTask(target='/kernel-sru-workflow/new-review')
+            tasks_by_name['new-review'] = s.lpbug.addTask(target='/kernel-sru-workflow/new-review')
             task_sr = tasks_by_name['sru-review']
             task_nr = tasks_by_name['new-review']
 
@@ -1016,7 +1015,7 @@ class WorkflowBug():
 
         if redo:
             cinfo('    Re-scanning bug tasks:', 'cyan')
-            for t in s.lpbug.tasks:
+            for t in s.lpbug.bug_tasks:
                 task_name       = t.bug_target_name
 
                 if task_name.startswith(s.workflow_project):
@@ -1329,7 +1328,7 @@ class WorkflowBug():
             cdebug('')
         else:
             cdebug('Adding comment to tracking bug')
-            s.lpbug.add_comment(body, subject)
+            s.lpbug.newMessage(content=body, subject=subject)
         cleave(s.__class__.__name__ + '.add_comment')
 
     # timestamp
@@ -1368,13 +1367,12 @@ class WorkflowBug():
     def workflow_duplicates(s):
         retval = []
 
-        # XXX: XXX: lpltk does NOT let me get to the duplicate list!?!?!?!
-        duplicates = s.lpbug.lpbug.duplicates
+        duplicates = s.lpbug.duplicates
         #duplicates = [ s.lp.get_bug('1703532') ]
         for dup in duplicates:
             cdebug("workflow_duplicates: checking {}".format(dup.id))
             try:
-                dup_wb = WorkflowBug(s.lp, dup.id)
+                dup_wb = WorkflowBug(dup.id)
             except WorkflowBugError as e:
                 cinfo("workflow_duplicates: duplicate {} threw a {} exception, ignored".format(dup.id, e.__class__.__name__))
                 for l in e.args:

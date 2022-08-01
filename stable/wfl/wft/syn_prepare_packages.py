@@ -94,7 +94,7 @@ class SynPreparePackages(TaskHandler):
                         every=timedelta(hours=24),
                     )
                 else:
-                    s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.username)
+                    s.task.reason = 'Ongoing -b Being cranked by: {}'.format(s.task.assignee.name)
             else:
                 building = False
                 state = 'Ongoing'

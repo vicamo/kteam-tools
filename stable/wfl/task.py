@@ -61,6 +61,7 @@ class WorkflowBugTask(object):
                 cinfo('    Task %s status changing from %s to %s' % (s.name, s.__status, val), 'yellow')
                 s.__modified = True
                 s.lp_task.status = val
+                s.lp_task.lp_save()
                 s.__status = None
         cleave(s.__class__.__name__ + '.status')
 

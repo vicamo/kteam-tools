@@ -2,10 +2,13 @@
 import os
 import json
 from wfl.log                                    import Clog, center, cleave, cdebug, cinfo, cerror
+from wfl.context                                import ctx
 from wfl.errors                                 import ShankError
-from .base                                      import TaskHandler
+
 from ktl.sru_report                             import SruReport
 from ktl.bug_spam                               import BugSpam
+
+from .base                                      import TaskHandler
 
 
 class BugSpamError(ShankError):
@@ -47,7 +50,7 @@ class VerificationTesting(TaskHandler):
             sru_report_cfg['archive-versions'] = False
             if Clog.debug:
                 sru_report_cfg['debug'] = 'core'
-            sru_report = json.loads(SruReport(cfg=sru_report_cfg, lp_service=s.lp.default_service).generate())
+            sru_report = json.loads(SruReport(cfg=sru_report_cfg, lp=s.lp).generate())
         except Exception as e:
             raise BugSpamError('Failed to generate sru-report: %s' % str(e))
 
@@ -109,7 +112,7 @@ class VerificationTesting(TaskHandler):
                     bug_spam_cfg['comment-text'] = f.read()
 
                 # feed the report to the bug spammer
-                BugSpam(cfg=bug_spam_cfg, lp_service=s.lp.default_service).spam()
+                BugSpam(cfg=bug_spam_cfg, lp=s.lp).spam()
             except Exception as e:
                 raise BugSpamError('Failed to spam bugs: %s' % str(e))
             except:
@@ -148,7 +151,7 @@ class VerificationTesting(TaskHandler):
         overall = {}
         for bug in sru_bugs:
             try:
-                lp_bug = self._lp.default_service.launchpad.bugs[bug]
+                lp_bug = self.lp.bugs[bug]
                 rls = self.bug.series
 
                 state = 'missing'

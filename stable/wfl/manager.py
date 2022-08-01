@@ -417,14 +417,14 @@ class WorkflowManager():
             if status_modified:
                 s.status_save(status_all)
 
-    @property
-    def lp(s):
-        if s._lp is None:
-            if s.test_mode is True:
-                s._lp = LaunchpadStub(s.args)
-            else:
-                s._lp = Launchpad(False)
-        return s._lp
+    #@property
+    #def lp(s):
+    #    if s._lp is None:
+    #        if s.test_mode is True:
+    #            s._lp = LaunchpadStub(s.args)
+    #        else:
+    #            s._lp = Launchpad(False)
+    #    return s._lp
 
     @property
     def buglist(s):
@@ -463,7 +463,7 @@ class WorkflowManager():
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
 
             for bugid in bugs:
-                lpbug = s.lp.default_service.get_bug(bugid)
+                lpbug = ctx.lp.bugs[bugid]
                 cinfo('    LP: #%s - %s' % (lpbug.id, lpbug.title), 'magenta')
                 retval[bugid] = lpbug.title
         elif not s.args.dependants_only:
@@ -473,7 +473,7 @@ class WorkflowManager():
                 search_tags_combinator = "All"
                 search_status          = ["Triaged", "In Progress", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
                 search_since           = datetime(year=2013, month=1, day=1)
-                lp_project = s.lp.default_service.projects[project]
+                lp_project = ctx.lp.projects[project]
                 tasks = lp_project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
                 for task in tasks:
@@ -489,7 +489,7 @@ class WorkflowManager():
     def initialise_context(self):
         # We use lambda here to convert the expression into a callable
         # so that we can delay instantiating it until first use.
-        ctx.lp = lambda : self.lp.default_service.launchpad # XXX: this is the raw connection.
+        ctx.lp = lambda : Launchpad(False).default_service.launchpad # XXX: this is the raw connection.
         ctx.sc = lambda : SruCycle()
         ctx.ks = lambda : KernelSeries()
 
@@ -543,6 +543,11 @@ class WorkflowManager():
             cinfo("queuing barrier")
             work.send_barrier(priority=priority)
 
+    # bug_url
+    #
+    def bug_url(s, bugid):
+        return "https://bugs.launchpad.net/bugs/" + bugid
+
     # manage_payload
     #
     def manage_payload(s):
@@ -586,7 +591,7 @@ class WorkflowManager():
                     bugs_scanned += 1
                     with cinstance("LP#" + bugid), s.lock_bug(bugid):
                         cinfo('')
-                        cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.lp.bug_url(bugid)))
+                        cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.bug_url(bugid)))
 
                         buglist_rescan += s.crank(bugid)
 
@@ -655,12 +660,12 @@ class WorkflowManager():
                     cinfo('    LP: #{} (already scanned {} {})'.format(bugid, validator, scanned), 'magenta')
                     return []
 
-            lpbug = s.lp.default_service.get_bug(bugid)
+            lpbug = ctx.lp.bugs[bugid]
             if lpbug is None:
                 cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
                 s.status_set(bugid, None)
                 raise WorkflowBugError('is invalid, skipping (and dropping)')
-            bug = WorkflowBug(s.lp.default_service, bug=lpbug, manager=s)
+            bug = WorkflowBug(bug=lpbug, manager=s)
             if bug.error is not None:
                 raise bug.error
             if lpbug.duplicate_of is not None:
@@ -777,21 +782,14 @@ class WorkflowManager():
 
         # Determine this bugs project.
         #
-        for task in bug.lpbug.tasks:
-            task_name = task.bug_target_name
-            if task_name in WorkflowBug.projects_tracked:
-                s.projectname = task_name
-                break
+        s.projectname = bug.workflow_project
 
         retval = False
         for workflow_task_name in sorted(bug.tasks_by_name):
             task = bug.tasks_by_name[workflow_task_name]
             cinfo('')
-            username = task.assignee.username if task.assignee is not None else None
+            username = task.assignee.name if task.assignee is not None else None
             cinfo("        %-25s  %15s  %10s  %s (%s)" % (task.name, task.status, task.importance, username, workflow_task_name), 'magenta')
-
-            therest = task_name[len(s.projectname) + 1:].strip()
-            task_name = therest
 
             if workflow_task_name not in s._task_map:
                 task.reason = 'Stalled -- unknown workflow task'
@@ -799,7 +797,7 @@ class WorkflowManager():
                 continue
 
             try:
-                cls = s._task_map[workflow_task_name](s.lp, task, bug)
+                cls = s._task_map[workflow_task_name](ctx.lp, task, bug)
                 if cls.evaluate_status(task.status) and not s.args.dryrun:
                     retval = True
                     cinfo('        True')
