@@ -29,11 +29,8 @@ class SwmBarrier(SwmWorkCmds):
         self.queue = args.queue
         self.direct = self.queue + '--' + self.args.name
 
-        self.groups_wanted = set()
-        self.groups = []
-
-        self.wanted = set()
-        self.seen = set()
+        # Wanted, Seen per group.
+        self.groups = [(set(), set())]
 
     # _announce
     #
@@ -70,23 +67,21 @@ class SwmBarrier(SwmWorkCmds):
 
             elif what == 'shank':
                 shank_id = payload.get('id')
-                self.wanted.add(shank_id)
-                self.groups_wanted.add(shank_id)
-                self.log.info("wanted={}".format(self.wanted))
-                self.log.info("seen={}".format(self.seen))
+                self.groups[-1][0].add(shank_id)
+                self.log.info("groups={}".format(self.groups))
 
             elif what == 'shank-complete':
                 shank_id = payload.get('id')
-                if shank_id in self.wanted:
-                    self.seen.add(shank_id)
-                    self.log.info("wanted={}".format(self.wanted))
-                    self.log.info("seen={}".format(self.seen))
+                for group in self.groups:
+                    if shank_id in group[0]:
+                        group[1].add(shank_id)
+                        self.log.info("groups={}".format(self.groups))
+                        break
                 else:
                     self.log.info("skipping id={}".format(shank_id))
 
             elif what == 'barrier':
-                self.groups.append(self.groups_wanted)
-                self.groups_wanted = set()
+                self.groups.append((set(), set()))
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
@@ -96,19 +91,22 @@ class SwmBarrier(SwmWorkCmds):
         request_dependants = False
 
         groups = []
-        for wanted in list(self.groups):
-            self.log.info("GROUP {} in {} = {}".format(wanted, self.seen, wanted.issubset(self.seen)))
-            if wanted.issubset(self.seen):
-                self.log.info("GROUP {} COMPLETE".format(wanted))
+        for group in self.groups:
+            # An empty want is an as yet unclaimed group and should be
+            # ignored.
+            if len(group[0]) == 0:
+                continue
+            self.log.info("GROUP {} ready? {}".format(group, group[0] == group[1]))
+            if group[0] == group[1]:
+                self.log.info("GROUP {} COMPLETE".format(group))
                 request_dependants = True
             else:
-                groups.append(wanted)
+                groups.append(group)
         self.groups = groups
 
-        if len(self.wanted) and self.wanted == self.seen:
+        if len(self.groups) == 0:
             self.log.info("QUEUE EMPTY")
-            self.wanted = set()
-            self.seen = set()
+            self.groups = [(set(), set())]
             request_dependants = True
 
         if request_dependants:
