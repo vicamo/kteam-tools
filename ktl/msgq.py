@@ -6,6 +6,10 @@ import pika
 #
 class MsgQueue(object):
 
+    ACK = object()
+    REJECT = object()
+    REQUEUE = object()
+
     # __init__
     #
     def __init__(s, address='162.213.33.247', exchange='kernel', exchange_type='topic', heartbeat_interval=None, supports_global_qos=False, local=False, **kwargs):
@@ -65,11 +69,17 @@ class MsgQueue(object):
             if isinstance(body, bytes):
                 body = body.decode('utf-8')
             payload = json.loads(body)
+            ack = None
             if handler_function is not None:
                 handler_function(payload)
             if handler is not None:
-                handler(channel, method, properties, payload)
-            channel.basic_ack(method.delivery_tag)
+                ack = handler(channel, method, properties, payload)
+            if ack is s.REJECT:
+                channel.basic_reject(method.delivery_tag, requeue=False)
+            elif ack is s.REQUEUE:
+                channel.basic_reject(method.delivery_tag, requeue=True)
+            else:
+                channel.basic_ack(method.delivery_tag)
 
         if s.supports_global_qos:
             s.channel.basic_qos(prefetch_count=1, global_qos=True)
