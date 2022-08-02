@@ -54,6 +54,7 @@ class SwmWorker(SwmWorkCmds):
 
         prefix = args.name.split('-')[-1]
 
+        ack = MsgQueueService.ACK
         try:
             what = payload.get('type')
             if what is None:
@@ -63,6 +64,7 @@ class SwmWorker(SwmWorkCmds):
                 self.mq.listen_stop()
 
             elif what in ("shank", "dependants"):
+                ack = MsgQueueService.REQUEUE
                 cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only"]
 
                 if what == "shank":
@@ -89,6 +91,9 @@ class SwmWorker(SwmWorkCmds):
                         self.mq.connection.process_data_events()
                     self.log.info("Complete {} res={}".format(cmd, res) )
 
+                    if res == 0:
+                        ack = MsgQueueService.ACK
+
                     #self._announce('cod-job-stop', 'finished ' + job_tag)
 
                 except OSError:
@@ -104,12 +109,15 @@ class SwmWorker(SwmWorkCmds):
                     #self._announce('cod-job-stop', 'exploded ' + job_tag)
 
                 # Indicate this is complete.
-                self.send_complete(payload)
+                if ack is MsgQueueService.ACK:
+                    self.send_complete(payload)
 
         except Exception as e:
             self.log.error("announcement failed: {}".format(str(e)))
             self._announce('announce-control', 'exploded')
             raise e
+
+        return ack
 
 
     def main(self):
