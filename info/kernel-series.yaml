@@ -3068,6 +3068,11 @@ defaults:
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: false
+            testing:
+                flavours:
+                    azure-cvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
             invalid-tasks:
               - certification-testing
               - security-signoff
