@@ -127,6 +127,8 @@ class WorkflowBugTask(object):
     #
     def reason_state(s, ok_state, acceptable):
         task_start = s.lp_task.date_left_new
+        if task_start is None:
+            return 'Stalled'
         now = datetime.now(timezone.utc)
         cdebug("{} stall check {} {}".format(s.name, now, now - task_start, now - task_start > acceptable))
         state = ok_state
