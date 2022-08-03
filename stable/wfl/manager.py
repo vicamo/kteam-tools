@@ -17,8 +17,7 @@ from ktl.sru_cycle                      import SruCycle
 from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
 from .log                               import center, cleave, cdebug, cinfo, cerror, centerleave, cinstance
-from .launchpad                         import Launchpad
-from .launchpad_stub                    import LaunchpadStub
+from .launchpad                         import LaunchpadDirect
 from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
 from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
@@ -489,7 +488,7 @@ class WorkflowManager():
     def initialise_context(self):
         # We use lambda here to convert the expression into a callable
         # so that we can delay instantiating it until first use.
-        ctx.lp = lambda : Launchpad(False).default_service.launchpad # XXX: this is the raw connection.
+        ctx.lp = lambda : LaunchpadDirect.login_application('swm-engine')
         ctx.sc = lambda : SruCycle()
         ctx.ks = lambda : KernelSeries()
 
