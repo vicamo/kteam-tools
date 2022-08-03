@@ -24,9 +24,13 @@ from ktl.log                            import cdebug, cerror
 class SruReport:
     # __init__
     #
-    def __init__(self, cfg={}, lp_service=None):
+    def __init__(self, cfg={}, lp_service=None, lp=None):
         self.cfg = cfg
-        self.lp_service = lp_service
+
+        if lp_service is not None:
+            self.lp = lp_service.launchpad
+        else:
+            self.lp = lp
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
         self.ports_root   = 'http://ports.ubuntu.com/ubuntu-ports'
@@ -57,9 +61,9 @@ class SruReport:
         self.changelog_bug_pattern = re.compile(r'(?:lp(?::| |#)+|href="/bugs/)([0-9]+)')
         self.published_date_pattern = re.compile(r'Published.*\n.*on ([-0-9]+)')
 
-        if self.lp_service is None:
+        if self.lp is None:
             self.cfg['launchpad_client_name'] = 'kernel-team-sru-report'
-            self.lp_service = LaunchpadService(self.cfg)
+            self.lp = LaunchpadService(self.cfg).launchpad
 
         if self.cfg['archive-versions']:
             ar = Archive()
@@ -262,7 +266,7 @@ class SruReport:
                             self._dbg('core', "        bug: '%s'" % (bug))
                             results['releases'][rls][pkg]['bugs'][bug] = {}
                             try:
-                                lp_bug = self.lp_service.get_bug(bug)
+                                lp_bug = self.lp.bugs[bug]
                                 state = 'missing'
                                 if   'kernel-tracking-bug'          in lp_bug.tags: state = 'release-tracker'
                                 elif 'kernel-release-tracker'       in lp_bug.tags: state = 'release-tracker'
