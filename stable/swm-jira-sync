@@ -618,12 +618,12 @@ if __name__ == '__main__':
 
             if key_del is not None:
                 tag_del = 'kernel-jira-issue-' + key_del.lower()
-                print("LP #{} -- unlinking {}".format(bug_id, tag_del, " (noop)" if tag_del not in tags else ""))
+                print("LP #{} -- unlinking {}{}".format(bug_id, tag_del, " (noop)" if tag_del not in tags else ""))
                 if tag_del in tags:
                     tags.remove(tag_del)
 
             tag_add = 'kernel-jira-issue-' + key_add.lower()
-            print("LP #{} -- linking {}".format(bug_id, tag_add, " (noop)" if tag_add in tags else ""))
+            print("LP #{} -- linking {}{}".format(bug_id, tag_add, " (noop)" if tag_add in tags else ""))
             if tag_add not in tags:
                 tags.append(tag_add)
 
