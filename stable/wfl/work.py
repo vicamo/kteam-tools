@@ -31,6 +31,17 @@ class SwmWorkCmds:
         key = "swm.{}".format(payload["type"])
         self.mq.publish(key, payload, priority=priority)
 
+    def send_instantiate(self, tracker, scanned=None, priority=None):
+        if priority is None:
+            priority = 4
+        payload = {
+            "type": "instantiate",
+            "tracker": tracker,
+            "id": uuid.uuid4().hex,
+        }
+        key = "swm.{}".format(payload["type"])
+        self.mq.publish(key, payload, priority=priority)
+
     def send_dependants(self, priority=None):
         if priority is None:
             priority = 4
