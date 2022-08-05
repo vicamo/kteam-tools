@@ -6,9 +6,12 @@
 #
 
 import os
+import logging
 import re
 import sys
-from logging                            import basicConfig
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from contextlib                         import contextmanager
+from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 
 import yaml
 
@@ -200,10 +203,49 @@ class TrackerProduction:
         for bug_id, bug in sorted(bugs.items()):
             self.instantiate(bug_id, bug)
 
-if __name__ == '__main__':
-    log_format = "%(levelname)05s - %(message)s"
-    basicConfig(level='DEBUG', format=log_format)
-    Clog.color = False
+    @contextmanager
+    def lock_bug(self, what, block=True):
+        with open("swm.lock", "w") as lockfd:
+            mode = LOCK_EX
+            if block is False:
+                mode |= LOCK_NB
+            lockf(lockfd, mode, 1, int(what))
+            yield
+            lockf(lockfd, LOCK_UN, 1, int(what))
 
-    line = TrackerProduction('kernel-sru-workflow')
-    line.instantiate_all()
+    def instantiate_one(self, bug_id):
+        try:
+            with self.lock_bug(bug_id, block=False):
+                bug = self.lp.bugs[bug_id]
+                self.instantiate(bug_id, bug)
+        except BlockingIOError:
+            cinfo("INSTANTIATE {} already in-progress, skipped".format(bug_id))
+
+
+if __name__ == '__main__':
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+SWM tracker instantiator
+    '''
+    app_epilog = '''
+examples:
+    swm-instantiate --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('trackers', nargs="*", help='Trackers to scan')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+    logger = logging.getLogger('swm-instantiate')
+    logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
+
+    app = TrackerProduction('kernel-sru-workflow')
+    if len(args.trackers) == 0:
+        app.instantiate_all()
+    else:
+        for tracker in args.trackers:
+            app.instantiate_one(tracker)
