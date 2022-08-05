@@ -173,7 +173,7 @@ class SwmBarrier(SwmWorkCmds):
 
             self._announce('announce-control', 'swm-worker start')
 
-            shared = ['swm.shank', 'swm.shank-complete', 'swm.barrier']
+            shared = ['swm.shank', 'swm.shank-complete', 'swm.instantiate', 'swm.instantiate-complete', 'swm.barrier']
             self.mq.listen_worker(self.queue, shared, handler=self._handler)
             direct = ['direct.{}.swm.quit'.format(self.args.name),]
             self.mq.listen_worker(self.direct, direct, handler=self._handler, auto_delete=True)
