@@ -63,19 +63,24 @@ class SwmWorker(SwmWorkCmds):
             if what == 'quit':
                 self.mq.listen_stop()
 
-            elif what in ("shank", "dependants"):
+            elif what in ("shank", "dependants", "instantiate"):
                 ack = MsgQueueService.REQUEUE
-                cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only"]
 
                 if what == "shank":
                     tracker = payload.get('tracker')
                     if tracker is None:
                         raise ValueError("invalid shank message")
                     scanned = payload.get('scanned')
-                    cmd += [tracker + "@" + scanned]
+                    cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only", tracker + "@" + scanned]
 
                 elif what == "dependants":
-                    cmd += ["--dependants-only"]
+                    cmd = [os.path.join(os.path.dirname(__file__), "swm-run"), "--log-prefix", prefix + ":", "--queue-only", "--dependants-only"]
+
+                elif what == "instantiate":
+                    tracker = payload.get('tracker')
+                    if tracker is None:
+                        raise ValueError("invalid shank message")
+                    cmd = [os.path.join(os.path.dirname(__file__), "swm-instantiate"), tracker]
 
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
@@ -144,7 +149,7 @@ class SwmWorker(SwmWorkCmds):
             self._announce('announce-control', 'swm-worker start')
 
             q_args = {'x-max-priority': 7}
-            shared = ['swm.shank', 'swm.dependants']
+            shared = ['swm.shank', 'swm.dependants', 'swm.instantiate']
             self.mq.listen_worker(self.queue, shared, handler=self._handler, queue_arguments=q_args)
             direct = ['direct.{}.swm.quit'.format(self.args.name),]
             self.mq.listen_worker(self.direct, direct, handler=self._handler, queue_arguments=q_args, auto_delete=True)
