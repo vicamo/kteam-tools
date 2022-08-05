@@ -34,6 +34,7 @@ from wfl.launchpad import LaunchpadDirect
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
 from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
+from wfl.work import SwmWork
 
 
 class MonitorIncompatible(Exception):
@@ -897,11 +898,13 @@ if __name__ == '__main__':
 
     if len(changed) > 0:
         cmd_before = perf_counter()
-        cmd = ['./swm-cron', '--queue-direct'] + list(changed)
-        command = Popen(cmd)
-        print("COMMAND STARTED", command.pid)
-        sys.stdout.flush()
-        status = command.wait()
+        ss = factory.ss
+        swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
+        for cmd, tracker in changed:
+            if cmd == 'shank':
+                scanned = ss.trackers.get(bugid,{}).get('manager', {}).get('time-scanned')
+                swm_work.send_shank(tracker, scanned=scanned)
+        swm_work.send_barrier()
         cmd_after = perf_counter()
         print("COMMAND COMPLETE rc={} time={} wall={}".format(status, cmd_after - cmd_before, time()))
         if status != 0:
