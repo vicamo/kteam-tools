@@ -23,6 +23,7 @@ from ktl.workflow import Workflow, DefaultAssigneeMissing
 from lazr.restfulclient.errors import BadRequest
 from wfl.log import Clog, cdebug, cinfo, cerror, cwarn, center, cleave
 from wfl.launchpad import LaunchpadDirect
+from wfl.work import SwmWork
 
 
 class TrackerProduction:
@@ -213,11 +214,16 @@ class TrackerProduction:
             yield
             lockf(lockfd, LOCK_UN, 1, int(what))
 
+    def request_shank(self, bug_id):
+        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+        work.send_shank(bug_id, priority=3)
+
     def instantiate_one(self, bug_id):
         try:
             with self.lock_bug(bug_id, block=False):
                 bug = self.lp.bugs[bug_id]
                 self.instantiate(bug_id, bug)
+                self.request_shank(bug_id)
         except BlockingIOError:
             cinfo("INSTANTIATE {} already in-progress, skipped".format(bug_id))
 
