@@ -116,6 +116,12 @@ class TrackerProduction:
         for lp_task in lp_bug.bug_tasks:
             lp_tasks[lp_task.target.self_link] = lp_task
 
+        # Check if we are actually already complete.
+        lp_task = lp_tasks[self.project.self_link]
+        if lp_task.status != 'Confirmed':
+            cinfo("Already complete.")
+            return False
+
         # First add all of the required workflow tasks
         for wf_task in self.project.series_collection:
             cinfo(wf_task)
@@ -168,7 +174,10 @@ class TrackerProduction:
                 except BadRequest:
                     lp_package = lp_series.getSourcePackage(name='linux')
                     cdebug("    failed, adding: {}".format(lp_package.self_link))
-                    lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+                    try:
+                        lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+                    except BadRequest:
+                        pass
 
             if lp_package is not None:
                 lp_task = lp_tasks.get(lp_package.self_link)
@@ -188,6 +197,7 @@ class TrackerProduction:
         cdebug("liven workflow task")
 
         self.lp_task_update(lp_task, status='Triaged', importance='Medium')
+        return True
 
     def instantiate_all(self):
         bugs = {}
@@ -222,8 +232,8 @@ class TrackerProduction:
         try:
             with self.lock_bug(bug_id, block=False):
                 bug = self.lp.bugs[bug_id]
-                self.instantiate(bug_id, bug)
-                self.request_shank(bug_id)
+                if self.instantiate(bug_id, bug):
+                    self.request_shank(bug_id)
         except BlockingIOError:
             cinfo("INSTANTIATE {} already in-progress, skipped".format(bug_id))
 
@@ -248,6 +258,8 @@ examples:
     logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
     logger = logging.getLogger('swm-instantiate')
     logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
+
+    Clog.color = False
 
     app = TrackerProduction('kernel-sru-workflow')
     if len(args.trackers) == 0:
