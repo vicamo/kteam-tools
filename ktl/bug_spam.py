@@ -11,13 +11,17 @@ from ktl.log                            import cwarn, cdebug
 class BugSpam:
     # __init__
     #
-    def __init__(self, cfg, lp_service=None):
+    def __init__(self, cfg, lp_service=None, lp=None):
         self.cfg = cfg
 
-        if lp_service is not None:
-            self.lp_service = lp_service
+        if lp is not None:
+            self.lp = lp
+
+        elif lp_service is not None:
+            self.lp = lp_service.default_service.launchpad
+
         else:
-            self.lp_service = LaunchpadService(self.cfg)
+            self.lp_service = LaunchpadService(self.cfg).default_service.launchpad
 
         log_format = "%(levelname)s - %(message)s"
         if 'debug' in self.cfg or 'verbose' in self.cfg:
@@ -64,7 +68,7 @@ class BugSpam:
             self.verbose("%s/%s:" % (series, package))
 
             for bug_id in bugs:
-                bug = self.lp_service.get_bug(bug_id)
+                bug = self.lp.bugs[bug_id]
                 self.print_bug_info(bug_id, bug)
                 should_be_spammed = False
                 is_tracker_bug = True
@@ -145,7 +149,7 @@ class BugSpam:
                     if 'comment-text' in self.cfg:
                         self.verbose('        . adding comment')
                         if not self.cfg['dryrun']:
-                            bug.add_comment(self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
+                            bug.newMessage(content=self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
 
                     # Status
                     #
