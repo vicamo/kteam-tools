@@ -1775,8 +1775,10 @@ class Package():
                     if date_available is None or bi[d][pocket]['most_recent_build'] > date_available:
                         date_available = bi[d][pocket]['most_recent_build']
 
-            date_available = date_available.replace(tzinfo=timezone.utc)
             now = datetime.now(timezone.utc)
+            if date_available is None:
+                date_available = now
+            date_available = date_available.replace(tzinfo=timezone.utc)
             comp_date = date_available + period
             if comp_date < now:
                 retval = True
