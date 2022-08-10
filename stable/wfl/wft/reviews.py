@@ -39,6 +39,7 @@ class SourceReview(TaskHandler):
 
             # Record the delta between the build ppa and whatever follows.
             s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
+            prepare_id = s.bug.debs.prepare_id
 
             # For pre-approval we reviewed against the sru-review proffered
             # stamp, so copy that over; and then move directly to approved.
@@ -46,13 +47,18 @@ class SourceReview(TaskHandler):
                 cinfo("pre-approval detected, approving")
                 s.bug.clamp_assign(s.review_task, s.bug.clamp('sru-review'))
                 s.task.status = 'Fix Released'
+                retval = True
+
+            # Reject if the prepare_id is bad.
+            elif prepare_id is None:
+                cinfo("Trying to go New with prepare_id==None")
 
             # Otherwise take the current build stamp, and ask for review.
             else:
-                s.bug.clamp_assign(s.review_task, s.bug.debs.prepare_id)
+                s.bug.clamp_assign(s.review_task, prepare_id)
                 s.task.status = 'Confirmed'
+                retval = True
 
-            retval = True
             break
 
         cleave(s.__class__.__name__ + '._new (%s)' % retval)
