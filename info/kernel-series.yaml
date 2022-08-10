@@ -1470,6 +1470,33 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-uc22-intel-iotg:
+            routing: uc22
+            packages:
+                linux-uc22-intel-iotg:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-intel-iotg/+git/jammy', 'master-next']
+                linux-signed-uc22-intel-iotg:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-intel-iotg/+git/jammy']
+            supported: true
+            owner: philcox
+            development: false
+            snaps:
+                intel-iotg-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'intel-iotg']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['22']
+            derived-from: [ '22.04', 'linux-intel-iotg' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
+
         linux-xilinx-zynqmp:
             variants: ['--']
             packages:
