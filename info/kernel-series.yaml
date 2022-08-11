@@ -3121,7 +3121,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde-5.15']
             supported: true
-            owner: mhcerri
+            owner: timg-tpi
             derived-from: [ '20.04', 'linux-azure-5.15' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
