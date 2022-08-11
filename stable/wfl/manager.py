@@ -530,17 +530,29 @@ class WorkflowManager():
         with self.lock_status():
             status = self.status_load()
 
-        for bugid in buglist:
-            manager = status.get(bugid,{}).get('manager', {})
-            scanned = manager.get('time-scanned')
+            submitted = 0
+            for bugid in buglist:
+                manager = status.get(bugid,{}).get('manager', {})
+                scanned = manager.get('time-scanned')
+                requested = manager.get('time-requested')
 
-            cinfo("queuing shank {} {}".format(bugid, scanned))
-            work.send_shank(bugid, scanned=scanned, priority=priority)
+                if requested is not None and scanned == requested:
+                    cinfo("queuing shank {} {} -- already requested, ignored".format(bugid, scanned))
+                    continue
 
-        if dependants:
-            # If we had anything todo, ask for a rescan at low-priority.
-            cinfo("queuing barrier")
-            work.send_barrier(priority=priority)
+                cinfo("queuing shank {} {}".format(bugid, scanned))
+                work.send_shank(bugid, scanned=scanned, priority=priority)
+                submitted += 1
+
+                manager['time-requested'] = scanned
+
+            if dependants and submitted > 0:
+                # If we had anything todo, ask for a rescan at low-priority.
+                cinfo("queuing barrier")
+                work.send_barrier(priority=priority)
+
+            if submitted > 0:
+                self.status_save(status)
 
     # bug_url
     #
