@@ -229,6 +229,10 @@ class SnapDebs:
                 cinfo("tracker version has changed resetting tracker {} -> {}".format(clamp, s.bug.version))
                 s.bug.clamp_assign('self', s.bug.version)
                 # XXX: likely we should be pulling tasks back here.
+                for taskname, task in s.bug.tasks_by_name.items():
+                    if taskname.startswith('snap-') and task.status != 'New':
+                        cinfo("pulling {} to New".format(taskname))
+                        task.status = 'New'
 
             # Expect this bug to have the data we need to identify the
             # snap.
