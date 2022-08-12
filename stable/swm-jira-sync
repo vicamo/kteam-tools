@@ -291,6 +291,9 @@ if __name__ == '__main__':
                 #jira.transition_issue(issue, transition='Kernel Not Ready')
                 jira_issues[key] = issue
 
+            elif key not in jira_issues:
+                continue
+
             else:
                 issue = jira_issues[key]
 
