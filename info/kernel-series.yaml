@@ -3820,7 +3820,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/focal', 'riscv-5.15']
             supported: true
-            owner: lukenow
+            owner: esmil
             development: false
             backport: true
             derived-from: ['22.04', 'linux-riscv']
