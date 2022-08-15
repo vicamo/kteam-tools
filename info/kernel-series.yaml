@@ -1515,7 +1515,6 @@ defaults:
                     intel-iotg:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-uc22-intel-iotg:
             routing: uc22
@@ -4281,7 +4280,6 @@ defaults:
                     intel-iotg:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-uc20-intel-iotg:
             routing: uc20
