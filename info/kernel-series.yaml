@@ -4300,9 +4300,9 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'intel-iotg']
                     gated: false
                     stable: false
-                    promote-to: [ 'edge', 'beta' ]
+                    promote-to: stable
                     qa: false
-                    hw-cert: false
+                    hw-cert: true
                     publish-to:
                         amd64: ['20']
             derived-from: [ '20.04', 'linux-intel-iotg-5.15' ]
