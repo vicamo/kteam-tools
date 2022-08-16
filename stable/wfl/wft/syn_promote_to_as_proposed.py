@@ -1,5 +1,8 @@
 from datetime                                   import datetime, timedelta, timezone
 
+from lazr.restfulclient.errors                  import BadRequest
+
+from wfl.bug                                    import WorkflowBugTaskError
 from wfl.log                                    import center, cleave, cdebug, cinfo
 from .base                                      import TaskHandler
 
@@ -82,11 +85,14 @@ class SynPromoteToAsProposed(TaskHandler):
                     package = s.bug.debs.pkgs[dep]
                     (src_archive, src_pocket) = s.bug.debs.build_info[dep]['Proposed']['route']
                     cinfo("copying from {}:{}:{} to {}:{}:{} package {}:{}".format(src_archive, src_pocket, s.bug.series, dst_archive, dst_pocket, s.bug.series, dep, package))
-                    dst_archive.copyPackage(
-                        from_archive=src_archive, from_series=s.bug.series, from_pocket=src_pocket,
-                        to_series=s.bug.series, to_pocket=dst_pocket,
-                        source_name=package, version=s.bug.debs.build_info[dep]['Proposed']['version'],
-                        include_binaries=True)
+                    try:
+                        dst_archive.copyPackage(
+                            from_archive=src_archive, from_series=s.bug.series, from_pocket=src_pocket,
+                            to_series=s.bug.series, to_pocket=dst_pocket,
+                            source_name=package, version=s.bug.debs.build_info[dep]['Proposed']['version'],
+                            include_binaries=True)
+                    except BadRequest:
+                        raise WorkflowBugTaskError("copy failed")
                 if s.task.status != 'Fix Committed':
                     s.task.status = 'Fix Committed'
                     retval = True
