@@ -1780,7 +1780,7 @@ class Package():
                 date_available = now
             date_available = date_available.replace(tzinfo=timezone.utc)
             comp_date = date_available + period
-            if comp_date < now:
+            if comp_date <= now:
                 retval = True
             else:
                 cinfo('It has been less than {} since the last package was either published or built in {}'.format(period, pocket))
