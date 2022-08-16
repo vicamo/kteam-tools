@@ -9,7 +9,7 @@ import time
 import traceback
 
 from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
-from subprocess                         import Popen, PIPE, STDOUT, CalledProcessError
+from subprocess                         import Popen, PIPE, STDOUT, CalledProcessError, TimeoutExpired
 
 from ktl.msgq                           import MsgQueueService, MsgQueueCredentials
 
@@ -85,14 +85,12 @@ class SwmWorker(SwmWorkCmds):
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
                     child = Popen(cmd)
-                    iteration = 0
                     while True:
-                        res = child.poll()
-                        if res != None:
+                        try:
+                            res = child.wait(timeout=10)
                             break
-
-                        iteration += 1
-                        time.sleep(1 if iteration < 60 else 10)
+                        except TimeoutExpired:
+                            pass
                         self.mq.connection.process_data_events()
                     self.log.info("Complete {} res={}".format(cmd, res) )
 
