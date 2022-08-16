@@ -5921,7 +5921,7 @@ defaults:
                     hw-cert: false
                     publish-to:
                         amd64: [ '18-5.4' ]
-            supported: true
+            supported: false
             owner: kmously
             backport: true
             derived-from: [ '20.04', 'linux-gke' ]
