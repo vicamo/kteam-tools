@@ -33,6 +33,23 @@ adjunct = lp.archives.getByReference(reference=adjunct_ref)
 
 ks = KernelSeries()
 
+# Run the list of packages and work out which ones have ancillaries.
+ancillaries = {}
+for ks_series in ks.series:
+    if not ks_series.supported and not ks_series.development:
+        continue
+    for ks_source in ks_series.sources:
+        for ks_package in ks_source.packages:
+            ancillary_for = ks_package.ancillary_for
+            if ancillary_for is None:
+                continue
+            #print(ks_source, ks_package, ks_package.type, ancillary_for.type)
+            ancillaries.setdefault(ancillary_for.type, set()).add(ancillary_for.name)
+
+ancillary_config = []
+for ancillary_type, ancillary_packages in ancillaries.items():
+    ancillary_config.append((ancillary_type, os.path.commonprefix(list(ancillary_packages))))
+
 # For private PPAs we will have to use the users subscription
 # to form the URLs to download the components.  Lookup up any
 # such subscription if needed.
@@ -42,11 +59,7 @@ if primary.private:
     if subscription is None:
         raise ValueError("no private subscription")
 
-for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
-        ['linux-signed', 'signed', ['generate'], primary],
-        ['linux-restricted-modules', 'lrm', ['lrg', 'lrs'], adjunct],
-    ):
-
+for prime_type, prime_prefix in ancillary_config:
     primaries = []
     primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published', order_by_date=True))
     primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Pending', order_by_date=True))
@@ -56,6 +69,7 @@ for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
         source_name = prime.source_package_name.replace(prime_prefix, 'linux')
         ks_series = ks.lookup_series(codename=series_name)
         ancillary_names = []
+        ancillary_ppa = None
         if ks_series is not None:
             ks_source = ks_series.lookup_source(source_name)
             if ks_source is None:
@@ -66,12 +80,16 @@ for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
                     ks_source = None
             if ks_source is not None:
                 for ks_package in ks_source.packages:
-                    if ks_package.type in ancillary_types:
-                        ancillary_names.append(ks_package.name)
+                    ancillary_for = ks_package.ancillary_for
+                    if ancillary_for is not None:
+                        if ancillary_for.type == prime_type:
+                            ancillary_names.append(ks_package.name)
+                        ancillary_ppa = adjunct if ks_package.adjunct else primary
         if not len(ancillary_names):
             continue
 
-        #print(prime)
+        #print(series_name, source_name, ancillary_ppa.reference, ancillary_names)
+
         prime_id = os.path.basename(prime.self_link)
         wanted = '-'
         ancillary_version = prime.source_package_version
