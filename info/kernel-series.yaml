@@ -1308,7 +1308,7 @@ defaults:
 
         linux-oem-6.0:
             versions: ['6.0.0']
-            variants: ['-22.04', '-22.04b']
+            variants: ['-22.04b']
             packages:
                 linux-oem-6.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-6.0-next']
