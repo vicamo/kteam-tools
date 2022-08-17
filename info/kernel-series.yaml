@@ -1397,12 +1397,11 @@ defaults:
             owner: smb
             snaps:
                 pc-kernel:
-                    primary: true
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc']
                     gated: false
-                    stable: false
                     qa: false
                     hw-cert: true
+                    promote-to: stable
                     publish-to:
                         amd64: ['22', '22-hwe']
                         arm64: ['22', '22-hwe']
@@ -1426,10 +1425,9 @@ defaults:
                     primary: true
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pc-lowlatency']
                     gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
                     qa: false
                     hw-cert: false
+                    promote-to: [ 'edge', 'beta' ]
                     publish-to:
                         amd64: ['22']
                         arm64: ['22']
