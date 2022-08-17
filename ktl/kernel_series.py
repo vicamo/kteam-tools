@@ -225,6 +225,9 @@ class KernelPackageEntry:
         self._name = name
         self._data = data if data else {}
 
+        package_relations = self._source.package_relations
+        self._defaults = self._ks.defaults.get('package-relations', {}).get(package_relations, {}).get(self.ptype, {})
+
     def __eq__(self, other):
         if isinstance(self, other.__class__):
             return self.name == other.name and self.source == other.source
@@ -248,6 +251,33 @@ class KernelPackageEntry:
     @property
     def type(self):
         return self._data.get('type', None)
+
+    def _type_to_package(self, ptype):
+        if ptype is None:
+            return None
+        return self._source.lookup_package(type=ptype)
+
+    @property
+    def ancillary_for(self):
+        return self._type_to_package(self._data.get('ancillary-for', self._defaults.get('ancillary-for')))
+
+    @property
+    def adjunct(self):
+        return self._data.get('adjunct', self._defaults.get('adjunct', False))
+
+    @property
+    def signing_to(self):
+        return self._type_to_package(self._data.get('signing-to', self._defaults.get('signing-to')))
+
+    @property
+    def signing_from(self):
+        return self._type_to_package(self._data.get('signing-from', self._defaults.get('signing-from')))
+
+    @property
+    def depends(self):
+        return self._type_to_package(self._data.get('depends', self._defaults.get('depends')))
+
+    feeder=depends
 
     @property
     def repo(self):
@@ -336,6 +366,10 @@ class KernelSourceEntry:
     @property
     def stakeholder(self):
         return self._data.get('stakeholder', None)
+
+    @property
+    def package_relations(self):
+        return self._data.get('package-relations', 'default')
 
     @property
     def packages(self):
