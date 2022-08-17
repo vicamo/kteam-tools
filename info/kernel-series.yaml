@@ -1339,6 +1339,37 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
+        linux-oem-6.0:
+            versions: ['6.0.0']
+            variants: ['-22.04', '-22.04b']
+            packages:
+                linux-oem-6.0:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-6.0-next']
+                linux-meta-oem-6.0:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/jammy', 'oem-6.0']
+                linux-signed-oem-6.0:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/jammy', 'oem-6.0']
+                linux-restricted-modules-oem-6.0:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/jammy', 'oem-6.0']
+                linux-restricted-generate-oem-6.0:
+                    type: lrg
+                linux-restricted-signatures-oem-6.0:
+                    type: lrs
+            supported: false
+            owner: tjaalton
+            derived-from: [ '22.10', 'linux-unstable' ]
+            development: false
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
         linux-oracle:
             variants: ['--']
             packages:
