@@ -718,39 +718,6 @@ defaults:
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-oem-5.17:
-            versions: ['5.17.0']
-            variants: ['-22.04', '-22.04a']
-            packages:
-                linux-oem-5.17:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/kinetic', 'oem-5.17-next']
-                linux-meta-oem-5.17:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/kinetic', 'oem-5.17']
-                linux-signed-oem-5.17:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/kinetic', 'oem-5.17']
-                linux-restricted-modules-oem-5.17:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/kinetic', 'oem-5.17']
-                linux-restricted-generate-oem-5.17:
-                    type: lrg
-                linux-restricted-signatures-oem-5.17:
-                    type: lrs
-            owner: tjaalton
-            #derived-from: [ '22.10', 'linux-unstable' ]
-            derived-from: [ '22.04', 'linux-oem-5.17' ]
-            backport: true
-            supported: false
-            development: false
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    oem:
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
-
         linux-oracle:
             variants: ['--']
             packages:
