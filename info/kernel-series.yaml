@@ -421,6 +421,26 @@ defaults:
             updates:
             security:
             release:
+  package-type:
+      meta:
+          feeder: main
+      signed:
+          feeder: main
+      generate:
+          feeder: main
+          ancillary-for: signed
+          generate: true
+      lrm:
+          feeder: main
+      lrg:
+          feeder: lrm
+          ancillary-for: lrm
+          adjunct: true
+          generate: true
+      lrs:
+          feeder: lrg
+          ancillary-for: lrm
+          adjunct: true
 
 # 22.10 (Kinetic Kudu)
 '22.10':
