@@ -347,9 +347,18 @@ class KernelSourceEntry:
                 result.append(KernelPackageEntry(self._ks, self, package_key, package))
         return result
 
-    def lookup_package(self, package_key):
+    def lookup_package(self, package_key=None, type=None):
+        if package_key is None and type is None:
+            raise ValueError("package-name/package-type required")
         packages = self._data.get('packages')
-        if not packages or package_key not in packages:
+        if not packages:
+            return None
+        if type is not None:
+            for package in self.packages:
+                if package.type == type or (type == 'main' and package.type is None):
+                    return package
+            return None
+        if package_key is None or package_key not in packages:
             return None
         return KernelPackageEntry(self._ks, self, package_key, packages[package_key])
 
