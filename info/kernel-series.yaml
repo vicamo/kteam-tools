@@ -1110,6 +1110,37 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
             stakeholder: 'linux-azure-signoff'
 
+        linux-azure-fde:
+            routing: classic-fde
+            variants: ['--', '-edge']
+            packages:
+                linux-azure-fde:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde']
+                linux-meta-azure-fde:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-fde']
+                linux-signed-azure-fde:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde']
+            supported: true
+            owner: timg-tpi
+            derived-from: [ '22.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+                testing-ppas: ['ppa:canonical-kernel-team/ubuntu/ppa']
+            testing:
+                flavours:
+                    azure:
+                        meta-pkg: linux-azure-fde-edge
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks:
+              - automated-testing
+              - certification-testing
+              - verification-testing
+            stakeholder: 'linux-azure-signoff'
+
         linux-gcp:
             variants: ['--']
             packages:
