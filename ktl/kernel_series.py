@@ -127,6 +127,7 @@ class KernelSnapEntry:
 
         # Convert stable to promote-to form.
         if 'promote-to' not in self._data and 'stable' in self._data:
+            print("APW", source, data)
             if self._data['stable'] is True:
                 self._data['promote-to'] = 'stable'
             else:

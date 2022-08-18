@@ -4371,13 +4371,13 @@ defaults:
             snaps:
                 hbt-imx-kernel:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/kernel-snaps-uc20']
-                  gated: false
-                  promote-to: 'stable'
-                  qa: true
-                  hw-cert: false
-                  publish-to:
-                      arm64: ['latest']
-                      armhf: ['latest']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: true
+                    hw-cert: false
+                    publish-to:
+                        arm64: ['latest']
+                        armhf: ['latest']
             derived-from: [ '20.04', 'linux-imx-honeywell']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
