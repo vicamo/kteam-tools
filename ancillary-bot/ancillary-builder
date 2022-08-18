@@ -59,10 +59,6 @@ do
 		dpkg-source -x $source*.dsc
 
 		# Confirm this is the appropriate form.
-		if [ -f $source-*/files.json ]; then
-			echo "$id: triggering ancillary-build-generate"
-			(	cd $source-* || exit 2
-				"$here/ancillary-build-generate" .
 		if [ -f $source-*/debian/scripts/gen-ancillary ]; then
 			echo "$id: triggering gen-anciallary"
 			(
