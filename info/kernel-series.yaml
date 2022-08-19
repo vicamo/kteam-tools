@@ -5996,7 +5996,7 @@ defaults:
                 linux-signed-gkeop-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/bionic', 'gkeop-5.4']
-            supported: true
+            supported: false
             owner: kmously
             backport: true
             derived-from: [ '20.04', 'linux-gkeop' ]
