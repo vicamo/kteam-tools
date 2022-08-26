@@ -60,7 +60,24 @@ do
 		dpkg-source -x $source*.dsc
 
 		# Confirm this is the appropriate form.
-		if [ -f $source-*/debian/scripts/gen-ancillary ]; then
+		if [ -d $source-*/debian/ancillary ]; then
+			echo "$id: direct ancillaries present"
+			(
+				cd $source-*/debian/ancillary/ || exit 2
+				for ancillary in *
+				do
+					[ ! -d $ancillary/debian ] && continue
+					(
+						echo "$id: building direct ancillary $ancillary ..."
+						cd "$ancillary" || exit 2
+						debian/rules clean
+						dpkg-buildpackage --no-sign -nc -S
+					) || exit "$?"
+					mv ${ancillary}_* ../../..
+				done
+			) || exit "$?"
+
+		elif [ -f $source-*/debian/scripts/gen-ancillary ]; then
 			echo "$id: triggering gen-anciallary"
 			(
 				cd $source-* || exit 2
