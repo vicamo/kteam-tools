@@ -49,6 +49,7 @@ for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
 
     primaries = []
     primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Published', order_by_date=True))
+    primaries += list(primary.getPublishedSources(source_name=prime_prefix, status='Pending', order_by_date=True))
     for prime in primaries:
         # Find the appropriate kernel in kernel-series based on the package name.
         series_name = prime.distro_series_link.split('/')[-1]
@@ -80,7 +81,18 @@ for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
             if len(ancillaries) == 0:
                 urls = []
                 for url in prime.sourceFileUrls():
-                    if subscription:
+                    # Convert the URL into a direct librarian link using our launchpad API
+                    # connection to do the initial fetch, limit that so we do not redirect
+                    # which will give us the librarian link for it.
+                    connection = lp._browser._connection
+                    connection.follow_redirects = False
+                    url2 = url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+                    (response, content) = connection.request(url2)
+                    connection.follow_redirects = True
+                    if 'location' in response:
+                        url = response['location']
+
+                    elif subscription:
                         deb = os.path.basename(url)
                         package = deb.split('_')[0]
                         prefix = package[0]

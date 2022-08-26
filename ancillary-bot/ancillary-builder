@@ -53,7 +53,8 @@ do
 		echo "$id: downloading source ..."
 		for url in $urls
 		do
-			wget $url
+			out=$(basename "$url" | sed -e 's/?.*$//')
+			wget -O "$out" $url
 		done
 		echo "$id: extracting source ..."
 		dpkg-source -x $source*.dsc
