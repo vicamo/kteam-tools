@@ -57,6 +57,12 @@ for prime_prefix, prime_type, ancillary_types, ancillary_ppa in (
         ancillary_names = []
         if ks_series is not None:
             ks_source = ks_series.lookup_source(source_name)
+            if ks_source is None:
+                for ks_source in ks_series.sources:
+                    if ks_source.lookup_package(prime.source_package_name):
+                        break
+                else:
+                    ks_source = None
             if ks_source is not None:
                 for ks_package in ks_source.packages:
                     if ks_package.type in ancillary_types:
