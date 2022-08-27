@@ -834,6 +834,7 @@ defaults:
     codename: jammy
     development: false
     supported: true
+    lts: true
     routing-table: *routing-table
     sources:
         linux:
