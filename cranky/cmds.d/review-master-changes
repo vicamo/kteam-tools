@@ -142,10 +142,10 @@ if [ -z "$base_version" ]; then
 fi
 
 # List the remote tags
+parent_src=$(dpkg-parsechangelog -l"$DEBIAN_MASTER"/changelog -SSource | sed -e 's/^linux//')
 base_tag=$(git ls-remote --tags "$RELEASE_REPO" |
-		   awk '{print $2}' |
-		   sed -r -e 's/^.*\///' |
-		   grep -E 'Ubuntu-.*'"$base_version"'$' |
+		   awk '{sub(/^.*\//, "", $2); print $2}' |
+		   grep -E 'Ubuntu'"$parent_src"'-'"$base_version"'$' |
 		   sort | tail -n1)
 if [ -z "$base_tag" ]; then
 	echo "Could not find a base tag for $base_version in the remote: $RELEASE_REPO"
