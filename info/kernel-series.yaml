@@ -1825,7 +1825,6 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             supported: false
-            owner: ztahenakos
             backport: false
             derived-from: [ '21.10', 'linux' ]
             swm:
