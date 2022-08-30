@@ -5193,7 +5193,7 @@ defaults:
                    type: signed
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
             supported: true
-            owner: ztahenakos
+            owner: lukenow
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -5584,7 +5584,7 @@ defaults:
                 linux-restricted-signatures-azure-fips:
                     type: lrs
             supported: true
-            owner: ztahenakos
+            owner: lukenow
             private: true
             derived-from: ['18.04', 'linux-azure-4.15']
             swm:
