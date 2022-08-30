@@ -1317,7 +1317,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv-bluefield/+git/jammy']
             supported: false
             development: true
-            owner: ztahenakos
+            owner: bzolnier
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -4120,7 +4120,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/focal']
             supported: true
-            owner: ztahenakos
+            owner: bzolnier
             derived-from: ['20.04', 'linux']
             swm:
                 kernel-testing: true
