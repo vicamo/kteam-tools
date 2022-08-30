@@ -1613,7 +1613,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-nvidia:
                     type: lrs
-            owner: ztahenakos
+            owner: ian-may
             development: true
             supported: false
             derived-from: [ '22.04', 'linux' ]
