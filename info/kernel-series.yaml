@@ -5323,7 +5323,7 @@ defaults:
                     publish-to:
                         arm64: [ '18' ]
             supported: true
-            owner: ztahenakos
+            owner: smb
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'certification-testing', 'regression-testing' ]
             testing:
