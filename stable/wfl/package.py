@@ -2779,7 +2779,8 @@ class Package():
         if s.bug.swm_config is not None and s.bug.swm_config.hack_kernel_testing:
             return sorted([x.name for x in s.source.testable_flavours])
 
-        generic = (s.name == 'linux' or
+        generic = (s.name is None or
+                   s.name == 'linux' or
                    s.name.startswith('linux-hwe') or
                    s.name.startswith('linux-lts-'))
         if generic:
