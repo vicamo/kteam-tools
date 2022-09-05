@@ -1050,7 +1050,7 @@ class WorkflowBug():
         # XXX: this is not deb related.
         retval = pkg in s.debs.pkgs
 
-        cleave(s.__class__.__name__ + '.valid_package')
+        cleave(s.__class__.__name__ + '.valid_package ({})'.format(retval))
         return retval
 
     def published_tag(s, pkg):

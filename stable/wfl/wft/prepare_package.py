@@ -70,12 +70,14 @@ class PreparePackage(TaskHandler):
             # Confirm whether this package is actually valid.
             if not s.bug.valid_package(pkg):
                 s.task.status = 'Invalid'
+                cdebug("prepare: mark invalid")
                 retval = True
                 break
 
             # Are we blocked.
             block = s.bug.source_block_present()
             if block is not None:
+                cdebug("prepare: blocked")
                 break
 
             # For derivative bugs we wait until the parent has at least got its
@@ -84,10 +86,12 @@ class PreparePackage(TaskHandler):
             if not s.bug.debs.ready_to_prepare():
                 if pkg == 'main' or not s.bug.valid_package('main'):
                     s.task.reason = 'Holding -- waiting for parent tracker'
+                cdebug("prepare: not read to prepare")
                 break
 
             # Check for blocking trackers in a previous cycle.
             if s.bug.debs.older_tracker_in_ppa:
+                cdebug("prepare: older tracker present")
                 break
 
             # If we are not the primary-package and there is a primary package
@@ -97,6 +101,7 @@ class PreparePackage(TaskHandler):
             if (pkg != 'main' and s.bug.valid_package('main') and
                 not s.bug.is_valid
                ):
+                cdebug("prepare primary: {} {} {}".format(pkg, s.bug.valid_package('main'), not s.bug.is_valid))
                 retval = False
                 break
 
