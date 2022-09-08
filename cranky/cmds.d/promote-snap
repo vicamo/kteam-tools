@@ -14,15 +14,15 @@ class SwmDataError(Exception):
 class SwmDataElement():
     def __init__(self):
         self.__data = {
-            'bugid':    None,
-            'master':   None,
-            'cycle':    None,
-            'series':   None,
-            'source':   None,
-            'version':  None,
-            'task':     None,
-            'status':   None,
-            'extinfo':  None,
+            'bugid': None,
+            'master': None,
+            'cycle': None,
+            'series': None,
+            'source': None,
+            'version': None,
+            'task': None,
+            'status': None,
+            'extinfo': None,
         }
 
     def __getitem__(self, key):
@@ -40,7 +40,7 @@ class SwmDataElement():
 
 class SwmData():
     def __init__(self, stream=None):
-        self.__data = dict()
+        self.__data = {}
         if stream is not None:
             self.load(stream)
 
@@ -63,15 +63,15 @@ class SwmData():
             flds = line.split(None, 11)
 
             newdata = SwmDataElement()
-            newdata['bugid']    = int(flds[1][1:])
+            newdata['bugid'] = int(flds[1][1:])
             if flds[3] != '--':
                 newdata['master'] = int(flds[3][1:])
-            newdata['cycle']    = flds[4]
-            newdata['series']   = flds[5]
-            newdata['source']   = flds[6]
-            newdata['version']  = flds[7]
-            newdata['task']     = flds[8]
-            newdata['status']   = flds[9]
+            newdata['cycle'] = flds[4]
+            newdata['series'] = flds[5]
+            newdata['source'] = flds[6]
+            newdata['version'] = flds[7]
+            newdata['task'] = flds[8]
+            newdata['status'] = flds[9]
             if len(flds) > 10:
                 newdata['extinfo'] = flds[11]
             else:
@@ -87,17 +87,16 @@ class SnapcraftData():
         rc, output = run_command('snapcraft status {}'.format(snapname))
         if rc != 0:
             raise SnapcraftDataError('Failed to obtain snapcraft status (output: {output})')
-
         self.__arch_start = None
         self.__chan_start = None
         self.__vers_start = None
         self.__revi_start = None
         self.__expi_start = None
-        self.__init_done  = False
-        self.data = dict()
+        self.__init_done = False
+        self.data = {}
 
         track = None
-        arch  = None
+        arch = None
         for line in output:
             if line.startswith('Track'):
                 # This is the header get the spacing from here
@@ -108,7 +107,7 @@ class SnapcraftData():
                 # Sometimes there is 'Expires at', sometimes there is not...
                 try:
                     self.__expi_start = line.index('Expires')
-                except:
+                except ValueError:
                     self.__expi_start = len(line)
                 self.__init_done = True
             else:
@@ -124,14 +123,14 @@ class SnapcraftData():
                     raise SnapcraftDataError('Failed to parse snapcraft data')
                 channel = line[self.__chan_start:self.__vers_start].rstrip()
                 version = line[self.__vers_start:self.__revi_start].rstrip()
-                rev     = line[self.__revi_start:self.__expi_start].rstrip()
+                rev = line[self.__revi_start:self.__expi_start].rstrip()
                 if track == 'latest':
                     trkchn = channel
                 else:
                     trkchn = '{}/{}'.format(track, channel)
 
-                self.data.setdefault(arch, dict())
-                self.data[arch].setdefault(trkchn, dict())
+                self.data.setdefault(arch, {})
+                self.data[arch].setdefault(trkchn, {})
                 self.data[arch][trkchn] = (version, rev)
 
 
@@ -177,7 +176,7 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
         logging.basicConfig(level=logging.INFO, format='%(message)s')
 
     # Some basic verification on the provided handles and fill with snapcraft data
-    scd = dict()
+    scd = {}
     for sh in args.snap_handles:
         part = sh.split('/')
         if len(part) != 3:
@@ -197,8 +196,8 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
         sys.exit(1)
 
     # Main app run
-    swm  = SwmData(output)
-    todo = dict()
+    swm = SwmData(output)
+    todo = {}
     for idx in swm:
         if 'snap-release-to-' in swm[idx]['task']:
             # snap <name> not in expected channel(s): <dest> ...
@@ -212,7 +211,7 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
             if snaphandle not in args.snap_handles:
                 continue
             for dst in parts[2].split():
-                snapvars = dict()
+                snapvars = {}
                 for subpart in dst.split(':'):
                     name, value = subpart.split('=')
                     snapvars[name] = value
@@ -230,8 +229,8 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
                 if scd[snapname].data[arch].get(channel, [None, None])[1] == rev:
                     cinfo('# {}: {}(rev={}) already on {}'.format(arch, snapname, rev, channel))
                     continue
-                todo.setdefault(snapname, dict())
-                todo[snapname].setdefault(arch, dict())
+                todo.setdefault(snapname, {})
+                todo[snapname].setdefault(arch, {})
                 todo[snapname][arch].setdefault(rev, [])
                 todo[snapname][arch][rev].append(channel)
 
