@@ -5,6 +5,7 @@ import sys
 import argparse
 import logging
 
+from crl.handle import Handle, HandleError
 from ktl.log import Clog, cerror, cinfo
 from ktl.utils import run_command
 
@@ -153,6 +154,12 @@ Example: cranky promote-snap bionic:linux-raspi2:pi-kernel
   NOTE(!): Since this kernel snap is released to more channels
   than an automatic  build can handle, this run would also finish
   the produce  step by promoting to the missing channels.
+
+Example: cranky promote-snap pi-kernel
+
+  This will deduce the series and source names from the current
+  working directory and then execute all promotions as detailed
+  in the previous example.
 '''
 
     formatter = argparse.RawDescriptionHelpFormatter
@@ -163,8 +170,11 @@ Example: cranky promote-snap bionic:linux-raspi2:pi-kernel
                         help='do not make any changes, just show what would be done')
     parser.add_argument('--debug', action='store_true', default=False,
                         help='output debug level logs')
-    parser.add_argument('snap_handles', metavar='<series>:<source name>:<snap name>', nargs='+', type=str,
-                        help='specification of the snap to be promoted')
+    parser.add_argument('snap_handles', metavar='[<series>:<source name>:]<snap name>',
+                        nargs='+', type=str,
+                        help='specification of the snap to be promoted. If ' +
+                        '<series>:<source name> is not provided, deduces it ' +
+                        'from the current working directory.')
     args = parser.parse_args()
 
     Clog.color = True
@@ -175,8 +185,24 @@ Example: cranky promote-snap bionic:linux-raspi2:pi-kernel
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-    # Handle the old format
-    snap_handles = [a.replace('/', ':') for a in args.snap_handles]
+    # Handle the old format and prepend 'series:source' if necessary
+    series_source = None
+    snap_handles = []
+    for handle in args.snap_handles:
+        handle = handle.replace('/', ':')
+        if ':' not in handle:
+            # Snap name only, prepend 'series:source' to the handle
+            if not series_source:
+                try:
+                    handle_set = Handle().lookup_set(os.getcwd(), validate=False)
+                except HandleError as e:
+                    cerror(e)
+                    sys.exit(1)
+                series_source = '{}:{}'.format(handle_set.series.codename,
+                                               handle_set.source.name)
+                cinfo('# Use source handle: {}'.format(series_source))
+            handle = series_source + ':' + handle
+        snap_handles.append(handle)
 
     # Some basic verification on the provided handles and fill with snapcraft data
     scd = {}
