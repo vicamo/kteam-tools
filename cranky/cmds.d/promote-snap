@@ -145,10 +145,10 @@ of tracks.
 '''
 
     epilog = '''
-Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
+Example: cranky promote-snap bionic:linux-raspi2:pi-kernel
 
   This will execute all promotions needed for the pi-kernel
-  snap which is based on bionic/linux-raspi2.
+  snap which is based on bionic:linux-raspi2.
 
   NOTE(!): Since this kernel snap is released to more channels
   than an automatic  build can handle, this run would also finish
@@ -163,7 +163,7 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
                         help='do not make any changes, just show what would be done')
     parser.add_argument('--debug', action='store_true', default=False,
                         help='output debug level logs')
-    parser.add_argument('snap_handles', metavar='<series>/<source name>/<snap name>', nargs='+', type=str,
+    parser.add_argument('snap_handles', metavar='<series>:<source name>:<snap name>', nargs='+', type=str,
                         help='specification of the snap to be promoted')
     args = parser.parse_args()
 
@@ -175,12 +175,15 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
     else:
         logging.basicConfig(level=logging.INFO, format='%(message)s')
 
+    # Handle the old format
+    snap_handles = [a.replace('/', ':') for a in args.snap_handles]
+
     # Some basic verification on the provided handles and fill with snapcraft data
     scd = {}
-    for sh in args.snap_handles:
-        part = sh.split('/')
+    for sh in snap_handles:
+        part = sh.split(':')
         if len(part) != 3:
-            cerror('{} is not in */*/* format!'.format(sh))
+            cerror('{} is not in *:*:* format!'.format(sh))
             sys.exit(1)
         snapname = part[2]
         try:
@@ -205,10 +208,9 @@ Example: cranky promote-snap bionic/linux-raspi2/pi-kernel
             info = swm[idx]['extinfo']
             parts = info.partition(' not in expected channel(s): ')
             series = swm[idx]['series']
-            source = swm[idx]['source']
-            snapname = source.split('/')[1]
-            snaphandle = '{}/{}'.format(series, source)
-            if snaphandle not in args.snap_handles:
+            source, snapname = swm[idx]['source'].split('/')
+            snaphandle = '{}:{}:{}'.format(series, source, snapname)
+            if snaphandle not in snap_handles:
                 continue
             for dst in parts[2].split():
                 snapvars = {}
