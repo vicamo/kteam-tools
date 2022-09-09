@@ -98,19 +98,20 @@ def normalize_tree(path, source_pkg, ver, abi, upload):
         ):
         normalize_control_file(control_file, source_pkg, ver, abi, upload)
     # Detect ABI location.
-    if len(glob("{}/debian.*/abi/abiname".format(path))) > 0:
-        abi_path = "debian.*/abi"
-    else:
-        abi_path = "debian.*/abi/*"
-    for unsorted_file in (
-            glob("{}/{}/*/*.modules".format(path, abi_path)) +
-            glob("{}/{}/fwinfo".format(path, abi_path))
-        ):
-        normalize_unsorted_file(unsorted_file)
-    for abi_file in glob("{}/{}/*/*".format(path, abi_path)):
-        if '.' in os.path.basename(abi_file):
-            continue
-        normalize_abi_file(abi_file)
+    abi_dirs = []
+    for abi_path in (glob("{}/debian.*/abi/abiname".format(path)) +
+            glob("{}/debian.*/abi/*/abiname".format(path))):
+        abi_dirs.append(os.path.dirname(abi_path))
+    for abi_path in abi_dirs:
+        for unsorted_file in (
+                glob("{}/*/*.modules".format(abi_path)) +
+                glob("{}/fwinfo".format(abi_path))
+            ):
+            normalize_unsorted_file(unsorted_file)
+        for abi_file in glob("{}/*/*".format(abi_path)):
+            if '.' in os.path.basename(abi_file):
+                continue
+            normalize_abi_file(abi_file)
 
 def dsc_source_version(dsc_file):
     basename = os.path.basename(dsc_file)
