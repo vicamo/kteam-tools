@@ -1319,26 +1319,19 @@ defaults:
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-nv-bluefield:
-            routing: 
-                <<: [*routing-table-devel]
-                as-proposed:
-                proposed:
-                updates:
-                security:
-                release:
+        linux-bluefield:
             variants: ['--']
             packages:
-                linux-nv-bluefield:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nv-bluefield/+git/jammy', 'master-next']
-                linux-meta-nv-bluefield:
+                linux-bluefield:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/jammy', 'master-next']
+                linux-meta-bluefield:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nv-bluefield/+git/jammy']
-                linux-signed-nv-bluefield:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/jammy']
+                linux-signed-bluefield:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nv-bluefield/+git/jammy']
-            supported: false
-            development: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-bluefield/+git/jammy']
+            supported: true
+            development: false
             owner: bzolnier
             derived-from: [ '22.04', 'linux' ]
             swm:
