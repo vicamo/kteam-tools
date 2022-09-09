@@ -10,6 +10,21 @@
 #  - --meta-option v=<sometihg>
 #  - --profile <override> in concert with series-linux as "overrides"
 
+# Support arm64 and amd64 as chroot arches, everyone else gets to use amd64 with qemu-user-static
+if [ "$(dpkg --print-architecture)" = "arm64" ]; then
+	chroot_arch="arm64"
+	x86_compiler="gcc-x86-64-linux-gnu"
+	x86_libc="libc6-dev-amd64-cross"
+	arm64_compiler="gcc"
+	arm64_libc="libc6-dev"
+else
+	chroot_arch="amd64"
+	x86_compiler="gcc"
+	x86_libc="libc6-dev"
+	arm64_compiler="gcc-aarch64-linux-gnu"
+	arm64_libc="libc6-dev-arm64-cross"
+fi
+
 function out()
 {
 	local rc=$?
@@ -95,7 +110,7 @@ session_chroot_create()
 
 	local session="cranky-$series-$arch-$which"
 
-	if ! base_chroot_available "$series" "amd64"; then
+	if ! base_chroot_available "$series" "$arch"; then
 		echo "$P: base chroot not available -- run: $C chroot create-base \"$series:linux\""
 		return 1
 	fi
@@ -134,10 +149,10 @@ session_chroot_create()
 	fi
 
 	# Cross Compilers
-	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu gcc
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install $arm64_compiler gcc-arm-linux-gnueabihf gcc-powerpc64le-linux-gnu gcc-s390x-linux-gnu $x86_compiler
 
 	# Allow CC to link to libc
-	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install libc6-dev-arm64-cross libc6-dev-armhf-cross libc6-dev-ppc64el-cross libc6-dev-s390x-cross
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install $arm64_libc libc6-dev-armhf-cross libc6-dev-ppc64el-cross libc6-dev-s390x-cross $x86_libc
 
 	if [ "${series}" != "xenial" ] ; then
 		# Xenial doesn't have these packages
@@ -295,21 +310,21 @@ trap out INT TERM EXIT HUP
 
 case "$cmd" in
 create-base)
-	if base_chroot_available "$series" "amd64"; then
+	if base_chroot_available "$series" "$chroot_arch"; then
 		chroot_update "$RET"
 	else
-		base_chroot_create "$series" "amd64"
+		base_chroot_create "$series" "$chroot_arch"
 	fi
 	;;
 create-session)
-	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
 		chroot_update "$RET"
 	else
-		session_chroot_create "$series" "amd64" "$src" "$session"
+		session_chroot_create "$series" "$chroot_arch" "$src" "$session"
 	fi
 	;;
 map-session)
-	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
 		echo "$RET"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
@@ -318,7 +333,7 @@ map-session)
 	fi
 	;;
 run)
-	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
 		schroot -p -r -c "$RET" -- "$@"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
@@ -327,7 +342,7 @@ run)
 	fi
 	;;
 destroy-session)
-	if session_chroot_available "$series" "amd64" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
 		schroot -e -c "$RET"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
