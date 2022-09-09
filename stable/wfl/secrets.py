@@ -9,7 +9,7 @@ class Secrets:
     #
     def __init__(self, config=None):
         secrets = {}
-        if os.path.exists(config):
+        if config is not None and os.path.exists(config):
             with open(config) as rfd:
                 secrets = yaml.safe_load(rfd)
 
