@@ -132,18 +132,10 @@ class MsgQueueService(MsgQueue):
     authentication.  Start with hardwired data.
     """
 
-    server_argyle = '10.131.229.185'
-    server_ps45 = '10.15.182.2'
     server_ps5 = '10.131.229.185'
     server_map = {
-        'dashboard': server_ps5,
-        'mainline': server_ps5,
-        'announce': server_ps5,
-        'ckct': server_ps5,
     }
     local_map = {
-        server_argyle: 9123,
-        server_ps45: 9124,
         server_ps5: 9125,
     }
 
@@ -159,7 +151,7 @@ class MsgQueueService(MsgQueue):
 
         # Find the service rabbitmq server.
         if kwargs.get('host') is None:
-            kwargs['host'] = s.server_map.get(vhost, s.server_ps45)
+            kwargs['host'] = s.server_map.get(vhost, s.server_ps5)
         if local:
             kwargs['port'] = s.local_map.get(kwargs['host'], 9129)
             kwargs['host'] = 'localhost'
