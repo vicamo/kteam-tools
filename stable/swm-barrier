@@ -159,7 +159,7 @@ class SwmBarrier(SwmWorkCmds):
             self.log.info("Starting")
 
             # XXX: should this be by "name" in general.
-            self.secrets = Secrets(os.path.join(os.environ['HOME'], '.kernel-swm-worker.yaml'))
+            self.secrets = Secrets(os.path.expanduser('~/.kernel-swm-worker.yaml'))
 
             # Pass in credentials if we have them, else use the limited defaults.
             hostname = self.secrets.get('amqp-hostname')
