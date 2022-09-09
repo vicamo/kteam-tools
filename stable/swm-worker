@@ -26,7 +26,7 @@ class SwmWorker(SwmWorkCmds):
 
         self.log = logger
 
-        self.queue = args.queue
+        self.queue = self.args.queue
         self.direct = self.queue + '--' + self.args.name
 
     # _announce
@@ -52,7 +52,7 @@ class SwmWorker(SwmWorkCmds):
         self.log.info("handler method={}".format(method))
         self.log.info("handler properties={}".format(properties))
 
-        prefix = args.name.split('-')[-1]
+        prefix = self.args.name.split('-')[-1]
 
         ack = MsgQueueService.ACK
         try:
