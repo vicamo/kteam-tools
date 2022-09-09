@@ -441,6 +441,47 @@ defaults:
           feeder: lrg
           ancillary-for: lrm
           adjunct: true
+  package-relations:
+      default:
+          meta:
+              depends: main
+          signed:
+              depends: main
+              signing: true
+          lrm:
+              depends: main
+          lrg:
+              depends: lrm
+              ancillary-for: lrm
+              adjunct: true
+              generate: true
+          lrs:
+              depends: lrg
+              ancillary-for: lrm
+              adjunct: true
+              signing: true
+      signed-generate:
+          meta:
+              depends: main
+          generate:
+              depends: main
+              ancillary-for: signed
+              generate: true
+          signed:
+              depends: generate
+              signing: true
+          lrm:
+              depends: main
+          lrg:
+              depends: lrm
+              ancillary-for: lrm
+              adjunct: true
+              generate: true
+          lrs:
+              depends: lrg
+              ancillary-for: lrm
+              adjunct: true
+              signing: true
 
 # 22.10 (Kinetic Kudu)
 '22.10':
