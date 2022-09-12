@@ -983,7 +983,7 @@ defaults:
                 linux-meta-starfive-5.17:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.17']
-            owner: xnox
+            owner: esmil
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
             supported: true
             swm:
@@ -1003,7 +1003,7 @@ defaults:
                 linux-meta-allwinner-5.17:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'allwinner-5.17']
-            owner: xnox
+            owner: esmil
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
             supported: true
             swm:
