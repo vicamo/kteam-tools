@@ -269,11 +269,7 @@ Example: cranky promote-snap pi-kernel
     for snapname in todo:
         for arch in todo[snapname]:
             for rev in todo[snapname][arch]:
-                chanlist = ''
-                for channel in todo[snapname][arch][rev]:
-                    if chanlist != '':
-                        chanlist += ','
-                    chanlist += channel
+                chanlist = ','.join(todo[snapname][arch][rev])
                 cmd = 'snapcraft release {} {} {}'.format(snapname, rev, chanlist)
                 if args.dry_run:
                     cinfo('DRYRUN: ' + cmd)
