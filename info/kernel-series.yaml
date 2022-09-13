@@ -421,67 +421,47 @@ defaults:
             updates:
             security:
             release:
-  package-type:
-      meta:
-          feeder: main
-      signed:
-          feeder: main
-      generate:
-          feeder: main
-          ancillary-for: signed
-          generate: true
-      lrm:
-          feeder: main
-      lrg:
-          feeder: lrm
-          ancillary-for: lrm
-          adjunct: true
-          generate: true
-      lrs:
-          feeder: lrg
-          ancillary-for: lrm
-          adjunct: true
   package-relations:
       default:
           meta:
               depends: main
           signed:
               depends: main
-              signing: true
+              signing-from: main
           lrm:
               depends: main
           lrg:
               depends: lrm
               ancillary-for: lrm
+              signing-to: lrs
               adjunct: true
-              generate: true
           lrs:
               depends: lrg
               ancillary-for: lrm
+              signing-from: lrg
               adjunct: true
-              signing: true
       signed-generate:
           meta:
               depends: main
           generate:
               depends: main
               ancillary-for: signed
-              generate: true
+              signing-to: signed
           signed:
               depends: generate
-              signing: true
+              signing-from: generate
           lrm:
               depends: main
           lrg:
               depends: lrm
               ancillary-for: lrm
+              signing-to: lrs
               adjunct: true
-              generate: true
           lrs:
               depends: lrg
               ancillary-for: lrm
+              signing-from: lrg
               adjunct: true
-              signing: true
 
 # 22.10 (Kinetic Kudu)
 '22.10':
