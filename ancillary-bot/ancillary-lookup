@@ -25,11 +25,11 @@ me = lp.people[me_name]
 primary_ref, adjunct_ref = sys.argv[1:]
 
 primary = lp.archives.getByReference(reference=primary_ref)
-#public = lp.archives.getByReference(reference='ppa:apw/ubuntu/private')
-#print(primary)
-# XXX: public + '-ps'
+if primary is None:
+    raise ValueError("primary reference {} invalid".format(primary_ref))
 adjunct = lp.archives.getByReference(reference=adjunct_ref)
-#print(adjunct)
+if adjunct is None:
+    raise ValueError("primary reference {} invalid".format(adjunct_ref))
 
 ks = KernelSeries()
 
