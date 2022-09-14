@@ -1848,7 +1848,6 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
         package = source.lookup_package('linux-generate')
 
         self.assertEqual(package.depends.type, 'signed')
-        self.assertEqual(package.feeder.type, 'signed')
 
     def test_depends_absent(self):
         data = """
@@ -1866,7 +1865,6 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
         package = source.lookup_package('linux-generate')
 
         self.assertEqual(package.depends, None)
-        self.assertEqual(package.feeder, None)
 
     def test_depends_default(self):
         data = """
@@ -1890,7 +1888,6 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
         package = source.lookup_package('linux-generate')
 
         self.assertEqual(package.depends.type, 'signed')
-        self.assertEqual(package.feeder.type, 'signed')
 
     def test_adjunct_present(self):
         data = """

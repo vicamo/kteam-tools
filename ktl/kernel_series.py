@@ -277,8 +277,6 @@ class KernelPackageEntry:
     def depends(self):
         return self._type_to_package(self._data.get('depends', self._defaults.get('depends')))
 
-    feeder=depends
-
     @property
     def repo(self):
         data = self._data.get('repo', None)
