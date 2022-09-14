@@ -226,7 +226,7 @@ class KernelPackageEntry:
         self._data = data if data else {}
 
         package_relations = self._source.package_relations
-        self._defaults = self._ks.defaults.get('package-relations', {}).get(package_relations, {}).get(self.ptype, {})
+        self._defaults = self._ks.defaults.get('package-relations', {}).get(package_relations, {}).get(self.type, {})
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
