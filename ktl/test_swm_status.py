@@ -18,15 +18,18 @@ class TestSwmStatusCore(unittest.TestCase):
 
 class TestSwmStatus(TestSwmStatusCore):
 
-    data_yaml = """
-    trackers:
-        '123':
-            cycle: 2020.03.16-1
-            package: linux
-        '124':
-            cycle: 2020.03.16-1
-            package: linux-deriv
-    """
+    data_json = """{
+        "trackers": {
+            "123": {
+                "cycle": "2020.03.16-1",
+                "package": "linux"
+            },
+            "124": {
+                "cycle": "202.03.16.-1",
+                "package": "linux-deriv"
+            }
+        }
+    }"""
     data_raw = {
             'trackers': {
                 '123': None,
@@ -35,8 +38,8 @@ class TestSwmStatus(TestSwmStatusCore):
         }
     data_trackers = ['123', '124']
 
-    def test_initialisation_data_yaml(self):
-        ss = SwmStatus(data=self.data_yaml)
+    def test_initialisation_data_json(self):
+        ss = SwmStatus(data=self.data_json)
 
         self.assertEqual(sorted(ss.trackers.keys()), self.data_trackers)
 
@@ -47,9 +50,9 @@ class TestSwmStatus(TestSwmStatusCore):
 
     def test_initialisation_url(self):
         with TempDirectory() as d:
-            d.write('swm-status.yaml', self.data_yaml.encode('utf-8'))
+            d.write('swm-status.json', self.data_json.encode('utf-8'))
 
-            ss = SwmStatus(url='file://' + d.getpath('swm-status.yaml'))
+            ss = SwmStatus(url='file://' + d.getpath('swm-status.json'))
 
         self.assertEqual(sorted(ss.trackers.keys()), self.data_trackers)
 
