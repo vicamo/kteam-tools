@@ -40,8 +40,9 @@ do
 				echo "$id: re-uploading $upload (to $upload_name $upload_to) ..."
 				dput ${ANCILLARY_DPUTCF:+-c $ANCILLARY_DPUTCF} "$upload_to" "$upload"
 			done
-		) || exit "$?"
-		echo "$id: complete"
+		)
+		arc="$?"
+		echo "$id: complete, rc=$arc"
 		continue
 	fi
 
@@ -53,13 +54,34 @@ do
 		echo "$id: downloading source ..."
 		for url in $urls
 		do
-			wget $url
+			out=$(basename "$url" | sed -e 's/?.*$//')
+			wget -O "$out" $url
 		done
 		echo "$id: extracting source ..."
 		dpkg-source -x $source*.dsc
 
+		arc=0
+
 		# Confirm this is the appropriate form.
-		if [ -f $source-*/debian/scripts/gen-ancillary ]; then
+		if [ -d $source-*/debian/ancillary ]; then
+			echo "$id: direct ancillaries present"
+			(
+				cd $source-*/debian/ancillary/ || exit 2
+				for ancillary in *
+				do
+					[ ! -d $ancillary/debian ] && continue
+					(
+						echo "$id: building direct ancillary $ancillary ..."
+						cd "$ancillary" || exit 2
+						debian/rules clean
+						dpkg-buildpackage --no-sign -nc -S
+					) || exit "$?"
+					mv ${ancillary}_* ../../..
+				done
+			)
+			arc="$?"
+
+		elif [ -f $source-*/debian/scripts/gen-ancillary ]; then
 			echo "$id: triggering gen-anciallary"
 			(
 				cd $source-* || exit 2
@@ -69,7 +91,8 @@ do
 					echo "$id: gen-ancillary failed rc=$rc" 1>&2
 				fi
 				exit "$rc"
-			) || exit "$?"
+			)
+			arc="$?"
 		
 		elif [ -f $source-*/debian/scripts/gen-rules.lrm ]; then
 			(
@@ -84,12 +107,18 @@ do
 				sed -i -e '1s/linux-restricted-generate/linux-restricted-signatures/' debian/changelog
 				debian/rules clean
 				dpkg-buildpackage --no-sign -nc -S
-			) || exit "$?"
+			)
+			arc="$?"
 
 		else
 			echo "$id: non-ancillary form, marking ignored"
 			touch "ignore"
-			exit 0
+			arc="1"
+		fi
+
+		if [ "$arc" != 0 ]; then
+			echo "$id: ancillary build failed, rc=$arc"
+			continue
 		fi
 
 		for upload in *_source.changes

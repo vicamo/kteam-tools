@@ -35,6 +35,7 @@ do
 		"$builder" ppa:canonical-kernel-team/ubuntu/azure     ppa:canonical-kernel-team/ubuntu/azure-ps
 		"$builder" ppa:fips-cc-stig/ubuntu/fips-build         ppa:fips-cc-stig/ubuntu/fips-build
 		"$builder" ppa:canonical-kernel-dgx/ubuntu/build      ppa:canonical-kernel-dgx/ubuntu/build-ps
+		"$builder" ppa:nvidia-kernel/ubuntu/build             ppa:nvidia-kernel/ubuntu/build
 	;;
 	esac
 done
