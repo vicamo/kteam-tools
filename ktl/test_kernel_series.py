@@ -1775,6 +1775,285 @@ class TestKernelPackageEntry(TestKernelSeriesCore):
 
         self.assertEqual(package.repo, None)
 
+    def test_ancillary_for_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+                            type: signed
+                        linux-generate:
+                            ancillary-for: signed
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.ancillary_for.type, 'signed')
+
+    def test_ancillary_for_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.ancillary_for, None)
+
+    def test_ancillary_for_default(self):
+        data = """
+        defaults:
+            package-relations:
+                default:
+                    generate:
+                        ancillary-for: signed
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+                            type: signed
+                        linux-generate:
+                            type: generate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.ancillary_for.type, 'signed')
+
+    def test_depends_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+                            type: signed
+                        linux-generate:
+                            depends: signed
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.depends.type, 'signed')
+
+    def test_depends_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+                            type: signed
+                        linux-generate:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.depends, None)
+
+    def test_depends_default(self):
+        data = """
+        defaults:
+            package-relations:
+                default:
+                    generate:
+                        depends: signed
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+                            type: signed
+                        linux-generate:
+                            type: generate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.depends.type, 'signed')
+
+    def test_adjunct_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            adjunct: true
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertTrue(package.adjunct)
+
+    def test_adjunct_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertFalse(package.adjunct)
+
+    def test_adjunct_default(self):
+        data = """
+        defaults:
+            package-relations:
+                default:
+                    generate:
+                        adjunct: true
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            type: generate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertTrue(package.adjunct)
+
+    def test_signing_to_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            signing-to: signed
+                        linux-signed:
+                            type: signed
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.signing_to.type, 'signed')
+
+    def test_signing_to_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertEqual(package.signing_to, None)
+
+    def test_signing_to_default(self):
+        data = """
+        defaults:
+            package-relations:
+                default:
+                    generate:
+                        signing-to: signed
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            type: generate
+                        linux-signed:
+                            type: signed
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-generate')
+
+        self.assertTrue(package.signing_to.type == 'signed')
+
+    def test_signing_from_present(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            type: generate
+                        linux-signed:
+                            signing-from: generate
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-signed')
+
+        self.assertEqual(package.signing_from.type, 'generate')
+
+    def test_signing_from_absent(self):
+        data = """
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-signed:
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-signed')
+
+        self.assertEqual(package.signing_from, None)
+
+    def test_signing_from_default(self):
+        data = """
+        defaults:
+            package-relations:
+                default:
+                    generate:
+                    signed:
+                        signing-from: generate
+        '18.04':
+            sources:
+                linux:
+                    packages:
+                        linux-generate:
+                            type: generate
+                        linux-signed:
+                            type: signed
+        """
+        ks = KernelSeries(data=data)
+        series = ks.lookup_series('18.04')
+        source = series.lookup_source('linux')
+        package = source.lookup_package('linux-signed')
+
+        self.assertEqual(package.signing_from.type, 'generate')
+
 
 class TestKernelSnapEntry(TestKernelSeriesCore):
 
