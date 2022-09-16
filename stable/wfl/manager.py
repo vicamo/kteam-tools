@@ -16,13 +16,14 @@ from ktl.sru_cycle                      import SruCycle
 
 from .context                           import ctx
 from .errors                            import WorkflowCrankError, WorkflowCorruptError
-from .log                               import center, cleave, cdebug, cinfo, cerror
+from .log                               import center, cleave, cdebug, cinfo, cerror, cinstance
 from .launchpad                         import Launchpad
 from .launchpad_stub                    import LaunchpadStub
 from .bug                               import WorkflowBug, WorkflowBugError, WorkflowBugTaskError
 from .package                           import PackageError, SeriesLookupFailure
 from .snap                              import SnapError
 from .bugmail                           import BugMailConfigFileMissing
+from .work                              import SwmWork
 import wfl.wft
 
 
@@ -100,6 +101,8 @@ class WorkflowManager():
         with s.lock_status():
             s.status_start = s.status_load()
         s.status_wanted = {}
+
+        s.tracker_validator = {}
 
         cleave('WorkflowManager.__init__')
 
@@ -425,8 +428,14 @@ class WorkflowManager():
         if s.args.bugs:
             bugs = []
             for bugid in s.args.bugs:
-                if bugid.isdigit():
+                if '@' in bugid:
+                    bugid, validator = bugid.split('@')
+                    s.tracker_validator[bugid] = validator
                     bugs.append(bugid)
+
+                elif bugid.isdigit():
+                    bugs.append(bugid)
+
                 elif ':' in bugid:
                     # We will search for <series>:<source>:<target>
                     # if target is missing imply it from source.
@@ -441,9 +450,9 @@ class WorkflowManager():
                             search_data.get('target', '-')]
                         if bits == search_key:
                             bugs.append(search_id)
+
                 else:
                     cerror('    {}: bugid format unknown'.format(bugid), 'red')
-                    continue
 
             for bugid in bugs:
                 lpbug = s.lp.default_service.get_bug(bugid)
@@ -499,6 +508,33 @@ class WorkflowManager():
             s.manage_payload()
         cinfo('Completed run ' + str(datetime.now()))
 
+    # queue_cranks
+    #
+    def queue_cranks(self, buglist, priority=None, dependants=False):
+        if len(buglist) == 0:
+            return
+
+        # Queue these in the most appropriate order.
+        buglist = list(set(buglist))
+        buglist = list(sorted(buglist, key=self.tracker_key))
+
+        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+
+        with self.lock_status():
+            status = self.status_load()
+
+        for bugid in buglist:
+            manager = status.get(bugid,{}).get('manager', {})
+            scanned = manager.get('time-scanned')
+
+            cinfo("queuing shank {} {}".format(bugid, scanned))
+            work.send_shank(bugid, scanned=scanned, priority=priority)
+
+        if dependants:
+            # If we had anything todo, ask for a rescan at low-priority.
+            cinfo("queuing barrier")
+            work.send_barrier(priority=priority)
+
     # manage_payload
     #
     def manage_payload(s):
@@ -513,8 +549,15 @@ class WorkflowManager():
             bugs_pass = 0
             bugs_overall = 0
 
+            if s.args.queue_direct:
+                s.queue_cranks(buglist, dependants=True)
+                buglist=[]
+
             if s.args.dependants_only:
                 buglist = s.live_dependants_rescan()
+                if s.args.queue_only:
+                    s.queue_cranks(buglist, priority=2, dependants=True)
+                    buglist = []
 
             while len(buglist) > 0:
                 # Make sure that each bug only appears once.
@@ -533,7 +576,7 @@ class WorkflowManager():
                 cinfo("manage_payload: scan={}".format(buglist))
                 for bugid in buglist:
                     bugs_scanned += 1
-                    with s.lock_bug(bugid):
+                    with cinstance("LP#" + bugid), s.lock_bug(bugid):
                         cinfo('')
                         cinfo("Processing ({}/{} pass={} total={}): {} ({})".format(bugs_scanned, bugs_total, bugs_pass, bugs_overall, bugid, s.lp.bug_url(bugid)))
 
@@ -546,6 +589,9 @@ class WorkflowManager():
                     buglist_rescan += s.live_dependants_rescan()
 
                 buglist = buglist_rescan
+                if s.args.queue_only:
+                    s.queue_cranks(buglist)
+                    buglist = []
 
         except BugMailConfigFileMissing as e:
             print(e.message)
@@ -592,6 +638,15 @@ class WorkflowManager():
         modified = False
         bug = None
         try:
+            tracker_status = s.status_get(bugid)
+            validator = s.tracker_validator.get(bugid, False)
+            scanned = tracker_status.get('manager', {}).get('time-scanned')
+            if validator is not False:
+                cinfo('    LP: #{} (validator {} {})'.format(bugid, validator, scanned), 'magenta')
+                if validator != str(scanned):
+                    cinfo('    LP: #{} (already scanned {} {})'.format(bugid, validator, scanned), 'magenta')
+                    return []
+
             lpbug = s.lp.default_service.get_bug(bugid)
             if lpbug is None:
                 cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
@@ -620,8 +675,6 @@ class WorkflowManager():
 
             # Update linkage.
             bug.add_live_children(s.live_children(bugid))
-
-            tracker_status = s.status_get(bugid)
 
             # Catch direct modification of the bug.  We would be asked to scan
             # the bug but not ourselves modify it.

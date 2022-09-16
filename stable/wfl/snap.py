@@ -7,6 +7,7 @@ try:
 except ImportError:
     from urllib2 import urlopen, urlencode, Request, URLError, HTTPError
 
+import os
 import json
 from .errors import ShankError
 from datetime import datetime
@@ -51,7 +52,7 @@ class SnapStore:
         """
         s.snap = snap
         s._channel_map = None  # dictionary with {(<arch>,<channel>): {<version>,<revision>}}
-        s.secrets = Secrets().get('snaps')
+        s.secrets = Secrets(os.path.expanduser("~/.swm-secrets.yaml")).get('snaps')
 
     # channel_map_lookup
     #

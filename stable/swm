@@ -38,6 +38,8 @@ examples:
     parser.add_argument('--no-color',                   action='store_true', default=False, help='Turn off colorisationn.)')
     parser.add_argument('--dependants',                 action='store_true', default=False, help='Include dependant bugs of specified bugs.')
     parser.add_argument('--dependants-only',            action='store_true', default=False, help='Only scan dependant bugs.')
+    parser.add_argument('--queue-only',                 action='store_true', default=False, help='Only queue bugs requiring further scan.')
+    parser.add_argument('--queue-direct',               action='store_true', default=False, help='Only queue proffered bugs.')
     parser.add_argument('--logfile',                                         default=None, help='Where to log the output.')
     parser.add_argument('--log-prefix',                                      default=None, help='Logfile prefix to disabiguate overlapping runs.')
     parser.add_argument('--local-msgqueue-port',  type=int,                  default=None,  help='The local port to be used to talk to the Rabbit MQ service.')

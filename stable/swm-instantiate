@@ -6,9 +6,12 @@
 #
 
 import os
+import logging
 import re
 import sys
-from logging                            import basicConfig
+from argparse                           import ArgumentParser, RawDescriptionHelpFormatter
+from contextlib                         import contextmanager
+from fcntl                              import lockf, LOCK_EX, LOCK_NB, LOCK_UN
 
 import yaml
 
@@ -20,6 +23,7 @@ from ktl.workflow import Workflow, DefaultAssigneeMissing
 from lazr.restfulclient.errors import BadRequest
 from wfl.log import Clog, cdebug, cinfo, cerror, cwarn, center, cleave
 from wfl.launchpad import LaunchpadDirect
+from wfl.work import SwmWork
 
 
 class TrackerProduction:
@@ -112,6 +116,12 @@ class TrackerProduction:
         for lp_task in lp_bug.bug_tasks:
             lp_tasks[lp_task.target.self_link] = lp_task
 
+        # Check if we are actually already complete.
+        lp_task = lp_tasks[self.project.self_link]
+        if lp_task.status != 'Confirmed':
+            cinfo("Already complete.")
+            return False
+
         # First add all of the required workflow tasks
         for wf_task in self.project.series_collection:
             cinfo(wf_task)
@@ -164,7 +174,10 @@ class TrackerProduction:
                 except BadRequest:
                     lp_package = lp_series.getSourcePackage(name='linux')
                     cdebug("    failed, adding: {}".format(lp_package.self_link))
-                    lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+                    try:
+                        lp_tasks[lp_package.self_link] = lp_bug.addTask(target=lp_package)
+                    except BadRequest:
+                        pass
 
             if lp_package is not None:
                 lp_task = lp_tasks.get(lp_package.self_link)
@@ -184,6 +197,7 @@ class TrackerProduction:
         cdebug("liven workflow task")
 
         self.lp_task_update(lp_task, status='Triaged', importance='Medium')
+        return True
 
     def instantiate_all(self):
         bugs = {}
@@ -200,10 +214,56 @@ class TrackerProduction:
         for bug_id, bug in sorted(bugs.items()):
             self.instantiate(bug_id, bug)
 
+    @contextmanager
+    def lock_bug(self, what, block=True):
+        with open("swm.lock", "w") as lockfd:
+            mode = LOCK_EX
+            if block is False:
+                mode |= LOCK_NB
+            lockf(lockfd, mode, 1, int(what))
+            yield
+            lockf(lockfd, LOCK_UN, 1, int(what))
+
+    def request_shank(self, bug_id):
+        work = SwmWork(config=os.path.expanduser("~/.kernel-swm-worker.yaml"))
+        work.send_shank(bug_id, priority=3)
+
+    def instantiate_one(self, bug_id):
+        try:
+            with self.lock_bug(bug_id, block=False):
+                bug = self.lp.bugs[bug_id]
+                if self.instantiate(bug_id, bug):
+                    self.request_shank(bug_id)
+        except BlockingIOError:
+            cinfo("INSTANTIATE {} already in-progress, skipped".format(bug_id))
+
+
 if __name__ == '__main__':
-    log_format = "%(levelname)05s - %(message)s"
-    basicConfig(level='DEBUG', format=log_format)
+    # Command line argument setup and initial processing
+    #
+    app_description = '''
+SWM tracker instantiator
+    '''
+    app_epilog = '''
+examples:
+    swm-instantiate --help
+    '''
+    parser = ArgumentParser(description=app_description, epilog=app_epilog, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('--debug', action='store_true', default=False, help='Print out a lot of messages about what is going on.')
+    parser.add_argument('trackers', nargs="*", help='Trackers to scan')
+    args = parser.parse_args()
+
+    # If logging parameters were set on the command line, handle them
+    # here.
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
+    logger = logging.getLogger('swm-instantiate')
+    logger.setLevel(level=logging.DEBUG if args.debug else logging.INFO)
+
     Clog.color = False
 
-    line = TrackerProduction('kernel-sru-workflow')
-    line.instantiate_all()
+    app = TrackerProduction('kernel-sru-workflow')
+    if len(args.trackers) == 0:
+        app.instantiate_all()
+    else:
+        for tracker in args.trackers:
+            app.instantiate_one(tracker)

@@ -34,6 +34,7 @@ from wfl.launchpad import LaunchpadDirect
 from wfl.snap import SnapStore, SnapStoreError
 from wfl.wft.regression_testing import RegressionTestingResults, RegressionTestingResultsError
 from wfl.wft.automated_testing import AutomatedTestingResults, AutomatedTestingResultsError
+from wfl.work import SwmWork
 
 
 class MonitorIncompatible(Exception):
@@ -200,8 +201,8 @@ class MonitorLaunchpadProject:
                 dup_id = bug.duplicate_of.id
                 print("D", dup_id, '<-', bug_id)
                 # Add both ends as SWM may have triggered the duplication.
-                changed.add(str(dup_id))
-                changed.add(str(bug_id))
+                changed.add(('shank', str(dup_id)))
+                changed.add(('shank', str(bug_id)))
             for activity in bug.activity:
                 activity_date = activity.datechanged
 
@@ -224,18 +225,23 @@ class MonitorLaunchpadProject:
                 elif activity.person_link.endswith("/~ubuntu-kernel-bot"):
                     continue
                 print("Y", bug_id, activity, activity.person_link)
-                changed.add(str(bug_id))
+                changed.add(('shank', str(bug_id)))
                 break
 
+        # Trackers in Confirmed are uninstantiated and need to be built,
+        # retrigger until they resolve.
         # Trackers in Triaged are new and have never been scanned (or that
         # scan has failed, retrigger until they resolve.
-        tasks = self.project.searchTasks(status=['Triaged'])
+        tasks = self.project.searchTasks(status=['Confirmed', 'Triaged'])
         for task in tasks:
             bug = task.bug
             if 'kernel-release-tracking-bug-test' in bug.tags:
                 continue
-            print("TASK (NEW)", task, bug, bug.date_last_updated)
-            changed.add(str(bug.id))
+            print("TASK ({})".format(task.status), task, bug, bug.date_last_updated)
+            if task.status == 'Confirmed':
+                changed.add(('instantiate', str(bug.id)))
+            else:
+                changed.add(('shank', str(bug.id)))
 
         return changed
 
@@ -306,7 +312,7 @@ class MonitorLaunchpadQueues:
                     # If this is new to the queue then trigger it.
                     if date_created > start_date:
                         source_key = "{}:{}".format(series.codename, self.source_packages[package_key])
-                        changed.add(source_key)
+                        changed.add(('shank', source_key))
 
                     # Anything on the queue is interesting for summary notification.
                     notices.append([status, series.codename, upload.pocket, package_name])
@@ -385,7 +391,7 @@ class MonitorTrelloDisposition:
                     lp_bug.tags = tags
                     lp_bug.lp_save()
 
-                    changed.add(tracker_id)
+                    changed.add(('shank', tracker_id))
 
         # Remove a tag for any tracker which is no longer blocked.
         for tracker_key in self.tagged:
@@ -400,7 +406,7 @@ class MonitorTrelloDisposition:
                 lp_bug.tags = tags
                 lp_bug.lp_save()
 
-            changed.add(tracker_id)
+            changed.add(('shank', tracker_id))
 
         self.tagged = new_tagged
 
@@ -451,7 +457,7 @@ class MonitorStatusSwmStatus:
                 #print("APW", bug_data['refresh-time'] - start_date, bug_data['refresh-time'] < start_date)
                 if when < start_date:
                     #print("APW", bug_id, bug_data['refresh-time'], "READY")
-                    changed.add(bug_id)
+                    changed.add(('shank', bug_id))
 
             scanned = bug_data.get('manager', {}).get('time-scanned')
             scanned = scanned.replace(tzinfo=timezone.utc)
@@ -470,7 +476,7 @@ class MonitorStatusSwmStatus:
         print("SCANNER trackers={} lagging={} limit={}".format(len(status.trackers), len(lagging), limit))
         for scan_refresh, delta, bug_id in sorted(lagging):
             print("LAGGER {} time={} delta={}".format(bug_id, scan_refresh, delta))
-            changed.add(bug_id)
+            changed.add(('shank', bug_id))
 
             limit -= 1
             if limit == 0:
@@ -705,7 +711,7 @@ class MonitorSwmStatusMonitor:
                     'tracker-modified':     self.tracker_modified,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
-                    changed.add(bug_id)
+                    changed.add(('shank', bug_id))
                     break
             sys.stdout.flush()
         print("REFRESH", changed)
@@ -795,7 +801,8 @@ class FilterSwmStatus:
         status = self.ss
 
         trackers_mapped = set()
-        for tracker in trackers:
+        for item in trackers:
+            (command, tracker) = item
             if ':' in tracker:
                 # We will search for <series>:<source>:<target>
                 # if target is missing imply it from source.
@@ -809,20 +816,23 @@ class FilterSwmStatus:
                         search_data.get('source', '-'),
                         search_data.get('target', '-')]
                     if bits == search_key:
-                        trackers_mapped.add(search_id)
+                        trackers_mapped.add((command, search_id))
             else:
-                trackers_mapped.add(tracker)
+                trackers_mapped.add(item)
 
         print("MAPPED", len(trackers_mapped), trackers_mapped)
 
         tracker_delta = {}
-        for tracker in trackers_mapped:
+        for item in trackers_mapped:
+            command, tracker = item
+            item_key = command + '--' + tracker
             tracker_delta[tracker] = '+'
             #print("NEEDS SCANNING {}".format(tracker))
-            self.last_scanned[tracker] = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
+            self.last_scanned[item_key] = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
 
-        for tracker in list(self.last_scanned):
-            last_scanned = self.last_scanned[tracker]
+        for item_key in list(self.last_scanned):
+            command, tracker = item_key.split('--')
+            last_scanned = self.last_scanned[item_key]
             if isinstance(last_scanned, datetime):
                 last_scanned = last_scanned.replace(tzinfo=None)
             curr_scanned = status.trackers.get(tracker, {}).get('manager', {}).get('time-scanned', False)
@@ -832,11 +842,11 @@ class FilterSwmStatus:
                     print("RECOVERED {} {} {}".format(tracker, last_scanned, curr_scanned))
                 else:
                     print("NEW {} {} {}".format(tracker, last_scanned, curr_scanned))
-                changed.add(tracker)
+                changed.add((command, tracker))
             else:
                 tracker_delta[tracker] = '-'
                 print("ALREADY-SCANNED {} {} {}".format(tracker, last_scanned, curr_scanned))
-                del self.last_scanned[tracker]
+                del self.last_scanned[item_key]
 
         print("DELTA ", ' '.join(["{}{}".format(x, y) for y,x in sorted([(y,x) for x,y in tracker_delta.items()])]))
 
@@ -894,15 +904,18 @@ if __name__ == '__main__':
 
     if len(changed) > 0:
         cmd_before = perf_counter()
-        cmd = ['./swm-cron'] + list(changed)
-        command = Popen(cmd)
-        print("COMMAND STARTED", command.pid)
-        sys.stdout.flush()
-        status = command.wait()
+        ss = factory.ss
+        swm_work = SwmWork(config="~/.kernel-swm-worker.yaml")
+        for cmd, tracker in changed:
+            print("QUEUE: {} {}".format(cmd, tracker))
+            if cmd == 'shank':
+                scanned = ss.trackers.get(tracker,{}).get('manager', {}).get('time-scanned')
+                swm_work.send_shank(tracker, scanned=scanned)
+            elif cmd == 'instantiate':
+                swm_work.send_instantiate(tracker)
+        swm_work.send_barrier()
         cmd_after = perf_counter()
-        print("COMMAND COMPLETE rc={} time={} wall={}".format(status, cmd_after - cmd_before, time()))
-        if status != 0:
-            sys.exit(1)
+        print("COMMAND COMPLETE time={} wall={}".format(cmd_after - cmd_before, time()))
 
         swm_filter.commit()
         factory.sync()
