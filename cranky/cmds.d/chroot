@@ -160,6 +160,10 @@ session_chroot_create()
 	fi
 
 	# Fixups to support backport kernels
+	if [ "${series}" = "jammy" ] ; then
+		# Compiling Kinetic kernels requires gcc-12
+		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install ${arm64_compiler/gcc/gcc-12} gcc-12-arm-linux-gnueabihf gcc-12-powerpc64le-linux-gnu gcc-12-s390x-linux-gnu gcc-12-riscv64-linux-gnu  ${x86_compiler/gcc/gcc-12}
+	fi
 	if [ "${series}" = "focal" ] ; then
 		# Compiling Hirsute and later kernels requires dctrl-tools
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install dctrl-tools
