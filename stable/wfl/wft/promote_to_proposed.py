@@ -320,10 +320,10 @@ class PromoteFromTo(Promoter):
                 # If we've already been through here and already sent out the announcement
                 # don't go through it again.
                 #
-                if 'proposed-announcement-sent' not in s.bug.bprops:
+                if not s.bug.flag('proposed-announcement-sent'):
                     if not s.bug.source.private:
                         s.bug.send_upload_announcement('proposed')
-                    s.bug.bprops['proposed-announcement-sent'] = True
+                    s.bug.flag_assign('proposed-announcement-sent', True)
 
             cinfo('    All components are now in -proposed', 'magenta')
             s.task.status = 'Fix Released'

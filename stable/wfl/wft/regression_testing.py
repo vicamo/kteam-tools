@@ -185,9 +185,9 @@ class RegressionTesting(TaskHandler):
             # If we are checking results and we have not requested sru testing
             # do that now.  If we are marked for early-testing we will test against
             # the PPA version.
-            if 'proposed-testing-requested' not in s.bug.bprops:
+            if not s.bug.flag('proposed-testing-requested'):
                 s.bug.debs.send_testing_requests(op="sru", ppa=early_testing)
-                s.bug.bprops['proposed-testing-requested'] = True
+                s.bug.flag_assign('proposed-testing-requested', True)
 
             try:
                 result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'sru')
@@ -313,9 +313,9 @@ class BootTesting(TaskHandler):
         else:
             # If we are checking results and we have not requested boot testing
             # do that now.
-            if 'boot-testing-requested' not in s.bug.bprops:
+            if not s.bug.flag('boot-testing-requested'):
                 s.bug.debs.send_boot_testing_requests()
-                s.bug.bprops['boot-testing-requested'] = True
+                s.bug.flag_assign('boot-testing-requested', True)
 
             try:
                 result = RegressionTestingResults.lookup_result(s.bug.sru_cycle, s.bug.series, s.bug.name, s.bug.version, 'boot')

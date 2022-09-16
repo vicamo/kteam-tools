@@ -252,16 +252,16 @@ class VerificationTesting(TaskHandler):
         else:
             # Spam bugs against this package (but not those against our master)
             # if they haven't been spammed already.
-            if 'bugs-spammed' not in s.bug.bprops:
+            if not s.bug.flag('bugs-spammed'):
                 cinfo('            Spamming bugs for verification', 'yellow')
                 try:
                     s._spam_bugs()
-                    s.bug.bprops['bugs-spammed'] = True
+                    s.bug.flag_assign('bugs-spammed', True)
                 except BugSpamError as e:
                     cerror('            %s' % str(e))
 
             # If we have managed to spam the bugs then verification is now in-progress.
-            if 'bugs-spammed' in s.bug.bprops:
+            if s.bug.flag('bugs-spammed'):
                 if s.task.status == 'Confirmed':
                     s.task.status = 'In Progress'
                     retval = True
@@ -278,11 +278,11 @@ class VerificationTesting(TaskHandler):
                 s.task.status = 'Incomplete'
                 retval = True
 
-            elif status == 'needed' and 'bugs-spammed' in s.bug.bprops and task_status != 'In Progress':
+            elif status == 'needed' and s.bug.flag('bugs-spammed') and task_status != 'In Progress':
                 s.task.status = 'In Progress'
                 retval = True
 
-            elif status == 'needed' and 'bugs-spammed' not in s.bug.bprops and task_status != 'Confirmed':
+            elif status == 'needed' and not s.bug.flag('bugs-spammed') and task_status != 'Confirmed':
                 s.task.status = 'Confirmed'
                 retval = True
 
