@@ -1170,11 +1170,6 @@ class WorkflowBug():
         if abi_bump:
             subject += " (ABI bump)"
 
-        if s._dryrun or s._no_announcements:
-            cinfo('    dryrun - Sending announcement to shankbot', 'red')
-        else:
-            send_to_shankbot(subject + '\n')
-
         body  = "A new " + s.series + " kernel has been uploaded into "
         body += pocket + ". "
         if abi_bump:
