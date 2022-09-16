@@ -44,7 +44,7 @@ kernel-series.yaml.
 
 Positional arguments:
   handle         Handle to a kernel source tree, either a path to a kernel
-                 kernel source tree or a handle in <series>:<package> format.
+                 source tree or a handle in <series>:<package> format.
                  If not given the current working directory is used.
 
 Optional arguments:
