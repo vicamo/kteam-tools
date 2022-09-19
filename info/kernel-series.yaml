@@ -1073,7 +1073,7 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-aws:
-            variants: ['--']
+            variants: ['--', '-lts-22.04']
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'master-next']
@@ -1102,7 +1102,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            variants: ['--']
+            variants: ['--', '-lts-22.04']
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'master-next']
