@@ -267,6 +267,14 @@ if __name__ == '__main__':
                     jira.transition_issue(issue, transition=671) # 'Force Rejected'
                 continue
 
+            # Determine swm's view of its disposition.
+            tracker_id = trackers[key].get('_id')
+            tracker_owner = trackers[key].get('owner')
+            tracker_tasks = trackers[key].get('task', {})
+            tracker_flags = trackers[key].get('flag', {})
+            tracker_issue = trackers[key].get('issue')
+            tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
+
             if key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
                 print("MISSING ISSUE")
                 print("{}: new issue ...".format(cycle))
@@ -286,14 +294,6 @@ if __name__ == '__main__':
             else:
                 issue = jira_issues[key]
 
-            # Determine swm's view of its disposition.
-            tracker_id = trackers[key].get('_id')
-            tracker_owner = trackers[key].get('owner')
-            tracker_tasks = trackers[key].get('task', {})
-            tracker_flags = trackers[key].get('flag', {})
-            tracker_issue = trackers[key].get('issue')
-
-            tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
             if tracker_overall in ('Fix Committed', 'Fix Released'):
                 status = str(issue.fields.status)
                 if status not in ('Kernel Complete', 'Rejected'):
