@@ -302,7 +302,10 @@ class WorkflowBug():
     # _remove_live_tag
     #
     def _remove_live_tag(s):
-        # If this task is now closed, also drop the live tag.
+        # Once the cycle a tracker is in is complete the swm-status data for
+        # that tracker is dropped and the tracker considered fully closed.  At
+        # this point we can also remove its -live tag to eliminate it from
+        # future searches.
         if s.is_valid and s.is_purgable:
             if s._dryrun:
                 cinfo('    dryrun - workflow task is closed -- removing -live tag', 'red')
