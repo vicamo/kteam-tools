@@ -334,7 +334,6 @@ class WorkflowBug():
         if task is not None and task.status not in ('Fix Committed', 'Fix Released'):
             cinfo("Tracker closing, moving fix-committed")
             task.status = 'Fix Committed'
-            #task.lp_save()
 
     @property
     def _dryrun(s):
