@@ -669,7 +669,7 @@ class WorkflowManager():
                 bug.save()
                 status = None if bug.is_purgable else bug.status_summary()
                 s.status_set(bugid, status, modified=False)
-                raise WorkflowBugError('is closed and purgable, skipping (dropping={})'.format(status is None))
+                raise WorkflowBugError('is closed, skipping (dropping={})'.format(status is None))
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
