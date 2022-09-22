@@ -953,6 +953,7 @@ defaults:
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-starfive-5.17:
             versions: ['5.17.0']
