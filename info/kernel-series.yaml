@@ -3584,6 +3584,30 @@ defaults:
                         clouds: ['gke']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-gkeop-5.15:
+            variants: [ '-edge', '-5.15' ]
+            packages:
+                linux-gkeop-5.15:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gkeop-5.15-next']
+                linux-meta-gkeop-5.15:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal', 'gkeop-5.15']
+                linux-signed-gkeop-5.15:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop-5.15']
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '22.04', 'linux-gkeop' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-gke:
             # For Focal, we want linux-gke to stay at the version that is
             # native to the release. This is not how things get selected
