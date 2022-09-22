@@ -1595,9 +1595,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-fips:
                     type: lrs
-            development: true
-            supported: false
-            owner: mhcerri
+            development: false
+            supported: true
+            owner: jsalisbury
             private: true
             derived-from: ['22.04', 'linux']
             backport: true # use local-mangle to keep it in sync with the generic kernel
