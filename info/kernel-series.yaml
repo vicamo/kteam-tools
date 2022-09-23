@@ -7037,7 +7037,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-oracle-xenial']
             supported: true
-            owner: juergh
+            owner: jsalisbury
             backport: true
             derived-from: [ '18.04', 'linux-oracle' ]
             testing:
