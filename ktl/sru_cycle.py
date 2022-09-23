@@ -44,6 +44,7 @@ class SruCycleSpinEntry:
         self._release_date = rdate
 
         self._hold = data.get('hold', False)
+        self._complete = data.get('complete', False)
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -72,6 +73,10 @@ class SruCycleSpinEntry:
     @property
     def hold(self):
         return self._hold
+
+    @property
+    def complete(self):
+        return self._complete
 
     @property
     def known(self):

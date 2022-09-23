@@ -200,6 +200,10 @@ class WorkflowBug():
     def kernel_series(self):
         return ctx.ks
 
+    @property
+    def sc(self):
+        return ctx.sc
+
     def version_from_title(s):
         (s.series, s.name, s.version, s.source, s.kernel, s.abi) = (None, None, None, None, None, None)
 
@@ -298,8 +302,11 @@ class WorkflowBug():
     # _remove_live_tag
     #
     def _remove_live_tag(s):
-        # If this task is now closed, also drop the live tag.
-        if s.is_valid and s.is_closed:
+        # Once the cycle a tracker is in is complete the swm-status data for
+        # that tracker is dropped and the tracker considered fully closed.  At
+        # this point we can also remove its -live tag to eliminate it from
+        # future searches.
+        if s.is_valid and s.is_purgable:
             if s._dryrun:
                 cinfo('    dryrun - workflow task is closed -- removing -live tag', 'red')
             else:
@@ -319,6 +326,14 @@ class WorkflowBug():
             cinfo("Tracker modified, saving")
             s.lpbug.lpbug.lp_save()
             s.tracker_modified = False
+
+    # close
+    #
+    def close(s):
+        task = s.tasks_by_name.get('kernel-sru-workflow')
+        if task is not None and task.status not in ('Fix Committed', 'Fix Released'):
+            cinfo("Tracker closing, moving fix-committed")
+            task.status = 'Fix Committed'
 
     @property
     def _dryrun(s):
@@ -820,6 +835,11 @@ class WorkflowBug():
             status['master-bug'] = status[master_bug]
             del status[master_bug]
 
+        if s.is_duplicate:
+            status['task'] = {'kernel-sru-workflow': status['task']['kernel-sru-workflow']}
+            status['reason'] = {}
+            status['phase'] = 'Complete'
+
         return status
 
     # check_is_valid
@@ -834,6 +854,8 @@ class WorkflowBug():
         s.is_crankable = False
         s.is_closed = False
         s.is_gone = False
+        s.is_purgable = False
+        s.is_duplicate = s.lpbug.duplicate_of is not None
         for t in s.lpbug.tasks:
             task_name       = t.bug_target_name
 
@@ -845,10 +867,32 @@ class WorkflowBug():
                     s.is_crankable = True
                 elif t.status == 'In Progress':
                     s.is_crankable = True
+                elif t.status == 'Fix Committed':
+                    s.is_closed = True
                 elif t.status == 'Fix Released':
                     s.is_closed = True
+                    s.is_purgable = True
                 elif t.status == 'Invalid':
                     s.is_gone = True
+                break
+
+        if not s.is_closed or s.is_purgable:
+            return
+
+        # Consider if we are in a closed cycle and ready for final
+        # closure.
+        sru_cycle = s.sc.lookup_cycle(s.sru_cycle)
+        cycle_complete = sru_cycle is not None and sru_cycle.complete
+        if not cycle_complete:
+            return
+
+        for task in s.lpbug.tasks:
+            task_name       = task.bug_target_name
+
+            if task_name in WorkflowBug.projects_tracked:
+                if task.status == 'Fix Committed':
+                    task.status = 'Fix Released'
+                    s.is_purgable = True
                 break
 
     # accept_new

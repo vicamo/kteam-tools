@@ -460,8 +460,8 @@ class MonitorStatusSwmStatus:
                     changed.add(('shank', bug_id))
 
             scanned = bug_data.get('manager', {}).get('time-scanned')
-            scanned = scanned.replace(tzinfo=timezone.utc)
             if scanned is not None:
+                scanned = scanned.replace(tzinfo=timezone.utc)
                 scan_refresh = scanned + timedelta(hours=3, minutes=30)
                 if scan_refresh < start_date:
                     delta = scan_refresh - start_date

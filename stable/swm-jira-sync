@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from jira import JIRA as BrokenJIRA
 from jira.resources import GreenHopperResource, User
 
+from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
 from wfl.launchpad import LaunchpadDirect
 
@@ -63,6 +64,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(datetime.now(), "starting")
+
+    sc = SruCycle()
 
     # Load up the Swm Status data.  This tells us what trackers exist
     # and provides us with status information for each.
@@ -126,6 +129,15 @@ if __name__ == '__main__':
         print(" ", cycle)
         cycles.add(cycle)
 
+    # Run the list of cycles and work out if they are marked complete.
+    print("Cycle Status:", len(cycles))
+    cycle_complete = {}
+    for cycle in sorted(cycles):
+        sru_cycle = sc.lookup_cycle(cycle)
+        if sru_cycle is not None:
+            cycle_complete[cycle] = sru_cycle.complete
+        print(" {} complete={}".format(cycle, cycle_complete.get(cycle, False)))
+
     jira_issues = {}
 
     crank_re = re.compile("^Crank +([^ ]*) +#([^ ]*)$")
@@ -169,6 +181,20 @@ if __name__ == '__main__':
             if len(issues) == 0:
                 break
             for issue in issues:
+                if cycle_complete.get(cycle, False):
+                    issue_status = str(issue.fields.status)
+                    if issue_status not in ('Done', 'Rejected', 'Done', 'Kernel Complete'):
+                        if issue_status == 'Kernel Notice':
+                            new_status = 'Kernel Notice Complete'
+                        else:
+                            new_status = 'Rejected'
+                        print("CLOSE: {} {} -> {}".format(str(issue.key), str(issue.fields.status), new_status))
+                        if new_status == 'Rejected':
+                            jira.transition_issue(issue, transition=671) # 'Force Rejected'
+                        else:
+                            jira.transition_issue(issue, transition=new_status)
+                    continue
+
                 summary = issue.fields.summary
 
                 match = crank_re.match(summary)
@@ -230,7 +256,7 @@ if __name__ == '__main__':
                 # otherwise we need to shove it into Kernel Complete.
                 if ('kernel-debs' not in issue.fields.labels and
                         'kernel-snap-debs' not in issue.fields.labels):
-                    print("NEW/UNKNOWN ISSUE")
+                    print(issue, "NEW/UNKNOWN ISSUE", status)
 
                 elif status not in ('Kernel Complete', 'Rejected'):
                     print(issue, "LOST/COMPLETE ISSUE", status)
@@ -241,7 +267,15 @@ if __name__ == '__main__':
                     jira.transition_issue(issue, transition=671) # 'Force Rejected'
                 continue
 
-            if key not in jira_issues:
+            # Determine swm's view of its disposition.
+            tracker_id = trackers[key].get('_id')
+            tracker_owner = trackers[key].get('owner')
+            tracker_tasks = trackers[key].get('task', {})
+            tracker_flags = trackers[key].get('flag', {})
+            tracker_issue = trackers[key].get('issue')
+            tracker_overall = tracker_tasks.get('kernel-sru-workflow', {}).get('status', 'Invalid')
+
+            if key not in jira_issues and tracker_overall not in ('Fix Committed', 'Fix Released', 'Invalid'):
                 print("MISSING ISSUE")
                 print("{}: new issue ...".format(cycle))
                 title = key_to_title(key)
@@ -260,12 +294,16 @@ if __name__ == '__main__':
             else:
                 issue = jira_issues[key]
 
-            # Determine swm's view of its disposition.
-            tracker_id = trackers[key].get('_id')
-            tracker_owner = trackers[key].get('owner')
-            tracker_tasks = trackers[key].get('task', {})
-            tracker_flags = trackers[key].get('flag', {})
-            tracker_issue = trackers[key].get('issue')
+            if tracker_overall in ('Fix Committed', 'Fix Released'):
+                status = str(issue.fields.status)
+                if status not in ('Kernel Complete', 'Rejected'):
+                    print(issue, "LOST/COMPLETE ISSUE {} (kernel-sru-workflow={})".format(status, tracker_overall))
+                    print(issue.key, status, '->', 'Rejected')
+                    # Transition us to Rejected using the hidden transition
+                    # Force Rejected.  Note as it is hidden we have to use the
+                    # transitionId for it; this is looked up in the workflow.
+                    jira.transition_issue(issue, transition=671) # 'Force Rejected'
+                continue
 
             if tracker_flags.get('jira-preparation-block', False):
                 blocked_seen.add(tracker_id)

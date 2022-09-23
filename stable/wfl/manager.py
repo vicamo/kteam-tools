@@ -335,7 +335,7 @@ class WorkflowManager():
 
                     # If our scanned time is before the modified time then we need
                     # to be rescanned.
-                    if scanned < modified:
+                    if modified is not None and scanned < modified:
                         cinfo('    LP: #{} parent LP: #{} modified since scanned -- triggering ({}, {})'.format(child_nr, parent_nr, modified, scanned, scanned is None or modified > scanned), 'magenta')
                         rescan = True
 
@@ -652,20 +652,24 @@ class WorkflowManager():
                 cinfo('    LP: #{} (INVALID BUGID)'.format(bugid), 'magenta')
                 s.status_set(bugid, None)
                 raise WorkflowBugError('is invalid, skipping (and dropping)')
-            if lpbug.duplicate_of is not None:
-                cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
-                s.status_set(bugid, None)
-                s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
-                raise WorkflowBugError('is duplicated, skipping (and dropping)')
             bug = WorkflowBug(s.lp.default_service, bug=lpbug, manager=s)
             if bug.error is not None:
                 raise bug.error
+            if lpbug.duplicate_of is not None:
+                cinfo('    LP: #{} (DUPLICATE)'.format(bugid), 'magenta')
+                bug.close()
+                status = None if bug.is_purgable else bug.status_summary()
+                s.status_set(bugid, status, modified=False)
+                s.live_duplicates_mark(str(bugid), str(lpbug.duplicate_of.id))
+                raise WorkflowBugError('is duplicated, skipping (dropping={})'.format(status is None))
             if bug.is_closed:
                 # Update linkage.
                 bug.add_live_children(s.live_children(bugid))
+                bug.transient_reset_all()
                 bug.save()
-                s.status_set(bugid, None)
-                raise WorkflowBugError('is closed, skipping (and dropping)')
+                status = None if bug.is_purgable else bug.status_summary()
+                s.status_set(bugid, status, modified=False)
+                raise WorkflowBugError('is closed, skipping (dropping={})'.format(status is None))
             if not bug.is_crankable:
                 s.status_set(bugid, None)
                 raise WorkflowBugError('not crankable, skipping (and dropping)')
