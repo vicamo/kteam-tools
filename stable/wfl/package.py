@@ -5,6 +5,8 @@ import re
 from datetime                           import datetime, timedelta, timezone
 from hashlib                            import sha384
 import json
+import yaml
+
 from  debian.debian_support             import version_compare
 
 from lazr.restfulclient.errors          import NotFound, Unauthorized
@@ -1531,12 +1533,27 @@ class Package():
             pockets_srch.append(pocket_next)
 
         bi = s.build_info
+        pkg_outstanding = set(bi.keys())
         for pkg in bi:
             if pocket not in bi[pkg]:
                 continue
             found = False
             if bi[pkg][pocket]['version'] is None:
                 found = True
+            ancillary_for = s.ancillary_package_for(pkg)
+            if ancillary_for is not None:
+                pkg_af = ancillary_for
+            else:
+                pkg_af = pkg
+            # If the version is our version then ultimatly we won't copy this item, all is well.
+            if bi[pkg][pocket]['version'] == s.bug.bprops.get('versions', {}).get(pkg_af):
+                cinfo('            {} has {} pending in {} -- my version so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
+                found = True
+            # If the versions is a version we have replaced within the life of this tracker, all is well.
+            if bi[pkg][pocket]['version'] in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
+                cinfo('            {} has {} pending in {} -- an old version of mine so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
+                found = True
+            # If the version is in a later pocket then all is well.
             for pocket_next in pockets_srch:
                 if found:
                     break
@@ -1544,15 +1561,15 @@ class Package():
                     continue
                 try:
                     if version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version']) <= 0:
+                        cinfo('            {} has {} pending in {} -- matches later pocket so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                         found = True
                 except ValueError:
                     pass
                 if pkg not in s.dependent_packages_for_pocket(pocket_next):
                     found = True
                 cinfo("APW: {} <= {} = {}".format(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'], version_compare(bi[pkg][pocket]['version'], bi[pkg][pocket_next]['version'])))
-            if not found:
-                cinfo('            {} has {} pending in {}.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
-                retval = False
+            if found:
+                pkg_outstanding.discard(pkg)
 
         # We are ready to go but proposed is not clear.  Consider any
         # bug we are marked as replacing.
@@ -1560,14 +1577,41 @@ class Package():
 
         # If proposed is not clear, consider if it is full due to a bug
         # which has been duplicated against me.
-        if not retval:
+        if len(pkg_outstanding):
+            cinfo("APW: packages {} unaccounted for".format(pkg_outstanding))
             duplicates = s.bug.workflow_duplicates
             for dup_wb in duplicates:
-                # Consider only those supporting debs.
-                if dup_wb.debs and dup_wb.debs.all_built_and_in_pocket(pocket):
-                    cinfo('            %s is duplicate of us and owns the binaries in -proposed, overriding' % (dup_wb.lpbug.id,), 'yellow')
-                    retval = True
+                # Stop scanning out duplicates if we manage to account for everything.
+                if len(pkg_outstanding) == 0:
                     break
+                for pkg in list(pkg_outstanding):
+                    found = False
+                    if bi[pkg][pocket]['version'] is None:
+                        found = True
+                    ancillary_for = s.ancillary_package_for(pkg)
+                    if ancillary_for is not None:
+                        pkg_af = ancillary_for
+                    else:
+                        pkg_af = pkg
+                    # If the version is our version then ultimatly we won't copy this item, all is well.
+                    if bi[pkg][pocket]['version'] == dup_wb.bprops.get('versions', {}).get(pkg_af):
+                        found = True
+                    # If the versions is a version we have replaced within the life of this tracker, all is well.
+                    if bi[pkg][pocket]['version'] in dup_wb.bprops.get('versions-replace', {}).get(pkg_af, []):
+                        found = True
+                    # If we have found it then all is good for this package.
+                    if found:
+                        cinfo('            {} has {} pending in {} -- belongs to duplicate so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket, ), 'yellow')
+                        pkg_outstanding.discard(pkg)
+
+        outstanding = {}
+        for pkg in pkg_outstanding:
+            cinfo('            {} has {} pending in {} -- unaccounted for so blocking.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
+            retval = False
+            outstanding[pkg] = [bi[pkg][pocket]['version']]
+
+        if len(outstanding):
+            s.bug.reasons['packages-unaccounted'] = 'Stalled -s ' + yaml.dump(outstanding, default_flow_style=True, width=10000).strip()
 
         return retval
 

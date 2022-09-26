@@ -398,6 +398,11 @@ class WorkflowBug():
             if s.is_derivative_package:
                 try:
                     master = WorkflowBug(s.lp, s.master_bug_id)
+                    # check if our master is a duplicate, and if so follow the chain.
+                    duplicate_of = master.lpbug.lpbug.duplicate_of
+                    if duplicate_of is not None:
+                        cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, duplicate_of.id))
+                        master = WorkflowBug(s.lp, duplicate_of.id)
                     error = None
                     if master.is_gone:
                         error = WorkflowCrankError("master tracker link points to invalidated tracker")
@@ -405,13 +410,7 @@ class WorkflowBug():
                         error = WorkflowCrankError("master tracker link points to uninstantiated tracker")
 
                     if error is not None:
-                        # check if our master is a duplicte, and if so follow the chain.
-                        duplicate_of = master.lpbug.lpbug.duplicate_of
-                        if duplicate_of is not None:
-                            cinfo("master-bug link points to a duplicated bug, following {} -> {}".format(s.master_bug_id, master.lpbug.lpbug.id))
-                            master = WorkflowBug(s.lp, bug=duplicate_of)
-                        else:
-                            raise error
+                        raise error
                 except WorkflowBugError as e:
                     # Mark this as known to fail.
                     raise WorkflowCrankError("invalid master bug link -- {}".format(e.args[0]))
@@ -1299,7 +1298,8 @@ class WorkflowBug():
                     cinfo(l, 'red')
                 continue
 
-            if not dup_wb.is_workflow or not dup_wb.is_valid or dup_wb.is_gone:
+            cdebug("workflow_duplicates: checking {} is_workflow={} is_valid={}".format(dup.id, dup_wb.is_workflow, dup_wb.is_valid))
+            if not dup_wb.is_workflow or not dup_wb.is_valid:
                 continue
             retval.append(dup_wb)
 
