@@ -13,7 +13,6 @@ sys.path.append(os.path.realpath(
 from ktl.log            import Clog, cerror, cwarn, cinfo, cdebug
 from ktl.kernel_series  import KernelSeries
 from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
-from ktl.sruboard       import SRUBoard, SRUBoardError
 
 class Task():
     def __init__(self, taskset, ks_source, ks_snap=None):
@@ -442,6 +441,7 @@ class TaskSet():
     def CreateCards(self, boardname, dryrun=False, cve=False):
         if dryrun is False and self.board is None:
             try:
+                from ktl.sruboard       import SRUBoard, SRUBoardError
                 self.board = SRUBoard(self.cycletag, cve=cve)
             except SRUBoardError as e:
                 cerror(e)
