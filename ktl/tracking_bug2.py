@@ -192,8 +192,7 @@ class TrackingBug(object):
                 # the bug linking completely. So this would be "normal".
                 s._master_bug_id = p_master
             elif s._master_bug_id != p_master:
-                cwarn('Mismatch between tag and properties: master bug')
-                cwarn('tag: %s / property: %s' % (s._master_bug_id, p_master))
+                cwarn('Mismatch : master bug - tag: %s; property: %s  (lp: #%s)' % (s._master_bug_id, p_master, bug.id))
                 s._master_bug_id = p_master
                 #prefix = 'kernel-sru-%s-of-' % s.__type
                 #s.__update_pfx_tag(prefix, '%s%s' % (prefix, p_master))
