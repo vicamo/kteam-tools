@@ -259,7 +259,7 @@ class Promoter(TaskHandler):
                 'prepare-package-signed'     : ['Fix Released'],
                 'promote-to-proposed'        : ['Confirmed', 'Fix Released'],
                 'promote-to-updates'         : ['Confirmed', 'In Progress', 'Fix Released'],
-                'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
+                'promote-to-release'         : ['Confirmed', 'Triaged', 'In Progress', 'Fix Released'],
             }
 
             testing_complete = ['Fix Released', "Won't Fix"]
