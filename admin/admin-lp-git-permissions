@@ -322,7 +322,7 @@ def is_hwe(source):
             'linux-intel', 'linux-iot')
 
 def is_nvidia(source):
-    return source.name in ('linux-nvidia-tegra', 'linux-nvidia')
+    return source.name.startswith('linux-nvidia')
 
 def add_primary(repo_set):
     admins = '/~canonical-kernel-repo-admins-active'
