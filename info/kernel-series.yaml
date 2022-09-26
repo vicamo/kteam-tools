@@ -955,6 +955,40 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-hwe-5.19:
+            routing: wip
+            variants: [ '-wip' ]
+            packages:
+                linux-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.19-next']
+                linux-meta-hwe-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'hwe-5.19']
+                linux-signed-hwe-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'hwe-5.19']
+                linux-restricted-modules-hwe-5.19:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'hwe-5.19']
+                linux-restricted-generate-hwe-5.19:
+                    type: lrg
+                linux-restricted-signatures-hwe-5.19:
+                    type: lrs
+            owner: p-pisati
+            backport: true
+            derived-from: [ '22.10', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']        # test system arch names
+                        clouds: ['metal']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal']
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
         linux-starfive-5.17:
             versions: ['5.17.0']
             variants: ['--']
