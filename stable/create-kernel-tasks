@@ -556,7 +556,7 @@ Examples:
         devel_set = False
         for handle in args.handle:
             try:
-                (cn, sn) = handle.split(':')
+                (cn, sn) = handle.split(':') # cn = "series codename (focal, jammy, etc.)"; sn = "source name (linux, linux-realtime, linux-aws, etc)"
             except:
                 cerror('Failed to parse handle({})'.format(handle))
                 sys.exit(2)
