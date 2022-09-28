@@ -15,3 +15,4 @@ from .kernel_snap                       import SnapReleaseToBeta, SnapReleaseToC
 from .syn_prepare_packages              import SynPreparePackages
 from .syn_promote_to_as_proposed        import SynPromoteToAsProposed
 from .reviews                           import SruReview, NewReview
+from .canonical_signing_jobs            import CanonicalSigningJobs

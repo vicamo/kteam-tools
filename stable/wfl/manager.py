@@ -38,6 +38,7 @@ class WorkflowManager():
         s._lp = None
         s._task_map = {
             'kernel-sru-workflow'       : wfl.wft.Workflow,
+            'canonical-signing-jobs'    : wfl.wft.CanonicalSigningJobs,
             'upload-to-ppa-dnu'         : wfl.wft.IgnoreInvalid,
             'prepare-package'           : wfl.wft.PreparePackage,
             'prepare-package-lbm'       : wfl.wft.PreparePackage,

@@ -992,7 +992,10 @@ class WorkflowBug():
         for t in s.lpbug.bug_tasks:
             task_name       = t.bug_target_name
 
-            if task_name.startswith(s.workflow_project):
+            if task_name.startswith("canonical-signing-jobs"):
+                tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
+
+            elif task_name.startswith(s.workflow_project):
                 if '/' in task_name:
                     task_name = task_name[len(s.workflow_project) + 1:].strip()
                 tasks_by_name[task_name] = WorkflowBugTask(t, task_name, s.debs, s)
