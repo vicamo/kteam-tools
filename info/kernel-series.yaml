@@ -1373,6 +1373,7 @@ defaults:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.0:
             versions: ['6.0.0']
@@ -1404,6 +1405,7 @@ defaults:
                     oem:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
             variants: ['--']
