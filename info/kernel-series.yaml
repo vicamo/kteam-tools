@@ -3274,6 +3274,7 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
+              - boot-testing
               - automated-testing
               - certification-testing
               - verification-testing
@@ -3305,6 +3306,7 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
+              - boot-testing
               - automated-testing
               - certification-testing
               - verification-testing
