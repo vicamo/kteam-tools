@@ -718,6 +718,20 @@ class MonitorSwmStatusMonitor:
         print(tag, "expected={} current={} change={}".format(status, binary.status, binary.status != status))
         return binary.status != status
 
+    def launchpad_thing_status(self, bug_id, bug_data, monitor):
+        tag = "{}: bug={}".format(monitor['type'], bug_id)
+        lp_api = monitor.get('lp-api')
+        status = monitor.get('status')
+
+        # Grab us the object in question.
+        thing = self.lp.load(lp_api)
+        if thing is None:
+            print(tag, "no-api-object change=False")
+            return False
+
+        print(tag, "expected={} current={} change={}".format(status, thing.status, thing.status != status))
+        return thing.status != status
+
     def tracker_modified(self, bug_id, bug_data, monitor):
         tag = "{}: bug={}".format(monitor['type'], bug_id)
         watch = monitor.get('watch')
@@ -755,6 +769,7 @@ class MonitorSwmStatusMonitor:
                     'launchpad-build':      self.launchpad_build,
                     'launchpad-upload':     self.launchpad_upload,
                     'launchpad-binary':     self.launchpad_binary,
+                    'launchpad-task':       self.launchpad_thing_status,
                     'tracker-modified':     self.tracker_modified,
                     }.get(monitor.get("type"))
                 if handler is not None and handler(bug_id, bug_data, monitor):
