@@ -9,7 +9,7 @@ import traceback
 from ktl.kernel_series                  import KernelSeries
 from ktl.sru_cycle                      import SruCycle
 from wfl.log                            import center, cleave, Clog, cerror
-from wfl.launchpad                      import Launchpad
+from wfl.launchpad                      import LaunchpadDirect
 from wfl.bug                            import WorkflowBug
 from wfl.package                        import PackageError
 from wfl.context                        import ctx
@@ -133,8 +133,7 @@ if __name__ == '__main__':
         Clog.dbg = False
     Clog.color = False
 
-    ctx.launchpad = lambda : Launchpad()
-    ctx.lp = lambda : ctx.launchpad.default_service.launchpad
+    ctx.lp = lambda : LaunchpadDirect.login_application('swm-engine') 
     ctx.sc = lambda : SruCycle()
     ctx.ks = lambda : KernelSeries()
 
