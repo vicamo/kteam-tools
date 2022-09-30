@@ -59,6 +59,17 @@ def pkg_arch_link(pkg, series, arch):
     return "http://autopkgtest.ubuntu.com/packages/{0}/{1}/{2}/{3}/".format(srchash(pkg), pkg, series, arch)
 
 
+def must_disable_acpi(meta, arch):
+    '''
+    Return True if the provided kernel (meta) package / architecture combination does not
+    support ACPI which in turn requires a magic trigger that disables QEMU ACPI and enables
+    device tree instead.
+    '''
+    if meta.startswith('linux-meta-raspi') and arch == 'arm64':
+        return True
+    return False
+
+
 class AutoPackageTest(object):
     """autopkgtest integration
 
@@ -880,6 +891,9 @@ class AutoPackageTest(object):
         cell = fmt.format(status_class, status, status_link, pkg + " " + version + annot, ' *' if 'hinted' in annot else '', width)
 
         triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+        if must_disable_acpi(self.meta, arch):
+            # Add the magic trigger that disables QEMU ACPI
+            triggers.append('qemu-efi-noacpi%2F0')
         # XXX: if we specify a test package trigger this is assumed as -proposed.
         #if lversion and version != lversion:
         #    pver = pkg + '/' + lversion
@@ -1106,6 +1120,9 @@ wide {{
                 (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
 
                 triggers = [ self.meta.replace('/', '%2F').replace('+', '%2B') ]
+                if must_disable_acpi(self.meta, arch):
+                    # Add the magic trigger that disables QEMU ACPI
+                    triggers.append('qemu-efi-noacpi%2F0')
                 archive = "&ppa=" + self.archive.replace('/', '%2F').replace('+', '%2B') if self.archive != '-' else ''
                 entry = "{6} {5}?release={0}&trigger={1}&arch={2}&package={3}{4}\n".format(self.series, '&trigger='.join(triggers), arch, tpkg, archive, retry_url, status)
                 entries.append((status + ' ' + arch + ' ' + tpkg, entry))
@@ -1130,12 +1147,15 @@ wide {{
                 (status, status_link, version, lversion) = results[pkgver][tpkg][arch]
 
                 triggers = [ self.meta ]
+                if must_disable_acpi(self.meta, arch):
+                    # Add the magic trigger that disables QEMU ACPI
+                    triggers.append('qemu-efi-noacpi/0')
                 archive = "--ppa " + self.archive if self.archive != '-' else ''
                 entry = "run-autopkgtest{ppa} -s {series} -a {arch} --trigger {triggers} {package} # {status}\n".format(**{
                     'ppa': archive,
                     'series': self.series,
                     'arch': arch,
-                    'triggers': '--trigger '.join(triggers),
+                    'triggers': ' --trigger '.join(triggers),
                     'package': tpkg,
                     'status': status,
                     })
