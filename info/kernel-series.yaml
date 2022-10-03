@@ -483,13 +483,13 @@ defaults:
                 linux-signed-unstable:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/unstable', 'master']
-                linux-restricted-modules-unstable:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
-                linux-restricted-generate-unstable:
-                    type: lrg
-                linux-restricted-signatures-unstable:
-                    type: lrs
+                #linux-restricted-modules-unstable:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/unstable', 'master']
+                #linux-restricted-generate-unstable:
+                #    type: lrg
+                #linux-restricted-signatures-unstable:
+                #    type: lrs
             supported: false
             owner: arighi
             testing:
