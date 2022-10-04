@@ -1375,8 +1375,9 @@ defaults:
                 flavours:
                     kvm:
                         arches: ['arm64']        # test system arch names
-                        clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
+                        clouds: ['mellanox']     # FIXME: how to describe on-NIC?
+            invalid-tasks: ['boot-testing', 'automated-testing', 'regression-testing']
+            stakeholder: 'kernel-sru-bluefield-signoff'
 
         linux-oem-5.17:
             versions: ['5.17.0']
