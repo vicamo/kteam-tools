@@ -1429,9 +1429,8 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-6.0:
                     type: lrs
-            supported: false
+            supported: true
             owner: tjaalton
-            derived-from: [ '22.10', 'linux-unstable' ]
             development: false
             swm:
                 kernel-testing: true
