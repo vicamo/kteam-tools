@@ -384,8 +384,8 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
             build-private:
                 - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
-            #signing:
-            #    - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-nvidia-tegra', 'Release']
             proposed:
                 - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
             updates:
