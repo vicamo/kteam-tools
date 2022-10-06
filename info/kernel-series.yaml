@@ -1219,7 +1219,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp:
                     type: lrs
-            owner: kmously
+            owner: cascardo
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -3467,7 +3467,7 @@ defaults:
                 linux-restricted-signatures-gcp:
                     type: lrs
             supported: true
-            owner: kmously
+            owner: cascardo
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
