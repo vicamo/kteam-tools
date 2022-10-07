@@ -975,6 +975,8 @@ defaults:
                 linux-restricted-signatures-hwe-5.19:
                     type: lrs
             owner: p-pisati
+            supported: false
+            development: true
             backport: true
             derived-from: [ '22.10', 'linux' ]
             swm:
