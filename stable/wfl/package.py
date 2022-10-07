@@ -558,8 +558,9 @@ class PackageBuild:
             fullybuilt, creator, signer, published, most_recent_build, status = s.__sources_built(matches, archive, package, release, pocket)
             version = matches[0].source_package_version
             changes = matches[0].changesFileUrl()
+            source = matches[0]
         else:
-            fullybuilt   = False
+            fullybuilt = False
             status  = ''
             creator = None
             signer  = None
@@ -586,7 +587,7 @@ class PackageBuild:
             s.bug.debs.monitor_debs_add(monitor)
 
         cleave(s.__class__.__name__ + '.__is_fully_built')
-        return fullybuilt, creator, signer, published, most_recent_build, status, version, changes
+        return fullybuilt, creator, signer, published, most_recent_build, status, version, changes, source
 
     # __find_matches
     #
@@ -857,7 +858,7 @@ class PackageBuild:
 
         # If we have a match use that, else use the first one.
         if len(publications) == 0:
-            publications = [(False, None, None, None, None, '', None, None)]
+            publications = [(False, None, None, None, None, '', None, None, None)]
         if publications[-1][5] != '':
             info = publications[-1]
         else:
@@ -873,6 +874,7 @@ class PackageBuild:
         self._data['version'] = info[6]
         self._data['route'] = (src_archive, src_pocket)
         self._data['changes'] = info[7]
+        self._data['source'] = info[8]
 
         cinfo('DELAYED %-8s %-8s : %-20s : %-5s / %-10s    (%s : %s) %s [%s %s]' % (self.dependent, self.pocket, self.package, info[0], info[5], info[3], info[4], info[6], src_archive.reference, src_pocket), 'cyan')
 
