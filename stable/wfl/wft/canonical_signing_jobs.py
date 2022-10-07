@@ -79,9 +79,8 @@ class CanonicalSigningJobs(TaskHandler):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
-        clamp = s.bug.clamp('new-review')
-        if clamp is None or str(clamp) != str(s.bug.debs.prepare_id):
-            cinfo("{0} id has changed, recinding {0}".format('new-review'))
+        if s.bug.task_status('new-review') not in ('Triaged', 'Fix Released'):
+            cinfo("new-review no longer approved, recinding")
             if s.task.status != 'Incomplete':
                 s.task.status = 'Incomplete'
                 retval = True
