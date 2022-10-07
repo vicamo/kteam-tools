@@ -31,6 +31,7 @@ __review_status_text = {
     'New'           : 'Not Ready',
     'In Progress'   : 'In Progress',
     'Confirmed'     : 'Ready',
+    'Triaged'       : 'Ready/Bins',
     'Incomplete'    : 'Rejected',
     'Fix Released'  : 'Approved',
 }
@@ -165,6 +166,9 @@ def __status_bites(bug, attrs):
     promote_to_proposed_status = __task_status(bug, 'promote-to-proposed')
     sru_review_status = __task_status(bug, 'sru-review')
     new_review_status = __task_status(bug, 'new-review')
+    # Suppress new-review on the dashboard till it is in Triaged.
+    if new_review_status == 'Confirmed':
+        new_review_status = 'New'
     testing_valid = (
             boot_testing_status not in test_set_invalid or
             new_review_status not in test_set_invalid or
