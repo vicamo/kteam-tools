@@ -22,10 +22,20 @@ class CanonicalSigningJobs(TaskHandler):
     #
     def _ready(s):
         center(s.__class__.__name__ + '._ready')
-        retval = s._recind()
+        retval = False
 
         while not retval:
+            # Allow In Progress to avoid race conditions triggered by the normal
+            # ordering:
+            #  new-review -> In Progress
+            #  canonical-signing-jobs -> Triaged
+            #  new-review -> Fix Released
             nrs = s.bug.task_status("new-review")
+            if nrs not in ("In Progress", "Fix Committed", "Fix Released"):
+                cinfo("new-review is not marked approved, fail signing")
+                s.task.status = "Incomplete"
+                retval = True
+                break
             if nrs != "Fix Released":
                 break
 
@@ -66,7 +76,7 @@ class CanonicalSigningJobs(TaskHandler):
     #
     def _failed(s):
         center(s.__class__.__name__ + '._failed')
-        retval = s._recind()
+        retval = False
 
         s.reason = "Stalled -s signing request failed/recinded"
 
@@ -79,7 +89,7 @@ class CanonicalSigningJobs(TaskHandler):
         center(s.__class__.__name__ + '._recind')
         retval = False
 
-        if s.bug.task_status('new-review') not in ('Triaged', 'Fix Released'):
+        if s.bug.task_status('new-review') != 'Fix Released':
             cinfo("new-review no longer approved, recinding")
             if s.task.status != 'Incomplete':
                 s.task.status = 'Incomplete'

@@ -14,9 +14,9 @@ class SourceReview(TaskHandler):
 
         s.jumper['New']            = s._new
         s.jumper['Confirmed']      = s._confirmed
-        s.jumper['Triaged']        = s._new
+        s.jumper['Triaged']        = s._confirmed
         s.jumper['In Progress']    = s._confirmed
-        s.jumper['Fix Committed']  = s._confirmed
+        s.jumper['Fix Committed']  = s._recind
         s.jumper['Fix Released']   = s._recind
         s.jumper['Incomplete']     = s._confirmed
 
@@ -41,17 +41,9 @@ class SourceReview(TaskHandler):
             s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
             prepare_id = s.bug.debs.prepare_id
 
-            # For pre-approval we reviewed against the sru-review proffered
-            # stamp, so copy that over; and then move directly to approved.
-            if s.task.status == 'Triaged' and s.review_task == 'new-review':
-                cinfo("pre-approval detected, approving")
-                s.bug.clamp_assign(s.review_task, s.bug.clamp('sru-review'))
-                s.task.status = 'Fix Released'
-                retval = True
-
             # Reject if the prepare_id is bad.
-            elif prepare_id is None:
-                cinfo("Trying to go New with prepare_id==None")
+            if prepare_id is None:
+                cinfo("Trying to go Confirmed with prepare_id==None")
 
             # Otherwise take the current build stamp, and ask for review.
             else:
@@ -68,14 +60,23 @@ class SourceReview(TaskHandler):
     #
     def _confirmed(s):
         center(s.__class__.__name__ + '._confirmed')
-        retval = False
-
         retval = s._recind()
+
+        pps = s.bug.task_status(':prepare-packages')
+
+        # If all of our binaries are now ready upgrade to Triaged.
+        status = s.task.status
+        if status == 'Confirmed' and pps == 'Fix Released':
+            s.task.status = 'Triaged'
+            retval = True
 
         status = s.task.status
         if status == 'Confirmed':
             state = s.task.reason_state('Pending', timedelta(hours=12))
             s.task.reason = '{} -s ready for review'.format(state)
+
+        elif status == 'Triaged':
+            s.task.reason = 'Stalled -s ready for review (built)'
 
         elif status == 'Incomplete':
             s.task.reason = 'Stalled -- review FAILED'
@@ -115,8 +116,131 @@ class NewReview(SourceReview):
 
     review_task = 'new-review'
     prerequisites = [
-            [':prepare-packages', ['Fix Committed', 'Fix Released']],
-            ['sru-review', ['Fix Released']]]
+            [':prepare-packages', ['Fix Committed', 'Fix Released']]]
+
+    # __init__
+    #
+    def __init__(s, lp, task, bug):
+        center(s.__class__.__name__ + '.__init__')
+        super().__init__(lp, task, bug)
+
+        s.jumper['Fix Committed']  = s._built
+
+        cleave(s.__class__.__name__ + '.__init__')
+
+    def fetch_binary_list(self, src):
+        if src is None:
+            return False, []
+        happy = True
+        for build in src.getBuilds():
+            if build.buildstate != 'Successfully built':
+                happy = False
+        binaries = []
+        binaries_seen = set()
+        for binary in src.getPublishedBinaries(active_binaries_only=False):
+            status = binary.status
+            flags = [status]
+            binary_arch = binary.distro_arch_series_link.split("/")[-1]
+            binary_name = binary.binary_package_name
+            duplicate_key = (binary_name, binary_arch)
+            if duplicate_key in binaries_seen:
+                continue
+            binaries_seen.add(duplicate_key)
+            if status != "Published":
+                happy = False
+            # Handle base versions (x.y.z-a) in package names as -ABI.
+            binary_bits = binary.binary_package_version.split(".")
+            if len(binary_bits) >= 4:
+                binary_abi = ".".join(binary.binary_package_version.split(".", 4)[0:3])
+                binary_name_abi = binary_name.replace("-" + binary_abi, "-ABI")
+            else:
+                binary_name_abi = binary_name
+            if binary_name != binary_name_abi:
+                flags.append("ABI")
+            binaries.append((binary_name_abi, binary_arch, flags))
+        return happy, binaries
+
+    # new_binaries
+    #
+    def new_binaries(s):
+        center(s.__class__.__name__ + '.new_binaries')
+        retval = True
+
+        pocket_next = 'Release' if s.bug.is_development_series else 'Updates' 
+        pocket_next_routing = s.bug.debs.pocket_routing(pocket_next)
+        pocket_next_route = pocket_next_routing[0] if pocket_next_routing is not None else None
+
+        bi = s.bug.debs.build_info
+        happy_overall = True
+        binaries_old = []
+        binaries_new = []
+        for pkg in s.bug.debs.dependent_packages_for_pocket(pocket_next):
+            cinfo('considering {} in {} -> {} '.format(pkg, 'ppa', bi[pkg]['ppa']['source']))
+            happy, binaries = s.fetch_binary_list(bi[pkg]['ppa']['source'])
+            happy_overall &= happy
+            binaries_new += binaries
+            cinfo('  happy={} binaries={}'.format(happy, len(binaries)))
+
+            cinfo('considering {} in {} -> {} '.format(pkg, pocket_next, bi[pkg][pocket_next]['source']))
+            happy, binaries = s.fetch_binary_list(bi[pkg][pocket_next]['source'])
+            binaries_old += binaries
+            cinfo('  happy={} binaries={}'.format(happy, len(binaries)))
+
+        # Perform a New comparison.  We have collected all of the binaries for the
+        # old and new sources packages.  Eliminate those from the new found in the old,
+        # for the remainder attempt to look them up directly.  If they are still not found
+        # they are most likely New (or an ABI specific file).
+        if pocket_next_route is None:
+            # This is an entirely New kernel, we have no packages in pocket_next for it.
+            cinfo("Completely new kernel considering New")
+            new_binaries = True
+
+        else:
+            pocket_next_archive, pocket_next_pocket = pocket_next_route
+            cinfo("{} {}".format(len(binaries_old), len(binaries_new)))
+            new_binaries = False
+            for binary, arch, flags in binaries_new:
+                if (binary, arch, flags) in binaries_old:
+                    cinfo("{} MATCH-OLD".format(binary))
+                else:
+                    bins_old = pocket_next_archive.getPublishedBinaries(
+                        exact_match=True, order_by_date=True,
+                        binary_name=binary, pocket=pocket_next_pocket
+                    )
+                    if len(bins_old) > 0:
+                        cinfo("{} MATCH-ARCHIVE".format(binary))
+                    else:
+                        cinfo("{} MISS-MATCH".format(binary))
+                        new_binaries = True
+
+        retval = not happy_overall or new_binaries
+        cinfo("happy_overall={} new_binaries={} -> retval={}".format(happy_overall, new_binaries, retval))
+
+        cleave(s.__class__.__name__ + '.new_binaries (%s)' % retval)
+        return retval
+
+    # _built
+    #
+    def _built(s):
+        center(s.__class__.__name__ + '._built')
+        retval = s._recind()
+
+        # If all of our binaries are now ready upgrade to Triaged.
+        if s.bug.task_status(':prepare-packages') == 'Fix Released':
+            # Check the binary status, if there are News then this
+            # new-review needs to be re-considered.
+            if s.new_binaries():
+                cinfo('New binaries detected moving Triaged')
+                s.task.status = 'Triaged'
+                retval = True
+            else:
+                cinfo('No New binaries detected moving Fix Released')
+                s.task.status = 'Fix Released'
+                retval = True
+
+        s.task.reason = 'Ongoing -s review complete (waiting for binaries)'
+
+        return retval
 
     def evaluate_status(self, status):
         # SIGNING-BOT: we have two different workflows for reviewing and

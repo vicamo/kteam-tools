@@ -1586,6 +1586,7 @@ class Package():
 
         retval = []
         for pkg in s.dependent_packages_for_pocket(dst):
+            pkg_in_dst = None
             pkg_in_src = s.__pkg_in(pkg, src)
             pocket = dst
             for pocket in s.__pockets_from(dst):
