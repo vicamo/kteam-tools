@@ -86,8 +86,7 @@ session_chroot_available()
 {
 	local series="$1"
 	local arch="$2"
-	local package="$3"
-	local which="$4"
+	local which="$3"
 
 	local session="session:cranky-$series-$arch-$which"
 
@@ -321,14 +320,14 @@ create-base)
 	fi
 	;;
 create-session)
-	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$session"; then
 		chroot_update "$RET"
 	else
 		session_chroot_create "$series" "$chroot_arch" "$src" "$session"
 	fi
 	;;
 map-session)
-	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$session"; then
 		echo "$RET"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
@@ -337,7 +336,7 @@ map-session)
 	fi
 	;;
 run)
-	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$session"; then
 		schroot -p -r -c "$RET" -- "$@"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
@@ -346,7 +345,7 @@ run)
 	fi
 	;;
 destroy-session)
-	if session_chroot_available "$series" "$chroot_arch" "$src" "$session"; then
+	if session_chroot_available "$series" "$chroot_arch" "$session"; then
 		schroot -e -c "$RET"
 	else
 		echo "$P: No chroot session available for $series:$src" 1>&2
