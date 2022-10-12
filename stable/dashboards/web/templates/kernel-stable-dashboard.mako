@@ -10,7 +10,7 @@ __testing_status_colors = {
     'Incomplete'    : 'red',
     'Invalid'       : 'grey',
     'Fix Released'  : 'green', # '#1496bb',
-    'Fix Committed' : '#1496bb',
+    'Fix Committed' : 'green', # '#1496bb',
     'Task missing'  : 'red',
     'unknown'       : 'magenta',
     'n/a'           : 'grey',
@@ -33,6 +33,7 @@ __review_status_text = {
     'Confirmed'     : 'Ready',
     'Triaged'       : 'Ready/Bins',
     'Incomplete'    : 'Rejected',
+    'Fix Committed' : 'Approved/aNR',
     'Fix Released'  : 'Approved',
 }
 %>
