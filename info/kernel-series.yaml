@@ -472,7 +472,7 @@ defaults:
     sources:
         linux-unstable:
             routing: devel-unstable
-            versions: ['6.0.0']
+            versions: ['6.1.0']
             variants: ['-wip']
             packages:
                 linux-unstable:
