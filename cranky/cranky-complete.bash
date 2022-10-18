@@ -16,6 +16,7 @@ _cranky() {
 		"fdr -h --help -c --clean"
 		"fix -h --help"
 		"link-tb -h --help -d --dry-run -r --re-run -s --sru-cycle -c --cve"
+		"list-repos -h --help -v --verbose -g --git-url --include main meta signed lrm lrs lrg lum lbm HANDLE"
 		"list-routing -h --help -v --verbose HANDLE"
 		"list-derivatives -h --help -v --verbose --has-lrm --has-signed HANDLE"
 		"list-owners -h --help -v --verbose --include-esm --include-devel --by-owner HANDLE"

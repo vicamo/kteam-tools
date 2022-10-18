@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+#
+# cranky list-repos: For a given handle, print a list of all package repo urls
+#                    and the main branch associated with each repo.
+#
+# Copyright (C) 2022, Canonical Ltd.
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+
+import argparse
+import logging
+import sys
+
+from crl.handle import Handle, HandleError
+
+from ktl.kernel_series import KernelSeries
+from ktl.log import cdebug, cerror
+
+
+class SimplePackage:
+    """Wraps KernelSeries.KernelPackageEntry for printing a subset of its information"""
+
+    def __init__(self, entry):
+        """Create a new SimplePackage
+        :param entry: KerelPackageEntry
+        """
+        self._entry = entry
+
+    @property
+    def package_type(self):
+        """Returns type of this package.
+        A type of None is interpreted as the 'main' package
+        :return: str
+        """
+        if self._entry.type is None:
+            return "main"
+        return self._entry.type
+
+    def format_link(self, git_url=False):
+        """Format package information as string
+        :param git_url: True to use a git clone url instead of a web url
+        :return: str
+        """
+        repo = self._entry.repo
+        url = repo.url
+        if not git_url:
+            url = SimplePackage.git_to_web(url, repo.branch)
+        return "{} {} {} {}".format(
+            self._entry.series.codename, self.package_type, url, repo.branch
+        )
+
+    @staticmethod
+    def git_to_web(url, branch):
+        """Translate a LP git clone url and branch to a LP web url
+        e.g. git://git.launchpad.net/... -> https://launchpad.net/...
+        :param url: str git clone url
+        :param branch: str git branch name:
+        :return: str
+        """
+        url = url.replace("git:", "https:")
+        url = url.replace("git.launchpad.net", "launchpad.net", 1)
+        url = "{}/+ref/{}".format(url, branch)
+        return url
+
+    def __str__(self):
+        return str(self._entry)
+
+    def __repr__(self):
+        return str(self)
+
+
+class RepoSource:
+    """Extracts repo information for handles from kernel series database"""
+
+    def __init__(self, handle_names, include_types):
+        """Create a new repo source
+        :param handle_names: list(str) list of cranky handles, e.g. linux:bionic-kvm
+        :param include_types: list(str) package types to include, e.g. meta, lrm, signed
+        """
+        self._ks = KernelSeries()
+        self._handle_names = handle_names
+        self._include_types = include_types
+
+    def list_packages(self):
+        """Returns a list of SimpleRepo for these handle names and package types
+        :return: list(SimplePackage)
+        """
+        # XXX: convert to yield once we settle on standard Python version (3.3+)
+        repos = []
+
+        handles = self._handle_names
+        if not handles:
+            cdebug(
+                "no handles specified, all repos matching include_types will be shown"
+            )
+            for series in self._ks.series:
+                for source in series.sources:
+                    handle = "{}:{}".format(series.codename, source.name)
+                    handles.append(handle)
+
+        for h in handles:
+            # validate=False is used when we do not care about the state
+            # of the local git tree for this handle. We are pulling data
+            # from the kernel series db so skipping validation is safe.
+            handle = Handle(ks=self._ks).lookup_set(h, validate=False)
+            for tree in handle.trees:
+                package = SimplePackage(tree.package)
+                if not self.__accept_package(package):
+                    cdebug("skipping {}".format(str(package)))
+                    continue
+                repos.append(package)
+
+        return repos
+
+    def __accept_package(self, package):
+        """Return True if this package should be accepted
+        :param package: SimplePackage
+        :return: bool
+        """
+        if not self._include_types:
+            return True
+        return package.package_type in self._include_types
+
+
+if __name__ == "__main__":
+    desc = """
+Query the kernel-series.yaml database for a list of kernels and their package's repo urls and 
+the name of its main branch.
+"""
+
+    epilog = """
+Examples:
+  $ cranky list-repos
+
+  This produces a list of repos for all packages in the kernel series database.
+  Each kernel will have one or more packages associated with it such as meta and signed.
+  The output format is one space-delimited line per package as:
+
+  series-codename package-name repo-url branch-name
+
+  $ cranky list-repos --include meta bionic:linux-kvm
+
+  Lists only the meta package for the handle bionic linux-kvm. One or more handles
+  may be specified in the standard cranky handle format (* <series>:<source>)
+
+  $ cranky list-repos --git-url --include main --include signed jammy:linux
+
+  Lists the main and signed package types for jammy:linux using the git clone url format.
+"""
+
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=epilog,
+        prog="cranky list-repos",
+    )
+    parser.add_argument(
+        "handle",
+        nargs="*",
+        metavar="<handle>",
+        help="Handle to a kernel source "
+        "tree, either a path to a kernel source tree or a "
+        "handle in <series>:<package> format",
+    )
+    parser.add_argument(
+        "--include",
+        action="append",
+        default=[],
+        choices=("main", "meta", "signed", "lrm", "lrs", "lrg", "lum", "lbm"),
+        help="Exclude all package types EXCEPT for this type",
+    )
+    parser.add_argument(
+        "-g",
+        "--git-url",
+        action="store_true",
+        help="Print repo urls as git clone urls instead of web urls",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Increase verbosity"
+    )
+    args = parser.parse_args()
+
+    level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=level, format="%(message)s")
+
+    try:
+        repo_source = RepoSource(args.handle, args.include)
+    except HandleError as e:
+        cerror(e)
+        sys.exit(1)
+
+    for repo in repo_source.list_packages():
+        info = repo.format_link(args.git_url)
+        print(info)
