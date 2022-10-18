@@ -22,6 +22,9 @@
 #       the date patches are no longer applied to the git repos for the given
 #       cycle
 
+'d2022.10.11':
+    complete: true
+
 '2022.10.10':
     release-date: '2022-10-31'
 
@@ -29,6 +32,9 @@
     release-date: '2022-10-10'
 
 'd2022.09.12':
+    complete: true
+
+'d2022.09.05':
     complete: true
 
 '2022.08.29':
