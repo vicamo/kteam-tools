@@ -1044,7 +1044,7 @@ defaults:
                     primary: true
                     repo: ['https://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'pi']
                     gated: false
-                    promote-to: ['edge', 'beta']
+                    promote-to: stable
                     qa: false
                     hw-cert: true
                     publish-to:
