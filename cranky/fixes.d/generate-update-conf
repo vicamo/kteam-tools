@@ -67,6 +67,9 @@ print("DEBIAN_MASTER=debian." + master_branch)
 # 1) back-ports    -- ~20.04  (5.15.0-30.31~20.04.1)
 # 2) forward-ports -- +22.04  (5.15.0-30.31+22.04.1)
 # 3) "same"-ports  -- empty   (5.15.0-30.31.1)
+# 3.1) "same"-ports for fips may use +fips instead of empty
+# 3.2) "same"-ports with regular 1000 abi numbers may simply force
+#      local-mangle usage
 #
 # Note that an empty suffix empty is represented by '--' such that
 # an empty variable still indicates the non-backport case.
@@ -75,8 +78,18 @@ if source.backport:
     parent_series = int(parent_source.series.name.replace('.', ''))
     if series == parent_series:
         suffix = "--"
+        # get lastversion and lastabi
+        lastversion = Debian.changelog()[0]["version"]
+        lastabi = int(lastversion.split('-')[1].split('.')[0])
+        if "+fips" in lastversion:
+            suffix="+fips"
+        elif lastabi > 1000:
+            suffix=""
     elif series > parent_series:
         suffix = "+{series}"
     else:
         suffix = "~{series}"
-    print("BACKPORT_SUFFIX=" + suffix.format(series=source.series.name))
+    if suffix:
+        print("BACKPORT_SUFFIX=" + suffix.format(series=source.series.name))
+    else:
+        print("BACKPORT_NO_SUFFIX=1")
