@@ -174,9 +174,11 @@ class GitHandle():
                   self.directory, validate_hdl.package.series.codename,
                   validate_hdl.package.name))
 
-    def clone(self, reference=None, dissociate=False):
+    def clone(self, reference=None, dissociate=False, depth=None):
         '''
         Clone the repository which the GitHandle represents.
+        :param depth: Optional[int] git clone argument
+            creates a shallow clone truncating to this many commits
         '''
         pkg  = self.__ht.package
         repo = pkg.repo
@@ -195,6 +197,8 @@ class GitHandle():
                 cmd.extend(["--reference", reference])
             else:
                 cwarn('Warning: {} is not a directory or git repo'.format(reference))
+        if depth:
+            cmd.extend(["--depth", depth])
         cmd.extend([repo_url, repo_dir])
 
         cnotice('Cloning "{}" into {}'.format(pkg.name, repo_dir))

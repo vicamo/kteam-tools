@@ -14,7 +14,7 @@ from crl.handle import HandleError
 from ktl.log import cerror, cnotice
 
 
-def checkout_repos(handle, reference=None, dissociate=False):
+def checkout_repos(handle, reference=None, dissociate=False, depth=None):
     """
     Clone the repos that make up the set of kernel packages
     """
@@ -37,7 +37,7 @@ def checkout_repos(handle, reference=None, dissociate=False):
         if os.path.exists(os.path.join(repo_dir, '.git')):
             gh.update_remote(gh.remote, gh.get_url())
         else:
-            gh.clone(reference, dissociate)
+            gh.clone(reference, dissociate, depth)
 
         # Configure the git repo. Do this every time in case things have
         # changed, for example when a release transitions to ESM.
@@ -106,6 +106,9 @@ Examples:
       branches of the main 'linux', 'linux-meta' and 'linux-signed' repos. See
       below for more details.
 
+  $ cranky checkout --depth 1 xenial:linux-raspi2
+      Checkout a shallow clone of all repos for this handle.
+
 Notes:
   Some kernel variants have their own repos (like aws, for example) whereas
   others simply reside on branches of the main repos (like raspi2). Depending
@@ -155,6 +158,9 @@ traffic. This is a git clone option, check 'git help clone' for more details.
     parser.add_argument("-d", "--dissociate", action="store_true",
                         default=config_cmd.get('dissociate', False),
                         help=help_dissociate)
+    parser.add_argument("--depth",
+                        default=None,
+                        help="Perform a shallow clone with --depth <int>")
 
     try:
         checkout_repos(**vars(parser.parse_args()))

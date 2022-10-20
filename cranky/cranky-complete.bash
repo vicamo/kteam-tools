@@ -9,7 +9,7 @@ _cranky() {
 	local first cmd opts
 	local cmds=(
 		"build-sources -h --help -c --current --build-opts HANDLE"
-		"checkout -h --help -r --reference -d --dissociate HANDLE"
+		"checkout -h --help -r --reference -d --dissociate --depth HANDLE"
 		"chroot -h --help create-base create-session map-session run destroy-session HANDLE"
 		"close -h --help -d --dry-run -c --include-config -s --skip-master"
 		"dput-sources -h --help -f --force -c --current -e --email HANDLE"
