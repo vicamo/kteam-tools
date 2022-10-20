@@ -4,15 +4,38 @@
 #               it against the primary copies of repositories.
 #
 
-if [ "$#" -ne 0 ] || [ "$1" = '--help' ]; then
+function usage()
+{
 	cat - 1>&2 <<EOM
-Usage: $0 [--help]
+Usage: $0 [-h] [-v]
 
 cranky fix -- fix various common files from kteam-tools for main packages, and
               sync those between main and subsiduary packages.
+
+options:
+  -h, --help      show this help message and exit
+  -v, --verbose   show extra info when running.
 EOM
 	exit 1
-fi
+}
+
+verbose=0
+
+while [ "$#" -gt 0 ] ; do
+	case "${1}" in
+		-h|--help)
+			usage
+			;;
+		-v|--verbose)
+			verbose=1
+			;;
+		*)
+			echo "error: Unrecognized argument ${1}" >&2
+			usage
+			;;
+	esac
+	shift
+done
 
 # Locate the debian directory taking into accout debian.env if present.
 debian="debian"
@@ -48,7 +71,7 @@ fi
 cranky_root=$(dirname "$C")
 
 bug="1786013"
-FIX_VERBOSE="0" \
+FIX_VERBOSE="${verbose}" \
 FIX_BUG="$bug" \
 FIX_BUGLINK="BugLink: https://bugs.launchpad.net/bugs" \
 FIX_MASTER="$cranky_root/master" \
