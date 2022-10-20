@@ -6,7 +6,7 @@
 #
 
 _cranky() {
-	local cur first cmd opts
+	local first cmd opts
 	local cmds=(
 		"build-sources -h --help -c --current --build-opts HANDLE"
 		"checkout -h --help -r --reference -d --dissociate HANDLE"
@@ -49,11 +49,27 @@ _cranky() {
 		done
 	fi
 
-	# Escape colons since bash completion handles them as special
-	# characters in order to support completion for variables such
-	# as PATH:
-	cur="${COMP_WORDS[COMP_CWORD]//:/\\:}"
-	mapfile -t COMPREPLY < <(compgen -W "$opts" -- "$cur")
+	_cranky_compat_complete "$opts"
+}
+
+# Starting with Kinetic (bash-5.2), completion of a HANDLE as used in cranky
+# is broken. The previous method of escaping ':' is no longer sufficient for
+# expanding handles properly. This function depends on bash-completion being
+# present and properly sourced in your shell. If the necessary functions are
+# not found, cranky completion for handles will silently fail.
+_cranky_compat_complete() {
+	local opts="$1"
+
+	local cur
+	if type _get_comp_words_by_ref &>/dev/null; then
+		_get_comp_words_by_ref -n : cur
+	fi
+
+	COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+
+	if type __ltrim_colon_completions &>/dev/null; then
+		__ltrim_colon_completions "$cur"
+	fi
 }
 
 _cranky_expand_handles() {
@@ -89,8 +105,7 @@ _cranky_get_handles() {
 		if [ ! -e "$cache_dir" ]; then
 			mkdir -p "$cache_dir"
 		fi
-		# Escape colons:
-		"$cranky" shell-helper list-handles | sed -e 's/:/\\\\&/g' > "$cache_file"
+		"$cranky" shell-helper list-handles > "$cache_file"
 	fi
 	tr '\n' ' ' < "$cache_file"
 }
