@@ -358,6 +358,7 @@ defaults:
                 - ['ppa:ibm-cloud/ubuntu/test', 'Release']
             build:
                 - ['ppa:ibm-cloud/ubuntu/build', 'Release']
+                - ['ppa:ibm-cloud/ubuntu/build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
             proposed:
