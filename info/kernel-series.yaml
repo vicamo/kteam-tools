@@ -329,8 +329,10 @@ defaults:
                 - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
+                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
             build-private:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
+                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
             test:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
             signing:
