@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+
+from argparse import ArgumentParser
+
+from ktl.kernel_series import KernelSeries
+
+
+parser = ArgumentParser()
+parser.add_argument("--security", action="store_true", help="include security PPAs in list")
+parser.add_argument("--regular", action="store_true", help="include build PPAs in list")
+args = parser.parse_args()
+
+ks = KernelSeries()
+
+route_pairs = set()
+
+for ks_series in ks.series:
+    if not ks_series.supported and not ks_series.development:
+        continue
+    for ks_source in ks_series.sources:
+        if not ks_series.supported and not ks_series.development:
+            continue
+        ancillaries = False
+        for ks_package in ks_source.packages:
+            if ks_package.ancillary_for is not None:
+                ancillaries = True
+        if not ancillaries:
+            continue
+
+        #print(ks_source.series.codename, ks_source.name)
+        ks_routing = ks_source.routing
+        if ks_routing is None:
+            continue
+
+        if args.regular:
+            build_routes = ks_routing.lookup_route("build")
+            build_private_routes = ks_routing.lookup_route("build-private")
+            if len(build_routes) != 0 and len(build_private_routes) != 0:
+                for build_route, private_route in zip(build_routes, build_private_routes):
+                    route_pairs.add((build_route.reference, private_route.reference))
+
+        if args.security:
+            security_build_routes = ks_routing.lookup_route("security-build")
+            for build_route in security_build_routes:
+                route_pairs.add((build_route.reference, build_route.reference))
+
+def route_pair_key(pair):
+    public = pair[0]
+    if public.startswith("ppa:canonical-kernel-team/"):
+        public_ppa = public.rsplit("/", 1)[-1]
+        if public_ppa.startswith("ppa"):
+            order = 10
+        elif public_ppa in ("unstable", "bootstrap"):
+            order = 11
+        else:
+            order = 19
+    elif public.startswith("ppa:canonical-kernel-security-team/"):
+        public_ppa = public.rsplit("/", 1)[-1]
+        if public_ppa.startswith("ppa"):
+            order = 90
+        else:
+            order = 99
+    else:
+        order = 50
+    return order, public
+
+for build_ref, private_ref in sorted(route_pairs, key=route_pair_key):
+    print(build_ref, private_ref)
