@@ -6,6 +6,9 @@ from .base                                      import TaskHandler
 
 class SourceReview(TaskHandler):
 
+    IN = 1
+    NOT_IN = 2
+
     # __init__
     #
     def __init__(s, lp, task, bug):
@@ -30,9 +33,11 @@ class SourceReview(TaskHandler):
 
         while True:
             ready = True
-            for task_name, ready_stati in s.prerequisites:
+            for which, task_name, ready_stati in s.prerequisites:
                 cinfo("{}: {} ? {}".format(s.review_task, task_name, ready_stati))
-                if s.bug.task_status(task_name) not in ready_stati:
+                if which == SourceReview.IN and s.bug.task_status(task_name) not in ready_stati:
+                    ready = False
+                elif which == SourceReview.NOT_IN and s.bug.task_status(task_name) in ready_stati:
                     ready = False
             if not ready:
                 break
@@ -109,14 +114,15 @@ class SruReview(SourceReview):
 
     review_task = 'sru-review'
     prerequisites = [
-            [':prepare-packages', ['Fix Committed', 'Fix Released']]]
+            [SourceReview.IN, ':prepare-packages', ['Fix Committed', 'Fix Released']]]
 
 
 class NewReview(SourceReview):
 
     review_task = 'new-review'
     prerequisites = [
-            [':prepare-packages', ['Fix Committed', 'Fix Released']]]
+            [SourceReview.IN, ':prepare-packages', ['Fix Committed', 'Fix Released']],
+            [SourceReview.NOT_IN, 'sru-review', ['New', 'Incomplete']]]
 
     # __init__
     #
