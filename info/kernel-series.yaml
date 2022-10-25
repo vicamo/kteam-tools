@@ -927,7 +927,7 @@ defaults:
 
         linux-hwe-5.17:
             routing: wip
-            variants: [ '-wip' ]
+            variants: [ '-base' ]
             packages:
                 linux-hwe-5.17:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.17-next']
