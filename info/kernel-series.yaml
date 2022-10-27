@@ -1687,29 +1687,29 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
-        linux-nvidia-hwe-5.19:
+        linux-nvidia-5.19:
             routing: nvidia
-            variants: ['--']
+            variants: [ '--', '-edge' ]
             packages:
-                linux-nvidia-hwe-5.19:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'hwe-5.19-next']
-                linux-meta-nvidia-hwe-5.19:
+                linux-nvidia-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'nvidia-5.19-next']
+                linux-meta-nvidia-5.19:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/jammy', 'hwe-5.19']
-                linux-signed-nvidia-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/jammy', 'nvidia-5.19']
+                linux-signed-nvidia-5.19:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/jammy', 'hwe-5.19']
-                linux-restricted-modules-nvidia-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/jammy', 'nvidia-5.19']
+                linux-restricted-modules-nvidia-5.19:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/jammy', 'hwe-5.19']
-                linux-restricted-generate-nvidia-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-nvidia/+git/jammy', 'nvidia-5.19']
+                linux-restricted-generate-nvidia-5.19:
                     type: lrg
-                linux-restricted-signatures-nvidia-hwe-5.19:
+                linux-restricted-signatures-nvidia-5.19:
                     type: lrs
             owner: ian-may
             development: true
             supported: false
-            derived-from: [ '22.10', 'linux' ]
+            derived-from: [ '22.04', 'linux-hwe-5.19' ]
             swm:
                 kernel-testing: true
             testing:
