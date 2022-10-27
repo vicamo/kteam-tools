@@ -469,8 +469,8 @@ defaults:
 # 22.10 (Kinetic Kudu)
 '22.10':
     codename: kinetic
-    development: true
-    supported: false
+    development: false
+    supported: true
     routing-table: *routing-table
     sources:
         linux-unstable:
