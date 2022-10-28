@@ -254,6 +254,7 @@ defaults:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-build', 'Release']
+                - ['ppa:canonical-hwe-imx/ubuntu/imx-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/ke-imx', 'Release']
             proposed:
