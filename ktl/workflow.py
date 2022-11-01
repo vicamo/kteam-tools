@@ -169,7 +169,7 @@ class Workflow:
                 'snap-release-to-candidate'  : 'canonical-kernel-team',
                 'snap-release-to-edge'       : 'canonical-kernel-team',
                 'snap-release-to-stable'     : 'canonical-kernel-team',
-                'snap-qa-testing'            : 'canonical-kernel-team',
+                'snap-qa-testing'            : 'oem-qa',
                 'snap-publish'               : 'canonical-kernel-team',
                 'snap-certification-testing' : 'canonical-hw-cert',
                 'prepare-package'            : 'canonical-kernel-team',
