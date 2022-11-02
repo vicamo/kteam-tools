@@ -526,8 +526,6 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             owner: arighi
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -560,8 +558,6 @@ defaults:
                     type: lrs
             owner: p-pisati
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -584,8 +580,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/kinetic']
             owner: juergh
             derived-from: ['22.10', 'linux']
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -609,8 +603,6 @@ defaults:
                 # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
             owner: jsalisbury
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -639,8 +631,6 @@ defaults:
                     type: lrs
             owner: timg-tpi
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -670,8 +660,6 @@ defaults:
                     type: lrs
             owner: mhcerri
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -703,8 +691,6 @@ defaults:
                     type: lrs
             owner: kmously
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -727,8 +713,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/kinetic']
             owner: kmously
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -752,8 +736,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/kinetic']
             owner: arighi
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -783,8 +765,6 @@ defaults:
                     type: lrs
             owner: kmously
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -804,8 +784,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic']
             owner: esmil
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -824,8 +802,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'starfive']
             owner: esmil
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
@@ -844,8 +820,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic', 'allwinner']
             owner: esmil
             derived-from: [ '22.10', 'linux' ]
-            supported: false
-            development: true
             swm:
                 kernel-testing: true
             testing:
