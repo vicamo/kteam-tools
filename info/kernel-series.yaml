@@ -658,7 +658,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure:
                     type: lrs
-            owner: mhcerri
+            owner: timg-tpi
             derived-from: [ '22.10', 'linux' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
