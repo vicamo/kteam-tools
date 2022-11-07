@@ -475,6 +475,7 @@ defaults:
     routing-table: *routing-table
     opening:
       archive-closed: true
+      repositories: true
     sources:
         linux-unstable:
             routing: devel-unstable
