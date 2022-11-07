@@ -473,6 +473,7 @@ defaults:
     development: true
     supported: false
     routing-table: *routing-table
+    opening:
     sources:
         linux-unstable:
             routing: devel-unstable
