@@ -467,11 +467,11 @@ defaults:
               signing-from: lrg
               adjunct: true
 
-# 22.10 (Kinetic Kudu)
-'22.10':
-    codename: kinetic
-    development: false
-    supported: true
+# 23.04 (Lunar Lobster)
+'23.04':
+    codename: lunar
+    development: true
+    supported: false
     routing-table: *routing-table
     sources:
         linux-unstable:
@@ -506,6 +506,361 @@ defaults:
                         arches: ['arm64']
                         clouds: ['metal', 'aws']
 
+        linux:
+            versions: ['5.19.0']
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            packages:
+                linux:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lunar', 'master-next']
+                linux-meta:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lunar']
+                linux-signed:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar']
+                linux-restricted-modules:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar']
+                linux-restricted-generate:
+                    type: lrg
+                linux-restricted-signatures:
+                    type: lrs
+            owner: arighi
+            backported: true
+            derived-from: ['22.10', 'linux']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        # arches as defined by the testing system
+                        arches: ['amd64', 'ppc64el', 'ppc64el.9', 'arm64', 'armhf', 's390x.KVM', 's390x.LPAR', 's390x.zVM']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    generic-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+
+        linux-lowlatency:
+            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            packages:
+                linux-lowlatency:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lunar', 'lowlatency-next']
+                linux-meta-lowlatency:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lunar', 'lowlatency']
+                linux-signed-lowlatency:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar', 'lowlatency']
+                linux-restricted-modules-lowlatency:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar', 'lowlatency']
+                linux-restricted-generate-lowlatency:
+                    type: lrg
+                linux-restricted-signatures-lowlatency:
+                    type: lrs
+            owner: p-pisati
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-lowlatency']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-raspi:
+            variants: ['--']
+            packages:
+                linux-raspi:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/lunar', 'master-next']
+                linux-meta-raspi:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/lunar']
+            owner: juergh
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-raspi']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                   raspi:
+                        arches: ['armhf', 'arm64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-realtime:
+            routing: realtime-interim
+            variants: ['--']
+            packages:
+                linux-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/lunar', 'master-next']
+                linux-meta-realtime:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/lunar']
+                linux-signed-realtime:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/lunar']
+                # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
+            owner: jsalisbury
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-realtime']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    realtime:
+                        arches: ['amd64', 'arm64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+
+        linux-aws:
+            variants: ['--']
+            packages:
+                linux-aws:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/lunar', 'master-next']
+                linux-meta-aws:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/lunar']
+                linux-signed-aws:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/lunar']
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/lunar']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
+            owner: timg-tpi
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-aws']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-azure:
+            variants: ['--']
+            packages:
+                linux-azure:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/lunar', 'master-next']
+                linux-meta-azure:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/lunar']
+                linux-signed-azure:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/lunar']
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/lunar']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
+            owner: timg-tpi
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-azure']
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-gcp:
+            variants: ['--']
+            packages:
+                linux-gcp:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/lunar', 'master-next']
+                linux-meta-gcp:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/lunar']
+                linux-signed-gcp:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/lunar']
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/lunar']
+                linux-restricted-generate-gcp:
+                    type: lrg
+                linux-restricted-signatures-gcp:
+                    type: lrs
+            owner: kmously
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-gcp']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    gcp:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['gcp']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-ibm:
+            variants: ['--']
+            packages:
+                linux-ibm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/lunar', 'master-next']
+                linux-meta-ibm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/lunar']
+                linux-signed-ibm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/lunar']
+            owner: kmously
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-ibm']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm:
+                        meta-pkg: linux-ibm
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['ibm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-kvm:
+            variants: ['--']
+            packages:
+                linux-kvm:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/lunar', 'master-next']
+                linux-meta-kvm:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/lunar']
+                linux-signed-kvm:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/lunar']
+            owner: arighi
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-kvm']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    kvm:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-oracle:
+            variants: ['--']
+            packages:
+                linux-oracle:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/lunar', 'master-next']
+                linux-meta-oracle:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/lunar']
+                linux-signed-oracle:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/lunar']
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/lunar']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
+            owner: kmously
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-oracle']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-riscv:
+            variants: ['--']
+            packages:
+                linux-riscv:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/lunar']
+                linux-meta-riscv:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar']
+            owner: esmil
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-riscv']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-starfive:
+            variants: ['--']
+            packages:
+                linux-starfive:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/lunar', 'starfive-next']
+                linux-meta-starfive:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar', 'starfive']
+            owner: esmil
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-starfive']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    starfive:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-allwinner:
+            variants: ['--']
+            packages:
+                linux-allwinner:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/lunar', 'allwinner-next']
+                linux-meta-allwinner:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar', 'allwinner']
+            owner: esmil
+            #derived-from: ['23.04', 'linux']
+            backported: true
+            derived-from: ['22.10', 'linux-allwinner']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    allwinner:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+# 22.10 (Kinetic Kudu)
+'22.10':
+    codename: kinetic
+    development: false
+    supported: true
+    routing-table: *routing-table
+    sources:
         linux:
             versions: ['5.19.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
