@@ -71,6 +71,10 @@ def must_disable_acpi(meta, arch):
     return False
 
 
+class AutoPackageTestError(Exception):
+    pass
+
+
 class AutoPackageTest(object):
     """autopkgtest integration
 
@@ -164,6 +168,8 @@ class AutoPackageTest(object):
         key = self.series + ' ' + self.source
         if self.map_archs and key in self.map_archs:
             self.archs = self.map_archs[key]
+        if self.archs is None:
+            raise AutoPackageTestError("no architectures defined")
 
         # Load up the hints file.
         self.hint_status = {}
@@ -1287,7 +1293,7 @@ table.matrix td {{
         # Find the all kernel source packages for this series.
         series_ks = ks.lookup_series(codename=series)
         if series_ks is None:
-            adt.log_verbose('{} series not present in kernel-series, skipped'.format(series))
+            print('E: [{}] - series {} not present in kernel-series'.format(time.asctime(), series))
             continue
         ks_source = None
         series_source_packages = []
@@ -1305,22 +1311,26 @@ table.matrix td {{
         for sub_name, sub_data in package_cache['cache-latest'].get(key, {}).items():
             latest.update(sub_data)
 
-        adt = AutoPackageTest(
-                stamp = stamp,
-                series = series,
-                source = package,
-                series_source_packages = series_source_packages,
-                parent = parent,
-                packages = seed,
-                latest = latest,
-                live = live,
-                triggers = triggers,
-                tag = tag,
-                archive = archive,
-                hints = hints,
-                migration = migration,
-                swift_scanned = swift_scanned,
-            )
+        try:
+            adt = AutoPackageTest(
+                    stamp = stamp,
+                    series = series,
+                    source = package,
+                    series_source_packages = series_source_packages,
+                    parent = parent,
+                    packages = seed,
+                    latest = latest,
+                    live = live,
+                    triggers = triggers,
+                    tag = tag,
+                    archive = archive,
+                    hints = hints,
+                    migration = migration,
+                    swift_scanned = swift_scanned,
+                )
+        except AutoPackageTestError as e:
+            print('E: [{}] - Unable to process {} {} - {}'.format(time.asctime(), series, package, e.args[0]))
+            continue
 
         adt.log_verbose('Updating from swift')
         adt.update()
