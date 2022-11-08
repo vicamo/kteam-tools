@@ -117,6 +117,8 @@ class AutoPackageTest(object):
 
         self.verbose = True
 
+        self.log_verbose("Scanning {}:{} ...".format(self.series, self.source))
+
         self.cache_file = self.series + ".cache"
 
         # XXX: Pick the linux-meta package trigger out of the triggers.
