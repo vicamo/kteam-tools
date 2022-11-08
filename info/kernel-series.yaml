@@ -5696,7 +5696,7 @@ defaults:
             supported: true
             owner: juergh
             derived-from: [ '18.04', 'linux' ]
-            invalid-tasks: ['automated-testing', 'regression-testing', 'boot-testing']
+            invalid-tasks: ['automated-testing', 'regression-testing']
             swm:
                 kernel-testing: true
             testing:
@@ -5735,7 +5735,7 @@ defaults:
                    raspi:
                         arches: ['armhf', 'arm64']        # test system arch names
                         clouds: ['metal']
-            invalid-tasks: ['automated-testing', 'regression-testing', 'boot-testing']
+            invalid-tasks: ['automated-testing', 'regression-testing']
 
         linux-raspi2-5.3:
             variants: ['-hwe-18.04']
