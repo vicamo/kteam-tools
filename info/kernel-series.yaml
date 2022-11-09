@@ -477,6 +477,7 @@ defaults:
       archive-closed: true
       repositories: true
       debootstrap: true
+      chroots: true
     sources:
         linux-unstable:
             routing: devel-unstable
