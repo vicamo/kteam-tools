@@ -478,6 +478,7 @@ defaults:
       repositories: true
       debootstrap: true
       chroots: true
+      archive-open: true
     sources:
         linux-unstable:
             routing: devel-unstable
