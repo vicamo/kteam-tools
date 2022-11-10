@@ -121,7 +121,7 @@ class TheApp(object):
         print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td> </tr>' % (patch_end))
         print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (prep_start, prep_end))
         print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">%s</td>   <td class="sru-date">%s</td>     </tr>' % (test_start, test_end))
-        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">%s</td> </tr>' % (release_end))
+        print('                <tr> <td class="sru-pad">&nbsp;</td>   <td class="sru-date">&nbsp;</td>   <td class="sru-date">Week of %s</td> </tr>' % (release_end))
         print('            </table>')
         print('        </td>')
 
