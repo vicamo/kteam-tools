@@ -1201,7 +1201,7 @@ defaults:
     sources:
         linux:
             versions: ['5.15.0']
-            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            variants: ['--', '-hwe-22.04']
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'master-next']
@@ -1232,7 +1232,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            variants: ['--', '-hwe-22.04']
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-next']
@@ -1297,8 +1297,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-hwe-5.19:
-            routing: wip
-            variants: [ '-wip' ]
+            variants: [ '-hwe-22.04-edge' ]
             packages:
                 linux-hwe-5.19:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.19-next']
@@ -1315,9 +1314,9 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.19:
                     type: lrs
-            owner: p-pisati
-            supported: false
-            development: true
+            owner: kleber-souza
+            supported: true
+            development: false
             backport: true
             derived-from: [ '22.10', 'linux' ]
             swm:
@@ -1330,7 +1329,42 @@ defaults:
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal']
-            invalid-tasks: [ 'automated-testing', 'certification-testing']
+            invalid-tasks: [ 'certification-testing' ]
+
+        linux-lowlatency-hwe-5.19:
+            variants: [ '-hwe-22.04-edge' ]
+            packages:
+                linux-lowlatency-hwe-5.19:
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-hwe-5.19-next']
+                linux-meta-lowlatency-hwe-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-signed-lowlatency-hwe-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-restricted-modules-lowlatency-hwe-5.19:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-restricted-generate-lowlatency-hwe-5.19:
+                    type: lrg
+                linux-restricted-signatures-lowlatency-hwe-5.19:
+                    type: lrs
+            owner: kleber-souza
+            supported: true
+            development: false
+            backport: true
+            derived-from: [ '22.10', 'linux-lowlatency' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    lowlatency:
+                        arches: ['amd64', 'arm64']
+                        clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
+                    lowlatency-64k:
+                        arches: ['arm64']
+                        clouds: ['metal', 'aws']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-starfive-5.17:
             versions: ['5.17.0']
