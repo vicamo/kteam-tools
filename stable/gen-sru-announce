@@ -90,7 +90,7 @@ class TheApp(object):
         print('         %s   Last day for kernel commits for this cycle.' % (patch_end))
         print('%s - %s   Kernel prep week.' % (prep_start, prep_end))
         print('%s - %s   Bug verification & Regression testing.' % (test_start, test_end))
-        print('         %s   Release to -updates.' % (release_end))
+        print(' Week of %s   Release to -updates.' % (release_end))
         print('')
 
 
