@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 import logging
+import yaml
 
 from crl.handle import Handle, HandleError
 from ktl.log import Clog, cerror, cinfo
@@ -193,13 +194,18 @@ Example: cranky promote-snap pi-kernel
         if ':' not in handle:
             # Snap name only, prepend 'series:source' to the handle
             if not series_source:
-                try:
-                    handle_set = Handle().lookup_set(os.getcwd(), validate=False)
-                except HandleError as e:
-                    cerror(e)
-                    sys.exit(1)
-                series_source = '{}:{}'.format(handle_set.series.codename,
-                                               handle_set.source.name)
+                if os.path.exists('kernel-info.yaml'):
+                    with open('kernel-info.yaml', encoding='utf-8') as fh:
+                        ki = yaml.safe_load(fh)
+                    series_source = '{}:{}'.format(ki['series'], ki['source'])
+                else:
+                    try:
+                        handle_set = Handle().lookup_set(os.getcwd(), validate=False)
+                    except HandleError as e:
+                        cerror(e)
+                        sys.exit(1)
+                    series_source = '{}:{}'.format(handle_set.series.codename,
+                                                   handle_set.source.name)
                 cinfo('# Use source handle: {}'.format(series_source))
             handle = series_source + ':' + handle
         snap_handles.append(handle)
