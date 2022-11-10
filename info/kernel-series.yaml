@@ -2011,7 +2011,7 @@ defaults:
                     type: lrs
             development: false
             supported: true
-            owner: jsalisbury
+            owner: mhcerri
             private: true
             derived-from: ['22.04', 'linux']
             backport: true # use local-mangle to keep it in sync with the generic kernel
