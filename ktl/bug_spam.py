@@ -70,7 +70,7 @@ class BugSpam:
             for bug_id in bugs:
                 bug = self.lp.bugs[bug_id]
                 self.print_bug_info(bug_id, bug)
-                should_be_spammed = False
+                should_be_spammed = True
                 is_tracker_bug = True
 
                 # RULE: Do not add verification tags or comments to bugs that exist
@@ -109,40 +109,13 @@ class BugSpam:
                     is_tracker_bug = False
                     break
 
-                # RULE: If a bug already has the appropriate verification tags on
-                #       it, we don't add them again.
-                #
-                while (not is_tracker_bug):
-                    if 'verification-failed-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-failed-%s tag' % self.cfg['series'])
-                        break  # The tag exists
+                if is_tracker_bug:
+                    should_be_spammed = False
 
-                    if 'verification-reverted-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-reverted-%s tag' % self.cfg['series'])
-                        break  # The tag exists
-
-                    if 'verification-needed-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-needed-%s tag' % self.cfg['series'])
-                        break  # The tag exists
-
-                    if 'verification-done-%s' % self.cfg['series'] in bug.tags:
-                        self.verbose('    . has verification-done-%s tag' % self.cfg['series'])
-                        break  # The tag exists
-
-                    # None of the tags that we are checking for exist, lets hook em up.
-                    #
-                    self.verbose('    . no verification tags')
-                    should_be_spammed = True
-                    break
-
+                # Now that we are limiting spamming to those bugs which are unique to a kernel
+                # we can and should remove any old verification tags as we go.
                 if should_be_spammed:
                     self.verbose('    . should be spammed')
-
-                    # Tags
-                    #
-                    self.verbose('        . adding tag: verification-needed-%s' % (self.cfg['series']))
-                    if not self.cfg['dryrun']:
-                        bug.tags.append('verification-needed-%s' % self.cfg['series'])
 
                     # Comment
                     #
@@ -150,6 +123,30 @@ class BugSpam:
                         self.verbose('        . adding comment')
                         if not self.cfg['dryrun']:
                             bug.newMessage(content=self.cfg['comment-text'].replace('_SERIES_', self.cfg['series']).replace('_PACKAGE_', self.cfg['package']).replace('_VERSION_', self.cfg['version']))
+
+                    series = self.cfg['series']
+                    tags = set(bug.tags)
+                    for tag in (
+                        'verification-failed-' + series,
+                        'verification-reverted-' + series,
+                        'verification-needed-' + series,
+                        'verification-done-' + series,
+                        'verification-done',
+                    ):
+                        if tag in tags:
+                            self.verbose('    . has {} tag removing'.format(tag))
+                            tags.remove(tag)
+
+                    # Tags
+                    #
+                    self.verbose('        . adding tag: verification-needed-%s' % (self.cfg['series']))
+                    if not self.cfg['dryrun']:
+                        tags.add('verification-needed-' + series)
+
+                    # Write the tags back if they are changed.
+                    if set(bug.tags) != tags:
+                        bug.tags = list(tags)
+                        bug.lp_save()
 
                     # Status
                     #
