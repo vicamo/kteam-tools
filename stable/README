@@ -67,21 +67,15 @@ create-respin-card:
 
     Setup: same as for create-sru-cards
 
-create-sru-cards.py:
-    Create a Trello board for a SRU cycle and add cards for the tasks
-    which need to be done.
+create-sru-cards:
+    Create a Jira sprint board for a SRU cycle and add issues for the initial
+    tasks which need to be done.
     The cycle given is the date of the Monday in week #1 in
     YYYY.MM.DD format.
 
     Setup:
       - ./deploy
-      - first time run ($HOME/.trellotool does not exist): run
-        create-sru-cards <any YYYY.MM.DD date>, this will print an
-        authentication link
-        - follow link and accept trellotool to access trello
-        - copy <token>
-        - create $HOME/.trellotool (if it does not exist) and add:
-          trello_token: <token>
+      - Check README.JIRA for setting up the authentication token.
 
     Example:
-      create-sru-cards.py 2017.10.09
+      create-sru-cards 2017.10.09
