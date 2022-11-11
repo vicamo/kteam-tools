@@ -887,7 +887,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures:
                     type: lrs
-            owner: arighi
+            owner: lukenow
             swm:
                 kernel-testing: true
             testing:
@@ -1097,7 +1097,7 @@ defaults:
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/kinetic']
-            owner: arighi
+            owner: smb
             derived-from: [ '22.10', 'linux' ]
             swm:
                 kernel-testing: true
