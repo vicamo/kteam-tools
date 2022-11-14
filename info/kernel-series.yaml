@@ -479,6 +479,7 @@ defaults:
       debootstrap: true
       chroots: true
       archive-open: true
+      autopkgtest: true
     sources:
         linux-unstable:
             routing: devel-unstable
