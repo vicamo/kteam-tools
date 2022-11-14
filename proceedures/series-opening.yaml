@@ -4,51 +4,68 @@ cards:
       - Examine each of the sub-tasks and any such stimuli which are complete
         can be moved Done.
     list: On Deck
+  - name: "Archive: old-series released"
+    description: |
+      - Once we have the old series formall out of the door.
+    list: On Deck
+    subtask-of: "External Stimuli"
+  - name: "Archive: series name chosen"
+    description: |
+      - Once we have the new series name (specifically the adjective).
+    list: On Deck
+    subtask-of: "External Stimuli"
   - name: "Archive: new series initialised"
     description: |
       - When the new series is created, formally initialised, and fully published to the
         mirrors; it does not need to be open for uploads yet.
+    list: On Deck
     subtask-of: "External Stimuli"
   - name: "Updated debootstrap in the archive"
     description: |
       - When all relevant series have an updated debootstrap capable of bootstrapping
         the opening series, this can be moved Done.
+    list: On Deck
     subtask-of: "External Stimuli"
   - name: "Archive: open for uploads"
     description: |
       - When the archive is formally open for uploads.
+    list: On Deck
     subtask-of: "External Stimuli"
   - name: "Britney running in development"
     description: |
       - Britney is running against the newly opened series.
+    list: On Deck
     subtask-of: "External Stimuli"
   - name: "ADT running in development"
     description: |
       - ADT is running against the newly opened series.
+    list: On Deck
     subtask-of: "External Stimuli"
   - name: "ubuntu-kernel-release: add stable series branch"
     description: |
       - In lp:~ubuntu-kernel-release/britney/+git/hints-ubuntu:
          - create the new ubuntu/<stable-series> branch off of the devel branch
     prerequisites:
+      - "Archive: old-series released"
     list: On Deck
   - name: "linux-firmware: add new series branch"
     description: |
       - In lp:~ubuntu-kernel/ubuntu/+source/linux-firmware
          - create the new <development-series> branch off of the existing <stable-series> branch
     prerequisites:
+      - "Add new series to Ubuntu KTL"
     list: On Deck
   - name: "Apply git gc to all mirrors"
     description: |
       - On kernel.ubuntu.com in /srv/kernel.ubuntu.com/git/kernel-ppa/mirror apply git gc to all repositories.
     prerequisites:
-    list: On Deck
+    list: Backlog
   - name: "Mark series archive-closed"
     description: |
       - OPENING: opening: archive-closed: true
     prerequisites:
       - "Archive: new series initialised"
-    list: On Deck
+    list: Backlog
   - name: "Create new linux-snap git repository"
     description: |
       - NEEDS: launchpad admin for canonical-kernel-snaps
@@ -58,6 +75,7 @@ cards:
       - fork, rename to new series
       - clean up branches as needed for supported snaps (usually pc & pi to start with)
     prerequisites:
+      - "Archive: series name chosen"
     list: On Deck
   - name: "Request new snap tracks"
     description: |
@@ -83,7 +101,7 @@ cards:
          - Mark the new series as "supported : false"; "development: true"; "opening:"
          - CHECK: confirm that we have derived kernels specified correctly in the previous series.
     prerequisites:
-      - "Switch development series to stable"
+      - "Archive: series name chosen"
     list: Backlog
   - name: "Mark series archive-open"
     description: |
@@ -101,7 +119,6 @@ cards:
     description: |
       - Create recipies (Producing snaps documentation)
     prerequisites:
-      - "Archive: new series initialised"
       - "Create new linux-snap git repository"
       - "Request new snap tracks"
     list: Backlog
@@ -168,17 +185,18 @@ cards:
       - Add ADT matrix config for new series to canonical-kernel-team--bootstrap.conf and canonical-kernel-team--unstable.conf
     prerequisites:
       - "ADT running in development"
+      - "Validate ubuntu-kernel-release devel branch"
     list: Backlog
   - name: "Remove opening tag"
     description: |
       - remove "opening" from series stanza
     prerequisites:
-      - "Create new primary repositories"
       - "Mark series archive-closed"
+      - "Create new primary repositories"
       - "Install updated debootstrap onto builders"
       - "Add series to chroot creation"
       - "Validate ubuntu-kernel-release devel branch"
-      - "ADT running in development"
+      - "Mark series autopkgtest"
       - "Mark series archive-open"
     list: Backlog
   - name: "Update opening proceedure"
