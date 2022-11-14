@@ -473,13 +473,6 @@ defaults:
     development: true
     supported: false
     routing-table: *routing-table
-    opening:
-      archive-closed: true
-      repositories: true
-      debootstrap: true
-      chroots: true
-      archive-open: true
-      autopkgtest: true
     sources:
         linux-unstable:
             routing: devel-unstable
