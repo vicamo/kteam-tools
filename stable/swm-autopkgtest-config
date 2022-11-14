@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+#
+import argparse
+
+from ktl.kernel_series import KernelSeries
+from ktl.swm_status import SwmStatus
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="SWM autopkgtest-config")
+    args = parser.parse_args()
+
+    ks = KernelSeries()
+    swm = SwmStatus()
+
+    print(
+        """# Never run EOL kernels ADT-165
+# generated with kteam-tools/stable/swm-autopkgtest-config
+# update approximately every 6 months
+#"""
+    )
+    for series in ks.series:
+        if not series.supported and not series.development:
+            continue
+        if series.esm:
+            continue
+
+        for source in sorted(series.sources, key=lambda x: x.name):
+            if source.supported or source.private or source.development:
+                continue
+
+            print("{}/all/{}".format(source.name, series.codename))
