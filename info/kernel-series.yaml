@@ -2056,7 +2056,7 @@ defaults:
 
         linux-nvidia-5.19:
             routing: nvidia
-            variants: [ '--', '-edge' ]
+            variants: [ '-edge' ]
             packages:
                 linux-nvidia-5.19:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'nvidia-5.19-next']
