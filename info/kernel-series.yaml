@@ -2822,6 +2822,58 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
+        linux-iot:
+            variants: [ '--' ]
+            packages:
+                linux-iot:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-iot/+git/jammy', 'master-next']
+                linux-meta-iot:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-iot/+git/jammy']
+                linux-signed-iot:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-iot/+git/jammy']
+            supported: false
+            owner: wenchien
+            development: true
+            derived-from: [ '22.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    iot:
+                        meta-pkg: linux-iot
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-uc22-iot:
+            routing: uc22
+            packages:
+                linux-uc22-iot:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-iot/+git/jammy', 'main']
+                linux-signed-uc22-iot:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-iot/+git/jammy', 'main']
+            supported: false
+            owner: wenchien
+            development: true
+            snaps:
+                iot-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'iot']
+                    gated: false
+                    promote-to: 'beta'
+                    qa: false
+                    hw-cert: false
+                    publish-to:
+                        amd64: ['22']
+                        arm64: ['22']
+            derived-from: [ '22.04', 'linux-iot' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
+
+
 # 21.10 (Impish Indri)
 '21.10':
     codename: impish
