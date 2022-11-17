@@ -7,7 +7,6 @@ import re
 from ktl.utils                          import date_to_string, string_to_date
 from .log                               import cdebug, center, cleave, cinfo, cerror
 from .package                           import Package, PackageError
-from ktl.shanky                         import send_to_shankbot
 from .errors                            import ShankError, WorkflowCrankError, WorkflowCorruptError
 from .deltatime                         import DeltaTime
 from .snap                              import SnapDebs, SnapError
