@@ -48,7 +48,7 @@ def normalize_control_file(path, source_pkg, ver, abi, upload):
 
     verabi = ver + abi
     fullver = verabi + '.' + upload
-    basever = verabi + '.' + upload.split('+')[0]
+    basever = verabi + '.' + upload.rsplit('+', 1)[0]
 
     fulldep = '(>= ' + verabi + '.' + upload + ')'
     basedep = '(>= ' + verabi + '.' + upload.split('+')[0] + ')'
