@@ -955,6 +955,7 @@ class WorkflowBug():
             if task_name in WorkflowBug.projects_tracked:
                 if task.status == 'Fix Committed':
                     task.status = 'Fix Released'
+                    task.lp_save()
                     s.is_purgable = True
                 break
 
