@@ -2125,10 +2125,7 @@ defaults:
                 flavours:
                     nvidia:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'arm64']
-                        clouds: ['metal']
-                    nvidia-64k:
-                        arches: ['arm64']
+                        arches: ['amd64']
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
@@ -2161,10 +2158,7 @@ defaults:
                 flavours:
                     nvidia:
                         # arches as defined by the testing system
-                        arches: ['amd64', 'arm64']
-                        clouds: ['metal']
-                    nvidia-64k:
-                        arches: ['arm64']
+                        arches: ['amd64']
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
