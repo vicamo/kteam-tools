@@ -4817,7 +4817,7 @@ defaults:
                     stable: false
                     promote-to: stable
                     qa: false
-                    hw-cert: true
+                    hw-cert: false
                     publish-to:
                         amd64: ['20']
                 intel-kernel:
