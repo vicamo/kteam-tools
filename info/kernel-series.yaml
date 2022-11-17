@@ -1813,6 +1813,38 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oem-6.1:
+            versions: ['6.1.0']
+            variants: ['-22.04c']
+            packages:
+                linux-oem-6.1:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-6.1-next']
+                linux-meta-oem-6.1:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/jammy', 'oem-6.1']
+                linux-signed-oem-6.1:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/jammy', 'oem-6.1']
+                linux-restricted-modules-oem-6.1:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oem/+git/jammy', 'oem-6.1']
+                linux-restricted-generate-oem-6.1:
+                    type: lrg
+                linux-restricted-signatures-oem-6.1:
+                    type: lrs
+            supported: false
+            owner: tjaalton
+            derived-from: [ '23.04', 'linux-unstable' ]
+            development: true
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oem:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-oracle:
             variants: ['--']
             packages:
