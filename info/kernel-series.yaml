@@ -1986,6 +1986,66 @@ defaults:
             swm:
                 block-parent-release: true
 
+        linux-intel-iotg-realtime:
+            routing: realtime
+            variants: ['--']
+            packages:
+                linux-intel-iotg-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-intel-iotg-realtime/+git/jammy', 'master-next']
+                linux-meta-intel-iotg-realtime:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-intel-iotg-realtime/+git/jammy']
+                linux-signed-intel-iotg-realtime:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-intel-iotg-realtime/+git/jammy']
+                linux-restricted-modules-intel-iotg-realtime:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-intel-iotg-realtime/+git/jammy']
+                linux-restricted-generate-intel-iotg-realtime:
+                    type: lrg
+                linux-restricted-signatures-intel-iotg-realtime:
+                    type: lrs
+            supported: true
+            owner: philcox
+            development: false
+            backport: false
+            derived-from: [ '22.04', 'linux-realtime' ]
+            invalid-tasks: [ 'automated-testing' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    intel-iotg:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['metal']
+
+        linux-uc22-intel-iotg-realtime:
+            routing: realtime-uc22
+            packages:
+                linux-uc22-intel-iotg:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iotg-realtime/+git/jammy', 'realtime']
+                linux-signed-uc22-intel-iotg:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iotg-realtime/+git/jammy''realtime']
+            supported: true
+            owner: philcox
+            development: false
+            snaps:
+                intel-iotg-realtime-kernel:
+                    primary: true
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/+git/kernel-snaps-uc22', 'intel-iotg-realtime']
+                    gated: false
+                    stable: false
+                    promote-to: [ 'edge', 'beta' ]
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        amd64: ['22']
+            derived-from: [ '22.04', 'linux-intel-iotg-realtime' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
+
         linux-xilinx-zynqmp:
             variants: ['--']
             packages:
