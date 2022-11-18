@@ -164,6 +164,11 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+        security-build-uc20-fragment: &routing-table-security-build-uc20
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
         security-proposed-fragment: &routing-table-security-proposed
             security-proposed:
                 - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
@@ -193,11 +198,7 @@ defaults:
             release:
                 - ['ubuntu', 'Release']
         uc20: &routing-table-uc20
-            <<: *routing-table-security-proposed
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
             signing:
