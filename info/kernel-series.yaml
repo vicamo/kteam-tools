@@ -606,31 +606,6 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing']
 
-        linux-realtime:
-            routing: realtime-interim
-            variants: ['--']
-            packages:
-                linux-realtime:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/lunar', 'master-next']
-                linux-meta-realtime:
-                    type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/lunar']
-                linux-signed-realtime:
-                    type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/lunar']
-                # The NVIDIA drivers explicitly do not support PREEMPT_RT, so no need for LRM.
-            owner: jsalisbury
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-realtime']
-            swm:
-                kernel-testing: true
-            testing:
-                flavours:
-                    realtime:
-                        arches: ['amd64', 'arm64']        # test system arch names
-            invalid-tasks: [ 'automated-testing', 'certification-testing' ]
-
         linux-aws:
             variants: ['--']
             packages:
