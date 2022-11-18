@@ -272,6 +272,16 @@ defaults:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-proposed', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-release', 'Release']
+        kariya:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
+            build:
+                - ['ppa:kariya-team/ubuntu/kariya-build', 'Release']
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ke-kariya', 'Release']
+            proposed:
+                - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
+            updates:
+                - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -3270,6 +3280,17 @@ defaults:
                     type: extra
             development: true
             supported: false
+
+        linux-qcom-qcs410:
+            routing: kariya
+            packages:
+                linux-qcom-qcs410:
+        linux-uc20-qcom-qcs410:
+            routing: kariya
+            packages:
+                linux-uc20-qcom-qcs410:
+                linux-signed-uc20-qcom-qcs410:
+                    type: signed
 
         linux-raspi:
             variants: ['--']
