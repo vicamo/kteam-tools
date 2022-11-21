@@ -32,8 +32,8 @@ class CanonicalSigningJobs(TaskHandler):
             #  new-review -> Fix Released
             nrs = s.bug.task_status("new-review")
             if nrs not in ("In Progress", "Fix Committed", "Fix Released"):
-                cinfo("new-review is not marked approved, fail signing")
-                s.task.status = "Incomplete"
+                cinfo("new-review is not marked approved, recinding signing")
+                s.task.status = "New"
                 retval = True
                 break
             if nrs != "Fix Released":
