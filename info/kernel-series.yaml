@@ -201,10 +201,12 @@ defaults:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-build2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/uc20', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-staging2', 'Release']
             updates:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
             release:
@@ -235,8 +237,10 @@ defaults:
             <<:             *routing-table-uc20
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-build', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/uc-build2', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-proposed', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/uc-proposed2', 'Release']
             updates:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-release', 'Release']
             release:
@@ -415,12 +419,14 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/esm', 'Release']
             as-proposed:
-                - ['ppa:canonical-kernel-rt/ubuntu/as-proposed', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
             proposed:
                 - ['ppa:ubuntu-advantage/ubuntu/realtime-proposed', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
             release:
@@ -446,10 +452,12 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
             build:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/esm', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
                 - ['ubuntu', 'Updates']
