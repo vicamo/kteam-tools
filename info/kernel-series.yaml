@@ -950,7 +950,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-lowlatency:
                     type: lrs
-            owner: p-pisati
+            owner: lukenow
             derived-from: [ '22.10', 'linux' ]
             swm:
                 kernel-testing: true
