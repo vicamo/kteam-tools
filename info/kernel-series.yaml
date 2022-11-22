@@ -286,6 +286,26 @@ defaults:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
             updates:
                 - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
+        ambarella-bosch-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
+            build:
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+            signing:
+                - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-bosch', 'Release' ]
+            proposed:
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+            updates:
+                - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+        ambarella-honeywell-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
+            build:
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
+            signing:
+                - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-honeywell', 'Release' ]
+            proposed:
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
+            updates:
+                - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -3304,43 +3324,79 @@ defaults:
             swm:
                 block-parent-release: true
 
+        linux-ambarella-honeywell:
+            routing: ambarella-honeywell
+            packages:
+                linux-ambarella-honeywell:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-ambarella-honeywell', 'master-next']
+            supported: false
+            owner: wenchien
+            private: true
+            derived-from: ['20.04', 'linux']
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+
         linux-uc20-ambarella-honeywell:
-            routing:
-                'build':
-                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
-                'signing':
-                    - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-honeywell', 'Release' ]
-                'proposed':
-                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
-                'updates':
-                    - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+            routing: ambarella-honeywell
             packages:
                 linux-uc20-ambarella-honeywell:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-uc20-ambarella-honeywell', 'master-next']
                 linux-signed-uc20-ambarella-honeywell:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-signed-uc20-ambarella-honeywell']
                     type: signed
-                linux-ambarella-honeywell:
-                    type: extra
             development: true
             supported: false
+            owner: wenchien
+            private: true
+            snaps:
+                hon-hbt-cv22-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/hon-hbt-kernel-snap', 'cv22']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: ['latest']
+            derived-from: ['20.04', 'linux-ambarella-honeywell']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
+
+        linux-ambarella-bosch:
+            routing: ambarella-bosch
+            packages:
+                linux-ambarella-bosch:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-ambarella-bosch', 'master-next']
+            supported: false
+            owner: wenchien
+            private: true
+            derived-from: ['20.04', 'linux']
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-uc20-ambarella-bosch:
-            routing:
-                'build':
-                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
-                'signing':
-                    - [ 'ppa:canonical-signing/ubuntu/ke-ambarella-bosch', 'Release' ]
-                'proposed':
-                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
-                'updates':
-                    - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+            routing: ambarella-bosch
             packages:
                 linux-uc20-ambarella-bosch:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-uc20-ambarella-bosch', 'master-next']
                 linux-signed-uc20-ambarella-bosch:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-signed-uc20-ambarella-bosch']
                     type: signed
-                linux-ambarella-bosch:
-                    type: extra
             development: true
             supported: false
+            owner: wenchien
+            private: true
+            snaps:
+                bosch-bt-s6lm-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/bosch-bt-kernel-snap', 's6lm']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: ['latest']
+            derived-from: ['20.04', 'linux-ambarella-bosch']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-qcom-qcs410:
             routing: kariya
