@@ -47,6 +47,8 @@ if __name__ == '__main__':
         action='store_true', default=False)
     parser.add_argument('--show-owner', help='Display target owner',
         action='store_true', default=False)
+    parser.add_argument('--show-stream', help='Display stream',
+        action='store_true', default=False)
     parser.add_argument('--limit-owner', help='Limit display target to owner',
         action='append')
     parser.add_argument('--sort-phase', help='Sort by phase (including entry and exit)',
@@ -93,6 +95,7 @@ if __name__ == '__main__':
                     'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'][task].get('assignee', 'unassigned'),
                     'owner':            bug_data.get('owner', '-'),
+                    'stream':           bug_data.get('built', {}).get('route-entry', '-'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -112,6 +115,7 @@ if __name__ == '__main__':
                     'stage':            bug_data.get('stage', 10000),
                     'assignee':         bug_data['task'].get(task, {}).get('assignee', 'unassigned'),
                     'owner':            bug_data.get('owner', '-'),
+                    'stream':           bug_data.get('built', {}).get('route-entry', '-'),
                     }
                 results.append((generate_sort(entry), entry))
 
@@ -129,6 +133,7 @@ if __name__ == '__main__':
                 'stage':            bug_data.get('stage', 10000),
                 'assignee':         '--',
                 'owner':            bug_data.get('owner', '-'),
+                'stream':           bug_data.get('built', {}).get('route-entry', '-'),
                 }
             results.append((generate_sort(entry), entry))
 
@@ -157,6 +162,8 @@ if __name__ == '__main__':
         fmt += " {owner:{len_owner}}"
     if args.show_assignee:
         fmt += ' {assignee:{len_assignee}}'
+    if args.show_stream:
+        fmt += ' {stream}'
     fmt += "  {phase:{len_phase}} {phase_status:35}"
     sort_prev = None
     count = 0
