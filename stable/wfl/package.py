@@ -2518,7 +2518,11 @@ class Package():
             # Fix Released.
             cinfo("    considering {}".format(tracker_nr))
             ptp_status = tracker_data.get('task', {}).get('promote-to-proposed', {}).get('status', 'Invalid')
-            if ptp_status not in ('Invalid', 'Fix Released'):
+            stream = tracker_data.get('built', {}).get('route-entry')
+            if stream is not None and stream != s.built_in:
+                cinfo("    not in stream {}".format(tracker_nr))
+
+            elif ptp_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} considered blocking".format(ptp_status))
                 return tracker_nr
 
