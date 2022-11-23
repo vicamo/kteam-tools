@@ -27,6 +27,7 @@
 
 '2022.11.14':
     release-date: '2022-12-05'
+    stream: 1
 
 'd2022.10.24':
     complete: true
@@ -39,6 +40,7 @@
 
 '2022.10.10':
     release-date: '2022-11-14'
+    stream: 2
 
 'd2022.09.27':
     complete: true
