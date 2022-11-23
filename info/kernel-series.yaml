@@ -191,6 +191,7 @@ defaults:
                 - ['ppa:canonical-signing/ubuntu/primary', 'Release']
             proposed:
                 - ['ubuntu', 'Proposed']
+                - ['ppa:canonical-kernel-team/ubuntu/proposed2', 'Release']
             as-proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
             updates:
