@@ -45,15 +45,24 @@ class Clog:
 
     @classmethod
     def debug(c, msg, color='magenta'):
-        debug(colored(msg, color))
+        if c.color:
+            debug(colored(msg, color))
+        else:
+            debug(msg)
 
     @classmethod
     def warn(c, msg, color='red'):
-        warning(colored(msg, color))
+        if c.color:
+            warning(colored(msg, color))
+        else:
+            warning(msg)
 
     @classmethod
     def notice(c, msg, color='yellow'):
-        c.info(colored(msg, color))
+        if c.color:
+            c.info(colored(msg, color))
+        else:
+            info(msg)
 
     @classmethod
     def enter(c, msg):
