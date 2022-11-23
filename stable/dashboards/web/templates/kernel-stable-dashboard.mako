@@ -379,6 +379,8 @@ for bid in sorted(swm_trackers):
 
     phase = b.get('phase', 'unknown (no phase set)')
 
+    stream = b.get('built', {}).get('route-entry', '-')
+
     sn = b.get('series', 'unknown')
 
     if cycle not in cadence:
@@ -473,6 +475,7 @@ for bid in sorted(swm_trackers):
         if first:
             status_row['bug'] = bid
             status_row['version'] = version
+            status_row['stream'] = stream
             status_row['thing-in'] = thing_in
             first = False
         cadence[cycle][sn][package].append(status_row)
@@ -577,11 +580,11 @@ for bid in sorted(swm_trackers):
                                     % for cycle in sorted(cycles, key=cycle_key):
                                         % if cycle_first is False:
                                             <tr class="entry-any owner-any phase-any">
-                                                <td colspan="6">&nbsp;</td>
+                                                <td colspan="7">&nbsp;</td>
                                             </tr>
                                         % endif
                                         <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                            <td colspan="6" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
+                                            <td colspan="7" style="background: #ffffc0; font-size: 140%; ">${cycle}</td>
                                         </tr>
                                         <%
                                             cycle_first = False
@@ -593,7 +596,7 @@ for bid in sorted(swm_trackers):
                                             %>
                                             % if releases[rls] in cadence[cycle]:
                                             <tr class="entry-any owner-any phase-any cycle-${cycle}">
-                                                <td colspan="6" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
+                                                <td colspan="7" style="background: #e9e7e5;">${rls} &nbsp;&nbsp; ${codename}</td>
                                             </tr>
                                                 % for pkg in sorted(cadence[cycle][releases[rls]]):
                                                     % for bug in cadence[cycle][releases[rls]][pkg]:
@@ -601,6 +604,7 @@ for bid in sorted(swm_trackers):
                                                             cell_version = '&nbsp;'
                                                             cell_package = '&nbsp;'
                                                             cell_spin = '&nbsp;'
+                                                            cell_stream = '&nbsp;'
                                                             cell_in = '&nbsp;'
                                                             if bug['bug'] is not None:
                                                                 url = "https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s" % bug['bug']
@@ -608,6 +612,7 @@ for bid in sorted(swm_trackers):
                                                                 cell_package = '<a href="{}">{}</a>'.format(url, pkg)
                                                                 cell_spin = '#{}'.format(bug['spin'])
                                                                 cell_in = 'in: ' + __coloured('/', 'silver').join(bug['thing-in'])
+                                                                cell_stream = bug['stream']
                                                                 row_number += 1
                                                             row_style = ' background: #f6f6f6;' if row_number % 2 == 0 else ''
                                                         %>
@@ -617,6 +622,7 @@ for bid in sorted(swm_trackers):
                                                             <td class="${bug['master-class']}">${cell_package}</a></td>
                                                             <td style="color: grey">${cell_spin}</td>
                                                             <td>${bug['phase']}</td>
+                                                            <td>${cell_stream}</td>
                                                             <td>${cell_in}</td>
                                                         </tr>
                                                     % endfor
@@ -626,7 +632,7 @@ for bid in sorted(swm_trackers):
                                     % endfor
                                     % if cycle_first is True:
                                         <tr>
-                                            <td colspan="6">No active SRU cycle at this time (see <a href="https://kernel.ubuntu.com/">kernel.ubuntu.com</a> for any announcements).</td>
+                                            <td colspan="7">No active SRU cycle at this time (see <a href="https://kernel.ubuntu.com/">kernel.ubuntu.com</a> for any announcements).</td>
                                         </tr>
                                     % endif
                                     </table>
