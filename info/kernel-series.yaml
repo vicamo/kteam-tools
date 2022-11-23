@@ -179,6 +179,8 @@ defaults:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             security-test:
                 - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            test-build:
+                - ['ppa:canonical-kernel-team/ubuntu/test-builds', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
