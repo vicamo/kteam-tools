@@ -45,6 +45,7 @@ class SruCycleSpinEntry:
 
         self._hold = data.get('hold', False)
         self._complete = data.get('complete', False)
+        self._stream = data.get('stream')
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
@@ -81,6 +82,10 @@ class SruCycleSpinEntry:
     @property
     def known(self):
         return self._known
+
+    @property
+    def stream(self):
+        return self._stream
 
     @property
     def ready_to_release(self):
