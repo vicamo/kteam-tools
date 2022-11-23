@@ -839,10 +839,11 @@ class PackageBuild:
         cdebug("INSTANTIATING {} {} {} {} {} {}".format(self.dependent, self.pocket, self.package, self.srch_version, self.srch_abi, self.srch_sloppy))
 
         build_route = self.pocket == 'ppa' or self.pocket.startswith('build')
+        stream_route = self.pocket in ('ppa', 'Proposed', 'as-proposed') or self.pocket.startswith('build')
 
         publications = []
         archive_num = 0
-        archive_only = self.bug.debs.built_in if build_route else None
+        archive_only = self.bug.debs.built_in if stream_route else None
         for (src_archive, src_pocket) in self.routing:
             archive_num += 1
             if archive_only is not None and archive_num != archive_only:
