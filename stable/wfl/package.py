@@ -927,6 +927,21 @@ class Package():
                 cinfo("tracker version has changed dropping package version data")
                 del s.bug.bprops['versions']
 
+        # XXX: TRANSITION -- use the cycle information to work out which stream
+        # we are going to default to.
+        stream = s.built_in
+        if stream is None:
+            sru_cycle = s.bug.sc.lookup_cycle(s.bug.sru_cycle)
+            if sru_cycle is not None and sru_cycle.stream is not None:
+                stream = sru_cycle.stream
+                cinfo("APW: STREAM2 -- no stream set, set to {}".format(int(stream)))
+                s.built_in = stream
+                s.bug.flag_assign('stream-from-cycle', True)
+            else:
+                cinfo("APW: STREAM2 -- no stream set, cannot set for {}".format(s.bug.sru_cycle))
+        else:
+            cinfo("APW: STREAM2 -- stream already present {}".format(stream))
+
         # Pick up versions from our bug as needed.
         s.series = s.bug.series
         s.name = s.bug.name
