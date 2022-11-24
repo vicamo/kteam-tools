@@ -112,6 +112,10 @@ class BugSpam:
                 if is_tracker_bug:
                     should_be_spammed = False
 
+                if 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package']) in bug.tags:
+                    self.verbose('    . already spammed for this package')
+                    should_be_spammed = False
+
                 # Now that we are limiting spamming to those bugs which are unique to a kernel
                 # we can and should remove any old verification tags as we go.
                 if should_be_spammed:
@@ -139,9 +143,10 @@ class BugSpam:
 
                     # Tags
                     #
-                    self.verbose('        . adding tag: verification-needed-%s' % (self.cfg['series']))
-                    if not self.cfg['dryrun']:
-                        tags.add('verification-needed-' + series)
+                    for tag in ('verification-needed-' + series, 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package'])):
+                        self.verbose('        . adding tag: ' + tag)
+                        if not self.cfg['dryrun']:
+                            tags.add(tag)
 
                     # Write the tags back if they are changed.
                     if set(bug.tags) != tags:
