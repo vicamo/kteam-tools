@@ -3429,7 +3429,8 @@ defaults:
             routing: wendover
             packages:
                 linux-uc20-qcomm:
-                linux-siuc20-qcomm:
+                linux-signed-uc20-qcomm:
+                    type: signed
 
         linux-raspi:
             variants: ['--']
