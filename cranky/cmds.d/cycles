@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+#
+# Manipulate cycle refs in refs/swm/$handle/$series_$package/$cycle for this repo
+#
+
+import argparse
+import logging
+import os
+import sys
+
+from ktl.log import cdebug, cerror, cexception
+
+from crl.cycle_ref import CycleRef, Git
+from crl.exceptions import CrankyException
+from crl.handle import Handle, HandleError, KernelSeries
+
+
+def rebuild_cycles(handle, dry_run=False, quiet=False, **kwargs):
+    """Rebuild all cycle references for the specified handle"""
+    ks = KernelSeries()
+    tree = Handle(ks=ks).lookup_set(handle, validate=False)
+    main_tree = tree.get_tree_by_package_type("main")
+
+    CycleRef.generate(tree, remote=main_tree.remote, dry_run=dry_run)
+    if not quiet:
+        list_cycles(handle, **kwargs)
+
+
+def list_cycles(
+    handle,
+    package: str = None,
+    descending: bool = False,
+    after: str = None,
+    before: str = None,
+    **kwargs,
+):
+    """List cycle references for the specified handle and package"""
+    tree = Handle().lookup_set(handle, validate=False).get_tree_by_package_type(package)
+    if not tree:
+        raise CrankyException(
+            "No package type '{}' found in {}".format(package, handle)
+        )
+    cdebug("Found tree {} by package type {}".format(tree.name, package))
+
+    cycle_refs = CycleRef.get_list(tree.directory, descending, before, after)
+    for cycle_ref in cycle_refs:
+        print("{} {}".format(tree.name, str(cycle_ref)))
+
+
+def destroy_cycles(handle, dry_run=False, **kwargs):
+    """Delete all local cycle references under refs/swm"""
+    handle_set = Handle().lookup_set(handle, validate=False)
+    for tree in handle_set.trees:
+        git = Git(tree.directory)
+        for cycle_ref in CycleRef.get_list(tree.directory):
+            ref = CycleRef.make_ref(handle_set.handle_name, cycle_ref.cycle)
+            git("update-ref -d {}".format(ref), dry_run=dry_run)
+
+
+if __name__ == "__main__":
+    desc = """
+Manipulate refs/swm/*/* for this handle
+"""
+
+    epilog = """
+Examples:
+  $ cranky cycles rebuild jammy:linux
+
+  $ cranky cycles list --before 2022.11.01 --after 2021.09.09 jammy:linux
+"""
+
+    help_handle = """
+Handle to a kernel source tree in <series>:<package> format
+"""
+
+    help_dry_run = """
+Do not execute and commands that modify state
+"""
+
+    help_verbose = """
+Emit more debugging information
+"""
+
+    help_sub_list = """
+List cycles refs for this handle from oldest to newest
+"""
+
+    help_sub_list_desc = """
+List cycle refs from newest to oldest
+"""
+
+    help_sub_list_after = """
+List cycles refs occurring after cycle, exclusive
+"""
+
+    help_sub_list_before = """
+List cycle refs occurring before cycle, exclusive
+"""
+
+    help_sub_rebuild = """
+Rebuild cycles refs for this handle
+"""
+
+    help_sub_list_package = """
+List cycles for this specific package. If omitted and HANDLE is specified,
+the main package will be listed. If omitted and HANDLE is inferred from your
+working directory, the package type of working directory will be listed.
+"""
+
+    help_sub_rebuild_quiet = """
+Do not print references after rebuild
+"""
+
+    help_sub_destroy = """
+Delete all local cycle references in your local git tree for this handle
+"""
+
+    choices_sub_list_packages = (
+        "main",
+        "meta",
+        "signed",
+        "lrm",
+        "lrs",
+        "lrg",
+        "lum",
+        "lbm",
+    )
+
+    formatter = argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=formatter,
+        epilog=epilog,
+        prog="cranky cycles",
+    )
+    parser.add_argument("--dry-run", action="store_true", help=help_dry_run)
+    parser.add_argument("-v", "--verbose", action="store_true", help=help_verbose)
+
+    subparsers = parser.add_subparsers(help="Sub-command help", required=True)
+
+    parser_list = subparsers.add_parser("list", help=help_sub_list)
+    parser_list.add_argument(
+        "-d", "--descending", action="store_true", help=help_sub_list_desc
+    )
+    parser_list.add_argument("-a", "--after", help=help_sub_list_after)
+    parser_list.add_argument("-b", "--before", help=help_sub_list_before)
+    parser_list.add_argument(
+        "-p",
+        "--package",
+        help=help_sub_list_package,
+        choices=choices_sub_list_packages,
+    )
+    parser_list.set_defaults(func=list_cycles)
+
+    parser_rebuild = subparsers.add_parser("rebuild", help=help_sub_rebuild)
+    parser_rebuild.add_argument(
+        "-q", "--quiet", action="store_true", help=help_sub_rebuild_quiet
+    )
+    parser_rebuild.set_defaults(func=rebuild_cycles)
+
+    parser_destroy = subparsers.add_parser("destroy", help=help_sub_destroy)
+    parser_destroy.set_defaults(func=destroy_cycles)
+
+    # Handle must be added after subcommands
+    for subparser in subparsers.choices.values():
+        subparser.add_argument(
+            "handle",
+            nargs="?",
+            default=os.getcwd(),
+            help="<series>:<package> handle, or path to source tree. "
+            "If not provided, defaults to the current directory.",
+        )
+
+    args = parser.parse_args()
+    level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=level, format="%(message)s")
+    cdebug(args)
+
+    try:
+        kwargs = vars(args)
+        args.func(**kwargs)
+    except HandleError:
+        # Show a helpful message instead of spewing a stacktrace
+        if args.handle == os.getcwd():
+            cerror(
+                "No handle was specified and you are not in a kernel repo. "
+                "Try specifying a handle SERIES:PACKAGE or cd to a repo."
+            )
+        else:
+            cerror(f"The handle '{args.handle}' is invalid")
+    except CrankyException as ex:
+        cexception(ex)
+        sys.exit(1)
