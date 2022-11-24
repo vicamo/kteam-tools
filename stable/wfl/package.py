@@ -2516,7 +2516,10 @@ class Package():
             ptu_status = tracker_data.get('task', {}).get('promote-to-updates', {}).get('status', 'Invalid')
             if ptu_status == 'Invalid':
                 ptu_status = tracker_data.get('task', {}).get('promote-to-release', {}).get('status', 'Invalid')
-            if ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
+            stream = tracker_data.get('built', {}).get('route-entry')
+            if stream is not None and stream != s.built_in:
+                cinfo("    not in stream {}".format(tracker_nr))
+            elif ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} plus promote-to-{{updates,release}} {} considered blocking".format(ptp_status, ptu_status))
                 return tracker_nr
 
