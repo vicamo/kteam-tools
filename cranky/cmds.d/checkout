@@ -11,11 +11,13 @@ import datetime
 
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
-from crl.handle import HandleError
-from ktl.log import cerror, cnotice, Clog
+from crl.cycle_ref import CycleRef, Git
+from crl.exceptions import CrankyException
+from crl.handle import Handle, HandleError
+from ktl.log import cdebug, cerror, cnotice, Clog
 
 
-def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False):
+def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False, cycle=None):
     """
     Clone the repos that make up the set of kernel packages
     """
@@ -55,11 +57,23 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
         rmt_branch = gh.remote_branch
         branch     = gh.get_cranky_branch_name(crd and crd.isoformat())
 
-        # Add info for the summary
-        summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
-                        "branch": branch})
+        if cycle:
+            # Generate operates on the entire set so we only
+            # need to run it once.
+            is_rebuilt = False
+            if not is_rebuilt:
+                CycleRef.generate(ghs.handle, remote=gh.remote)
+                is_rebuilt = True
 
-        if crd:
+            cycle_ref = CycleRef.get_cycle_ref(gh.directory, cycle)
+            if not cycle_ref:
+                raise CrankyException("Aborting: no cycle '{}' found for {}.".format(cycle, pkg.name))
+
+            branch = "{}-{}".format(branch, cycle_ref.cycle)
+            git = Git(gh.directory)
+            # TODO: teach gh.checkout how to handle a local ref
+            git("checkout -B {} {}".format(branch, cycle_ref.tag))
+        elif crd:
             try:
                 gh.checkout('security', branch, branch)
             except:
@@ -69,6 +83,10 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
 
         if crd:
             gh.set_upstream(branch, 'security')
+
+        # Add info for the summary
+        summary.append({"name": pkg.name, "dir": gh.directory, "remote": remote,
+                        "branch": branch})
 
     # Print the summary
     cnotice("Summary:")
@@ -128,6 +146,10 @@ Examples:
       Checks out as CRD-2018-01-07+master branch.
       It also sets 'security' as the upstream remote.
 
+  $ cranky checkout --cycle 2023.01.30 xenial:linux
+      Checkout the 'linux', 'linux-meta' and 'linux-signed' repositories for
+      Xenial at the latest respin for the 2023.01.30 cycle.
+
 Notes:
   Some kernel variants have their own repos (like aws, for example) whereas
   others simply reside on branches of the main repos (like raspi2). Depending
@@ -164,12 +186,26 @@ otherwise the cranky checkout'd repo will get corrupted.
 Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
 """
+
     help_nc = '''No Colour. By default the debug output that is printed comes out in
 multiple colours to help with the debugging. This option disables that.
 '''
 
+    help_depth = """
+Perform a shallow clone with --depth <int>
+"""
+
     help_crd = """
 Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
+"""
+
+    help_cycle = """
+Checks out the repo as it was for the specified cycle.
+Example:
+    --cycle 2022.08.08
+
+    Will checkout create a branch cranky/$cycle at the newest tag belonging
+    to this cycle.
 """
 
     formatter = argparse.RawDescriptionHelpFormatter
@@ -186,7 +222,7 @@ Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
                         help=help_dissociate)
     parser.add_argument("--depth",
                         default=None,
-                        help="Perform a shallow clone with --depth <int>")
+                        help=help_depth)
     parser.add_argument("-C", "--crd",
                         default=None,
                         type=datetime.date.fromisoformat,
@@ -195,9 +231,10 @@ Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
                         action='store_true',
                         default=False,
                         help=help_nc)
+    parser.add_argument("--cycle", help=help_cycle)
 
     try:
         checkout_repos(**vars(parser.parse_args()))
-    except (HandleError, GitError) as e:
+    except (HandleError, GitError, CrankyException) as e:
         cerror(e)
         sys.exit(1)
