@@ -309,6 +309,16 @@ defaults:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
             updates:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
+        wendover:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
+            build:
+                - [ 'ppa:capilano-team/ubuntu/capilano-build', 'Release' ]
+            signing:
+                - [ 'ppa:canonical-signing/ubuntu/ke-wendover', 'Release' ]
+            proposed:
+                - [ 'ppa:capilano-team/ubuntu/capilano-proposed', 'Release' ]
+            updates:
+                - [ 'ppa:capilano-team/ubuntu/capilano-updates', 'Release' ]
         classic-fde:
             <<: *routing-table-default
             security-build:
@@ -3410,6 +3420,16 @@ defaults:
                 linux-uc20-qcom-qcs410:
                 linux-signed-uc20-qcom-qcs410:
                     type: signed
+
+        linux-qcomm:
+            routing: wendover
+            packages:
+                linux-qcomm:
+        linux-uc20-qcomm:
+            routing: wendover
+            packages:
+                linux-uc20-qcomm:
+                linux-siuc20-qcomm:
 
         linux-raspi:
             variants: ['--']
