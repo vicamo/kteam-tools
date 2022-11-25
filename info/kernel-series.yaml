@@ -384,6 +384,7 @@ defaults:
                 - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
             test:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
             signing:
                 - ['ppa:canonical-signing/ubuntu/fips', 'Release']
             proposed:
