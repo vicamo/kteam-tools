@@ -415,6 +415,7 @@ defaults:
                 - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
             proposed:
                 - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
+                - ['ppa:ibm-cloud/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:ibm-cloud/ubuntu/release', 'Release']
             #security:
