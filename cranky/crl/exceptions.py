@@ -1,0 +1,2 @@
+class CrankyException(Exception):
+    pass
