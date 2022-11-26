@@ -62,7 +62,7 @@ class CanonicalSigningJobs(TaskHandler):
         retval = s._recind()
 
         while not retval:
-            s.reason = "Ongoing -s signing request in-progress"
+            s.task.reason = "Ongoing -s signing request in-progress"
             s.bug.monitor_add({
                 'type': 'launchpad-task',
                 'lp-api': s.task.lp_task.self_link,
