@@ -2401,6 +2401,9 @@ class Package():
         center(s.__class__.__name__ + '.ready_for_testing')
         # We only have mirrors on the primary archive, so if we are not routing
         routing = s.routing('Proposed')
+
+        # xXX: this is picking the first one every time ... dammit.
+
         (archive, pocket) = routing[0]
         if archive.reference == 'ubuntu':
             delay = timedelta(hours=1)
@@ -2497,10 +2500,7 @@ class Package():
 
         return None
 
-    # older_tracker_in_proposed
-    #
-    @property
-    def older_tracker_in_proposed(s):
+    def _older_tracker_in_proposed(s, limit_stream):
         # The target trackers are returned in cycle order.
         target_trackers = s.bug.target_trackers
         #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
@@ -2517,13 +2517,25 @@ class Package():
             if ptu_status == 'Invalid':
                 ptu_status = tracker_data.get('task', {}).get('promote-to-release', {}).get('status', 'Invalid')
             stream = tracker_data.get('built', {}).get('route-entry')
-            if stream is not None and stream != s.built_in:
+            if stream is not None and limit_stream is not None and stream != limit_stream:
                 cinfo("    not in stream {}".format(tracker_nr))
             elif ptp_status == 'Fix Released' and ptu_status not in ('Invalid', 'Fix Released'):
                 cinfo("      promote-to-proposed {} plus promote-to-{{updates,release}} {} considered blocking".format(ptp_status, ptu_status))
                 return tracker_nr
 
         return None
+
+    # older_tracker_in_proposed
+    #
+    @property
+    def older_tracker_in_proposed(s):
+        return s._older_tracker_in_proposed(s.built_in)
+
+    # older_tracker_in_proposed_any
+    #
+    @property
+    def older_tracker_in_proposed_any(s):
+        return s._older_tracker_in_proposed(None)
 
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """

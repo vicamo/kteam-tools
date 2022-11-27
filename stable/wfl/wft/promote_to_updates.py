@@ -76,6 +76,10 @@ class PromoteToUpdates(Promoter):
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break
 
+            if s.bug.debs.older_tracker_in_proposed_any:
+               s.task.reason = 'Stalled -- tracker for earlier spin active in Proposed'
+               break
+
             if s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
@@ -139,6 +143,10 @@ class PromoteToUpdates(Promoter):
             prerequisites = s._prerequisites_released()
             if not prerequisites and not s.bug.manual_unblock("prerequisites"):
                 cinfo("            Prerequisites not reported available pulling back from Confirmed", 'yellow')
+                pull_back = True
+
+            if s.bug.debs.older_tracker_in_proposed_any:
+                cinfo("            Earlier spin active in Proposed pulling back from Confirmed", 'yellow')
                 pull_back = True
 
             if s._kernel_block():
