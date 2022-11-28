@@ -2093,7 +2093,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iotg-realtime/+git/jammy', 'realtime']
                 linux-signed-uc22-intel-iotg:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iotg-realtime/+git/jammy''realtime']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iotg-realtime/+git/jammy', 'realtime']
             supported: true
             owner: philcox
             development: false
