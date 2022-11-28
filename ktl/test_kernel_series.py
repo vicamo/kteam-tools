@@ -52,6 +52,14 @@ class TestKernelSeries(TestKernelSeriesCore):
             count += 1
         self.assertEqual(count, 3)
 
+    def test_kernel_series_use_local(self):
+        err = None
+        try:
+            KernelSeries(use_local=True)
+        except Exception as e:
+            err = e
+        self.assertIsNone(err)
+
     def test_lookup_series(self):
         ks = KernelSeries(data=self.data_yaml)
         series = ks.lookup_series('16.04')
