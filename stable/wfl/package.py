@@ -791,10 +791,13 @@ class PackageBuild:
             if binary.architecture_specific:
                 arch_published.add(binary.distro_arch_series_link.split('/')[-1])
 
-        # If our build architecture list does not match our published architecture
-        # list then we have a publication missing.  Check if we have publications
-        # missing because they are in flight.
-        if arch_build != arch_published:
+        # Ensure we have publications in every architecture for which we have a build.
+        # In the case of a copy (with binaries) of a package we may have more published
+        # architectures than we have builds.  If we have architecuture builds which are not
+        # published check the publications to see if they are missing because they are in
+        # the uploads or approval queues.
+        if not arch_build.issubset(arch_published):
+            cinfo("build/published missmatch arch_build={} arch_published={}".format(arch_build, arch_published))
             if arch_build == arch_complete:
                 uploads = source.distro_series.getPackageUploads(exact_match=True,
                         archive=archive, pocket=pocket, name=source.source_package_name,
