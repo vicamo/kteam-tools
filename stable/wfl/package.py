@@ -2679,13 +2679,18 @@ class Package():
     def send_testing_message(s, op="sru", ppa=False, flavour="generic", meta=None):
         cdebug("send_testing_message: op={} ppa={} flavour={} meta={}".format(op, ppa, flavour, meta))
 
+        who = {
+            2: "s2",
+            3: "s3",
+        }.get(s.built_in, "kernel")
+
         # Send a message to the message queue. This will kick off testing of
         # the kernel packages in the -proposed pocket.
         #
         msg = {
             "key"            : "kernel.publish.proposed.%s" % s.series,
             "op"             : op,
-            "who"            : ["kernel"],
+            "who"            : [who],
             "pocket"         : "proposed",
             "date"           : str(datetime.utcnow()),
             "series-name"    : s.series,
