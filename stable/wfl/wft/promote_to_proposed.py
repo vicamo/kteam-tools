@@ -129,7 +129,7 @@ class PromoteFromTo(Promoter):
                         '{}:{} waiting for {} to become clear'.format(s.bug.series, s.bug.name, pocket_dest))
                 break
 
-            if s._kernel_block_ppa():
+            if s.bug.manual_block("promote-to-proposed") or s._kernel_block_ppa():
                 s.task.reason = 'Stalled -- manual kernel-block/kernel-block-ppa present'
                 break
 
@@ -179,7 +179,7 @@ class PromoteFromTo(Promoter):
                 if s.bug.task_status(task_src) not in ('Fix Released', 'Invalid'):
                     cinfo('            {} no longer ready pulling back from Confirmed'.format(task_src), 'yellow')
                     pull_back = True
-            if s._kernel_block_ppa():
+            if s.bug.manual_block("promote-to-proposed") or s._kernel_block_ppa():
                 cinfo('            A kernel-block/kernel-block-ppa tag exists on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
             if s.bug.debs.older_tracker_in_proposed is not None:

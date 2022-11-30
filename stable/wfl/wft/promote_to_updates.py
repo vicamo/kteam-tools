@@ -82,7 +82,7 @@ class PromoteToUpdates(Promoter):
                s.task.reason = severity + ' -- waiting for earlier spin to move to Updates'
                break
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-updates") or s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
@@ -151,7 +151,7 @@ class PromoteToUpdates(Promoter):
                 cinfo("            Earlier spin active in Proposed pulling back from Confirmed", 'yellow')
                 pull_back = True
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-updates") or s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
 

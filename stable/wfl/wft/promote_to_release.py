@@ -65,7 +65,7 @@ class PromoteToRelease(Promoter):
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-release") or s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
@@ -115,7 +115,7 @@ class PromoteToRelease(Promoter):
                 cinfo('            A hold-promote-to-updates present ({}) on this tracking bug pulling back from Confirmed'.format(blocks), 'yellow')
                 pull_back = True
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-release") or s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
                 pull_back = True
 

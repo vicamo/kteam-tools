@@ -80,7 +80,7 @@ class PromoteToSecurity(Promoter):
                     s.task.reason = 'Holding -- not ready for security (replication dwell)'
                 break
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-security") or s._kernel_block():
                 s.task.reason = 'Stalled -- kernel-block/kernel-block-proposed tag present'
                 break
 
@@ -112,21 +112,25 @@ class PromoteToSecurity(Promoter):
         while not retval:
             if s.task.status not in ('Confirmed'):
                 break
+
+            pull_back = False
+
             if s._kernel_manual_release():
                 break
-            if not s._kernel_block() and not s._in_blackout() and s._cycle_ready():
-                break
 
-            if s._kernel_block():
+            if s.bug.manual_block("promote-to-security") or s._kernel_block():
                 cinfo('            A kernel-block/kernel-block-proposed on this tracking bug pulling back from Confirmed', 'yellow')
+                pull_back = True
             if s._in_blackout():
                 cinfo('            Package now in development blackout pulling back from Confirmed', 'yellow')
+                pull_back = True
             if not s._cycle_ready():
                 cinfo('            Cycle no longer ready for release pulling back from Confirmed', 'yellow')
+                pull_back = True
 
-            s.task.status = 'New'
-
-            retval = True
+            if pull_back:
+                s.task.status = 'New'
+                retval = True
             break
 
         while not retval:
