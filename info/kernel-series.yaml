@@ -748,17 +748,16 @@ defaults:
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/lunar']
-                linux-restricted-modules-gcp:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/lunar']
-                linux-restricted-generate-gcp:
-                    type: lrg
-                linux-restricted-signatures-gcp:
-                    type: lrs
+                #linux-restricted-modules-gcp:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/lunar']
+                #linux-restricted-generate-gcp:
+                #    type: lrg
+                #linux-restricted-signatures-gcp:
+                #    type: lrs
             owner: kmously
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-gcp']
+            derived-from: ['23.04', 'linux-unstable']
+            backported: false
             swm:
                 kernel-testing: true
             testing:
