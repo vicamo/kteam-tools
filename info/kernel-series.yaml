@@ -330,6 +330,7 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/classic-fde2', 'Release']
         prerelease:
             <<:             *routing-table-default
             updates:
