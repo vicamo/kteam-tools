@@ -685,17 +685,16 @@ defaults:
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/lunar']
-                linux-restricted-modules-aws:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/lunar']
-                linux-restricted-generate-aws:
-                    type: lrg
-                linux-restricted-signatures-aws:
-                    type: lrs
+                #linux-restricted-modules-aws:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/lunar']
+                #linux-restricted-generate-aws:
+                #    type: lrg
+                #linux-restricted-signatures-aws:
+                #    type: lrs
             owner: timg-tpi
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-aws']
+            derived-from: ['23.04', 'linux-unstable']
+            backported: false
             swm:
                 kernel-testing: true
             testing:
