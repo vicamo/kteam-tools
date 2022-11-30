@@ -715,17 +715,16 @@ defaults:
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/lunar']
-                linux-restricted-modules-azure:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/lunar']
-                linux-restricted-generate-azure:
-                    type: lrg
-                linux-restricted-signatures-azure:
-                    type: lrs
+                #linux-restricted-modules-azure:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/lunar']
+                #linux-restricted-generate-azure:
+                #    type: lrg
+                #linux-restricted-signatures-azure:
+                #    type: lrs
             owner: timg-tpi
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-azure']
+            derived-from: ['23.04', 'linux-unstable']
+            backported: false
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
