@@ -826,17 +826,16 @@ defaults:
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/lunar']
-                linux-restricted-modules-oracle:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/lunar']
-                linux-restricted-generate-oracle:
-                    type: lrg
-                linux-restricted-signatures-oracle:
-                    type: lrs
+                #linux-restricted-modules-oracle:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/lunar']
+                #linux-restricted-generate-oracle:
+                #    type: lrg
+                #linux-restricted-signatures-oracle:
+                #    type: lrs
             owner: kmously
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-oracle']
+            derived-from: ['23.04', 'linux-unstable']
+            backported: false
             swm:
                 kernel-testing: true
             testing:
