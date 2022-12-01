@@ -804,7 +804,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/lunar']
             owner: arighi
-            derived-from: ['23.04', 'linux']
+            derived-from: ['23.04', 'linux-unstable']
             backported: false
             swm:
                 kernel-testing: true
