@@ -61,7 +61,7 @@ class PromoteToRelease(Promoter):
                 s.task.reason = blocks
                 break
 
-            if not prerequisites:
+            if not prerequisites and not s.bug.manual_unblock("prerequisites"):
                 s.task.reason = 'Pending -- prerequisites not ready'
                 break
 

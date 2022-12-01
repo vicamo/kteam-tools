@@ -723,6 +723,15 @@ class WorkflowBug():
 
         return False
 
+    def manual_unblock(s, task):
+        tag = 'kernel-unblock-' + task
+
+        if tag in s.tags:
+            cinfo("{} manual task unblock present".format(task))
+            return True
+
+        return False
+
     def block_present(s, block):
         if block not in s.blockers:
             return None
