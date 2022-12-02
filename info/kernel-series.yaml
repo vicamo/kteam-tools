@@ -631,17 +631,16 @@ defaults:
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar', 'lowlatency']
-                linux-restricted-modules-lowlatency:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar', 'lowlatency']
-                linux-restricted-generate-lowlatency:
-                    type: lrg
-                linux-restricted-signatures-lowlatency:
-                    type: lrs
+                #linux-restricted-modules-lowlatency:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar', 'lowlatency']
+                #linux-restricted-generate-lowlatency:
+                #    type: lrg
+                #linux-restricted-signatures-lowlatency:
+                #    type: lrs
             owner: p-pisati
-            #derived-from: ['23.04', 'linux']
-            backported: true
-            derived-from: ['22.10', 'linux-lowlatency']
+            derived-from: ['23.04', 'linux-unstable']
+            backported: false
             swm:
                 kernel-testing: true
             testing:
