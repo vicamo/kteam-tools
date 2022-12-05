@@ -22,11 +22,11 @@
 #       the date patches are no longer applied to the git repos for the given
 #       cycle
 
-'2022.12.05':
-    release-date: '2023-01-03'
+'2023.01.02':
+    release-date: '2023-01-23'
 
 '2022.11.14':
-    release-date: '2022-12-05'
+    release-date: '2022-12-19'
     stream: 1
 
 'd2022.10.24':
