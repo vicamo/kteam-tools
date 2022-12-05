@@ -363,6 +363,7 @@ defaults:
             <<:             *routing-table-devel
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/early-proposed2', 'Release']
             as-proposed:
             security:
             updates:
