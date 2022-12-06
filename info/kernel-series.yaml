@@ -258,8 +258,8 @@ defaults:
                 - ['ppa:denver-team/ubuntu/denver-proposed', 'Release']
             updates:
                 - ['ppa:denver-team/ubuntu/denver-updates', 'Release']
-        imx:
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
+        ein-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-build', 'Release']
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-build2', 'Release']
@@ -269,8 +269,8 @@ defaults:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-proposed', 'Release']
             updates:
                 - ['ppa:canonical-hwe-imx/ubuntu/imx-release', 'Release']
-        imx-honeywell:
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
+        shiner-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:canonical-hwe-imx/ubuntu/honeywell-build', 'Release']
             signing:
@@ -4992,12 +4992,12 @@ defaults:
             swm:
                 block-parent-release: true
 
-        linux-imx:
-            routing: imx
+        linux-ein:
+            routing: ein-uc20
             packages:
-                linux-imx:
+                linux-ein:
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-imx/+git/focal', 'master-next']
-                linux-meta-imx:
+                linux-meta-ein:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-imx/+git/focal']
             supported: false
@@ -5007,19 +5007,19 @@ defaults:
             derived-from: [ '20.04', 'linux']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
-        linux-uc20-imx:
-            routing: imx
+        linux-uc20-ein:
+            routing: ein-uc20
             packages:
-                linux-uc20-imx:
+                linux-uc20-ein:
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-uc20-imx/+git/focal', 'master-next']
-                linux-signed-uc20-imx:
+                linux-signed-uc20-ein:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-signed-uc20-imx/+git/focal']
             supported: false
             owner: wenchien
             development: true
             private: true
-            derived-from: [ '20.04', 'linux-imx']
+            derived-from: [ '20.04', 'linux-ein']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
@@ -5054,27 +5054,27 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
-        linux-imx-honeywell:
-            routing: imx-honeywell
+        linux-shiner:
+            routing: shiner-uc20
             packages:
-                linux-imx-honeywell:
+                linux-shiner:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-imx-honeywell', 'master-next']
-                linux-meta-imx-honeywell:
+                linux-meta-shiner:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-meta-imx-honeywell']
             supported: false
             owner: wenchien
             development: true
             private: true
-            derived-from: [ '20.04', 'linux-imx']
+            derived-from: [ '20.04', 'linux-ein']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
-        linux-uc20-imx-honeywell:
-            routing: imx-honeywell
+        linux-uc20-shiner:
+            routing: shiner-uc20
             packages:
-                linux-uc20-imx-honeywell:
+                linux-uc20-shiner:
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-uc20-imx-honeywell', 'master-next']
-                linux-signed-uc20-imx-honeywell:
+                linux-signed-uc20-shiner:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-signed-uc20-imx-honeywell']
             supported: false
@@ -5091,7 +5091,7 @@ defaults:
                     publish-to:
                         arm64: ['latest']
                         armhf: ['latest']
-            derived-from: [ '20.04', 'linux-imx-honeywell']
+            derived-from: [ '20.04', 'linux-shiner']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
