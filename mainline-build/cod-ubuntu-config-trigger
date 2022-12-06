@@ -45,19 +45,15 @@ if [ ! -f "$tags_list" ]; then
 fi
 
 diff "$tags_list" "$tags_list.new" | \
-	egrep '^>' | tac >"$tags_list.added"
+	egrep '^>' | tac | head -100 >"$tags_list.added"
 
-echo "v--- new entries"
+echo "v--- new entries (limited to 100)"
 cat "$tags_list.added"
 echo "^---"
 
-count=$( wc -l <"$tags_list.added" )
-if [ "$count" -gt 100 ]; then
-	echo "$P: $count new tags is greater than 100 not processing." 1>&2
-	exit 1
-fi
-
 # Commit the list.
+sed 's/^> *//' "$tags_list.added" >>"$tags_list"
+sort -k1,1 -k2,2 -k3,3V "$tags_list" >"$tags_list.new"
 mv "$tags_list.new" "$tags_list"
 
 # Run the list.
