@@ -112,6 +112,25 @@ class BugSpam:
                 if is_tracker_bug:
                     should_be_spammed = False
 
+                    # TRANSITION: fix up errant tagging of non-spammable bugs.
+                    series = self.cfg['series']
+                    tags = set(bug.tags)
+                    for tag in (
+                        'verification-failed-' + series,
+                        'verification-reverted-' + series,
+                        'verification-needed-' + series,
+                        'verification-done-' + series,
+                        'verification-done',
+                    ):
+                        if tag in tags:
+                            self.verbose('    . has {} tag removing'.format(tag))
+                            tags.remove(tag)
+
+                    # Write the tags back if they are changed.
+                    if set(bug.tags) != tags:
+                        bug.tags = list(tags)
+                        bug.lp_save()
+
                 if 'kernel-spammed-%s-%s' % (self.cfg['series'], self.cfg['package']) in bug.tags:
                     self.verbose('    . already spammed for this package')
                     should_be_spammed = False
