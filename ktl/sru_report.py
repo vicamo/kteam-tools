@@ -265,6 +265,7 @@ class SruReport:
                         for bug in bugs:
                             self._dbg('core', "        bug: '%s'" % (bug))
                             results['releases'][rls][pkg]['bugs'][bug] = {}
+                            spammed = 'kernel-spammed-{}-{}'.format(rls, pkg)
                             try:
                                 lp_bug = self.lp.bugs[bug]
                                 state = 'missing'
@@ -284,6 +285,10 @@ class SruReport:
                                 elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
                                 elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
                                 elif 'verification-done' in lp_bug.tags: state = 'verified'
+
+                                # If this was not spammed in our name by SWM then it is being validated in our parent.
+                                if not state.endswith('-tracker') and spammed not in lp_bug.tags:
+                                    state = 'parent-validated'
 
                                 results['releases'][rls][pkg]['bugs'][bug]['title'] = lp_bug.title
                                 results['releases'][rls][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name

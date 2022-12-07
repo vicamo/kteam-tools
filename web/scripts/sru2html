@@ -290,6 +290,10 @@ class SruReport:
                                     colour = '#ffff00' # Yellow
                                     img    = 'img/zoom.png'
                                     msg    = 'This is a packaging-tracking bug, not needing verification'
+                                elif state == 'parent-validated':
+                                    colour = '#ffff00' # Yellow
+                                    img    = None
+                                    msg    = 'This bug is being verified against our parent tracker'
                                 else:
                                     colour = '#ffffff'
                                     img    = 'img/tux.png'
@@ -298,6 +302,10 @@ class SruReport:
                                 # Special handling of the current tracker bug because some people seem to find it difficult
                                 # to find.
                                 #
+                                if img is not None:
+                                    col2 = '<img src="%s"></img>' % (img, )
+                                else:
+                                    col2 = '&mdash;'
                                 if (proposed_version != None) and (proposed_version in self.data['releases'][rls][pkg]['bugs'][bug]['title']) and ('-proposed tracker' in self.data['releases'][rls][pkg]['bugs'][bug]['title']):
                                     retval += '                                       <td width="20" title="Current -proposed tracking bug" align="center"><img src="img/star.png"></img></a></td>\n'
                                     retval += '                                           &nbsp;\n'
@@ -307,7 +315,7 @@ class SruReport:
                                     retval += '                                           &nbsp;\n'
                                     retval += '                                       </td>\n'
 
-                                retval += '                                       <td width="20" title="%s" align="center"><img src="%s"></img></a></td>\n' % (msg, img)
+                                retval += '                                       <td width="20" title="%s" align="center">%s</a></td>\n' % (msg, col2)
                                 retval += '                                       <td width="20" valign="top">\n'
                                 tmp = "http://launchpad.net/bugs/%s" % bug
                                 retval += '                                           <a href="%s">%s</a>\n' % (tmp, bug)
