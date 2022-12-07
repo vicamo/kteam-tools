@@ -1819,7 +1819,6 @@ defaults:
                     type: lrs
             supported: true
             owner: tjaalton
-            derived-from: [ '22.04', 'linux-hwe-5.17' ]
             swm:
                 kernel-testing: true
             testing:
