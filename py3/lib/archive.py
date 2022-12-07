@@ -34,8 +34,8 @@ def compare_versions(version1, version2):
     # print 'comparing ', version1, 'and', version2
     # 2.6.35-26.46
 
-    r1 = re.split('[-\.\~]', version1)
-    r2 = re.split('[-\.\~]', version2)
+    r1 = re.split('[-\.\~\+]', version1)
+    r2 = re.split('[-\.\~\+]', version2)
     for i in range(0, len(r1)):
         if r1[i] != r2[i]:
             return int(r1[i]) - int(r2[i])
