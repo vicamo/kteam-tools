@@ -3411,23 +3411,27 @@ defaults:
             routing: kariya
             packages:
                 linux-qcom-qcs410:
+            supported: false
         linux-uc20-qcom-qcs410:
             routing: kariya
             packages:
                 linux-uc20-qcom-qcs410:
                 linux-signed-uc20-qcom-qcs410:
                     type: signed
+            supported: false
 
         linux-qcomm:
             routing: wendover
             packages:
                 linux-qcomm:
+            supported: false
         linux-uc20-qcomm:
             routing: wendover
             packages:
                 linux-uc20-qcomm:
                 linux-signed-uc20-qcomm:
                     type: signed
+            supported: false
 
         linux-raspi:
             variants: ['--']
