@@ -2443,12 +2443,13 @@ class Package():
         '''
         center(s.__class__.__name__ + '.ready_for_testing')
         # We only have mirrors on the primary archive, so if we are not routing
+        # to the primary archive -proposed pocket we do not need a mirroring
+        # delay.
         routing = s.routing('Proposed')
-
-        # xXX: this is picking the first one every time ... dammit.
-
-        (archive, pocket) = routing[0]
-        if archive.reference == 'ubuntu':
+        archive = None
+        if s.built_in is not None and s.built_in <= len(routing):
+            (archive, pocket) = routing[s.built_in - 1]
+        if archive is not None and archive.reference == 'ubuntu':
             delay = timedelta(hours=1)
         else:
             delay = timedelta(hours=0)
