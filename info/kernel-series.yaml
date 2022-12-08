@@ -828,6 +828,9 @@ defaults:
               - *routing-table-release-nv-dgx
             signing:
                 - ['signing:pro/3', 'Release']
+        concept-x13s:
+            build:
+                - ['ppa:canonical-concept/ubuntu/x13s', 'Release']
   package-relations:
       default:
           meta:
@@ -1254,6 +1257,21 @@ defaults:
                     allwinner:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
+
+        linux-laptop:
+            # Concept kernel for the Lenovo x13s ARM laptop
+            owner: juergh
+            routing: concept-x13s
+            variants: ['--']
+            packages:
+                linux-laptop:
+                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux/+git/lunar', 'linux-laptop']
+                linux-meta-laptop:
+                    type: meta
+                    repo: ['git.launchpad.net/~ubuntu-concept/ubuntu/+source/linux-meta/+git/lunar', 'linux-laptop']
+            derived-from: ['23.04', 'linux']
+            backported: false
+            supported: false
 
 # 22.10 (Kinetic Kudu)
 '22.10':
