@@ -5064,10 +5064,10 @@ defaults:
             routing: shiner-uc20
             packages:
                 linux-shiner:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-imx-honeywell', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-shiner', 'master-next']
                 linux-meta-shiner:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-meta-imx-honeywell']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-meta-shiner']
             supported: false
             owner: wenchien
             development: true
@@ -5079,10 +5079,10 @@ defaults:
             routing: shiner-uc20
             packages:
                 linux-uc20-shiner:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-uc20-imx-honeywell', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-uc20-shiner', 'master-next']
                 linux-signed-uc20-shiner:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-signed-uc20-imx-honeywell']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/shiner/+git/linux-signed-uc20-shiner']
             supported: false
             owner: wenchien
             development: true
