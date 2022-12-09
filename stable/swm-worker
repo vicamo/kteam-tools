@@ -96,6 +96,8 @@ class SwmWorker(SwmWorkCmds):
 
                     if res == 0:
                         ack = MsgQueueService.ACK
+                    else:
+                        time.sleep(10)
 
                     #self._announce('cod-job-stop', 'finished ' + job_tag)
 
