@@ -5002,10 +5002,10 @@ defaults:
             routing: ein-uc20
             packages:
                 linux-ein:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-imx/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-ein/+git/focal', 'master-next']
                 linux-meta-ein:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-imx/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-meta-ein/+git/focal']
             supported: false
             owner: wenchien
             development: true
@@ -5017,10 +5017,10 @@ defaults:
             routing: ein-uc20
             packages:
                 linux-uc20-ein:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-uc20-imx/+git/focal', 'master-next']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-uc20-ein/+git/focal', 'master-next']
                 linux-signed-uc20-ein:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-signed-uc20-imx/+git/focal']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-imx/ubuntu/+source/linux-signed-uc20-ein/+git/focal']
             supported: false
             owner: wenchien
             development: true
