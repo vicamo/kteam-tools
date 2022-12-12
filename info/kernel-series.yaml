@@ -599,13 +599,13 @@ defaults:
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar']
-                linux-restricted-modules:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar']
-                linux-restricted-generate:
-                    type: lrg
-                linux-restricted-signatures:
-                    type: lrs
+                #linux-restricted-modules:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar']
+                #linux-restricted-generate:
+                #    type: lrg
+                #linux-restricted-signatures:
+                #    type: lrs
             owner: arighi
             backported: false
             swm:
