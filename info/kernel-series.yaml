@@ -289,7 +289,7 @@ defaults:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
             updates:
                 - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
-        ambarella-bosch-uc20:
+        nuremberg-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
@@ -299,7 +299,7 @@ defaults:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-proposed-ppa', 'Release' ]
             updates:
                 - [ 'ppa:nuremberg-team/ubuntu/uc20-kernel-release-ppa', 'Release' ]
-        ambarella-honeywell-uc20:
+        havana-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - [ 'ppa:havana-team/ubuntu/uc20-kernel-build-ppa', 'Release' ]
@@ -3335,24 +3335,24 @@ defaults:
             swm:
                 block-parent-release: true
 
-        linux-ambarella-honeywell:
-            routing: ambarella-honeywell-uc20
+        linux-havana:
+            routing: havana-uc20
             packages:
-                linux-ambarella-honeywell:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-ambarella-honeywell', 'master-next']
+                linux-havana:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-havana', 'master-next']
             supported: false
             owner: wenchien
             private: true
             derived-from: ['20.04', 'linux']
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
-        linux-uc20-ambarella-honeywell:
-            routing: ambarella-honeywell-uc20
+        linux-uc20-havana:
+            routing: havana-uc20
             packages:
-                linux-uc20-ambarella-honeywell:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-uc20-ambarella-honeywell', 'master-next']
-                linux-signed-uc20-ambarella-honeywell:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-signed-uc20-ambarella-honeywell']
+                linux-uc20-havana:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-uc20-havana', 'master-next']
+                linux-signed-uc20-havana:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/linux-signed-uc20-havana']
                     type: signed
             development: true
             supported: false
@@ -3367,29 +3367,29 @@ defaults:
                     hw-cert: true
                     publish-to:
                         arm64: ['latest']
-            derived-from: ['20.04', 'linux-ambarella-honeywell']
+            derived-from: ['20.04', 'linux-havana']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
 
-        linux-ambarella-bosch:
-            routing: ambarella-bosch-uc20
+        linux-nuremberg:
+            routing: nuremberg-uc20
             packages:
-                linux-ambarella-bosch:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-ambarella-bosch', 'master-next']
+                linux-nuremberg:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-nuremberg', 'master-next']
             supported: false
             owner: wenchien
             private: true
             derived-from: ['20.04', 'linux']
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
-        linux-uc20-ambarella-bosch:
-            routing: ambarella-bosch-uc20
+        linux-uc20-nuremberg:
+            routing: nuremberg-uc20
             packages:
-                linux-uc20-ambarella-bosch:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-uc20-ambarella-bosch', 'master-next']
-                linux-signed-uc20-ambarella-bosch:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-signed-uc20-ambarella-bosch']
+                linux-uc20-nuremberg:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-uc20-nuremberg', 'master-next']
+                linux-signed-uc20-nuremberg:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/nuremberg/+git/linux-signed-uc20-nuremberg']
                     type: signed
             development: true
             supported: false
@@ -3404,7 +3404,7 @@ defaults:
                     hw-cert: true
                     publish-to:
                         arm64: ['latest']
-            derived-from: ['20.04', 'linux-ambarella-bosch']
+            derived-from: ['20.04', 'linux-nuremberg']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
