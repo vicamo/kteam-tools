@@ -157,7 +157,7 @@ defaults:
             - ['2022-02-13 14:00', '2022-02-14 04:00']
             - ['2022-11-08 16:00', '2022-11-12 16:00'] # Local midnight to midnight
             - ['2022-11-21 08:00', '2022-11-29 08:00'] # West coast midnight to midnight
-            - ['2022-12-23 08:00', '2023-01-01 23:00']
+            - ['2022-12-14 08:00', '2023-01-02 08:00'] # West coast midnight to midnight (includes holidays and FIFA world cup final)
     routing-fragments:
         security-build-fragment: &routing-table-security-build
             security-build:
