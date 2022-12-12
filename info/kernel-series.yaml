@@ -2040,24 +2040,24 @@ defaults:
             swm:
                 block-parent-release: true
 
-        linux-intel-iotg-realtime:
+        linux-intel-iot-realtime:
             routing: realtime
             variants: ['--']
             packages:
-                linux-intel-iotg-realtime:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-intel-iotg-realtime/+git/jammy', 'master-next']
-                linux-meta-intel-iotg-realtime:
+                linux-intel-iot-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-intel-iot-realtime/+git/jammy', 'master-next']
+                linux-meta-intel-iot-realtime:
                     type: meta
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-intel-iotg-realtime/+git/jammy']
-                linux-signed-intel-iotg-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-intel-iot-realtime/+git/jammy']
+                linux-signed-intel-iot-realtime:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-intel-iotg-realtime/+git/jammy']
-                linux-restricted-modules-intel-iotg-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-intel-iot-realtime/+git/jammy']
+                linux-restricted-modules-intel-iot-realtime:
                     type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-intel-iotg-realtime/+git/jammy']
-                linux-restricted-generate-intel-iotg-realtime:
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-intel-iot-realtime/+git/jammy']
+                linux-restricted-generate-intel-iot-realtime:
                     type: lrg
-                linux-restricted-signatures-intel-iotg-realtime:
+                linux-restricted-signatures-intel-iot-realtime:
                     type: lrs
             supported: true
             owner: philcox
@@ -2073,21 +2073,21 @@ defaults:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
-        linux-uc22-intel-iotg-realtime:
+        linux-uc22-intel-iot-realtime:
             routing: realtime-uc22
             packages:
                 linux-uc22-intel-iotg:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iotg-realtime/+git/jammy', 'realtime']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-intel-iot-realtime/+git/jammy', 'realtime']
                 linux-signed-uc22-intel-iotg:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iotg-realtime/+git/jammy', 'realtime']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iot-realtime/+git/jammy', 'realtime']
             supported: true
             owner: philcox
             development: false
             snaps:
-                intel-iotg-realtime-kernel:
+                intel-iot-realtime-kernel:
                     primary: true
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/+git/kernel-snaps-uc22', 'intel-iotg-realtime']
+                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/+git/kernel-snaps-uc22', 'intel-iot-realtime']
                     gated: false
                     stable: false
                     promote-to: [ 'edge', 'beta' ]
@@ -2095,7 +2095,7 @@ defaults:
                     hw-cert: true
                     publish-to:
                         amd64: ['22']
-            derived-from: [ '22.04', 'linux-intel-iotg-realtime' ]
+            derived-from: [ '22.04', 'linux-intel-iot-realtime' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
