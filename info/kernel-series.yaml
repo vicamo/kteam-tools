@@ -427,6 +427,9 @@ defaults:
             #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
         nvidia:
             <<: [*routing-table-default]
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/nvidia', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/nvidia2', 'Release']
             test-build:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             test:
