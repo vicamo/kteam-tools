@@ -588,7 +588,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
-            versions: ['5.19.0']
+            versions: ['6.1.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux:
@@ -607,8 +607,7 @@ defaults:
                 linux-restricted-signatures:
                     type: lrs
             owner: arighi
-            backported: true
-            derived-from: ['22.10', 'linux']
+            backported: false
             swm:
                 kernel-testing: true
             testing:
