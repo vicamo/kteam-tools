@@ -1371,7 +1371,6 @@ defaults:
                     generic-64k:
                         arches: ['arm64']
                         clouds: ['metal']
-            invalid-tasks: [ 'certification-testing' ]
 
         linux-lowlatency-hwe-5.19:
             variants: [ '-hwe-22.04-edge' ]
