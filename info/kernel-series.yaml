@@ -1880,7 +1880,7 @@ defaults:
                     type: lrs
             supported: false
             owner: tjaalton
-            derived-from: [ '23.04', 'linux-unstable' ]
+            derived-from: [ '23.04', 'linux' ]
             development: true
             swm:
                 kernel-testing: true
