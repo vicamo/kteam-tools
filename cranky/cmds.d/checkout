@@ -12,15 +12,13 @@ import datetime
 from crl.git import GitHandleSet, GitError
 from crl.config import Config
 from crl.handle import HandleError
-from ktl.log import cerror, cnotice, Clog
+from ktl.log import cerror, cnotice
 
 
-def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None, nc=False):
+def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=None):
     """
     Clone the repos that make up the set of kernel packages
     """
-    Clog.color = not nc
-
     # Cycle through the trees and clone/update the package specific
     # repositories.
     ghs = GitHandleSet(handle)
@@ -164,9 +162,6 @@ otherwise the cranky checkout'd repo will get corrupted.
 Borrow the objects from the referenced local repository only to reduce network
 traffic. This is a git clone option, check 'git help clone' for more details.
 """
-    help_nc = '''No Colour. By default the debug output that is printed comes out in
-multiple colours to help with the debugging. This option disables that.
-'''
 
     help_crd = """
 Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
@@ -191,10 +186,6 @@ Checks out branches as CRD-{DATE}+{BRANCH} and sets upstream to 'security'.
                         default=None,
                         type=datetime.date.fromisoformat,
                         help=help_crd)
-    parser.add_argument('--nc',
-                        action='store_true',
-                        default=False,
-                        help=help_nc)
 
     try:
         checkout_repos(**vars(parser.parse_args()))
