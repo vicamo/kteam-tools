@@ -684,6 +684,11 @@ class SnapReleaseToStable(KernelSnapBase):
             cinfo('    task snap-qa-testing is neither \'Fix Released\' nor \'Invalid\'', 'yellow')
             return False
 
+        if s.bug.task_status("stakeholder-signoff") not in ("Fix Released", "Invalid"):
+            cinfo("    task stakeholder-signoff 'Fix Released' nor 'Invalid'", "yellow")
+            s.task.reason = 'Holding -- waiting for signoffs: stakeholder-signoff'
+            return False
+
         if s.debs_bug is not None:
             promote_to = 'promote-to-updates'
             if 'promote-to-release' in s.debs_bug.tasks_by_name:
