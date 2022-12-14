@@ -1551,6 +1551,37 @@ defaults:
                         clouds: ['aws']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-aws-5.19:
+            variants: [ '-edge' ]
+            packages:
+                linux-aws-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'aws-5.19-next']
+                linux-meta-aws-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy', 'aws-5.19']
+                linux-signed-aws-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy', 'aws-5.19']
+                linux-restricted-modules-aws-5.19:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/jammy', 'aws-5.19']
+                linux-restricted-generate-aws-5.19:
+                    type: lrg
+                linux-restricted-signatures-aws-5.19:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '22.10', 'linux-aws' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    aws:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['aws']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-azure:
             variants: ['--', '-lts-22.04']
             packages:
