@@ -71,11 +71,11 @@ class Task():
 
         return task
 
-    def CreateTrackingBugs(self, dryrun=False, independent=False):
+    def CreateTrackingBugs(self, dryrun=False, independent=False, stream=None):
         new_tbids = []
         new_tbid  = None
         for subtask in self.subtasks:
-            new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun, independent=independent))
+            new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun, independent=independent, stream=stream))
 
         cn = self.ks_source.series.codename
         if self.sourcetype == 'deb':
@@ -128,6 +128,12 @@ class Task():
                     cinfo('  + replaces LP: #{}'.format(old_tb.id))
                     if dryrun is False:
                         self.tb.wf_set_property('replaces', 'bug {}'.format(old_tb.id))
+
+            # If we have a stream specified add it to the tracker.
+            if stream is not None:
+                cinfo('  + stream: {}'.format(stream))
+                if dryrun is False:
+                    self.tb.wf_set_property('built', {'route-entry': stream})
 
         # Add the tracking bugs of the subtasks to this tasks tracking bug
         # as derivatives.
@@ -425,9 +431,9 @@ class TaskSet():
                     continue
                 raise ValueError('{}/{} has no tracking bug and is not created!'.format(cn, sn))
 
-    def CreateTrackingBugs(self, dryrun=False, independent=False):
+    def CreateTrackingBugs(self, dryrun=False, independent=False, stream=None):
         for tkey in self.tasks.keys():
-            self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun, independent=independent)
+            self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun, independent=independent, stream=stream)
 
     def FinalizeTrackingBugs(self, dryrun=False):
         for tkey in self.tasks.keys():
@@ -504,6 +510,8 @@ Examples:
                         help='output debug level logs')
     parser.add_argument('--independent', action='store_true', default=False,
                         help='mark the tracking bugs as independent (avoid dupping through to previous trackers)')
+    parser.add_argument('--stream', action='store', default=None, type=int,
+                        help='override the default stream for the tracking bugs')
     parser.add_argument('cycledate', metavar='<cycle date>',
                         help='date of this cycle (YYYY.MM.DD). When not in development mode, this has to be a Monday')
     args = parser.parse_args()
