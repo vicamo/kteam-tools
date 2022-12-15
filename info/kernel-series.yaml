@@ -610,7 +610,6 @@ defaults:
                 #linux-restricted-signatures:
                 #    type: lrs
             owner: arighi
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -643,7 +642,6 @@ defaults:
                 #    type: lrs
             owner: p-pisati
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -666,7 +664,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/lunar']
             owner: juergh
             #derived-from: ['23.04', 'linux']
-            backported: true
             derived-from: ['22.10', 'linux-raspi']
             swm:
                 kernel-testing: true
@@ -697,7 +694,6 @@ defaults:
                 #    type: lrs
             owner: timg-tpi
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -727,7 +723,6 @@ defaults:
                 #    type: lrs
             owner: timg-tpi
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -759,7 +754,6 @@ defaults:
                 #    type: lrs
             owner: kmously
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -782,7 +776,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/lunar']
             owner: kmously
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -806,7 +799,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/lunar']
             owner: arighi
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -836,7 +828,6 @@ defaults:
                 #    type: lrs
             owner: kmously
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -856,7 +847,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar']
             owner: esmil
             derived-from: ['23.04', 'linux-unstable']
-            backported: false
             swm:
                 kernel-testing: true
             testing:
@@ -875,7 +865,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar', 'starfive']
             owner: esmil
             #derived-from: ['23.04', 'linux']
-            backported: true
             derived-from: ['22.10', 'linux-starfive']
             swm:
                 kernel-testing: true
@@ -895,7 +884,6 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar', 'allwinner']
             owner: esmil
             #derived-from: ['23.04', 'linux']
-            backported: true
             derived-from: ['22.10', 'linux-allwinner']
             swm:
                 kernel-testing: true
