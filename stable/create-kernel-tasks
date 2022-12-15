@@ -71,11 +71,11 @@ class Task():
 
         return task
 
-    def CreateTrackingBugs(self, dryrun=False):
+    def CreateTrackingBugs(self, dryrun=False, independent=False):
         new_tbids = []
         new_tbid  = None
         for subtask in self.subtasks:
-            new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun))
+            new_tbids.extend(subtask.CreateTrackingBugs(dryrun=dryrun, independent=independent))
 
         cn = self.ks_source.series.codename
         if self.sourcetype == 'deb':
@@ -104,7 +104,7 @@ class Task():
                 new_tbid = self.tb.id
             cinfo('  + created LP: #{}'.format(new_tbid))
 
-            if old_tb is not None:
+            if not independent and old_tb is not None:
                 # Initially, when we took care of all the parent/child linkage while the
                 # new tracking bugs were created, it made sense to inherit all childs of
                 # a tracking bug which was about to be replaced (duplicated). And since
@@ -425,9 +425,9 @@ class TaskSet():
                     continue
                 raise ValueError('{}/{} has no tracking bug and is not created!'.format(cn, sn))
 
-    def CreateTrackingBugs(self, dryrun=False):
+    def CreateTrackingBugs(self, dryrun=False, independent=False):
         for tkey in self.tasks.keys():
-            self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun)
+            self.tasks[tkey].CreateTrackingBugs(dryrun=dryrun, independent=independent)
 
     def FinalizeTrackingBugs(self, dryrun=False):
         for tkey in self.tasks.keys():
@@ -502,6 +502,8 @@ Examples:
                         help='create test tracking bugs (using a different live tag)')
     parser.add_argument('--debug', action='store_true', default=False,
                         help='output debug level logs')
+    parser.add_argument('--independent', action='store_true', default=False,
+                        help='mark the tracking bugs as independent (avoid dupping through to previous trackers)')
     parser.add_argument('cycledate', metavar='<cycle date>',
                         help='date of this cycle (YYYY.MM.DD). When not in development mode, this has to be a Monday')
     args = parser.parse_args()
@@ -688,7 +690,7 @@ Examples:
         cdebug('Creating cards on: {}'.format(boardname))
         ts.CreateCards(boardname, dryrun=args.dry_run, cve=args.cve)
     if not args.force_nobugs:
-        ts.CreateTrackingBugs(dryrun=args.dry_run)
+        ts.CreateTrackingBugs(dryrun=args.dry_run, independent=args.independent, stream=args.stream)
         ts.FinalizeTrackingBugs(dryrun=args.dry_run)
 
 # vi:set ts=4 sw=4 expandtab syntax=python:
