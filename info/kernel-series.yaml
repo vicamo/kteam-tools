@@ -4571,7 +4571,7 @@ defaults:
             owner: esmil
             development: false
             backport: true
-            derived-from: ['22.04', 'linux-riscv']
+            derived-from: ['22.04', 'linux']
             swm:
                 kernel-testing: true
             testing:
