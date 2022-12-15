@@ -642,6 +642,7 @@ defaults:
                 #    type: lrs
             owner: p-pisati
             derived-from: ['23.04', 'linux-unstable']
+            backport: true
             swm:
                 kernel-testing: true
             testing:
