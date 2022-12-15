@@ -847,6 +847,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/lunar']
             owner: esmil
             derived-from: ['23.04', 'linux-unstable']
+            backport: true
             swm:
                 kernel-testing: true
             testing:
