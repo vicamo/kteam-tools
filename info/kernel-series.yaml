@@ -1180,6 +1180,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/kinetic']
             owner: esmil
             derived-from: [ '22.10', 'linux' ]
+            backport: true
             swm:
                 kernel-testing: true
             testing:
