@@ -170,7 +170,7 @@ EOM
 git add debian.master/rules.d/hooks.mk
 
 # Disable the ABI, module, and aliases checks.
-for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
+for i in debian/scripts/*-check debian/scripts/checks/*-check debian.master/reconstruct
 do
 	if [ -f "$i" ]; then
 		cat - <<EOM >"$i"

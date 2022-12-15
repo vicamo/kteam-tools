@@ -184,7 +184,7 @@ git checkout "$series/master" -- .gitignore || \
 git add -f debian debian.master .gitignore
 
 # Disable the ABI, module, and aliases checks.
-for i in debian/scripts/*-check debian.master/scripts/*-check debian.master/reconstruct
+for i in debian/scripts/*-check debian/scripts/checks/*-check debian.master/reconstruct
 do
 	if [ -f "$i" ]; then
 		cat - <<EOM >"$i"
