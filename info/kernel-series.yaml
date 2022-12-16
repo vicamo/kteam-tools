@@ -453,8 +453,8 @@ defaults:
             <<:             *routing-table-realtime-uc22
             signing:
                 - ['signing:core/2', 'Release']
-        denver:
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
+        denver-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
                 - ['ppa:denver-team/ubuntu/denver-build', 'Release']
             signing:
@@ -5783,7 +5783,7 @@ defaults:
             stakeholder: 'kernel-sru-bluefield-signoff'
 
         linux-denver:
-            routing: denver
+            routing: denver-uc20
             variants: ['--']
             packages:
                 linux-denver:
@@ -5800,7 +5800,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
 
         linux-uc20-denver:
-            routing: denver
+            routing: denver-uc20
             packages:
                 linux-uc20-denver:
                     repo: ['git://git.launchpad.net/~canonical-kernel/denver/+git/linux-uc20-denver', 'master-next']
