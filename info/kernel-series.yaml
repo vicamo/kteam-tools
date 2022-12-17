@@ -430,6 +430,9 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/nvidia', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/nvidia2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/nvidia-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/nvidia2-ps', 'Release']
             test-build:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             test:
