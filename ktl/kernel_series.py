@@ -9,6 +9,35 @@ except ImportError:
 import os
 import yaml
 
+from .signing_config import SigningConfig
+
+
+class KernelRoutingEntryDestination:
+
+    def __init__(self, ks, entry, data):
+        self._ks = ks
+        self._entry = entry
+
+        self.raw_reference = data[0]
+        self.pocket = data[1]
+        self._reference = None
+
+        self.suite = self._entry.source.series.codename
+        if self.pocket != "Release":
+            self.suite += "-" + self.pocket.lower()
+
+    @property
+    def reference(self):
+        if self._reference is None:
+            # Convert signing: namespace items via the signing-config streams.
+            if self.raw_reference.startswith("signing:"):
+                stream = self._ks.xc.lookup_stream(self.raw_reference[8:])
+                self._reference = stream.archive_reference
+            else:
+                self._reference = self.raw_reference
+
+        return self._reference
+
 
 class KernelRoutingEntry:
     def __init__(self, ks, source, data):
@@ -60,11 +89,17 @@ class KernelRoutingEntry:
     def __getitem__(self, which):
         return self._data[which]
 
+    def lookup_route(self, route):
+        return [KernelRoutingEntryDestination(self._ks, self, data) for data in self._data.get(route, [])]
+
     def lookup_destination(self, dest, primary=False):
-        data = self._data.get(dest, None)
-        if primary is False or data is None:
-            return data
-        return data[0]
+        routes = self.lookup_route(dest)
+        simple = [[route.reference, route.pocket] for route in self.lookup_route(dest)]
+        if len(simple) == 0:
+            return None
+        if primary is True:
+            return simple[0]
+        return simple
 
     def __str__(self):
         return str(self._data)
@@ -648,7 +683,7 @@ class KernelSeries:
             cls._data_txt[url] = data
         return cls._data_txt[url]
 
-    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False)):
+    def __init__(self, url=None, data=None, use_local=os.getenv("USE_LOCAL_KERNEL_SERIES_YAML", False), xc=None):
         if data or url:
             if url:
                 response = urlopen(url)
@@ -658,6 +693,9 @@ class KernelSeries:
         else:
             data = self.__load_once(self._url_local if use_local else self._url)
         self._data = yaml.safe_load(data)
+
+        self._xc = None
+        self._xc_local = use_local
 
         self._development_series = None
         self._codename_to_series = {}
@@ -677,6 +715,12 @@ class KernelSeries:
             # Strip the assets as they are only used for YAML instantiation.
             if 'assets' in self.defaults:
                 del self.defaults['assets']
+
+    @property
+    def xc(self):
+        if self._xc is None:
+            self._xc = SigningConfig(use_local=self._xc_local)
+        return self._xc
 
     @staticmethod
     def key_series_name(series):
