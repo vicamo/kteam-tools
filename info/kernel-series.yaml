@@ -188,7 +188,7 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/primary', 'Release']
+                - ['signing:ubuntu/2', 'Release']
             proposed:
                 - ['ubuntu', 'Proposed']
                 - ['ppa:canonical-kernel-team/ubuntu/proposed2', 'Release']
@@ -206,7 +206,7 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-build2', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/uc20', 'Release']
+                - ['signing:core/1', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-staging2', 'Release']
@@ -388,7 +388,7 @@ defaults:
             test:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/fips', 'Release']
+                - ['signing:pro/fips/2', 'Release']
             proposed:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
@@ -402,7 +402,7 @@ defaults:
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-recert-build', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/fips', 'Release']
+                - ['signing:pro/fips/2', 'Release']
             proposed:
                 - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
         ibm-gt:
@@ -465,7 +465,7 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+                - ['signing:pro/2', 'Release']
             as-proposed:
                 - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
             proposed:
@@ -498,7 +498,7 @@ defaults:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/esm', 'Release']
+                - ['signing:pro/2', 'Release']
             proposed:
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed2', 'Release']
