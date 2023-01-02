@@ -2,7 +2,7 @@ import sys
 import unittest
 from testfixtures       import TempDirectory
 
-from kernel_series      import (KernelSeries,
+from ktl.kernel_series  import (KernelSeries,
                                 KernelSeriesEntry,
                                 KernelSourceEntry,
                                 KernelSourceTestingFlavourEntry,

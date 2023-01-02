@@ -7,7 +7,7 @@ from testfixtures       import (TempDirectory,
 
 from datetime           import date
 
-from swm_status         import SwmStatus
+from ktl.swm_status     import SwmStatus
 
 
 class TestSwmStatusCore(unittest.TestCase):

@@ -7,7 +7,7 @@ from testfixtures       import (TempDirectory,
 
 from datetime           import date
 
-from sru_cycle          import (SruCycle,
+from ktl.sru_cycle      import (SruCycle,
                                 SruCycleSpinEntry,
                                )
 
@@ -287,7 +287,7 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         sc = SruCycle(data=data)
         spin = sc.lookup_spin('2018.01.02-1')
 
-        with Replace('sru_cycle.datetime', test_datetime(2018, 2, 1, 0, 0)):
+        with Replace('ktl.sru_cycle.datetime', test_datetime(2018, 2, 1, 0, 0)):
             self.assertEqual(spin.ready_to_release, False)
 
     def test_ready_to_release_today(self):
@@ -298,7 +298,7 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         sc = SruCycle(data=data)
         spin = sc.lookup_spin('2018.01.02-1')
 
-        with Replace('sru_cycle.datetime', test_datetime(2018, 2, 3, 0, 0)):
+        with Replace('ktl.sru_cycle.datetime', test_datetime(2018, 2, 3, 0, 0)):
             self.assertEqual(spin.ready_to_release, True)
 
     def test_ready_to_release_after(self):
@@ -309,7 +309,7 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         sc = SruCycle(data=data)
         spin = sc.lookup_spin('2018.01.02-1')
 
-        with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
+        with Replace('ktl.sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
             self.assertEqual(spin.ready_to_release, True)
 
     def test_ready_to_release_hold(self):
@@ -321,7 +321,7 @@ class TestSruCycleSpinEntry(TestSruCycleCore):
         sc = SruCycle(data=data)
         spin = sc.lookup_spin('2018.01.02-1')
 
-        with Replace('sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
+        with Replace('ktl.sru_cycle.datetime', test_datetime(2018, 2, 5, 0, 0)):
             self.assertEqual(spin.ready_to_release, False)
 
 
