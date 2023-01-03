@@ -26,10 +26,11 @@ def print_table(routing):
     table = [["Destination", "Archive/PPA", "Pocket"]]
 
     # Rearrange the routing info
-    for dest, routes in routing:
-        for i, (ppa, pocket) in enumerate(routes):
-            table.append([dest if i == 0 else "%s%d" % (dest, i + 1), ppa,
-                          "-" if ppa.startswith("ppa:") else pocket])
+    for route in routing.routes:
+        for i, destination in enumerate(route):
+            archive, pocket = destination.reference, destination.pocket
+            table.append([destination.name, archive,
+                          "-" if archive.startswith("ppa:") else pocket])
 
     # Determine the max width of each column
     widths = [len(max(col, key=len)) for col in zip(*table)]
