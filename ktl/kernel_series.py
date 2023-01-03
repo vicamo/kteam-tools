@@ -129,7 +129,7 @@ class KernelRoutingEntry:
 
     def lookup_route(self, route):
         self._routes_init()
-        return self._routes.get(route)
+        return self._routes.get(route, [])
 
     def lookup_destination(self, dest, primary=False):
         routes = self.lookup_route(dest)
