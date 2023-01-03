@@ -14,15 +14,18 @@ from .signing_config import SigningConfig
 
 class KernelRoutingEntryDestination:
 
-    def __init__(self, ks, entry, data):
+    def __init__(self, ks, route, entry, data):
         self._ks = ks
-        self._entry = entry
+        self.route = route
+        self.entry = entry
+
+        self.name = "{}#{}".format(route.name, entry) if entry > 1 else route.name
 
         self.raw_reference = data[0]
         self.pocket = data[1]
         self._reference = None
 
-        self.suite = self._entry.source.series.codename
+        self.suite = self.route.routing.source.series.codename
         if self.pocket != "Release":
             self.suite += "-" + self.pocket.lower()
 
@@ -37,6 +40,30 @@ class KernelRoutingEntryDestination:
                 self._reference = self.raw_reference
 
         return self._reference
+
+
+class KernelRoutingEntryRoute:
+
+    def __init__(self, ks, routing, name, data):
+        self._ks = ks
+        self.name = name
+        self.routing = routing
+
+        self._data = data
+
+        self._entries = None
+
+    @property
+    def entries(self):
+        if self._entries is None:
+            self._entries = [KernelRoutingEntryDestination(self._ks, self, count + 1, entry) for count, entry in enumerate(self._data)]
+        return self._entries
+
+    def __iter__(self):
+        return iter(self.entries)
+
+    def __getitem__(self, item):
+        return self.entries[item]
 
 
 class KernelRoutingEntry:
@@ -67,6 +94,8 @@ class KernelRoutingEntry:
         self._name = name
         self._data = data if data else {}
 
+        self._routes = None
+
     @property
     def source(self):
         return self._source
@@ -89,8 +118,18 @@ class KernelRoutingEntry:
     def __getitem__(self, which):
         return self._data[which]
 
+    def _routes_init(self):
+        if self._routes is None:
+            self._routes = {dest: KernelRoutingEntryRoute(self._ks, self, dest, route) for dest, route in self._data.items()}
+
+    @property
+    def routes(self):
+        self._routes_init()
+        return [route for dest, route in self._routes.items()]
+
     def lookup_route(self, route):
-        return [KernelRoutingEntryDestination(self._ks, self, data) for data in self._data.get(route, [])]
+        self._routes_init()
+        return self._routes.get(route)
 
     def lookup_destination(self, dest, primary=False):
         routes = self.lookup_route(dest)
