@@ -13,4 +13,4 @@ jobs:
       - python3
       - python3-testfixtures
       - python3-yaml
-    run: cd ktl && python3 -m unittest -v
+    run: cd ktl/tests && python3 -m unittest -v
