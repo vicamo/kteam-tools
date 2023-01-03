@@ -563,7 +563,7 @@ defaults:
     sources:
         linux-unstable:
             routing: devel-unstable
-            versions: ['6.1.0']
+            versions: ['6.2.0']
             variants: ['-wip']
             packages:
                 linux-unstable:
