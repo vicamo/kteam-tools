@@ -90,8 +90,10 @@ def rmadison_lp(handle_set, show_all=False, show_ext=False, show_pocket=None):
                 # Generate the pocket name to display
                 if dest == "release":
                     pocket_name = series
-                elif dest in ("security", "updates", "proposed"):
+                elif dest in ("security", "updates"):
                     pocket_name = "%s-%s" % (series, dest)
+                elif dest in ("proposed",):
+                    pocket_name = "%s-%s" % (series, dest_n)
                 else:
                     pocket_name = "%s (ppa:%s)" % (series, dest_n)
 
