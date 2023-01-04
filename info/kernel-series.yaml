@@ -1939,10 +1939,10 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-oem-6.1:
                     type: lrs
-            supported: false
+            supported: true
             owner: tjaalton
             derived-from: [ '23.04', 'linux' ]
-            development: true
+            development: false
             swm:
                 kernel-testing: true
             testing:
