@@ -469,10 +469,25 @@ class WorkflowBug():
         except WorkflowBugError:
             raise WorkflowBugError("invalid replaces pointer {}".dup_id)
 
+        # For debs trackers do not duplicate between streams.  Ignore the the
+        # replaces directive where our streams differ.  Where we do not yet
+        # have a local stream for comparison and the replaced tracker does
+        # ignore but retain the directive, otherwise drop it.
+        keep = False
+        if (s.debs is not None
+            and dup_wb.debs is not None
+            and s.debs.built_in != dup_wb.debs.built_in
+        ):
+            keep = True
+            if s.debs.built_in is None:
+                cinfo("replaces={} stream disparity detected {} != {} -- no local stream, holding".format(dup_pointer, s.debs.built_in, dup_wb.debs.built_in))
+            else:
+                cinfo("replaces={} stream disparity detected {} != {} -- dropping replaces directive".format(dup_pointer, s.debs.built_in, dup_wb.debs.built_in))
+                del s.bprops['replaces']
+
         # If we have no testing tasks active then there is is no value in
         # holding the duplication till later.  For variant debs we also trigger
         # duplication when we are ready to to promote the replacement tracker.
-        keep = False
         if inactive_only:
             cinfo("replaces={} detected checking target inactive".format(dup_pointer))
             trash = False
