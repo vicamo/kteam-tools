@@ -1775,7 +1775,7 @@ defaults:
                 linux-signed-ibm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/jammy']
-            owner: kmously
+            owner: john-cabaj
             derived-from: [ '22.04', 'linux' ]
             swm:
                 kernel-testing: true
