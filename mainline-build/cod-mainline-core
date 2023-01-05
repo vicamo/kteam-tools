@@ -229,7 +229,7 @@ do
 	found="$fversion"
 	config_ref="$git_ref"
 done
-configset="Ubuntu-$short_version-$found Ubuntu-$found $config_ref"
+configset="Ubuntu-$short_version-$found Ubuntu-$found Ubuntu-unstable-$found $config_ref"
 echo "II:  chose $config_ref $found ($configset)"
 
 #
