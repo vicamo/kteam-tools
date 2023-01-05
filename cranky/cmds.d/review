@@ -34,7 +34,7 @@ def dpkg_extract(dsc_path, dest_path):
 
     return (sp.returncode, stderr)
 
-def normalize_control_file(path, ver, abi, upload):
+def normalize_control_file(path, source_pkg, ver, abi, upload):
     if not os.path.exists(path):
         return
 
@@ -53,6 +53,9 @@ def normalize_control_file(path, ver, abi, upload):
     cfile_data = cfile_data.replace(basever, "BASEVER")
     cfile_data = cfile_data.replace(verabi, "VERABI")
     cfile_data = cfile_data.replace(ver, "VERSION")
+    cfile_data = re.sub('\n [0-9a-f]{32} \d+ ' + source_pkg, '\n MD5SUM SIZE ' + source_pkg, cfile_data)
+    cfile_data = re.sub('\n [0-9a-f]{40} \d+ ' + source_pkg, '\n SHA1SUM SIZE ' + source_pkg, cfile_data)
+    cfile_data = re.sub('\n [0-9a-f]{64} \d+ ' + source_pkg, '\n SHA256SUM SIZE ' + source_pkg, cfile_data)
     with open(path, "w") as cfile:
         cfile.write(cfile_data)
 
@@ -74,16 +77,16 @@ def normalize_abi_file(path):
     with open(path, "w") as afile:
         afile.write(''.join(sorted(afile_data)))
 
-def normalize_tree(path, ver, abi, upload):
-    normalize_control_file(os.path.join(path, "DSC"), ver, abi, upload)
-    normalize_control_file(os.path.join(path, "debian", "control"), ver, abi, upload)
+def normalize_tree(path, source_pkg, ver, abi, upload):
+    normalize_control_file(os.path.join(path, "DSC"), source_pkg, ver, abi, upload)
+    normalize_control_file(os.path.join(path, "debian", "control"), source_pkg, ver, abi, upload)
     for control_file in (
             glob("{}/debian/control.stub".format(path)) +
             glob("{}/debian.*/control.stub".format(path)) +
             glob("{}/debian/d-i/kernel-versions".format(path)) +
             glob("{}/debian.*/d-i/kernel-versions".format(path))
         ):
-        normalize_control_file(control_file, ver, abi, upload)
+        normalize_control_file(control_file, source_pkg, ver, abi, upload)
     # Detect ABI location.
     if len(glob("{}/debian.*/abi/abiname".format(path))) > 0:
         abi_path = "debian.*/abi"
@@ -146,7 +149,7 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
             cerror("Output from dpkg-source:")
             print(stderr, end='')
             sys.exit(1)
-        normalize_tree(prev_path, prev_ver, prev_abi, prev_upload)
+        normalize_tree(prev_path, source_pkg, prev_ver, prev_abi, prev_upload)
 
         (ret, stderr) = dpkg_extract(dsc_file, new_path)
         if ret != 0:
@@ -154,7 +157,7 @@ def review_dscs(prev_dsc_file, dsc_file, output=None):
             cerror("Output from dpkg-source:")
             print(stderr, end='')
             sys.exit(1)
-        normalize_tree(new_path, ver, abi, upload)
+        normalize_tree(new_path, source_pkg, ver, abi, upload)
 
         cmd = ["git", "diff", "--no-index", "--no-prefix", "--stat=500", "--stat-graph-width=10", "-p",  prev_dir, new_dir]
         sp = subprocess.Popen(cmd, stdout=outfile, stderr=subprocess.PIPE, cwd=tmpdir)
