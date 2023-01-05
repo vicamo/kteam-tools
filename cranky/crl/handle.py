@@ -237,6 +237,24 @@ class HandleSet(HandleCore):
                 self.trees.append(HandleTree(series, package_entry,
                                              validate=validate, ks=self.ks, config=self.config))
 
+    @property
+    def handle_name(self):
+        """Returns handle name in series:package format"""
+        return "{}:{}".format(self.series.codename, self.source.name)
+
+    def get_tree_by_package_type(self, package_type):
+        """Returns HandleTree for the request package or None if not found"""
+        result = None
+        for tree in self.trees:
+            if tree.package.type == package_type:
+                result = tree
+                break
+            # When package.type is None or an empty string that indicates 'main'
+            # Support both options like the rest of the codebase.
+            if not tree.package.type and package_type in (None, '', 'main'):
+                result = tree
+                break
+        return result
 
 class Handle(HandleCore):
     def __init__(self, config=None, ks=None):
