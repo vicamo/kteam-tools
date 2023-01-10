@@ -562,11 +562,11 @@ Examples:
                 sys.exit(2)
             ks_series = ks.lookup_series(codename=cn)
             if ks_series is None:
-                cerror('{} seems to be no valid series codename'.format(cn))
+                cerror('{} is not a valid series codename. It was not found in kernel-series.info.'.format(cn))
                 sys.exit(3)
             ks_source = ks_series.lookup_source(sn)
             if ks_source is None:
-                cerror('{} is no valid source in {}'.format(sn, cn))
+                cerror('{} is not a valid source within the {} series.'.format(sn,cn))
                 sys.exit(3)
             # The first handle decides whether we treat this as devel cycle or stable.
             # Instead of trying to figure out whether something originates in a development
