@@ -9,6 +9,8 @@ class Config:
     def __init__(self, filename=None, data=None):
         self.config = None
 
+        filename = os.getenv("CRANKY_CONFIG_FILE", filename)
+
         if filename is not None and data is not None:
             raise ValueError("supply only one of filename and data")
 
