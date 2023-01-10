@@ -14,6 +14,13 @@ from ktl.log            import Clog, cerror, cwarn, cinfo, cdebug
 from ktl.kernel_series  import KernelSeries
 from ktl.tracking_bug2  import TrackingBugs, TrackingBugError
 
+try:
+    from ktl.sruboard       import SRUBoard, SRUBoardError
+except ModuleNotFoundError:
+    SRUBoard = None
+    SRUBoardError = None
+    print('Warning: SRUBoard module not found. Jira Integration will not work as expected.')
+
 class Task():
     def __init__(self, taskset, ks_source, ks_snap=None):
         self.taskset   = taskset
@@ -441,7 +448,6 @@ class TaskSet():
     def CreateCards(self, boardname, dryrun=False, cve=False):
         if dryrun is False and self.board is None:
             try:
-                from ktl.sruboard       import SRUBoard, SRUBoardError
                 self.board = SRUBoard(self.cycletag, cve=cve)
             except SRUBoardError as e:
                 cerror(e)
