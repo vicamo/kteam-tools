@@ -566,26 +566,6 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             test:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
-        nvidia-tegra:
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
-            test-build:
-                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
-            test:
-                - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
-            build:
-                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
-            build-private:
-                - ['ppa:nvidia-kernel/ubuntu/build', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/ke-nvidia-tegra', 'Release']
-            proposed:
-                - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
-            #security:
-            #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
-            #release:
-            #    - ['ppa:nvidia-kernel/ubuntu/release', 'Release']
         realtime: &routing-table-realtime
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             test:
@@ -2726,7 +2706,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-nvidia-tegra:
-            routing: nvidia-tegra
+            routing: nvidia
             variants: ['--']
             packages:
                 linux-nvidia-tegra:
@@ -5605,7 +5585,7 @@ defaults:
                 block-parent-release: true
 
         linux-nvidia-tegra-5.15:
-            routing: nvidia-tegra
+            routing: nvidia
             variants: ['--']
             packages:
                 linux-nvidia-tegra-5.15:
