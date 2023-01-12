@@ -4095,14 +4095,42 @@ defaults:
             routing: kariya
             packages:
                 linux-qcom-qcs410:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-qcom-qcs410-focal', 'master-next']
+                linux-meta-qcom-qcs410:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-meta-qcom-qcs410-focal']
             supported: false
+            owner: hwang4
+            development: true
+            private: true
+            derived-from: [ '20.04', 'linux']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+
         linux-uc20-qcom-qcs410:
             routing: kariya
             packages:
                 linux-uc20-qcom-qcs410:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-uc20-qcom-qcs410-focal', 'master-next']
                 linux-signed-uc20-qcom-qcs410:
                     type: signed
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/linux-signed-uc20-qcom-qcs410-focal']
             supported: false
+            owner: hwang4
+            development: true
+            private: true
+            snaps:
+                mic-qcom-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/kariya/+git/mic-qcom-kernel', 'uc20']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: true
+                    hw-cert: false
+                    publish-to:
+                        arm64: ['latest']
+            derived-from: [ '20.04', 'linux-qcom-qcs410']
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: true
 
         linux-qcomm:
             routing: wendover
