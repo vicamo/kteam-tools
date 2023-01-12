@@ -14,6 +14,7 @@ import json
 import sys
 
 from jira import JIRA
+from jira.exceptions import JIRAError
 
 def main():
     parser = argparse.ArgumentParser(description='Create Jira issue(s) from LP bug(s).')
@@ -41,7 +42,13 @@ def main():
         if not args.force:
             jql = 'project = "{}" and component = "{}" and summary ~ "#{} "'.format(
                 project, component, cve)
-            issues = jira.search_issues(jql)
+            try:
+                issues = jira.search_issues(jql)
+            except JIRAError as e:
+                print('Jira search failed with: {}'.format(e.text))
+                print('Have you configured Jira authentication via netrc?')
+                sys.exit(1)
+
             if issues:
                 print('Issue might exist already:')
                 for issue in issues:
