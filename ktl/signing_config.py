@@ -64,11 +64,15 @@ class SigningConfig:
 
     def lookup_stream(self, stream_level):
         if "/" not in stream_level:
-            raise "Invalid stream/level format"
-        bits = stream_level.split("/", 2)
-        if len(bits) == 2:
-            bits.insert(1, bits[0])
+            raise ValueError("Invalid stream/level format")
+        stream, level = stream_level.split("/", 1)
+        if ":" in level:
+            level, variant = level.split(":")
 
-        stream, variant, level = bits
+        elif "/" in level:
+            variant, level = level.split("/")
+
+        else:
+            variant = stream
 
         return SigningConfigStreamLevel(stream, level, variant, self._streams.get(stream, {}).get(int(level), {}).get(variant))
