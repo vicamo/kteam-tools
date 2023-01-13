@@ -388,7 +388,7 @@ defaults:
             test:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
             signing:
-                - ['signing:pro/fips/2', 'Release']
+                - ['signing:pro/2:fips', 'Release']
             proposed:
                 - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
                 - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
@@ -402,7 +402,7 @@ defaults:
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-recert-build', 'Release']
             signing:
-                - ['signing:pro/fips/2', 'Release']
+                - ['signing:pro/2:fips', 'Release']
             proposed:
                 - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
         ibm-gt:
