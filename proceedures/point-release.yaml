@@ -34,6 +34,11 @@ cards:
     description: |
       - Review all of the ADT and upgrade testing and approve rolls
     prerequisites:
+  - name: "Sync with Certification Team"
+    description: |
+      - Notify the Certification Team as soon as possible about a new HWE kernel
+        being prepared to allow them to plan for the certification tests on
+        time.
   - name: "Roll linux-foo to linux-foo-edge package"
     description: |
       - Update the variants of the linux-foo-edge package to '-foo' so the
@@ -44,6 +49,7 @@ cards:
     prerequisites:
     - "Pick point release kernel cut over cycle and announce"
     - "Identify kernels to be rolled with the point release"
+    - "Sync with Certification Team"
   - name: "Review linux-*-edge testing"
     description: |
       - Once kernels are rolled review ADT testing for those and create
