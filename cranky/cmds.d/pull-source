@@ -26,7 +26,8 @@ Positional arguments:
   RELEASE         The release name (xenial, bionic, ...).
 
 Optional arguments:
-  -h, --help    Show this help text and exit.
+  -h, --help       Show this help text and exit.
+  -n, --no-verify  Disable GPG signature verification of the downloaded dsc file.
 
 Examples:
   $ cranky pull-source linux
@@ -47,12 +48,16 @@ EOF
 src_pkg=
 version=
 release=
+verify=1
 
 while [ $# -gt 0 ] ; do
 	case "${1}" in
 		-h|--help)
 			usage
 			exit
+			;;
+		-n|--no-verify)
+			verify=0
 			;;
 		-*)
 			echo "Unexpected argument: $1" >&2
@@ -108,8 +113,11 @@ if ! [ -e "${dsc}" ] ; then
 	fi
 
 	while IFS= read -r url ; do
-		dget -d "${url}"/pool/main/l/"${src_pkg}"/"${dsc}" || true
+		dget -u -d "${url}"/pool/main/l/"${src_pkg}"/"${dsc}" || true
 		if [ -e "${dsc}" ] ; then
+			if [ "$verify" -eq 1 ]; then
+				dscverify "${dsc}"
+			fi
 			break
 		fi
 	done < <(grep '^http' "${getabis}")
