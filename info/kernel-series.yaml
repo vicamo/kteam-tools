@@ -1982,13 +1982,14 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-riscv:
-            variants: ['--']
+            variants: ['-eol-riscv-5.15']
             packages:
                 linux-riscv:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy']
                 linux-meta-riscv:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy']
+            supported: false
             owner: esmil
             derived-from: [ '22.04', 'linux' ]
             swm:
