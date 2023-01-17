@@ -262,6 +262,22 @@ do
 done
 echo "II: using configs from $config_ref $configs"
 
+if [ -e debian.master/config/config.common.ubuntu ] && \
+   ! [ -e debian.master/etc/kernelconfig ] ; then
+	# We pull packaging scripts and kernel configs from different points
+	# in time. For this build, the configs are still old-style so the
+	# old config scripts are used which need etc/kernelconfig.
+	# Reconstruct it.
+	archs=
+	for arch in debian.master/abi/* ; do
+		if [ -d "$arch" ] ; then
+			archs="${archs} ${arch##*/}"
+		fi
+	done
+	echo "archs=\"${archs# }\"" > debian.master/etc/kernelconfig
+	git add debian.master/etc/kernelconfig
+fi
+
 # Take the defaults for the configuration, applying any local
 # overrides for the series and also applying a default =m
 # for tristate options regardless of the kernel default.
