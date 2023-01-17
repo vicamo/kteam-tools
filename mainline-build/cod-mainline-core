@@ -194,12 +194,6 @@ do
 	[ -x "$trigger" ] && "$trigger" "$series" "$build_release"
 done
 
-# Find our debian directory.
-for debian in "debian.master" "debian"
-do
-	[ -d "$debian" ] && break
-done 
-
 # Identify the last Ubuntu version which used the same main version
 # to use for the configs.
 find=`echo "$full_version" | cut -d. -f1-2 | cut -d- -f1`.9999999
@@ -235,7 +229,7 @@ echo "II:  chose $config_ref $found ($configset)"
 #
 # Rebuild the changelog.
 #
-changelog="$debian/changelog"
+changelog=debian.master/changelog
 rm -f "$changelog"
 
 {
@@ -283,7 +277,7 @@ fi
 # for tristate options regardless of the kernel default.
 {
 	[ -f "$here/config.$series" ] && cat "$here/config.$series"
-} >"$debian/config/OVERRIDES"
+} >debian.master/config/OVERRIDES
 try=0
 while [ "$try" -lt 20 ]
 do
@@ -299,9 +293,9 @@ do
 	{
 		git diff HEAD | grep '^+# .* is not set' | awk '{print $2 "=m"}'
 		[ -f "$here/config.$series" ] && cat "$here/config.$series"
-	} >"$debian/config/OVERRIDES"
+	} >debian.master/config/OVERRIDES
 	echo "v-- OVERRIDES"
-	cat "$debian/config/OVERRIDES"
+	cat debian.master/config/OVERRIDES
 	echo "^-- OVERRIDES"
 
 	# Commit the differences.
@@ -311,7 +305,7 @@ do
 		git commit --no-edit -a --ame
 	fi
 done
-rm -f "$debian/config/OVERRIDES"
+rm -f debian.master/config/OVERRIDES
 
 # The sha we are building in the tip builds will be this bundle tip.
 sha=$( git log -1 --pretty=format:%H "HEAD" )
