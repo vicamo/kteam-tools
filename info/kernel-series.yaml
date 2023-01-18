@@ -164,6 +164,27 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+        security-build-stable-fragment: &routing-table-security-build-stable # XXX: this is duplicate of the above.
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+        security-build-devel-fragment: &routing-table-security-build-devel
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/devel', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/devel2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/devel3', 'Release']
+            security-test: # XXX: this is likely wrong in security (and has no -ps so is unusable)
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+        security-build-esm-fragment: &routing-table-security-build-esm
+            security-test:
+                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
         security-build-uc20-fragment: &routing-table-security-build-uc20
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
@@ -174,6 +195,101 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/proposed2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/proposed3', 'Release']
+        build-stable-fragment: &routing-table-build-stable
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/ppa2-ps', 'Release']
+            test-build: # XXX: this is likely wrong in development (and has no -ps so is unusable)
+                - ['ppa:canonical-kernel-team/ubuntu/test-builds', 'Release']
+        build-devel-fragment: &routing-table-build-devel
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
+            test-build: # XXX: this is likely wrong in development (and has no -ps so is unusable)
+                - ['ppa:canonical-kernel-team/ubuntu/test-builds', 'Release']
+        build-esm-fragment: &routing-table-build-esm
+            build:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
+        build-devel-unstable-fragment: &routing-table-unstable-devel
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/early-proposed2', 'Release']
+            release:
+                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
+        ubuntu-primary-fragment: &routing-table-ubuntu-primary
+            proposed:
+                - ['ubuntu', 'Proposed']
+                - ['ppa:canonical-kernel-team/ubuntu/proposed2', 'Release']
+            as-proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
+            updates:
+                - ['ubuntu', 'Updates']
+            security:
+                - ['ubuntu', 'Security']
+            release:
+                - ['ubuntu', 'Release']
+        esm1-release-fragment: &routing-table-release-esm1
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed2', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
+        esm2-release-fragment: &routing-table-release-esm2
+            proposed:
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/proposed2', 'Release']
+            updates:
+                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
+                - ['ubuntu', 'Updates']
+            release:
+                - ['ubuntu', 'Release']
+        wip-any-fragment: &routing-table-wip-any
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/early-proposed2', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
+        prerelease-any-fragment: &routing-table-prerelease-any
+            proposed:
+                - ['ubuntu', 'Proposed'] # XXX: consider if we should just use proposed PPA here.
+                - ['ppa:canonical-kernel-team/ubuntu/proposed2', 'Release']
+            as-proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
+        fips-build-fragment: &routing-table-fips-build
+            test-build:
+                - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
+            build:
+                - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
+                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
+            build-private:
+                - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
+                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
+            test:
+                - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+        fips-release-fragment: &routing-table-fips-release
+            proposed:
+                - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
+            updates:
+                - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
+        fips-prerelease-fragment: &routing-table-fips-prerelease
+            proposed:
+                - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
+                - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
+            updates:
+                - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -512,6 +628,116 @@ defaults:
             updates:
                 - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
                 - ['ubuntu', 'Updates']
+        stable-unsigned:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        stable-ubuntu/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        stable-wip-ubuntu/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-wip-any
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        stable-prerelease-ubuntu/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-prerelease-any
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        dev-unsigned:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        dev-ubuntu/2:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        dev-unstable:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-unstable-devel
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        dev-prerelease-ubuntu/2:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-prerelease-any
+            signing:
+              - ["signing:ubuntu/2", "Release"]
+        fips-pro/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-fips-build
+              - *routing-table-fips-release
+            signing:
+                - ['signing:pro/2:fips', 'Release']
+        fips-prerelease-pro/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-fips-build
+              - *routing-table-fips-prerelease
+            signing:
+                - ['signing:pro/2:fips', 'Release']
+        esm1:
+            <<:
+              - *routing-table-security-build-esm
+              - *routing-table-security-proposed
+              - *routing-table-build-esm
+              - *routing-table-release-esm1
+        esm1-pro/2:
+            <<:
+              - *routing-table-security-build-esm
+              - *routing-table-security-proposed
+              - *routing-table-build-esm
+              - *routing-table-release-esm1
+            signing:
+                - ['signing:pro/2', 'Release']
+        esm2:
+            <<:
+              - *routing-table-security-build-esm
+              - *routing-table-security-proposed
+              - *routing-table-build-esm
+              - *routing-table-release-esm2
+        esm2-pro/2:
+            <<:
+              - *routing-table-security-build-esm
+              - *routing-table-security-proposed
+              - *routing-table-build-esm
+              - *routing-table-release-esm2
+            signing:
+                - ['signing:pro/2', 'Release']
+        stable-eol:
+            build:
   package-relations:
       default:
           meta:
@@ -560,9 +786,14 @@ defaults:
     development: true
     supported: false
     routing-table: *routing-table
+    routing-map:
+        devel: dev-unsigned # XXX: until we drop the base mapping
+        default: dev-unsigned
+        ubuntu/2: dev-ubuntu/2
+        unstable: dev-unstable
     sources:
         linux-unstable:
-            routing: devel-unstable
+            routing: unstable
             versions: ['6.2.0']
             variants: ['-wip']
             packages:
@@ -594,6 +825,8 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
+            routing: ubuntu/2
+            package-relations: signed-generate
             versions: ['6.1.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
@@ -602,6 +835,8 @@ defaults:
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/lunar']
+                linux-generate:
+                    type: generate
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar']
@@ -626,6 +861,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
+            routing: ubuntu/2
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux-lowlatency:
@@ -659,6 +895,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-raspi:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-raspi:
@@ -679,6 +916,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-aws:
@@ -708,6 +946,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-azure:
@@ -739,6 +978,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -768,6 +1008,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-ibm:
@@ -791,6 +1032,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -813,6 +1055,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -904,8 +1147,14 @@ defaults:
     development: false
     supported: true
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.19.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
@@ -938,6 +1187,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
+            routing: ubuntu/2
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
                 linux-lowlatency:
@@ -1013,6 +1263,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-aws:
@@ -1042,6 +1293,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-azure:
@@ -1073,6 +1325,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -1102,6 +1355,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-ibm:
@@ -1125,6 +1379,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -1147,6 +1402,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -1237,8 +1493,14 @@ defaults:
     supported: true
     lts: true
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.15.0']
             variants: ['--', '-hwe-22.04']
             packages:
@@ -1271,6 +1533,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
+            routing: ubuntu/2
             variants: ['--', '-hwe-22.04']
             packages:
                 linux-lowlatency:
@@ -1303,7 +1566,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.17:
-            routing: wip
+            routing: wip-ubuntu/2
             variants: [ '-base' ]
             packages:
                 linux-hwe-5.17:
@@ -1336,6 +1599,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-hwe-5.19:
+            routing: ubuntu/2
             variants: [ '-hwe-22.04-edge' ]
             packages:
                 linux-hwe-5.19:
@@ -1370,6 +1634,7 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.19:
+            routing: ubuntu/2
             variants: [ '-hwe-22.04-edge' ]
             packages:
                 linux-lowlatency-hwe-5.19:
@@ -1523,6 +1788,7 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--', '-lts-22.04']
             packages:
                 linux-aws:
@@ -1552,6 +1818,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.19:
+            routing: ubuntu/2
             variants: [ '-edge' ]
             packages:
                 linux-aws-5.19:
@@ -1583,6 +1850,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--', '-lts-22.04']
             packages:
                 linux-azure:
@@ -1646,6 +1914,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.19:
+            routing: ubuntu/2
             variants: [ '-edge' ]
             packages:
                 linux-azure-5.19:
@@ -1679,6 +1948,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -1713,6 +1983,7 @@ defaults:
             # for GKE but consistent with other derivatives. Additionally
             # we have the kernel version as variant so image building can
             # use that as a selection.
+            routing: ubuntu/2
             variants: ['--', '-5.15']
             packages:
                 linux-gke:
@@ -1739,6 +2010,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop:
+            routing: ubuntu/2
             # As for linux-gke, the main variant is for consistency with other
             # derivatives. The version based variant is for imaging.
             variants: ['--', '-5.15']
@@ -1765,6 +2037,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-ibm:
@@ -1812,6 +2085,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -1834,6 +2108,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-bluefield:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-bluefield:
@@ -1859,6 +2134,7 @@ defaults:
             stakeholder: 'kernel-sru-bluefield-signoff'
 
         linux-oem-5.17:
+            routing: ubuntu/2
             versions: ['5.17.0']
             variants: ['-22.04', '-22.04a']
             packages:
@@ -1890,6 +2166,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.0:
+            routing: ubuntu/2
             versions: ['6.0.0']
             variants: ['-22.04b']
             packages:
@@ -1921,6 +2198,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.1:
+            routing: ubuntu/2
             versions: ['6.1.0']
             variants: ['-22.04c']
             packages:
@@ -1953,6 +2231,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -2072,6 +2351,7 @@ defaults:
                 block-parent-release: true
 
         linux-intel-iotg:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-intel-iotg:
@@ -2207,7 +2487,7 @@ defaults:
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
         linux-fips:
-            routing: fips-prerelease
+            routing: fips-prerelease-pro/2
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/jammy-linux-fips', 'master-next']
@@ -2340,8 +2620,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.13.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -2418,6 +2704,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-aws:
@@ -2449,6 +2736,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-azure:
@@ -2482,6 +2770,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -2512,6 +2801,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -2535,6 +2825,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -2590,8 +2881,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.11.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -2668,6 +2965,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-aws:
@@ -2698,6 +2996,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-azure:
@@ -2730,6 +3029,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -2760,6 +3060,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -2783,6 +3084,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -2837,8 +3139,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.8.0']
             variants: ['--', '-hwe-20.04', '-hwe-20.04-edge']
             packages:
@@ -2893,6 +3201,7 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-aws:
@@ -2919,6 +3228,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-azure:
@@ -2950,6 +3260,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-gcp:
@@ -2979,6 +3290,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -3001,6 +3313,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-oracle:
@@ -3054,8 +3367,14 @@ defaults:
     supported: true
     lts: true
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.4.0']
             variants: ['--']
             packages:
@@ -3089,6 +3408,7 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.15:
+            routing: ubuntu/2
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-hwe-5.15:
@@ -3123,6 +3443,7 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.15:
+            routing: ubuntu/2
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
             packages:
                 linux-lowlatency-hwe-5.15:
@@ -3158,6 +3479,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.13:
+            routing: ubuntu/2
             variants: [ 'eol-hwe-20.04' ]
             packages:
                 linux-hwe-5.13:
@@ -3195,7 +3517,7 @@ defaults:
                         clouds: ['metal']
 
         linux-hwe-5.11:
-            routing: prerelease
+            routing: prerelease-ubuntu/2
             variants: [ '-eol-hwe-5.11' ]
             packages:
                 linux-hwe-5.11:
@@ -3234,7 +3556,7 @@ defaults:
             invalid-tasks: [ 'certification-testing', 'regression-testing' ]
 
         linux-hwe-5.8:
-            routing: prerelease
+            routing: prerelease-ubuntu/2
             versions: ['5.8.0']
             variants: [ '-eol-hwe-5.8' ]
             packages:
@@ -3310,6 +3632,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing', 'verification-testing']
 
         linux-intel-5.13:
+            routing: ubuntu/2
             variants: [ '-eol-5.13' ]
             packages:
                 linux-intel-5.13:
@@ -3332,7 +3655,7 @@ defaults:
                         clouds: ['metal']
 
         linux-intel:
-            routing: prerelease
+            routing: prerelease-ubuntu/2
             variants: []
             packages:
                 linux-intel:
@@ -3575,6 +3898,7 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem-5.6:
+            routing: ubuntu/2
             versions: ['5.6.0']
             variants: ['-20.04a']
             packages:
@@ -3601,6 +3925,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.10:
+            routing: ubuntu/2
             versions: ['5.10.0']
             variants: ['-20.04b']
             packages:
@@ -3628,6 +3953,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.13:
+            routing: ubuntu/2
             versions: ['5.13.0']
             variants: ['-20.04c']
             packages:
@@ -3656,6 +3982,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.14:
+            routing: ubuntu/2
             versions: ['5.14.0']
             variants: ['-20.04', '-20.04d']
             packages:
@@ -3685,6 +4012,7 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['-lts-20.04']
             packages:
                 linux-aws:
@@ -3715,6 +4043,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.8:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-aws-5.8:
@@ -3742,7 +4071,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.11:
-            routing: prerelease
+            routing: prerelease-ubuntu/2
             variants: [ '-eol-5.11' ]
             packages:
                 linux-aws-5.11:
@@ -3774,6 +4103,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.13:
+            routing: ubuntu/2
             variants: [ '-eol-5.13' ]
             packages:
                 linux-aws-5.13:
@@ -3805,6 +4135,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.15:
+            routing: ubuntu/2
             variants: [ '--', '-edge' ]
             packages:
                 linux-aws-5.15:
@@ -3836,6 +4167,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             variants: ['-lts-20.04']
             packages:
                 linux-azure:
@@ -3868,6 +4200,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-cvm:
+            routing: ubuntu/2
             Variants: ['--']
             packages:
                 linux-azure-cvm:
@@ -3963,6 +4296,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.8:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-azure-5.8:
@@ -3996,7 +4330,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.11:
-            routing: prerelease
+            routing: prerelease-ubuntu/2
             variants: [ '-eol-5.11' ]
             packages:
                 linux-azure-5.11:
@@ -4031,6 +4365,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.13:
+            routing: ubuntu/2
             variants: [ '-eol-5.13' ]
             packages:
                 linux-azure-5.13:
@@ -4064,6 +4399,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.15:
+            routing: ubuntu/2
             variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.15:
@@ -4097,6 +4433,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             variants: ['-lts-20.04']
             packages:
                 linux-gcp:
@@ -4127,6 +4464,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.8:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-gcp-5.8:
@@ -4157,6 +4495,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.15:
+            routing: ubuntu/2
             variants: [ '-edge', '--' ]
             packages:
                 linux-gcp-5.15:
@@ -4188,6 +4527,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.13:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-gcp-5.13:
@@ -4219,6 +4559,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.11:
+            routing: ubuntu/2
             variants: [ '-eol-5.11' ]
             packages:
                 linux-gcp-5.11:
@@ -4250,6 +4591,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.15:
+            routing: ubuntu/2
             variants: [ '-edge', '-5.15' ]
             packages:
                 linux-gke-5.15:
@@ -4274,6 +4616,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop-5.15:
+            routing: ubuntu/2
             variants: [ '-edge', '-5.15' ]
             packages:
                 linux-gkeop-5.15:
@@ -4298,6 +4641,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke:
+            routing: ubuntu/2
             # For Focal, we want linux-gke to stay at the version that is
             # native to the release. This is not how things get selected
             # for GKE but consistent with other derivatives. Additionally
@@ -4347,6 +4691,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop:
+            routing: ubuntu/2
             # As for linux-gke, the main variant is for consistency with other
             # derivatives. The version based variant is for imaging.
             variants: ['--', '-5.4']
@@ -4373,6 +4718,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
+            routing: ubuntu/2
             variants: ['-lts-20.04', '--']
             packages:
                 linux-ibm:
@@ -4397,6 +4743,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                 linux-kvm:
@@ -4420,6 +4767,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             variants: ['-lts-20.04']
             packages:
                 linux-oracle:
@@ -4450,6 +4798,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.8:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-oracle-5.8:
@@ -4480,6 +4829,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.15:
+            routing: ubuntu/2
             variants: [ '-edge', '--' ]
             packages:
                 linux-oracle-5.15:
@@ -4511,6 +4861,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.13:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-oracle-5.13:
@@ -4542,6 +4893,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.11:
+            routing: ubuntu/2
             variants: [ '-eol-5.11' ]
             packages:
                 linux-oracle-5.11:
@@ -4703,7 +5055,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'master-next']
@@ -4734,7 +5086,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-aws-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'aws-fips']
@@ -4766,7 +5118,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-azure-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-azure-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'azure-fips']
@@ -4800,7 +5152,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-gcp-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'gcp-fips']
@@ -4832,6 +5184,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-larch:
+            routing: ubuntu/2
             routing:
                 build:
                     - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
@@ -4866,6 +5219,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-bluefield:
+            routing: ubuntu/2
             # Assuming that this becomes a normal kernel wrt where / how it is built,
             # we can get rid of all the special routing. The prerelease routing will
             # go away, too, once this is no longer work-in-progress.
@@ -4943,6 +5297,7 @@ defaults:
             supported: false
 
         linux-iot:
+            routing: ubuntu/2
             variants: [ '--' ]
             packages:
                 linux-iot:
@@ -5013,6 +5368,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-intel-iotg-5.15:
+            routing: ubuntu/2
             variants: [ '--', '-edge' ]
             packages:
                 linux-intel-iotg-5.15:
@@ -5219,8 +5575,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['5.3.0']
             packages:
                 linux:
@@ -5259,6 +5621,7 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-oem:
+            routing: ubuntu/2
             packages:
                 linux-oem:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/eoan', 'oem-next']
@@ -5277,6 +5640,7 @@ defaults:
             copy-forward: [ '18.04', 'linux-oem' ]
 
         linux-oem-osp1:
+            routing: ubuntu/2
             packages:
                 linux-oem-osp1:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/eoan', 'oem-next']
@@ -5295,6 +5659,7 @@ defaults:
             copy-forward: [ '18.04', 'linux-oem-osp1' ]
 
         linux-aws:
+            routing: ubuntu/2
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/eoan']
@@ -5313,6 +5678,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/eoan', 'master-next']
@@ -5337,6 +5703,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
+            routing: ubuntu/2
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/eoan', 'master-next']
@@ -5358,6 +5725,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-kvm:
+            routing: ubuntu/2
             packages:
                 linux-kvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/eoan', 'master-next']
@@ -5373,6 +5741,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
+            routing: ubuntu/2
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/eoan', 'master-next']
@@ -5770,8 +6139,14 @@ defaults:
     supported: true
     lts: true
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['4.13.0', '4.14.0', '4.15.0']
             packages:
                 linux:
@@ -5823,6 +6198,7 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe:
+            routing: ubuntu/2
             versions: ['5.3.0']
             variants: []
             packages:
@@ -5850,6 +6226,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.0:
+            routing: ubuntu/2
             versions: [ '5.0.0' ]
             # variants: [ '-gkeop-5.0' ]
             variants: []
@@ -5878,6 +6255,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.4:
+            routing: ubuntu/2
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
             # transitionals: [ '-oem-osp1', '-oem' ]
             packages:
@@ -5912,6 +6290,7 @@ defaults:
                         clouds: ['metal']
 
         linux-hwe-edge:
+            routing: ubuntu/2
             packages:
                 linux-hwe-edge:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-edge']
@@ -5953,6 +6332,7 @@ defaults:
             supported: false
 
         linux-dell300x:
+            routing: ubuntu/2
             variants: ['--']
             packages:
                linux-dell300x:
@@ -6104,6 +6484,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem:
+            routing: ubuntu/2
             packages:
                 linux-oem:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/bionic', 'oem-next']
@@ -6125,6 +6506,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-osp1:
+            routing: ubuntu/2
             packages:
                 linux-oem-osp1:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem-osp1/+git/bionic', 'oem-next']
@@ -6147,6 +6529,7 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
+            routing: ubuntu/2
             variants: ['-lts-18.04']
             packages:
                 linux-aws:
@@ -6177,6 +6560,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.0:
+            routing: ubuntu/2
             packages:
                 linux-aws-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/bionic', 'aws-5.0-next']
@@ -6197,6 +6581,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.3:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-aws-5.3:
@@ -6220,6 +6605,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.4:
+            routing: ubuntu/2
             variants: ['--', '-edge']
             packages:
                 linux-aws-5.4:
@@ -6278,6 +6664,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
+            routing: ubuntu/2
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'master-next']
@@ -6304,6 +6691,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-4.15:
+            routing: ubuntu/2
             variants: [ '-lts-18.04' ]
             packages:
                 linux-azure-4.15:
@@ -6337,7 +6725,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-azure-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'azure-fips']
@@ -6370,6 +6758,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.3:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-azure-5.3:
@@ -6397,6 +6786,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.4:
+            routing: ubuntu/2
             variants: [ '--', '-edge' ]
             packages:
                 linux-azure-5.4:
@@ -6440,6 +6830,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-edge:
+            routing: ubuntu/2
             packages:
                 #linux-azure-edge:
                 #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-edge-next']
@@ -6465,6 +6856,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp:
+            routing: ubuntu/2
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'master-next']
@@ -6488,6 +6880,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-4.15:
+            routing: ubuntu/2
             variants: ['-lts-18.04']
             packages:
                 linux-gcp-4.15:
@@ -6515,7 +6908,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-gcp-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'gcp-fips']
@@ -6539,6 +6932,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-gcp-5.3:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-gcp-5.3:
@@ -6563,6 +6957,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.4:
+            routing: ubuntu/2
             variants: ['--', '-edge']
             packages:
                 linux-gcp-5.4:
@@ -6604,6 +6999,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm-5.4:
+            routing: ubuntu/2
             variants: ['--', '-edge']
             packages:
                 linux-ibm-5.4:
@@ -6628,6 +7024,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-4.15:
+            routing: ubuntu/2
             variants: ['--','-4.15']
             packages:
                 linux-gke-4.15:
@@ -6667,6 +7064,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.0:
+            routing: ubuntu/2
             variants: ['-5.0']
             packages:
                 linux-gke-5.0:
@@ -6707,6 +7105,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.3:
+            routing: ubuntu/2
             variants: ['-5.3']
             packages:
                 linux-gke-5.3:
@@ -6747,6 +7146,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.4:
+            routing: ubuntu/2
             variants: ['-5.4']
             packages:
                 linux-gke-5.4:
@@ -6785,6 +7185,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop-5.4:
+            routing: ubuntu/2
             variants: ['-5.4']
             packages:
                 linux-gkeop-5.4:
@@ -6931,6 +7332,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-oracle:
+            routing: ubuntu/2
             variants: [ '-lts-18.04' ]
             packages:
                 linux-oracle:
@@ -6961,6 +7363,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.0:
+            routing: ubuntu/2
             packages:
                 linux-oracle-5.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/bionic', 'oracle-5.0-next']
@@ -6984,6 +7387,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.3:
+            routing: ubuntu/2
             variants: []
             packages:
                 linux-oracle-5.3:
@@ -7008,6 +7412,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.4:
+            routing: ubuntu/2
             variants: [ '--', '-edge' ]
             packages:
                 linux-oracle-5.4:
@@ -7039,7 +7444,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'master-next']
@@ -7095,7 +7500,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-aws-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'aws-fips']
@@ -7192,8 +7597,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['4.11.0', '4.12.0', '4.13.0']
             packages:
                 linux:
@@ -7238,8 +7649,14 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        default: stable-unsigned
+        ubuntu/2: stable-ubuntu/2
+        wip-ubuntu/2: stable-wip-ubuntu/2
+        prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
+            routing: ubuntu/2
             versions: ['4.10.0']
             packages:
                 linux:
@@ -7339,9 +7756,12 @@ defaults:
     esm: true
     routing-table: *routing-table
     routing-map:
-        esm: esm-v2
+        esm: esm2 # XXX
+        default: esm2
+        pro/2: esm2-pro/2
     sources:
         linux:
+            routing: pro/2
             versions: ['4.4.0']
             packages:
                 linux:
@@ -7405,6 +7825,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-aws-hwe:
+            routing: pro/2
             packages:
                 linux-aws-hwe:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-aws-xenial', 'aws-hwe-next']
@@ -7427,6 +7848,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
+            routing: pro/2
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-xenial', 'master-next']
@@ -7510,6 +7932,7 @@ defaults:
             supported: false
 
         linux-gcp:
+            routing: pro/2
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-gcp-xenial', 'master-next']
@@ -7557,6 +7980,7 @@ defaults:
             supported: false
 
         linux-hwe:
+            routing: pro/2
             packages:
                 linux-hwe:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'hwe-next']
@@ -7645,6 +8069,7 @@ defaults:
 
         # FIXME: Already out of support. Maybe time for complete removal?
         linux-oem:
+            routing: pro/2
             packages:
                 linux-oem:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/xenial', 'oem-next']
@@ -7663,6 +8088,7 @@ defaults:
                         clouds: ['metal']
 
         linux-oracle:
+            routing: pro/2
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-oracle-xenial', 'master-next']
@@ -7736,7 +8162,7 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'certification-testing', 'regression-testing' ]
 
         linux-fips:
-            routing: fips
+            routing: fips-pro/2
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/xenial-kernel', 'master-next']
@@ -7822,6 +8248,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['4.2.0']
@@ -7850,6 +8279,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.19.0']
@@ -7869,6 +8301,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.16.0']
@@ -7891,9 +8326,12 @@ defaults:
     esm: true
     routing-table: *routing-table
     routing-map:
-        esm: esm-v2
+        esm: esm2 # XXX
+        default: esm2
+        pro/2: esm2-pro/2
     sources:
         linux:
+            routing: pro/2
             versions: ['3.13.0']
             packages:
                 linux:
@@ -7934,6 +8372,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
+            routing: pro/2
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-trusty', 'master-next']
@@ -7965,6 +8404,7 @@ defaults:
             supported: false
 
         linux-lts-utopic:
+            routing: pro/2
             packages:
                 linux-lts-utopic:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-utopic']
@@ -7978,6 +8418,7 @@ defaults:
             supported: false
 
         linux-lts-vivid:
+            routing: pro/2
             packages:
                 linux-lts-vivid:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-vivid']
@@ -7991,6 +8432,7 @@ defaults:
             supported: false
 
         linux-lts-wily:
+            routing: pro/2
             packages:
                 linux-lts-wily:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/trusty', 'lts-backport-wily']
@@ -8004,6 +8446,7 @@ defaults:
             supported: false
 
         linux-lts-xenial:
+            routing: pro/2
             packages:
                 linux-lts-xenial:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-trusty', 'lts-backport-xenial']
@@ -8035,6 +8478,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.11.0']
@@ -8068,6 +8514,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.8.0']
@@ -8101,6 +8550,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.5.0']
@@ -8149,7 +8601,9 @@ defaults:
     esm: true
     routing-table: *routing-table
     routing-map:
-        esm: esm-v1
+        esm: esm1 # XXX
+        default: esm1
+        pro/2: esm1-pro/2
     sources:
         linux:
             versions: ['3.2.0']
@@ -8196,6 +8650,7 @@ defaults:
             supported: false
 
         linux-lts-quantal:
+            routing: pro/2
             packages:
                 linux-lts-quantal:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-quantal']
@@ -8208,6 +8663,7 @@ defaults:
             supported: false
 
         linux-lts-raring:
+            routing: pro/2
             packages:
                 linux-lts-raring:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-raring']
@@ -8220,6 +8676,7 @@ defaults:
             supported: false
 
         linux-lts-saucy:
+            routing: pro/2
             packages:
                 linux-lts-saucy:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/precise', 'lts-backport-saucy']
@@ -8232,6 +8689,7 @@ defaults:
             supported: false
 
         linux-lts-trusty:
+            routing: pro/2
             packages:
                 linux-lts-trusty:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-precise', 'lts-backport-trusty']
@@ -8289,6 +8747,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['3.0.0']
@@ -8317,6 +8778,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.38']
@@ -8345,6 +8809,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.35']
@@ -8385,6 +8852,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.32']
@@ -8415,6 +8885,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.31']
@@ -8464,6 +8937,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.28']
@@ -8480,6 +8956,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.27']
@@ -8496,6 +8975,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.24']
@@ -8521,6 +9003,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.22']
@@ -8536,6 +9021,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux:
             versions: ['2.6.20']
@@ -8551,6 +9039,9 @@ defaults:
     development: false
     supported: false
     routing-table: *routing-table
+    routing-map:
+        stable: stable-unsigned # XXX
+        default: stable-unsigned
     sources:
         linux-source-2.6.15:
             versions: ['2.6.15']
