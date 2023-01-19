@@ -2,17 +2,17 @@
 
 Turning the crank refers to the process by which the Canonical Kernel Team
 creates new kernels and updates all our existing kernels every three weeks as
-part of the Ubuntu Stable Release Update (SRU) process.  To compliment the SRU
-process the kernel engineering team has created a rich toolset for kernel
-cranking, which we maintain in the kteam-tools repo, which you will need to
-clone to your local machine as part of setting up your development
+part of the Ubuntu Stable Release Update (SRU) process. To compliment the SRU
+process, the kernel engineering team has created a rich toolset for kernel
+cranking. These tools are maintained in the kteam-tools repo, which you will
+need to clone to your local machine as part of setting up your development
 environment.
 
 While the information in this document sufficiently covers all the necessary
 steps a new kernel engineer needs to perform in order to crank a kernel, it is
 expected that a mentor is assigned to any new/unfamiliar engineer to answer
 questions and explain details for what is being done in each step for which
-kernel and why.  Without understanding what is actually being done by these
+kernel and why. Without understanding what is actually being done by these
 tools, it is difficult to properly debug and solve issues on when something
 inevitably breaks in the process.
 
@@ -26,8 +26,8 @@ engineers should feel free to make change/update this document in kteam-tools.
 ### Initialize chroot environment - `cranky chroot`
 <!--cheatsheet-->
 ```
-cranky chroot create-base RELEASE:linux
-cranky chroot create-session configs RELEASE:linux
+$ cranky chroot create-base RELEASE:linux
+$ cranky chroot create-session configs RELEASE:linux
 ```
 <!--/cheatsheet-->
 
@@ -46,11 +46,11 @@ that you are going to build.
 
 Example:
 ```
-cranky chroot run xenial:linux -- cat /etc/debian_chroot
+$ cranky chroot run xenial:linux -- cat /etc/debian_chroot
 ```
 
 If you get something like `xenial-amd64` the chroot environment is correctly
-initialized.
+initialized for cranking a Xenial kernel.
 
 Otherwise, if you get an error, you need to initialize the chroot environment
 to properly build the kernel. In this case use `cranky chroot` to create the
@@ -59,8 +59,8 @@ chroot environment for the kernel to build (as documented in
 
 Example:
 ```
-cranky chroot create-base xenial:linux
-cranky chroot create-session configs xenial:linux
+$ cranky chroot create-base xenial:linux
+$ cranky chroot create-session configs xenial:linux
 ```
 
 After your chroot environment is initialized, you only need to update your
@@ -69,8 +69,11 @@ create-session`.
 
 Example:
 ```
-cranky chroot create-session configs xenial:linux
+$ cranky chroot create-session configs xenial:linux
 ```
+
+Note that `create-base` is not required for updating a chroot. It is only
+required for creating a new chroot.
 
 ### Removing a chroot environment
 
@@ -80,7 +83,7 @@ corresponding chroot from your system.
 First remove the session created by `cranky chroot`:
 
 ```
-cranky chroot destroy-session configs RELEASE:linux
+$ cranky chroot destroy-session configs RELEASE:linux
 ```
 
 Then find the directory listed in the schroot configuration file under
@@ -107,8 +110,8 @@ $ rm /etc/schroot/chroot.d/sbuild-groovy-amd64
 ### Update the kteam-tools repo
 <!--cheatsheet-->
 ```
-cd <kteam-tools repo>
-git pull
+$ cd <kteam-tools repo>
+$ git pull
 ```
 <!--/cheatsheet-->
 
@@ -118,14 +121,14 @@ recent changes that could impact cranking.
 
 Example:
 ```
-cd $HOME/canonical/kteam-tools
-git pull
+$ cd $HOME/canonical/kteam-tools
+$ git pull
 ```
 
 ### Clone and checkout the kernel repository - `cranky checkout`
 <!--cheatsheet-->
 ```
-cranky checkout RELEASE:KERNEL
+$ cranky checkout RELEASE:KERNEL
 ```
 <!--/cheatsheet-->
 
@@ -133,11 +136,11 @@ Use `cranky checkout` to get the kernel that you want to build.
 
 Example:
 ```
-cd canonical/kernel/ubuntu
-cranky checkout xenial:linux-oracle
+$ cd canonical/kernel/ubuntu
+$ cranky checkout xenial:linux-oracle
 ```
 
-**Note**: Private kernel repositories (including security) will get
+**Note** Private kernel repositories (including security) will get
 checked out using a `git+ssh://` URL. If your local username and your
 Launchpad ID are not the same, then the following mapping is needed
 in your `~/.gitconfig` file:
@@ -150,7 +153,7 @@ in your `~/.gitconfig` file:
 ### Tool sync stage - `cranky fix`
 <!--cheatsheet-->
 ```
-cranky fix
+$ cranky fix
 ```
 <!--/cheatsheet-->
 
@@ -159,8 +162,8 @@ version and also can update/create the "debian.<variant>/etc/update.conf" file
 and commits those changes. In case of a rebase tree, the changes to the helpers
 may vanish on rebase if those were already done there.
 ```
-cd xenial/linux-oracle
-cranky fix
+$ cd xenial/linux-oracle
+$ cranky fix
 ```
 
 **Note** The `cranky fix` step has a chicken/egg problem when unbreaking a
@@ -170,7 +173,7 @@ directory when doing the new trusty/azure. Care must be taken to verify.
 ### Rebase stage - `cranky rebase`
 <!--cheatsheet-->
 ```
-cranky rebase
+$ cranky rebase
 ```
 <!--/cheatsheet-->
 
@@ -194,29 +197,30 @@ steps "git rebase --skip, git rebase --continue, ..." have to be taken.
 
 Example:
 ```
-cranky rebase
+$ cranky rebase
 ```
 
 Another example:
 ```
-cranky rebase -r LOCAL_PATH_TO_KERNEL_GIT_REPO [-b master-next]
+$ cranky rebase -r LOCAL_PATH_TO_KERNEL_GIT_REPO [-b master-next]
 ```
 
-**Note** some times `cranky rebase` can fail due to conflicts. If conflicts are
-affecting the debian helper scripts (debian/scripts) you can safely skip the
-commit and continue with the rebase:
+**Note** Some times `cranky rebase` can fail due to conflicts. If conflicts are
+affecting only the debian helper scripts (debian/scripts), you can safely skip
+the commit and continue with the rebase:
 ```
-git rebase --skip
+$ git rebase --skip
 ```
 
-Conflicts that cannot be resolve this way, must be resolved manually.
+Other conflicts must be resolved manually. Follow the normal `git rebase` flow
+to handle them.
 
 **Note** Continue until the rebase completes without any conflicts and re-run
 `cranky fix` at the end to make sure the helper scripts are correct.
 
 <!--cheatsheet-->
 ```
-cranky fix
+$ cranky fix
 ```
 <!--/cheatsheet-->
 
@@ -224,13 +228,13 @@ At this point you should double check that the version number at the top of
 "debian.master/changelog" matches the version that you see on the dashboard:
 https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
 
-Look under "linux", inside the section of the release in the dashboard you are
-currently cranking such as "xenial".
+Look next to kernel name you are craking (e.g. linux-fips), inside the section
+of the release in the dashboard you are currently cranking such as "xenial".
 
 ### Starting commit - `cranky open`
 <!--cheatsheet-->
 ```
-cranky open
+$ cranky open
 ```
 <!--/cheatsheet-->
 
@@ -252,11 +256,11 @@ is to download and update the ABI files based on the last release. Those files
 are obtained from a list of repositories, which is configured via
 `debian.<variant>/etc/getabis`.
 
-This file can either have the list of the repositories itself, in case of
+This file can either have the list of the repositories itself, in the case of
 regular public kernels, or for private kernels it reads the list from an
-external source. The name of the external file depends on the kernel source
-package and is also set on `debian.<variant>/etc/getabis`, the general pattern
-being `${HOME}/.getabis.<series>-<variant>` (for instance: 
+external file. The name of the external file depends on the kernel source
+package and is also set on `debian.<variant>/etc/getabis`. The general pattern
+is `${HOME}/.getabis.<series>-<variant>` (for instance:
 `~/.getabis.bionic-fips`).
 
 That file should be created manually containing on each line an URL for each of
@@ -280,30 +284,40 @@ binaries for the last release. However having the `build`, `proposed` and
 The URLs with username and password can be obtained from
 <https://launchpad.net/~/+archivesubscriptions>.
 
+**Note** The username/password combination is specific to a private archive so
+you will need to go through each one needed for the build.
+
+**Note** Not all entries in `cranky list-routing [handle]` are required for all
+kernels. Configure only the ones relevant to the kernel you crank. For example,
+linux-fips will report security PPAs too but those are not needed to crank a
+linux-fips kernel.
 
 ### Include any necessary changes from the base kernel into the derivatives - `cranky review-master-changes`
 
-Derivatives receive most of the changes from its base kernel via the
-rebase. However we need to manually review changes that are applied to
-debian.BRANCH in the base kernel.
+Derivatives receive most of the changes from its base kernel via the rebase.
+However we need to manually review changes that are applied to `debian.BRANCH`
+in the base kernel.
 
-Run `cranky review-master-changes` and review if any of the listed
-changes need to be applied to the derivative.
+Run `cranky review-master-changes` and review if any of the listed changes need
+to be applied to the derivative.
 
-In particular, check if any changes were made to debian.master/rules.d that should
-be reflected in debian.DERIVATIVE/rules.d. Those commits may not be obvious in
-the master changelog.
+In particular, check if any changes were made to `debian.master/rules.d` that
+should be reflected in `debian.DERIVATIVE/rules.d`. Those commits may not be
+obvious in the master changelog.
 
 <!--cheatsheet-->
 ```
-cranky review-master-changes
+$ cranky review-master-changes
 ```
 <!--/cheatsheet-->
 
 ### Link to tracker - `cranky link-tb`
+**Note** This command is making public changes, it's not only affecting your
+local repository. Make sure to skip this test if you're doing local tests.
+
 <!--cheatsheet-->
 ```
-cranky link-tb
+$ cranky link-tb
 ```
 <!--/cheatsheet-->
 
@@ -312,13 +326,10 @@ Link current build to tracker bug in Launchpad:
 $ cranky link-tb
 ```
 
-**Note** this command is making public changes, it's not only affecting your
-local repository. Make sure to skip this test if you're doing local tests.
-
 ### dkms package update stage - `update-dkms-versions`
 <!--cheatsheet-->
 ```
-./update-dkms-versions
+$ ./update-dkms-versions
 ```
 <!--/cheatsheet-->
 
@@ -347,13 +358,13 @@ looks suspicious, don't hesitate to ask the team if the changes are expected.
 
 Example:
 ```
-./update-dkms-versions
+$ ./update-dkms-versions
 ```
 
 ### Closing commit - `cranky close`
 <!--cheatsheet-->
 ```
-cranky close
+$ cranky close
 ```
 <!--/cheatsheet-->
 
@@ -422,7 +433,7 @@ they will **not** be grouped in the changelog.
 ### Testing builds - `cranky test-build`
 <!--cheatsheet-->
 ```
-cranky test-build [-a ARCH[,ARCH,...]|-a all] [-f] HOST
+$ cranky test-build [-a ARCH[,ARCH,...]|-a all] [-f] HOST
 ```
 <!--/cheatsheet-->
 
@@ -431,7 +442,7 @@ currently checked out.
 
 Example:
 ```
-cranky test-build -f -a all kathleen
+$ cranky test-build -f -a all kathleen
 ```
 
 Make sure to specify "-a all" for official builds, we want to make sure the
@@ -447,8 +458,8 @@ re-run `cranky close` once all additional fixes have been applied successfully.
 `cranky test-build`. The list of builders and their IP addresses can be found
 on the section "List of builders" below.
 
-**Note 2** kathleen in the example above represents both a git remote name,
-which by default matches the name of the remote build host.
+**Note 2** "kathleen" in the example above represents both a git remote name and
+a build host. By default, their name match.
 
 ### Compile selftests for the master kernels
 
@@ -460,7 +471,7 @@ before uploading the source packages to the PPA.
 
 <!--cheatsheet-->
 ```
-cranky test-build [-a ARCH[,ARCH,...]] -t compileselftests HOST
+$ cranky test-build [-a ARCH[,ARCH,...]] -t compileselftests HOST
 ```
 <!--/cheatsheet-->
 
@@ -472,92 +483,100 @@ i386.
 
 Example:
 ```
-cranky test-build -f -a amd64,i386 -t compileselftests kathleen
+$ cranky test-build -f -a amd64,i386 -t compileselftests kathleen
 ```
 
 ### Tagging - `cranky tag`
 <!--cheatsheet-->
 ```
-cranky tag
+$ cranky tag
 ```
 <!--/cheatsheet-->
 
 Run the following command to apply the correct tag to the kernel:
 ```
-cranky tag
+$ cranky tag
 ```
 
 ### Prepare meta/signed/resticted-modules repositories - `cranky update-dependent`
 <!--cheatsheet-->
 ```
-cd ../linux-meta-DERIVATIVE
-cranky update-dependent
-cranky tag
+$ cd ../linux-meta-DERIVATIVE
+$ cranky update-dependent
+$ cranky tag
 
-cd ../linux-signed-DERIVATIVE
-cranky update-dependent
-cranky tag
+$ cd ../linux-signed-DERIVATIVE
+$ cranky update-dependent
+$ cranky tag
 
-cd ../linux-restricted-modules-DERIVATIVE
-cranky update-dependent
-cranky tag
+$ cd ../linux-restricted-modules-DERIVATIVE
+$ cranky update-dependent
+$ cranky tag
 ```
 <!--/cheatsheet-->
 
 Currently this step must be done manually, calling the scripts from
-"linux-meta", "linux-signed" and "linux-restricted-modules" (the additional repositories
-cloned via `cranky checkout`).
+"linux-meta", "linux-signed" and "linux-restricted-modules" (the additional
+repositories cloned via `cranky checkout`).
 
 Example:
 ```
-cd ../linux-meta-oracle
-cranky update-dependent
-cranky tag
+$ cd ../linux-meta-oracle
+$ cranky update-dependent
+$ cranky tag
 
-cd ../linux-signed-oracle
-cranky update-dependent
-cranky tag
+$ cd ../linux-signed-oracle
+$ cranky update-dependent
+$ cranky tag
 
-cd ../linux-restricted-modules-oracle
-cranky update-dependent
-cranky tag
+$ cd ../linux-restricted-modules-oracle
+$ cranky update-dependent
+$ cranky tag
 ```
 
 It is mandatory to run "cranky update-dependent" and "cranky tag" from the
-"linux-meta", "linux-signed" and "linux-restricted-modules" directories, not from the kernel
-source directory.
+"linux-meta", "linux-signed" and "linux-restricted-modules" directories, not
+from the kernel source directory.
 
-**Note** In certain releases "linux-signed" and "linux-restricted-modules" are missing, for
-example "linux-kvm". To show the list of packages that are part of a certain
-kernel set, you can use the command `cranky rmadison`, example:
+**Note** In certain releases "linux-signed" and "linux-restricted-modules" are
+missing, for example "linux-kvm". To show the list of packages that are part of
+a certain kernel set, you can use the command `cranky rmadison`, example:
 ```
-cranky rmadison xenial:linux-oracle
+$ cranky rmadison xenial:linux-oracle
 ```
 
 ### Verify preparation
 <!--cheatsheet-->
 ```
-cd linux-DERIVATIVE && verify-release-ready
-cd linux-meta-DERIVATIVE && verify-release-ready
-cd linux-signed-DERIVATIVE && verify-release-ready
-cd linux-restricted-modules-DERIVATIVE && verify-release-ready
+$ cd linux-DERIVATIVE && verify-release-ready
+$ cd linux-meta-DERIVATIVE && verify-release-ready
+$ cd linux-signed-DERIVATIVE && verify-release-ready
+$ cd linux-restricted-modules-DERIVATIVE && verify-release-ready
 ```
 <!--/cheatsheet-->
 
-Perform one last sanity check on the git trees with `verify-release-ready` to catch
-many of the mistakes that will require changes before this kernel passes review.
+Perform one last sanity check on the git trees with `verify-release-ready` to
+catch many of the mistakes that will require changes before this kernel passes
+review.
+
+**Note** The `verify-release-ready` script is available in
+`kteam-tools/maintscripts`. Add it to your `PATH` for convenience.
 
 ### Build sources - `cranky build-sources`
 <!--cheatsheet-->
 ```
-cranky build-sources
+$ cranky build-sources
 ```
 <!--/cheatsheet-->
 
-Before running `cranky build-sources`, you need to download the previous
-source packages to the parent directory. Note that you need to download all
-source packages listed by `cranky rmadison` for the kernel set you're working
-on.
+Before running `cranky build-sources`, you need to download the previous source
+packages to the parent directory. Note that you need to download the source
+packages listed by `cranky rmadison` for the kernel set you're working on.
+
+**Note** In specific cases, some of the packages reported by `cranky rmadison`
+are not handled through `cranky`. For example, `linux-restricted-signatures*`
+source packages are generated via a different process (as part of the workflow
+directed by swm).
 
 Example:
 
@@ -569,24 +588,52 @@ $ cranky pull-source linux-signed-oracle xenial
 $ cd -
 ```
 
-Doing it this way, `cranky build-sources` will produce the diff.gz instead of
-whole tarballs.
-
-Now run `cranky build-sources` from the main kernel source directory to build the
-source packages.
+**Note** Be aware that you will need to provide the version to `cranky
+pull-source` when craking/dealing with a private kernel otherwise pulling will
+fail.
 
 Example:
 
 ```
-cd linux-oracle
-cranky build-sources
+$ cranky pull-source --no-verify linux-fips 5.4.0-1070.79 focal
 ```
 
-**Note:** If you are performing a respin and the package version in `-proposed` is greater
-than the package version in `-updates`, then the package version in `-updates` must be
-supplied to `cranky build-sources` so the source packages are built against the correct
-package versions to preserve the delta between the one in `-updates` and the current spin.
-One can use `cranky rmadison` to see what versions are in `-updates` and `-proposed`.
+**Note** The `pull-source` command will validate the GPG signature of the
+downloaded `.dsc` file by default when building private kernels. If the key is
+not available, the tool will complain about it. Mind the fact that this failure
+is not fatal and the files are still pulled successfully. If you want to
+silence the error, you can pull in the required key in a keyring considered by
+`dscverify`.
+
+Example:
+
+```
+$ gpg --export --armor 0x12345678 | gpg --import --no-default-keyring \
+--keyring ~/.gnupg/trustedkeys.gpg
+```
+
+Make sure that you replace the key ID with the right value.
+
+When the previous source packages are available (e.g. downloaded with the
+`pull-source` commands detailed above), `cranky build-sources` will produce the
+diff.gz instead of whole tarballs.
+
+Now run `cranky build-sources` from the main kernel source directory to build
+the source packages.
+
+Example:
+
+```
+$ cd linux-oracle
+$ cranky build-sources
+```
+
+**Note:** If you are performing a respin and the package version in `-proposed`
+is greater than the package version in `-updates`, then the package version in
+`-updates` must be supplied to `cranky build-sources` so the source packages
+are built against the correct package versions to preserve the delta between
+the one in `-updates` and the current spin. One can use `cranky rmadison` to
+see what versions are in `-updates` and `-proposed`.
 
 Example:
 
@@ -602,21 +649,21 @@ $ cranky build-sources --build-opts "main:-v4.15.0-1021.23~16.04.1" --build-opts
 ### Reviewing - `cranky review`
 <!--cheatsheet-->
 ```
-cranky review *.changes
+$ cranky review *.changes
 ```
 <!--/cheatsheet-->
 
-Generates debdiff files for review between newly generated .dsc files and
-those currently in the archive. Takes source.changes filenames as
-argument(s) and produces .debdiff files for review.
+This generates debdiff files for review between newly generated .dsc files and
+those currently in the archive. Takes source.changes filenames as argument(s)
+and produces .debdiff files for review.
 
 Example (run this on the same directory where the .changes and .dsc files have
 been generated by the previous step):
 ```
-cranky review *.changes
+$ cranky review *.changes
 ```
 
-**Note:** The example above will generate debdiffs for all the .changes files
+**Note** The example above will generate debdiffs for all the .changes files
 in the current directory. If you are keeping files from older cranks in the
 same directory, provide different parameters that would create the debdiffs
 only for the latest crank.
@@ -625,7 +672,7 @@ only for the latest crank.
 
 Sign the source packages:
 ```
-debsign *_source.changes
+$ debsign *_source.changes
 ```
 
 **Note** While this step is not really needed (unless you already have upload
@@ -635,13 +682,13 @@ uploading packages, this manual step is not necessary as it is wrapped by
 
 ### Uploading packages - `cranky upload`
 
-**Note:** Uploading packages can only be done by team members with upload
+**Note** Uploading packages can only be done by team members with upload
 rights. Pushing to the official git repos can only be done by team members with
 commit rigths. Before a new member is granted such rights, the git trees and
 source packages produced need to be reviewed and sponsored by some other team
 member with the necessary rights.
 
-**Note:** DO NOT publish private kernels such as ESM, linux-ibm-gt and
+**Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
 linux-fips to public repositories, see section "Special kernels" below.
 
 The best way to provide the git trees for a review is pushing them to one of
@@ -657,29 +704,29 @@ Tips:
 
 You only need to push master or master-next and the last tag applied:
 ```
-cd linux-oracle
-git remote add for-review ssh://<builder>/~/xenial-linux-oracle
-git push for-review cranky/master-next
-git push for-review TAG
-cd ..
+$ cd linux-oracle
+$ git remote add for-review ssh://<builder>/~/xenial-linux-oracle
+$ git push for-review cranky/master-next
+$ git push for-review TAG
+$ cd ..
 
-cd linux-meta-oracle
-git remote add for-review ssh://<builder>/~/xenial-linux-meta-oracle
-git push for-review cranky/master
-git push for-review TAG
-cd ..
+$ cd linux-meta-oracle
+$ git remote add for-review ssh://<builder>/~/xenial-linux-meta-oracle
+$ git push for-review cranky/master-next
+$ git push for-review TAG
+$ cd ..
 
-cd linux-signed-oracle
-git remote add for-review ssh://<builder>/~/xenial-linux-signed-oracle
-git push for-review cranky/master
-git push for-review TAG
-cd ..
+$ cd linux-signed-oracle
+$ git remote add for-review ssh://<builder>/~/xenial-linux-signed-oracle
+$ git push for-review cranky/master-next
+$ git push for-review TAG
+$ cd ..
 ```
 
-TAG represents the last tag applied on each repository. The last tag can be
-determined running the following command:
+`TAG` represents the last tag applied on each repository as per the process
+detailed above. The last tag can be determined running the following command:
 ```
-git tag --sort=creatordate | tail -1
+$ git tag --sort=creatordate | tail -1
 ```
 
 Make sure the tag matches the last version that we are currently uploading for
@@ -687,24 +734,27 @@ review.
 
 Upload source packages to one of the builders for a review:
 ```
-ssh <builder> "mkdir -p for-review/xenial-linux-oracle"
-scp *4.15.0.1031.31* *4.15.0-1031.31* <builder>:~/for-review/xenial-linux-oracle
+$ ssh <builder> "mkdir -p for-review/xenial-linux-oracle"
+$ scp *4.15.0.1031.31* *4.15.0-1031.31* <builder>:~/for-review/xenial-linux-oracle
 ```
 
 Add the information about the git tags and the source packages to the crank
 card/issue in a way that would be easy for the reviewer to fetch them. I.e.,
-the tag location can be used as ia copy+paste parameter to `git fetch` and the
+the tag location can be used as a copy+paste parameter to `git fetch` and the
 packages location to `scp`.
 
 Example:
 
 ```
-main:   git+ssh://<builder>/~<user>/xenial-linux-oracle tag <TAG>
-meta:   git+ssh://<builder>/~<user>/xenial-linux-meta-oracle tag <TAG>
-signed: git+ssh://<builder>/~<user>/xenial-linux-signed-oracle tag <TAG>
+main:   git+ssh://kathleen/~<user>/xenial-linux-oracle tag <TAG>
+meta:   git+ssh://kathleen/~<user>/xenial-linux-meta-oracle tag <TAG>
+signed: git+ssh://kathleen/~<user>/xenial-linux-signed-oracle tag <TAG>
 
-packages: <builder>:~<user>/for-review/xenial-linux-oracle/
+packages: kathleen:~<user>/for-review/xenial-linux-oracle/
 ```
+
+`kathleen` and the paths are used as an example. Make sure you replace them as
+needed along with `<user>` and `TAG`.
 
 After source packages and git repositories have been reviewed and acknowledged
 by another kernel team member, this person could either upload the packages
@@ -713,32 +763,32 @@ the signed packages to the same directory that `cranky build-sources` uses, this
 replaces the previously signed files. Then upload them using `cranky
 dput-sources`:
 ```
-cranky dput-sources build xenial:linux-oracle
+$ cranky dput-sources build xenial:linux-oracle
 ```
 
 Unless stated otherwise, the default upload destination should always be
 "build". You can find the other possible upload destinations and archive/ppa
 information by executing the following cranky command:
 ```
-cranky list-routing xenial:linux-oracle
+$ cranky list-routing xenial:linux-oracle
 ```
 
-**Note:** dput-sources will always ask if you want to (re-)sign the packages.
+**Note** dput-sources will always ask if you want to (re-)sign the packages.
 In the case where you are uploading packages which were sponsored and signed
 by another team member, the packages should not be re-signed as Launchpad would
 reject packages signed by a user who doesn't have upload rights.
 
 Alternatively, you can upload them manually using dput:
 ```
-dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
-dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
-dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1_source.changes
+$ dput -u ppa:canonical-kernel-team/ppa linux-oracle_4.15.0-1010.12~16.04.1_source.changes
+$ dput -u ppa:canonical-kernel-team/ppa linux-meta-oracle_4.15.0.1010.4_source.changes
+$ dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04.1_source.changes
 ```
 
 **Note** When uploading manually using dput, double check the destination to
 make sure the packages are being uploaded to the correct PPA. Also make sure
-you have ```default_host_main = UNKNOWN"``` set in your ~/.dput.cf, to prevent
-uploading packages to ```ubuntu```. (see snip-dput.cf)
+you have `default_host_main = UNKNOWN"` set in your ~/.dput.cf, to prevent
+uploading packages to `ubuntu` (see snip-dput.cf).
 
 ### Special kernels
 
@@ -763,7 +813,7 @@ right series team owned repo
 https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal,
 click "fork it directly to your account". 
 
-### List of builders
+## List of builders
 
 This is the current list of builders which can be used for test-builds and
 pushing cranks for review.
