@@ -37,7 +37,6 @@ remote="$1"
 commit="$2"
 publish="$3"
 
-build_arch=$(dpkg --print-architecture)
 id="$commit"
 
 master_tree_select
@@ -91,7 +90,11 @@ series="$RET"
 map_series_to_build_series "$series"
 build_release="$RET"
 
-echo "II: repo-series=$series build-series=$build_release"
+# Set the chroot to use.
+build_arch=$(dpkg --print-architecture)
+chroot_name=${build_release}-${build_arch}
+
+echo "II: repo-series=$series build-series=$build_release build-arch=$build_arch"
 
 # Ensure we have the latest and greatest code in the master release.
 repo_remote_update "$series"
@@ -285,7 +288,7 @@ do
 	echo "fix-configs: iteration $try ..."
 
 	# Take the defaults, if nothing changes we are done.
-	do_chroot "$build_release-$build_arch" \
+	do_chroot "${chroot_name}" \
 		fakeroot debian/rules clean defaultconfigs
 	git diff --exit-code debian.master/config && break
 
@@ -322,7 +325,7 @@ git bundle create "$result/crack.bundle" "$commit..refs/tags/$bundle_tag"
 
 # Clean the tree so we can tell what architectures need building.
 git clean -x -f -d
-do_chroot "$build_release-$build_arch" \
+do_chroot "${chroot_name}" \
 	fakeroot debian/rules clean
 archs=$(
 	grep Architecture debian/control |
