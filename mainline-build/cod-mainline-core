@@ -1,5 +1,43 @@
 #!/bin/bash
 
+# Fix kernel annotations for an upstream kernel using Ubuntu configs as
+# a baseline. Use the default values for new options but try to set new
+# tristate options to 'm'.
+function fix_annotations()
+{
+	local chroot_name=${1} configs=${2}
+	local try
+
+	try=0
+	while [ ${try} -lt 20 ] ; do
+		try=$((try + 1))
+		echo "fix-annotations: iteration ${try} ..."
+
+		do_chroot "${chroot_name}" \
+			fakeroot debian/rules clean defaultconfigs
+		git diff --exit-code debian.master/config && break
+
+		# Create the overrides, i.e., try to enable new tristates
+		git diff HEAD | grep "^+CONFIG_.*'n'" | \
+			sed -e "s/^+//" -e "s/'n'/'m'/g" > __overrides__
+		echo "v-- OVERRIDES"
+		cat __overrides__
+		echo "^-- OVERRIDES"
+
+		# Commit the differences
+		if [ ${try} -eq 1 ]; then
+			git commit -a -m "configs (based on $configs)"
+		else
+			git commit --no-edit -a --amend
+		fi
+
+		# Append the overrides for the next iteration
+		cat debian.master/config/annotations __overrides__ > __annotations__
+		mv __annotations__ debian.master/config/annotations
+	done
+	rm -f __overrides__
+}
+
 # Fix kernel configs for an upstream kernel using Ubuntu configs as
 # a baseline. Use the default values for new options but try to set new
 # tristate options to 'm'.
@@ -304,24 +342,27 @@ do
 done
 echo "II: using configs from $config_ref $configs"
 
-if [ -e debian.master/config/config.common.ubuntu ] && \
-   ! [ -e debian.master/etc/kernelconfig ] ; then
-	# We pull packaging scripts and kernel configs from different points
-	# in time. For this build, the configs are still old-style so the
-	# old config scripts are used which need etc/kernelconfig.
-	# Reconstruct it.
-	archs=
-	for arch in debian.master/abi/* ; do
-		if [ -d "$arch" ] ; then
-			archs="${archs} ${arch##*/}"
-		fi
-	done
-	echo "archs=\"${archs# }\"" > debian.master/etc/kernelconfig
-	git add debian.master/etc/kernelconfig
-fi
+if [ -e debian.master/config/config.common.ubuntu ] ; then
+	if ! [ -e debian.master/etc/kernelconfig ] ; then
+		# We pull packaging scripts and kernel configs from different points
+		# in time. For this build, the configs are still old-style so the
+		# old config scripts are used which need etc/kernelconfig.
+		# Reconstruct it.
+		archs=
+		for arch in debian.master/abi/* ; do
+			if [ -d "$arch" ] ; then
+				archs="${archs} ${arch##*/}"
+			fi
+		done
+		echo "archs=\"${archs# }\"" > debian.master/etc/kernelconfig
+		git add debian.master/etc/kernelconfig
+	fi
 
-overrides=${here}/configs.${series}
-fix_configs "${chroot_name}" "${configs}" "${overrides}"
+	overrides=${here}/configs.${series}
+	fix_configs "${chroot_name}" "${configs}" "${overrides}"
+else
+	fix_annotations "${chroot_name}" "${configs}"
+fi
 
 # The sha we are building in the tip builds will be this bundle tip.
 sha=$( git log -1 --pretty=format:%H "HEAD" )
