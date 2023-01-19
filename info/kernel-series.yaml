@@ -7394,15 +7394,6 @@ defaults:
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-aws-xenial']
-            snaps:
-                aws-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'aws']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
             supported: true
             owner: cascardo
             derived-from: [ '16.04', 'linux' ]
@@ -7445,15 +7436,6 @@ defaults:
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-xenial']
-            snaps:
-                azure-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'azure']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
             supported: true
             owner: mhcerri
             backport: true
@@ -7537,22 +7519,6 @@ defaults:
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-gcp-xenial']
-            snaps:
-                gcp-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gcp']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                gke-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/xenial', 'gke']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
             supported: true
             owner: kmously
             backport: true
