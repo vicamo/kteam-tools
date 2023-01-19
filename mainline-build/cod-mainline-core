@@ -1,4 +1,49 @@
 #!/bin/bash
+
+# Fix kernel configs for an upstream kernel using Ubuntu configs as
+# a baseline. Use the default values for new options but try to set new
+# tristate options to 'm'.
+function fix_configs()
+{
+	local chroot_name=${1} configs=${2} overrides=${3}
+	local try
+
+	# Take the defaults for the configuration, applying any local
+	# overrides for the series and also applying a default =m
+	# for tristate options regardless of the kernel default.
+	{
+		[ -f "${overrides}" ] && cat "${overrides}"
+	} >debian.master/config/OVERRIDES
+
+	try=0
+	while [ $try -lt 20 ] ; do
+		try=$((try + 1))
+		echo "fix-configs: iteration ${try} ..."
+
+		# Take the defaults, if nothing changes we are done.
+		do_chroot "${chroot_name}" \
+			fakeroot debian/rules clean defaultconfigs
+		git diff --exit-code debian.master/config && break
+
+		# Attempt to enable any tri-state options.
+		{
+			git diff HEAD | grep '^+# .* is not set' | awk '{print $2 "=m"}'
+			[ -f "${overrides}" ] && cat "${overrides}"
+		} >debian.master/config/OVERRIDES
+		echo "v-- OVERRIDES"
+		cat debian.master/config/OVERRIDES
+		echo "^-- OVERRIDES"
+
+		# Commit the differences.
+		if [ ${try} -eq 1 ]; then
+			git commit -a -m "configs (based on ${configs})"
+		else
+			git commit --no-edit -a --amend
+		fi
+	done
+	rm -f debian.master/config/OVERRIDES
+}
+
 P='cod-mainline-core'
 
 # Options.
@@ -275,40 +320,8 @@ if [ -e debian.master/config/config.common.ubuntu ] && \
 	git add debian.master/etc/kernelconfig
 fi
 
-# Take the defaults for the configuration, applying any local
-# overrides for the series and also applying a default =m
-# for tristate options regardless of the kernel default.
-{
-	[ -f "$here/config.$series" ] && cat "$here/config.$series"
-} >debian.master/config/OVERRIDES
-try=0
-while [ "$try" -lt 20 ]
-do
-	let try="$try + 1"
-	echo "fix-configs: iteration $try ..."
-
-	# Take the defaults, if nothing changes we are done.
-	do_chroot "${chroot_name}" \
-		fakeroot debian/rules clean defaultconfigs
-	git diff --exit-code debian.master/config && break
-
-	# Attempt to enable any tri-state options.
-	{
-		git diff HEAD | grep '^+# .* is not set' | awk '{print $2 "=m"}'
-		[ -f "$here/config.$series" ] && cat "$here/config.$series"
-	} >debian.master/config/OVERRIDES
-	echo "v-- OVERRIDES"
-	cat debian.master/config/OVERRIDES
-	echo "^-- OVERRIDES"
-
-	# Commit the differences.
-	if [ "$try" -eq 1 ]; then
-		git commit -a -m "configs (based on $configs)"
-	else
-		git commit --no-edit -a --ame
-	fi
-done
-rm -f debian.master/config/OVERRIDES
+overrides=${here}/configs.${series}
+fix_configs "${chroot_name}" "${configs}" "${overrides}"
 
 # The sha we are building in the tip builds will be this bundle tip.
 sha=$( git log -1 --pretty=format:%H "HEAD" )
