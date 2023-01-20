@@ -2177,6 +2177,12 @@ defaults:
                 linux-signed-bluefield:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-bluefield/+git/jammy']
+                linux-bluefield-modules:
+                    type: extra
+                    repo: ['git://git.launchpad.net/~canonical-kernel/+git/jammy-linux-bluefield-modules']
+                linux-bluefield-modules-signed:
+                    type: extra2
+                    repo: ['git://git.launchpad.net/~canonical-kernel/+git/jammy-linux-bluefield-modules-signed']
             supported: true
             development: false
             owner: bzolnier
