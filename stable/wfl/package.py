@@ -1895,6 +1895,10 @@ class Package():
         sources = 0
         for pkg in delta:
             sources += 1
+            if pkg not in s.srcs:
+                failures.setdefault('missing', []).append(pkg)
+                missing += 1
+                continue
             status = s.srcs[pkg].get(pocket, {}).get('status')
             if status == 'BUILDING':
                 failures.setdefault('building', []).append(pkg)
