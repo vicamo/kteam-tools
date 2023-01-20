@@ -660,14 +660,36 @@ defaults:
               - *routing-table-prerelease-any
             signing:
               - ["signing:ubuntu/2", "Release"]
+        stable-ubuntu/4:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/4", "Release"]
+        stable-wip-ubuntu/4:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-wip-any
+            signing:
+              - ["signing:ubuntu/4", "Release"]
+        stable-prerelease-ubuntu/4:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-stable
+              - *routing-table-prerelease-any
+            signing:
+              - ["signing:ubuntu/4", "Release"]
         dev-unsigned:
             <<:
               - *routing-table-security-build-devel
               - *routing-table-security-proposed
               - *routing-table-build-devel
               - *routing-table-ubuntu-primary
-            signing:
-              - ["signing:ubuntu/2", "Release"]
         dev-ubuntu/2:
             <<:
               - *routing-table-security-build-devel
@@ -676,7 +698,7 @@ defaults:
               - *routing-table-ubuntu-primary
             signing:
               - ["signing:ubuntu/2", "Release"]
-        dev-unstable:
+        dev-unstable-ubuntu/2:
             <<:
               - *routing-table-security-build-devel
               - *routing-table-security-proposed
@@ -692,6 +714,30 @@ defaults:
               - *routing-table-prerelease-any
             signing:
               - ["signing:ubuntu/2", "Release"]
+        dev-ubuntu/4:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-ubuntu-primary
+            signing:
+              - ["signing:ubuntu/4", "Release"]
+        dev-unstable-ubuntu/4:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-unstable-devel
+            signing:
+              - ["signing:ubuntu/4", "Release"]
+        dev-prerelease-ubuntu/4:
+            <<:
+              - *routing-table-security-build-devel
+              - *routing-table-security-proposed
+              - *routing-table-build-devel
+              - *routing-table-prerelease-any
+            signing:
+              - ["signing:ubuntu/4", "Release"]
         fips-pro/2:
             <<:
               - *routing-table-security-build-stable
@@ -790,10 +836,10 @@ defaults:
         devel: dev-unsigned # XXX: until we drop the base mapping
         default: dev-unsigned
         ubuntu/2: dev-ubuntu/2
-        unstable: dev-unstable
+        unstable-ubuntu/2: dev-unstable-ubuntu/2
     sources:
         linux-unstable:
-            routing: unstable
+            routing: unstable-ubuntu/2
             versions: ['6.2.0']
             variants: ['-wip']
             packages:
