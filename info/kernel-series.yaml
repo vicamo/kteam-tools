@@ -872,9 +872,9 @@ defaults:
 
         linux:
             routing: ubuntu/2
-            package-relations: signed-generate
             versions: ['6.1.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            package-relations: signed-generate
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/lunar', 'master-next']
@@ -1204,9 +1204,9 @@ defaults:
     sources:
         linux:
             routing: ubuntu/4
-            package-relations: signed-generate
             versions: ['5.19.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            package-relations: signed-generate
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'master-next']
@@ -1556,9 +1556,9 @@ defaults:
     sources:
         linux:
             routing: ubuntu/4
-            package-relations: signed-generate
             versions: ['5.15.0']
             variants: ['--', '-hwe-22.04']
+            package-relations: signed-generate
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'master-next']
@@ -3443,9 +3443,9 @@ defaults:
     sources:
         linux:
             routing: ubuntu/4
-            package-relations: signed-generate
             versions: ['5.4.0']
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'master-next']
