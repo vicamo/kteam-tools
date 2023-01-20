@@ -48,6 +48,7 @@ class WorkflowManager():
             'prepare-package-meta'      : wfl.wft.PreparePackage,
             'prepare-package-ports-meta': wfl.wft.PreparePackage,
             'prepare-package-signed'    : wfl.wft.PreparePackage,
+            'prepare-package-generate'  : wfl.wft.PreparePackage,
             'prepare-package-extra'     : wfl.wft.PreparePackage,
             'prepare-package-extra2'    : wfl.wft.PreparePackage,
             'prepare-package-extra3'    : wfl.wft.PreparePackage,
