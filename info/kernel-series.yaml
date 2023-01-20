@@ -1544,9 +1544,13 @@ defaults:
         ubuntu/2: stable-ubuntu/2
         wip-ubuntu/2: stable-wip-ubuntu/2
         prerelease-ubuntu/2: stable-prerelease-ubuntu/2
+        ubuntu/4: stable-ubuntu/4
+        wip-ubuntu/4: stable-wip-ubuntu/4
+        prerelease-ubuntu/4: stable-prerelease-ubuntu/4
     sources:
         linux:
-            routing: ubuntu/2
+            routing: ubuntu/4
+            package-relations: signed-generate
             versions: ['5.15.0']
             variants: ['--', '-hwe-22.04']
             packages:
@@ -1555,6 +1559,8 @@ defaults:
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy']
+                linux-generate:
+                    type: generate
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy']
