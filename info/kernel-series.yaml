@@ -6661,16 +6661,6 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-aws-5.4:
                     type: lrs
-            snaps:
-                aws-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'aws']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
             supported: true
             owner: jsalisbury
             backport: true
@@ -6842,16 +6832,6 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-5.4:
                     type: lrs
-            snaps:
-                azure-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'azure']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
             supported: true
             owner: timg-tpi
             backport: true
@@ -7013,16 +6993,6 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-gcp-5.4:
                     type: lrs
-            snaps:
-                gcp-kernel:
-                    primary: true
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'gcp']
-                    gated: false
-                    stable: false
-                    qa: false
-                    hw-cert: false
-                    arches: ['amd64']
-                    track: '18'
             supported: true
             owner: kmously
             backport: true
