@@ -1624,14 +1624,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.17:
-            routing: wip-ubuntu/2
+            routing: wip-ubuntu/4
             variants: [ '-base' ]
+            package-relations: signed-generate
             packages:
                 linux-hwe-5.17:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.17-next']
                 linux-meta-hwe-5.17:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'hwe-5.17']
+                linux-generate-hwe-5.17:
+                    type: generate
                 linux-signed-hwe-5.17:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'hwe-5.17']
