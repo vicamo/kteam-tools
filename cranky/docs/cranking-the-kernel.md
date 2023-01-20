@@ -712,13 +712,13 @@ $ cd ..
 
 $ cd linux-meta-oracle
 $ git remote add for-review ssh://<builder>/~/xenial-linux-meta-oracle
-$ git push for-review cranky/master-next
+$ git push for-review cranky/master
 $ git push for-review TAG
 $ cd ..
 
 $ cd linux-signed-oracle
 $ git remote add for-review ssh://<builder>/~/xenial-linux-signed-oracle
-$ git push for-review cranky/master-next
+$ git push for-review cranky/master
 $ git push for-review TAG
 $ cd ..
 ```
