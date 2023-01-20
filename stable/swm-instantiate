@@ -106,6 +106,12 @@ class TrackerProduction:
         variant = swm_props.get('variant', 'combo')
         master = swm_props.get('master-bug', swm_props.get('kernel-stable-master-bug'))
 
+        # If this is not a valid source we actually cannot instantiate it.  Drop it from
+        # the queue and assume it will be re-requested again later.
+        if ks_source is None:
+            cinfo("Invalid source.")
+            return False
+
         # Pick up the invalidation hints from kernel-series.
         ks_invalid_tasks = []
         if ks_source.invalid_tasks is not None:
