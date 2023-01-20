@@ -2401,6 +2401,7 @@ defaults:
                         amd64: ['22']
                         arm64: ['22']
             derived-from: [ '22.04', 'linux-lowlatency' ]
+            supported: false
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
@@ -3779,15 +3780,6 @@ defaults:
                         amd64: ['20']
                         arm64: ['20']
                         armhf: ['20']
-                pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc20', 'pc-lowlatency']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['20']
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
@@ -6232,16 +6224,6 @@ defaults:
                         amd64: ['18']
                         i386: ['18']
                         armhf: ['18']
-                pc-lowlatency-kernel:
-                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-snap/+git/bionic', 'pc-lowlatency']
-                    gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
-                    qa: false
-                    hw-cert: false
-                    publish-to:
-                        amd64: ['18']
-                        i386: ['18']
             supported: true
             owner: lukenow
             testing:
