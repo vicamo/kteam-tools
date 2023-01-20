@@ -118,7 +118,7 @@ do
 
 		if [ "$arc" != 0 ]; then
 			echo "$id: ancillary build failed, rc=$arc"
-			continue
+			return
 		fi
 
 		for upload in *_source.changes
