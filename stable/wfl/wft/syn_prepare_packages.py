@@ -71,10 +71,7 @@ class SynPreparePackages(TaskHandler):
             failures = None
             if s.bug.version is not None:
                 # Work on the assumption that eventually we end up in -proposed.
-                delta = s.bug.debs.delta_src_dst("ppa", "Proposed")
-                # XXX: we need to figure out how to represent this.
-                if "lrs" in delta and "lrg" not in delta:
-                    delta.append("lrg")
+                delta = s.bug.debs.delta_src_dst("ppa", "Proposed", pair_signing=True)
                 failures = s.bug.debs.delta_failures_in_pocket(delta, "ppa", ignore_all_missing=True)
             if failures is None:
                 if s.bug.flag('jira-in-review'):

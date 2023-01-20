@@ -1597,7 +1597,7 @@ class Package():
 
     # delta_src_dst
     #
-    def delta_src_dst(s, src, dst):
+    def delta_src_dst(s, src, dst, pair_signing=False):
         '''
         List of dependent packages in src which are not in dst or later.
         '''
@@ -1623,6 +1623,15 @@ class Package():
 
             else:
                 cinfo('        {} is in {} and in {}'.format(pkg, src, pocket), 'red')
+
+        # If we are missing a signing consumer ensure the signing provider is included
+        # as we are unable to build the latter without the former.
+        if pair_signing:
+            for pkg in retval:
+                signing_for = s.signing_package_for(pkg)
+                if signing_for is not None and signing_for not in retval:
+                    cdebug("{} not in delta, added for ppa".format(signing_for))
+                    retval.append(signing_for)
 
         cinfo("from {} to {} delta {}".format(src, dst, retval))
 
@@ -1669,10 +1678,7 @@ class Package():
 
     # delta_record
     def delta_record(s, which, pocket_src, pocket_dest):
-        delta = s.delta_src_dst(pocket_src, pocket_dest)
-        # XXX: when everything is in signing we will drop lrg from the list...
-        if pocket_src == 'ppa' and 'lrs' in delta and 'lrg' not in delta:
-            delta.append('lrg')
+        delta = s.delta_src_dst(pocket_src, pocket_dest, pair_signing=pocket_src == "ppa")
         s.bug.bprops.setdefault('delta', {})[which] = delta
 
     # all_built_and_in_pocket
