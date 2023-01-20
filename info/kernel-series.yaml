@@ -5372,6 +5372,7 @@ defaults:
                         meta-pkg: linux-iot
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
+            invalid-tasks: [ 'certification-testing' ]
 
         linux-uc20-iot:
             routing: uc20
