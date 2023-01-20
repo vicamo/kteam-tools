@@ -1200,7 +1200,8 @@ defaults:
         prerelease-ubuntu/2: stable-prerelease-ubuntu/2
     sources:
         linux:
-            routing: ubuntu/2
+            routing: ubuntu/4
+            package-relations: signed-generate
             versions: ['5.19.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             packages:
@@ -1209,6 +1210,8 @@ defaults:
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/kinetic']
+                linux-generate:
+                    type: generate
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/kinetic']
