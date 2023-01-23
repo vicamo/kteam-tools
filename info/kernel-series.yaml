@@ -1873,14 +1873,17 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
 
         linux-aws:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-lts-22.04']
+            packages-relations: signed-generate
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'master-next']
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy']
+                linux-generate-aws:
+                    type: generate
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy']
