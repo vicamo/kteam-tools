@@ -1938,14 +1938,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-azure:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-lts-22.04']
+            package-relations: signed-generate
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'master-next']
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy']
+                linux-generate-azure:
+                    type: generate
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy']
