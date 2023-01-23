@@ -1239,14 +1239,17 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
+            package-relations: signed-generate
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/kinetic', 'lowlatency-next']
                 linux-meta-lowlatency:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/kinetic', 'lowlatency']
+                linux-generate-lowlatency:
+                    type: generate
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/kinetic', 'lowlatency']
