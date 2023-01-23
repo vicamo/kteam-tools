@@ -1442,12 +1442,15 @@ defaults:
         linux-kvm:
             routing: ubuntu/2
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-kvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-kvm/+git/kinetic', 'master-next']
                 linux-meta-kvm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-kvm/+git/kinetic']
+                linux-generate-kvm:
+                    type: generate
                 linux-signed-kvm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-kvm/+git/kinetic']
