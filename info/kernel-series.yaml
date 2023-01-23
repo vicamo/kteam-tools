@@ -1469,14 +1469,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/kinetic', 'master-next']
                 linux-meta-oracle:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/kinetic']
+                linux-generate-oracle:
+                    type: generate
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/kinetic']
