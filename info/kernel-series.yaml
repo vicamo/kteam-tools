@@ -1380,14 +1380,17 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: ubuntu/2
+            routing: ubuntu/3
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-gcp:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/kinetic', 'master-next']
                 linux-meta-gcp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/kinetic']
+                linux-generate-gcp:
+                    type: generate
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/kinetic']
