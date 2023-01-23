@@ -1681,14 +1681,17 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
         linux-hwe-5.19:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-hwe-22.04-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-hwe-5.19:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'hwe-5.19-next']
                 linux-meta-hwe-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'hwe-5.19']
+                linux-generate-hwe-5.19:
+                    type: generate
                 linux-signed-hwe-5.19:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'hwe-5.19']
