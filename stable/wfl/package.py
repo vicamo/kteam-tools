@@ -629,6 +629,17 @@ class Package():
         cinfo("KSPSv4: signing_package_for {} -> {} {}".format(pkg, old, new))
         return new
 
+    # generate_package_for
+    #
+    def generate_package_for_new(self, pkg):
+        pkg = self.source.lookup_package(type=pkg)
+        pkg = pkg and pkg.signing_to
+        return pkg and self._ptype_map(pkg.type)
+    def generate_package_for(self, pkg):
+        new = self.generate_package_for_new(pkg)
+        cinfo("KSPSv4: generate_package_for {} -> -na- {}".format(pkg, new))
+        return new
+
     # feeder_package_for
     #
     def feeder_package_for_old(self, pkg):
@@ -864,7 +875,7 @@ class Package():
     def dependent_packages_for_pocket(self, pocket):
         pkgs = []
         for pkg in self.build_info:
-            if pkg == 'lrg' and pocket not in ('ppa', 'build-private', 'Signing'):
+            if self.generate_package_for(pkg) is not None and pocket not in ('ppa', 'build-private', 'Signing'):
                 continue
             pkgs.append(pkg)
         cdebug("dependent_packages_for_pocket({})={}".format(pocket, pkgs))
