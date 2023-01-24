@@ -1624,14 +1624,17 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-hwe-22.04']
+            package-relations: signed-generate
             packages:
                 linux-lowlatency:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-next']
                 linux-meta-lowlatency:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency']
+                linux-generate-lowlatency:
+                    type: generate
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency']
