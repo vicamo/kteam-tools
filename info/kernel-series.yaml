@@ -3543,17 +3543,14 @@ defaults:
                         clouds: ['metal', 'kvm', 'aws', 'azure', 'gcp']
 
         linux-hwe-5.15:
-            routing: ubuntu/4
+            routing: ubuntu/2
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
-            package-relations: signed-generate
             packages:
                 linux-hwe-5.15:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/focal', 'hwe-5.15-next']
                 linux-meta-hwe-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/focal', 'hwe-5.15']
-                linux-generate-hwe-5.15:
-                    type: generate
                 linux-signed-hwe-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/focal', 'hwe-5.15']
