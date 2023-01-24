@@ -4108,15 +4108,18 @@ defaults:
                         clouds: ['metal']
 
         linux-oem-5.14:
-            routing: ubuntu/2
+            routing: ubuntu/4
             versions: ['5.14.0']
             variants: ['-20.04', '-20.04d']
+            package-relations: signed-generate
             packages:
                 linux-oem-5.14:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/focal', 'oem-5.14-next']
                 linux-meta-oem-5.14:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/focal', 'oem-5.14']
+                linux-generate-oem-5.14:
+                    type: generate
                 linux-signed-oem-5.14:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/focal', 'oem-5.14']
