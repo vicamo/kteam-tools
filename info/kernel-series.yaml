@@ -4282,14 +4282,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '--', '-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-aws-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal', 'aws-5.15-next']
                 linux-meta-aws-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal', 'aws-5.15']
+                linux-generate-aws-5.15:
+                    type: generate
                 linux-signed-aws-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/focal', 'aws-5.15']
