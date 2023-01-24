@@ -2238,6 +2238,8 @@ defaults:
                 linux-meta-bluefield:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-bluefield/+git/jammy']
+                linux-generate-bluefield:
+                    type: generate
                 linux-signed-bluefield:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-bluefield/+git/jammy']
