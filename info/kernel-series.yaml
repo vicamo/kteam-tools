@@ -292,17 +292,17 @@ defaults:
                 - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
         bluefield-ppas-build-fragment: &routing-table-build-bluefield-ppas
             build:
-                - ['ppa:canonical-kernel-bluefield/ppa', 'Release']
-                - ['ppa:canonical-kernel-bluefield/ppa2', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/ppa2', 'Release']
             build-private:
-                - ['ppa:canonical-kernel-bluefield/ppa-ps', 'Release']
-                - ['ppa:canonical-kernel-bluefield/ppa2-ps', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/ppa2-ps', 'Release']
         bluefield-ppa-release-fragment: &routing-table-release-bluefield-ppas
             proposed:
-                - ['ppa:canonical-kernel-bluefield/proposed', 'Release']
-                - ['ppa:canonical-kernel-bluefield/proposed2', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/proposed2', 'Release']
             updates:
-                - ['ppa:canonical-kernel-bluefield/release', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ubuntu/release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
