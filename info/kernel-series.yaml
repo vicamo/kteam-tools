@@ -4738,14 +4738,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge', '-5.15' ]
+            package-relations: signed-generate
             packages:
                 linux-gke-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gke-5.15-next']
                 linux-meta-gke-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal', 'gke-5.15']
+                linux-generate-gke-5.15:
+                    type: generate
                 linux-signed-gke-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gke-5.15']
