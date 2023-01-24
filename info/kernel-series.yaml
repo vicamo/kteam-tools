@@ -4156,14 +4156,17 @@ defaults:
                         clouds: ['metal']
 
         linux-aws:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['-lts-20.04']
+            package-relations: signed-generate
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/focal']
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/focal']
+                linux-generate-aws:
+                    type: generate
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/focal']
