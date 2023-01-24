@@ -2072,19 +2072,22 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke:
+            routing: ubuntu/4
             # For Jammy, we want linux-gke to stay at the version that is
             # native to the release. This is not how things get selected
             # for GKE but consistent with other derivatives. Additionally
             # we have the kernel version as variant so image building can
             # use that as a selection.
-            routing: ubuntu/2
             variants: ['--', '-5.15']
+            package-relations: signed-generate
             packages:
                 linux-gke:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/jammy', 'master-next']
                 linux-meta-gke:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/jammy']
+                linux-generate-gke:
+                    type: generate
                 linux-signed-gke:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/jammy']
