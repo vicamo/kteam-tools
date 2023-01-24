@@ -290,6 +290,19 @@ defaults:
                 - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
             updates:
                 - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
+        bluefield-ppas-build-fragment: &routing-table-build-bluefield-ppas
+            build:
+                - ['ppa:canonical-kernel-bluefield/ppa', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ppa2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-bluefield/ppa-ps', 'Release']
+                - ['ppa:canonical-kernel-bluefield/ppa2-ps', 'Release']
+        bluefield-ppa-release-fragment: &routing-table-release-bluefield-ppas
+            proposed:
+                - ['ppa:canonical-kernel-bluefield/proposed', 'Release']
+                - ['ppa:canonical-kernel-bluefield/proposed2', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-bluefield/release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -784,6 +797,14 @@ defaults:
                 - ['signing:pro/2', 'Release']
         stable-eol:
             build:
+        bluefield-ppas-ubuntu/2:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-bluefield-ppas
+              - *routing-table-release-bluefield-ppas
+            signing:
+                - ['signing:ubuntu/2', 'Release']
   package-relations:
       default:
           meta:
@@ -803,7 +824,7 @@ defaults:
               ancillary-for: lrm
               signing-from: lrg
               adjunct: true
-      signed-generate:
+      signed-generate: &package-relations-signed-generate
           meta:
               depends: main
           generate:
@@ -825,6 +846,14 @@ defaults:
               ancillary-for: lrm
               signing-from: lrg
               adjunct: true
+      bluefield-extras:
+              <<: *package-relations-signed-generate
+              extra:
+                depends: main
+                signing-to: extra2
+              extra2:
+                depends: extra
+                signing-from: extra
 
 # 23.04 (Lunar Lobster)
 '23.04':
@@ -2211,8 +2240,9 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-bluefield:
-            routing: ubuntu/2
+            routing: bluefield-ppas-ubuntu/2
             variants: ['--']
+            package-relations: bluefield-extras
             packages:
                 linux-bluefield:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/jammy', 'master-next']
