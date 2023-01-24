@@ -4636,14 +4636,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge', '--' ]
+            package-relations: signed-generate
             packages:
                 linux-gcp-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/focal', 'gcp-5.15-next']
                 linux-meta-gcp-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gcp/+git/focal', 'gcp-5.15']
+                linux-generate-gcp-5.15:
+                    type: generate
                 linux-signed-gcp-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/focal', 'gcp-5.15']
