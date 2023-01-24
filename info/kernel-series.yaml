@@ -2291,15 +2291,18 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oem-6.0:
-            routing: ubuntu/2
+            routing: ubuntu/4
             versions: ['6.0.0']
             variants: ['-22.04b']
+            package-relations: signed-generate
             packages:
                 linux-oem-6.0:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-6.0-next']
                 linux-meta-oem-6.0:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/jammy', 'oem-6.0']
+                linux-generate-oem-6.0:
+                    type: generate
                 linux-signed-oem-6.0:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/jammy', 'oem-6.0']
