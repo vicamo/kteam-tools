@@ -2256,15 +2256,18 @@ defaults:
             stakeholder: 'kernel-sru-bluefield-signoff'
 
         linux-oem-5.17:
-            routing: ubuntu/2
+            routing: ubuntu/4
             versions: ['5.17.0']
             variants: ['-22.04', '-22.04a']
+            package-relations: signed-generate
             packages:
                 linux-oem-5.17:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oem/+git/jammy', 'oem-5.17-next']
                 linux-meta-oem-5.17:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oem/+git/jammy', 'oem-5.17']
+                linux-generate-oem-5.17:
+                    type: generate
                 linux-signed-oem-5.17:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oem/+git/jammy', 'oem-5.17']
