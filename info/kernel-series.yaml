@@ -7225,14 +7225,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm-5.4:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-edge']
+            package-relations: signed-generate
             packages:
                 linux-ibm-5.4:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/bionic', 'ibm-5.4-next']
                 linux-meta-ibm-5.4:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/bionic', 'ibm-5.4']
+                linux-generate-ibm-5.4:
+                    type: generate
                 linux-signed-ibm-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/bionic', 'ibm-5.4']
