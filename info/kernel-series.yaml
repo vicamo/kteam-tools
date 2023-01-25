@@ -3598,14 +3598,17 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-hwe-20.04', '-hwe-20.04-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-5.15:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-lowlatency/+git/focal', 'hwe-5.15-next']
                 linux-meta-lowlatency-hwe-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-lowlatency/+git/focal', 'hwe-5.15']
+                linux-generate-lowlatency-hwe-5.15:
+                    type: generate
                 linux-signed-lowlatency-hwe-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed-lowlatency/+git/focal', 'hwe-5.15']
