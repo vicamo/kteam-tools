@@ -303,6 +303,18 @@ defaults:
                 - ['ppa:canonical-kernel-bluefield/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:canonical-kernel-bluefield/ubuntu/release', 'Release']
+        ibm-gt-build-fragment: &routing-table-build-ibm-gt
+            test-build:
+                - ['ppa:ibm-cloud/ubuntu/test', 'Release']
+            build:
+                - ['ppa:ibm-cloud/ubuntu/build', 'Release']
+                - ['ppa:ibm-cloud/ubuntu/build2', 'Release']
+        ibm-gt-release-fragment: &routing-table-release-ibm-gt
+            proposed:
+                - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
+                - ['ppa:ibm-cloud/ubuntu/proposed2', 'Release']
+            updates:
+                - ['ppa:ibm-cloud/ubuntu/release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -534,26 +546,6 @@ defaults:
                 - ['signing:pro/2:fips', 'Release']
             proposed:
                 - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
-        ibm-gt:
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
-            test-build:
-                - ['ppa:ibm-cloud/ubuntu/test', 'Release']
-            test:
-                - ['ppa:ibm-cloud/ubuntu/test', 'Release']
-            build:
-                - ['ppa:ibm-cloud/ubuntu/build', 'Release']
-                - ['ppa:ibm-cloud/ubuntu/build2', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
-            proposed:
-                - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
-                - ['ppa:ibm-cloud/ubuntu/proposed2', 'Release']
-            updates:
-                - ['ppa:ibm-cloud/ubuntu/release', 'Release']
-            #security:
-            #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
-            #release:
-            #    - ['ppa:ibm-cloud/ubuntu/release', 'Release']
         nvidia:
             <<: [*routing-table-default]
             build:
@@ -785,6 +777,14 @@ defaults:
               - *routing-table-release-bluefield-ppas
             signing:
                 - ['signing:ubuntu/2', 'Release']
+        ibm-gt/1:
+            <<:
+              - *routing-table-security-build
+              - *routing-table-security-proposed
+              - *routing-table-build-ibm-gt
+              - *routing-table-release-ibm-gt
+            signing:
+                - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
   package-relations:
       default:
           meta:
@@ -2179,7 +2179,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm-gt:
-            routing: ibm-gt
+            routing: ibm-gt/1
             variants: ['--']
             packages:
                 linux-ibm-gt:
@@ -7409,7 +7409,7 @@ defaults:
             invalid-tasks: [ 'regression-testing' ]
 
         linux-ibm-gt:
-            routing: ibm-gt
+            routing: ibm-gt/1
             variants: ['--']
             packages:
                 linux-ibm-gt:
@@ -7432,7 +7432,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-ibm-gt-fips:
-            routing: ibm-gt
+            routing: ibm-gt/1
             packages:
                 linux-ibm-gt-fips:
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-bionic', 'ibm-gt-fips']
@@ -7455,7 +7455,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-ibm-gt-5.4:
-            routing: ibm-gt
+            routing: ibm-gt/1
             variants: ['-edge']
             packages:
                 linux-ibm-gt-5.4:
