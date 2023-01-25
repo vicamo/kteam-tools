@@ -89,7 +89,7 @@ for prime_type, prime_prefix in ancillary_config:
                     if ancillary_for is not None:
                         if ancillary_for.type == prime_type:
                             ancillary_names.append(ks_package.name)
-                        ancillary_ppa = adjunct if ks_package.adjunct else primary
+                            ancillary_ppa = adjunct if ks_package.adjunct else primary
         if not len(ancillary_names):
             continue
 
