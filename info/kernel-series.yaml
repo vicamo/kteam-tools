@@ -4861,7 +4861,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gke:
-            routing: ubuntu/2
+            routing: ubuntu/4
             # For Focal, we want linux-gke to stay at the version that is
             # native to the release. This is not how things get selected
             # for GKE but consistent with other derivatives. Additionally
@@ -4869,12 +4869,15 @@ defaults:
             # use that as a selection.
             # The gke meta has been removed from focal/linux-meta-gcp.
             variants: ['--', '-5.4']
+            package-relations: signed-generate
             packages:
                 linux-gke:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'master-next']
                 linux-meta-gke:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal']
+                linux-generate-gke:
+                    type: generate
                 linux-signed-gke:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal']
