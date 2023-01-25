@@ -4944,14 +4944,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-ibm:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['-lts-20.04', '--']
+            package-relations: signed-generate
             packages:
                 linux-ibm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-ibm/+git/focal', 'master-next']
                 linux-meta-ibm:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-ibm/+git/focal']
+                linux-generate-ibm:
+                    type: generate
                 linux-signed-ibm:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-ibm/+git/focal']
