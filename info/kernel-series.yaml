@@ -5276,12 +5276,15 @@ defaults:
 
         linux-fips:
             routing: fips-pro/2
+            package-relations: signed-generate
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'master-next']
                 linux-meta-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips']
+                linux-generate-fips:
+                    type: generate
                 linux-signed-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips']
