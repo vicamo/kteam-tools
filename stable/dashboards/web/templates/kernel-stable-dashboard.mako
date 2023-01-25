@@ -365,8 +365,8 @@ for bid in sorted(swm_trackers):
         if 'cycle' in b:
             (cycle, spin) = (b['cycle'].split('-') + ['?'])[0:2]
 
-        package = b.get('source', 'unknown')
-        version = b.get('version', '-')
+        package = b.get('source') or 'unknown'
+        version = b.get('version') or '-'
 
         if 'snap-name' in b:
             package = package + ' / ' + b['snap-name']
@@ -377,11 +377,11 @@ for bid in sorted(swm_trackers):
 
     cycles[cycle] = True
 
-    phase = b.get('phase', 'unknown (no phase set)')
+    phase = b.get('phase') or 'unknown (no phase set)'
 
-    stream = b.get('built', {}).get('route-entry', '-')
+    stream = b.get('built', {}).get('route-entry') or '-'
 
-    sn = b.get('series', 'unknown')
+    sn = b.get('series') or 'unknown'
 
     if cycle not in cadence:
         cadence[cycle] = {}
