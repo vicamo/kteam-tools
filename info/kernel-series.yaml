@@ -4780,14 +4780,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge', '-5.15' ]
+            package-relations: signed-generate
             packages:
                 linux-gkeop-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gkeop-5.15-next']
                 linux-meta-gkeop-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal', 'gkeop-5.15']
+                linux-generate-gkeop-5.15:
+                    type: generate
                 linux-signed-gkeop-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop-5.15']
