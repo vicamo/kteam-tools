@@ -4999,14 +4999,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['-lts-20.04']
+            package-relations: signed-generate
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'master-next']
                 linux-meta-oracle:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal']
+                linux-generate-oracle:
+                    type: generate
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal']
