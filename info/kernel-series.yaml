@@ -315,6 +315,28 @@ defaults:
                 - ['ppa:ibm-cloud/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:ibm-cloud/ubuntu/release', 'Release']
+        realtime-build-fragment: &routing-table-build-realtime
+            test:
+                - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
+            build:
+                - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
+        realtime-release-fragment: &routing-table-release-realtime
+            as-proposed:
+                - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
+            proposed:
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-proposed', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/proposed2', 'Release']
+            updates:
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
+            release:
+                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
+        realtime-release-interim-fragment: &routing-table-release-realtime-interim
+            <<: *routing-table-release-realtime
+            updates:
+                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -785,6 +807,22 @@ defaults:
               - *routing-table-release-ibm-gt
             signing:
                 - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
+        realtime-pro/2:
+            <<:
+              - *routing-table-security-build
+              - *routing-table-security-proposed
+              - *routing-table-build-realtime
+              - *routing-table-release-realtime
+            signing:
+                - ['signing:pro/2', 'Release']
+        realtime-interim-pro/2:
+            <<:
+              - *routing-table-security-build
+              - *routing-table-security-proposed
+              - *routing-table-build-realtime
+              - *routing-table-release-realtime-interim
+            signing:
+                - ['signing:pro/2', 'Release']
   package-relations:
       default:
           meta:
@@ -1306,7 +1344,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-realtime:
-            routing: realtime-interim
+            routing: realtime-interim-pro/2
             variants: ['--']
             packages:
                 linux-realtime:
@@ -1840,7 +1878,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-realtime:
-            routing: realtime
+            routing: realtime-pro/2
             versions: ['5.15.0']
             variants: ['--']
             packages:
@@ -2559,7 +2597,7 @@ defaults:
                 block-parent-release: true
 
         linux-intel-iot-realtime:
-            routing: realtime
+            routing: realtime-pro/2
             variants: ['--']
             packages:
                 linux-intel-iot-realtime:
@@ -2833,7 +2871,7 @@ defaults:
             invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-realtime:
-            routing: realtime
+            routing: realtime-pro/2
             variants: ['--']
             packages:
                 linux-realtime:
@@ -3094,7 +3132,7 @@ defaults:
             invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
         linux-realtime:
-            routing: realtime
+            routing: realtime-pro/2
             variants: ['--']
             packages:
                 linux-realtime:
