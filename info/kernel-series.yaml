@@ -5539,14 +5539,17 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-intel-iotg-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '--', '-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-intel-iotg-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-intel-iotg/+git/focal']
                 linux-meta-intel-iotg-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-intel-iotg/+git/focal']
+                linux-generate-intel-iotg-5.15:
+                    type: generate
                 linux-signed-intel-iotg-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-intel-iotg/+git/focal']
