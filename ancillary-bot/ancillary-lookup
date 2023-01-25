@@ -22,7 +22,7 @@ lp = Launchpad.login_with(service_root='production', version='devel',
 me_name = lp.me.name
 me = lp.people[me_name]
 
-primary_ref, adjunct_ref = sys.argv[1:]
+primary_ref, adjunct_ref, ignore_list = sys.argv[1:]
 
 primary = lp.archives.getByReference(reference=primary_ref)
 if primary is None:
@@ -30,6 +30,11 @@ if primary is None:
 adjunct = lp.archives.getByReference(reference=adjunct_ref)
 if adjunct is None:
     raise ValueError("primary reference {} invalid".format(adjunct_ref))
+
+ignore_builds = set()
+with open(ignore_list) as ilfd:
+    for ignore in ilfd:
+        ignore_builds.add(ignore.strip())
 
 ks = KernelSeries()
 
@@ -91,6 +96,10 @@ for prime_type, prime_prefix in ancillary_config:
         #print(series_name, source_name, ancillary_ppa.reference, ancillary_names)
 
         prime_id = os.path.basename(prime.self_link)
+        if prime_id in ignore_builds:
+            #print(prime_id, prime.source_package_name, "ignore")
+            continue
+
         wanted = '-'
         ancillary_version = prime.source_package_version
         for ancillary_name in ancillary_names:

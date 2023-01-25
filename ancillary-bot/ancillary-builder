@@ -15,7 +15,7 @@ here=$(dirname $(readlink -f "$0"))
 ignore="IGNORE-BUILD"
 [ ! -f "$ignore" ] && touch "$ignore"
 
-"$here/ancillary-lookup" "$ppa" "$ppa_ps" | \
+"$here/ancillary-lookup" "$ppa" "$ppa_ps" "$ignore" | \
 while read id source urls
 do
 	if [ "$urls" = '-' ]; then
