@@ -5541,14 +5541,17 @@ defaults:
             supported: false
 
         linux-iot:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '--' ]
+            package-relations: signed-generate
             packages:
                 linux-iot:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-iot/+git/focal', 'master-next']
                 linux-meta-iot:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-iot/+git/focal']
+                linux-generate-iot:
+                    type: generate
                 linux-signed-iot:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-iot/+git/focal']
