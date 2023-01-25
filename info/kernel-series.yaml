@@ -6490,15 +6490,18 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-hwe-5.4:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-hwe-18.04', '-hwe-18.04-edge' ]
             # transitionals: [ '-oem-osp1', '-oem' ]
+            package-relations: signed-generate
             packages:
                 linux-hwe-5.4:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic', 'hwe-5.4']
                 linux-meta-hwe-5.4:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/bionic', 'hwe-5.4']
+                linux-generate-hwe-5.4:
+                    type: generate
                 linux-signed-hwe-5.4:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/bionic', 'hwe-5.4']
