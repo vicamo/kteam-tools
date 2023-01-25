@@ -5391,12 +5391,15 @@ defaults:
 
         linux-gcp-fips:
             routing: fips-pro/2
+            package-relations: signed-generate
             packages:
                 linux-gcp-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'gcp-fips']
                 linux-meta-gcp-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'gcp-fips']
+                linux-generate-gcp-fips:
+                    type: generate
                 linux-signed-gcp-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'gcp-fips']
