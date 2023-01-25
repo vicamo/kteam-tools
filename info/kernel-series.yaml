@@ -4999,14 +4999,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle-5.15:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge', '--' ]
+            package-relations: signed-generate
             packages:
                 linux-oracle-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal', 'oracle-5.15-next']
                 linux-meta-oracle-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/focal', 'oracle-5.15']
+                linux-generate-oracle-5.15:
+                    type: generate
                 linux-signed-oracle-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/focal', 'oracle-5.15']
