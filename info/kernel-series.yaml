@@ -4914,16 +4914,19 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gkeop:
-            routing: ubuntu/2
+            routing: ubuntu/4
             # As for linux-gke, the main variant is for consistency with other
             # derivatives. The version based variant is for imaging.
             variants: ['--', '-5.4']
+            package-relations: signed-generate
             packages:
                 linux-gkeop:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gke/+git/focal', 'gkeop-next']
                 linux-meta-gkeop:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-gke/+git/focal', 'gkeop']
+                linux-generate-gkeop:
+                    type: generate
                 linux-signed-gkeop:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gke/+git/focal', 'gkeop']
