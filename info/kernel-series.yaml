@@ -1881,12 +1881,15 @@ defaults:
             routing: realtime-pro/2
             versions: ['5.15.0']
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-realtime:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-realtime/+git/jammy', 'master-next']
                 linux-meta-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-realtime/+git/jammy']
+                linux-generate-realtime:
+                    type: generate
                 linux-signed-realtime:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-realtime/+git/jammy']
