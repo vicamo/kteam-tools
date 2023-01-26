@@ -1,12 +1,12 @@
 streams:
   core:
     1: uc20
-    2: core-2021v2
+    2: core-2021v1
   pro:
     2:
       fips: fips
       pro: esm
-    3: advantage-2021v2
+    3: advantage-2021v1
   ubuntu:
     2: primary
     3: primary-2021v1
