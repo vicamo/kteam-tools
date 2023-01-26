@@ -6982,16 +6982,13 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
-            routing: fips-pro/3
-            package-relations: signed-generate
+            routing: fips-pro/2
             packages:
                 linux-azure-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'azure-fips']
                 linux-meta-azure-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'azure-fips']
-                linux-generate-azure-fips:
-                    type: generate
                 linux-signed-azure-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'azure-fips']
@@ -7696,13 +7693,16 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-fips:
-            routing: fips-pro/2
+            routing: fips-pro/3
+            package-relations: signed-generate
             packages:
                 linux-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'master-next']
                 linux-meta-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips']
+                linux-generate-fips:
+                    type: generate
                 linux-signed-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips']
