@@ -870,7 +870,6 @@ defaults:
               <<: *package-relations-signed-generate
               extra:
                 depends: main
-                signing-to: extra2
               extra2:
                 depends: extra
                 signing-from: extra
