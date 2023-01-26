@@ -580,6 +580,8 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             test:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
+            transition:
+                - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
         realtime: &routing-table-realtime
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             test:
