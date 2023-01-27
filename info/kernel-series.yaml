@@ -2073,14 +2073,17 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-5.19:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-azure-5.19:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-5.19-next']
                 linux-meta-azure-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-5.19']
+                linux-generate-azure-5.19:
+                    type: generate
                 linux-signed-azure-5.19:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-5.19']
