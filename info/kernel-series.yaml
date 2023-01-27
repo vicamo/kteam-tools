@@ -822,7 +822,7 @@ defaults:
               - *routing-table-build-ibm-gt
               - *routing-table-release-ibm-gt
             signing:
-                - ['ppa:canonical-signing/ubuntu/ibm-gt', 'Release']
+                - ['signing:ibm-gt/1', 'Release']
         realtime-pro/2:
             <<:
               - *routing-table-security-build
