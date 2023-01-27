@@ -7158,7 +7158,7 @@ defaults:
         linux-gcp-4.15:
             routing: ubuntu/4
             variants: ['-lts-18.04']
-            package-relations: signed-generic
+            package-relations: signed-generate
             packages:
                 linux-gcp-4.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-gcp/+git/bionic', 'gcp-4.15-next']
