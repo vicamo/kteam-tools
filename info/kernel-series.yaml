@@ -343,6 +343,18 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
             release:
                 - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
+        uc20-build-fragment: &routing-table-build-uc20
+            build:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-build', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-build2', 'Release']
+        uc20-release-fragment: &routing-table-release-uc20
+            proposed:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-staging', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-staging2', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+            release:
+                - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -847,6 +859,14 @@ defaults:
               - *routing-table-release-realtime-interim
             signing:
                 - ['signing:pro/2', 'Release']
+        uc22-core/2:
+            <<:
+              - *routing-table-security-build-uc20
+              - *routing-table-security-proposed
+              - *routing-table-build-uc20
+              - *routing-table-release-uc20
+            signing:
+                - ['signing:core/2', 'Release']
   package-relations:
       default:
           meta:
@@ -2537,7 +2557,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-uc22:
-            routing: uc22
+            routing: uc22-core/2
             packages:
                 linux-uc22:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22/+git/jammy', 'main']
