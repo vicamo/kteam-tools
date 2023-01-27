@@ -831,6 +831,14 @@ defaults:
               - *routing-table-release-realtime
             signing:
                 - ['signing:pro/2', 'Release']
+        realtime-pro/3:
+            <<:
+              - *routing-table-security-build
+              - *routing-table-security-proposed
+              - *routing-table-build-realtime
+              - *routing-table-release-realtime
+            signing:
+                - ['signing:pro/3', 'Release']
         realtime-interim-pro/2:
             <<:
               - *routing-table-security-build
@@ -1893,7 +1901,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-realtime:
-            routing: realtime-pro/2
+            routing: realtime-pro/3
             versions: ['5.15.0']
             variants: ['--']
             package-relations: signed-generate
