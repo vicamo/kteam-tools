@@ -2678,7 +2678,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    intel-iotg:
+                    intel-iot:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
