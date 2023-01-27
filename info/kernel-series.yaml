@@ -5355,13 +5355,16 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-aws-fips:
-            routing: fips-pro/2
+            routing: fips-pro/3
+            package-relations: signed-generate
             packages:
                 linux-aws-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-fips', 'aws-fips']
                 linux-meta-aws-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-meta-fips', 'aws-fips']
+                linux-generate-aws-fips:
+                    type: generate
                 linux-signed-aws-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/focal-linux-signed-fips', 'aws-fips']
