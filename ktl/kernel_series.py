@@ -73,6 +73,9 @@ class KernelRoutingEntryRoute:
             self._entries = [KernelRoutingEntryDestination(self._ks, self, count + 1, entry) for count, entry in enumerate(self._data)]
         return self._entries
 
+    def __len__(self):
+        return len(self.entries)
+
     def __iter__(self):
         return iter(self.entries)
 
