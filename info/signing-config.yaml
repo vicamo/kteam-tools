@@ -2,6 +2,8 @@ streams:
   core:
     1: uc20
     2: core-2021v1
+  ibm-gt:
+    1: ibm-gt
   pro:
     2:
       fips: fips
