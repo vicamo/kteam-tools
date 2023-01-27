@@ -1940,7 +1940,7 @@ defaults:
         linux-aws:
             routing: ubuntu/4
             variants: ['--', '-lts-22.04']
-            packages-relations: signed-generate
+            package-relations: signed-generate
             packages:
                 linux-aws:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'master-next']
