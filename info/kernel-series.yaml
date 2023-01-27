@@ -7170,13 +7170,16 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-gcp-fips:
-            routing: fips-pro/2
+            routing: fips-pro/3
+            package-relations: signed-generate
             packages:
                 linux-gcp-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'gcp-fips']
                 linux-meta-gcp-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'gcp-fips']
+                linux-generate-gcp-fips:
+                    type: generate
                 linux-signed-gcp-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'gcp-fips']
