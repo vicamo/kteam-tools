@@ -6991,13 +6991,16 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fips:
-            routing: fips-pro/2
+            routing: fips-pro/3
+            package-relations: signed-generate
             packages:
                 linux-azure-fips:
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-fips', 'azure-fips']
                 linux-meta-azure-fips:
                     type: meta
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-meta-fips', 'azure-fips']
+                linux-generate-azure-fips:
+                    type: generate
                 linux-signed-azure-fips:
                     type: signed
                     repo: ['git://git.launchpad.net/~fips-cc-stig/+git/bionic-linux-signed-fips', 'azure-fips']
