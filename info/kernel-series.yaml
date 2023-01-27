@@ -2497,7 +2497,7 @@ defaults:
 
         linux-starfive-5.17:
             versions: ['5.17.0']
-            variants: ['--']
+            variants: ['-eol-starfive-5.17']
             packages:
                 linux-starfive-5.17:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'starfive-5.17-next']
@@ -2506,7 +2506,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.17']
             owner: esmil
             derived-from: [ '22.04', 'linux-hwe-5.17' ]
-            supported: true
+            supported: false
             swm:
                 kernel-testing: true
             testing:
