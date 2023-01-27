@@ -2515,6 +2515,27 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-starfive-5.19:
+            variants: ['--']
+            packages:
+                linux-starfive-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'starfive-5.19-next']
+                linux-meta-starfive-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'starfive-5.19']
+            supported: true
+            owner: esmil
+            development: false
+            backport: true
+            derived-from: ['22.10', 'linux-starfive']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-uc22:
             routing: uc22
             packages:
