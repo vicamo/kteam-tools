@@ -5307,7 +5307,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-fips:
-            routing: fips-pro/2
+            routing: fips-pro/3
             package-relations: signed-generate
             packages:
                 linux-fips:
