@@ -309,6 +309,9 @@ defaults:
             build:
                 - ['ppa:ibm-cloud/ubuntu/build', 'Release']
                 - ['ppa:ibm-cloud/ubuntu/build2', 'Release']
+            build-private:
+                - ['ppa:ibm-cloud/ubuntu/build', 'Release']
+                - ['ppa:ibm-cloud/ubuntu/build2', 'Release']
         ibm-gt-release-fragment: &routing-table-release-ibm-gt
             proposed:
                 - ['ppa:ibm-cloud/ubuntu/proposed', 'Release']
@@ -319,6 +322,9 @@ defaults:
             test:
                 - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
             build:
+                - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
+            build-private:
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
         realtime-release-fragment: &routing-table-release-realtime
