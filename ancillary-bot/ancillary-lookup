@@ -29,7 +29,9 @@ if primary is None:
     raise ValueError("primary reference {} invalid".format(primary_ref))
 adjunct = lp.archives.getByReference(reference=adjunct_ref)
 if adjunct is None:
-    raise ValueError("primary reference {} invalid".format(adjunct_ref))
+    raise ValueError("adjunct reference {} invalid".format(adjunct_ref))
+if not adjunct.private:
+    raise ValueError("adjunct archive {} not private".format(adjunct_ref))
 
 ignore_builds = set()
 with open(ignore_list) as ilfd:
