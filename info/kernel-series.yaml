@@ -1971,14 +1971,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-aws-5.19:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-aws-5.19:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-aws/+git/jammy', 'aws-5.19-next']
                 linux-meta-aws-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/jammy', 'aws-5.19']
+                linux-generate-aws-5.19:
+                    type: generate
                 linux-signed-aws-5.19:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/jammy', 'aws-5.19']
