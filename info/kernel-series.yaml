@@ -6596,14 +6596,17 @@ defaults:
             supported: false
 
         linux-dell300x:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--']
+            package-relations: signed-generate
             packages:
                linux-dell300x:
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-dell300x/+git/bionic', 'master-next']
                linux-meta-dell300x:
                    type: meta
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-dell300x/+git/bionic' ]
+               linux-generate-dell300x:
+                   type: generate
                linux-signed-dell300x:
                    type: signed
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
