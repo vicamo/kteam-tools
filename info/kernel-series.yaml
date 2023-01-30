@@ -973,7 +973,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux:
-            routing: ubuntu/2
+            routing: ubuntu/4
             versions: ['6.1.0']
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             package-relations: signed-generate
