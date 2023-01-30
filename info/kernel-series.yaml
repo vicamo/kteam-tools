@@ -211,11 +211,11 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/test-builds', 'Release']
         build-devel-fragment: &routing-table-build-devel
             build:
-                - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
             build-private:
-                - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
+                - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
             test-build: # XXX: this is likely wrong in development (and has no -ps so is unusable)
                 - ['ppa:canonical-kernel-team/ubuntu/test-builds', 'Release']
         build-esm-fragment: &routing-table-build-esm
