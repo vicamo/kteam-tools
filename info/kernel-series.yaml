@@ -190,6 +190,11 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/uc20-3', 'Release']
+        security-build-nv-dgx-fragment: &routing-table-security-build-nv-dgx
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx3', 'Release']
         security-proposed-fragment: &routing-table-security-proposed
             security-proposed:
                 - ['ppa:canonical-kernel-security-team/ubuntu/proposed', 'Release']
@@ -355,6 +360,18 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
             release:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
+        nv-dgx-build-fragment: &routing-table-build-nv-dgx
+            build:
+                - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
+                - ['ppa:canonical-kernel-dgx/ubuntu/build2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
+                - ['ppa:canonical-kernel-dgx/ubuntu/build2-ps', 'Release']
+        nv-dgx-release-fragment: &routing-table-release-nv-dgx
+            proposed:
+                - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
+            updates:
+                - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
     routing-table: &routing-table
         default: &routing-table-default
             <<: [*routing-table-security-build, *routing-table-security-proposed]
@@ -395,22 +412,6 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
             release:
                 - ['ppa:canonical-kernel-team/ubuntu/uc20-release', 'Release']
-        nv-dgx:
-            <<: *routing-table-security-proposed
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/nv-dgx3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-dgx/ubuntu/build', 'Release']
-            build-private:
-                - ['ppa:canonical-kernel-dgx/ubuntu/build-ps', 'Release']
-            signing:
-                - ['ppa:canonical-signing/ubuntu/ke-nv-dgx', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
-            updates:
-                - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
         uc22:
             <<:             *routing-table-uc20
         newparis-uc20:
@@ -867,6 +868,14 @@ defaults:
               - *routing-table-release-uc20
             signing:
                 - ['signing:core/2', 'Release']
+        nv-dgx-pro/3:
+            <<:
+              - *routing-table-security-build-nv-dgx
+              - *routing-table-security-proposed
+              - *routing-table-build-nv-dgx
+              - *routing-table-release-nv-dgx
+            signing:
+                - ['signing:pro/3', 'Release']
   package-relations:
       default:
           meta:
@@ -3869,14 +3878,17 @@ defaults:
                         clouds: ['metal']
 
         linux-nv-dgx:
-            routing: nv-dgx
+            routing: nv-dgx-pro/3
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-nv-dgx:
                     repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-nv-dgx', 'master-next']
                 linux-meta-nv-dgx:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-meta-nv-dgx']
+                linux-generate-nv-dgx:
+                    type: generate
                 linux-signed-nv-dgx:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-dgx/+git/focal-linux-signed-nv-dgx']
