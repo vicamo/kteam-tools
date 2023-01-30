@@ -1815,14 +1815,17 @@ defaults:
                         clouds: ['metal']
 
         linux-lowlatency-hwe-5.19:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: [ '-hwe-22.04-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-5.19:
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/jammy', 'lowlatency-hwe-5.19-next']
                 linux-meta-lowlatency-hwe-5.19:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta/+git/jammy', 'lowlatency-hwe-5.19']
+                linux-generate-lowlatency-hwe-5.19:
+                    type: generate
                 linux-signed-lowlatency-hwe-5.19:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/jammy', 'lowlatency-hwe-5.19']
