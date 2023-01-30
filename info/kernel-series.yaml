@@ -935,6 +935,7 @@ defaults:
         devel: dev-unsigned # XXX: until we drop the base mapping
         default: dev-unsigned
         ubuntu/2: dev-ubuntu/2
+        ubuntu/4: dev-ubuntu/4
         unstable-ubuntu/4: dev-unstable-ubuntu/4
     sources:
         linux-unstable:
