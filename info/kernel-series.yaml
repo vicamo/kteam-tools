@@ -1671,7 +1671,7 @@ defaults:
         linux:
             routing: ubuntu/4
             versions: ['5.15.0']
-            variants: ['--', '-hwe-22.04']
+            variants: ['--']
             package-relations: signed-generate
             packages:
                 linux:
@@ -1778,7 +1778,7 @@ defaults:
 
         linux-hwe-5.19:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-5.19:
