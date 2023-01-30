@@ -7033,7 +7033,7 @@ defaults:
         linux-azure-4.15:
             routing: ubuntu/4
             variants: [ '-lts-18.04' ]
-            package-relation: signed-generate
+            package-relations: signed-generate
             packages:
                 linux-azure-4.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/bionic', 'azure-4.15-next']
