@@ -5554,7 +5554,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-bluefield:
-            routing: ubuntu/2
+            routing: ubuntu/4
             # Assuming that this becomes a normal kernel wrt where / how it is built,
             # we can get rid of all the special routing. The prerelease routing will
             # go away, too, once this is no longer work-in-progress.
@@ -5562,9 +5562,12 @@ defaults:
             # kernel is for the special on NIC environment, I don't think running our
             # regression-testing environment does make sense.
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-bluefield:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-bluefield/+git/focal', 'master-next']
+                linux-generate-bluefield:
+                    type: generate
                 linux-signed-bluefield:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-bluefield/+git/focal']
