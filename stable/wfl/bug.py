@@ -757,6 +757,9 @@ class WorkflowBug():
 
         return s.blockers[block]
 
+    def accept_present(s, accept):
+        return 'kernel-accept-' + accept in s.tags
+
     def flag_assign(s, flag, value):
         flags = s.bprops.setdefault('flag', {})
         if value is not False:

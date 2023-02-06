@@ -650,9 +650,9 @@ class PackageBuild:
         status.add('UNKNOWN')
 
         cdebug("source status={}".format(source.status))
-        if source.status in ('Pending'):
+        if source.status == "Pending":
             status.add('PENDING')
-        elif source.status in ('Published'):
+        elif source.status == "Published":
             status.add('FULLYBUILT')
         else:
             # Anything else is broken.
@@ -763,6 +763,9 @@ class PackageBuild:
             if binary.status == 'Pending':
                 status.add('PENDING')
             elif binary.status  == 'Published':
+                status.add('FULLYBUILT')
+            elif s.bug.accept_present("superseded-binaries") and binary.status == "Superseded":
+                cdebug("binary arch={} status={} binary_package_name={} binary_package_version={} component_name={} binary superseded accepted".format(arch_tag, binary.status, binary.binary_package_name, binary.binary_package_version, binary.component_name))
                 status.add('FULLYBUILT')
             else:
                 # Anything else is broken.
