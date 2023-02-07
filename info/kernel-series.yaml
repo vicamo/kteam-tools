@@ -2685,22 +2685,25 @@ defaults:
         linux-intel-iot-realtime:
             routing: realtime-pro/2
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-intel-iot-realtime:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-intel-iot-realtime/+git/jammy', 'master-next']
                 linux-meta-intel-iot-realtime:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-meta-intel-iot-realtime/+git/jammy']
+                linux-generate-intel-iot-realtime:
+                    type: generate
                 linux-signed-intel-iot-realtime:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-intel-iot-realtime/+git/jammy']
-                linux-restricted-modules-intel-iot-realtime:
-                    type: lrm
-                    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-intel-iot-realtime/+git/jammy']
-                linux-restricted-generate-intel-iot-realtime:
-                    type: lrg
-                linux-restricted-signatures-intel-iot-realtime:
-                    type: lrs
+                #linux-restricted-modules-intel-iot-realtime:
+                #    type: lrm
+                #    repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-restricted-modules-intel-iot-realtime/+git/jammy']
+                #linux-restricted-generate-intel-iot-realtime:
+                #    type: lrg
+                #linux-restricted-signatures-intel-iot-realtime:
+                #    type: lrs
             supported: true
             owner: philcox
             development: false
