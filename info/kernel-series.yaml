@@ -519,67 +519,6 @@ defaults:
                 - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
             security:
             release:
-        wip:
-            <<:             *routing-table-default
-            proposed:
-                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
-                - ['ppa:canonical-kernel-private/ubuntu/early-proposed2', 'Release']
-            as-proposed:
-            updates:
-                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
-            security:
-            release:
-        devel: &routing-table-devel
-            <<: [*routing-table-default, *routing-table-security-proposed]
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/devel', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/devel2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/devel3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-team/ubuntu/unstable', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/bootstrap', 'Release']
-            build-private:
-                - ['ppa:canonical-kernel-team/ubuntu/unstable-ps', 'Release']
-                - ['ppa:canonical-kernel-team/ubuntu/bootstrap-ps', 'Release']
-        devel-unstable:
-            <<:             *routing-table-devel
-            proposed:
-                - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
-                - ['ppa:canonical-kernel-private/ubuntu/early-proposed2', 'Release']
-            as-proposed:
-            security:
-            updates:
-            release:
-                - ['ppa:canonical-kernel-team/ubuntu/early-release', 'Release']
-        devel-prerelease:
-            <<:             *routing-table-devel
-            updates:
-            security:
-            release:
-                - ['ppa:canonical-kernel-team/ubuntu/prerelease', 'Release']
-        fips: &routing-table-fips
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
-            test-build:
-                - ['ppa:fips-cc-stig/ubuntu/fips-kernel', 'Release']
-            build:
-                - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
-                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
-            build-private:
-                - ['ppa:fips-cc-stig/ubuntu/fips-build', 'Release']
-                - ['ppa:fips-cc-stig/ubuntu/fips-build2', 'Release']
-            test:
-                - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
-            signing:
-                - ['signing:pro/2:fips', 'Release']
-            proposed:
-                - ['ppa:ubuntu-advantage/ubuntu/fips-proposed', 'Release']
-                - ['ppa:canonical-kernel-private/ubuntu/fips-proposed2', 'Release']
-            updates:
-                - ['ppa:ubuntu-advantage/ubuntu/fips-updates', 'Release']
-        fips-prerelease:
-            <<:             *routing-table-fips
-            updates:
-                - ['ppa:fips-cc-stig/ubuntu/fips-prerelease', 'Release']
         fips-recert:
             build:
                 - ['ppa:fips-cc-stig/ubuntu/fips-recert-build', 'Release']
@@ -601,61 +540,11 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             transition:
                 - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
-        realtime: &routing-table-realtime
-            <<: [*routing-table-security-build, *routing-table-security-proposed]
-            test:
-                - ['ppa:canonical-kernel-rt/ubuntu/rebase2', 'Release']
-            build:
-                - ['ppa:canonical-kernel-rt/ubuntu/ppa', 'Release']
-                - ['ppa:canonical-kernel-rt/ubuntu/ppa2', 'Release']
-            signing:
-                - ['signing:pro/2', 'Release']
-            as-proposed:
-                - ['ppa:canonical-kernel-rt/ubuntu/proposed', 'Release']
-            proposed:
-                - ['ppa:ubuntu-advantage/ubuntu/realtime-proposed', 'Release']
-                - ['ppa:canonical-kernel-rt/ubuntu/proposed2', 'Release']
-            updates:
-                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
-            release:
-                - ['ppa:ubuntu-advantage/ubuntu/realtime-updates', 'Release']
-        realtime-interim:
-            <<: *routing-table-realtime
-            updates:
-                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
-            release:
-                - ['ppa:canonical-kernel-rt/ubuntu/release', 'Release']
         eol:
             proposed:
             updates:
             security:
             release:
-        esm-v1: &routing-table-esm
-            <<: *routing-table-security-proposed
-            security-test:
-                - ['ppa:canonical-kernel-security-team/ubuntu/test', 'Release']
-            security-build:
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm2', 'Release']
-                - ['ppa:canonical-kernel-security-team/ubuntu/esm3', 'Release']
-            build:
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
-                - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
-            signing:
-                - ['signing:pro/2', 'Release']
-            proposed:
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
-                - ['ppa:canonical-kernel-esm/ubuntu/proposed2', 'Release']
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm', 'Release']
-                - ['ubuntu', 'Updates']
-            release:
-                - ['ubuntu', 'Release']
-        esm-v2:
-            <<: *routing-table-esm
-            updates:
-                - ['ppa:ubuntu-esm/ubuntu/esm-infra-security', 'Release']
-                - ['ubuntu', 'Updates']
         stable-unsigned:
             <<:
               - *routing-table-security-build-stable
