@@ -2687,12 +2687,15 @@ defaults:
         linux-nvidia:
             routing: nvidia
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-nvidia:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'main-next']
                 linux-meta-nvidia:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-nvidia/+git/jammy', 'main']
+                linux-generate-nvidia:
+                    type: generate
                 linux-signed-nvidia:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-nvidia/+git/jammy', 'main']
