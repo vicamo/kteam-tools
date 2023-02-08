@@ -2603,7 +2603,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    intel-iot:
+                    intel-iot-realtime:
                         arches: ['amd64']        # test system arch names
                         clouds: ['metal']
 
