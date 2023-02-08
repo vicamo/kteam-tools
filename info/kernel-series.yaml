@@ -222,6 +222,9 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
+            build-private:
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa', 'Release']
+                - ['ppa:canonical-kernel-esm/ubuntu/ppa2', 'Release']
         build-devel-unstable-fragment: &routing-table-unstable-devel
             proposed:
                 - ['ppa:canonical-kernel-team/ubuntu/early-proposed', 'Release']
