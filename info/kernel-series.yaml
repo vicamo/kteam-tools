@@ -707,6 +707,14 @@ defaults:
               - *routing-table-release-esm2
             signing:
                 - ['signing:pro/2', 'Release']
+        esm2-pro/3:
+            <<:
+              - *routing-table-security-build-esm
+              - *routing-table-security-proposed
+              - *routing-table-build-esm
+              - *routing-table-release-esm2
+            signing:
+                - ['signing:pro/3', 'Release']
         stable-eol:
             build:
         bluefield-ppas-ubuntu/4:
@@ -8044,6 +8052,7 @@ defaults:
         esm: esm2 # XXX
         default: esm2
         pro/2: esm2-pro/2
+        pro/3: esm2-pro/3
     sources:
         linux:
             routing: pro/2
