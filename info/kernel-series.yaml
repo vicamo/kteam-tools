@@ -2572,7 +2572,7 @@ defaults:
                 block-parent-release: true
 
         linux-intel-iot-realtime:
-            routing: realtime-pro/2
+            routing: realtime-pro/3
             variants: ['--']
             package-relations: signed-generate
             packages:
