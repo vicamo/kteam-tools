@@ -8265,13 +8265,16 @@ defaults:
             supported: false
 
         linux-hwe:
-            routing: pro/2
+            routing: pro/3
+            package-relations: signed-generate
             packages:
                 linux-hwe:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'hwe-next']
                 linux-meta-hwe:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-xenial', 'hwe']
+                linux-generate-hwe:
+                    type: generate
                 linux-signed-hwe:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-xenial', 'hwe']
