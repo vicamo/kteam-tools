@@ -529,7 +529,7 @@ defaults:
                 - ['signing:pro/2:fips', 'Release']
             proposed:
                 - ['ppa:fips-cc-stig/ubuntu/fips-under-certification', 'Release']
-        nvidia:
+        nvidia: &routing-table-nvidia
             <<: [*routing-table-default]
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/nvidia', 'Release']
@@ -543,6 +543,10 @@ defaults:
                 - ['ppa:nvidia-kernel/ubuntu/test', 'Release']
             transition:
                 - ['ppa:nvidia-kernel/ubuntu/proposed', 'Release']
+        nvidia-ubuntu/4:
+            <<: [*routing-table-nvidia]
+            signing:
+                - ['signing:ubuntu/4', 'Release']
         eol:
             proposed:
             updates:
@@ -2696,7 +2700,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-nvidia:
-            routing: nvidia
+            routing: nvidia-ubuntu/4
             variants: ['--']
             package-relations: signed-generate
             packages:
