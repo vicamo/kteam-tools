@@ -2564,7 +2564,7 @@ defaults:
                         clouds: ['metal']
 
         linux-uc22-intel-iotg:
-            routing: uc22
+            routing: uc22-core/2
             packages:
                 linux-uc22-intel-iotg:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-intel-iotg/+git/jammy', 'master-next']
