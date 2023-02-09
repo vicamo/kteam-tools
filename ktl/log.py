@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-from logging                            import info, debug, warning
+from logging                            import info, debug, exception, warning
 from ktl.termcolor                      import colored
 
 def cinfo(msg, color='white'):
@@ -14,6 +14,9 @@ def cwarn(msg, color='red'):
 
 def cerror(msg, color='red'):
     Clog.warn(msg, color)
+
+def cexception(ex):
+    Clog.exception(ex)
 
 def cnotice(msg, color='yellow'):
     Clog.notice(msg, color)
@@ -56,6 +59,10 @@ class Clog:
             warning(colored(msg, color))
         else:
             warning(msg)
+
+    @classmethod
+    def exception(c, ex):
+        exception(ex)
 
     @classmethod
     def notice(c, msg, color='yellow'):
