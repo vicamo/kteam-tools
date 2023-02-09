@@ -504,7 +504,7 @@ defaults:
                 - [ 'ppa:capilano-team/ubuntu/capilano-proposed', 'Release' ]
             updates:
                 - [ 'ppa:capilano-team/ubuntu/capilano-updates', 'Release' ]
-        classic-fde:
+        classic-fde: &routing-table-classic-fde
             <<: *routing-table-default
             security-build:
                 #- ['ppa:canonical-kernel-security-team/ubuntu/classic-fde', 'Release']
@@ -516,6 +516,10 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde2', 'Release']
+        classic-fde/4:
+            <<: [*routing-table-classic-fde]
+            signing:
+                - ['signing:ubuntu/4', 'Release']
         prerelease:
             <<:             *routing-table-default
             updates:
@@ -1952,7 +1956,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fde:
-            routing: classic-fde
+            routing: classic-fde/4
             variants: ['--', '-edge']
             packages:
                 linux-azure-fde:
