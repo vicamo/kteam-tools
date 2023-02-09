@@ -516,8 +516,8 @@ defaults:
             build:
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde', 'Release']
                 - ['ppa:canonical-kernel-team/ubuntu/classic-fde2', 'Release']
-        classic-fde/4:
-            <<: [*routing-table-classic-fde]
+        classic-fde-ubuntu/4:
+            <<: *routing-table-classic-fde
             signing:
                 - ['signing:ubuntu/4', 'Release']
         prerelease:
@@ -1956,7 +1956,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fde:
-            routing: classic-fde/4
+            routing: classic-fde-ubuntu/4
             variants: ['--', '-edge']
             packages:
                 linux-azure-fde:
