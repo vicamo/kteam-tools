@@ -1624,7 +1624,7 @@ defaults:
 
         linux-lowlatency:
             routing: ubuntu/4
-            variants: ['--', '-hwe-22.04']
+            variants: ['--']
             package-relations: signed-generate
             packages:
                 linux-lowlatency:
@@ -1734,7 +1734,7 @@ defaults:
 
         linux-lowlatency-hwe-5.19:
             routing: ubuntu/4
-            variants: [ '-hwe-22.04-edge' ]
+            variants: [ '-hwe-22.04', '-hwe-22.04-edge' ]
             package-relations: signed-generate
             packages:
                 linux-lowlatency-hwe-5.19:
