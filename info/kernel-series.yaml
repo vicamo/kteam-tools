@@ -690,6 +690,14 @@ defaults:
               - *routing-table-fips-prerelease
             signing:
                 - ['signing:pro/2:fips', 'Release']
+        fips-prerelease-pro/3:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-fips-build
+              - *routing-table-fips-prerelease
+            signing:
+                - ['signing:pro/3', 'Release']
         esm1:
             <<:
               - *routing-table-security-build-esm
