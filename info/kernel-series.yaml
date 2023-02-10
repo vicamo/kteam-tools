@@ -2099,9 +2099,10 @@ defaults:
                 kernel-testing: true
                 gke-releases:
                     - '1.24'
+                    - '1.25'
+                    - '1.26'
                 nvidia-releases:
                     - 470
-                    - 515
             testing:
                 flavours:
                     gke:
