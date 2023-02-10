@@ -347,6 +347,10 @@ class GitHandleSet():
     def source(self):
         return self.__hdlset.source
 
+    @property
+    def handle(self):
+        return self.__hdlset
+
     def __iter__(self):
         '''
         Returns all GitHandle objects which are part of the GitHandleSet.
