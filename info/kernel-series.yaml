@@ -768,6 +768,14 @@ defaults:
               - *routing-table-release-realtime-interim
             signing:
                 - ['signing:pro/2', 'Release']
+        uc20-core/2:
+            <<:
+              - *routing-table-security-build-uc20
+              - *routing-table-security-proposed
+              - *routing-table-build-uc20
+              - *routing-table-release-uc20
+            signing:
+                - ['signing:core/2', 'Release']
         uc22-core/2:
             <<:
               - *routing-table-security-build-uc20
@@ -5687,7 +5695,7 @@ defaults:
                         clouds: ['metal']
 
         linux-uc20-intel-iotg:
-            routing: uc20
+            routing: uc20-core/2
             packages:
                 linux-uc20-intel-iotg:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-intel-iotg/+git/focal', 'master-next']
