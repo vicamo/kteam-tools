@@ -1676,7 +1676,7 @@ defaults:
 
         linux-hwe-5.17:
             routing: wip-ubuntu/4
-            variants: [ '-base' ]
+            variants: [ '-eol-hwe-5.17' ]
             package-relations: signed-generate
             packages:
                 linux-hwe-5.17:
@@ -1696,6 +1696,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-hwe-5.17:
                     type: lrs
+            supported: false
             owner: p-pisati
             backport: true
             swm:
