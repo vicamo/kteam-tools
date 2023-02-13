@@ -4573,7 +4573,7 @@ defaults:
               - security-signoff
 
         linux-azure-fde:
-            routing: classic-fde
+            routing: classic-fde-ubuntu/4
             variants: ['--']
             packages:
                 linux-azure-fde:
