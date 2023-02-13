@@ -2632,8 +2632,7 @@ defaults:
                     primary: true
                     repo: ['git://git.launchpad.net/~canonical-kernel-snaps/+git/kernel-snaps-uc22', 'intel-iotg']
                     gated: false
-                    stable: false
-                    promote-to: [ 'edge', 'beta' ]
+                    stable: true
                     qa: false
                     hw-cert: false
                     publish-to:
