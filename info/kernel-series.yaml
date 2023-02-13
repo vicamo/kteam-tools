@@ -5516,7 +5516,7 @@ defaults:
                 linux-restricted-signatures-azure-fips:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: john-cabaj
             private: true
             derived-from: ['20.04', 'linux-azure']
             backport: true # use local-mangle to keep it in sync with linux-azure
@@ -5553,7 +5553,7 @@ defaults:
                 linux-restricted-signatures-gcp-fips:
                     type: lrs
             supported: true
-            owner: mhcerri
+            owner: john-cabaj
             private: true
             derived-from: ['20.04', 'linux-gcp']
             backport: true # use local-mangle to keep it in sync with linux-gcp
