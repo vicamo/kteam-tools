@@ -169,6 +169,11 @@ defaults:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa2', 'Release']
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa3', 'Release']
+        security-build-ibm-gt-fragment: &routing-table-security-build-ibm-gt
+            security-build:
+                - ['ppa:canonical-kernel-security-team/ubuntu/ibm-gt', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ibm-gt2', 'Release']
+                - ['ppa:canonical-kernel-security-team/ubuntu/ibm-gt3', 'Release']
         security-build-stable-fragment: &routing-table-security-build-stable # XXX: this is duplicate of the above.
             security-build:
                 - ['ppa:canonical-kernel-security-team/ubuntu/ppa', 'Release']
@@ -751,7 +756,7 @@ defaults:
                 - ['signing:ubuntu/4', 'Release']
         ibm-gt/1:
             <<:
-              - *routing-table-security-build
+              - *routing-table-security-build-ibm-gt
               - *routing-table-security-proposed
               - *routing-table-build-ibm-gt
               - *routing-table-release-ibm-gt
