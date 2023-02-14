@@ -4017,7 +4017,7 @@ defaults:
                 block-parent-release: true
 
         linux-uc20-efi:
-            routing: uc20
+            routing: uc20-core/2
             packages:
                 linux-uc20-efi:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-efi/+git/focal', 'master-next']
