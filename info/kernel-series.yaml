@@ -2885,10 +2885,10 @@ defaults:
             routing: uc22
             packages:
                 linux-uc22-iot:
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-iot/+git/jammy', 'main']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc22-iot/+git/jammy']
                 linux-signed-uc22-iot:
                     type: signed
-                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-iot/+git/jammy', 'main']
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-uc22-iot/+git/jammy']
             supported: false
             owner: wenchien
             development: true
