@@ -150,14 +150,19 @@ defaults:
   assets:
     deployment-blackout:
         azure-blackout: &swm-azure-blackout
-            - ['2019-11-25 00:00', '2019-12-03 10:00'] # Local midnight EU to local
-            - ['2019-12-21 00:00', '2020-01-03 10:00'] #   midnight US west coast
-            - ['2020-01-23 16:00', '2020-01-30 16:00'] # Local midnight to midnight
-            - ['2022-01-31 16:00', '2022-02-04 16:00'] # Local midnight to midnight
-            - ['2022-02-13 14:00', '2022-02-14 04:00']
-            - ['2022-11-08 16:00', '2022-11-12 16:00'] # Local midnight to midnight
-            - ['2022-11-21 08:00', '2022-11-29 08:00'] # West coast midnight to midnight
-            - ['2022-12-14 08:00', '2023-01-02 08:00'] # West coast midnight to midnight (includes holidays and FIFA world cup final)
+            - ['2023-10-06 16:00', '2023-11-14 16:00'] # Holiday Readiness Monday, November 6 16:00 UTC - Tuesday, November 14 16:00 UTC
+            - ['2023-11-08 16:00', '2023-11-13 16:00'] # Singles Day 2023 Wednesday, November 8 16:00 UTC - Monday, November 13 16:00 UTC
+            - ['2023-11-19 08:00', '2023-11-28 16:00'] # Black Friday, Cyber Monday 2023 Sunday, November 19 08:00 UTC - Tuesday, November 28 16:00 UTC
+            - ['2023-12-22 08:00', '2024-01-08 16:00'] # December Holidays 2023 Friday, December 22 08:00 UTC - Monday, January 8 16:00 UTC
+            - ['2024-02-09 08:00', '2024-02-13 16:00'] # Lunar New Year 2024 Friday, February 9 16:00 UTC - Tuesday, February 13 16:00 UTC
+            - ['2024-02-11 14:00', '2024-02-12 16:00'] # Super Bowl LVIII 2024 Sunday, February 11 14:00 UTC - Monday, February 12 16:00 UTC
+            - ['2024-07-26 01:00', '2024-07-29 16:00'] # Paris 2024 Summer Olympics Opening Ceremony Friday, July 26 01:00 UTC - Monday, July 29 16:00 UTC
+            - ['2024-07-11 01:00', '2024-07-12 16:00'] # Paris 2024 Summer Olympics Closing Ceremony  Sunday, August 11 01:00 UTC - Monday, August 12 16:00 UTC
+            - ['2024-11-04 08:00', '2024-11-06 16:00'] # US General Election Day 2024 Monday, November 4 08:00 UTC - Wednesday, November 6 16:00 UTC
+            - ['2024-11-11 16:00', '2024-11-19 16:00'] # Holiday Readiness Monday, November 11 16:00 UTC - Tuesday, November 19 16:00 UTC
+            - ['2024-11-08 16:00', '2024-11-12 16:00'] # Singles Day 2024 Friday, November 8 16:00 UTC - Tuesday, November 12 16:00 UTC
+            - ['2024-11-24 21:00', '2024-12-03 16:00'] # Black Friday, Cyber Monday 2024 Sunday, November 24 21:00 UTC - Tuesday, December 3 16:00 UTC
+            - ['2024-12-23 08:00', '2025-01-06 16:00'] # December Holidays 2024 Monday, December 23 08:00 UTC - Monday, January 6 16:00 UTC
     routing-fragments:
         security-build-fragment: &routing-table-security-build
             security-build:
