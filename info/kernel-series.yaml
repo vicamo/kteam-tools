@@ -5722,7 +5722,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-uc20-iot:
-            routing: uc20
+            routing: uc20-core/2
             packages:
                 linux-uc20-iot:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-uc20-iot/+git/focal', 'master-next']
