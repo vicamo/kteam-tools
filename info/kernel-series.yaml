@@ -4550,7 +4550,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-cvm:
-            routing: ubuntu/2
+            routing: ubuntu/4
             Variants: ['--']
             packages:
                 linux-azure-cvm:
