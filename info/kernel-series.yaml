@@ -8321,7 +8321,7 @@ defaults:
                     gated: false
                     qa: false
                     hw-cert: true
-                    promote-to: stable
+                    promote-to: candidate
                     arches: ['armhf']
             supported: true
             owner: smb
