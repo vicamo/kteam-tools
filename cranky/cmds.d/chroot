@@ -175,6 +175,9 @@ session_chroot_create()
 		# Compiling Focal and later kernels requires dwarves
 		schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install dwarves
 	fi
+
+	# Signed v3.1 needs python3
+	schroot -u root -r -c "$session" -- apt-get -y -o APT::Get::Only-Source=true install python3
 }
 
 chroot_update() {
