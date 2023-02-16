@@ -5796,9 +5796,9 @@ defaults:
                 linux-meta-xilinx-zynqmp:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-xilinx-zynqmp/+git/focal', 'master']
-            supported: false
+            supported: true
             owner: wenchien
-            development: true
+            development: false
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
