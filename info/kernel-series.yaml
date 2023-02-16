@@ -2438,7 +2438,6 @@ defaults:
                     type: lrs
             supported: true
             owner: tjaalton
-            derived-from: [ '23.04', 'linux' ]
             development: false
             swm:
                 kernel-testing: true
