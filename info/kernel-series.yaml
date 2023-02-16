@@ -754,6 +754,14 @@ defaults:
               - *routing-table-release-bluefield-ppas
             signing:
                 - ['signing:ubuntu/4', 'Release']
+        bluefield-ppas-pro/3:
+            <<:
+              - *routing-table-security-build-stable
+              - *routing-table-security-proposed
+              - *routing-table-build-bluefield-ppas
+              - *routing-table-release-bluefield-ppas
+            signing:
+                - ['signing:pro/3', 'Release']
         ibm-gt/1:
             <<:
               - *routing-table-security-build-ibm-gt
@@ -2302,7 +2310,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-bluefield:
-            routing: bluefield-ppas-ubuntu/4
+            routing: bluefield-ppas-pro/3
             variants: ['--']
             package-relations: bluefield-extras
             packages:
