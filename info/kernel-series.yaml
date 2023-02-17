@@ -2601,7 +2601,6 @@ defaults:
                     publish-to:
                         amd64: ['22', '22-hwe']
                         arm64: ['22', '22-hwe']
-                        armhf: ['22']
             derived-from: [ '22.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
@@ -4084,7 +4083,6 @@ defaults:
                     publish-to:
                         amd64: ['20']
                         arm64: ['20']
-                        armhf: ['20']
             derived-from: [ '20.04', 'linux' ]
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
@@ -6626,7 +6624,6 @@ defaults:
                     publish-to:
                         amd64: ['18']
                         i386: ['18']
-                        armhf: ['18']
             supported: true
             owner: lukenow
             testing:
