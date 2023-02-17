@@ -431,7 +431,7 @@ defaults:
             <<:             *routing-table-uc20
             build:
                 - ['ppa:oem-archive/ubuntu/newparis', 'Release']
-        realtime-uc22:
+        realtime-uc22: &routing-table-realtime-uc20
             <<:             *routing-table-uc20
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-build', 'Release']
@@ -444,7 +444,7 @@ defaults:
             release:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-release', 'Release']
         realtime-uc22-core/2:
-            <<:             *realtime-uc22
+            <<:             *routing-table-realtime-uc22
             signing:
                 - ['signing:core/2', 'Release']
         denver:
