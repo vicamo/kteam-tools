@@ -431,7 +431,7 @@ defaults:
             <<:             *routing-table-uc20
             build:
                 - ['ppa:oem-archive/ubuntu/newparis', 'Release']
-        realtime-uc22: &routing-table-realtime-uc20
+        realtime-uc22: &routing-table-realtime-uc22
             <<:             *routing-table-uc20
             build:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-build', 'Release']
