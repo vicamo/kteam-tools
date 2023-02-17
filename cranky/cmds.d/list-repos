@@ -83,7 +83,8 @@ class RepoSource:
         self._handle_names = handle_names
         self._include_types = include_types
 
-    def list_packages(self, supported_sources_only=False):
+    def list_packages(self, supported_sources_only=False,
+                      base_sources=True, derivative_sources=True):
         """Returns a list of SimpleRepo for these handle names and package types
         :return: list(SimplePackage)
         """
@@ -97,7 +98,9 @@ class RepoSource:
             )
             for series in self._ks.series:
                 for source in series.sources:
-                    if (supported_sources_only and not source.supported):
+                    if (supported_sources_only and not source.supported) or \
+                       (not base_sources and source.derived_from is None) or \
+                       (not derivative_sources and source.derived_from is not None):
                         continue
                     handle = "{}:{}".format(series.codename, source.name)
                     handles.append(handle)
@@ -111,7 +114,9 @@ class RepoSource:
             except HandleError as e:
                 cerror(e)
                 sys.exit(1)
-            if (supported_sources_only and not handle.source.supported):
+            if (supported_sources_only and not handle.source.supported) or \
+               (not base_sources and handle.source.derived_from is None) or \
+               (not derivative_sources and handle.source.derived_from is not None):
                 continue
             for tree in handle.trees:
                 package = SimplePackage(tree.package)
@@ -193,7 +198,21 @@ Examples:
         action="store_true",
         help='Show only repositories from "supported" sources'
     )
+    parser.add_argument(
+        "--base-sources",
+        action="store_true",
+        help="Show repositories part of base sources"
+    )
+    parser.add_argument(
+        "--derivative-sources",
+        action="store_true",
+        help="Show repositories part of derivative sources"
+    )
     args = parser.parse_args()
+
+    # If no explicit base/derivative selection, show all.
+    if not args.base_sources and not args.derivative_sources:
+        args.base_sources = args.derivative_sources = True;
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=level, format="%(message)s")
@@ -204,7 +223,11 @@ Examples:
         cerror(e)
         sys.exit(1)
 
-    repos = repo_source.list_packages(supported_sources_only=args.supported_sources)
+    repos = repo_source.list_packages(
+        supported_sources_only=args.supported_sources,
+        base_sources=args.base_sources,
+        derivative_sources=args.derivative_sources
+    )
     if not repos:
         cnotice("no repositories matched the query (check help)")
         sys.exit(0)
