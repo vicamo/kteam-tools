@@ -443,6 +443,10 @@ defaults:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-release', 'Release']
             release:
                 - ['ppa:canonical-kernel-rt/ubuntu/uc-release', 'Release']
+        realtime-uc22-core/2:
+            <<:             *realtime-uc22
+            signing:
+                - ['signing:core/2', 'Release']
         denver:
             <<: [*routing-table-security-build, *routing-table-security-proposed]
             build:
@@ -1899,7 +1903,7 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-uc22-realtime:
-            routing: realtime-uc22
+            routing: realtime-uc22-core/2
             packages:
                 linux-uc22-realtime:
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-uc22-realtime/+git/jammy', 'realtime']
