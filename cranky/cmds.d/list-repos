@@ -16,7 +16,7 @@ import sys
 from crl.handle import Handle, HandleError
 
 from ktl.kernel_series import KernelSeries
-from ktl.log import cdebug, cerror
+from ktl.log import cdebug, cerror, cnotice
 
 
 class SimplePackage:
@@ -83,7 +83,7 @@ class RepoSource:
         self._handle_names = handle_names
         self._include_types = include_types
 
-    def list_packages(self):
+    def list_packages(self, supported_sources_only=False):
         """Returns a list of SimpleRepo for these handle names and package types
         :return: list(SimplePackage)
         """
@@ -97,6 +97,8 @@ class RepoSource:
             )
             for series in self._ks.series:
                 for source in series.sources:
+                    if (supported_sources_only and not source.supported):
+                        continue
                     handle = "{}:{}".format(series.codename, source.name)
                     handles.append(handle)
 
@@ -104,7 +106,13 @@ class RepoSource:
             # validate=False is used when we do not care about the state
             # of the local git tree for this handle. We are pulling data
             # from the kernel series db so skipping validation is safe.
-            handle = Handle(ks=self._ks).lookup_set(h, validate=False)
+            try:
+                handle = Handle(ks=self._ks).lookup_set(h, validate=False)
+            except HandleError as e:
+                cerror(e)
+                sys.exit(1)
+            if (supported_sources_only and not handle.source.supported):
+                continue
             for tree in handle.trees:
                 package = SimplePackage(tree.package)
                 if not self.__accept_package(package):
@@ -180,6 +188,11 @@ Examples:
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Increase verbosity"
     )
+    parser.add_argument(
+        "--supported-sources",
+        action="store_true",
+        help='Show only repositories from "supported" sources'
+    )
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose else logging.INFO
@@ -191,6 +204,10 @@ Examples:
         cerror(e)
         sys.exit(1)
 
-    for repo in repo_source.list_packages():
+    repos = repo_source.list_packages(supported_sources_only=args.supported_sources)
+    if not repos:
+        cnotice("no repositories matched the query (check help)")
+        sys.exit(0)
+    for repo in repos:
         info = repo.format_link(args.git_url)
         print(info)
