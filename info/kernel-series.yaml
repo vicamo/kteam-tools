@@ -8920,12 +8920,15 @@ defaults:
 
         linux-lts-xenial:
             routing: pro/2
+            package-relations: signed-generate
             packages:
                 linux-lts-xenial:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-trusty', 'lts-backport-xenial']
                 linux-meta-lts-xenial:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-trusty', 'lts-backport-xenial']
+                linux-generate-lts-xenial:
+                    type: generate
                 linux-signed-lts-xenial:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-trusty', 'lts-backport-xenial']
