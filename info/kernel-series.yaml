@@ -8559,7 +8559,7 @@ defaults:
 
         linux-oracle:
             routing: pro/3
-            package-routing: signed-generate
+            package-relations: signed-generate
             packages:
                 linux-oracle:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-oracle-xenial', 'master-next']
