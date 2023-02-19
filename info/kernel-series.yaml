@@ -8225,14 +8225,17 @@ defaults:
         pro/3: esm2-pro/3
     sources:
         linux:
-            routing: pro/2
+            routing: pro/3
             versions: ['4.4.0']
+            package-relations: signed-generate
             packages:
                 linux:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-xenial', 'master-next']
                 linux-meta:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-xenial']
+                linux-generate:
+                    type: generate
                 linux-signed:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-xenial']
