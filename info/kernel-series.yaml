@@ -4658,7 +4658,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-azure-fde-5.15:
-            routing: classic-fde
+            routing: classic-fde-ubuntu/4
             variants: ['-edge']
             packages:
                 linux-azure-fde-5.15:
