@@ -967,13 +967,13 @@ defaults:
                 linux-signed-lowlatency:
                     type: signed
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-signed/+git/lunar', 'lowlatency']
-                #linux-restricted-modules-lowlatency:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar', 'lowlatency']
-                #linux-restricted-generate-lowlatency:
-                #    type: lrg
-                #linux-restricted-signatures-lowlatency:
-                #    type: lrs
+                linux-restricted-modules-lowlatency:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-restricted-modules/+git/lunar', 'lowlatency']
+                linux-restricted-generate-lowlatency:
+                    type: lrg
+                linux-restricted-signatures-lowlatency:
+                    type: lrs
             owner: p-pisati
             derived-from: ['23.04', 'linux-unstable']
             backport: true
@@ -1022,13 +1022,13 @@ defaults:
                 linux-signed-aws:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-aws/+git/lunar']
-                #linux-restricted-modules-aws:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/lunar']
-                #linux-restricted-generate-aws:
-                #    type: lrg
-                #linux-restricted-signatures-aws:
-                #    type: lrs
+                linux-restricted-modules-aws:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-aws/+git/lunar']
+                linux-restricted-generate-aws:
+                    type: lrg
+                linux-restricted-signatures-aws:
+                    type: lrs
             owner: timg-tpi
             derived-from: ['23.04', 'linux-unstable']
             swm:
@@ -1052,13 +1052,13 @@ defaults:
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/lunar']
-                #linux-restricted-modules-azure:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/lunar']
-                #linux-restricted-generate-azure:
-                #    type: lrg
-                #linux-restricted-signatures-azure:
-                #    type: lrs
+                linux-restricted-modules-azure:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/lunar']
+                linux-restricted-generate-azure:
+                    type: lrg
+                linux-restricted-signatures-azure:
+                    type: lrs
             owner: timg-tpi
             derived-from: ['23.04', 'linux-unstable']
             swm:
@@ -1084,13 +1084,13 @@ defaults:
                 linux-signed-gcp:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-gcp/+git/lunar']
-                #linux-restricted-modules-gcp:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/lunar']
-                #linux-restricted-generate-gcp:
-                #    type: lrg
-                #linux-restricted-signatures-gcp:
-                #    type: lrs
+                linux-restricted-modules-gcp:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-gcp/+git/lunar']
+                linux-restricted-generate-gcp:
+                    type: lrg
+                linux-restricted-signatures-gcp:
+                    type: lrs
             owner: kmously
             derived-from: ['23.04', 'linux-unstable']
             swm:
@@ -1161,13 +1161,13 @@ defaults:
                 linux-signed-oracle:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/lunar']
-                #linux-restricted-modules-oracle:
-                #    type: lrm
-                #    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/lunar']
-                #linux-restricted-generate-oracle:
-                #    type: lrg
-                #linux-restricted-signatures-oracle:
-                #    type: lrs
+                linux-restricted-modules-oracle:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/lunar']
+                linux-restricted-generate-oracle:
+                    type: lrg
+                linux-restricted-signatures-oracle:
+                    type: lrs
             owner: kmously
             derived-from: ['23.04', 'linux-unstable']
             swm:
