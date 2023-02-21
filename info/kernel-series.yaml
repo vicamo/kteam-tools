@@ -1916,6 +1916,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-realtime/+git/jammy', 'realtime']
             owner: jsalisbury
+            private: true
             supported: true
             snaps:
                 realtime-kernel:
