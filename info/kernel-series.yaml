@@ -2545,6 +2545,27 @@ defaults:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: [ 'automated-testing', 'certification-testing']
 
+        linux-allwinner-5.19:
+            variants: ['--']
+            packages:
+                linux-allwinner-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-riscv/+git/jammy', 'allwinner-5.19-next']
+                linux-meta-allwinner-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-riscv/+git/jammy', 'allwinner-5.19']
+            supported: true
+            owner: esmil
+            development: false
+            backport: true
+            derived-from: ['22.10', 'linux-allwinner']
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    generic:
+                        arches: ['riscv64']        # test system arch names
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-starfive-5.17:
             versions: ['5.17.0']
             variants: ['-eol-starfive-5.17']
