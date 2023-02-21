@@ -20,7 +20,7 @@
 	pushinsteadof = "git://git.launchpad.net/"
 	pushinsteadof = "https://git.launchpad.net/"
 	insteadof = lps:
-	insteadof = "git+ssh://git.launchpad.net"
+	insteadof = "git+ssh://git.launchpad.net/"
 
 [url "git+ssh://<your-launchpad-id>@git.launchpad.net/~canonical-kernel-esm/"]
 	insteadof = lp:~canonical-kernel-esm
