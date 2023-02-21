@@ -2309,7 +2309,7 @@ class Package():
                 cinfo('            {} has {} pending in {} -- my version so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 found = True
             # If the versions is a version we have replaced within the life of this tracker, all is well.
-            if bi[pkg][pocket]['version'] in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
+            if not found and bi[pkg][pocket]['version'] in s.bug.bprops.get('versions-replace', {}).get(pkg_af, []):
                 cinfo('            {} has {} pending in {} -- an old version of mine so ignored.'.format(pkg, bi[pkg][pocket]['version'], pocket), 'yellow')
                 found = True
             # If the version is in a later pocket then all is well.
