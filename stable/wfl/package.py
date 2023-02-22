@@ -2598,6 +2598,57 @@ class Package():
     def older_tracker_in_proposed_any(s):
         return s._older_tracker_in_proposed(None)
 
+    # occupancy_reference
+    def occupancy_reference(s, pocket):
+        routing = s.routing(pocket)
+        if routing is None:
+            cinfo("APW: occupancy_reference pocket={} no routing".format(pocket))
+            return None
+        # XXX: we directly understand streaming here...
+        if pocket in ("build", "proposed"):
+            which = s.built_in
+            if which is None:
+                which = 1
+            else:
+                which = int(which)
+        else:
+            which = 1
+        if len(routing) < which:
+            cinfo("APW: occupancy_reference pocket={} stream={} out of range".format(pocket, which))
+            return None
+        archive, pocket = routing[which - 1]
+        if archive is None:
+            cinfo("APW: occupancy_reference pocket={} no archive".format(pocket))
+            return None
+        reference = archive.reference
+        if pocket != "Release":
+            reference += " " + pocket
+        return reference
+
+    # occupancy
+    #
+    @property
+    def occupancy(s):
+        occupancy = set()
+        ptp_status = s.bug.task_status('promote-to-proposed')
+        ptu_status = s.bug.task_status('promote-to-updates')
+        if ptu_status == 'Invalid':
+            ptu_status = s.bug.task_status('promote-to-release')
+        pts_status = s.bug.task_status('promote-to-security')
+
+        if pts_status not in ("Invalid", "Fix Released"):
+            occupancy.add(s.occupancy_reference("Security"))
+            occupancy.add(s.occupancy_reference("Updates"))
+        if ptu_status not in ("Invalid", "Fix Released"):
+            occupancy.add(s.occupancy_reference("Updates"))
+            occupancy.add(s.occupancy_reference("Proposed"))
+        if ptp_status not in ('Invalid', 'Fix Released'):
+            occupancy.add(s.occupancy_reference("Proposed"))
+            occupancy.add(s.occupancy_reference("build"))
+        cinfo("APW: occupancy ptp={} ptu={} occupancy={}".format(ptp_status, ptu_status, occupancy))
+
+        return occupancy
+
     def check_component_in_pocket(s, tstamp_prop, pocket):
         """
         Check if packages for the given tracking bug were properly copied

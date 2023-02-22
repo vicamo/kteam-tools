@@ -919,6 +919,10 @@ class WorkflowBug():
         except Exception as e:
             cerror("status failed {}".format(e))
 
+        if s.debs is not None:
+            occupancy = s.debs.occupancy
+            status['occupancy'] = list(sorted(occupancy))
+
         # Do not expose this API error.
         master_bug = s.master_bug_property_name
         if master_bug != 'master-bug' and master_bug in status:
