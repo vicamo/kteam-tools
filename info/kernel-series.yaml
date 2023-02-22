@@ -253,6 +253,11 @@ defaults:
                 - ['ubuntu', 'Security']
             release:
                 - ['ubuntu', 'Release']
+        ubuntu-primary-devel-fragment: &routing-table-ubuntu-primary-devel
+            <<: *routing-table-ubuntu-primary
+            proposed:
+                - ['ubuntu', 'Proposed']
+                - ['ubuntu', 'Proposed']
         esm1-release-fragment: &routing-table-release-esm1
             proposed:
                 - ['ppa:canonical-kernel-esm/ubuntu/proposed', 'Release']
@@ -631,13 +636,13 @@ defaults:
               - *routing-table-security-build-devel
               - *routing-table-security-proposed
               - *routing-table-build-devel
-              - *routing-table-ubuntu-primary
+              - *routing-table-ubuntu-primary-devel
         dev-ubuntu/2:
             <<:
               - *routing-table-security-build-devel
               - *routing-table-security-proposed
               - *routing-table-build-devel
-              - *routing-table-ubuntu-primary
+              - *routing-table-ubuntu-primary-devel
             signing:
               - ["signing:ubuntu/2", "Release"]
         dev-unstable-ubuntu/2:
@@ -661,7 +666,7 @@ defaults:
               - *routing-table-security-build-devel
               - *routing-table-security-proposed
               - *routing-table-build-devel
-              - *routing-table-ubuntu-primary
+              - *routing-table-ubuntu-primary-devel
             signing:
               - ["signing:ubuntu/4", "Release"]
         dev-unstable-ubuntu/4:
