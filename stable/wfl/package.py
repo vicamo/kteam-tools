@@ -2644,7 +2644,7 @@ class Package():
         routing = s.routing(pocket)
         if routing is None:
             cinfo("APW: occupancy_reference pocket={} no routing".format(pocket))
-            return None
+            return "error:NO-ROUTE " + pocket
         # XXX: we directly understand streaming here...
         if pocket in ("build", "proposed"):
             which = s.built_in
@@ -2656,11 +2656,11 @@ class Package():
             which = 1
         if len(routing) < which:
             cinfo("APW: occupancy_reference pocket={} stream={} out of range".format(pocket, which))
-            return None
+            return "error:NO-STREAM " + pocket
         archive, pocket = routing[which - 1]
         if archive is None:
             cinfo("APW: occupancy_reference pocket={} no archive".format(pocket))
-            return None
+            return "error:NO-ARCHIVE " + pocket
         reference = archive.reference
         if pocket != "Release":
             reference += " " + pocket
