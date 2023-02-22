@@ -2590,13 +2590,45 @@ class Package():
     #
     @property
     def older_tracker_in_proposed(s):
-        return s._older_tracker_in_proposed(s.built_in)
+        retval = s._older_tracker_in_proposed(s.built_in)
+        newval = s.older_tracker_in_pocket("Proposed")
+        cinfo("APW: older_tracker_in_proposed old={} new={}".format(retval, newval))
+        return retval
 
     # older_tracker_in_proposed_any
     #
     @property
     def older_tracker_in_proposed_any(s):
-        return s._older_tracker_in_proposed(None)
+        retval = s._older_tracker_in_proposed(None)
+        newval = s.older_tracker_in_pocket("Updates")
+        cinfo("APW: older_tracker_in_proposed_any old={} new={}".format(retval, newval))
+        return retval
+
+    # older_tracker_in_pocket
+    #
+    def older_tracker_in_pocket(s, pocket):
+        blocker = s.occupancy_reference(pocket)
+
+        cinfo("    analysing pocket {} blocker {}".format(pocket, blocker))
+
+        target_trackers = s.bug.target_trackers
+        #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
+
+        for tracker_nr, tracker_data in target_trackers:
+            # If we find ourselves then we have considered everything "older".
+            if tracker_nr == str(s.bug.lpbug.id):
+                return None
+
+            occupancy = tracker_data.get('occupancy')
+            cinfo("    considering {} occupancy {}".format(tracker_nr, occupancy))
+            if occupancy is None:
+                cinfo("    no occupancy information, considered blocking")
+                return tracker_nr
+            if blocker in occupancy:
+                cinfo("    overlapping occupancy, considered blocking")
+                return tracker_nr
+
+        return None
 
     # occupancy_reference
     def occupancy_reference(s, pocket):
