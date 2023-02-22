@@ -2529,7 +2529,7 @@ class Package():
     # older_tracker_in_ppa
     #
     @property
-    def older_tracker_in_ppa(s):
+    def _older_tracker_in_ppa(s):
         # The target trackers are returned in cycle order.
         target_trackers = s.bug.target_trackers
         #cinfo("older_tracker_in_ppa: {}".format(target_trackers))
@@ -2560,6 +2560,15 @@ class Package():
                 return tracker_nr
 
         return None
+
+    # older_tracker_in_ppa
+    #
+    @property
+    def older_tracker_in_ppa(s):
+        retval = s._older_tracker_in_ppa
+        newval = s.older_tracker_in_pocket("build")
+        cinfo("APW: older_tracker_in_proposed old={} new={}".format(retval, newval))
+        return retval
 
     def _older_tracker_in_proposed(s, limit_stream):
         # The target trackers are returned in cycle order.
