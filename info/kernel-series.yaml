@@ -2037,7 +2037,7 @@ defaults:
 
         linux-azure-fde:
             routing: classic-fde-ubuntu/4
-            variants: ['--', '-edge']
+            variants: ['--']
             packages:
                 linux-azure-fde:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde']
@@ -2050,6 +2050,38 @@ defaults:
             supported: true
             owner: timg-tpi
             derived-from: [ '22.04', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+                testing-ppas: ['ppa:canonical-kernel-team/ubuntu/ppa']
+            testing:
+                flavours:
+                    azure:
+                        meta-pkg: linux-azure-fde-edge
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks:
+              - boot-testing
+              - automated-testing
+              - certification-testing
+              - verification-testing
+            stakeholder: 'linux-azure-signoff'
+
+        linux-azure-fde-5.19:
+            routing: classic-fde-ubuntu/4
+            variants: ['-edge']
+            packages:
+                linux-azure-fde-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-fde-5.19']
+                linux-meta-azure-fde-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-fde-5.19']
+                linux-signed-azure-fde-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde-5.19']
+            supported: true
+            owner: timg-tpi
+            derived-from: [ '22.10', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
