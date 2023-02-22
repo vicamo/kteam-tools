@@ -10,7 +10,13 @@ from argparse                           import ArgumentParser, RawDescriptionHel
 from copy                               import deepcopy
 
 from jira import JIRA
-from jira.resources import GreenHopperResource
+
+# GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
+# sure to support both classes.
+try:
+    from jira.resources import AgileResource
+except ImportError:
+    from jira.resources import GreenHopperResource as AgileResource
 
 from ktl.msgq                           import MsgQueue, MsgQueueService, MsgQueueCredentials
 
@@ -133,7 +139,7 @@ class TheApp():
 
             # Connect us to JIRA.
             s.jira = JIRA('https://warthogs.atlassian.net/',
-                options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+                options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
 
             # Pass in credentials if we have them, else use the limited defaults.
             hostname = s.secrets.data.get('amqp-hostname')

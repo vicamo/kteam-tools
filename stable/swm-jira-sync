@@ -16,7 +16,14 @@ import yaml
 from datetime import datetime, timedelta, timezone
 
 from jira import JIRA as BrokenJIRA
-from jira.resources import GreenHopperResource, User
+from jira.resources import User
+
+# GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
+# sure to support both classes.
+try:
+    from jira.resources import AgileResource
+except ImportError:
+    from jira.resources import GreenHopperResource as AgileResource
 
 from ktl.sru_cycle import SruCycle
 from ktl.swm_status import SwmStatus
@@ -100,7 +107,7 @@ if __name__ == '__main__':
 
     # Connect us to JIRA.
     jira = JIRA('https://warthogs.atlassian.net/',
-        options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+        options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
 
     # Lookup custom fields we are going to use.
     #for field in jira.fields():

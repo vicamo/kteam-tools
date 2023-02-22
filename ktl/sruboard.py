@@ -7,7 +7,12 @@ from datetime import datetime, timezone, timedelta
 
 from jira import JIRA
 from jira.exceptions import JIRAError
-from jira.resources import GreenHopperResource
+# GreenHopperResource has been renamed to AgileResource in Jira 3.3.0, make
+# sure to support both classes.
+try:
+    from jira.resources import AgileResource
+except ImportError:
+    from jira.resources import GreenHopperResource as AgileResource
 
 
 class SRUBoardError(Exception):
@@ -20,7 +25,7 @@ class SRUBoard:
         :param cycle: The SRU cycle date of the board
         '''
         self.jira = JIRA('https://warthogs.atlassian.net/',
-            options={'agile_rest_path': GreenHopperResource.AGILE_BASE_REST_PATH})
+            options={'agile_rest_path': AgileResource.AGILE_BASE_REST_PATH})
 
         self.cycle = cycle
         self.dryrun = dryrun
