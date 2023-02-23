@@ -4686,7 +4686,7 @@ defaults:
 
         linux-azure-fde:
             routing: classic-fde-ubuntu/4
-            variants: ['--']
+            variants: ['-lts-22.04']
             packages:
                 linux-azure-fde:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-fde']
@@ -4718,7 +4718,7 @@ defaults:
 
         linux-azure-fde-5.15:
             routing: classic-fde-ubuntu/4
-            variants: ['-edge']
+            variants: ['--', '-edge']
             packages:
                 linux-azure-fde-5.15:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-fde-5.15']
