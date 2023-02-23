@@ -35,6 +35,21 @@ See "cranky/docs/snip-cranky.yaml".
 
 See "cranky/docs/snip-dput.cf".
 
+### Add builders to /etc/hosts
+
+This is the current list of builders which can be used for test-builds and
+pushing cranks for review.
+
+* 10.246.72.16  gloin       gloin.kernel
+* 10.246.72.52  kathleen    kathleen.buildd
+* 10.246.75.167 sita        sita.kernel sita.maas
+
+There is no DNS to resolve the names of our builders, so add them to the hosts file.
+
+```
+printf "10.246.72.16 gloin\n10.246.75.167 sita\n10.246.72.52 kathleen\n" | sudo tee -a hosts
+```
+
 ## Get cranky tools
 
 Clone the Kernel Team Tools git repository (yes, by now you've cloned

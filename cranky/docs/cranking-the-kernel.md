@@ -456,7 +456,7 @@ re-run `cranky close` once all additional fixes have been applied successfully.
 
 **Note** crank-turners need to add the host entries to /etc/hosts before running
 `cranky test-build`. The list of builders and their IP addresses can be found
-on the section "List of builders" below.
+in [crank-turning-setup](crank-turning-setup.md).
 
 **Note 2** "kathleen" in the example above represents both a git remote name and
 a build host. By default, their name match.
@@ -811,13 +811,4 @@ amount of objects one needs to push. For example open
 https://code.launchpad.net/ubuntu/+source/linux-oracle select the
 right series team owned repo
 https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal,
-click "fork it directly to your account". 
-
-## List of builders
-
-This is the current list of builders which can be used for test-builds and
-pushing cranks for review.
-
-* 10.246.72.52		kathleen	kathleen.buildd
-* 10.246.75.167		sita		sita.kernel sita.maas
-* 10.246.72.16		gloin		gloin.kernel
+click "fork it directly to your account".
