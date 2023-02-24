@@ -166,6 +166,54 @@ class NewReview(SourceReview):
             binaries.append((binary_name_abi, binary_arch, flags))
         return happy, binaries
 
+    def signing_compat(self, compatibility):
+        if compatibility == None:
+            return "--not-present--"
+        if len(compatibility) == 0:
+            return "--empty--"
+        return " ".join(compatibility)
+
+    def fetch_usc(self, package_spph):
+        changes_url = package_spph.changesFileUrl()
+        if changes_url is None:
+            return False, None
+
+        # If we managed to find a changes file then we can extract the list.
+        changes_url = changes_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+        changes = self.lp._browser.get(changes_url)
+        compatibility = None
+        for line in changes.decode('utf-8').rstrip().split('\n'):
+            if line.startswith("Ubuntu-Compatible-Signing:"):
+                compatibility = line.split()[1:]
+        cinfo("Ubuntu-Compatible-Signing {} source".format(self.signing_compat(compatibility)))
+
+        # If there are builds available check they are matching compatibility.
+        happy = True
+        compatibility_match = True
+        for build in package_spph.getBuilds():
+            # If we managed to find a changes file then we can extract the list.
+            changes_url = build.changesfile_url
+            if changes_url is None:
+                cinfo("  Ubuntu-Compatible-Signing - {} build not available".format(build.arch_tag))
+                happy = False
+                continue
+            changes_url = build.changesfile_url.replace('https://launchpad.net/', 'https://api.launchpad.net/devel/')
+            changes = self.lp._browser.get(changes_url)
+            build_compat = None
+            for line in changes.decode('utf-8').rstrip().split('\n'):
+                if line.startswith("Ubuntu-Compatible-Signing:"):
+                    build_compat = line.split()[1:]
+                    if compatibility != build_compat:
+                        compatibility_match = False
+            cinfo("  Ubuntu-Compatible-Signing {} {}".format(self.signing_compat(build_compat), build.arch_tag))
+
+        # Report compatibility error.
+        if not compatibility_match:
+            cinfo("compatibility missmatch")
+            happy = False
+
+        return happy, compatibility
+
     # new_binaries
     #
     def new_binaries(s):
@@ -186,6 +234,10 @@ class NewReview(SourceReview):
             happy_overall &= happy
             binaries_new += binaries
             cinfo('  happy={} binaries={}'.format(happy, len(binaries)))
+            if happy:
+                happy, compatibility = s.fetch_usc(bi[pkg]['ppa']['source'])
+                happy_overall &= happy
+                cinfo('  happy={} compatibility={}'.format(happy, compatibility))
 
             cinfo('considering {} in {} -> {} '.format(pkg, pocket_next, bi[pkg][pocket_next]['source']))
             happy, binaries = s.fetch_binary_list(bi[pkg][pocket_next]['source'])
