@@ -583,7 +583,7 @@ defaults:
               - *routing-table-ubuntu-primary
             signing:
               - ["signing:ubuntu/2", "Release"]
-        stable-ubuntu/2:
+        stable-ubuntu/2: &routing-table-stable-ubuntu-2
             <<:
               - *routing-table-security-build-stable
               - *routing-table-security-proposed
@@ -827,6 +827,18 @@ defaults:
               - *routing-table-release-nv-dgx
             signing:
                 - ['signing:pro/3', 'Release']
+        larch-carvers/2:
+            <<:
+            build:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            test:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            proposed:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            updates:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            release:
+                - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
   package-relations:
       default:
           meta:
@@ -5680,18 +5692,7 @@ defaults:
             invalid-tasks: ['automated-testing', 'certification-testing']
 
         linux-larch:
-            routing: ubuntu/2
-            routing:
-                build:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                test:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                proposed:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                updates:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
-                release:
-                    - ['ppa:larch-carvers/ubuntu/ipoc', 'Release']
+            routing: larch-carvers/2
             packages:
                 linux-larch:
                     repo: ['git://git.launchpad.net/~larch-carvers/ubuntu/+source/linux/+git/larch', 'master-next']
