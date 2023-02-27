@@ -226,7 +226,8 @@ $ cranky fix
 
 At this point you should double check that the version number at the top of
 "debian.master/changelog" matches the version that you see on the dashboard:
-https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html
+
+<https://kernel.ubuntu.com/sru/dashboards/web/kernel-stable-board.html>
 
 Look next to kernel name you are craking (e.g. linux-fips), inside the section
 of the release in the dashboard you are currently cranking such as "xenial".
@@ -808,7 +809,7 @@ mistake.
 The best to fork an existing parent repository into your own namespace is using
 launchpad web UI. This will create an efficient server side fork, minimizing the
 amount of objects one needs to push. For example open
-https://code.launchpad.net/ubuntu/+source/linux-oracle select the
+<https://code.launchpad.net/ubuntu/+source/linux-oracle> select the
 right series team owned repo
-https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal,
+<https://code.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/focal>,
 click "fork it directly to your account".
