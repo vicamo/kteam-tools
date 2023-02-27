@@ -8870,6 +8870,7 @@ defaults:
         esm: esm2 # XXX
         default: esm2
         pro/2: esm2-pro/2
+        pro/3: esm2-pro/3
     sources:
         linux:
             routing: pro/2
