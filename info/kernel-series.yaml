@@ -8377,13 +8377,16 @@ defaults:
             invalid-tasks: [ 'automated-testing', 'certification-testing' ]
 
         linux-azure:
-            routing: pro/2
+            routing: pro/3
+            package-relations: signed-generate
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-xenial', 'master-next']
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-meta-azure-xenial']
+                linux-generate-azure:
+                    type: generate
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-signed-azure-xenial']
