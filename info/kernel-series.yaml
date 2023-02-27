@@ -8918,7 +8918,7 @@ defaults:
 
         linux-azure:
             routing: pro/3
-            package-routing: signed-generate
+            package-relations: signed-generate
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel-esm/canonical-kernel-esm/+git/linux-azure-trusty', 'master-next']
