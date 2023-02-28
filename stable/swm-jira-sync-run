@@ -9,5 +9,12 @@ export http_proxy="http://squid.internal:3128"
 export https_proxy="https://squid.internal:3128"
 export no_proxy="launchpad.net,.launchpad.net,kernel.ubuntu.com"
 
+# Ensure we have a copy of kernel-users.
+if [ ! -d "kernel-users" ]; then
+	git clone ssh+git://ubuntu-kernel-bot@git.launchpad.net/~canonical-kernel/+git/kernel-users
+else
+	(cd kernel-users && git pull)
+fi
+
 set -o pipefail
 "$here/swm-jira-sync" "$@" 2>&1 | tee -a "$HOME/logs/swm-jira-sync.log"
