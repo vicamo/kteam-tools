@@ -1934,7 +1934,7 @@ defaults:
 
         linux-aws:
             routing: ubuntu/4
-            variants: ['--', '-lts-22.04']
+            variants: ['-lts-22.04']
             package-relations: signed-generate
             packages:
                 linux-aws:
@@ -1967,7 +1967,7 @@ defaults:
 
         linux-aws-5.19:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: ['--', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-aws-5.19:
