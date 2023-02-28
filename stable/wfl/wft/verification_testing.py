@@ -80,6 +80,9 @@ class VerificationTesting(TaskHandler):
             master_report = s._sru_report(master_bug.series, master_bug.name)
             master_bugs = master_report['releases'][master_bug.series][master_bug.name]['bugs']
 
+            if master_bugs is None:
+                raise BugSpamError("master-bug has no bugs list yet...")
+
             cdebug("SPAM master_bugs {} {}".format(len(master_bugs), master_bugs))
 
             # sru_bugs = sru_bugs - master_bugs
@@ -123,6 +126,10 @@ class VerificationTesting(TaskHandler):
 
         # Grab a list of our bugs (as found in the changes file).
         sru_bugs = self.bug.debs.bugs
+        if sru_bugs is None:
+            spam_needed = "needed"
+            cleave(self.__class__.__name__ + '._verification_status retval={}'.format(spam_needed))
+            return spam_needed
         cdebug("SPAM-V sru_bugs {} {}".format(len(sru_bugs), sru_bugs))
 
         # If we have a master bug then we ask for its list of bugs and subtract those from ours
@@ -271,8 +278,12 @@ class VerificationTesting(TaskHandler):
                 s.task.status = 'Incomplete'
                 retval = True
 
-            elif status == 'needed' and task_status != 'In Progress':
+            elif status == 'needed' and 'bugs-spammed' in s.bug.bprops and task_status != 'In Progress':
                 s.task.status = 'In Progress'
+                retval = True
+
+            elif status == 'needed' and 'bugs-spammed' not in s.bug.bprops and task_status != 'Confirmed':
+                s.task.status = 'Confirmed'
                 retval = True
 
             elif status in ('reverted', 'verified', 'none') and task_status != 'Fix Released':

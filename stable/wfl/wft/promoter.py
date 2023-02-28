@@ -139,8 +139,8 @@ class Promoter(TaskHandler):
                 if task not in s.bug.tasks_by_name:
                     s.task.reason = 'Stalled -- %s task is missing' % (task,)
                     tested = False
-                elif s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid']:
-                    cinfo('            %s is neither "Fix Released" nor "Invalid" (%s)' % (task, s.bug.tasks_by_name[task].status), 'yellow')
+                elif s.bug.tasks_by_name[task].status not in ['Fix Released', 'Invalid', "Won't Fix"]:
+                    cinfo('            %s is not in %s (%s)' % (task, ['Fix Released', 'Invalid', "Won't Fix"], s.bug.tasks_by_name[task].status), 'yellow')
                     tested = False
 
             if not tested:
@@ -243,12 +243,15 @@ class Promoter(TaskHandler):
                 'promote-to-release'         : ['Confirmed', 'In Progress', 'Fix Released'],
             }
 
-            required_sru_tasks['automated-testing']     = ['Fix Released']
-            required_sru_tasks['regression-testing']    = ['Fix Released']
+            testing_complete = ['Fix Released', "Won't Fix"]
+            required_sru_tasks['automated-testing']     = testing_complete
+            required_sru_tasks['regression-testing']    = testing_complete
 
+            # XXX: as the tasks are invalid (through being missing) it is not
+            #      clear we cannot just check them all always.
             if not master.is_development_series:
-                required_sru_tasks['certification-testing'] = ['Fix Released']
-                required_sru_tasks['verification-testing']  = ['Fix Released']
+                required_sru_tasks['certification-testing'] = testing_complete
+                required_sru_tasks['verification-testing']  = testing_complete
 
             tasks = required_sru_tasks
             retval = True

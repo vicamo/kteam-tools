@@ -43,6 +43,10 @@ class AutomatedTestingResultsOne:
         return self.status is not None and self.status.upper() in ['GOOD', 'FAIL', 'NEUTRAL']
 
     @property
+    def is_noseed(self):
+        return 'SEED-AWOL' in self.data.get('summary', '')
+
+    @property
     def task_status(self):
         if self.is_awol:
             return 'Triaged'
@@ -160,9 +164,6 @@ class AutomatedTesting(TaskHandler):
         promote_status = s.bug.task_status('promote-to-updates')
         if promote_status == 'Invalid':
             promote_status = s.bug.task_status('promote-to-release')
-        if promote_status == 'Fix Released':
-            cinfo('kernels promoted successfully from Proposed', 'green')
-            return retval
 
         present = s.bug.debs.all_built_and_in_pocket_or_after('Proposed')
         if not present:
@@ -187,6 +188,9 @@ class AutomatedTesting(TaskHandler):
                 s.task.status = 'Fix Released'
                 retval = True
 
+        elif s.task.status != 'In Progress' and promote_status not in ('New', 'Confirmed', 'Invalid'):
+            cinfo('kernels promoted successfully from Proposed', 'green')
+
         # Otherwise use the testing status as posted by adt-matrix summariser.
         else:
             try:
@@ -202,6 +206,8 @@ class AutomatedTesting(TaskHandler):
                     #"source": s.bug.name,
                     #"version": s.bug.version,
                     "status": result.status})
+                if result.is_noseed:
+                    raise WorkflowBugTaskError('results not valid, seeds missing')
             except AutomatedTestingResultsError as e:
                 s.bug.monitor_add({
                     "type": "automated-testing",
