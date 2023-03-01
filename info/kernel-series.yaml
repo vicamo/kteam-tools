@@ -4299,7 +4299,7 @@ defaults:
                         armhf: [ '20' ]
                         arm64: [ '20' ]
             supported: true
-            owner: juergh
+            owner: diewald
             derived-from: [ '20.04', 'linux' ]
             swm:
                 kernel-testing: true
@@ -6889,7 +6889,7 @@ defaults:
                         armhf: [ '18-pi3', '18-cm3', '18-pi2' ]
                         arm64: [ '18-pi3' ]
             supported: true
-            owner: juergh
+            owner: diewald
             derived-from: [ '18.04', 'linux' ]
             invalid-tasks: ['automated-testing', 'regression-testing']
             swm:
@@ -6920,7 +6920,7 @@ defaults:
                         armhf: [ '18-pi' ]
                         arm64: [ '18-pi' ]
             supported: true
-            owner: juergh
+            owner: diewald
             backport: true
             derived-from: [ '20.04', 'linux-raspi' ]
             swm:
