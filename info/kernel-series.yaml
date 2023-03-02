@@ -2081,7 +2081,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-fde-5.19']
             supported: true
             owner: timg-tpi
-            derived-from: [ '22.10', 'linux-azure' ]
+            derived-from: [ '22.04', 'linux-azure-5.19' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
@@ -2089,7 +2089,7 @@ defaults:
             testing:
                 flavours:
                     azure:
-                        meta-pkg: linux-azure-fde-edge
+                        meta-pkg: linux-azure-fde-5.19-edge
                         arches: ['amd64']        # test system arch names
                         clouds: ['azure']
             invalid-tasks:
