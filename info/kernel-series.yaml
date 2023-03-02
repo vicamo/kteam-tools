@@ -6851,7 +6851,7 @@ defaults:
                    type: signed
                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-dell300x/+git/bionic' ]
             supported: true
-            owner: lukenow
+            owner: corytodd
             derived-from: [ '18.04', 'linux' ]
             swm:
                 kernel-testing: true
