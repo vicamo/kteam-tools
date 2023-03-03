@@ -1,4 +1,4 @@
-## Before You Start
+# Before You Start
 
 Before proceeding with this document, it is important to have followed the
 instructions in "crank-turning-setup.md" on your local host machine and basic
