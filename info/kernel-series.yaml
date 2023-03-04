@@ -1004,8 +1004,7 @@ defaults:
                     type: meta
                     repo: ['git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-meta-raspi/+git/lunar']
             owner: juergh
-            #derived-from: ['23.04', 'linux']
-            derived-from: ['22.10', 'linux-raspi']
+            derived-from: ['23.04', 'linux-unstable']
             swm:
                 kernel-testing: true
             testing:
