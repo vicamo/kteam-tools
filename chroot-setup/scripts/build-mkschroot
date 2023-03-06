@@ -230,6 +230,11 @@ bionic|focal|groovy|hirsute|impish|jammy)
 	ADDPKG="$ADDPKG clang libelf-dev llvm"
 	;;
 esac
+case "$SUITE" in
+jammy|lunar)
+	ADDPKG="$ADDPKG rustc-1.62 rust-1.62-src rustfmt-1.62 bindgen-0.56 clang-14 llvm-14"
+	;;
+esac
 
 case $SUITE in
 *)	_SUITE=$SUITE ;;
