@@ -4653,7 +4653,7 @@ defaults:
 
         linux-azure-cvm:
             routing: ubuntu/4
-            Variants: ['--']
+            variants: ['-lts-22.04']
             packages:
                 linux-azure-cvm:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/focal', 'azure-cvm']
@@ -4667,7 +4667,7 @@ defaults:
                     type: lrg
                 linux-restricted-signatures-azure-cvm:
                     type: lrs
-            supported: true
+            supported: false
             owner: mhcerri
             backport: true
             derived-from: [ '20.04', 'linux-azure' ]
@@ -4695,7 +4695,7 @@ defaults:
                 linux-signed-azure-fde:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/focal', 'azure-fde']
-            supported: true
+            supported: false
             owner: mhcerri
             derived-from: [ '20.04', 'linux-azure-cvm' ]
             swm:
@@ -4852,7 +4852,7 @@ defaults:
 
         linux-azure-5.15:
             routing: ubuntu/4
-            variants: [ '--', '-edge' ]
+            variants: [ '--', '-cvm', '-edge' ]
             package-relations: signed-generate
             packages:
                 linux-azure-5.15:
