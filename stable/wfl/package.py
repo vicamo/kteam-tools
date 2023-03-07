@@ -1368,6 +1368,7 @@ class Package():
 
     __states_present = ['DEPWAIT', 'BUILDING', 'FULLYBUILT', 'PENDING', 'FULLYBUILT_PENDING', 'FAILEDTOBUILD']
     __pockets_uploaded = ('ppa', 'Signing', 'Proposed', 'Security', 'Updates', 'Release')
+    __pockets_signed = ('Proposed', 'Security', 'Updates', 'Release')
 
     # build_info
     #
@@ -2392,6 +2393,26 @@ class Package():
                 break
 
         cleave(s.__class__.__name__ + '.uploaded (%s)' % (retval))
+        return retval
+
+    # signed
+    #
+    def signed(s, pkg):
+        '''
+        '''
+        center(s.__class__.__name__ + '.signed')
+        retval = False
+
+        bi = s.build_info
+        for pocket in s.__pockets_signed:
+            if pocket not in bi[pkg]:
+                continue
+            cdebug("checking for {} in {} is '{}'".format(pkg, pocket, bi[pkg][pocket]['status']))
+            if bi[pkg][pocket]['status'] in s.__states_present:
+                retval = True
+                break
+
+        cleave(s.__class__.__name__ + '.signed (%s)' % (retval))
         return retval
 
     def upload_version(s, pkg):

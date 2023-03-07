@@ -197,6 +197,10 @@ class PreparePackage(TaskHandler):
             if s.bug.debs.routing('ppa'):
                 # Confirm that this package is uploaded.
                 upload_present = s.bug.debs.uploaded(pkg)
+                if not upload_present:
+                    pkg_for = s.bug.debs.generate_package_for(pkg)
+                    if pkg_for:
+                        upload_present = s.bug.debs.signed(pkg_for)
                 if upload_present:
                     # If we have any uploads create an empty versions dictionary
                     # which will escalate all miss messages.
@@ -241,10 +245,16 @@ class PreparePackage(TaskHandler):
             # If we have a ppa route, then we should check these packages were
             # uploaded.
             if s.bug.debs.routing('ppa'):
-                # Hold prepare-package open until the package is built.
+                # Hold prepare-package open until the package is built, or the packages
+                # which would have depended on us are past signing (as we must have existed).
                 if not s.bug.debs.built_and_in_pocket_or_after(pkg, 'ppa'):
-                    s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
-                    break
+                    pkg_for = s.bug.debs.generate_package_for(pkg)
+                    for_present = False
+                    if pkg_for:
+                        for_present = s.bug.debs.signed(pkg_for)
+                    if not for_present:
+                        s.task.reason = 'Ongoing -- {} package not yet fully built'.format(pkg)
+                        break
 
             # If we have a no ppa route, then we should consider duplicates now.
             if not s.bug.debs.routing('ppa'):
@@ -291,6 +301,15 @@ class PreparePackage(TaskHandler):
             upload_present = s.bug.debs.uploaded(pkg)
             if upload_present:
                 break
+
+            # If we are a generate package for another package then we may
+            # consider the package as present (in absence) if our signing
+            # result is so present.
+            pkg_for = s.bug.debs.generate_package_for(pkg)
+            if pkg_for:
+                upload_present = s.bug.debs.signed(pkg_for)
+                if upload_present:
+                    break
 
             # The package is no longer found in the build route, this
             # means we cannot any longer claim to be prepared.  Pull
