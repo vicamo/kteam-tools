@@ -388,6 +388,7 @@ defaults:
         nv-dgx-release-fragment: &routing-table-release-nv-dgx
             proposed:
                 - ['ppa:canonical-kernel-dgx/ubuntu/proposed', 'Release']
+                - ['ppa:canonical-kernel-dgx/ubuntu/proposed2', 'Release']
             updates:
                 - ['ppa:canonical-kernel-dgx/ubuntu/release', 'Release']
     routing-table: &routing-table
