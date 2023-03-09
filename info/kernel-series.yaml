@@ -5956,7 +5956,7 @@ defaults:
             development: true
             private: true
             derived-from: [ '20.04', 'linux']
-            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'regression-testing', 'verification-testing' ]
 
         linux-uc20-ein:
             routing: ein-uc20
@@ -5971,7 +5971,7 @@ defaults:
             development: true
             private: true
             derived-from: [ '20.04', 'linux-ein']
-            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'regression-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
 
