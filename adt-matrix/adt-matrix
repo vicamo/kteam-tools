@@ -39,6 +39,7 @@ from datetime import datetime
 import shlex
 
 from ktl.kernel_series import KernelSeries
+from adt_matrix.misc import summary_is_relaxed_pass
 
 retry_url = "https://autopkgtest.ubuntu.com/request.cgi"
 
@@ -373,6 +374,7 @@ class AutoPackageTest(object):
         it is added to the triggers of that result.
         '''
 
+        autopkgtest_summary = None
         src_arch_key = src + ' ' + arch
 
         try:
@@ -399,6 +401,11 @@ class AutoPackageTest(object):
                 exitcode = int(tar.extractfile('exitcode').read().strip())
                 srcver = tar.extractfile('testpkg-version').read().decode().strip()
                 (ressrc, ver) = srcver.split()
+
+                try:
+                    autopkgtest_summary = tar.extractfile('summary').read().decode()
+                except KeyError:
+                    pass
 
                 # Blacklisted.
                 if ver == 'blacklisted':
@@ -533,7 +540,14 @@ class AutoPackageTest(object):
         # allow some skipped tests, but nothing else
         passed = exitcode in [0, 2]
         if exitcode == 8:
-            passed = None
+            # autopkgtest/autodep8 will treat superficial passes as 'skipped'
+            # since autodep8 0.26. Before this version, superficial tests were
+            # reported as passed. We want to keep the old behaviour in ADT
+            # matrix.
+            if autopkgtest_summary and summary_is_relaxed_pass(autopkgtest_summary):
+                passed = True
+            else:
+                passed = None
 
         passed_str = {
             True:       'pass',
