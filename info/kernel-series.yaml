@@ -2942,14 +2942,17 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-nvidia-tegra:
-            routing: nvidia
+            routing: nvidia-ubuntu/4
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-nvidia-tegra:
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-jammy', 'main-next']
                 linux-meta-nvidia-tegra:
                     type: meta
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-jammy', 'main']
+                linux-generate-nvidia-tegra:
+                    type: generate
                 linux-signed-nvidia-tegra:
                     type: signed
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-jammy', 'main']
