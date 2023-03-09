@@ -5970,6 +5970,15 @@ defaults:
             owner: wenchien
             development: true
             private: true
+            snaps:
+                asus-aiot-pe100a-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/zhongyi/+git/kernel-snaps-uc20']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: ['latest']
             derived-from: [ '20.04', 'linux-ein']
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'regression-testing', 'verification-testing' ]
             swm:
