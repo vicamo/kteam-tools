@@ -1,0 +1,234 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: Canonical Ltd.
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+set -e
+
+CMD=""
+DRY_RUN=0
+HINTS_PATH=""
+PACKAGE=""
+SERIES=""
+SKIP_CACHE_DOWNLOAD=0
+
+ADT_MATRIX_URL="https://kernel.ubuntu.com/adt-matrix"
+
+PACKAGE_BINARIES_FILE="package-binaries.json"
+PACKAGE_RELATION_FILE="package-relation.json"
+VERSIONS_ADT_MATRIX_FILE="versions.adt-matrix"
+
+help() {
+	cat << EOF
+adt-matrix-test downloads all adt-matrix prerequisites and allows for running
+it against a specific series/package.
+
+adt-matrix-test [CMD] [ARGS]
+
+Commands:
+	full
+		Download/configure all the files required by adt-matrix and run
+		adt-matrix.
+	init
+		Download/configure all the files required by adt-matrix but
+		don't run adt-matrix.
+
+	run
+		Run the adt-matrix while not downloading or configuring any
+		required files. This implies that these requirements where
+		dealt with manually or via an 'init'/'full' command (see
+		above).
+
+Arguments:
+	--dry-run
+		Avoids running adt-matrix and outputs its command to stdout.
+	--hints
+		The path to the adt-matrix primary hints directory.
+		Required for 'full' and 'run' commands.
+		Example: /home/ubuntu/adt-matrix-hints/primary.hints.d
+	--package
+		Run adt-matrix for a specific package.
+		When not provided, all packages are selected.
+		Example: linux-meta-kvm.
+	--series
+		Run adt-matrix against a specific series. This triggers
+		downloading the adt-matrix cache for it too.
+		When not provided, all series are selected and no cache
+		downloaded.
+		Example: bionic.
+	--skip-cache-download
+		Skip downloading the adt-matrix cache even if a specific series
+		was requested. This is useful when requiring runs without any
+		local caches or reusing existing cache.
+	--help
+		Display this help and exit.
+EOF
+}
+
+# Trivial fail function.
+fail() {
+	echo "$1"
+	exit 1
+}
+
+# Check if a passed value to an argument is valid. A valid value is not empty
+# and not an argument.
+is_valid_value() {
+	[ -n "$1" ] || return 1
+	case "$1" in
+		"--"*) return 1 ;;
+	esac
+	return 0
+}
+
+# Download a file from adt-matrix.
+adt_matrix_get() {
+	adt_file="$1"
+	printf "[INFO] Downloading %s ... " "$adt_file"
+	HTTP_CODE="$(curl "$ADT_MATRIX_URL/$adt_file" \
+		--silent \
+		--write-out "%{http_code}" \
+		--output "./$adt_file")" || fail "\n[ERR] Failed to download $adt_file."
+	[ "$HTTP_CODE" -eq 200 ] || fail "\n[ERR] Failed to download $adt_file [$HTTP_CODE]."
+	echo "done."
+}
+
+# Function for handling the selection output for the init tool command.
+cmd_init_selection() {
+	echo "\
+	- $(if [ -z "$SERIES" ]; then printf "all"; else printf "%s" "$SERIES"; fi) series
+	- $(if [ -z "$PACKAGE" ]; then printf "all"; else printf "%s" "$PACKAGE"; fi) package(s)"
+}
+
+# Function for handling the selection output for the run tool command.
+cmd_run_selection() {
+	echo "\
+	- dry run: $(if [ "$DRY_RUN" -eq 0 ]; then printf "no"; else printf "yes"; fi)\
+$(if [ -n "$HINTS_PATH" ]; then printf "\n	- hints path: %s" "$HINTS_PATH"; fi)"
+}
+
+# Function for handling the selection output for the full tool command.
+cmd_full_selection() {
+	cmd_init_selection && cmd_run_selection
+}
+
+# Download and configure all requirements for adt-matrix.
+cmd_init() {
+
+	# Download the series cache if one is requested.
+	if [ $SKIP_CACHE_DOWNLOAD -eq 0 ] && [ -n "$SERIES" ]; then
+		adt_matrix_get "$SERIES.cache"
+	fi
+
+	# Download adt-matrix prerequisites.
+	for file in \
+		"$PACKAGE_RELATION_FILE" \
+		"$VERSIONS_ADT_MATRIX_FILE" \
+		"$PACKAGE_BINARIES_FILE"; do
+		adt_matrix_get "$file"
+	done
+
+	# Filter by series/package.
+	mv "$VERSIONS_ADT_MATRIX_FILE" "$VERSIONS_ADT_MATRIX_FILE.test.orig"
+	grep "$SERIES" "$VERSIONS_ADT_MATRIX_FILE.test.orig" | grep "$PACKAGE" > "$VERSIONS_ADT_MATRIX_FILE"
+}
+
+# Run adt-matrix.
+cmd_run() {
+	# adt-matrix requires relative files so we need to make sure we are in the
+	# right place.
+	[ -x "./adt-matrix" ] || fail "[ERR] Run this tool in the adt-matrix directory."
+
+	# Validate the hints path.
+	[ -n "$HINTS_PATH" ] || fail "[ERR] The path to the hints is required. Check help."
+	[ -e "$HINTS_PATH" ] || fail "[ERR] The hints path ($HINTS_PATH) doesn't look valid."
+
+	# Ready to run adt-matrix.
+	adt_matrix_cmd="./adt-matrix - $HINTS_PATH < $VERSIONS_ADT_MATRIX_FILE"
+	if [ "$DRY_RUN" -eq 0 ]; then
+		eval "$adt_matrix_cmd" || fail "\n[ERR] adt-matrix failed. See logs above."
+	else
+		printf "\nDry run requested. adt-matrix full command:\n"
+		echo "$adt_matrix_cmd"
+	fi
+}
+
+# Download/configure all requirements for adt-matrix and run adt-matrix.
+cmd_full() {
+	cmd_init && cmd_run
+}
+
+#
+# MAIN
+#
+
+# Parse the tool's command.
+case $1 in
+	--help)
+		help
+		exit 0
+		;;
+
+	'')
+		printf "[ERR] No command requested. See help below.\n\n"
+		help
+		exit 1
+		;;
+	full|init|run)
+		CMD="$1"
+		shift
+		;;
+	*)
+		printf "[ERR] Unrecognized command '%s'. See help below.\n\n" "$1"
+		help
+		exit 1
+		;;
+esac
+
+# Parse the tool's arguments.
+while [ $# -gt 0 ]; do
+	arg="$1"
+	val="$2"
+	case $arg in
+		--help)
+			help
+			exit 0
+			;;
+		--series)
+			is_valid_value "$val" || fail "[ERR] \"$arg\" argument requires a valid value."
+			SERIES="$val"
+			shift
+			;;
+		--package)
+			is_valid_value "$val" || fail "[ERR] \"$arg\" argument requires a valid value."
+			PACKAGE="$val"
+			shift
+			;;
+		--hints)
+			is_valid_value "$val" || fail "[ERR] \"$arg\" argument requires a valid value."
+			HINTS_PATH="$val"
+			shift
+			;;
+		--skip-cache-download)
+			SKIP_CACHE_DOWNLOAD=1
+			;;
+		--dry-run)
+			DRY_RUN=1
+			;;
+		*)
+			printf "[ERR] Unrecognized argument '%s'. See help below.\n\n" "$arg"
+			help
+			exit 1
+			;;
+	esac
+	shift
+done
+
+# Print selection output.
+echo "[INFO] Tool's mode: $CMD"
+echo "[INFO] Tool's selection:"
+eval "cmd_${CMD}_selection"
+
+# Run the tool's command.
+eval "cmd_$CMD"
