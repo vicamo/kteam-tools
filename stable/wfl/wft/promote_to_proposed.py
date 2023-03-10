@@ -367,7 +367,7 @@ class PromoteFromTo(Promoter):
 
         clamp = s.bug.clamp('promote-to-proposed')
         if clamp is not None and str(clamp) != str(s.bug.debs.prepare_id):
-            cinfo("promote-to-proposed id has changed, recinding promote-to-proposed")
+            cinfo("promote-to-proposed id has changed, recinding promote-to-proposed ({} -> {})".format(str(clamp), str(s.bug.debs.prepare_id)))
             s.task.status = 'New'
             retval = True
 
