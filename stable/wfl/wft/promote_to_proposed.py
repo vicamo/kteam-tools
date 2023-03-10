@@ -78,6 +78,12 @@ class PromoteFromTo(Promoter):
             if not s.bug.debs.delta_in_pocket(delta, s.pocket_dest):
                 break
 
+            # Record what is missing as we move out of New.  This is everything
+            # we will need to move at any stage of the (potentially) multi-step
+            # copy.
+            s.bug.debs.delta_record('promote-to-proposed', 'ppa', 'Proposed')
+            s.bug.clamp_assign('promote-to-proposed', s.bug.debs.prepare_id)
+
             s.task.status = 'Fix Committed'
             s.task.timestamp('started')
 
