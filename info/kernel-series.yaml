@@ -5778,6 +5778,15 @@ defaults:
             supported: false
             owner: wenchien
             development: true
+            snaps:
+                avnet-avt-iiotg20-kernel:
+                    repo: [ 'git://git.launchpad.net/~canonical-hwe-team/denver/+git/denver-kernel-snaps', 'denver']
+                    gated: false
+                    promote-to: 'stable'
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        armhf: ['latest']
             derived-from: [ '20.04', 'linux-denver' ]
             invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
             swm:
