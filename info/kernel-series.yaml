@@ -5993,14 +5993,17 @@ defaults:
                 block-parent-release: true
 
         linux-nvidia-tegra-5.15:
-            routing: nvidia
+            routing: nvidia-ubuntu/4
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-nvidia-tegra-5.15:
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-focal-5.15', 'main-next']
                 linux-meta-nvidia-tegra-5.15:
                     type: meta
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-meta-focal-5.15', 'main']
+                linux-generate-nvidia-tegra-5.15:
+                    type: generate
                 linux-signed-nvidia-tegra-5.15:
                     type: signed
                     repo: ['git://git.launchpad.net/~nvidia-kernel/nvidia-kernel-private/+git/linux-signed-focal-5.15', 'main']
