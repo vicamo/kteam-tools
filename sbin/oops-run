@@ -1,5 +1,7 @@
 #!/bin/bash
 
+here=$(dirname "$(readlink -f "${0}")")
+
 error_ok=999
 if [ "$1" = "--error-ok" ]; then
 	error_ok="$2"
@@ -11,8 +13,11 @@ shift
 
 [ "$key" = "" ] && key="UNKNOWN"
 
-here=$(dirname "$(readlink -f "${0}")")
-oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
+if [ -d "$HOME/oops" ]; then
+       oops=$(mktemp "$HOME/oops/$key.XXXXXXXXXX")
+else
+       oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
+fi
 chmod 644 "$oops"
 
 # { { { { someprog; echo $? >&3; } | filter >&4; } 3>&1; } | { read xs; exit $xs; } } 4>&1
