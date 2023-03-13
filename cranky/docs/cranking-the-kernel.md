@@ -683,11 +683,11 @@ uploading packages, this manual step is not necessary as it is wrapped by
 
 ### Uploading packages - `cranky upload`
 
-**Note** Uploading packages can only be done by team members with upload
-rights. Pushing to the official git repos can only be done by team members with
-commit rigths. Before a new member is granted such rights, the git trees and
-source packages produced need to be reviewed and sponsored by some other team
-member with the necessary rights.
+**Note** Only packages signed by team members with commit rights can be
+uploaded. Pushing to the official git repos can only be done by team members
+with commit rights. Before a new member is granted such rights, the git trees
+and source packages produced need to be reviewed and sponsored by some other
+team member with the necessary rights.
 
 **Note** _DO NOT_ publish private kernels such as ESM, linux-ibm-gt and
 linux-fips to public repositories, see section "Special kernels" below.
@@ -790,6 +790,9 @@ $ dput -u ppa:canonical-kernel-team/ppa linux-signed-oracle_4.15.0-1010.12~16.04
 make sure the packages are being uploaded to the correct PPA. Also make sure
 you have `default_host_main = UNKNOWN"` set in your ~/.dput.cf, to prevent
 uploading packages to `ubuntu` (see snip-dput.cf).
+
+**Note** dput-source will raise an error if you do not have the public key of your
+sponsor. Verify and import the public key of your sponsor to resolve this problem.
 
 ### Special kernels
 
