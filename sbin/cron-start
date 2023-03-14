@@ -6,16 +6,31 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+report='y'
 instance=''
-case "$1" in
---instance)
-	instance="$2"
-	shift 2
-	;;
-esac
+while :
+do
+	case "$1" in
+	--instance)
+		instance="$2"
+		shift 2
+		;;
+	--report)
+		report=y
+		shift 1
+		;;
+	--no-report)
+		report=
+		shift 1
+		;;
+	*)
+		break
+		;;
+	esac
+done
 
 if [ "$#" -lt 6 ]; then
-	echo "Usage: $0 [--instance <instance>] <daemon> ... -- <group> <title> <warn> <alert> ..." 1>&2
+	echo "Usage: $0 [--instance <instance>] [--[no-]report] <daemon> ... -- <group> <title> <warn> <alert> ..." 1>&2
 	exit 1
 fi
 
@@ -50,7 +65,9 @@ lck="/tmp/$name.lck"
 	"$daemon" "${args[@]}" &
 ) 9>"$lck"
 
-# Attempt to re-grab an exclusive lock, if this succeeds then the daemon has
-# failed to start.  Timeout after 5s.
-flock -w 5 -x "$lck" -c "exit 0" || \
-    $here/../dashboard/dashboard-status "cron-start-$name" "$@"
+if [ "$report" ]; then
+	# Attempt to re-grab an exclusive lock, if this succeeds then the daemon has
+	# failed to start.  Timeout after 5s.
+	flock -w 5 -x "$lck" -c "exit 0" || \
+	    $here/../dashboard/dashboard-status "cron-start-$name" "$@"
+fi
