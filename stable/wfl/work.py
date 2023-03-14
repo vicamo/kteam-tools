@@ -32,6 +32,18 @@ class SwmWorkCmds:
         payload = {"type": "quit"}
         self._publish(payload, priority, name=name)
 
+    def send_worker_start(self, number, priority=None):
+        if priority is None:
+            priority = 6
+        payload = {
+            "type": "worker-start",
+            "number": number,
+        }
+        self._publish(payload, priority)
+
+    def send_worker_stop(self, number, priority=None):
+        self.send_admin_quit("W" + str(number))
+
     def send_shank(self, tracker, scanned=None, priority=None):
         payload = {
             "type": "shank",

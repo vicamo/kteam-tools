@@ -63,7 +63,7 @@ class SwmWorker(SwmWorkCmds):
             if what == 'quit':
                 self.mq.listen_stop()
 
-            elif what in ("shank", "dependants", "instantiate"):
+            elif what in ("shank", "dependants", "instantiate", "worker-start"):
                 ack = MsgQueueService.REQUEUE
 
                 if what == "shank":
@@ -81,6 +81,12 @@ class SwmWorker(SwmWorkCmds):
                     if tracker is None:
                         raise ValueError("invalid shank message")
                     cmd = [os.path.join(os.path.dirname(__file__), "swm-instantiate"), tracker]
+
+                elif what == "worker-start":
+                    number = payload.get('number')
+                    if number is None:
+                        raise ValueError("invalid worker-start message")
+                    cmd = [os.path.join(os.path.dirname(__file__), "swm-worker-start"), str(number)]
 
                 try:
                     self.log.info("Starting {} (priority={} key={})".format(cmd, properties.priority, method.routing_key))
@@ -149,7 +155,7 @@ class SwmWorker(SwmWorkCmds):
             self._announce('announce-control', 'swm-worker start')
 
             q_args = {'x-max-priority': 7}
-            shared = ['swm.shank', 'swm.dependants', 'swm.instantiate']
+            shared = ['swm.shank', 'swm.dependants', 'swm.instantiate', 'swm.worker-start']
             self.mq.listen_worker(self.queue, shared, handler=self._handler, queue_arguments=q_args)
             direct = ['direct.{}.swm.quit'.format(self.args.name),]
             self.mq.listen_worker(self.direct, direct, handler=self._handler, queue_arguments=q_args, auto_delete=True)
