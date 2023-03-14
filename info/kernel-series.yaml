@@ -1025,7 +1025,7 @@ defaults:
                 linux-meta-aws:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-aws/+git/lunar']
-                linux-generate-gcp:
+                linux-generate-aws:
                     type: generate
                 linux-signed-aws:
                     type: signed
