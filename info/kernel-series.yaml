@@ -1051,12 +1051,15 @@ defaults:
         linux-azure:
             routing: ubuntu/2
             variants: ['--']
+            package-relations: signed-generate
             packages:
                 linux-azure:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/lunar', 'master-next']
                 linux-meta-azure:
                     type: meta
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/lunar']
+                linux-generate-azure:
+                    type: generate
                 linux-signed-azure:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/lunar']
