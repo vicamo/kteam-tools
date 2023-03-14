@@ -1087,7 +1087,7 @@ defaults:
             stakeholder: 'linux-azure-signoff'
 
         linux-gcp:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--']
             package-relations: signed-generate
             packages:
