@@ -6311,7 +6311,6 @@ defaults:
     codename: disco
     development: false
     supported: false
-    old-releases: true
     routing-table: *routing-table
     sources:
         linux:
