@@ -397,3 +397,7 @@ do
 		${SCHROOTCMD} -- apt-get -y --force-yes --no-install-recommends install $i
 	fi
 done
+
+# Clean up the cache which otherwise might grow quite large
+${SCHROOTCMD} -- apt-get clean
+
