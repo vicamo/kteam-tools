@@ -2357,6 +2357,36 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: ['automated-testing', 'certification-testing']
 
+        linux-ibm-gt-fips:
+            routing: ibm-gt/1
+            variants: ['--']
+            package-relations: signed-generate
+            packages:
+                linux-ibm-gt-fips:
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-jammy', 'ibm-gt-fips']
+                linux-meta-ibm-gt-fips:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-meta-jammy', 'ibm-gt-fips']
+                linux-generate-ibm-gt-fips:
+                    type: generate
+                linux-signed-ibm-gt-fips:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy', 'ibm-gt-fips']
+            development: false
+            supported: true
+            owner: jcabaj
+            private: true
+            derived-from: [ '22.04', 'linux-ibm-gt' ]
+            backport: true # use local-mangle to keep it in sync with linux-ibm-gt
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    ibm-gt-fips:
+                        arches: ['amd64', 's390x.LPAR']   # test system arch names
+                        clouds: ['metal']
+            invalid-tasks: ['automated-testing', 'certification-testing']
+
         linux-kvm:
             routing: ubuntu/4
             variants: ['--']
