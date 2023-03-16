@@ -965,7 +965,7 @@ defaults:
                         clouds: ['metal', 'aws']
 
         linux-lowlatency:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--', '-hwe-22.04', '-hwe-22.04-edge']
             package-relations: signed-generate
             packages:
