@@ -6915,14 +6915,6 @@ defaults:
                         clouds: ['metal']
             invalid-tasks: [ 'regression-testing', 'boot-testing' ]
 
-        linux-denver:
-            routing: denver
-            packages:
-                cert-denver:
-                cert-denver-signed:
-                    type: signed
-            supported: false
-
         linux-raspi2:
             packages:
                 linux-raspi2:
