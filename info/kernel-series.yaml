@@ -1169,7 +1169,7 @@ defaults:
             invalid-tasks: [ 'certification-testing' ]
 
         linux-oracle:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--']
             package-relations: signed-generate
             packages:
