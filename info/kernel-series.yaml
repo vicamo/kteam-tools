@@ -830,7 +830,7 @@ defaults:
                 - ['signing:pro/3', 'Release']
         concept-x13s:
             build:
-                - ['ppa:canonical-concept/ubuntu/x13s', 'Release']
+                - ['ppa:ubuntu-concept/ubuntu/x13s', 'Release']
   package-relations:
       default:
           meta:
