@@ -1018,7 +1018,7 @@ defaults:
             invalid-tasks: ['automated-testing']
 
         linux-aws:
-            routing: ubuntu/2
+            routing: ubuntu/4
             variants: ['--']
             package-relations: signed-generate
             packages:
