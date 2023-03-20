@@ -2961,6 +2961,30 @@ defaults:
                 kernel-testing: false
             invalid-tasks: ['boot-testing', 'automated-testing', 'certification-testing', 'regression-testing']
 
+        linux-mtk:
+            variants: ['--']
+            packages:
+                linux-mtk:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-mtk-5.15', 'master-next']
+                linux-meta-mtk:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/linux-meta-baoshan-5.15']
+            supported: false
+            owner: shanelin
+            development: true
+            private: true
+            derived-from: [ '22.04', 'linux' ]
+            invalid-tasks: [ 'automated-testing', 'boot-testing', 'certification-testing', 'regression-testing', 'verification-testing' ]
+            snaps:
+                mediatek-genio-kernel:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/baoshan/+git/mediatek-genio-kernel-ebbr']
+                    gated: false
+                    qa: false
+                    hw-cert: true
+                    publish-to:
+                        arm64: [ '22' ]
+                    promote-to: 'stable'
+
         linux-fips:
             routing: fips-prerelease-pro/3
             package-relations: signed-generate
