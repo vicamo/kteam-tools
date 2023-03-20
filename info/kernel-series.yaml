@@ -2863,7 +2863,7 @@ defaults:
                 linux-signed-uc22-intel-iotg:
                     type: signed
                     repo: ['git://git.launchpad.net/~canonical-kernel-rt/ubuntu/+source/linux-signed-uc22-intel-iot-realtime/+git/jammy', 'realtime']
-            supported: true
+            supported: false 
             owner: jianhuilee
             development: false
             snaps:
