@@ -2673,7 +2673,7 @@ defaults:
                 kernel-testing: true
             testing:
                 flavours:
-                    generic:
+                    starfive:
                         arches: ['riscv64']        # test system arch names
             invalid-tasks: ['automated-testing', 'certification-testing']
 
