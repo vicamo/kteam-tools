@@ -2973,7 +2973,7 @@ defaults:
 
         linux-nvidia-5.19:
             routing: nvidia-ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '-5.19' ]
             package-relations: signed-generate
             packages:
                 linux-nvidia-5.19:
