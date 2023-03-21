@@ -2976,6 +2976,7 @@ defaults:
         linux-nvidia-5.19:
             routing: nvidia-ubuntu/4
             variants: [ '-edge' ]
+            package-relations: signed-generate
             packages:
                 linux-nvidia-5.19:
                     repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-nvidia/+git/jammy', 'nvidia-5.19-next']
