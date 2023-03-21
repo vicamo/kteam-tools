@@ -2416,6 +2416,28 @@ defaults:
                         clouds: ['kvm']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-s32:
+            variants: ['--']
+            packages:
+                linux-s32:
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux', 'master-next']
+                linux-meta-s32:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~erlangen-team/erlangen/+git/linux-meta']
+            development: true
+            supported: false
+            owner: kuba-t-pawlak
+            private: true
+            derived-from: [ '22.04', 'linux' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    s32:
+                        arches: ['amd64']        # test system arch names
+                        clouds: ['kvm']
+            invalid-tasks: ['certification-testing']
+
         linux-bluefield:
             routing: bluefield-ppas-pro/3
             variants: ['--']
