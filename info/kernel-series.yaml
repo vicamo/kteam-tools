@@ -2179,7 +2179,7 @@ defaults:
 
         linux-azure-5.19:
             routing: ubuntu/4
-            variants: [ '-edge' ]
+            variants: [ '--' ]
             package-relations: signed-generate
             packages:
                 linux-azure-5.19:
@@ -2203,6 +2203,43 @@ defaults:
             owner: timg-tpi
             backport: true
             derived-from: [ '22.10', 'linux-azure' ]
+            swm:
+                deployment-blackout: *swm-azure-blackout
+                kernel-testing: true
+            testing:
+                flavours:
+                    azure:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['azure']
+            invalid-tasks: [ 'certification-testing' ]
+            stakeholder: 'linux-azure-signoff'
+
+        linux-azure-6.2:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-azure-6.2:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-azure/+git/jammy', 'azure-6.2-next']
+                linux-meta-azure-6.2:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-azure/+git/jammy', 'azure-6.2']
+                linux-generate-azure-6.2:
+                    type: generate
+                linux-signed-azure-6.2:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-azure/+git/jammy', 'azure-6.2']
+                linux-restricted-modules-azure-6.2:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-azure/+git/jammy', 'azure-6.2']
+                linux-restricted-generate-azure-6.2:
+                    type: lrg
+                linux-restricted-signatures-azure-6.2:
+                    type: lrs
+            supported: true
+            owner: timg-tpi
+            backport: true
+            derived-from: [ '23.04', 'linux-azure' ]
             swm:
                 deployment-blackout: *swm-azure-blackout
                 kernel-testing: true
