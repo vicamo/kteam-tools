@@ -4268,7 +4268,7 @@ defaults:
             private: true
             snaps:
                 hon-hbt-cv22-kernel:
-                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/hon-hbt-kernel-snap', 'cv22']
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/havana/+git/hon-hbt-kernel-snap', 'master']
                     gated: false
                     promote-to: 'stable'
                     qa: false
