@@ -14,9 +14,12 @@ shift
 [ "$key" = "" ] && key="UNKNOWN"
 
 if [ -d "$HOME/oops" ]; then
-       oops=$(mktemp "$HOME/oops/$key.XXXXXXXXXX")
+	mkdir -p "$HOME/oops/$key"
+	oops_url="$key/oops"
+	oops=$(mktemp "$HOME/oops/$key/XXXXXXXXXXXXXXXX")
 else
-       oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
+	oops_url="oops"
+	oops=$(mktemp "$HOME/public_html/oops/$key.XXXXXXXXXX")
 fi
 chmod 644 "$oops"
 
@@ -35,7 +38,10 @@ if [ "$rc" = "$error_ok" ]; then
 	rm -f "$oops"
 
 elif [ "$rc" != 0 ]; then
-	echo "OOPS: http://kernel.ubuntu.com/~kernel-ppa/oops/$(basename "$oops")"
+	oops_csum=$(sha256sum $oops); oops_csum=${oops_csum%% *}
+	final_oops="$(dirname "$oops")/$oops_csum"
+	mv "$oops" "$final_oops"
+	echo "OOPS: https://kernel.ubuntu.com/$oops_url/$(basename "$final_oops")"
 
 else
 	rm -f "$oops"
