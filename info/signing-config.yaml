@@ -4,6 +4,9 @@ streams:
     2: core-2021v1
   ibm-gt:
     1: ibm-gt
+  kariya:
+    1: ke-kariya
+    2: ke-kariya-2
   pro:
     2:
       fips: fips

@@ -489,7 +489,7 @@ defaults:
             build:
                 - ['ppa:kariya-team/ubuntu/kariya-build', 'Release']
             signing:
-                - ['ppa:canonical-signing/ubuntu/ke-kariya', 'Release']
+                - ['signing:kariya/2', 'Release']
             proposed:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
             updates:
