@@ -327,6 +327,15 @@ Link current build to tracker bug in Launchpad:
 $ cranky link-tb
 ```
 
+**Note**: If you're doing a respin for a previous cycle while current cycle's
+kernel hasn't been cranked yet, this command will fail because multiple
+trackers are found. To find the correct launchpad bug, you have to specify the
+sru cycle you're respining.
+
+```
+$ cranky link-tb --sru-cycle <cycle>
+```
+
 ### dkms package update stage - `update-dkms-versions`
 <!--cheatsheet-->
 ```
@@ -587,6 +596,18 @@ $ cranky pull-source linux-oracle xenial
 $ cranky pull-source linux-meta-oracle xenial
 $ cranky pull-source linux-signed-oracle xenial
 $ cd -
+```
+
+**Note** If you are performing a respin, make sure you pull the latest version
+from `-updates`.
+`cranky rmadison` will show you the actual version.
+If the package version in `-proposed` is greater than the package version in
+`-updates`, then the package version in `-updates` must be supplied to
+`cranky pull-source`.
+
+Example:
+```
+$ cranky pull-source linux-oracle <version> xenial
 ```
 
 **Note** Be aware that you will need to provide the version to `cranky
