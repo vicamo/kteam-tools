@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+#
+# Simple HTML dashboard generator for mainline builds
+#
+
+from functools import cmp_to_key
+import os
+import re
+
+import apt_pkg
+
+BASE_PATH = "/home/kernel-ppa/public_html/mainline"
+BASE_URL = "https://kernel.ubuntu.com/~kernel-ppa/mainline"
+
+STATUS = {
+    "0": "pass",
+    "1": "setup",  # build setup failure
+    "2": "fail",   # build failure
+}
+
+def cmp_version(v1, v2):
+    """ Compare kernel versions
+    """
+    v1 = v1.replace("-rc", "~rc")
+    v2 = v2.replace("-rc", "~rc")
+    return apt_pkg.version_compare(v1, v2)
+
+def get_arches(version):
+    """ Return the list of supported arches for the given kernel version
+    """
+    arches = ["amd64", "i386"]
+
+    # The list of supported architectures is gathered from
+    # debian[.master]/config/ from the packaging bits used for the builds. This
+    # is mostly a superset of what is actually built but it's unclear atm how
+    # it was determined which arches to actually build.
+
+    # arm64: version >= 3.8
+    if cmp_version(version, "v3.8") >= 0:
+        arches.append("arm64")
+
+    # armel: version >= 2.6 && version <= 3.4
+    if cmp_version(version, "v2.5") >= 0 and cmp_version(version, "v3.4") <= 0:
+        arches.append("armel")
+
+    # armhf: version >= 3.1
+    if cmp_version(version, "v3.1") >= 0:
+        arches.append("armhf")
+
+    # powerpc: version >= 2.6 && version <= 4.11
+    if cmp_version(version, "v2.6") >= 0 and cmp_version(version, "v4.11") <= 0:
+        arches.append("powerpc")
+
+    # ppc64el: version >= 3.12
+    if cmp_version(version, "v3.12") >= 0:
+        arches.append("ppc64el")
+
+    # riscv64: version >= 5.4
+    if cmp_version(version, "v5.4") >= 0:
+        arches.append("riscv64")
+
+    # s390x: version >= 4.3
+    if cmp_version(version, "v4.3") >= 0:
+        arches.append("s390x")
+
+    return sorted(arches)
+
+def get_build_status(path, arches):
+    """ Return the statuses of a single build for the different architectures
+    """
+    status = {
+        "old_build": False,
+    }
+
+    f = os.path.join(path, "BUILT")
+    if os.path.exists(f):
+        # Old build
+        status["old_build"] = True
+        found = False
+        with open(f, encoding="utf-8") as fh:
+            for line in fh:
+                comps = line.strip().split(" ")
+                if ((len(comps) != 3 or comps[0] != "Status:" or
+                     comps[1] not in arches)):
+                    continue
+                found = True
+                arch, arch_status = comps[1:]
+                status[arch] = STATUS.get(arch_status, "unknown")
+
+        if not found:
+            # No status found, so scan for debs
+            debs = [f for f in os.listdir(path)
+                    if f.startswith("linux-image-") and f.endswith(".deb")]
+            for f in debs:
+                arch = f.split("_")[-1][:-4]
+                status[arch] = STATUS["0"]
+
+        return status
+
+    # New build
+    for arch in arches:
+        f = os.path.join(path, arch, "status")
+        if not os.path.exists(f):
+            continue
+        with open(f, encoding="utf-8") as fh:
+            arch_status = fh.readline().strip("\n")
+        status[arch] = STATUS.get(arch_status, "unknown")
+
+    return status
+
+# ----------------------------------------------------------------------------
+# Main entry point
+
+apt_pkg.init_system()
+
+print("""
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: #EAE9E7;
+      }
+      h1 {
+        color: #5E2750;
+      }
+      table {
+        border-spacing: 0;
+      }
+      td {
+        text-align: left;
+        padding: 2px;
+      }
+      #version {
+        width: 20ch;
+      }
+      #header {
+        background-color: #AEA79F;
+        font-weight: bold;
+      }
+      #pass {
+        background-color: #33d17a;
+        width: 10ch;
+      }
+      #fail {
+        background-color: #e01b24;
+        width: 10ch;
+      }
+      #setup {
+        background-color: #ff7800;
+        width: 10ch;
+      }
+      #missing {
+        background-color: #f6d32d;
+        width: 10ch;
+      }
+    </style>
+    <title>Ubuntu Mainline Build Status</title>
+  </head>
+
+  <body>
+    <h1>Ubuntu Mainline Build Status</h1>
+    <table>
+      <tr><td id='pass'>pass</td><td>Build succeeded</td></tr>
+      <tr><td id='setup'>setup</td><td>Setup failed</td></tr>
+      <tr><td id='fail'>fail</td><td>Build failed</td></tr>
+      <tr><td id='missing'></td><td>Missing/No build</td></tr>
+    </table>
+""")
+
+versions = [f for f in os.listdir(BASE_PATH) if f.startswith("v")]
+
+re_main_version = re.compile(r"^(v[0-9]+\.[0-9]+)")
+prev_version = "v1.0"
+
+for version in sorted(versions, reverse=True, key=cmp_to_key(cmp_version)):
+    build_path = os.path.join(BASE_PATH, version)
+
+    main_version = re_main_version.match(version).group(1)
+    prev_main_version = re_main_version.match(prev_version).group(1)
+
+    # Get the list of supported arches and the build statuses
+    arches = get_arches(main_version)
+    status = get_build_status(build_path, arches)
+
+    # Start a new table if the main version jumps
+    if main_version != prev_main_version:
+        if prev_version != "v1.0":
+            # Close the previous table
+            print("    </table>")
+
+        # Start a new table
+        print("    </br>")
+        print("    <table>")
+        print("      <tr>")
+        print("        <td id='header'>" + main_version + "</td>")
+        for arch in arches:
+            print("        <td id='header'>" + arch + "</td>")
+        print("      </tr>")
+    prev_version = version
+
+    # Data row
+    url = BASE_URL + "/" + version
+    print("      <tr>")
+    print("        <td id='version'><a href='" + url + "'>" + version +
+          "</a></td>")
+    for arch in arches:
+        arch_url = url if status["old_build"] else url + "/" + arch
+        arch_status = status.get(arch, "missing")
+        arch_text = "" if arch_status == "missing" else arch_status
+        print("        <td id='" + arch_status + "'><a href='" + arch_url +
+              "'>" + arch_text + "</a></td>")
+    print("      </tr>")
+
+print("""
+    </table>
+  </body>
+</html>
+""")
