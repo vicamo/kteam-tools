@@ -3,6 +3,7 @@
 # Simple HTML dashboard generator for mainline builds
 #
 
+from datetime import datetime
 from functools import cmp_to_key
 import os
 import re
@@ -113,47 +114,49 @@ def get_build_status(path, arches):
 
 apt_pkg.init_system()
 
+now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
 print("""
 <!DOCTYPE html>
 <html>
   <head>
     <style>
-      body {
+      body {{
         background-color: #EAE9E7;
-      }
-      h1 {
+      }}
+      h1 {{
         color: #5E2750;
-      }
-      table {
+      }}
+      table {{
         border-spacing: 0;
-      }
-      td {
+      }}
+      td {{
         text-align: left;
         padding: 2px;
-      }
-      #version {
+      }}
+      #version {{
         width: 20ch;
-      }
-      #header {
+      }}
+      #header {{
         background-color: #AEA79F;
         font-weight: bold;
-      }
-      #pass {
+      }}
+      #pass {{
         background-color: #33d17a;
         width: 10ch;
-      }
-      #fail {
+      }}
+      #fail {{
         background-color: #e01b24;
         width: 10ch;
-      }
-      #setup {
+      }}
+      #setup {{
         background-color: #ff7800;
         width: 10ch;
-      }
-      #missing {
+      }}
+      #missing {{
         background-color: #f6d32d;
         width: 10ch;
-      }
+      }}
     </style>
     <title>Ubuntu Mainline Build Status</title>
   </head>
@@ -166,13 +169,15 @@ print("""
       <strong>*** Notice ***</strong>
     </div>
     <h1>Ubuntu Mainline Build Status</h1>
+    {}</br>
+    </br>
     <table>
       <tr><td id='pass'>pass</td><td>Build succeeded</td></tr>
       <tr><td id='setup'>setup</td><td>Setup failed</td></tr>
       <tr><td id='fail'>fail</td><td>Build failed</td></tr>
       <tr><td id='missing'></td><td>Missing/No build</td></tr>
     </table>
-""")
+""".format(now))
 
 versions = [f for f in os.listdir(BASE_PATH) if f.startswith("v")]
 
