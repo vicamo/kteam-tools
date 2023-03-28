@@ -157,16 +157,28 @@ print("""
         background-color: #f6d32d;
         width: 10ch;
       }}
+      #warning {{
+         background-color: #f44336;
+         padding: 20px;
+         color: white;
+      }}
     </style>
     <title>Ubuntu Mainline Build Status</title>
   </head>
 
   <body>
-    <div style='background-color: #f44336; padding: 20px; color: white;'>
+    <div id='warning'>
       <strong>*** Notice ***</strong>
       This is still work in progress. Don't rely on it! It will change, it
       will move to a different location and it will disappear without notice!
       <strong>*** Notice ***</strong>
+    </div>
+    </br>
+    <div id='warning'>
+    These kernels are not supported and are not appropriate for production use!
+    Additionally, these kernels do not receive any security updates, therefore
+    if you install them manually via the mainline PPA, you will never receive
+    a security update or patch for that version.
     </div>
     <h1>Ubuntu Mainline Build Status</h1>
     {}</br>
