@@ -6865,7 +6865,7 @@ defaults:
                 linux-restricted-signatures-hwe-5.4:
                     type: lrs
             supported: true
-            owner: kleber-souza
+            owner: agherzan
             backport: true
             derived-from: [ '20.04', 'linux' ]
             swm:
