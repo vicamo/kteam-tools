@@ -2324,7 +2324,7 @@ defaults:
                 linux-signed-ibm-gt:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy']
-            owner: bzolnier
+            owner: john-cabaj
             private: true
             derived-from: [ '22.04', 'linux' ]
             swm:
@@ -2353,7 +2353,7 @@ defaults:
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-jammy', 'ibm-gt-fips']
             development: false
             supported: true
-            owner: jcabaj
+            owner: john-cabaj
             private: true
             derived-from: [ '22.04', 'linux-ibm-gt' ]
             backport: true # use local-mangle to keep it in sync with linux-ibm-gt
@@ -7860,7 +7860,7 @@ defaults:
                     type: signed
                     repo: ['git://git.launchpad.net/~ibm-cloud/ibm-cloud-private/+git/linux-signed-bionic']
             supported: true
-            owner: bzolnier
+            owner: john-cabaj
             private: true
             derived-from: ['18.04', 'linux']
             testing:
