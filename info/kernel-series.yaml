@@ -494,6 +494,16 @@ defaults:
                 - ['ppa:kariya-team/ubuntu/kariya-proposed', 'Release']
             updates:
                 - ['ppa:kariya-team/ubuntu/kariya-release', 'Release']
+        jollyville-uc20:
+            <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
+            build:
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-build', 'Release' ]
+            signing:
+                - [ 'ppa:canonical-signing/ubuntu/ke-jollyville', 'Release' ]
+            proposed:
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-proposed', 'Release' ]
+            updates:
+                - [ 'ppa:jollyville-team/ubuntu/jollyville-updates', 'Release' ]
         nuremberg-uc20:
             <<: [*routing-table-security-build-uc20, *routing-table-security-proposed]
             build:
@@ -6040,6 +6050,22 @@ defaults:
             invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
             swm:
                 block-parent-release: true
+
+        linux-uc20-jollyville:
+            routing: jollyville-uc20
+            packages:
+                linux-uc20-jollyville:
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/jollyville/+git/linux-uc20-jollyville', 'master-next']
+                linux-signed-uc20-jollyville:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-hwe-team/jollyville/+git/linux-signed-uc20-jollyville']
+            supported: false
+            owner: wenchien
+            development: true
+            derived-from: [ '20.04', 'linux-iot' ]
+            invalid-tasks: [ 'boot-testing', 'automated-testing', 'regression-testing', 'certification-testing', 'verification-testing' ]
+            swm:
+                block-parent-release: false
 
         linux-xilinx-zynqmp:
             variants: [ '--' ]
