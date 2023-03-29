@@ -17,27 +17,30 @@ apt_pkg.init_system()
 class Launchpad(_Launchpad):
     @classmethod
     def _get_paths(cls, service_root, launchpadlib_dir=None):
-        service_root, launchpadlib_dir, cache_path, service_root_dir = (
-            _Launchpad._get_paths(
-                service_root, launchpadlib_dir=launchpadlib_dir))
+        (
+            service_root,
+            launchpadlib_dir,
+            cache_path,
+            service_root_dir,
+        ) = _Launchpad._get_paths(service_root, launchpadlib_dir=launchpadlib_dir)
         cache_path += "-sru-report"
         if not os.path.exists(cache_path):
             os.makedirs(cache_path, 0o700)
         return service_root, launchpadlib_dir, cache_path, service_root_dir
 
+
 def get_flavor_from_linux_image(package):
-    if package.endswith('-dbgsym'):
+    if package.endswith("-dbgsym"):
         return None
-    if package.startswith('linux-image-') and \
-       package[12].isdigit():
-        return package.split('-', 4)[4]
-    if package.startswith('linux-image-unsigned-') and \
-       package[21].isdigit():
-        return package.split('-', 5)[5]
+    if package.startswith("linux-image-") and package[12].isdigit():
+        return package.split("-", 4)[4]
+    if package.startswith("linux-image-unsigned-") and package[21].isdigit():
+        return package.split("-", 5)[5]
     return None
 
+
 class KernelPackages:
-    def __init__(s, launchpad=None, cache='package-binaries.json', ppa=None):
+    def __init__(s, launchpad=None, cache="package-binaries.json", ppa=None):
         s.lp = None
         s.ubuntu = None
         s.archive = None
@@ -55,38 +58,35 @@ class KernelPackages:
             with open(s.cache_file) as cachef:
                 tmp = json.load(cachef)
 
-                s.cache_version  = tmp['cache-version']
-                s.map_source     = tmp['map-source']
-                if 'map-archs' in tmp:
-                    s.map_archs     = tmp['map-archs']
-
+                s.cache_version = tmp["cache-version"]
+                s.map_source = tmp["map-source"]
+                if "map-archs" in tmp:
+                    s.map_archs = tmp["map-archs"]
 
     def save(s):
         if s.dirty:
-            with open(s.cache_file + '.new', 'w') as cfd:
+            with open(s.cache_file + ".new", "w") as cfd:
                 out = {
-                    'cache-version':    s.cache_version,
-                    'map-source':       s.map_source,
-                    'map-archs':        s.map_archs,
+                    "cache-version": s.cache_version,
+                    "map-source": s.map_source,
+                    "map-archs": s.map_archs,
                 }
                 json.dump(out, cfd, indent=2)
-            os.rename(s.cache_file + '.new', s.cache_file)
-
+            os.rename(s.cache_file + ".new", s.cache_file)
 
     def lpinit(s, launchpad=None, ppa=None):
         logging.debug("Initializing LP Credentials")
         if not launchpad:
-            s.lp = Launchpad.login_anonymously('adt-lp-binaries', 'production')
+            s.lp = Launchpad.login_anonymously("adt-lp-binaries", "production")
         else:
             s.lp = launchpad
-            
-        s.ubuntu = s.lp.distributions['ubuntu']
-        if not ppa or ppa == '-':
-            s.archive = s.ubuntu.getArchive(name='primary')
-        else:
-            (ppa_owner, ppa_name) = ppa.split('/')
-            s.archive = s.lp.people[ppa_owner].getPPAByName(name=ppa_name)
 
+        s.ubuntu = s.lp.distributions["ubuntu"]
+        if not ppa or ppa == "-":
+            s.archive = s.ubuntu.getArchive(name="primary")
+        else:
+            (ppa_owner, ppa_name) = ppa.split("/")
+            s.archive = s.lp.people[ppa_owner].getPPAByName(name=ppa_name)
 
     def _series(s, series_name):
         if series_name not in s.series:
@@ -95,15 +95,16 @@ class KernelPackages:
 
         return s.series[series_name]
 
-
     def package_linux_image(s, seriesname, sourcename):
         distro_series = s._series(seriesname)
-        for pocket in ('Proposed', 'Updates', 'Security', 'Release'):
-            pubs = s.archive.getPublishedSources(source_name=sourcename,
-                                                    exact_match=True,
-                                                    pocket = pocket,
-                                                    status = 'Published',
-                                                    distro_series=distro_series)
+        for pocket in ("Proposed", "Updates", "Security", "Release"):
+            pubs = s.archive.getPublishedSources(
+                source_name=sourcename,
+                exact_match=True,
+                pocket=pocket,
+                status="Published",
+                distro_series=distro_series,
+            )
             if len(pubs) > 0:
                 break
 
@@ -111,12 +112,24 @@ class KernelPackages:
             pub = pubs[0]
 
             sver = pub.source_package_version
-            key = seriesname + ' ' + sourcename
-            key2 = seriesname + ' ' + sourcename.replace('linux', 'linux-meta')
+            key = seriesname + " " + sourcename
+            key2 = seriesname + " " + sourcename.replace("linux", "linux-meta")
 
-            print("  {}:{} found pocket={} version={} cache={}".format(seriesname, sourcename, pocket, sver, s.cache_version.get(key, '0.0')))
+            print(
+                "  {}:{} found pocket={} version={} cache={}".format(
+                    seriesname,
+                    sourcename,
+                    pocket,
+                    sver,
+                    s.cache_version.get(key, "0.0"),
+                )
+            )
 
-            if key2 not in s.map_archs or key not in s.cache_version or apt_pkg.version_compare(sver, s.cache_version[key]) > 0:
+            if (
+                key2 not in s.map_archs
+                or key not in s.cache_version
+                or apt_pkg.version_compare(sver, s.cache_version[key]) > 0
+            ):
                 print("  scanning")
                 # If this build is complete we no longer need to scan it.
 
@@ -124,11 +137,18 @@ class KernelPackages:
                 build_seen = False
                 for build in pub.getBuilds():
                     build_seen = True
-                    if build.buildstate not in ('Successfully built', 'Failed to build', 'Failed to upload', 'Cancelled build'):
+                    if build.buildstate not in (
+                        "Successfully built",
+                        "Failed to build",
+                        "Failed to upload",
+                        "Cancelled build",
+                    ):
                         complete = False
                 if not build_seen:
                     complete = False
-                if complete and (key not in s.cache_version or s.cache_version[key] != sver):
+                if complete and (
+                    key not in s.cache_version or s.cache_version[key] != sver
+                ):
                     s.cache_version[key] = sver
                     s.dirty = True
 
@@ -140,7 +160,7 @@ class KernelPackages:
                     if flavour != None:
                         flavours[flavour] = True
 
-                        arch = binary.distro_arch_series_link.split('/')[-1]
+                        arch = binary.distro_arch_series_link.split("/")[-1]
                         acache = s.map_archs.setdefault(key2, [])
                         if arch not in acache:
                             acache.append(arch)
@@ -152,18 +172,21 @@ class KernelPackages:
                     src_version = pub.source_package_version
                     base_versions[src_version] = True
                     # Legacy...
-                    (base, abi) = src_version.split('-', 1)
+                    (base, abi) = src_version.split("-", 1)
                     base_versions[base] = True
 
-                #print(flavours)
-                #print(base_versions)
+                # print(flavours)
+                # print(base_versions)
 
                 for base in base_versions:
                     for flavour in flavours:
-                        key = seriesname + ' ' + base + ' ' + flavour
+                        key = seriesname + " " + base + " " + flavour
                         if key not in s.map_source:
-                            s.map_source[seriesname + ' ' + base + ' ' + flavour] = sourcename.replace('linux', 'linux-meta')
+                            s.map_source[
+                                seriesname + " " + base + " " + flavour
+                            ] = sourcename.replace("linux", "linux-meta")
                             s.dirty = True
+
 
 ppa = None
 if len(sys.argv) > 1:
@@ -172,7 +195,7 @@ if len(sys.argv) > 1:
 kp = KernelPackages(ppa=ppa)
 for line in sys.stdin:
     (series, package) = line.split()
-    print('binaries:', series, package)
+    print("binaries:", series, package)
     kp.package_linux_image(series, package)
     sys.stdout.flush()
 kp.save()
