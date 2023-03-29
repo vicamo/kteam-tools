@@ -2586,6 +2586,41 @@ defaults:
                         clouds: ['oracle']
             invalid-tasks: [ 'certification-testing' ]
 
+        linux-oracle-5.19:
+            routing: ubuntu/4
+            variants: [ '-edge' ]
+            package-relations: signed-generate
+            packages:
+                linux-oracle-5.19:
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-oracle/+git/jammy', 'oracle-5.19-next']
+                linux-meta-oracle-5.19:
+                    type: meta
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-meta-oracle/+git/jammy', 'oracle-5.19']
+                linux-generate-oracle-5.19:
+                    type: generate
+                linux-signed-oracle-5.19:
+                    type: signed
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-signed-oracle/+git/jammy', 'oracle-5.19']
+                linux-restricted-modules-oracle-5.19:
+                    type: lrm
+                    repo: ['git://git.launchpad.net/~canonical-kernel/ubuntu/+source/linux-restricted-modules-oracle/+git/jammy', 'oracle-5.19']
+                linux-restricted-generate-oracle-5.19:
+                    type: lrg
+                linux-restricted-signatures-oracle-5.19:
+                    type: lrs
+            supported: true
+            owner: kmously
+            backport: true
+            derived-from: [ '22.10', 'linux-oracle' ]
+            swm:
+                kernel-testing: true
+            testing:
+                flavours:
+                    oracle:
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['oracle']
+            invalid-tasks: [ 'certification-testing' ]
+
         linux-riscv:
             variants: ['-eol-riscv-5.15']
             packages:
