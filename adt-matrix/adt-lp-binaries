@@ -6,12 +6,12 @@ import os
 import sys
 import logging
 import json
-
-import apt_pkg
+from copy import copy
+from datetime import datetime
 
 from launchpadlib.launchpad import Launchpad as _Launchpad
+from lazr.restfulclient.errors import Unauthorized
 
-apt_pkg.init_system()
 
 # Work around non-multiple-instance-safety of launchpadlib (bug #459418).
 class Launchpad(_Launchpad):
@@ -50,34 +50,66 @@ class KernelPackages:
 
         s.dirty = False
         s.cache_file = cache
-        s.cache_version = {}
+        s.i_scanned = {}
+        s.i_good = {}
         s.map_source = {}
         s.map_archs = {}
+        s.pocket_versions = {}
 
         if os.path.exists(s.cache_file):
             with open(s.cache_file) as cachef:
-                tmp = json.load(cachef)
-
-                s.cache_version = tmp["cache-version"]
+                tmp = json.load(cachef, object_hook=s._json_object_decode)
+                s.i_scanned = tmp["i-scanned"]
+                s.i_good = tmp["i-good"]
                 s.map_source = tmp["map-source"]
-                if "map-archs" in tmp:
-                    s.map_archs = tmp["map-archs"]
+                s.map_archs = tmp["map-archs"]
+                if "pocket-versions" in tmp:
+                    s.pocket_versions = tmp["pocket-versions"]
+
+    def _json_object_encode(self, obj):
+        if isinstance(obj, datetime):
+            return { '_isoformat': obj.isoformat() }
+        raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
+
+    def _json_object_decode(self, obj):
+        isoformat = obj.get('_isoformat')
+        if isoformat is not None:
+            #return datetime.fromisoformat(isoformat)
+            # XXX: before python 3.6 fromisoformat is not available.
+            if isoformat[-3] == ':':
+                isoformat = isoformat[0:-3] + isoformat[-2:]
+            for fmt in (
+                    '%Y-%m-%dT%H:%M:%S.%f%z',
+                    '%Y-%m-%dT%H:%M:%S%z',
+                    '%Y-%m-%dT%H:%M:%S.%f',
+                    '%Y-%m-%dT%H:%M:%S'):
+                try:
+                    obj = datetime.strptime(isoformat, fmt)
+                    break
+                except ValueError:
+                    pass
+            else:
+                raise ValueError("isoformat: {} invalid format".format(isoformat))
+        return obj
 
     def save(s):
         if s.dirty:
+            print("updating cache")
             with open(s.cache_file + ".new", "w") as cfd:
                 out = {
-                    "cache-version": s.cache_version,
+                    "i-scanned": s.i_scanned,
+                    "i-good": s.i_good,
                     "map-source": s.map_source,
                     "map-archs": s.map_archs,
+                    "pocket-versions": s.pocket_versions,
                 }
-                json.dump(out, cfd, indent=2)
+                json.dump(out, fp=cfd, default=s._json_object_encode, indent=2)
             os.rename(s.cache_file + ".new", s.cache_file)
 
     def lpinit(s, launchpad=None, ppa=None):
         logging.debug("Initializing LP Credentials")
         if not launchpad:
-            s.lp = Launchpad.login_anonymously("adt-lp-binaries", "production")
+            s.lp = Launchpad.login_anonymously("adt-lp-binaries", "production", version="devel")
         else:
             s.lp = launchpad
 
@@ -96,106 +128,118 @@ class KernelPackages:
         return s.series[series_name]
 
     def package_linux_image(s, seriesname, sourcename):
+        key = seriesname + " " + sourcename
+        key_sm = seriesname + " " + sourcename.replace("linux", "linux-meta")
+
+        i_scanned = s.i_scanned.get(key)
+        print("  {}:{} since={}".format(seriesname, sourcename, i_scanned))
         distro_series = s._series(seriesname)
-        for pocket in ("Proposed", "Updates", "Security", "Release"):
-            pubs = s.archive.getPublishedSources(
-                source_name=sourcename,
-                exact_match=True,
-                pocket=pocket,
-                status="Published",
-                distro_series=distro_series,
-            )
-            if len(pubs) > 0:
-                break
+        pubs = s.archive.getPublishedSources(
+            order_by_date=True,
+            created_since_date=i_scanned,
+            source_name=sourcename,
+            exact_match=True,
+            distro_series=distro_series,
+        )
 
-        if len(pubs) > 0:
-            pub = pubs[0]
-
+        count = 0
+        seen = set()
+        i_scanned_restart = None
+        pocket_versions = copy(s.pocket_versions.get(key, {}))
+        for pub in pubs:
             sver = pub.source_package_version
-            key = seriesname + " " + sourcename
-            key2 = seriesname + " " + sourcename.replace("linux", "linux-meta")
+            pocket = pub.pocket
 
-            print(
-                "  {}:{} found pocket={} version={} cache={}".format(
-                    seriesname,
-                    sourcename,
-                    pocket,
-                    sver,
-                    s.cache_version.get(key, "0.0"),
-                )
-            )
+            key_ssv = seriesname + " " + sourcename + " " + sver
 
-            if (
-                key2 not in s.map_archs
-                or key not in s.cache_version
-                or apt_pkg.version_compare(sver, s.cache_version[key]) > 0
-            ):
-                print("  scanning")
-                # If this build is complete we no longer need to scan it.
+            which = "  {}:{} found pocket={} version={}".format(seriesname, sourcename, pocket, sver)
 
-                complete = True
-                build_seen = False
-                for build in pub.getBuilds():
-                    build_seen = True
-                    if build.buildstate not in (
-                        "Successfully built",
-                        "Failed to build",
-                        "Failed to upload",
-                        "Cancelled build",
-                    ):
-                        complete = False
-                if not build_seen:
-                    complete = False
-                if complete and (
-                    key not in s.cache_version or s.cache_version[key] != sver
+            # Accumulate the latest publication into each pocket.
+            if pocket not in pocket_versions:
+                pocket_versions[pocket] = sver
+
+            # Skip sources we have scanned before for completeness.
+            if key_ssv in seen:
+                continue
+            seen.add(key_ssv)
+            if key_ssv in s.i_good:
+                print(which, "known good")
+                if i_scanned_restart is None:
+                    i_scanned_restart = pub.date_created
+                continue
+
+            #count += 1
+            #if count == 5:
+            #    break
+
+            print(which, "scanning")
+
+            # If this build is complete we no longer need to scan it.
+            complete = True
+            build_seen = False
+            try:
+                builds = pub.getBuilds()
+            except Unauthorized:
+                builds = []
+            for build in builds:
+                build_seen = True
+                if build.buildstate not in (
+                    "Successfully built",
+                    "Failed to build",
+                    "Failed to upload",
+                    "Cancelled build",
                 ):
-                    s.cache_version[key] = sver
-                    s.dirty = True
+                    complete = False
+            #if not build_seen:
+            #    complete = False
+            #if not complete:
+            #    i_scanned_restart = pub.date_created
+            if not complete or i_scanned_restart is None:
+                i_scanned_restart = pub.date_created
+            if complete and key_ssv not in s.i_good:
+                s.i_good[key_ssv] = True
+                s.dirty = True
 
-                # Scan all the binaries and accumulate the flavour version combinations.
+            # Scan all the binaries and accumulate the flavour version combinations.
+            if complete:
                 flavours = {}
-                for binary in pub.getPublishedBinaries():
+                for binary in pub.getPublishedBinaries(active_binaries_only=False):
                     binary_package_name = binary.binary_package_name
                     flavour = get_flavor_from_linux_image(binary_package_name)
                     if flavour != None:
                         flavours[flavour] = True
 
                         arch = binary.distro_arch_series_link.split("/")[-1]
-                        acache = s.map_archs.setdefault(key2, [])
+                        acache = s.map_archs.setdefault(key_sm, [])
                         if arch not in acache:
                             acache.append(arch)
                             s.dirty = True
 
-                base_versions = {}
-                for pub in pubs:
-                    # Record the exact source versions.
-                    src_version = pub.source_package_version
-                    base_versions[src_version] = True
-                    # Legacy...
-                    (base, abi) = src_version.split("-", 1)
-                    base_versions[base] = True
+                print("    complete={} flavours={}".format(complete, flavours))
 
-                # print(flavours)
-                # print(base_versions)
+                for flavour in flavours:
+                    key_svf = seriesname + " " + sver + " " + flavour
+                    if key_svf not in s.map_source:
+                        s.map_source[key_svf] = sourcename.replace("linux", "linux-meta")
+                        s.dirty = True
 
-                for base in base_versions:
-                    for flavour in flavours:
-                        key = seriesname + " " + base + " " + flavour
-                        if key not in s.map_source:
-                            s.map_source[
-                                seriesname + " " + base + " " + flavour
-                            ] = sourcename.replace("linux", "linux-meta")
-                            s.dirty = True
+        if i_scanned_restart is not None and s.i_scanned.get(key) != i_scanned_restart:
+            s.i_scanned[key] = i_scanned_restart
+            s.dirty = True
 
+        if pocket_versions != s.pocket_versions.get(key, {}):
+            s.pocket_versions[key] = pocket_versions
+            s.dirty = True
 
-ppa = None
-if len(sys.argv) > 1:
-    ppa = sys.argv[1]
+if __name__ == "__main__":
+    ppa = None
+    if len(sys.argv) > 1:
+        ppa = sys.argv[1]
 
-kp = KernelPackages(ppa=ppa)
-for line in sys.stdin:
-    (series, package) = line.split()
-    print("binaries:", series, package)
-    kp.package_linux_image(series, package)
-    sys.stdout.flush()
-kp.save()
+    kp = KernelPackages(ppa=ppa)
+    for line in sys.stdin:
+        (series, package) = line.split()
+        print("binaries:", series, package)
+        kp.package_linux_image(series, package)
+        sys.stdout.flush()
+    kp.save()
