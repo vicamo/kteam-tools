@@ -6022,8 +6022,8 @@ defaults:
                 flavours:
                     iot:
                         meta-pkg: linux-iot
-                        arches: ['amd64']        # test system arch names
-                        clouds: ['metal']
+                        arches: ['amd64', 'arm64']        # test system arch names
+                        clouds: ['metal', 'openstack']
 
         linux-uc20-iot:
             routing: uc20-core/2
