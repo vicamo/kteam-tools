@@ -77,7 +77,9 @@ class CycleStatus:
             if crankable:
                 if 'Packaging' in phase:
                     reason = self._byid[tid].get("reason", {}).get(":prepare-packages", "")
-                    if 'Pending' not in reason:
+                    if 'Pending' not in reason and 'Ongoing' not in reason:
+                        continue
+                    if 'building' in reason:
                         continue
                 elif 'Prepare' in phase:
                     reason = self._byid[tid].get("reason", {}).get("snap-prepare", "")
