@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+
+LIBDIR=os.path.join('..', 'ktl')
+if LIBDIR not in sys.path:
+    sys.path.append(LIBDIR)
+
+from ktl.swm_status import SwmStatus
+
+class CycleStatusError(Exception):
+    pass
+
+class CycleStatus:
+    def __init__(self, datestr, verbose=False):
+        swmfull = SwmStatus()
+
+        self._byid = dict()
+        self._idx_byhandle = dict()
+        for (tid, tinfo) in swmfull.trackers.items():
+            cycletag = tinfo.get("cycle")
+            if not cycletag.startswith(datestr):
+                continue
+            self._byid[int(tid)] = tinfo
+
+            series = tinfo.get("series")
+            source = tinfo.get("source")
+            handle = f'{series}:{source}'
+            if tinfo.get("variant") == 'snap-debs':
+                handle += f':{tinfo.get("snap-name")}'
+            tinfo["handle"]   = handle
+            tinfo["blocking"] = list()
+
+            if verbose:
+                print(f'II: Added LP: #{tid}({handle})')
+
+        #print(self._byid)
+        for tid in self._byid:
+            ptid   = self._byid[tid].get("master-bug", 0)
+            handle = self._byid[tid].get("handle")
+            if ptid == 0:
+                continue
+            if ptid not in self._byid:
+                print(f'EE: Undefined parent(LP: #{ptid}) for LP: #{tid}({handle})')
+                continue
+            phase = self._byid[tid].get("phase")
+            if "Holding before Packaging" in phase:
+                self._byid[ptid]["blocking"].append(tid)
+            if "Holding before Prepare" in phase:
+                self._byid[ptid]["blocking"].append(tid)
+
+    def get_nr_blocking(self, tid):
+        blocks = 0
+        for btid in self._byid[tid].get("blocking"):
+            blocks += 1 + self.get_nr_blocking(btid)
+
+        return blocks
+
+    def has_lrm(self, tid):
+        return self._byid[tid].get("packages", {}).get("lrm", "") != ""
+
+    def list_by_owner(self, ignore=[], lrm=False, crankable=False):
+        by_owner = dict()
+
+        for tid in self._byid:
+            phase = self._byid[tid].get("phase")
+            if "Promote" in phase:
+                continue
+            if "Complete" in phase:
+                continue
+            if "Holding before Packaging" in phase:
+                continue
+            if "Holding before Prepare" in phase:
+                continue
+            if crankable:
+                if 'Packaging' in phase:
+                    reason = self._byid[tid].get("reason", {}).get(":prepare-packages", "")
+                    if 'Pending' not in reason:
+                        continue
+                elif 'Prepare' in phase:
+                    reason = self._byid[tid].get("reason", {}).get("snap-prepare", "")
+                    if 'Pending' not in reason:
+                        continue
+                else:
+                    continue
+
+            skip  = False
+            cycle = self._byid[tid].get("cycle")
+            for spin in ignore:
+                if cycle.endswith(f'-{spin}'):
+                    skip = True
+                    break
+            if skip:
+                continue
+
+            if lrm and not self.has_lrm(tid):
+                continue
+
+            owner = self._byid[tid].get("owner")
+            if owner not in by_owner:
+                by_owner[owner] = list()
+            by_owner[owner].append(tid)
+
+        for owner in by_owner:
+            if crankable:
+                print(f'@{owner} has not completed to prepare:')
+            else:
+                print(f'@{owner} has the following kernels on todo:')
+            for tid in by_owner[owner]:
+                handle   = self._byid[tid].get("handle")
+
+                if lrm:
+                    priority = ''
+                else:
+                    if self.has_lrm(tid):
+                        priority = '!'
+                    else:
+                        priority = ''
+                if self._byid[tid].get("variant", "") == 'snap-debs':
+                    handle += " [snap]"
+
+                blocking = self.get_nr_blocking(tid)
+                if blocking == 0:
+                    print(f'  - {priority}{handle}')
+                else:
+                    print(f'  - {priority}{handle} ({blocking} sources are waiting on this)')
+
+
+if __name__ == "__main__":
+    desc = """
+    A crude helper to gather owners with sources that need attention in a given cycle.
+    Right now the selection critera might be rather simple.
+    """
+    epilog = """
+EXAMPLES:
+
+swm-laglist <DD.MM.YYYY>
+
+    This lists all kernel tasks which need some form of attention from the owner.
+    Either a source is not prepared, yet or has not finished all testing. Some
+    issues cannot be resolved by the owner directly but at least it should prompt
+    asking why this is not complete.
+
+swm-laglist -i <spin number> [-i <spin number> [...]] <DD.MM.YYYY>
+
+    Same as above but ignoring certain spins. Primarily added because of the potential
+    public security re-spins which would be handled separately.
+
+swm-laglist --crankable <DD.MM.YYYY>
+
+    Only list sources (debs or snaps) which could be done but have not been uploaded,
+    yet. Intention is to use this at the end of preparation week.
+
+swm-laglist --lrm <DD.MM.YYYY>
+
+    Limit the complete report of unfinished tasks to only those sources which have
+    LRM. Because all those have to release together or none at all they have a high
+    chance to critically delay a release.
+    """
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog=epilog,
+                                     prog="swm-laglist")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Add more details to the output.")
+    parser.add_argument("-i", "--ignore", metavar='<spin nr>', type=str, action="append",
+                        default=[],
+                        help="Ignore the given spin number (for security spins).")
+    parser.add_argument("--lrm", action="store_true",
+                        help="Concentrate on sources which have LRM.")
+    parser.add_argument("--crankable", action="store_true",
+                        help="Only report sources which are not prepared, yet")
+    parser.add_argument('cdate', metavar='<date>', nargs=1, type=str,
+                        help="Date (YYYY.MM.DD) of cycle to show")
+    args = parser.parse_args()
+
+    cdate = args.cdate[0]
+    content = ""
+    if args.lrm:
+        content = "sources with LRM"
+    if args.crankable:
+        if content != "":
+            content += ' '
+        content += 'not yet prepared'
+    if len(args.ignore) > 0:
+        if content != "":
+            content += ', '
+        content += f'ignoring spin(s)#{",".join(args.ignore)}'
+    if content == "":
+        content = "Complete"
+
+    print(f'Report on SRU Cycle {cdate} ({content})')
+    cs = CycleStatus(args.cdate[0], verbose=args.verbose)
+    cs.list_by_owner(ignore=args.ignore, lrm=args.lrm, crankable=args.crankable)
