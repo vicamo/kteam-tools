@@ -199,19 +199,23 @@ class CycleRef:
                 this_git(f"update-ref {ref} {matching_tag}", dry_run=dry_run)
 
     @staticmethod
-    def get_list(repo_path, descending=False, before=None, after=None):
+    def get_list(handle_tree, descending=False, before=None, after=None):
         """Returns a list of CycleRefs found in the specified git repo
-        :param repo_path: str path to repo
+        :param handle_tree: a HandleTree (or any interface with directory and handle_name)
         :param descending: bool True to return newest->oldest
         :param before: str return all cycle refs before this cycle, exclusive
         :param after: str return all cycle refs after this cycle, exclusive
         :return: list(CycleRef)
         """
+        repo_path = handle_tree.directory
+        handle_name = handle_tree.handle_name
+        unfriendly = r"[^\d\w-]"
+        handle_name = re.sub(unfriendly, "_", handle_name)
         git = Git(repo_path)
         try:
             # HACK the format option doesn't escape correctly so omit ' and replace space with |
             raw = git(
-                "for-each-ref --sort=creatordate --format=%(refname)|%(tag)|%(object) refs/swm/*/*",
+                "for-each-ref --sort=creatordate --format=%(refname)|%(tag)|%(object) refs/swm/{}/*".format(handle_name),
                 split="\n",
             )
         except CrankyException as ex:
@@ -250,14 +254,14 @@ class CycleRef:
         return filtered
 
     @staticmethod
-    def get_cycle_ref(repo_path, cycle):
+    def get_cycle_ref(handle_tree, cycle):
         """Returns CycleRef for the specified cycle name or None
-        :param repo_path: str path to repo
+        :param handle_tree: a HandleTree (or any interface with directory and handle_name)
         :param cycle: str name of cycle to locate
         :return: Optional[CycleRef]
         """
         result = None
-        for cycle_ref in CycleRef.get_list(repo_path):
+        for cycle_ref in CycleRef.get_list(handle_tree):
             if cycle_ref.cycle == cycle:
                 result = cycle_ref
                 break

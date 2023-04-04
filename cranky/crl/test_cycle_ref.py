@@ -178,7 +178,7 @@ class TestCycleRef(BaseCrankyTest):
             context = self.setup_package_set(d, "bionic")
 
             # Execute
-            actual = CycleRef.get_list(context.repo.directory)
+            actual = CycleRef.get_list(context.repo)
 
             # Assert
             self.assertEqual(len(actual), 0, "No cycles should have been returned")
@@ -200,7 +200,7 @@ class TestCycleRef(BaseCrankyTest):
             CycleRef.generate(context.handle)
 
             # Execute
-            actual = CycleRef.get_list(context.repo.directory)
+            actual = CycleRef.get_list(context.repo)
 
             # Assert
             self.assertEqual(len(actual), 0, "No cycles should have been returned")
@@ -222,7 +222,7 @@ class TestCycleRef(BaseCrankyTest):
             CycleRef.generate(context.handle)
 
             # Execute
-            actual = CycleRef.get_list(context.repo.directory)
+            actual = CycleRef.get_list(context.repo)
 
             # Assert
             self.assertEqual(len(actual), 3)
@@ -244,7 +244,7 @@ class TestCycleRef(BaseCrankyTest):
             CycleRef.generate(context.handle)
 
             # Execute
-            actual = CycleRef.get_list(context.repo.directory, descending=True)
+            actual = CycleRef.get_list(context.repo, descending=True)
 
             # Assert
             self.assertEqual(len(actual), len(bug_contents))
@@ -273,7 +273,7 @@ class TestCycleRef(BaseCrankyTest):
 
             # Execute
             actual = CycleRef.get_list(
-                context.repo.directory,
+                context.repo,
                 descending=True,
                 before="2022.03.01",
                 after="2022.01.01",

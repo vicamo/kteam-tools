@@ -42,7 +42,7 @@ def list_cycles(
         )
     cdebug("Found tree {} by package type {}".format(tree.name, package))
 
-    cycle_refs = CycleRef.get_list(tree.directory, descending, before, after)
+    cycle_refs = CycleRef.get_list(tree, descending, before, after)
     for cycle_ref in cycle_refs:
         print("{} {}".format(tree.name, str(cycle_ref)))
 
@@ -52,7 +52,7 @@ def destroy_cycles(handle, dry_run=False, **kwargs):
     handle_set = Handle().lookup_set(handle, validate=False)
     for tree in handle_set.trees:
         git = Git(tree.directory)
-        for cycle_ref in CycleRef.get_list(tree.directory):
+        for cycle_ref in CycleRef.get_list(tree):
             ref = CycleRef.make_ref(handle_set.handle_name, cycle_ref.cycle)
             git("update-ref -d {}".format(ref), dry_run=dry_run)
 

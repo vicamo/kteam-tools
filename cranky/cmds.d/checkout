@@ -65,7 +65,7 @@ def checkout_repos(handle, reference=None, dissociate=False, depth=None, crd=Non
                 CycleRef.generate(ghs.handle, remote=gh.remote)
                 is_rebuilt = True
 
-            cycle_ref = CycleRef.get_cycle_ref(gh.directory, cycle)
+            cycle_ref = CycleRef.get_cycle_ref(gh, cycle)
             if not cycle_ref:
                 raise CrankyException("Aborting: no cycle '{}' found for {}.".format(cycle, pkg.name))
 
