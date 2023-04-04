@@ -136,10 +136,17 @@ class HandleCore:
 
         return (changelog[0]['series'], package)
 
+    @property
+    def handle_name(self):
+        """Returns handle name in series:package format"""
+        if not self.source:
+            return None
+        return "{}:{}".format(self.series.codename, self.source.name)
+
 
 class HandleTree(HandleCore):
-    def __init__(self, series, package, directory=None, validate=True, config=None, ks=None):
-        super().__init__(series=series, package=package, config=config, ks=ks)
+    def __init__(self, series, package, source=None, directory=None, validate=True, config=None, ks=None):
+        super().__init__(series=series, package=package, source=source, config=config, ks=ks)
 
         if directory is None:
             directory = self.encode_directory(package)
@@ -224,7 +231,7 @@ class HandleSet(HandleCore):
                 if package_entry.repo is None:
                     continue
                 directory = prefix + add[package_entry.type if package_entry.type else 'main']
-                self.trees.append(HandleTree(series, package_entry, directory=directory,
+                self.trees.append(HandleTree(series, package_entry, source=source, directory=directory,
                                              validate=validate, ks=self.ks, config=self.config))
 
         else:
@@ -234,13 +241,8 @@ class HandleSet(HandleCore):
                 # which does not have repository.
                 if package_entry.repo is None:
                     continue
-                self.trees.append(HandleTree(series, package_entry,
+                self.trees.append(HandleTree(series, package_entry, source=source,
                                              validate=validate, ks=self.ks, config=self.config))
-
-    @property
-    def handle_name(self):
-        """Returns handle name in series:package format"""
-        return "{}:{}".format(self.series.codename, self.source.name)
 
     def get_tree_by_package_type(self, package_type):
         """Returns HandleTree for the request package or None if not found"""
@@ -266,6 +268,7 @@ class Handle(HandleCore):
     def lookup_tree(self, handle, validate=True):
         package = None
         directory = None
+        source = None
 
         # A directory passed as a handle.
         if os.path.exists(handle):
@@ -288,6 +291,7 @@ class Handle(HandleCore):
         for source_entry in series.sources:
             for package_entry in source_entry.packages:
                 if package_entry.name == package_name:
+                    source = source_entry
                     package = package_entry
                     break
             if package:
@@ -296,7 +300,7 @@ class Handle(HandleCore):
         if package is None:
             raise HandleError("{}: handle directory contains unknown package {}".format(handle, package_name))
 
-        return HandleTree(series, package, directory=directory, validate=validate, ks=self.ks, config=self.config)
+        return HandleTree(series, package, source=source, directory=directory, validate=validate, ks=self.ks, config=self.config)
 
     def lookup_set(self, handle, validate=True):
         # A directory passed as a handle.
