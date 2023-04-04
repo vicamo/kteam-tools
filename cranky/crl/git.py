@@ -42,6 +42,10 @@ class GitHandle():
         self.__ht = handle_tree
 
     @property
+    def handle_name(self):
+        return self.__ht.handle_name
+
+    @property
     def directory(self):
         return self.__ht.directory
 
